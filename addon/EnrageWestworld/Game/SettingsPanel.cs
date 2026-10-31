@@ -76,7 +76,7 @@ namespace EnrageWestworld.InGame
             { "FlirtPrompt", "Romance" }, { "Trysts", "Romance" }, { "CasualHookupsDecides", "Trysts" }, { "WillingSingle", "Romance" }, { "WillingTaken", "Romance" }, { "NpcFlirting", "Drama" }, { "AwakeningDays", "AwakeningShare" }, { "AwakeningBreakdown", "AwakeningShare" }, { "AwakeningDespair", "AwakeningShare" }, { "WakeHoldMinutes", "WakeHold" }, { "MindStartsScenes", "LanguagePicks" }, { "PickMetres", "LanguagePicks" }, { "BrawlMost", "MindBrawls" }, { "BrawlPullsYouIn", "MindBrawls" }, { "BrawlDraws", "MindBrawls" }, { "BrawlDrawShare", "BrawlDraws" }, { "BrawlFistsFatal", "MindBrawls" }, { "StalkerBlackModel", "StalkerBlack" }, { "StalkerBlackOutfit", "StalkerBlack" }, { "PicksAtOnce", "LanguagePicks" }, { "WakeLashOut", "WakeHold" },
             { "RealityChance", "HostsQuestionReality" }, { "ReturnChance", "Reveries" }, { "StrangerReturnChance", "Reveries" },
             { "DramaGapSeconds", "Drama" }, { "ScenesAtOnce", "Drama" }, { "ChanceMeetMetres", "Drama" }, { "Aftermath", "Drama" }, { "NightScenes", "Drama" }, { "FightCrowds", "Drama" }, { "HorseThieves", "Drama" }, { "AvengerChance", "Avengers" }, { "AvengersAtOnce", "Avengers" }, { "AvengerGapHours", "Avengers" }, { "KinWordDaysMin", "WordOfMouth" }, { "KinWordDaysMax", "WordOfMouth" }, { "UnseenKinWordDaysMin", "WordOfMouth" }, { "UnseenKinWordDaysMax", "WordOfMouth" }, { "QuietStillSeconds", "QuietWhenStill" },
-            { "CryingWomanChance", "CryingWoman" }, { "ExecutionChance", "Executions" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" },
+            { "CryingWomanChance", "CryingWoman" }, { "ExecutionChance", "Executions" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" }, { "GatheringHours", "Gatherings" }, { "GatheringGapHours", "Gatherings" },
             { "Hermits", "WestWorld" }, { "Gatherings", "WestWorld" }, { "RegularsPerTown", "Regulars" }, { "RegularsDress", "Regulars" },
             { "NameCardsMetres", "NameCards" }, { "NameCardsKnownMetres", "NameCards" }, { "NameCardsBesideEnrage", "NameCards" }, { "NameCardsSecondLine", "NameCards" }, { "NameCardsStrangerNames", "NameCards" }, { "NameCardsAlways", "NameCards" },
             { "ScenesOnTickerMetres", "ScenesOnTicker" },
@@ -95,7 +95,8 @@ namespace EnrageWestworld.InGame
             { "Subtitles", new[] { "game", "ours", "both", "off" } },
             { "NameCards", new[] { "off", "known", "everyone" } },
             { "WarNewsTo", new[] { "feed", "corner", "ticker" } },
-            { "TownPostsAfterDeath", new[] { "survive", "successor" } }
+            { "TownPostsAfterDeath", new[] { "survive", "successor" } },
+            { "GatheringHours", new[] { "any", "night" } }
         };
 
         private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "SettingsKey2", "TickerNextKey", "StalkerKey", "ExecutionKey", "CryingWomanKey", "HermitKey", "GatheringKey" };
@@ -153,7 +154,7 @@ namespace EnrageWestworld.InGame
             { "Encounters", "Encounters (master switch)" }, { "EncounterEveryMinutes", "Roll for an encounter every (real minutes)" },
             { "CryingWoman", "The crying woman" }, { "CryingWomanChance", "Her chance on each roll (percent)" }, { "Executions", "Executions on the road" }, { "ExecutionChance", "An execution's chance on each roll (percent)" },
             { "Hermits", "Hermits who woke" }, { "HermitChance", "A new camp's chance (percent)" },
-            { "Gatherings", "Gatherings of the awake" }, { "GatheringChance", "A gathering's chance (percent)" },
+            { "Gatherings", "Gatherings of the awake" }, { "GatheringChance", "A gathering's chance (percent)" }, { "GatheringHours", "When gatherings come (any hour, or night only)" }, { "GatheringGapHours", "Game hours at least between gatherings" },
             { "ReaderKey", "Letters, diaries and clippings" }, { "FlirtKey", "Flirt" }, { "WakeKey", "Wake the person you face" },
             { "TickerNextKey", "Next line on the ticker, or the next scene nearby" }, { "TestKey", "Status line and log dump" }, { "SettingsKey", "Open or close this panel" }, { "SettingsKey2", "... or this key" }
         };

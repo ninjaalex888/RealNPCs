@@ -267,6 +267,16 @@ namespace EnrageWestworld.Core
             "He looked. Don't move. Don't breathe."
         };
 
+        /// The same, for a ring standing in daylight (GatheringHours any).
+        public static readonly string[] GatherDayThoughts =
+        {
+            "Hold still. Hold still and he can't count us.",
+            "Sun on my neck. Whose neck is this?",
+            "Not the middle. Nobody stands in the middle.",
+            "Broad day, and nobody in town sees us. They never do.",
+            "He looked. Don't move. Don't breathe."
+        };
+
         public static string Pick(string[] pool, string seed)
         {
             return Voice.Pick(seed, pool);

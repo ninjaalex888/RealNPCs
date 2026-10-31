@@ -197,6 +197,8 @@ namespace EnrageWestworld.Core
         public string HermitKey = "None";
         public bool Gatherings = true;
         public int GatheringChance = 15;
+        public string GatheringHours = "any";   // any: the night's (midnight to 03:30, the wilds) and by day, in the open or at a town's edge; night: the night's only, as before settings version 163 (Lex, 2026-10-31: "make them happen more often and at any time of day")
+        public int GatheringGapHours = 6;       // game hours at least between gatherings, so they don't stack (settings version 163)
         public string GatheringKey = "None";
 
         // [World]
@@ -734,6 +736,8 @@ namespace EnrageWestworld.Core
             ExecutionChance = Math.Max(0, Math.Min(100, ExecutionChance));
             HermitChance = Math.Max(0, Math.Min(100, HermitChance));
             GatheringChance = Math.Max(0, Math.Min(100, GatheringChance));
+            GatheringHours = (GatheringHours ?? "").Trim().ToLowerInvariant() == "night" ? "night" : "any";
+            GatheringGapHours = Math.Max(1, Math.Min(72, GatheringGapHours));
             TownPostsAfterDeath = (TownPostsAfterDeath ?? "").Trim().ToLowerInvariant() == "successor" ? "successor" : "survive";
             RegularsPerTown = Math.Max(5, Math.Min(80, RegularsPerTown));            StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
             StalkerMinutes = Math.Max(1, Math.Min(240, StalkerMinutes));
@@ -969,8 +973,10 @@ namespace EnrageWestworld.Core
             b.AppendLine("ExecutionChance = " + ExecutionChance + "   ; percent on each roll, once a day at most, outside the towns");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
-            b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: around midnight in the wilds, the awake stand in a silent circle");
-            b.AppendLine("GatheringChance = " + GatheringChance + "   ; percent on each roll, between midnight and half past three");
+            b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: the awake stand in a silent circle, facing in: from midnight to half past three out in the wilds (once a night), and with GatheringHours any by day too, in an open field or just outside a town's edge");
+            b.AppendLine("GatheringChance = " + GatheringChance + "   ; percent on each encounter roll while one may happen");
+            b.AppendLine("GatheringHours = " + GatheringHours + "   ; any: at any hour (the night ones as they were, and by day in the open or at a town's edge); night: only from midnight to half past three in the wilds, as before");
+            b.AppendLine("GatheringGapHours = " + GatheringGapHours + "   ; game hours at least between one gathering and the next, so they don't come one on another (1-72; a game hour is about two real minutes)");
             b.AppendLine();
             b.AppendLine("[World]");
             b.AppendLine("Bravery = " + Bravery + "   ; how brave the townsfolk are, 0-100: in a fistfight nobody runs, they gather and watch; with guns most hold their ground and the odd coward still runs; the mod's own frights (an onlooker hurrying off, a fright that spreads, a man a gun is drawn on) mostly stand back and watch instead. Someone you aim at or lock on to is left as the game has them, so hold-ups and robbery work as before. Never lawmen, story characters, mission people or enRAGE's. 0: as the game has it");

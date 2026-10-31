@@ -1,5 +1,7 @@
 // The gathering, in the game (the hours, the ring, the creep and the lines are in Core/Encounters.cs). After midnight
-// in the wilds, on a roll, four to seven of the awake stand in a ring 45-70 m off, out of sight, facing in: residents
+// in the wilds (once a night), and with [Encounters] GatheringHours any at any other hour too, in the open or just
+// outside a town's edge (Lex, 2026-10-31: "make them happen more often and at any time of day"), at least
+// GatheringGapHours apart, on a roll, four to seven of the awake stand in a ring 45-70 m off, out of sight, facing in: residents
 // who are unravelling or awake, in the looks they were met in, made up with strangers. Within 30 m they all turn
 // their heads to you. While none of them is on your screen they step closer, never nearer than a few metres; the
 // moment one is seen, all of them stop dead. Step into the middle and they speak at once. Draw on one, shoot, or hit
@@ -32,6 +34,7 @@ namespace EnrageWestworld.InGame
             public readonly List<Gatherer> Ring = new List<Gatherer>();
             public int StartedAt, PhaseAt, NextCreep, NextMurmur;
             public bool Moving, Spoke, Test;
+            public bool Day;   // outside midnight to 03:30 (GatheringHours any): in the open or at a town's edge
         }
 
         private Gathering _gathering;
@@ -44,28 +47,53 @@ namespace EnrageWestworld.InGame
         /// Why a gathering can't happen here and now; null when it can.
         private string GatherNotNow()
         {
-            string town = _bridge.TownOnly(Game.Player.Character.Position);   // TownAt gives the region out in the wilds
-            if (town != null)
-                return "you're in " + town + " (only out in the wilds)";
             int hour = CLOCK.GET_CLOCK_HOURS(), minute = CLOCK.GET_CLOCK_MINUTES();
-            if (!Encounters.GatherHours(hour, minute))
-                return "it's " + hour.ToString("00") + ":" + minute.ToString("00") + " (from midnight to 03:30)";
-            if (DoneToday("gather"))
-                return "there was one already tonight";
+            bool night = Encounters.GatherHours(hour, minute);
+            if (night)
+            {
+                // the night's, as it always was: out in the wilds, once a night
+                string town = _bridge.TownOnly(Game.Player.Character.Position);   // TownAt gives the region out in the wilds
+                if (town != null)
+                    return "you're in " + town + " (at night only out in the wilds)";
+                if (DoneToday("gather"))
+                    return "there was one already tonight";
+            }
+            else if (_cfg.GatheringHours == "night")
+                return "it's " + hour.ToString("00") + ":" + minute.ToString("00") + " (from midnight to 03:30; [Encounters] GatheringHours is night)";
+            else if (_interiorType != 0)
+                return "you're indoors";   // by day: in the open, or at a town's edge (StartGathering keeps the ring outside the town)
+            int since = GatherHoursSince();
+            if (since >= 0 && since < _cfg.GatheringGapHours)
+                return "the last one was " + since + " game hours ago (at least " + _cfg.GatheringGapHours + ", [Encounters] GatheringGapHours)";
             return null;
+        }
+
+        /// Game hours since the last gathering stood, or -1 when there hasn't been one.
+        private int GatherHoursSince()
+        {
+            int at;
+            return _store.Counts.TryGetValue("enc:gatherAt", out at) ? Math.Max(0, (int)(Bridge.Now() / 60) - at) : -1;
         }
 
         private bool StartGathering(int now, bool test = false)
         {
             Ped me = Game.Player.Character;
-            Vector3 centre;
-            if (!EncounterSpot(me, 45f, 70f, out centre))
+            bool day = !Encounters.GatherHours(CLOCK.GET_CLOCK_HOURS(), CLOCK.GET_CLOCK_MINUTES());
+            bool inTown = day && _bridge.TownOnly(me.Position) != null;
+            Vector3 centre = Vector3.Zero;
+            bool found = false;
+            for (int tries = 0; tries < (inTown ? 4 : 1) && !found; tries++)
             {
-                Log.Write("ENCOUNTER gathering: nowhere out of sight for one");
+                // by day in town: the ring stands just outside its edge, never in the street
+                found = EncounterSpot(me, 45f, 70f, out centre) && (!inTown || _bridge.TownOnly(centre) == null);
+            }
+            if (!found)
+            {
+                Log.Write("ENCOUNTER gathering: " + (inTown ? "nowhere out of sight outside the town for one (by day in town, only at its edge)" : "nowhere out of sight for one"));
                 return false;
             }
             int n = Encounters.GatherSize(_rng.Next(100));
-            Gathering g = new Gathering { Centre = centre, StartedAt = now, Test = test };
+            Gathering g = new Gathering { Centre = centre, StartedAt = now, Test = test, Day = day };
             // the awake first, as they looked when they were met; strangers make up the rest
             List<Resident> awake = _store.Residents.Where(r => !r.Dead && r.PostId == null && r.Cast == null && (_hermit == null || _hermit.R != r) && _engine.StageOf(r.Id) >= Awakening.Unravelling)
                 .OrderBy(r => _rng.Next()).Take(n).ToList();
@@ -80,7 +108,7 @@ namespace EnrageWestworld.InGame
             _gathering = g;
             if (!test)
                 Pacing.NoteBig(_store.Pace, _store.LastGameMin);   // a big moment: the quiet starts (Pacing.cs)
-            Log.Write("ENCOUNTER gathering: " + n + " in a ring " + (int)centre.DistanceTo(me.Position) + " m away, " + awake.Count + " of them people who woke" +
+            Log.Write("ENCOUNTER gathering" + (day ? " by day" + (inTown ? ", at the town's edge" : ", in the open") : "") + ": " + n + " in a ring " + (int)centre.DistanceTo(me.Position) + " m away, " + awake.Count + " of them people who woke" +
                       (awake.Count > 0 ? " (" + string.Join(", ", awake.Select(r => r.Name)) + ")" : ""));
             return true;
         }
@@ -298,7 +326,11 @@ namespace EnrageWestworld.InGame
                 Spawner.Release(m.Ped, alive && (!seen || m.Ped.Position.DistanceTo(me.Position) > 120f));
             }
             if (g.Phase != "spawn" && !g.Test)
-                MarkDone("gather");   // nowhere to put them doesn't use up the night, nor does a test
+            {
+                if (!g.Day)
+                    MarkDone("gather");   // nowhere to put them doesn't use up the night, nor does a test; one by day doesn't use up the night either
+                _store.Counts["enc:gatherAt"] = (int)(Bridge.Now() / 60);   // the next at least GatheringGapHours on
+            }
             Log.Write("ENCOUNTER gathering: over (" + why + ")");
         }
 
@@ -318,7 +350,7 @@ namespace EnrageWestworld.InGame
                 Name = r != null ? r.Name : "One of the ring",
                 Distance = d + 2f,
                 Text = () => st != null ? Hosts.Thought(_engine.PersonOfResident(r), st, _engine.Player, r.Id + "|" + now / 180)
-                                        : Encounters.Pick(Encounters.GatherThoughts, ped.Handle + "|" + now / 180)
+                                        : Encounters.Pick(_gathering.Day ? Encounters.GatherDayThoughts : Encounters.GatherThoughts, ped.Handle + "|" + now / 180)
             });
         }
 
@@ -327,8 +359,11 @@ namespace EnrageWestworld.InGame
             if (!_cfg.Gatherings)
                 return "off";
             int awake = _store.Residents.Count(r => !r.Dead && r.PostId == null && _engine.StageOf(r.Id) >= Awakening.Unravelling);
-            return _cfg.GatheringChance + "% per roll (00:00 - 03:30, the wilds), " + awake + " unravelling or awake to stand in one" +
-                   (_gathering != null ? ", out: " + _gathering.Ring.Count + " (" + _gathering.Phase + ")" : "") + (DoneToday("gather") ? ", one already tonight" : "");
+            int since = GatherHoursSince();
+            return _cfg.GatheringChance + "% per roll (" + (_cfg.GatheringHours == "night" ? "00:00 - 03:30, the wilds" : "any hour: 00:00 - 03:30 in the wilds, by day in the open or at a town's edge") +
+                   ", " + _cfg.GatheringGapHours + " game hours apart), " + awake + " unravelling or awake to stand in one" +
+                   (_gathering != null ? ", out: " + _gathering.Ring.Count + " (" + _gathering.Phase + (_gathering.Day ? ", by day" : "") + ")" : "") + (DoneToday("gather") ? ", one already tonight" : "") +
+                   (since >= 0 ? ", the last " + since + " game hours ago" : "");
         }
     }
 }
