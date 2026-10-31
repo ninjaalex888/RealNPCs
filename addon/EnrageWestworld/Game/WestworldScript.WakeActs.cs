@@ -65,6 +65,15 @@ namespace EnrageWestworld.InGame
             public string HoldWhy;   // why the hold let them go, for the log
             public bool LashRolled;   // the hold's lash-out roll is taken (once a hold)
             public int LashAt, Target;   // the link it comes at (0: none); whom they go for
+            public int LawHandle, LawLookAt, LawAt;   // a lawman who saw the lash-out and stepped in (WestworldScript.WakeHold.cs)
+            // the model's pick of the next link (WestworldScript.WakeHold.cs): asked once an act, read when it ends
+            public string PickKey;
+            public List<string> PickIds, PickWords;
+            public int PickAt, PickOther, LashAim;   // LashAim: 1 at you, -1 at PickOther (the model said whom)
+            public bool PickAsked, PickCame;   // PickCame: the answer is in (PickAnswer, PickMs), read early by WakePickWaiting
+            public string PickAnswer;
+            public LanguageRequest PickReq;   // for the thought that comes with the answer
+            public long PickMs;
             public int GestPhase, GestAt, GestStarted, GestUntil, GestFlags;
             public string GestDict, GestClip;
             public Vector3 GestFrom;
@@ -248,6 +257,8 @@ namespace EnrageWestworld.InGame
                 string why = WhyEnded(act, me, now);
                 if (why != null)
                 {
+                    if (why == "finished" && WakePickWaiting(act, now))
+                        continue;   // the model was asked a moment ago: a breath longer for its answer (WestworldScript.WakeHold.cs)
                     if (why == "finished" && WakeHoldNext(i, act, me, now))
                         continue;   // straight into the next act of the hold (WestworldScript.WakeHold.cs)
                     if (why == "ended")
@@ -262,6 +273,7 @@ namespace EnrageWestworld.InGame
                     StepWakeAct(act, me, now);
                 }
                 WakeGestureStep(act, now);   // a gesture under way (WestworldScript.WakeHold.cs)
+                WakePickStep(act, me, now);   // near an act's end, the model asked what comes next (WestworldScript.WakeHold.cs)
             }
             if (now < _nextWakeScan)
                 return;
@@ -1495,6 +1507,12 @@ namespace EnrageWestworld.InGame
             int h = act.Handle;
             if (act.Links > 0)
                 HoldEnded(act, why);   // a minute's rest after a hold, however it ended (WestworldScript.WakeHold.cs)
+            if (h == _wakeTestHandle && _wakeTestHandle != 0)
+            {
+                _wakeTestHandle = 0;
+                if (_hint != null && _hint == _wakeTestSaid)
+                    _hintUntil = Game.GameTime + 1500;   // the Testing row's words go with the act they described
+            }
             if (act.Kind == "lashout")
                 LashOutEnded(act);   // no longer fair game; still at it, they're left to the fight
             if (act.Borrowed)

@@ -76,8 +76,8 @@ namespace EnrageWestworld.InGame
         /// What he has on: naked (nothing over the body or the legs), undressed (one of the two bare), or null; worn says
         /// what was read, for the log.
         // held back (2026-10-31): reading the metaped pieces hung the game thread, caught by the hang watch "inside sights >
-        // sample > clothes (the metaped pieces)" in Saint Denis, three hangs in all. Nothing reads them; naked and undressed
-        // aren't noticed meanwhile.
+        // sample > clothes (the metaped pieces)" in Saint Denis, three hangs in all (the first as the strip read them on a man).
+        // Nothing reads them until a safe way is found; naked and undressed aren't noticed meanwhile.
         private static readonly bool ClothesReadHeldBack = true;
 
         private static unsafe string DressOf(int h, out string worn)
@@ -142,11 +142,15 @@ namespace EnrageWestworld.InGame
             if (now >= _sightNextSample)
             {
                 _sightNextSample = now + SightSampleMs;
+                int w0 = WatchEnter("sample");   // the hang watch, step by step (2026-10-31: three hangs, the last "inside sights")
                 SightSample(me, now);
+                WatchLeave(w0);
             }
+            int w1 = WatchEnter("reactions playing");
             for (int i = _sights.Count - 1; i >= 0; i--)
                 if (SightPlay(_sights[i], now))
                     _sights.RemoveAt(i);
+            WatchLeave(w1);
             if (_sights.Count > 0 || now < _sightNextLook || now < _sightNext)
                 return;
             _sightNextLook = now + SightLookMs;
@@ -155,10 +159,12 @@ namespace EnrageWestworld.InGame
                 _sightWhyNot = "a street scene is going on";
                 return;
             }
+            int w2 = WatchEnter("who looks");
             if (_sightState != null && Sights.Remarkable(_sightState, _placeKind, _placeTown, _dirt))
                 SightLookForYou(me, now, _sightState, false);
             else
                 SightLookForBloodied(me, now);
+            WatchLeave(w2);
         }
 
         /// What the player looks like now: hurt lately (and not washed), drunk, filthy, soaked.
@@ -184,15 +190,19 @@ namespace EnrageWestworld.InGame
             {
                 _sightNextDress = now + DressSampleMs;
                 string worn;
+                int wd = WatchEnter("clothes (the metaped pieces)");
                 _dress = DressOf(h, out worn);
+                WatchLeave(wd);
                 if (worn != null && worn != _dressWorn)
                 {
                     _dressWorn = worn;
                     Log.Write("SIGHT clothes: " + (_dress ?? "dressed") + " (" + worn + ")");
                 }
             }
+            int wdr = WatchEnter("drunkenness");
             _drunk = PED._IS_PED_DRUNK(h);
             _drunkness = PED._GET_PED_DRUNKNESS(h);
+            WatchLeave(wdr);
             if (!_sightProbed)
             {
                 _sightProbed = true;
@@ -207,7 +217,9 @@ namespace EnrageWestworld.InGame
             else if (!_dirtOff && now >= _sightNextDirt)
             {
                 _sightNextDirt = now + DirtSampleMs;
+                int wdirt = WatchEnter("dirt level");
                 float d = Function.Call<float>(GetPedDirtLevel, h, false);
+                WatchLeave(wdirt);
                 if (float.IsNaN(d) || d < 0f || d > 1.5f)
                 {
                     _dirtOff = true;

@@ -22,6 +22,7 @@ namespace EnrageWestworld.InGame
             public string Key, Mind;
             public List<string> Ids, Words;
             public Plan Plan;
+            public LanguageRequest Req;   // for the thought's check (it came with the choice)
         }
 
         private const float PickMetres = 15f;
@@ -82,11 +83,12 @@ namespace EnrageWestworld.InGame
                 return false;
             r.Kind = "pick";
             r.Options = words;
+            r.WithThought = true;   // the thought and the choice in one answer, so they agree (Lex, 2026-10-31)
             string key = "pick|" + w.Id + "|" + Environment.TickCount + "|" + _picksAsked;
             if (!_engine.LanguageAnswers.AskPick(new LanguageAsk { Key = key, Name = w.Name, PersonId = w.Id, Request = r, AskedAtMs = Environment.TickCount }))
                 return false;
             _picksAsked++;
-            _pending.Add(new PendingPick { W = w, Handle = h, Key = key, Mind = w.Choice, Ids = ids, Words = words, Plan = ids.Contains("plan:seek") ? plan : null, AskedAt = now, Deadline = now + PickWaitMs });
+            _pending.Add(new PendingPick { W = w, Handle = h, Key = key, Mind = w.Choice, Ids = ids, Words = words, Plan = ids.Contains("plan:seek") ? plan : null, AskedAt = now, Deadline = now + PickWaitMs, Req = r });
             return true;
         }
 
@@ -124,7 +126,8 @@ namespace EnrageWestworld.InGame
             int h = pp.Handle;
             if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || w.Choice != pp.Mind)
                 return;   // gone, or the mind has moved on since
-            int idx = came ? Language.ParsePick(answer, pp.Ids.Count) : -1;
+            string thought = null;
+            int idx = came ? Language.ParseThinkPick(answer, pp.Ids.Count, out thought) : -1;
             string offered = string.Join(" | ", pp.Words.Select((x, k) => (k + 1) + " " + x));
             string outcome;
             if (!came)
@@ -143,6 +146,8 @@ namespace EnrageWestworld.InGame
                 outcome = (idx + 1) + " (" + pp.Words[idx] + ")" + (pp.Ids[idx] == pp.Mind ? ", the mind's own too" : ", not the mind's (" + Choosing.WordsOf(pp.Mind) + ")");
             }
             (_picksLogged++ < PicksLoud ? (Action<string>)Log.Write : Log.Detail)("MIND pick: " + w.Name + " offered " + offered + " -> " + outcome + ", " + ms + " ms");
+            if (idx >= 0)
+                PickThought(w.Name, h, thought, pp.Req);   // the thought it chose by, over their head as they go
             string picked = idx >= 0 ? pp.Ids[idx] : pp.Mind;
             _pickLast = w.Name + ": " + (idx >= 0 ? pp.Words[idx] : Choosing.WordsOf(pp.Mind) + " (the mind's)");
             if (picked == pp.Mind)
@@ -176,6 +181,25 @@ namespace EnrageWestworld.InGame
             MindActOn(w, h, now);
         }
 
+        private int _pickThoughtsShown, _pickThoughtsHeld;
+
+        /// The thought that came with a pick, shown over them when it passes the same check as any other thought.
+        private void PickThought(string name, int h, string thought, LanguageRequest r)
+        {
+            if (string.IsNullOrEmpty(thought))
+                return;
+            string why = Language.Check(r, thought);
+            if (why != null)
+            {
+                _pickThoughtsHeld++;
+                Log.Detail("MIND pick thought held for " + name + " (" + why + "): " + thought);
+                return;
+            }
+            _pickThoughtsShown++;
+            _ticker.Push(name + ", thinking", thought, "near", h);
+            (_picksLogged < PicksLoud ? (Action<string>)Log.Write : Log.Detail)("MIND pick thought: " + name + ": \"" + thought + "\"");
+        }
+
         private string PicksStatus()
         {
             if (!_cfg.LanguagePicks)
@@ -185,7 +209,7 @@ namespace EnrageWestworld.InGame
             string store = _engine != null ? ", store: " + _engine.LanguageAnswers.PicksAsked + " queued, " + _engine.LanguageAnswers.PicksAnswered + " answered, " + _engine.LanguageAnswers.PicksFailed + " failed, " +
                            _engine.LanguageAnswers.PicksDropped + " dropped" : "";
             return (_langReady ? "on" : "on, the server not ready") + ": " + _picksAsked + " asked this session, " + _picksTaken + " picked (" + _picksSame + " the mind's own, " + _picksPlan + " a plan's step), " +
-                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting" + store + (_pickLast != null ? "; last: " + _pickLast : "");
+                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting; thoughts with them " + _pickThoughtsShown + " shown, " + _pickThoughtsHeld + " held by the check" + store + (_pickLast != null ? "; last: " + _pickLast : "");
         }
     }
 }

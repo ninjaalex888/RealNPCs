@@ -68,6 +68,7 @@ namespace EnrageWestworld.InGame
             PerfSlot slot = timed ? PerfSlotOf(feature) : null;
             int depth = 0;
             long start = timed ? PerfBegin(out depth) : 0;
+            int wd = WatchEnter(feature);   // the hang watch: where the game thread is, for a thread that looks on
             try
             {
                 a();
@@ -97,8 +98,86 @@ namespace EnrageWestworld.InGame
             }
             finally
             {
+                WatchLeave(wd);
                 if (timed)
                     PerfEnd(slot, start, depth);
+            }
+        }
+
+        // ---- the hang watch (Lex, 2026-10-31: the game froze twice in Saint Denis; Windows called both a hang and the log
+        // said nothing) ----------------------------------------------------------------------------------------------
+        // Safe notes which feature the game thread is in (nested ones too); a background thread looks every second, and if
+        // the same feature has held the game thread over 2 s, the log says which, and again at 8 s and 30 s. Nothing but
+        // ints and strings cross between the threads; the log has its own lock.
+        private static readonly string[] _watchAt = new string[16];
+        private static volatile int _watchDepth, _watchSince, _watchSeq;
+        private static System.Threading.Thread _watcher;
+        private static volatile bool _watchStop;
+
+        /// The watch ended with the script, before Script Hook unloads it: a thread left running can hold up the reload (Lex,
+        /// 2026-10-31: Insert froze the game after "Aborted script").
+        private static void WatchStop()
+        {
+            _watchStop = true;
+            System.Threading.Thread t = _watcher;
+            if (t != null)
+                try { t.Join(2000); } catch { }
+            _watcher = null;
+        }
+
+        private static int WatchEnter(string feature)
+        {
+            int d = _watchDepth;
+            if (d < _watchAt.Length)
+                _watchAt[d] = feature;
+            _watchDepth = d + 1;
+            _watchSince = Environment.TickCount;
+            _watchSeq++;
+            if (_watcher == null && !_watchStop)
+            {
+                _watcher = new System.Threading.Thread(WatchLoop) { IsBackground = true, Name = "RealNPCs hang watch", Priority = System.Threading.ThreadPriority.BelowNormal };
+                _watcher.Start();
+            }
+            return d;
+        }
+
+        private static void WatchLeave(int d)
+        {
+            _watchDepth = d;
+            _watchSince = Environment.TickCount;
+            _watchSeq++;
+        }
+
+        private static void WatchLoop()
+        {
+            int seenSeq = -1, told = 0;
+            while (!_watchStop)
+            {
+                System.Threading.Thread.Sleep(250);
+                if (_watchStop)
+                    break;
+                try
+                {
+                    int seq = _watchSeq, depth = _watchDepth, held = Environment.TickCount - _watchSince;
+                    if (seq != seenSeq || depth == 0)
+                    {
+                        seenSeq = seq;
+                        told = 0;
+                        continue;   // moving, or between features (a pause or a load stops the ticks too; that's no hang)
+                    }
+                    int next = told == 0 ? 2000 : told == 1 ? 8000 : told == 2 ? 30000 : int.MaxValue;
+                    if (held < next)
+                        continue;
+                    told++;
+                    var path = new List<string>();
+                    for (int i = 0; i < depth && i < _watchAt.Length; i++)
+                        path.Add(_watchAt[i]);
+                    Log.Write("HANG watch: the game thread has been inside " + string.Join(" > ", path) + " for " + held / 1000 + " s (RealNPCs is the one holding it)");
+                }
+                catch
+                {
+                    // the watch must never be what brings the game down
+                }
             }
         }
 
@@ -529,10 +608,14 @@ namespace EnrageWestworld.InGame
             if (_hint != null && now < _hintUntil)
             {
                 float s = _cfg.TickerScale * 0.9f;
-                float w = Draw.Width(_hint, s);
-                float y = _cfg.TickerY - Draw.LineHeight(_cfg.TickerScale) * 1.4f - (line != null && line.Text != null && line.Text.Length > 90 ? Draw.LineHeight(_cfg.TickerScale) : 0f);
-                Draw.Rect(0.5f - w / 2f - 0.006f, y - 0.003f, w + 0.012f, Draw.LineHeight(s) + 0.006f, 12, 10, 8, 170);
-                Draw.Text(_hint, 0.5f - w / 2f, y, s, 236, 214, 160);
+                // wrapped to the screen, the lines stacked upward from where the one line was (a Testing row's words run long)
+                List<string> rows = Draw.Wrap(_hint, s, 0.9f);
+                float lh = Draw.LineHeight(s);
+                float y = _cfg.TickerY - Draw.LineHeight(_cfg.TickerScale) * 1.4f - (line != null && line.Text != null && line.Text.Length > 90 ? Draw.LineHeight(_cfg.TickerScale) : 0f) - (rows.Count - 1) * lh;
+                float w = rows.Max(r => Draw.Width(r, s));
+                Draw.Rect(0.5f - w / 2f - 0.006f, y - 0.003f, w + 0.012f, lh * rows.Count + 0.006f, 12, 10, 8, 170);
+                for (int i = 0; i < rows.Count; i++)
+                    Draw.Text(rows[i], 0.5f - Draw.Width(rows[i], s) / 2f, y + i * lh, s, 236, 214, 160);
             }
         }
 

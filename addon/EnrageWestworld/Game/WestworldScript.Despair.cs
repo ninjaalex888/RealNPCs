@@ -108,6 +108,9 @@ namespace EnrageWestworld.InGame
         private void BeginDespair(WakeAct act, Ped me, int now, string forced = null)
         {
             int h = act.Handle;
+            // the body they leave mustn't count against you when you carry it (Lex, 2026-10-31: picking up a man who had ended his
+            // own life, wanted for murder, the charge back every half second): the game's own flag, set while they live
+            PED.SET_PED_CONFIG_FLAG(h, PcfDontInfluenceWantedLevel, true);
             Ped ped = new Ped(h);
             bool armed = WEAPON.IS_PED_ARMED(h, 4);
             Vector3 wall, dir;

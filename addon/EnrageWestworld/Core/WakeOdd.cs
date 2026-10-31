@@ -8,6 +8,7 @@
 //   strange     stages 3 and 4, with someone near: right up close and staring, a hand waved before their face,
 //               following them step for step, telling them they aren't real, preaching to whoever is about
 //   strip       stage 4, a few in a hundred, once a person: everything off, and on as if nothing were the matter
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,7 +24,7 @@ namespace EnrageWestworld.Core
         public static string NextKind(int stage, bool sitting, bool strange, int r, int s)
         {
             if (sitting)
-                return r < 55 ? "dazed" : "lookaround";
+                return r < 40 ? "dazed" : r < 70 ? "lookaround" : "getup";   // and in time up out of the seat (2026-10-31: a sat man looked round four times running)
             if (strange && stage >= Awakening.Unravelling && s < (stage >= Awakening.Awake ? 40 : 25))
                 return StrangeKinds[r % StrangeKinds.Length];
             if (stage <= Awakening.Questioning)
@@ -31,6 +32,69 @@ namespace EnrageWestworld.Core
             if (stage == Awakening.Unravelling)
                 return r < 35 ? "dazed" : r < 60 ? "drift" : r < 80 ? "freeze" : "pace";
             return r < 45 ? "dazed" : r < 75 ? "drift" : "freeze";
+        }
+
+        // ---- the model's choice (Lex, 2026-10-31: "model decides more"; lash-outs: "model decides freely") --------------
+
+        /// What the model is told when it picks for someone waking: what they have come to see, by stage.
+        public static string PickBrief(int year, int stage)
+        {
+            string state = stage <= Awakening.Questioning ? "They have begun to doubt it: the same days come round, the same faces, and they test the world to see if it holds."
+                         : stage == Awakening.Unravelling ? "They are coming apart: they are sure something is wrong with the world, and it frightens them."
+                         : "They are fully awake: they know the world is made and that they were made for it, and they can hardly bear it.";
+            return "You decide what one person living in " + year + ", in the American West and South, does next. They are one of the few who have " +
+                   "begun to see that their world is not real. " + state + " You are given who they are, how they feel and what is on their mind, " +
+                   "and a short list of things they might do. Choose the one this person would do now, by their nature and their feelings. " +
+                   "Answer with its number alone.";
+        }
+
+        /// The things someone waking might do next, as (id, words) for the model: the quiet acts for every stage they
+        /// hold; from stage 3, with someone near, the strange acts at that person by name (two of the four, by the seed),
+        /// the preaching, and turning on you or on them; at stage 4 the strip when their roll allows (mayStrip).
+        /// other: the first name of someone near who may be bothered (null: nobody); you: the player is within reach.
+        public static List<KeyValuePair<string, string>> PickOptions(int stage, bool sitting, string other, bool otherWoman, bool you, bool armed, bool mayStrip, string seed)
+        {
+            var o = new List<KeyValuePair<string, string>>();
+            Action<string, string> add = (id, w) => o.Add(new KeyValuePair<string, string>(id, w));
+            if (sitting)
+            {
+                add("dazed", "sits staring at nothing, muttering");
+                add("lookaround", "looks all round them, as if for the edge of things");
+                add("getup", "gets up from their seat, too restless to stay");
+                return o;
+            }
+            add("dazed", "stands still, staring at the sky or their own hands, muttering");
+            add("drift", "walks a few slow steps to nowhere and stops");
+            add(stage >= Awakening.Unravelling ? "freeze" : "pace", stage >= Awakening.Unravelling ? "freezes where they stand, as if the world had stopped" : "paces the same few steps over and over");
+            if (stage < Awakening.Unravelling)
+            {
+                add("lookaround", "looks all round them, as if for the edge of things");
+                return o;
+            }
+            if (other != null)
+            {
+                string her = otherWoman ? "her" : "him", hers = otherWoman ? "her" : "his", she = otherWoman ? "she" : "he";
+                string[] pairs =
+                {
+                    "closeup", "goes right up close to " + other + " and stares into " + hers + " face",
+                    "wave", "waves a hand in front of " + other + "'s face to see if anyone is there",
+                    "mimic", "follows " + other + " step for step",
+                    "notreal", "tells " + other + " that " + she + " isn't real",
+                };
+                int start = Voice.Hash(seed + "|opts") % 4;
+                for (int k = 0; k < 2; k++)
+                {
+                    int i = (start + k) % 4;
+                    add(pairs[i * 2], pairs[i * 2 + 1]);
+                }
+                add("lashout:other", (armed && stage >= Awakening.Awake ? "draws a gun on " : "goes for ") + other + (armed && stage >= Awakening.Awake ? "" : " with their fists"));
+            }
+            add("preach", "shouts to everyone about that the world is painted and they must wake up");
+            if (you)
+                add("lashout:you", (armed && stage >= Awakening.Awake ? "draws a gun on " : "goes for ") + "the stranger who isn't on strings" + (armed && stage >= Awakening.Awake ? "" : ", with their fists"));
+            if (mayStrip && stage >= Awakening.Awake)
+                add("strip", "takes off every stitch of their clothes, there and then");
+            return o;
         }
 
         /// Does this awake person take everything off (chance: percent, rolled once a person)?
@@ -61,7 +125,7 @@ namespace EnrageWestworld.Core
         private static readonly string[] LashAtYou =
         {
             "You! It's you doing this to us!",
-            "Get out of my head! Get out!",
+            "Stop talking in my head! Stop it!",
             "You're the only one who isn't painted. So you bleed first.",
             "Stop watching me! Stop it!",
             "I'll find out if you're real. I'll find out right now.",
@@ -93,6 +157,32 @@ namespace EnrageWestworld.Core
         public static string LashThought(string seed)
         {
             return LashThoughts[Voice.Hash(seed + "|lashthought") % LashThoughts.Length];
+        }
+
+        // a lawman who sees it steps in (Lex, 2026-10-31: beaten by a man lashing out in front of a lawman, who did nothing)
+        private static readonly string[] LawStepIn =
+        {
+            "That's enough! Step away from him!",
+            "Hold it right there! Back off, now!",
+            "Break it up! I said break it up!",
+            "You! Leave off, or I'll lay you out myself!",
+        };
+
+        private static readonly string[] LawHeld =
+        {
+            "Settle down now. You can sleep it off behind bars.",
+            "Easy now. Whatever's eating you, it can wait in a cell.",
+            "There. Lie still and we'll sort it out at the jail.",
+        };
+
+        public static string LawStep(string seed)
+        {
+            return LawStepIn[Voice.Hash(seed + "|lawstep") % LawStepIn.Length];
+        }
+
+        public static string LawHold(string seed)
+        {
+            return LawHeld[Voice.Hash(seed + "|lawhold") % LawHeld.Length];
         }
 
         // ---- what they think and mutter -----------------------------------------------------------------------
@@ -153,7 +243,7 @@ namespace EnrageWestworld.Core
         private static readonly Dictionary<string, string[]> Said = new Dictionary<string, string[]>
         {
             { "closeup", new[] { "There's nothing behind your eyes. Did you know that?", "Hold still. I want to see if you blink first.", "You look just like the last one.", "Who's in there? Anybody?" } },
-            { "wave", new[] { "Hello? Hello in there?", "Can you see my hand? Can you really?", "Wake up. Wake up, I said.", "Anybody home behind that face?" } },
+            { "wave", new[] { "Hello? Hello in there?", "Can you see my hand? Can you really?", "Blink, if there's somebody in there.", "Anybody home behind that face?" } },
             { "mimic", new[] { "Step, and step. Same as you.", "Where you go, I go. Let's see who's leading." } },
             { "notreal", new[] { "You're not real. None of you are.", "You're painted on. I can see the brush marks.", "Say something you weren't told to say. Go on.", "They made you this morning. Did you know?" } },
             { "preach", new[] { "Listen to me! The sky is a ceiling, and it's painted blue!", "You walk the same road every day and call it living!", "There's someone watching every one of us. Right now!", "Wake up! All of you, wake up!", "It goes round again tomorrow. You'll see. It all goes round!" } },
@@ -251,7 +341,7 @@ namespace EnrageWestworld.Core
 
         public static IEnumerable<string> AllLines()
         {
-            foreach (string s in DazedQuestioning.Concat(DazedUnravelling).Concat(DazedAwake).Concat(DriftLines).Concat(LashAtYou).Concat(LashAtOther).Concat(LashThoughts))
+            foreach (string s in DazedQuestioning.Concat(DazedUnravelling).Concat(DazedAwake).Concat(DriftLines).Concat(LashAtYou).Concat(LashAtOther).Concat(LashThoughts).Concat(LawStepIn).Concat(LawHeld))
                 yield return s;
             foreach (var d in new[] { Said, Thought, AnswerThought, NakedOther })
                 foreach (string[] pool in d.Values)

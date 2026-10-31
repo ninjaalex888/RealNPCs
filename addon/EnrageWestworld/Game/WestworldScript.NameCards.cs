@@ -411,7 +411,8 @@ namespace EnrageWestworld.InGame
                     return;
                 }
                 ac.SetName(was.Key);
-                Log.Write("NAME enRAGE took up " + was.Key + " as " + (theirs ?? "nobody") + ": kept as " + was.Key);
+                bool prompt = _bridge.RenameNamedAt(h, was.Key);   // and the lock-on prompt, which enRAGE labels from its own list
+                Log.Write("NAME enRAGE took up " + was.Key + " as " + (theirs ?? "nobody") + ": kept as " + was.Key + (prompt ? " (the prompt too)" : ""));
             }
             catch (Exception ex)
             {

@@ -50,7 +50,7 @@ namespace EnrageWestworld.InGame
 
         private static bool OddKind(string kind)
         {
-            return kind == "dazed" || kind == "drift" || kind == "strip" || kind == "lashout" || WakeOdd.StrangeKinds.Contains(kind);
+            return kind == "dazed" || kind == "drift" || kind == "strip" || kind == "lashout" || kind == "getup" || WakeOdd.StrangeKinds.Contains(kind);
         }
 
         // ---- the hold -------------------------------------------------------------------------------------------
@@ -86,23 +86,33 @@ namespace EnrageWestworld.InGame
             int h = act.Handle;
             bool sitting = PED.IS_PED_USING_ANY_SCENARIO(h);
             int r = _rng.Next(100), s = _rng.Next(100);
-            string kind;
-            if (!act.LashRolled && act.Stage >= Awakening.Unravelling)
-            {
-                act.LashRolled = true;   // once a hold: does this one end with them turning on someone (WakeLashOut)?
-                if (WakeOdd.LashesOut(_cfg.WakeLashOut, act.Stage, act.P.Personality, act.P.Id + "|" + now / 60000))
-                    act.LashAt = act.Links + 2 + _rng.Next(4);
-            }
-            if (act.LashAt > 0 && act.Links + 1 >= act.LashAt && !sitting)
-                kind = "lashout";
-            else if (act.Stage >= Awakening.Awake && !act.Stripped && !act.St.Has(StripMark) && _bridge.RecordAt(h) == null && !sitting && s < 30 &&
-                !StripHeldBack && WakeOdd.Strips(_cfg.WakeStripChance, act.P.Id))
-                kind = "strip";
+            string kind = null, picked = WakePickTaken(act, now);   // the model's, when it answered in time
+            if (picked != null && (!sitting || picked == "dazed" || picked == "lookaround" || picked == "getup"))
+                kind = picked.StartsWith("lashout", StringComparison.Ordinal) ? "lashout" : picked;   // nothing rolled: the model chose (lash-outs too)
             else
-                kind = WakeOdd.NextKind(act.Stage, sitting, _cfg.WakeStrange && OtherFor(act, me) != null, r, s);
-            if (kind == act.Kind && kind != "dazed")
-                kind = "dazed";   // not the same act twice running
+            {
+                if (!act.LashRolled && act.Stage >= Awakening.Unravelling)
+                {
+                    act.LashRolled = true;   // once a hold: does this one end with them turning on someone (WakeLashOut)?
+                    if (WakeOdd.LashesOut(_cfg.WakeLashOut, act.Stage, act.P.Personality, act.P.Id + "|" + now / 60000))
+                        act.LashAt = act.Links + 2 + _rng.Next(4);
+                }
+                if (act.LashAt > 0 && act.Links + 1 >= act.LashAt && !sitting)
+                    kind = "lashout";
+                else if (act.Stage >= Awakening.Awake && !act.Stripped && !act.St.Has(StripMark) && _bridge.RecordAt(h) == null && !sitting && s < 30 &&
+                         !StripHeldBack && WakeOdd.Strips(_cfg.WakeStripChance, act.P.Id))
+                    kind = "strip";
+                else
+                    kind = WakeOdd.NextKind(act.Stage, sitting, _cfg.WakeStrange && OtherFor(act, me) != null, r, s);
+                if (kind == act.Kind && kind != "dazed")
+                    kind = "dazed";   // not the same act twice running
+            }
             WakeAct next = NextLink(act, kind, now);
+            if (picked != null)
+            {
+                next.PickOther = act.PickOther;   // whom the model named
+                next.LashAim = picked == "lashout:you" ? 1 : picked == "lashout:other" ? -1 : 0;
+            }
             if (!sitting)
                 TASK.CLEAR_PED_TASKS(h, true, false);
             if (!BeginAct(next, new Ped(h), me, now))
@@ -128,7 +138,7 @@ namespace EnrageWestworld.InGame
         /// Dangers that let a held person go mid-act: their events are blocked, so the game won't move them for these itself.
         private string HoldDanger(WakeAct act, Ped me)
         {
-            if (PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0) return "the law is after you";
+            if (PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0) return "you're wanted";
             if (PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle) || PED.IS_PED_SHOOTING(me.Handle)) return "a gun out";
             Vector3 at = new Ped(act.Handle).Position;
             if (PED.IS_ANY_PED_SHOOTING_IN_AREA(at.X - 40f, at.Y - 40f, at.Z - 15f, at.X + 40f, at.Y + 40f, at.Z + 15f, false, false)) return "gunfire near";
@@ -204,6 +214,13 @@ namespace EnrageWestworld.InGame
                 }
                 case "lashout":
                     return BeginLashOut(act, ped, me, now);
+                case "getup":
+                    if (!PED.IS_PED_USING_ANY_SCENARIO(h))
+                        return false;
+                    Take(act);
+                    TASK.CLEAR_PED_TASKS(h, true, false);   // up the game's own way, never pulled out (a man pulled off a bar went into a T pose)
+                    act.Until = now + 9000;
+                    return true;
                 case "preach":
                 {
                     Take(act);
@@ -216,7 +233,7 @@ namespace EnrageWestworld.InGame
                 }
                 default:   // closeup, wave, mimic, notreal: someone near, gone up to
                 {
-                    Ped other = OtherFor(act, me);
+                    Ped other = PickedOther(act, me) ?? OtherFor(act, me);   // the one the model named, else whoever is nearest
                     if (other == null)
                         return false;
                     Take(act);
@@ -279,6 +296,14 @@ namespace EnrageWestworld.InGame
                     break;
                 case "lashout":
                     StepLashOut(act, me, now);
+                    break;
+                case "getup":
+                    if (act.Phase == 0 && !PED.IS_PED_USING_ANY_SCENARIO(h))
+                    {
+                        act.Phase = 1;   // on their feet: a moment stood, then the next link is a standing one
+                        TASK.TASK_STAND_STILL(h, 3000);
+                        act.Until = Math.Min(act.Until, now + 2500);
+                    }
                     break;
                 case "preach":
                     if (act.Said < act.Lines && now >= act.PhaseUntil)
@@ -449,6 +474,163 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        // ---- the model's pick of the next link ------------------------------------------------------------------
+        // (Lex, 2026-10-31: "model decides more"; lash-outs "model decides freely"). Near the end of each act of a hold
+        // (4 s left), what they might do next goes to the model with who they are and how they feel (the same request the
+        // mind's picks send, with the waking brief); when the act ends, its answer is the next link. No answer by then,
+        // or one that names none: the rolls as before (WakeOdd.NextKind, the WakeLashOut roll). With an answer, nothing
+        // is rolled: a lash-out at you or at someone near is the model's to choose, once a hold (it ends the hold).
+
+        private int _wakePicksAsked, _wakePicksTaken, _wakePicksLate, _wakePicksUnread, _wakePickLash, _wakePicksLogged;
+        private string _wakePickLast;
+
+        private bool WakePicksOn { get { return _cfg.WakeHold && PicksOn; } }
+
+        private void WakePickStep(WakeAct act, Ped me, int now)
+        {
+            if (act.PickAsked || act.Passive || act.Stage < Awakening.Questioning || act.Kind == "lashout" || act.Until - now > 4000 || now - act.Started < 300 || !WakePicksOn)
+                return;
+            if (act.HoldUntil > 0 && now + 4000 >= act.HoldUntil)
+                return;   // the hold ends with this act: nothing to pick for
+            act.PickAsked = true;
+            int h = act.Handle;
+            if (act.Kind == "awake" && (act.Ending == "despair" || act.Ending == "escape"))
+                return;
+            MindWho w = MindKnown(h, now);
+            if (w == null || w.Id == null)
+                return;
+            bool sitting = PED.IS_PED_USING_ANY_SCENARIO(h);
+            Ped other = _cfg.WakeStrange ? OtherFor(act, me) : null;
+            bool otherWoman = other != null && !PED.IS_PED_MALE(other.Handle);
+            string otherName = other != null ? OtherFirst(other) : null;
+            bool you = new Ped(h).Position.DistanceTo(me.Position) < 15f && !PLAYER.IS_PLAYER_DEAD(Game.Player.Handle);
+            uint gun = WEAPON.GET_BEST_PED_WEAPON(h, false, false);
+            bool armed = gun != 0 && gun != Natives.Hash("WEAPON_UNARMED");
+            bool mayStrip = !StripHeldBack && !act.Stripped && !act.St.Has(StripMark) && _bridge.RecordAt(h) == null && WakeOdd.Strips(_cfg.WakeStripChance, act.P.Id);
+            List<KeyValuePair<string, string>> opts = WakeOdd.PickOptions(act.Stage, sitting, _cfg.WakeStrange ? otherName : null, otherWoman, you && _cfg.WakeLashOut > 0, armed, mayStrip,
+                                                                           act.P.Id + "|" + now / 1000);
+            if (_cfg.WakeLashOut <= 0)
+                opts.RemoveAll(kv => kv.Key.StartsWith("lashout", StringComparison.Ordinal));   // WakeLashOut 0 still means never
+            for (int k = opts.Count - 1; k > 0; k--)
+            {
+                int j = _rng.Next(k + 1);   // a fresh order each ask: in the same order the model took the same line every time (2026-10-31: 20 of 20)
+                KeyValuePair<string, string> t = opts[k];
+                opts[k] = opts[j];
+                opts[j] = t;
+            }
+            if (opts.Count < 2)
+                return;
+            string why;
+            LanguageRequest r = MindRequestOf(w, h, now, out why);
+            if (r == null)
+                return;
+            r.Kind = "pick";
+            r.WakeStage = act.Stage;
+            r.WithThought = true;   // the thought they choose by, shown as the next act begins
+            r.Options = opts.Select(kv => kv.Value).ToList();
+            string key = "wakepick|" + w.Id + "|" + Environment.TickCount + "|" + _wakePicksAsked;
+            if (!_engine.LanguageAnswers.AskPick(new LanguageAsk { Key = key, Name = w.Name, PersonId = w.Id, Request = r, AskedAtMs = Environment.TickCount }))
+                return;
+            _wakePicksAsked++;
+            act.PickKey = key;
+            act.PickIds = opts.Select(kv => kv.Key).ToList();
+            act.PickWords = r.Options;
+            act.PickReq = r;
+            act.PickAt = now;
+            act.PickOther = other != null ? other.Handle : 0;
+        }
+
+        /// An act over with the model asked under 1.5 s ago and no answer yet: kept going a moment longer (2026-10-31: two acts
+        /// that ended early were asked 0.01 s before their end and missed). Reads the answer when it comes, for WakePickTaken.
+        private bool WakePickWaiting(WakeAct act, int now)
+        {
+            if (act.PickKey == null || act.PickCame)
+                return false;
+            string answer;
+            long ms;
+            if (_engine.LanguageAnswers.TakePick(act.PickKey, out answer, out ms))
+            {
+                act.PickCame = true;
+                act.PickAnswer = answer;
+                act.PickMs = ms;
+                return false;
+            }
+            return now - act.PickAt < 1500 && now >= act.PickAt;
+        }
+
+        /// The model's answer for the next link, when the act ends: its id ("lashout:you" and the like), or null for the rolls.
+        private string WakePickTaken(WakeAct act, int now)
+        {
+            if (act.PickKey == null)
+                return null;
+            string answer;
+            long ms;
+            bool came = act.PickCame;
+            answer = act.PickAnswer;
+            ms = act.PickMs;
+            if (!came)
+                came = _engine.LanguageAnswers.TakePick(act.PickKey, out answer, out ms);
+            string offered = string.Join(" | ", act.PickWords.Select((x, k) => (k + 1) + " " + x));
+            string outcome, picked = null;
+            if (!came)
+            {
+                _wakePicksLate++;
+                outcome = "no answer by the act's end (" + (now - act.PickAt) / 1000.0 + " s): the rolls";
+            }
+            else
+            {
+                string thought;
+                int idx = Language.ParseThinkPick(answer, act.PickIds.Count, out thought);
+                if (idx >= 0)
+                    PickThought(act.Name, act.Handle, thought, act.PickReq);   // over their head as the act they chose begins
+                if (idx < 0)
+                {
+                    _wakePicksUnread++;
+                    outcome = "\"" + (answer ?? "").Trim() + "\" names none of them: the rolls";
+                }
+                else
+                {
+                    _wakePicksTaken++;
+                    picked = act.PickIds[idx];
+                    if (picked.StartsWith("lashout", StringComparison.Ordinal))
+                        _wakePickLash++;
+                    outcome = (idx + 1) + " (" + act.PickWords[idx] + "), " + ms + " ms";
+                    _wakePickLast = act.Name + ": " + act.PickWords[idx];
+                }
+            }
+            (_wakePicksLogged++ < 40 ? (Action<string>)Log.Write : Log.Detail)("WAKE pick: " + act.Name + " (" + Awakening.StageName(act.Stage) + ") offered " + offered + " -> " + outcome);
+            act.PickKey = null;
+            return picked;
+        }
+
+        /// The one the model named, if they're still there to be bothered.
+        private Ped PickedOther(WakeAct act, Ped me)
+        {
+            int o = act.PickOther;
+            if (o == 0 || !ENTITY.DOES_ENTITY_EXIST(o) || ENTITY.IS_ENTITY_DEAD(o) || _director.Involves(o))
+                return null;
+            Ped p = new Ped(o);
+            return p.Position.DistanceTo(new Ped(act.Handle).Position) < 18f && MayDirectWhyNot(p) == null ? p : null;
+        }
+
+        private string OtherFirst(Ped p)
+        {
+            string id, name, temper;
+            if (LastingId(p, out id, out name, out temper) && name != null)
+                return Person.FirstOf(name);
+            return Director.Kind(p, !PED.IS_PED_MALE(p.Handle));   // "a townswoman"
+        }
+
+        private string WakePicksStatus()
+        {
+            if (!_cfg.WakeHold)
+                return "the hold is off";
+            if (!PicksOn)
+                return "waiting on [Mind] Language, LanguagePicks and MindLive (and the server): the rolls choose";
+            return _wakePicksAsked + " asked, " + _wakePicksTaken + " picked (" + _wakePickLash + " a lash-out), " + _wakePicksLate + " late, " + _wakePicksUnread + " unreadable" +
+                   (_wakePickLast != null ? "; last: " + _wakePickLast : "");
+        }
+
         // ---- turning on someone ---------------------------------------------------------------------------------
 
         private readonly Dictionary<int, int> _wakeAttackers = new Dictionary<int, int>();   // someone waking who turned on another -> whom (fair game: WestworldScript.Watch.cs)
@@ -461,10 +643,10 @@ namespace EnrageWestworld.InGame
         {
             int h = act.Handle;
             string seed = act.P.Id + "|lash|" + now / 1000;
-            bool test = _lashTestAtYou != 0;
-            bool atYou = test ? _lashTestAtYou > 0 : WakeOdd.AtYou(act.P.Personality, seed);
+            int aim = act.LashAim != 0 ? act.LashAim : _lashTestAtYou;   // the model said whom, or the Testing row
+            bool atYou = aim != 0 ? aim > 0 : WakeOdd.AtYou(act.P.Personality, seed);
             _lashTestAtYou = 0;
-            Ped other = atYou ? null : OtherFor(act, me);
+            Ped other = atYou ? null : PickedOther(act, me) ?? OtherFor(act, me);
             if (other == null)
             {
                 if (ped.Position.DistanceTo(me.Position) > 20f || PLAYER.IS_PLAYER_DEAD(Game.Player.Handle))
@@ -513,6 +695,7 @@ namespace EnrageWestworld.InGame
         private void StepLashOut(WakeAct act, Ped me, int now)
         {
             int h = act.Handle;
+            LashLawStep(act, me, now);
             if (act.Target == 0 || !ENTITY.DOES_ENTITY_EXIST(act.Target) || ENTITY.IS_ENTITY_DEAD(act.Target))
             {
                 act.Until = now;
@@ -522,11 +705,73 @@ namespace EnrageWestworld.InGame
                 act.Until = now;   // it went out of them
         }
 
+        // ---- the law steps in on a lash-out (Lex, 2026-10-31: "getting beat up by Hank Crabtree ... in front of a lawman but he is
+        // not getting attacked by the law as expected"). The game's lawmen leave one townsman beating another alone; a lawman
+        // within 30 m who can see it now shouts and goes for the attacker, with his fists for fists and his gun for a gun.
+        // When it's over and the attacker still stands or lies alive, he hogties them (the game's own way, as for a caught
+        // pickpocket). Under [World] LawChases.
+        private int _lashLawSteps, _lashLawHeld;
+
+        private void LashLawStep(WakeAct act, Ped me, int now)
+        {
+            if (!_cfg.LawChases || act.LawHandle != 0 || now < act.LawLookAt)
+                return;
+            act.LawLookAt = now + 1500;
+            int h = act.Handle;
+            Vector3 at = new Ped(h).Position;
+            Ped law = World.GetAllPeds().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Handle != h && Natives.IsLaw(p) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
+                                                    !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_IN_COMBAT(p.Handle, me.Handle) && p.Position.DistanceTo(at) < 30f &&
+                                                    ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, h, 17))
+                                        .OrderBy(p => p.Position.DistanceTo(at)).FirstOrDefault();
+            if (law == null)
+                return;
+            int l = law.Handle;
+            act.LawHandle = l;
+            act.LawAt = now;
+            _lashLawSteps++;
+            uint attackerGun = WEAPON.GET_BEST_PED_WEAPON(h, false, false);
+            bool gun = WEAPON.IS_PED_ARMED(h, 4) && attackerGun != 0 && attackerGun != Natives.Hash("WEAPON_UNARMED");
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(l, false);
+            TASK.CLEAR_PED_TASKS(l, true, false);
+            if (!gun)
+            {
+                WEAPON.SET_CURRENT_PED_WEAPON(l, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
+                PED.SET_PED_COMBAT_ATTRIBUTES(l, 5, true);   // fists for fists
+                PED.SET_PED_COMBAT_ATTRIBUTES(l, 46, true);
+            }
+            TASK.TASK_COMBAT_PED(l, h, 0, 16);
+            LawSay(law, "The deputy", WakeOdd.LawStep(act.P.Id + "|" + now / 1000), "SHOUT_STOP");
+            Log.Write("WAKE law: a lawman " + (int)law.Position.DistanceTo(at) + " m off steps in on " + act.Name + "'s lash-out" + (gun ? ", gun drawn (they have one)" : ", with his fists"));
+        }
+
+        /// The lash-out over: the lawman who stepped in hogties them if they're alive, then goes back to his rounds.
+        private void LashLawAfter(WakeAct act)
+        {
+            int l = act.LawHandle, h = act.Handle;
+            if (l == 0 || !ENTITY.DOES_ENTITY_EXIST(l) || ENTITY.IS_ENTITY_DEAD(l))
+                return;
+            int now = Game.GameTime;
+            if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h))
+            {
+                PED.SET_PED_TO_RAGDOLL(h, 1500, 2500, 0, false, false, "");
+                TASK.CLEAR_PED_TASKS(l, true, false);
+                TASK.TASK_HOGTIE_TARGET_PED(l, h);
+                act.LeaveOrders = true;   // theirs now: clearing their orders would undo the rope
+                _lashLawHeld++;
+                LawSay(new Ped(l), "The deputy", WakeOdd.LawHold(act.P.Id + "|hold"), "WON_FIGHT");
+                Log.Write("WAKE law: the lawman hogties " + act.Name);
+            }
+            else
+                TASK.CLEAR_PED_TASKS(l, true, false);
+            WanderLater(l, now + 25000);
+        }
+
         /// No longer fair game; still fighting, they're left to it (their orders kept) rather than stopped mid-swing.
         private void LashOutEnded(WakeAct act)
         {
             int h = act.Handle;
             _wakeAttackers.Remove(h);
+            LashLawAfter(act);   // a lawman who stepped in takes them in hand
             if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && PED.IS_PED_IN_COMBAT(h, 0))
                 act.LeaveOrders = true;
             if (_wakeAttackers.Count > 20)
@@ -758,9 +1003,49 @@ namespace EnrageWestworld.InGame
                 _wakeActs.Add(act);
                 _wakeCool[ped.Handle] = now + 20000;
                 Log.Write("WAKE strange test: " + p.Name + " (" + Awakening.StageName(st.WakeStage) + ") " + turn + (kind == "lashout" ? "" : ", then held"));
+                _wakeTestSaid = StrangeTestWords(turn, act, p, st.WakeStage, order, me);
+                _wakeTestHandle = ped.Handle;
                 return null;
             }
             return "nobody unravelling or awake within 15 m whose movement is ours (Y wakes the one you face; " + turn + " was next, skipped)";
+        }
+
+        private string _wakeTestSaid;   // what the Testing row says it's doing, above the ticker (Lex, 2026-10-31)
+        private int _wakeTestHandle;    // whose act it is: the words stay up until that act ends (Lex, 2026-10-31: "stay on the screen for the duration")
+
+        /// The strange-acts row in words: which turn, who, what they do and to whom, what to watch for, and what's next.
+        private string StrangeTestWords(string turn, WakeAct act, Person p, int stage, string[] order, Ped me)
+        {
+            int idx = Array.IndexOf(order, turn);
+            string next = order[(idx + 1) % order.Length];
+            Ped other = act.Other != 0 && ENTITY.DOES_ENTITY_EXIST(act.Other) ? new Ped(act.Other) : null;
+            string whom = other != null ? OtherName(other) : "the nearest person";
+            string what;
+            switch (turn)
+            {
+                case "closeup": what = "walks right up to " + whom + " and stares into their face. Watch " + whom + " answer: walk off, curse, laugh or take fright"; break;
+                case "wave": what = "waves a hand in front of " + whom + "'s face to see if anyone is in there. Watch for the gesture and " + whom + "'s answer"; break;
+                case "mimic": what = "follows " + whom + " step for step for about 13 s, then " + whom + " turns round and answers"; break;
+                case "notreal": what = "tells " + whom + " they aren't real. Watch for the subtitle and " + whom + "'s answer"; break;
+                case "preach": what = "preaches to everyone about that the world is painted. Up to three who hear it answer"; break;
+                case "lashout at you": what = "turns on you" + (stage >= Awakening.Awake ? ", with their gun if they carry one, else fists" : ", with their fists") + ". Fighting back is self-defence"; break;
+                case "lashout at another": what = "turns on " + whom + (stage >= Awakening.Awake ? ", with their gun if they carry one, else fists" : ", with their fists") + ". They get a red dot: stopping them is self-defence"; break;
+                default: what = "stands dazed, staring at nothing and muttering under their breath"; break;
+            }
+            string held = turn.StartsWith("lashout", StringComparison.Ordinal) ? " The hold ends with it." : " Then they stay strange, and the model picks what comes next.";
+            return "Test " + (idx + 1) + " of " + order.Length + ", " + StrangeTurnName(turn) + ": " + p.Name + " (" + Awakening.StageName(stage) + ") " + what + "." + held +
+                   " Next press: " + StrangeTurnName(next) + ".";
+        }
+
+        private static string StrangeTurnName(string turn)
+        {
+            switch (turn)
+            {
+                case "closeup": return "close up";
+                case "mimic": return "follow";
+                case "notreal": return "not real";
+                default: return turn;
+            }
         }
 
         private string WakeHoldStatus()
@@ -770,7 +1055,8 @@ namespace EnrageWestworld.InGame
                    "; gestures " + (_cfg.WakeGestures ? _gestPlayed + " played, " + _gestFailed + " didn't" + (_gestBad.Count > 0 ? ", dropped: " + string.Join(", ", _gestBad) : "") : "off") +
                    "; strange acts " + (_cfg.WakeStrange ? _strangeActs + " (answers: " + ans + "), last " + (_strangeLast ?? "none") : "off") +
                    "; stripped " + _strips + " (" + _cfg.WakeStripChance + "% of the awake)" + (_stripLast != null ? ", last " + _stripLast : "") +
-                   "; lash-outs " + _lashOuts + " (" + _lashAtYou + " at you; " + _cfg.WakeLashOut + "% of holds at stages 3-4)" + (_lashLast != null ? ", last " + _lashLast : "") +
+                   "; lash-outs " + _lashOuts + " (" + _lashAtYou + " at you; the law stepped in " + _lashLawSteps + ", hogtied " + _lashLawHeld + "; " + _cfg.WakeLashOut + "% of holds at stages 3-4)" + (_lashLast != null ? ", last " + _lashLast : "") +
+                   "; the model's picks: " + WakePicksStatus() +
                    "; now held: " + (_wakeActs.Count(a => a.Links > 0) == 0 ? "nobody" : string.Join(", ", _wakeActs.Where(a => a.Links > 0).Select(a => a.Name + " " + a.Kind)));
         }
 

@@ -143,6 +143,36 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// Our name kept on someone enRAGE has just taken up (WestworldScript.NameCards.cs KeepNameAtGreet): its record is
+        /// renamed through the record's own SetName, but enRAGE re-labels the lock-on prompt from its _named list every scan,
+        /// so the old name came back (Lex, 2026-10-31: "Jacob Shelby" over his head, "Austin Colby" on the prompt and in the
+        /// greeting's subtitle). A direct write of that entry's Name (CLAUDE.md, "Writing to enRAGE"), then enRAGE's own
+        /// SetPromptName. True when the entry was there to rename.
+        public bool RenameNamedAt(int handle, string name)
+        {
+            if (Mod == null || string.IsNullOrEmpty(name))
+                return false;
+            ResolveLooks();
+            try
+            {
+                IDictionary named = _namedField != null ? _namedField.GetValue(Mod) as IDictionary : null;
+                object n = named != null && named.Contains(handle) ? named[handle] : null;
+                FieldInfo f = n != null ? n.GetType().GetField("Name", Any) : null;
+                if (f == null)
+                    return false;
+                f.SetValue(n, name);
+                MethodInfo label = Mod.GetType().GetMethod("SetPromptName", Any, null, new[] { typeof(int), typeof(string) }, null);
+                if (label != null)
+                    label.Invoke(null, new object[] { handle, name });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Fail("RenameNamedAt", ex);
+                return false;
+            }
+        }
+
         private object ProvocationOf(int handle)
         {
             IDictionary all = _provokedField.GetValue(Mod) as IDictionary;

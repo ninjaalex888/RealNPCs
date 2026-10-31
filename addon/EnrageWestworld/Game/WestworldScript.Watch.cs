@@ -538,6 +538,9 @@ namespace EnrageWestworld.InGame
                     _bodyBounty = bounty;
                     _bodyWanted = level > 0 || incident;
                     _bodyWho = NameToShow(carried);
+                    PED.SET_PED_CONFIG_FLAG(carried, PcfDontInfluenceWantedLevel, true);   // the game's own flag on the body, so carrying it raises nothing (despair sets it while they live; this for the rest)
+                    bool took = PED.GET_PED_CONFIG_FLAG(carried, PcfDontInfluenceWantedLevel, true);
+                    Log.Write("LAW: you carry " + (_bodyWho ?? "a body") + ", dead by no hand of yours: the body marked not to count toward wanted (" + (took ? "it took" : "the game refused it on the dead") + ")");
                     Log.Detail("LAW: you carry " + (_bodyWho ?? "a body") + ", dead by no hand of yours: a murder charge while you do, and for 90 s after, is put back");
                 }
                 _bodyCarryAt = now;
@@ -560,7 +563,8 @@ namespace EnrageWestworld.InGame
             if (newlyWanted)
                 LawStandDown(me);
             _bodyCleared++;
-            Log.Write("LAW: the game charged you (" + (charge == 0 ? "no charge named" : Crimes.Name(charge)) + ") for carrying " + (_bodyWho ?? "a body") + ", dead by no hand of yours: " +
+            if (_bodyCleared == 1 || _bodyCleared % 20 == 0)   // the game charged again every half second (2026-10-31): the first, then every 20th
+                Log.Write("LAW: the game charged you (" + (charge == 0 ? "no charge named" : Crimes.Name(charge)) + ") for carrying " + (_bodyWho ?? "a body") + ", dead by no hand of yours: " +
                       (raised ? "bounty $" + bounty / 100 + " -> $" + _bodyBounty / 100 : "") + (raised && newlyWanted ? ", " : "") + (newlyWanted ? "no longer wanted" : ""));
         }
 

@@ -36,6 +36,8 @@ namespace EnrageWestworld.Core
         public string AvoidLine;             // the written line the fallback would give (the model must not copy it)
         public List<string> Options = new List<string>();    // Kind "pick": what they might do, in words (Language.Pick.cs); "say": the remarks their voice has (ThoughtVoice.cs)
         public string Thought;               // Kind "say": the thought showing now
+        public bool WithThought;             // Kind "pick": the thought as well as the choice, in one answer (Lex, 2026-10-31: what they think and do should agree)
+        public int WakeStage;                // Kind "pick" for the waking (WakeOdd.PickOptions): their stage, 2 to 4, so the brief says what they have come to see
 
         /// Every name the answer may use: their own, whom it's about, those near, the town, any in the memories.
         public HashSet<string> Names()

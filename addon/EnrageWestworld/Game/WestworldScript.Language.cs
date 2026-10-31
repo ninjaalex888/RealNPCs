@@ -68,7 +68,10 @@ namespace EnrageWestworld.InGame
             if (t == null)
                 return;
             _langStop = true;
-            try { t.Join(500); } catch { }
+            HttpWebRequest req = _langReq;
+            if (req != null)
+                try { req.Abort(); } catch { }   // a request still waiting on the model must not hold up a reload (Lex, 2026-10-31: Insert froze the game)
+            try { t.Join(2000); } catch { }
             _langThread = null;
         }
 
@@ -290,9 +293,12 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        private static volatile HttpWebRequest _langReq;   // the request under way, so a stop can cut it (a reload waited on it, 2026-10-31)
+
         private static string LanguagePost(string url, string body)
         {
             var req = (HttpWebRequest)WebRequest.Create(url);
+            _langReq = req;
             req.Method = "POST";
             req.ContentType = "application/json";
             req.Timeout = LanguageTimeoutMs;

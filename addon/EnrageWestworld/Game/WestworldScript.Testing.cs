@@ -131,8 +131,7 @@ namespace EnrageWestworld.InGame
             _lastFireSeed = seed;
             _lastFireResult = "started";
             Log.Write("TEST fire " + a.Id + ": started (" + how + (skipped != null ? "; skipped: " + skipped : string.Empty) + ")");
-            if (said != null)
-                Hint(said, 5000);
+            Hint(said ?? "Testing: " + a.Label + (skipped != null ? " (skipping " + skipped + ")" : "") + ".", a.Id == "wakestrange" && said != null ? 60000 : said != null && said.Length > 120 ? 9000 : 5000);   // the strange acts': up until the act ends   // every test says what it's doing (Lex, 2026-10-31)
         }
 
         private void TestRefuse(string id, string why)
@@ -379,7 +378,12 @@ namespace EnrageWestworld.InGame
                     return null;
                 case "wakestrange":
                     skipped = "the stage's roll, the hold's turn and, for stripping, its chance and the once-a-person mark";
-                    return WakeStrangeTest(now);   // the next strange act in turn, then held (WestworldScript.WakeHold.cs)
+                    {
+                        _wakeTestSaid = null;
+                        string sr = WakeStrangeTest(now);   // the next strange act in turn, then held (WestworldScript.WakeHold.cs)
+                        said = _wakeTestSaid;   // what it is, who, and what to watch for, above the ticker
+                        return sr;
+                    }
                 case "despairnow":
                     return DespairNow(now);   // the nearest free person RealNPCs knows, straight to despair, each way in turn (WestworldScript.Despair.cs)
                 case "despairanims":

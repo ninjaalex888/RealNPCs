@@ -543,6 +543,7 @@ namespace EnrageWestworld.InGame
 			LawPulseEnd(0, true);
 			Shutdown04();
 			Save();
+			WatchStop();   // our own threads ended before Script Hook unloads us (a reload froze waiting on one, 2026-10-31)
 			Log.Write("Stopped.");
 		}
 
