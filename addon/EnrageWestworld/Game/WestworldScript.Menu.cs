@@ -45,6 +45,8 @@ namespace EnrageWestworld.InGame
             public float Wide;
             public int RowsSel = -1;
             public bool RowsPending;
+            public bool Pad, RowsPad;  // a pad in use this frame (the hint under the list names its buttons), and as the rows were made
+            public string Foot;        // the hint under the list: which key says it and which leaves
         }
 
         private const uint TalkControl = 0x31219490;   // INPUT_INTERACT_LOCKON_TARGET_INFO: Q, or a pad's RB (as the clerk's Reset prompt)
@@ -322,7 +324,9 @@ namespace EnrageWestworld.InGame
                 PAD.DISABLE_CONTROL_ACTION(0, c, true);
             int pick = -1;
             bool up, down, accept, cancel;
-            if (PAD.IS_USING_KEYBOARD_AND_MOUSE(0))
+            bool keyboard = PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
+            t.Pad = !keyboard;   // the hint under the list follows what's in use
+            if (keyboard)
             {
                 bool wheelUp = WheelMoved(WheelUps), wheelDown = !wheelUp && WheelMoved(WheelDowns);   // one notch, one row (Lex, 2026-10-31)
                 up = TalkKey(0, 0x26) || wheelUp;
@@ -642,13 +646,14 @@ namespace EnrageWestworld.InGame
         }
 
         /// The list, drawn above the ticker on the left: who, then the options, the chosen one marked, the closed ones
-        /// greyed. The words and their width are worked out once per choice, not every frame.
+        /// greyed, and under them a small hint of the keys (Lex, 2026-10-31: say that Space chooses). The words and their
+        /// width are worked out once per choice, not every frame.
         private void TalkDraw(TalkMenu t)
         {
-            float s = 0.3f, lh = Draw.LineHeight(s), x = 0.035f;
+            float s = 0.3f, lh = Draw.LineHeight(s), x = 0.035f, fs = s * 0.85f, flh = Draw.LineHeight(fs);
             int n = t.Options.Count;
             bool pending = t.Pending != null;
-            if (t.Rows == null || t.RowsSel != t.Sel || t.RowsPending != pending)
+            if (t.Rows == null || t.RowsSel != t.Sel || t.RowsPending != pending || t.RowsPad != t.Pad)
             {
                 t.Title = t.Name + (t.Trade != null ? ", " + t.Trade : "");
                 t.Wide = Draw.Width(t.Title, s * 1.05f);
@@ -660,11 +665,14 @@ namespace EnrageWestworld.InGame
                     t.Wide = Math.Max(t.Wide, Draw.Width(row, s));
                     t.Rows[i] = (i == t.Sel && !pending ? "> " : "  ") + row;
                 }
+                t.Foot = t.Pad ? "A: say it   B: leave" : "Space: say it   Backspace: leave";
+                t.Wide = Math.Max(t.Wide, Draw.Width(t.Foot, fs));
                 t.RowsSel = t.Sel;
                 t.RowsPending = pending;
+                t.RowsPad = t.Pad;
             }
-            float y = 0.56f - (n + 1) * lh;
-            Draw.Rect(x - 0.008f, y - 0.006f, t.Wide + 0.016f, lh * (n + 1) + 0.016f, 12, 10, 8, 185);
+            float y = 0.56f - (n + 1) * lh - flh;   // the hint adds a line at the foot: the box grows upward, its foot stays clear of the ticker
+            Draw.Rect(x - 0.008f, y - 0.006f, t.Wide + 0.016f, lh * (n + 1) + flh + 0.016f, 12, 10, 8, 185);
             Draw.Text(t.Title, x, y, s * 1.05f, 236, 214, 160);
             for (int i = 0; i < n; i++)
             {
@@ -672,6 +680,7 @@ namespace EnrageWestworld.InGame
                 int c = closed ? 130 : sel ? 255 : 210;
                 Draw.Text(t.Rows[i], x, y + (i + 1) * lh + 0.004f, s, c, c, closed ? 130 : sel ? 200 : 210);
             }
+            Draw.Text(t.Foot, x, y + (n + 1) * lh + 0.006f, fs, pending ? 110 : 165, pending ? 104 : 155, pending ? 92 : 135);   // dimmer while they answer: no key does anything then
         }
 
         /// The Testing row: the menu on the nearest adult RealNPCs knows, within 6 m, no lock-on needed (the same busy
