@@ -360,7 +360,19 @@ namespace EnrageWestworld.InGame
             if (thought == null)
                 return;
             _ticker.Push(chooser.Who.Name + ", thinking", thought, "near", chooser.Ped.Handle);
+            _reasonThoughts++;
+            _reasonThoughtLast = chooser.Who.Name + ": " + thought;
             Log.Detail("REASON thought, " + chooser.Who.Name + ": " + thought);
+        }
+
+        private int _reasonThoughts;
+        private string _reasonThoughtLast;
+
+        /// F7: on or off, how many scenes this session showed why they started, and the last.
+        private string ReasonThoughtsStatus()
+        {
+            return (_cfg.ReasonThoughts ? "on" : "off ([Scenes] ReasonThoughts)") + "; " + _reasonThoughts + " shown this session (a scene the street's timing started for a reason, the one whose reason it is in view)" +
+                   (_reasonThoughtLast != null ? "; last: " + _reasonThoughtLast : "");
         }
 
         /// The scene for a kind between first and second (the one who does it first): the trouble kinds, a courtship, an

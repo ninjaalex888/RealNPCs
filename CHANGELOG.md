@@ -4,7 +4,7 @@
 
 ### Why a scene starts, as a thought (the game developer's "legible reasons")
 
-- When a street scene starts for a reason between two people, the one whose reason it is thinks why over their head as they go over, so you can follow what led to it: "That money. Hiram hears about it now.", "Ruth lost someone. Somebody ought to say a word.", "Got to tell Abe. Can't keep it in." Only when you can see them; a scene the model chose has the model's own thought instead. `[Scenes] ReasonThoughts` (on; settings version 155).
+- When a street scene starts for a reason between two people, the one whose reason it is thinks why over their head as they go over, so you can follow what led to it: "That money. Hiram hears about it now.", "Ruth lost someone. Somebody ought to say a word.", "Got to tell Abe. Can't keep it in." Only when you can see them; a scene the model chose has the model's own thought instead. `[Scenes] ReasonThoughts` (on; settings version 155). F7 `TEST reason thoughts:` counts them.
 - Fixed: when the model chose for someone near, a condolence was offered to the grieving one ("goes to offer Ruth sympathy", with Ruth the friend) and keeping clear to the one who did the wrong; both now go to the one whose choice it is.
 
 ### Personal space (the psychologist's list)
