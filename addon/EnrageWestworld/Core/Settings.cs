@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 146;
+        public const int CurrentVersion = 147;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -79,6 +79,8 @@ namespace EnrageWestworld.Core
         public bool ThoughtsAloud = true;   // with Language: a thought over someone near is said aloud in their own recorded voice when one of their remarks fits it (settings version 143)
         public bool LanguagePicks = true;   // with Language: the model picks what people near you do, from the few things the mind allows (settings version 142)
         public bool MindStartsScenes = true;   // with LanguagePicks: a person's own reasons with someone near (a quarrel, a friend to comfort, a debt) join the model's list, and a pick starts the scene (settings version 146; NIGHT3 item 1)
+        public int PickMetres = 25;    // how far from the player the model picks for people (15 until settings version 147; NIGHT3 item 2); past 15 m it's asked half as often
+        public int PicksAtOnce = 8;    // how many picks may wait on the model at once (4 until settings version 147)
         public bool Language = false;        // the language layer (2026-10-29; roadmap 15): with MindLive, the mind's own thoughts worded by a local model (Ollama at LanguageUrl, LanguageModel) through Language.Check, the written line always the fallback; off until the generated thoughts pass the checks at scale (settings version 94)
         public string LanguageUrl = "http://127.0.0.1:11434";   // the local server; nothing leaves the machine
         public string LanguageModel = "llama3.1:8b";           // the model Ollama holds (ollama pull <name>)
@@ -645,6 +647,8 @@ namespace EnrageWestworld.Core
             WakeHoldMinutes = Math.Max(1, Math.Min(15, WakeHoldMinutes));
             WakeStripChance = Math.Max(0, Math.Min(100, WakeStripChance));
             WakeLashOut = Math.Max(0, Math.Min(100, WakeLashOut));
+            PickMetres = Math.Max(5, Math.Min(60, PickMetres));
+            PicksAtOnce = Math.Max(1, Math.Min(16, PicksAtOnce));
             // stalker hours: the stalker day still runs 05:00 to 05:00; day hours stay in daylight, night hours cross midnight
             StalkerEveryMinutes = Math.Max(1, Math.Min(120, StalkerEveryMinutes));
             StalkerNearbyMetres = Math.Max(20, Math.Min(150, StalkerNearbyMetres));
@@ -781,6 +785,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("Language = " + B(Language) + "   ; (in testing) with MindLive on, the mind's own thoughts are worded by a local language model running on your own PC (Ollama; nothing leaves the machine); every answer is checked for the period, the names and the length, and the written line shows whenever the model's won't do");
             b.AppendLine("LanguagePicks = " + B(LanguagePicks) + "   ; (in testing) with Language on: for people near you, the model picks what they do next from the few things their mind allows (the best three, and a plan's step), by their nature and how they feel; if it's slow or says nothing sensible, their mind's own choice stands");
             b.AppendLine("MindStartsScenes = " + B(MindStartsScenes) + "   ; (in testing) with LanguagePicks on: when the model picks what someone near does, their own reasons with someone else near (a quarrel to pick up, a friend to comfort, a debt to call in, someone to court) are among the choices, and picking one starts that scene, as the street would; false: scenes start only from the street's own timing");
+            b.AppendLine("PickMetres = " + PickMetres + "   ; how far from you (metres, 5 to 60) the model picks what people do; past 15 m each person is asked half as often; the mind itself looks 25 m out, so more than 25 changes nothing yet");
+            b.AppendLine("PicksAtOnce = " + PicksAtOnce + "   ; how many people's picks may wait on the model at once (1 to 16); F7's TEST model: line shows how long answers take, so you can raise it while they stay quick");
             b.AppendLine("ThoughtsAloud = " + B(ThoughtsAloud) + "   ; (in testing) with Language on: as a thought shows over someone within 12 m, the model looks through the remarks their own voice has recorded and, if one fits, they say it aloud (most thoughts stay unspoken); the words show in the lower subtitle box when your local word list has them");
             b.AppendLine("LanguageUrl = " + LanguageUrl + "   ; where Ollama listens");
             b.AppendLine("LanguageModel = " + LanguageModel + "   ; the model it holds (ollama pull <name>)");

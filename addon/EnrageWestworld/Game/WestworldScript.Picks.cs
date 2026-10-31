@@ -27,8 +27,8 @@ namespace EnrageWestworld.InGame
             public bool Test;                 // the Testing row asked it
         }
 
-        private const float PickMetres = 15f;
-        private const int PickWaitMs = 2500, PicksAtOnce = 4, PicksLoud = 40;
+        private const float PickNear = 15f;   // within this, a person's every new choice may be asked; past it ([Mind] PickMetres), half of them
+        private const int PickWaitMs = 2500, PicksLoud = 40;   // how many wait at once and how far out: [Mind] PicksAtOnce, PickMetres (NIGHT3 item 2)
         private readonly List<PendingPick> _pending = new List<PendingPick>();
         private int _picksAsked, _picksTaken, _picksSame, _picksLate, _picksUnread, _picksPlan, _picksLogged;
         private string _pickLast;
@@ -39,15 +39,18 @@ namespace EnrageWestworld.InGame
         /// answer comes, or the wait is up); false to act on the mind's choice now.
         private bool PickAsk(MindWho w, int h, int now, ChoiceContext c)
         {
-            if (!PicksOn || w == null || w.Id == null || w.Choice == null || _pending.Count >= PicksAtOnce || w.Choice.StartsWith("urge:", StringComparison.Ordinal))
+            if (!PicksOn || w == null || w.Id == null || w.Choice == null || _pending.Count >= _cfg.PicksAtOnce || w.Choice.StartsWith("urge:", StringComparison.Ordinal))
                 return false;
             if (w.ChoiceWhy != null && w.ChoiceWhy.StartsWith("a feeling", StringComparison.Ordinal))
                 return false;   // a feeling strongly felt decides, not the model
             if (_pending.Any(x => x.Handle == h) || IsMindActing(h))
                 return false;
             Ped p = new Ped(h);
-            if (!p.Exists() || p.Position.DistanceTo(Game.Player.Character.Position) > PickMetres || MindActWhyNot(p, h) != null)
+            float pd = p.Exists() ? p.Position.DistanceTo(Game.Player.Character.Position) : 999f;
+            if (!p.Exists() || pd > _cfg.PickMetres || MindActWhyNot(p, h) != null)
                 return false;
+            if (pd > PickNear && (Voice.Hash(w.Id + "|" + now / 30000) & 1) == 1)
+                return false;   // the outer ring: half its choices go to the model, the rest are the mind's own (NIGHT3 item 2)
             List<KeyValuePair<string, string>> ranked = Choosing.Ranked(w.Needs, w.Traits, c, Choosing.SeedFor(w.Id, _store.LastGameMin), 3);
             var ids = new List<string>();
             var words = new List<string>();
@@ -98,6 +101,7 @@ namespace EnrageWestworld.InGame
         /// Each tick: the picks that came back, or whose wait is up, acted on.
         private void PicksStep(int now)
         {
+            ModelMinute(now);
             for (int i = _pending.Count - 1; i >= 0; i--)
             {
                 PendingPick pp = _pending[i];
@@ -146,6 +150,7 @@ namespace EnrageWestworld.InGame
             else
             {
                 _picksTaken++;
+                ModelMs(ms);
                 outcome = (idx + 1) + " (" + pp.Words[idx] + ")" + (pp.Ids[idx] == pp.Mind ? ", the mind's own too" : ", not the mind's (" + Choosing.WordsOf(pp.Mind) + ")");
             }
             (_picksLogged++ < PicksLoud ? (Action<string>)Log.Write : Log.Detail)("MIND pick: " + w.Name + " offered " + offered + " -> " + outcome + ", " + ms + " ms");
@@ -211,6 +216,55 @@ namespace EnrageWestworld.InGame
             _pickThoughtsShown++;
             _ticker.Push(name + ", thinking", thought, "near", h);
             (_picksLogged < PicksLoud ? (Action<string>)Log.Write : Log.Detail)("MIND pick thought: " + name + ": \"" + thought + "\"");
+        }
+
+        // ---- the model's numbers (NIGHT3 item 2, so the reach can be raised by what the PC keeps up with) ----------------
+        // The last 128 pick answers' times (the everyday picks and the waking's), the asks a minute, how many wait, the late
+        // and unreadable shares. F7 TEST model:, and a MODEL line in the log once a minute while picks are asked.
+        private readonly int[] _modelMs = new int[128];
+        private int _modelMsN, _modelMinuteAt, _modelMinAsked, _modelMinLate, _modelMinUnread, _modelMinTaken;
+
+        private void ModelMs(long ms)
+        {
+            _modelMs[_modelMsN % _modelMs.Length] = (int)Math.Max(0, Math.Min(ms, 60000));
+            _modelMsN++;
+        }
+
+        private string ModelTimes()
+        {
+            int n = Math.Min(_modelMsN, _modelMs.Length);
+            if (n == 0)
+                return "no answers yet";
+            var a = new int[n];
+            Array.Copy(_modelMs, a, n);
+            Array.Sort(a);
+            return "answers in " + a[n / 2] + " ms typically, " + a[Math.Min(n - 1, (int)(n * 0.9))] + " ms for 9 in 10, " + a[n - 1] + " ms the slowest (the last " + n + ")";
+        }
+
+        private void ModelMinute(int now)
+        {
+            if (now < _modelMinuteAt)
+                return;
+            int asked = _picksAsked + _wakePicksAsked, taken = _picksTaken + _wakePicksTaken, late = _picksLate + _wakePicksLate, unread = _picksUnread + _wakePicksUnread;
+            if (_modelMinuteAt > 0 && asked > _modelMinAsked)
+                Log.Write("MODEL minute: " + (asked - _modelMinAsked) + " picks asked, " + (taken - _modelMinTaken) + " picked, " + (late - _modelMinLate) + " late, " + (unread - _modelMinUnread) + " unreadable; " +
+                          _pending.Count + " waiting now (at most " + _cfg.PicksAtOnce + ", within " + _cfg.PickMetres + " m); " + ModelTimes());
+            _modelMinuteAt = now + 60000;
+            _modelMinAsked = asked;
+            _modelMinTaken = taken;
+            _modelMinLate = late;
+            _modelMinUnread = unread;
+        }
+
+        private string ModelStatus()
+        {
+            if (!PicksOn)
+                return "the model's picks are off or the server isn't ready";
+            int asked = _picksAsked + _wakePicksAsked, late = _picksLate + _wakePicksLate, unread = _picksUnread + _wakePicksUnread;
+            string store = _engine != null ? "; the queue: " + (_engine.LanguageAnswers.PicksAsked - _engine.LanguageAnswers.PicksAnswered - _engine.LanguageAnswers.PicksFailed) + " not yet answered, " +
+                           _engine.LanguageAnswers.PicksDropped + " turned away (full)" : "";
+            return asked + " picks asked this session (" + _picksAsked + " everyday, " + _wakePicksAsked + " waking), " + (asked > 0 ? (100 * late / asked) + "% late, " + (100 * unread / asked) + "% unreadable" : "none yet") +
+                   "; " + ModelTimes() + "; reach " + _cfg.PickMetres + " m (past " + (int)PickNear + " m half as often), " + _pending.Count + " of " + _cfg.PicksAtOnce + " waiting" + store;
         }
 
         private string PicksStatus()

@@ -31,7 +31,7 @@ namespace EnrageWestworld.Core
         private readonly Queue<LanguageAsk> _queue = new Queue<LanguageAsk>();
         public int Asked, Answered, Failed, Late, Held, ShownModel, ShownCache, ShownWritten, Dropped;
         // the model's picks (Language.Pick.cs): their own queue, served first, and their answers by key until taken
-        public const int MostPicksWaiting = 6;
+        public const int MostPicksWaiting = 16;   // 6 until NIGHT3 item 2, when the game side's PicksAtOnce became a setting (up to 16)
         private readonly Queue<LanguageAsk> _picks = new Queue<LanguageAsk>();
         private readonly Dictionary<string, KeyValuePair<string, long>> _picked = new Dictionary<string, KeyValuePair<string, long>>(StringComparer.Ordinal);
         public int PicksAsked, PicksAnswered, PicksFailed, PicksDropped;

@@ -591,6 +591,7 @@ namespace EnrageWestworld.InGame
                 else
                 {
                     _wakePicksTaken++;
+                    ModelMs(ms);
                     picked = act.PickIds[idx];
                     if (picked.StartsWith("lashout", StringComparison.Ordinal))
                         _wakePickLash++;

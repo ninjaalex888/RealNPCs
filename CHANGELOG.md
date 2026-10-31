@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### The model reaches further, and says how it keeps up (step 3 of the model plan; Lex: "control as many NPCs as possible")
+
+- The model now picks for people up to 25 m away (15 before) and for up to 8 at once (4 before), both settings: `[Mind] PickMetres` and `PicksAtOnce` (settings version 147). Past 15 m each person's choices go to the model half as often, the rest are the mind's own. The model's own queue holds up to 16 (6 before).
+- F7 `TEST model:` gives the numbers to raise them by: picks asked (everyday and waking), the late and unreadable shares, answer times (typical, 9 in 10, the slowest, over the last 128), how many wait, how many the queue turned away. Once a minute while picks are asked the log has a `MODEL minute:` line. The mind itself still looks 25 m out, so a `PickMetres` beyond 25 changes nothing yet.
+
 ### People start the street's scenes from their own thoughts (step 2 of the model plan; Lex, 2026-10-31)
 
 - When the model picks what someone near does, their own reasons with someone else near are now among the choices, in their words: "goes to have words with Hiram over money", "goes to offer Ruth sympathy", "goes to see Abe about the money between them", "goes to make it up with Clara". Picking one starts that scene through the very path the street's own timing uses (the cast, the quarrel ladder, the walk-over, someone stepping in, a bystander), so nothing is invented: only who chooses changes. Only the one who would start it is offered it; only while the street can take a scene; the same two rest after, as before. Sampled offline: a cooper sore at Hiram over eleven dollars went to have words with him 9 to 11 times in 12, wherever it stood in the list. `[Mind] MindStartsScenes` (on, with LanguagePicks; settings version 146). Testing row "A mind starts a scene (their own reason)". Log `MIND starts:`; F7 `TEST picks:` counts them.
