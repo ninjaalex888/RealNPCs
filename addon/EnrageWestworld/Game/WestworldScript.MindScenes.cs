@@ -93,8 +93,8 @@ namespace EnrageWestworld.InGame
             string why = MindSceneWhyNot(by == "the Testing row");
             if (why == null && (!pr.A.Ped.Exists() || pr.A.Ped.IsDead || !pr.B.Ped.Exists() || pr.B.Ped.IsDead))
                 why = "one of them is gone";
-            if (why == null && (_director.Involves(pr.A.Ped.Handle) || _director.Involves(pr.B.Ped.Handle)))
-                why = "one of them is in a scene";
+            if (why == null && (NotFree(pr.A.Ped.Handle) || NotFree(pr.B.Ped.Handle)))
+                why = "one of them is taken up (a scene, Talk, a walk-up)";
             bool started = why == null && PlayPairReason(pr, Game.Player.Character, _placeKind == "saloon", now, false, by);
             if (started)
             {

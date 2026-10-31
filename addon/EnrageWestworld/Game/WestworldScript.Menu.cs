@@ -596,6 +596,8 @@ namespace EnrageWestworld.InGame
             _menu = null;
             if (t == null)
                 return;
+            if (t.Id != null)
+                _youNodAt[t.Id] = _now;   // just spoke with him: no passing look and greeting straight after goodbye (ToYou's rest)
             if (t.ThoughtAt > 0 && _talkLast != null)
                 TalkThink(t);
             _spaceAgain[t.Handle] = Game.GameTime + 60000;   // stood close to talk: no "a little room" from them straight after

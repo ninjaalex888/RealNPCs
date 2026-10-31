@@ -133,7 +133,7 @@ namespace EnrageWestworld.InGame
             List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
                                                          ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres &&
-                                                         !Resting(p.Handle, now) && !_director.Involves(p.Handle) && !_wakeActs.Any(w => w.Handle == p.Handle)).ToList();   // (a quiet talk's two are taken; the waking are in an act of their own)
+                                                         !Resting(p.Handle, now) && !NotFree(p.Handle)).ToList();   // (a quiet talk's two are taken; the waking are in an act of their own; the Talk partner, a walk-up, the law at work: the cross-cutting review)
             if (pool.Count >= 2 && now >= _nextSpecial && SpecialScene(pool, me, saloon, now))
                 return;
             // first, two people near you who have a reason to have something to do with each other (Reasons.cs)
@@ -252,7 +252,7 @@ namespace EnrageWestworld.InGame
             List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
                                                          ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres &&
-                                                         !Resting(p.Handle, now) && clear(p) && !_wakeActs.Any(w => w.Handle == p.Handle)).ToList();   // not the waking (2026-10-31: a side quarrel took one mid-act)
+                                                         !Resting(p.Handle, now) && clear(p) && !NotFree(p.Handle)).ToList();   // not the waking (2026-10-31: a side quarrel took one mid-act), nor anyone another feature has
             Ped a = null, b = null;
             float best = 3.4f;
             for (int i = 0; i < pool.Count; i++)
@@ -1172,7 +1172,7 @@ namespace EnrageWestworld.InGame
         private void CastTick(int now)
         {
             KinWalkStep(now);
-            if (!_cfg.CastRelatives || now < _nextCast || _kinWalk != null)
+            if (!_cfg.CastRelatives || now < _nextCast || WalkUpGoing())
                 return;
             _nextCast = now + KinLookMs;
             if (_kinNotBefore == 0)
@@ -1200,6 +1200,11 @@ namespace EnrageWestworld.InGame
             if (_kinPending != null)
             {
                 why = _kinPending.R.Name + " is being made out of sight already";
+                return false;
+            }
+            if (WalkUpGoing())
+            {
+                why = "someone else is coming up to you, or you're in the Talk menu";
                 return false;
             }
             if (_placeTown == null || me == null || !me.Exists())
@@ -1566,8 +1571,8 @@ namespace EnrageWestworld.InGame
             {
                 if (w.Spawned)
                     Spawner.Release(w.Ped, false);   // made for the part: handed to the game, which clears them out of sight
-                else
-                    TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // said their piece; goes about their day
+                else if (!_director.Involves(h))
+                    TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // said their piece; goes about their day (unless a scene has them now)
                 _casts.Remove(h);
                 _kinWalk = null;
             }

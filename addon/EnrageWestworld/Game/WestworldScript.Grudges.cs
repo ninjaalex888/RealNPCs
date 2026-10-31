@@ -101,7 +101,8 @@ namespace EnrageWestworld.InGame
             string manner = Exchanges.Manner(doer.Who, doer.Who.Hurt != null);
             bool hot = friend.Who.Temper == "Hothead" || friend.Who.Temper == "Proud" || doer.Who.Temper == "Hothead" || doer.Who.Temper == "Proud";
             SceneCast cast = BuildCast(friend.Ped, doer.Ped, null, _placeKind == "saloon", me, now, seed);
-            bool blows = manner == "sharp" && hot && !cast.AWoman && !cast.BWoman && !cast.Off.Contains("brawl");
+            bool blows = manner == "sharp" && hot && !cast.AWoman && !cast.BWoman && !cast.Off.Contains("brawl") &&
+                         !(_hush && !test) && !(!test && _cfg.BeingWatched && LawWatching(friend.Ped, doer.Ped) != null);   // hushed or watched: words (the cross-cutting review)
             Scene s = Grudges.Confront(cast, seed, wrong.Kind, victimName, manner, blows);
             float apart2 = friend.Ped.Position.DistanceTo(doer.Ped.Position);
             if (apart2 > 2.6f)
@@ -133,14 +134,19 @@ namespace EnrageWestworld.InGame
                 why = "[Scenes] Grudges is off";
                 return false;
             }
-            if (_grudgeWalk != null || _thanksWalk != null || _lonelyWalk != null)
+            if (WalkUpGoing())
             {
-                why = "one is coming up to you already";
+                why = "one is coming up to you already, or you're in the Talk menu";
                 return false;
             }
             if (!test && (now < _nextGrudgeYou || _placeTown == null))
                 return false;
             _nextGrudgeYou = now + GrudgeLookMs;
+            if (!test && (PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0 || PED.IS_PED_IN_COMBAT(me.Handle, 0) || PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle)))
+            {
+                why = "you're wanted, fighting or aiming";
+                return false;   // (after its timer: the natives once a look, not every tick)
+            }
             long g = _store.LastGameMin;
             foreach (Candidate c in ReasonCandidates(me, now, test).Where(x => x.Ped.Position.DistanceTo(me.Position) < 20f && !IsRecord(x.Ped.Handle))
                                                                      .OrderBy(x => x.Ped.Position.DistanceTo(me.Position)))
@@ -204,6 +210,8 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 4000, 0f, 0f, 0f);
                     Feed.Say(w.Name, w.Line, Speech.When(h, w.Voice, me.Handle), h, toYou: true);
                     w.SaidAt = now;
+                    if (w.Id != null)
+                        _youNodAt[w.Id] = now;   // said it to his face: no passing look straight after (ToYou's rest)
                     if (w.Id != null)
                         _engine.MarkGrudged(w.Id, w.DeadId);   // said to your face: once for this death
                     Log.Write("GRUDGE " + w.Name + " to your face: " + w.Line);

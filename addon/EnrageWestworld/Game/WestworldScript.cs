@@ -685,19 +685,20 @@ namespace EnrageWestworld.InGame
 							continue;
 						}
 						KeepNameAtGreet(key);
+						bool quiet = _menu != null && _menu.Handle == key;   // in the Talk menu with him: the greeting counts, but no second conversation over it (the cross-cutting review)
 						RecordRef nemesisRecord = _bridge.RecordAt(key);
 						if (_cfg.Conversations)
 						{
 							if (nemesisRecord != null && nemesisRecord.IsAlive)
 							{
-								TalkTo(nemesisRecord, key);
+								TalkTo(nemesisRecord, key, quiet);
 							}
 							else
 							{
 								FolkRef acquaintance = _bridge.AcquaintanceAt(key);
 								if (acquaintance != null)
 								{
-									TalkTo(acquaintance, key);
+									TalkTo(acquaintance, key, quiet);
 								}
 							}
 						}
@@ -717,7 +718,7 @@ namespace EnrageWestworld.InGame
 			return false;
 		}
 
-		private void TalkTo(RecordRef rec, int ped)
+		private void TalkTo(RecordRef rec, int ped, bool quiet = false)
 		{
 			if (TalkedRecently(rec.Id))
 			{
@@ -731,7 +732,8 @@ namespace EnrageWestworld.InGame
 				Gossip = GossipFor(person)
 			};
 			List<string> lines = _engine.Greet(person, Bridge.Now(), ctx);
-			Speak(person.Name, lines, ped, person.Hate, person.Fear, person.Friendly);
+			if (!quiet)
+				Speak(person.Name, lines, ped, person.Hate, person.Fear, person.Friendly);
 			if (_cfg.RevealToEnrage)
 			{
 				int num = Snapshot.MarkKnown(rec, person);
@@ -744,7 +746,7 @@ namespace EnrageWestworld.InGame
 			_remarked[person.Id] = Game.GameTime;
 		}
 
-		private void TalkTo(FolkRef a, int ped)
+		private void TalkTo(FolkRef a, int ped, bool quiet = false)
 		{
 			Folk folk = Snapshot.Of(a);
 			if (!TalkedRecently(folk.Key))
@@ -759,7 +761,8 @@ namespace EnrageWestworld.InGame
 				if (list.Count != 0)
 				{
 					Log.Write("TALK " + folk.Name + " (townsfolk): " + string.Join(" | ", list));
-					Speak(folk.Name, list, ped, folk.Grudge, 0, false);
+					if (!quiet)
+						Speak(folk.Name, list, ped, folk.Grudge, 0, false);
 					_remarked[folk.Key] = Game.GameTime;
 				}
 			}

@@ -177,11 +177,19 @@ namespace EnrageWestworld.InGame
             if (handle == 0)
                 return false;
             Live l = _live;
-            if (l != null && (l.Cast.Any(p => p != null && p.Handle == handle) || l.Joiners.Any(j => j[0] == handle)))
-                return true;
+            if (l != null)
+            {
+                foreach (Ped p in l.Cast)   // loops, not Any: no closure (the busy test asks this every frame for the mind's acts)
+                    if (p != null && p.Handle == handle)
+                        return true;
+                foreach (int[] j in l.Joiners)
+                    if (j[0] == handle)
+                        return true;
+            }
             foreach (Live x in _side)
-                if (x.Cast.Any(p => p != null && p.Handle == handle))
-                    return true;
+                foreach (Ped p in x.Cast)
+                    if (p != null && p.Handle == handle)
+                        return true;
             return false;
         }
 

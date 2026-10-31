@@ -75,7 +75,7 @@ namespace EnrageWestworld.InGame
         private string LonelyLook(Ped me, int now, bool test)
         {
             _nextLonely = now + LonelyLookMs;
-            if (_lonelyWalk != null || _thanksWalk != null || _grudgeWalk != null || _kinWalk != null || _lifter != null || _liftRun != null || _menu != null)
+            if (WalkUpGoing())
                 return _lonelyWhyNot = "someone is already coming up to you, or you're in the Talk menu";
             if (!test && (_placeTown == null || _director.Busy))
                 return _lonelyWhyNot = _placeTown == null ? "out of the towns" : "a scene is going on";
@@ -174,7 +174,7 @@ namespace EnrageWestworld.InGame
                     Log.Write("LONELY " + w.Name + ": you went on before they reached you; they let it be");
                     return;
                 }
-                if (_menu != null || _grudgeWalk != null || _thanksWalk != null)
+                if (_menu != null || _grudgeWalk != null || _thanksWalk != null || _kinWalk != null || _lifter != null)
                 {
                     LonelyLetGo(h);   // he's taken up with someone else: another time
                     Log.Write("LONELY " + w.Name + " saw you busy and went on their way");

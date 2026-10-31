@@ -292,7 +292,38 @@ namespace EnrageWestworld.InGame
         /// Taken by something else of ours already: a street scene, a waking act, a conversation, a nod, a sight, a walk-up.
         private bool NotFree(int h)
         {
-            return _director.Involves(h) || IsAcknowledging(h) || InTalk(h) || _wakeActs.Any(x => x.Handle == h || (x.Other == h && x.Other != 0));
+            if (_director.Involves(h) || IsAcknowledging(h) || InTalk(h))
+                return true;
+            for (int i = 0; i < _wakeActs.Count; i++)   // a loop, not Any: no closure (the mind's acts ask this every frame)
+            {
+                WakeAct x = _wakeActs[i];
+                if (x.Handle == h || (x.Other == h && x.Other != 0) || (x.LawHandle == h && x.LawHandle != 0))
+                    return true;
+            }
+            return (_bodyClear != null && _bodyClear.Law == h) || (_theft != null && _theft.Lawman != null && _theft.Lawman.Handle == h);   // the law at work too: a body, a lash-out, a chase (the cross-cutting review)
+        }
+
+        /// Someone is coming up to Arthur already, or he's taken up (the Talk menu, a pickpocket at work): one at a time, for
+        /// every walk-up's starter (the cross-cutting review: only thanks and the lonely asked all of these).
+        private bool WalkUpGoing()
+        {
+            return _menu != null || _thanksWalk != null || _grudgeWalk != null || _lonelyWalk != null || _kinWalk != null || _kinPending != null || _lifter != null || _liftRun != null || _theft != null;
+        }
+
+        /// One of the walk-ups to Arthur has them: thanks, a grudge, the lonely, kin, the pickpocket on his way or on the run.
+        private bool WalkingUp(int h)
+        {
+            return (_grudgeWalk != null && _grudgeWalk.Ped != null && _grudgeWalk.Ped.Handle == h) || (_thanksWalk != null && _thanksWalk.Ped != null && _thanksWalk.Ped.Handle == h) ||
+                   LonelyWaiting(h) || (_kinWalk != null && _kinWalk.Ped != null && _kinWalk.Ped.Handle == h) ||
+                   (_lifter != null && _lifter.Handle == h) || (_liftRun != null && _liftRun.Handle == h) || (_theft != null && _theft.Thief != null && _theft.Thief.Handle == h);
+        }
+
+        /// What takes someone off a mind's errand: a scene, the old talk, the Talk menu, an onlooker's act, a walk-up. Not the
+        /// passing looks (a nod to a friend or to Arthur, a sight's reaction): a turn of the head doesn't stop a walk (the
+        /// pre-commit check: a nod ended a greeting walk before its face-to-face).
+        private bool TakenUp(int h)
+        {
+            return _director.Involves(h) || InTalk(h) || (_menu != null && _menu.Handle == h) || IsOnlooking(h) || WalkingUp(h);
         }
 
         private bool IsAcknowledging(int h)
@@ -311,16 +342,8 @@ namespace EnrageWestworld.InGame
                 return true;   // walking off with someone, a scene's take-away (Director "leavewith")
             if (_gunTest != null && _gunTest.Handle == h)
                 return true;   // and its gunshot row (WestworldScript.Gunshot.cs)
-            if (_grudgeWalk != null && _grudgeWalk.Ped != null && _grudgeWalk.Ped.Handle == h)
-                return true;
-            if (_thanksWalk != null && _thanksWalk.Ped != null && _thanksWalk.Ped.Handle == h)
-                return true;   // walking over to thank you (WestworldScript.Thanks.cs)
-            if (LonelyWaiting(h))
-                return true;   // lonely, coming over or hoping for a word (WestworldScript.Lonely.cs)
-            if ((_lifter != null && _lifter.Handle == h) || (_liftRun != null && _liftRun.Handle == h) || (_theft != null && _theft.Thief != null && _theft.Thief.Handle == h))
-                return true;   // the pickpocket on his way to you and on the run (WestworldScript.Lift.cs; 2026-10-30: the test cast's stroll had him back)
-            if (_kinWalk != null && _kinWalk.Ped != null && _kinWalk.Ped.Handle == h)
-                return true;   // kin walking up to the player (WestworldScript.Life.cs)
+            if (WalkingUp(h))
+                return true;   // a walk-up to Arthur: thanks, a grudge, the lonely, kin, the pickpocket on his way and on the run (2026-10-30: the test cast's stroll had him back)
             if (PatientWalking(h))
                 return true;   // on the way to the doctor's and back (WestworldScript.Patient.cs)
             if (_nod != null && ((_nod.A != null && _nod.A.Handle == h) || (_nod.B != null && _nod.B.Handle == h)))

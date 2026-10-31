@@ -133,6 +133,11 @@ namespace EnrageWestworld.InGame
             int h = pp.Handle;
             if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || w.Choice != pp.Mind)
                 return;   // gone, or the mind has moved on since
+            if (NotFree(h))
+            {
+                Log.Detail("MIND pick for " + w.Name + ": dropped, taken up since the ask (a scene, Talk, a walk-up)");
+                return;   // no thought over it, no act (the cross-cutting review)
+            }
             string thought = null;
             int idx = came ? Language.ParseThinkPick(answer, pp.Ids.Count, out thought) : -1;
             string offered = string.Join(" | ", pp.Words.Select((x, k) => (k + 1) + " " + x));

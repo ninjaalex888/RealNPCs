@@ -171,8 +171,7 @@ namespace EnrageWestworld.InGame
                 return "sat, leaning or at something already";
             if (PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h))
                 return "riding, fighting or running";
-            if (_director.Involves(h) || _director.Leaving(h) || InTalk(h) || IsAcknowledging(h) || IsOnlooking(h) || IsRescuer(h) || IsAcknowledgingYou(h) ||
-                _wakeActs.Any(x => x.Handle == h) || Spawner.IsOurs(h) || (_theft != null && _theft.Thief != null && _theft.Thief.Handle == h))
+            if (NotFree(h) || Spawner.IsOurs(h))   // (NotFree: a scene, Talk, a walk-up, a nod, a wake act and its other, the law at work)
                 return "busy with something of RealNPCs'";
             return MayDirectWhyNot(p);
         }
@@ -185,6 +184,11 @@ namespace EnrageWestworld.InGame
                 MindAct a = _mindActs[i];
                 int h = a.Handle;
                 bool gone = !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h);
+                if (!gone && TakenUp(h))
+                {
+                    _mindActs.RemoveAt(i);   // another feature has them now (Talk, a walk-up, a scene): the act ends, with no new orders (the cross-cutting review; a nod is not enough)
+                    continue;
+                }
                 if (!gone && a.LookAt > 0 && now >= a.LookAt)
                 {
                     a.LookAt = 0;
@@ -276,7 +280,7 @@ namespace EnrageWestworld.InGame
             foreach (int oh in _mindNear)
             {
                 MindWho o;
-                if (oh == h || !_mindWho.TryGetValue(oh, out o) || o.Id == null || !ENTITY.DOES_ENTITY_EXIST(oh) || _director.Involves(oh))
+                if (oh == h || !_mindWho.TryGetValue(oh, out o) || o.Id == null || !ENTITY.DOES_ENTITY_EXIST(oh) || NotFree(oh))
                     continue;
                 SceneTie t = _store.Ties.FirstOrDefault(x => x.Has(w.Id) && x.Has(o.Id));
                 if (t != null && t.Warmth > warm)
@@ -294,7 +298,7 @@ namespace EnrageWestworld.InGame
             float bestD = 12f;
             foreach (int oh in _mindNear)
             {
-                if (oh == h || !ENTITY.DOES_ENTITY_EXIST(oh) || ENTITY.IS_ENTITY_DEAD(oh) || _director.Involves(oh) || IsMindActing(oh) || PED.IS_PED_IN_COMBAT(oh, 0))
+                if (oh == h || !ENTITY.DOES_ENTITY_EXIST(oh) || ENTITY.IS_ENTITY_DEAD(oh) || NotFree(oh) || IsMindActing(oh) || PED.IS_PED_IN_COMBAT(oh, 0))
                     continue;
                 float d = ENTITY.GET_ENTITY_COORDS(oh, true, true).DistanceTo(at);
                 if (d > 2.5f && d < bestD)

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### One thing at a time for each person (a review across tonight's features)
+
+- Fixed: the street's chance meetings and quiet talks could take someone already busy with you or with another part of the mod: the person you were talking to in Talk (the list vanished as they turned to chat with a neighbour), a lonely regular waiting for a word, someone come to thank you, or a lawman at work. They take nobody another part has now.
+- Fixed: only one person comes up to you at a time, for every kind of walk-up: someone come to thank you, a lonely regular, a friend of a man you wronged, a relative, a pickpocket. Before, a grudge could be said over a Talk conversation, or a relative and a lonely regular arrive together; and a pickpocket no longer starts during a scene, in a hushed town or under a lawman's eye.
+- Fixed: a lawman carrying a body off, stepping in on a lash-out or chasing a thief is no longer picked for another job or sent strolling by another part, and nobody is sent strolling out of a fight.
+- Fixed: someone the mind had sent on an errand stops it, with no new orders, once Talk, a walk-up or a scene has them; a model's answer that comes back for someone taken up since is dropped (no thought over their talk with you); a mind's own scene needs both people free.
+- Fixed: right after you say goodbye in Talk, or someone thanks you or has it out with you, they don't also tip their hat and greet you as you pass. Greeting someone you're in Talk with no longer starts a second conversation over it. A friend's grudge in a hushed town, or with a lawman looking on, stays words.
+
 ### The bully turns on whoever stepped in (the run's buffer)
 
 - When someone steps in on a bully and he won't back down, he may now turn on the one who stepped in instead: the man comes up to him, gets a hard shove with a word on it ("You want some too, Cal? Here."), and the bully says his piece to the street ("Anybody else want to play the hero?") and goes; the one he had hold of goes to see the man is all right ("Lord, Cal, are you hurt? That was meant for me."), who answers as his nature is: makes light of it, or calls after him ("That's right. Keep walking."). A hothead more than half the time, the proud now and then, a coward hardly ever; drink makes it likelier, and a man stepping in who looks like he means it makes it less likely; never at a woman who stepped in. The one shoved remembers facing him down (once the shove has landed), and for a moment after a shove the shover is fair game: stopping him is no crime. Part of `[Scenes] Kindnesses`; the stand-up Testing row now takes four turns (the fight goes on, he backs off, they take the other away, he turns on them). Before, he only told them to keep out and went on. Also fixed: the one picked on called a friend who stepped in "mister".

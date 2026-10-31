@@ -63,7 +63,7 @@ namespace EnrageWestworld.InGame
         private string ThanksLook(Ped me, int now, bool test)
         {
             _nextThanks = now + ThanksLookMs;
-            if (_thanksWalk != null || _grudgeWalk != null || _lonelyWalk != null || _kinWalk != null || _lifter != null || _liftRun != null || _menu != null)
+            if (WalkUpGoing())
                 return _thanksWhyNot = "someone is already coming up to you, or you're in the Talk menu";
             if (!test && (_placeTown == null || _director.Busy))
                 return _thanksWhyNot = _placeTown == null ? "out of the towns" : "a scene is going on";
@@ -122,6 +122,7 @@ namespace EnrageWestworld.InGame
                         foreach (string k in owed.Keys)
                             _engine.MarkThanked(id, k, who);
                     _thanksNods++;
+                    _youNodAt[id] = now;   // the nod was it (ToYou's rest)
                     _thanksLast = who + " nodded to you over the " + owed.Kind + (test ? " (a test)" : "");
                     Log.Write("THANKS " + who + " (" + (temper ?? "plain") + ") nods to you over the " + owed.Kind + " " + (g - owed.At) / 60 + " game h ago; thinks: " + thought + (test ? ", a test" : ""));
                     return null;
@@ -156,7 +157,7 @@ namespace EnrageWestworld.InGame
             int h = w.Ped.Handle;
             if (w.SaidAt == 0)
             {
-                if (_menu != null || _grudgeWalk != null)
+                if (_menu != null || _grudgeWalk != null || _kinWalk != null || _lifter != null)
                 {
                     TASK.TASK_CLEAR_LOOK_AT(h);
                     TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // he's taken up with someone else: another time (nothing marked)
@@ -178,6 +179,8 @@ namespace EnrageWestworld.InGame
                         foreach (string k in w.Keys)
                             _engine.MarkThanked(w.Id, k, w.Name);   // thanked for this once, and the rest it covers
                     w.SaidAt = now;
+                    if (w.Id != null)
+                        _youNodAt[w.Id] = now;   // thanked him to his face: no passing hat-tip straight after (ToYou's rest)
                     _thanksSaid++;
                     _thanksLast = w.Name + ": " + w.Line + (w.Test ? " (a test)" : "");
                     Log.Write("THANKS " + w.Name + " to your face: " + w.Line + (w.Cents > 0 ? " (paid you back $" + (w.Cents / 100.0).ToString("0.00") + ")" : ""));

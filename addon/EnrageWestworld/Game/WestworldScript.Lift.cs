@@ -64,6 +64,10 @@ namespace EnrageWestworld.InGame
                 return why = "off ([Scenes] Lifts)";
             if (_lifter != null || _theft != null)
                 return why = "a thief is at work already";
+            if (!test && (WalkUpGoing() || _director.Busy || (_hush && _placeTown != null)))
+                return why = "someone is coming up to you, a scene is on, or the town is hushed";   // (its header always said never with a scene: the cross-cutting review)
+            if (!test && _cfg.BeingWatched && LawWatching(me, null) != null)
+                return why = "a lawman is looking this way (being watched)";
             if (MISC.GET_MISSION_FLAG() || PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false))
                 return why = "on a horse, in a wagon or in a mission";
             if (MONEY._MONEY_GET_CASH_BALANCE() < 200)
