@@ -47,13 +47,15 @@ namespace EnrageWestworld.InGame
         public static int GroundFallbacks;
 
         /// The game's safe spot for a ped near `near`. In 0.5.4 every call in town failed, so the answer is read in
-        /// both layouts (padded 24-byte and packed 12-byte) and the first few raw results are logged.
-        public static unsafe bool SafeCoord(Vector3 near, out Vector3 found)
+        /// both layouts (padded 24-byte and packed 12-byte) and the first few raw results are logged. `flags`: the game's
+        /// own scripts pass 16 or 2 (their meanings in RDR2 unverified); 0 as before. A spot inside a building is refused
+        /// (2026-10-31: the game's answer had no interior check, so StandSpot's "never inside" held only for its ground branch).
+        public static unsafe bool SafeCoord(Vector3 near, out Vector3 found, int flags = 0)
         {
             ulong* buf = stackalloc ulong[4];
             for (int i = 0; i < 4; i++)
                 buf[i] = 0;
-            bool ok = PATHFIND.GET_SAFE_COORD_FOR_PED(near.X, near.Y, near.Z, true, (Vector3*)buf, 0);
+            bool ok = PATHFIND.GET_SAFE_COORD_FOR_PED(near.X, near.Y, near.Z, true, (Vector3*)buf, flags);
             float* f = (float*)buf;
             Vector3 padded = new Vector3(f[0], f[2], f[4]), packed = new Vector3(f[0], f[1], f[2]);
             if (_safeProbes < 3)
@@ -71,6 +73,11 @@ namespace EnrageWestworld.InGame
                 found = packed;
             else
                 return false;
+            if (INTERIOR.GET_INTERIOR_AT_COORDS(found.X, found.Y, found.Z + 1f) != 0)
+            {
+                found = near;
+                return false;
+            }
             return true;
         }
 
