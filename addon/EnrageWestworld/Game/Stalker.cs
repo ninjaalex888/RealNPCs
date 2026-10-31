@@ -25,6 +25,7 @@ namespace EnrageWestworld.InGame
         private Ped _ped;
         private Mode _mode = Mode.Follow;
         private Blip _dot;           // his red dot on the map (Lex, 2026-10-31), ours to take away
+        private bool _crouchSaid;
 
         /// The game's own small red enemy dot on him, as the pickpocket has (BLIP_STYLE_ENEMY). With StalkerBlack on he is
         /// always a stranger we made, with no dot of his own.
@@ -233,6 +234,19 @@ namespace EnrageWestworld.InGame
 
             if (_mode != Mode.Flee && _mode != Mode.Circle && _mode != Mode.Rush && _mode != Mode.Still && _mode != Mode.Act && now - _stillSince >= _cfg.StalkerStillSeconds * 1000)
                 StartStill(player, now);
+
+            // crouched the whole time he's after you, until he runs (Lex, 2026-10-31): a new order can stand him up, so the
+            // crouch is put back each think; an act's own animation (a kneel, lying down) plays as it is, and StartFlee and
+            // Spawner.StandUp undo it
+            if (_mode != Mode.Flee && (_mode != Mode.Act || _step == ActStep.Go || _step == ActStep.Creep || _step == ActStep.Shift) && !PED.GET_PED_CROUCH_MOVEMENT(h))
+            {
+                PED._SET_PED_CROUCH_MOVEMENT(h, true, 0, false);
+                if (!_crouchSaid)
+                {
+                    _crouchSaid = true;
+                    Log.Write("STALKER " + Label + " keeps low: crouched until he runs");
+                }
+            }
 
             switch (_mode)
             {
