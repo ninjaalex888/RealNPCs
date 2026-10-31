@@ -19,10 +19,15 @@
 // call, so the spot was the fault: a random bearing 16-23 m from the body, never checked he could get there (Rockstar
 // sends a carrier only to hand-placed coords). Now the spot is Lex's: about [Mind] PickMetres - 3 m from the player
 // (12 m at least), on the far side of the body from the player, walkable, not inside, near the body's level, a spot by a
-// wall first; a body already that far is carried 6-10 m further. Up to four such spots are found (again as the carry
+// wall first; a body already that far is carried 3-7 m further. Up to four such spots are found (again as the carry
 // settles, from where the player is then); one he stands still on (2.5 s, then every 3 s: under 0.2 m/s and under a
 // metre gained) gives the next, by the nav mesh, after two failures straight if the line is clear, and only when every
 // spot fails is it set down where he stands ("no reachable spot"). Every check logs his speed and the metres gained.
+// 2026-10-31, the review: a body inside PickMetres - 1 goes to the edge (never past PickMetres - 1), one past it 3-7 m
+// further; the settle-time spots are found from where it lay (not his shoulder: a porch roof read as ground); a check
+// counts as slow only when he is slow too (a detour gains little in a line), the per-spot cap grows with the walk; a
+// give-up is a failure, not a clearing; the safe spot tries flags 2 first; the ground fallback no longer asks the safe
+// spot a third time, and after three misses in a row the safe spot isn't asked at all.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,12 +56,14 @@ namespace EnrageWestworld.InGame
             public float OrderDist;        // metres to the spot when the order went
             public int Slow;               // checks in a row under a metre gained
             public Vector3 LiftedAt;       // where he stood as the carry settled
+            public Vector3 BodyStart;      // where it lay (its Z the street's, for the settle-time spots: the review)
+            public bool GaveUp;            // set down where he stood (BodyGiveUp): a failure, not a clearing
         }
 
         private sealed class BodySpot
         {
             public Vector3 At;
-            public string How;   // "the safe spot (flags 16)", "the ground", plus "by a wall"
+            public string How;   // "the safe spot (flags 2)", "the ground", plus "by a wall"
         }
 
         // the game's own way, from its undertaker script (Lex, 2026-10-31): while he goes to the body and lifts it the body
@@ -282,7 +289,7 @@ namespace EnrageWestworld.InGame
                 return "nowhere to take it (" + goalWhy + ")";
             }
             float far = law.Position.DistanceTo(body.Position);
-            _bodyClear = new BodyClear { Law = law.Handle, Body = body.Handle, Stage = 0, Since = now, StageAt = now, Goal = spots[0].At, Spots = spots, Who = NameToShow(body.Handle) ?? "a body", LastDist = far, CheckAt = now + 3000 };
+            _bodyClear = new BodyClear { Law = law.Handle, Body = body.Handle, Stage = 0, Since = now, StageAt = now, Goal = spots[0].At, Spots = spots, BodyStart = body.Position, Who = NameToShow(body.Handle) ?? "a body", LastDist = far, CheckAt = now + 3000 };
             _bodyStepAt = now;   // the steps' clock starts here (a gap over a second is the controls off: BodiesTick)
             _bodiesTaken.Add(body.Handle);
             _bodyClear.Owned = LawTake(law.Handle);   // ours while he works: the game took him back before (Lex, 2026-10-31)
@@ -296,13 +303,32 @@ namespace EnrageWestworld.InGame
         }
 
         private static readonly int[] SpotAngles = { 0, 20, -20, 40, -40, 60, -60 };
-        private static readonly int[] SpotFlags = { 16, 2 };   // the only values the game's own scripts pass
+        // the only values the game's own scripts pass (their RDR2 meanings unverified); 2 first, since in GTA V's enum 2 is
+        // NOT_ISOLATED (no cut-off navmesh island: a fenced yard, a roof) and 16 ONLY_NETWORK_SPAWN (the review)
+        private static readonly int[] SpotFlags = { 2, 16 };
+
+        /// The ground under (x, y) from 2.5 m above `level` (under a boardwalk's porch roof), never inside. Not
+        /// Natives.StandSpot, which asks the safe spot a third time first (the cost review).
+        private static unsafe bool BodyGround(Vector3 near, float level, out Vector3 found)
+        {
+            found = near;
+            ulong slot = 0;   // a full 8-byte slot for the float out-parameter
+            if (!MISC.GET_GROUND_Z_FOR_3D_COORD(near.X, near.Y, level + 2.5f, (float*)&slot, false))
+                return false;
+            float g = *(float*)&slot;
+            if (g < -200f || INTERIOR.GET_INTERIOR_AT_COORDS(near.X, near.Y, g + 1f) != 0)
+                return false;
+            found = new Vector3(near.X, near.Y, g);
+            return true;
+        }
 
         /// Lex's spot (2026-10-31): about [Mind] PickMetres - 3 m from the player (12 m at least), on the far side of the
-        /// body from the player (from the lawman's side when it lies at the player's feet); a body already that far goes
-        /// 6-10 m further. Each try on rings round the player, within 60 degrees of that line, snapped by the game's safe
-        /// spot (flags 16, then 2) or the ground; refused inside, more than 3 m above or below the body, within 4 m of it or
-        /// out of the ring's range. Up to four kept, a spot by a wall first. `why`: what was found, for the log.
+        /// body from the player (from the lawman's side when it lies at the player's feet), never past PickMetres - 1; a
+        /// body already past that goes 3-7 m further (never back towards the player). Each try on rings round the
+        /// player, within 60 degrees of that line, snapped by the game's safe spot (flags 2, then 16; not asked once it has
+        /// missed three tries running) or the ground; refused inside, more than 3 m above or below the body, within 4 m of
+        /// it or out of the range. Up to six found, four kept, a spot by a wall first. `bodyAt`: where it lies on the
+        /// ground (not on his shoulder). `why`: what was found, for the log.
         private bool BodyGoal(Vector3 bodyAt, Vector3 player, Vector3 lawAt, out List<BodySpot> spots, out string why)
         {
             spots = new List<BodySpot>();
@@ -314,10 +340,23 @@ namespace EnrageWestworld.InGame
                 dir = new Vector3(1f, 0f, 0f);
             dir = dir.Normalized;
             float edge = Math.Max(12f, _cfg.PickMetres - 3f);
-            float r = Math.Max(edge, lies + 8f);
-            float lo = Math.Max(12f, Math.Max(edge - 4f, lies + 4f)), hi = r + 3f;
-            float[] rings = { r, r - 2f, r + 2f };
-            int tried = 0, inside = 0, level = 0, range = 0;
+            float r, lo, hi;
+            if (lies <= Math.Max(edge, _cfg.PickMetres - 1f))
+            {
+                // inside the edge: to the edge, never past PickMetres - 1 (the review: 20 m off went to 28-31 m before)
+                r = edge;
+                lo = Math.Max(12f, edge - 4f);
+                hi = Math.Max(lo + 2f, Math.Min(edge + 3f, _cfg.PickMetres - 1f));
+            }
+            else
+            {
+                // at the edge or past it: a little further, never back towards the player
+                r = lies + 5f;
+                lo = lies + 3f;
+                hi = r + 2f;
+            }
+            float[] rings = { r, Math.Max(lo, r - 2f), Math.Min(hi, r + 2f) };
+            int tried = 0, inside = 0, level = 0, range = 0, safeMiss = 0;
             foreach (int a in SpotAngles)
             {
                 double rad = a * Math.PI / 180.0;
@@ -331,13 +370,17 @@ namespace EnrageWestworld.InGame
                     tried++;
                     Vector3 at = p;
                     string how = null;
-                    foreach (int fl in SpotFlags)
-                        if (Natives.SafeCoord(p, out at, fl))
-                        {
-                            how = "the safe spot (flags " + fl + ")";
-                            break;
-                        }
-                    if (how == null && Natives.StandSpot(p, bodyAt.Z, out at))
+                    if (safeMiss < 3)
+                    {
+                        foreach (int fl in SpotFlags)
+                            if (Natives.SafeCoord(p, out at, fl))
+                            {
+                                how = "the safe spot (flags " + fl + ")";
+                                break;
+                            }
+                        safeMiss = how == null ? safeMiss + 1 : 0;
+                    }
+                    if (how == null && BodyGround(p, bodyAt.Z, out at))
                         how = "the ground";
                     if (how == null)
                         continue;
@@ -445,7 +488,7 @@ namespace EnrageWestworld.InGame
                             Vector3 you = Game.Player.Character.Position;
                             List<BodySpot> spots;
                             string goalWhy;
-                            if (BodyGoal(bodyAt, you, lawAt, out spots, out goalWhy))
+                            if (BodyGoal(c.BodyStart, you, lawAt, out spots, out goalWhy))   // where it lay: bodyAt is on his shoulder now
                             {
                                 c.Spots = spots;
                                 c.Goal = spots[0].At;
@@ -532,8 +575,8 @@ namespace EnrageWestworld.InGame
                         else if (now - c.StageAt > 500 && TASK.GET_SCRIPT_TASK_STATUS(c.Law, SeqTask, true) == 8)
                             BodyNextSpot(c, lawAt, "his walk ended " + (int)d + " m short of the spot (speed " + ENTITY.GET_ENTITY_SPEED(c.Law).ToString("F1") + " m/s, " +
                                                    (c.OrderDist - d).ToString("F1") + " m gained; " + CarryWords(c.Law, c.Body) + ")", now);
-                        else if (now - c.StageAt > 25000)
-                            BodyNextSpot(c, lawAt, "25 s on this spot and still " + (int)d + " m off (" + (c.OrderDist - d).ToString("F1") + " m gained; " + LawState(c) + ")", now);
+                        else if (now - c.StageAt > SpotCap(c))
+                            BodyNextSpot(c, lawAt, SpotCap(c) / 1000 + " s on this spot and still " + (int)d + " m off (" + (c.OrderDist - d).ToString("F1") + " m gained; " + LawState(c) + ")", now);
                         else if (now >= c.CheckAt)
                         {
                             string still = BodyProgress(c, d, now);
@@ -547,13 +590,16 @@ namespace EnrageWestworld.InGame
                     {
                         float off = bodyAt.DistanceTo(c.Goal);
                         string where = (int)FlatFrom(bodyAt, Game.Player.Character.Position) + " m from you, carried " + (int)FlatFrom(bodyAt, c.LiftedAt) + " m";
-                        BodyClearEnd(c, (off < 4f ? "set down off the street, " + where : "set down short of the spot (" + (int)off + " m), " + where) + " (" + CarryWords(c.Law, c.Body) + ")", true);
+                        bool there = !c.GaveUp && off < 5f;   // a give-up is a failure (the review: it counted as a clearing)
+                        BodyClearEnd(c, (there ? "set down off the street, " + where
+                                               : c.GaveUp ? "set down where he stood, " + (int)off + " m short of the spot, " + where
+                                               : "set down short of the spot (" + (int)off + " m), " + where) + " (" + CarryWords(c.Law, c.Body) + ")", there);
                     }
                     else if (now - c.StageAt > 10000)
                     {
                         TASK.CLEAR_PED_TASKS(c.Law, true, false);   // never left holding it
                         BodyClearEnd(c, "dropped where he stood: the set-down didn't finish in 10 s (" + (int)bodyAt.DistanceTo(c.Goal) + " m from the spot; " + CarryWords(c.Law, c.Body) + ")",
-                                     bodyAt.DistanceTo(c.Goal) < 4f);
+                                     !c.GaveUp && bodyAt.DistanceTo(c.Goal) < 4f);
                     }
                     break;
             }
@@ -598,6 +644,13 @@ namespace EnrageWestworld.InGame
             LawNavTo(c.Law, to, speed);
         }
 
+        /// How long one spot may take: 25 s, or the walk at a carrying pace (0.7 m/s) and 8 s (the review: a 20 m carry with a
+        /// detour came close to 25 s). The 110 s carry limit stops a runaway.
+        private static int SpotCap(BodyClear c)
+        {
+            return Math.Max(25000, (int)((c.OrderDist / 0.7f + 8f) * 1000f));
+        }
+
         /// A walk order with the body has just gone: its clock and distance, the first check 2.5 s on (a turn or the end of
         /// the lift's animation reads as standing still for a moment).
         private static void BodyOrderAt(BodyClear c, Vector3 lawAt, int now)
@@ -611,7 +664,8 @@ namespace EnrageWestworld.InGame
         }
 
         /// The progress check while he carries it (every 3 s): logged with his speed and the metres gained; null while he
-        /// moves, else why he counts as stuck: under 0.2 m/s and under a metre gained, or no metre gained two checks running.
+        /// moves, else why he counts as stuck: under 0.2 m/s and under a metre gained, or under 0.5 m/s and no metre gained
+        /// two checks running.
         private string BodyProgress(BodyClear c, float d, int now)
         {
             float speed = ENTITY.GET_ENTITY_SPEED(c.Law), gained = c.LastDist - d;
@@ -619,7 +673,7 @@ namespace EnrageWestworld.InGame
             c.LastDist = d;
             c.LastCheckAt = now;
             c.CheckAt = now + 3000;
-            c.Slow = gained < 1f ? c.Slow + 1 : 0;
+            c.Slow = gained < 1f && speed < 0.5f ? c.Slow + 1 : 0;   // slow only when he is too: a detour gains little in a line (the review)
             string how = (c.Stage == BcPlaceWalk ? "the place order" : c.Straight ? "straight" : "the nav mesh") + ", spot " + (c.SpotIx + 1) + " of " + c.Spots.Count;
             Log.Detail("LAW clears: carrying " + c.Who + " (" + how + "), " + (int)d + " m to the spot, " + (int)FlatFrom(ENTITY.GET_ENTITY_COORDS(c.Law, true, true), Game.Player.Character.Position) +
                        " m from you; speed " + speed.ToString("F1") + " m/s, " + gained.ToString("F1") + " m gained in " + secs + " s");
@@ -681,6 +735,7 @@ namespace EnrageWestworld.InGame
         private void BodyGiveUp(BodyClear c, Vector3 lawAt, string why, int now)
         {
             float moved = FlatFrom(lawAt, c.LiftedAt);
+            c.GaveUp = true;
             Log.Write("LAW clears: " + why + "; he sets " + c.Who + " down where he stands, " + (moved < 1f ? "never having moved from where he lifted it" : (int)moved + " m from where he lifted it") +
                       ", " + (int)FlatFrom(lawAt, Game.Player.Character.Position) + " m from you (speed " + ENTITY.GET_ENTITY_SPEED(c.Law).ToString("F1") + " m/s; " + LawState(c) + ")");
             BodySetDown(c, lawAt.DistanceTo(c.Goal), lawAt, now, "where he stands");
