@@ -24,6 +24,39 @@ namespace EnrageWestworld.InGame
         private readonly Random _rng = new Random();
         private Ped _ped;
         private Mode _mode = Mode.Follow;
+        private Blip _dot;           // his red dot on the map (Lex, 2026-10-31), ours to take away
+
+        /// The game's own small red enemy dot on him, as the pickpocket has (BLIP_STYLE_ENEMY). With StalkerBlack on he is
+        /// always a stranger we made, with no dot of his own.
+        private void MarkDot(int h)
+        {
+            try
+            {
+                if (_dot == null)
+                {
+                    _dot = new Blip(MAP.BLIP_ADD_FOR_ENTITY(Natives.Hash("BLIP_STYLE_ENEMY"), h));
+                    _dot.Label = "Stalker";
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Write("STALKER the red dot failed: " + ex.Message);
+            }
+        }
+
+        private void UnmarkDot()
+        {
+            try
+            {
+                if (_dot != null && _dot.Exists())
+                    _dot.Delete();
+            }
+            catch (Exception ex)
+            {
+                Log.Write("STALKER taking the red dot away failed: " + ex.Message);
+            }
+            _dot = null;
+        }
 
         /// Running off because he was caught out (our own flight, not a fight or a fright of the game's).
         public bool Fleeing { get { return _mode == Mode.Flee; } }
@@ -123,6 +156,7 @@ namespace EnrageWestworld.InGame
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             PED.SET_PED_KEEP_TASK(h, true);
             _startHealth = ENTITY.GET_ENTITY_HEALTH(h);
+            MarkDot(h);
             _nextMutter = Game.GameTime + 25000 + _rng.Next(20000);
             _nextRelocate = Game.GameTime + 20000;
             _stillSince = Game.GameTime;
@@ -147,6 +181,7 @@ namespace EnrageWestworld.InGame
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             PED.SET_PED_KEEP_TASK(h, true);
             _startHealth = ENTITY.GET_ENTITY_HEALTH(h);
+            MarkDot(h);
             int now = Game.GameTime;
             _nextMutter = now + 25000 + _rng.Next(20000);
             _nextRelocate = now + 20000;
@@ -547,6 +582,7 @@ namespace EnrageWestworld.InGame
             if (Done)
                 return;
             Done = true;
+            UnmarkDot();
             if (_ped != null)
             {
                 ReleaseAnims();
