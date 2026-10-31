@@ -126,8 +126,8 @@ NEW IN 0.7.11
   GatheringGapHours (6) between them.
 - Lawmen carry bodies off the street ([World] LawClearsBodies): a body left 20 s or more in a
   town street is lifted by the nearest lawman on foot within 50 m, the game undertaker's way,
-  and carried to a spot he can reach. Testing row "A lawman clears a body". Not yet seen in
-  game.
+  and carried to a spot he can reach. Testing row "A lawman clears a body". Seen working in
+  game (carried 12 m and set down); jogging with it is new and not yet seen.
 - Name plates stay up in crowds and after a saloon: the nearest eight are always drawn. After
   going in and out of a saloon every name could go for minutes, because the list of people in
   the world came back empty; RealNPCs now reads it from Script Hook itself, and keeps the last
