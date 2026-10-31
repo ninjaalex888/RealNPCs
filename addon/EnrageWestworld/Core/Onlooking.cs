@@ -37,6 +37,7 @@ namespace EnrageWestworld.Core
 
         /// At most this many onlookers act on one happening (the run's rule: two a scene).
         public const int MostAScene = 2;
+        public const int MostRunning = 4;   // a fright that spreads (Spread): up to this many run from one happening
 
         /// How strong a stranger's fright must be to send them off from someone else's trouble (a milder one watches it
         /// warily): between felt (0.12) and moderate (0.35).
@@ -101,6 +102,41 @@ namespace EnrageWestworld.Core
                     picked.Add(i);
             }
             return picked;
+        }
+
+        /// Emotional contagion (NIGHT3, the psychologist's list): one of the picked hurries off, and the others who were
+        /// frightened at all, and showed it, go with them, the most frightened first, up to MostRunning in all; their acts
+        /// become "hurry" (`acts` is changed). Returns the picked with the ones who caught it after. No hurry, no change.
+        public static List<int> Spread(IList<string> ids, IList<Feeling> felt, IList<string> acts, List<int> picked, int most = MostRunning)
+        {
+            bool runs = false;
+            foreach (int i in picked)
+                runs |= acts[i] == "hurry";
+            if (!runs)
+                return picked;
+            var seen = new HashSet<string>();
+            foreach (int i in picked)
+                seen.Add(ids[i]);
+            var catching = new List<int>();
+            for (int i = 0; i < ids.Count; i++)
+                if (!seen.Contains(ids[i]) && felt[i] != null && felt[i].Kind == "fear" && felt[i].Intensity >= Appraisal.Felt && (acts[i] == "leave" || acts[i] == "watch" || acts[i] == "freeze"))
+                    catching.Add(i);   // masked fear (slip), a bristle and a disapproval keep their own ways
+            catching.Sort((x, y) =>
+            {
+                int c = felt[y].Intensity.CompareTo(felt[x].Intensity);
+                return c != 0 ? c : string.CompareOrdinal(ids[x], ids[y]);
+            });
+            var all = new List<int>(picked);
+            foreach (int i in catching)
+            {
+                if (all.Count >= most)
+                    break;
+                if (!seen.Add(ids[i]))
+                    continue;
+                acts[i] = "hurry";
+                all.Add(i);
+            }
+            return all;
         }
 
         /// How long an act holds them, in milliseconds (the game side's own clock; nobody is held past it).

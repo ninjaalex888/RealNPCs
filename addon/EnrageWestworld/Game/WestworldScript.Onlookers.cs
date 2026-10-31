@@ -103,9 +103,15 @@ namespace EnrageWestworld.InGame
                     _onlookFelt.Add(a.Felt);
                     _onlookActs.Add(a.Act);
                 }
-                foreach (int i in Onlooking.Pick(_onlookIds, _onlookFelt, _onlookActs))
+                List<int> picked = Onlooking.Pick(_onlookIds, _onlookFelt, _onlookActs);
+                foreach (int i in Onlooking.Spread(_onlookIds, _onlookFelt, _onlookActs, picked))   // one runs, and the frightened near go too
                     if (_onlookQueue.Count < OnlookQueueMost)
+                    {
+                        if (_onlookPending[i].Act != _onlookActs[i])
+                            Log.Detail("ONLOOK " + _onlookPending[i].Name + " catches the fright and goes too");
+                        _onlookPending[i].Act = _onlookActs[i];
                         _onlookQueue.Add(_onlookPending[i]);
+                    }
             }
             catch (Exception ex)
             {
