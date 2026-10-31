@@ -2,7 +2,7 @@
 // would start trouble (a reason's theft, shove, fight, standoff, or the noon callout) and a lawman within 25 m has a
 // clear sight of the one who'd start it, or it's a Sunday morning by the church, it waits: the would-be doer glances at
 // the law and thinks why (in view of the player, one thought in five minutes each), and the pair's reason stays theirs
-// for later. A chance meeting with the law looking keeps to words. A mind's own pick still decides. [Scenes] BeingWatched.
+// for later. A bold thief tries it anyway now and then ([Scenes] BoldThieves; a lift on you too). A chance meeting with the law looking keeps to words. A mind's own pick still decides. [Scenes] BeingWatched.
 // F7 `TEST watched:`; log detail `WATCHED`.
 using System.Collections.Generic;
 using EnrageWestworld.Core;
@@ -70,7 +70,11 @@ namespace EnrageWestworld.InGame
             // one roll a day for each doer and kind (the review: seeded by the minute, a hothead swung within three ticks)
             string daySeed = (doer != null ? doer.Id : doerPed.Handle.ToString()) + "|" + kind + "|" + _store.LastGameMin / 1440;
             if (!Observed.Waits(kind, law != null, church, doer != null ? doer.Temper : null, doer != null && doer.Drunk, doer != null && doer.P != null ? doer.P.Devotion : null, daySeed))
+            {
+                if (law != null && Observed.Thieving(kind))
+                    NoteBold(doer != null ? doer.Name : "someone", kind, law, doerPed, daySeed);
                 return false;
+            }
             int next;
             if (_watchedThoughtAt.TryGetValue(doerPed.Handle, out next) && now < next)
                 return true;   // held again: counted, logged and thought once in five minutes (the reason comes back every tick)
@@ -95,13 +99,28 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
+        /// A bold thief goes ahead with the law looking on ([Scenes] BoldThieves): counted and logged once a day each.
+        private void NoteBold(string name, string kind, Ped law, Ped doerPed, string daySeed)
+        {
+            if (!_watchedBoldSeen.Add(daySeed))
+                return;
+            if (_watchedBoldSeen.Count > 64)
+                _watchedBoldSeen.Clear();
+            _watchedBold++;
+            Log.Write("WATCHED " + name + ": " + kind + " goes ahead, bold, with a lawman " + (law != null && doerPed != null ? (int)law.Position.DistanceTo(doerPed.Position) + " m off" : "near") +
+                      " looking on (" + Observed.BoldChance(null, false) + "% a day, [Scenes] BoldThieves)");
+        }
+
+        private int _watchedBold;
+        private readonly HashSet<string> _watchedBoldSeen = new HashSet<string>();
+
         /// F7: on or off, what waited this session and the last thought.
         private string WatchedStatus()
         {
             if (!_cfg.BeingWatched)
                 return "off ([Scenes] BeingWatched)";
             return "on; this session " + _watchedLaw + " held off with the law looking, " + _watchedChurch + " on a Sunday by the church, " + _watchedChance +
-                   " chance meetings kept to words" + (_watchedLast != null ? "; last: " + _watchedLast : "");
+                   " chance meetings kept to words, " + _watchedBold + " bold thieves went ahead anyway (" + _cfg.BoldThieves + "%)" + (_watchedLast != null ? "; last: " + _watchedLast : "");
         }
     }
 }

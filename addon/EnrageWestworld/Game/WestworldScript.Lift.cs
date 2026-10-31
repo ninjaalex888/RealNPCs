@@ -67,7 +67,8 @@ namespace EnrageWestworld.InGame
                 return why = "a thief is at work already";
             if (!test && (WalkUpGoing() || _director.Busy || (_hush && _placeTown != null)))
                 return why = "someone is coming up to you, a scene is on, or the town is hushed";   // (its header always said never with a scene: the cross-cutting review)
-            if (!test && _cfg.BeingWatched && LawWatching(me, null) != null)
+            Ped watcher = !test && _cfg.BeingWatched ? LawWatching(me, null) : null;
+            if (watcher != null && _cfg.BoldThieves <= 0)
                 return why = "a lawman is looking this way (being watched)";
             if (MISC.GET_MISSION_FLAG() || PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false))
                 return why = "on a horse, in a wagon or in a mission";
@@ -87,6 +88,15 @@ namespace EnrageWestworld.InGame
                                          .OrderBy(p => KnownPickpocket(p) ? 0 : 1).ThenBy(p => p.Position.DistanceTo(me.Position)).FirstOrDefault();
             if (pick == null)
                 return why = "no man near (4-22 m) free to send";
+            if (watcher != null)
+            {
+                // the law looking on: only a bold one tries it ([Scenes] BoldThieves; the hothead, the greedy and the drunk more often), one roll a day each
+                Someone who = SomeoneOf(pick);
+                string seed = (who != null ? who.Id : pick.Handle.ToString()) + "|lift|" + g / 1440;
+                if (!Observed.BoldGoes(who != null ? who.Temper : null, who != null && who.Drunk, seed))
+                    return why = "a lawman is looking this way (being watched)";
+                NoteBold(who != null ? who.Name : "a man", "lift", watcher, me, seed);
+            }
             _lifter = pick;
             _lifterSince = now;
             _lifterWalkAt = now;

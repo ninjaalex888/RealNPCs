@@ -1,6 +1,6 @@
 // Being watched (NIGHT3; the psychologist's list): people behave better when the law or the church is looking. The
-// street's own trouble waits while a lawman is in sight of the one who'd start it: a thief never works under the law's
-// nose; a shove, a brawl, a callout or a standoff waits unless temper or drink forgets the law (four times in ten then).
+// street's own trouble waits while a lawman is in sight of the one who'd start it: a thief mostly won't work under the
+// law's nose, but a bold one tries now and then (BoldThiefChance, more for a hothead, a greedy one or a drunk); a shove, a brawl, a callout or a standoff waits unless temper or drink forgets the law (four times in ten then).
 // On a Sunday morning by the church the same, but for the godless. The would-be doer thinks why, so it's seen; once the
 // watcher has gone, the reason is still theirs. The rules and the words here; the looking is the game side's
 // (WestworldScript.Observed.cs). Plain C#, no game; all words original.
@@ -11,6 +11,23 @@ namespace EnrageWestworld.Core
         public const float LawMetres = 25f;      // a lawman this near, with a clear sight of them
         public const float ChurchMetres = 60f;   // the Sabbath scenes' "by the church"
         public const int RecklessChance = 40;    // a hothead or a drunk who goes ahead anyway
+
+        /// A thief who tries it with the law looking on, in percent ([Scenes] BoldThieves; Lex, 2026-10-31: "less realistic,
+        /// more exciting"); a hothead, a greedy one or a drunk half as likely again. Set from the settings.
+        public static int BoldThiefChance = 25;
+
+        /// The percent for this thief: BoldThiefChance, half as much again for the hothead, the greedy and the drunk.
+        public static int BoldChance(string temper, bool drunk)
+        {
+            int c = System.Math.Max(0, System.Math.Min(100, BoldThiefChance));
+            return temper == "Hothead" || temper == "Greedy" || drunk ? System.Math.Min(100, c * 3 / 2) : c;
+        }
+
+        /// Whether a thief with the law looking on goes ahead anyway (one roll for the seed: the game side seeds it by the day).
+        public static bool BoldGoes(string temper, bool drunk, string seed)
+        {
+            return Voice.Chance(seed + "|bold", BoldChance(temper, drunk));
+        }
 
         /// The kinds that wait for the watcher to go: the thefts, a shove, the fights and the guns.
         public static bool Holds(string kind)
@@ -24,14 +41,15 @@ namespace EnrageWestworld.Core
         }
 
         /// Whether `kind` waits: `law` when the law has them in view, `church` a Sunday morning by the church; the doer's
-        /// temper, drink and devotion. A thief always waits (a crowd by the church is a crowd that would see); a hothead or
+        /// temper, drink and devotion. A thief waits but for a bold one under the law's eye (BoldGoes), and always by the church
+        /// (a crowd by the church is a crowd that would see); a hothead or
         /// a drunk goes ahead four times in ten; the godless don't mind the church.
         public static bool Waits(string kind, bool law, bool church, string temper, bool drunk, string devotion, string seed)
         {
             if (!Holds(kind) || (!law && !church))
                 return false;
             if (Thieving(kind))
-                return true;
+                return !(law && BoldGoes(temper, drunk, seed));   // by the church a thief always waits
             bool reckless = temper == "Hothead" || drunk;
             if (law)
                 return !(reckless && Voice.Chance(seed + "|law", RecklessChance));
