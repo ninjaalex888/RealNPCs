@@ -200,6 +200,9 @@ namespace EnrageWestworld.InGame
                     return TestCastBring(Game.Player.Character, now, out said);   // WestworldScript.TestCast.cs
                 case "cast:go":
                     return TestCastGo(out said);
+                case "stalkeroutfit":
+                    skipped = "nothing: it only shows clothes";
+                    return StalkerOutfitNext(now, out said);
                 case "stalker":
                     if (_stalker != null)
                         return "a stalker is out already";

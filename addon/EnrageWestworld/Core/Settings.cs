@@ -139,11 +139,14 @@ namespace EnrageWestworld.Core
         // [Stalkers]
         public bool Stalkers = true;
         public string StalkerKey = "]";
-        public int StalkerEveryMinutes = 34;
-        public int StalkerChance = 20;
+        public int StalkerEveryMinutes = 15;   // 34 until settings version 161 (Lex, 2026-10-31: "have the stalker appear more often")
+        public int StalkerChance = 35;         // 20 until settings version 161: about once in 45 minutes of play, was about once in three hours
         public int StalkerNearbyMetres = 60;
         public bool StalkerStrangers = true;
         public bool StalkerRecords = true;
+        public bool StalkerBlack = true;       // the stalker is always a stranger dressed in black, spawned out of sight (Lex, 2026-10-31); never someone near turned or one of enRAGE's people, whose clothes enRAGE knows them by; false: as before (settings version 161)
+        public string StalkerBlackModel = "a_m_o_sdupperclass_01";   // his model, from the Testing row "Stalker outfit: show the next candidate"
+        public int StalkerBlackOutfit = 0;     // his outfit preset in that model (-1: as the game made him)
         public int StalkerMinutes = 120;
         public int StalkerAppearMin = 45;
         public int StalkerAppearMax = 70;
@@ -491,6 +494,12 @@ namespace EnrageWestworld.Core
                 s.DramaGapSeconds = 90;
                 raised.Add("DramaGapSeconds 150 -> 90");
             }
+            if (s.SettingsVersion < 161)
+            {
+                // 2026-10-31 (Lex): "have the stalker appear more often"; the defaults as built move, values of your own are kept
+                if (s.StalkerEveryMinutes == 34) { s.StalkerEveryMinutes = 15; raised.Add("StalkerEveryMinutes 34 -> 15"); }
+                if (s.StalkerChance == 20) { s.StalkerChance = 35; raised.Add("StalkerChance 20 -> 35"); }
+            }
             if (s.SettingsVersion < 159)
             {
                 // 2026-10-31 (Lex): fewer stirring, a little; the waking more from what they live through and the model's
@@ -683,6 +692,8 @@ namespace EnrageWestworld.Core
             Bravery = Math.Max(0, Math.Min(100, Bravery));
             // stalker hours: the stalker day still runs 05:00 to 05:00; day hours stay in daylight, night hours cross midnight
             StalkerEveryMinutes = Math.Max(1, Math.Min(120, StalkerEveryMinutes));
+            StalkerBlackOutfit = Math.Max(-1, Math.Min(200, StalkerBlackOutfit));
+            StalkerBlackModel = string.IsNullOrWhiteSpace(StalkerBlackModel) ? "a_m_o_sdupperclass_01" : StalkerBlackModel.Trim().ToLowerInvariant();
             StalkerNearbyMetres = Math.Max(20, Math.Min(150, StalkerNearbyMetres));
             // stalker distances, kept in a sensible order so one odd value can't break him
             StalkerAppearMin = Math.Max(20, Math.Min(150, StalkerAppearMin));
@@ -888,11 +899,14 @@ namespace EnrageWestworld.Core
             b.AppendLine();
             b.AppendLine("[Stalkers]");
             b.AppendLine("Stalkers = " + B(Stalkers) + "   ; master switch: rarely, someone follows you from a distance and hides when you look. false turns off everything in this section");
-            b.AppendLine("StalkerEveryMinutes = " + StalkerEveryMinutes + "   ; every this many real minutes of play, a roll for a stalker (1-120)");
-            b.AppendLine("StalkerChance = " + StalkerChance + "   ; percent chance on each roll");
-            b.AppendLine("StalkerRecords = " + B(StalkerRecords) + "   ; one of enRAGE's people may be the stalker (one who hates you most likely), while enRAGE has no use for them; handed back the moment it has, and after 20 minutes at most");
-            b.AppendLine("StalkerNearbyMetres = " + StalkerNearbyMetres + "   ; on a hit, someone within this distance starts following you, someone with a history with you first (20-150)");
-            b.AppendLine("StalkerStrangers = " + B(StalkerStrangers) + "   ; if nobody near can be turned for a few minutes, a stranger turns up behind you instead");
+            b.AppendLine("StalkerEveryMinutes = " + StalkerEveryMinutes + "   ; every this many real minutes of play, a roll for a stalker (1-120; 15 as built, 34 before)");
+            b.AppendLine("StalkerChance = " + StalkerChance + "   ; percent chance on each roll (35 as built, 20 before: with 15 minutes, about once in 45 minutes of play)");
+            b.AppendLine("StalkerBlack = " + B(StalkerBlack) + "   ; the stalker is a stranger dressed in black, who turns up out of sight behind you; never someone near you turned, nor one of enRAGE's people (enRAGE knows its people by their clothes, so they're never re-dressed); false: someone near you or one of enRAGE's people, as below");
+            b.AppendLine("StalkerBlackModel = " + StalkerBlackModel + "   ; his model: the Testing row 'Stalker outfit: show the next candidate' shows each in turn and says the two lines to put here");
+            b.AppendLine("StalkerBlackOutfit = " + StalkerBlackOutfit + "   ; his outfit preset in that model, from the same row (-1: as the game makes him)");
+            b.AppendLine("StalkerRecords = " + B(StalkerRecords) + "   ; with StalkerBlack off: one of enRAGE's people may be the stalker (one who hates you most likely), while enRAGE has no use for them; handed back the moment it has, and after 20 minutes at most");
+            b.AppendLine("StalkerNearbyMetres = " + StalkerNearbyMetres + "   ; with StalkerBlack off: on a hit, someone within this distance starts following you, someone with a history with you first (20-150)");
+            b.AppendLine("StalkerStrangers = " + B(StalkerStrangers) + "   ; with StalkerBlack off: if nobody near can be turned for a few minutes, a stranger turns up behind you instead");
             b.AppendLine("StalkerMinutes = " + StalkerMinutes + "   ; how long a stalker keeps it up (real minutes, up to 240)");
             b.AppendLine("StalkerAppearMin = " + StalkerAppearMin + "   ; he first turns up this many metres behind you, at least...");
             b.AppendLine("StalkerAppearMax = " + StalkerAppearMax + "   ; ... and at most");

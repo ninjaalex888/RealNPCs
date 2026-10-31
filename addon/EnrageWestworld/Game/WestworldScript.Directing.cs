@@ -185,7 +185,7 @@ namespace EnrageWestworld.InGame
         /// What one of enRAGE's records near you could get from RealNPCs now, and why not (F7 TEST records).
         private string RecordCould(Ped p)
         {
-            string stalk = !_cfg.StalkerRecords ? "off" : RecordStalkWhyNot(p) ?? "yes";
+            string stalk = _cfg.StalkerBlack ? "no (StalkerBlack on: the stalker is a stranger in black)" : !_cfg.StalkerRecords ? "off" : RecordStalkWhyNot(p) ?? "yes";
             string free = RecordFreeWhyNot(p, _bridge.RecordAt(p.Handle));
             string despair = !_cfg.RecordFates ? "off" : !_bridge.CanBookDeath ? "no (enRAGE's history and roster saving not found)" : free != null ? "not now: " + free : "when awake and free";
             return "stalk " + stalk + "; despair " + despair + "; minds " + (_cfg.Minds && _cfg.RecordMinds ? "yes" : "off") + "; dress never (enRAGE knows them by their look)";

@@ -66,8 +66,25 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// The stalker in black (Lex, 2026-10-31: "can we dress the stalker in an all black outfit?"): ambient men's models
+        /// believed to have a dark or black preset, best first. None of these is proven: no offline source maps a model's
+        /// presets to colours, so the Testing row "Stalker outfit: show the next candidate" walks every preset of each, and
+        /// Lex's pick goes in [Stalkers] StalkerBlackModel and StalkerBlackOutfit. No gang or bounty-hunter models (a spawned
+        /// one may come with a hostile relationship group) and no u_ models (story characters to Natives.StoryModel).
+        public static readonly string[] BlackCandidates =
+        {
+            "a_m_o_sdupperclass_01", "a_m_m_nbxupperclass_01", "a_m_m_sdserversformal_01", "s_m_m_nbxriverboatdealers_01", "a_m_m_uppertrainpassengers_01",
+            "a_m_m_cardgameplayers_01", "a_m_m_blwupperclass_01", "a_m_m_rhdupperclass_01", "a_m_m_unigunslinger_01", "a_m_m_sdfancytravellers_01",
+            "a_m_m_bivfancytravellers_01", "s_m_m_sddealer_01"
+        };
+
+        /// The outfit preset he came in (-1: as the game made him), and how many his model has: for the log.
+        public int Outfit = -1, Outfits;
+
         /// Tries to put him somewhere behind the player, out of sight. False until it works (model streaming etc.).
-        public bool TrySpawn(uint model, Ped player)
+        /// outfit: a preset of his model to dress him in (-1: as the game makes him); he's dressed the moment he exists,
+        /// always out of sight. Never used on someone adopted (enRAGE knows its people by their clothes).
+        public bool TrySpawn(uint model, Ped player, int outfit = -1)
         {
             int now = Game.GameTime;
             if (now < _nextTry)
@@ -96,6 +113,13 @@ namespace EnrageWestworld.InGame
                 _ped = null;
                 return false;
             }
+            Outfits = PED.GET_NUM_META_PED_OUTFITS(h);
+            if (outfit >= 0 && Outfits > 0)
+            {
+                Outfit = Math.Min(outfit, Outfits - 1);
+                PED._EQUIP_META_PED_OUTFIT_PRESET(h, Outfit, false);   // the preset only: the clothing-reading natives froze the game in 0.7.9
+                PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+            }
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             PED.SET_PED_KEEP_TASK(h, true);
             _startHealth = ENTITY.GET_ENTITY_HEALTH(h);
@@ -103,7 +127,8 @@ namespace EnrageWestworld.InGame
             _nextRelocate = Game.GameTime + 20000;
             _stillSince = Game.GameTime;
             _stillAt = player.Position;
-            Log.Write("STALKER " + Label + " appears " + (int)at.DistanceTo(player.Position) + " m behind you" + (Revenant != null ? " (someone you killed, returned)" : ""));
+            Log.Write("STALKER " + Label + " appears " + (int)at.DistanceTo(player.Position) + " m behind you" + (Revenant != null ? " (someone you killed, returned)" : "") +
+                      (Outfit >= 0 ? " (dressed in preset " + Outfit + " of " + Outfits + ")" : ""));
             return true;
         }
 

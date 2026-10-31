@@ -216,7 +216,7 @@ namespace EnrageWestworld.InGame
             Log.Write("0.4 features: ticker " + (_cfg.Ticker ? "on" : "off") + ", news to " + _cfg.NewsRoute + ", reader key " + _readerKey +
                       ", reveries " + (_cfg.Reveries ? _cfg.ReturnChance + "%" : "off") + ", stalkers " + (_cfg.Stalkers ? _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min" : "off") + ".");
             Log.Write("West World " + (_cfg.WestWorld ? "on (awakening " + _cfg.AwakeningShare + "%, breakdown " + _cfg.AwakeningBreakdown + "%, despair " + _cfg.AwakeningDespair + "%)" : "off") +
-                      ", Stalkers " + (_cfg.Stalkers ? "on (" + _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min, key " + _stalkerKey + ", when you stand still: " + _cfg.StalkerWhenStill + ")" : "off") + ".");
+                      ", Stalkers " + (_cfg.Stalkers ? "on (" + _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min, key " + _stalkerKey + ", when you stand still: " + _cfg.StalkerWhenStill + (_cfg.StalkerBlack ? ", in black: " + _cfg.StalkerBlackModel + " preset " + _cfg.StalkerBlackOutfit : ", black off") + ")" : "off") + ".");
             Log.Write("0.5 features: scene reactions " + (_cfg.SceneReactions ? "on" : "off") + ", standoffs " + (_cfg.Standoffs ? "on" : "off") + ", songs " + (_cfg.Songs ? "on" : "off") +
                       ", tall tales " + (_cfg.TallTales ? "on" : "off") + ", pickpockets " + (_cfg.Pickpockets ? "on" : "off") + ", pleading " + (_cfg.Pleading ? "on" : "off") +
                       ", arrivals " + (_cfg.ArrivalTalk ? "on" : "off") + ", mourners " + (_cfg.Mourners ? "on" : "off") + ", posses " + (_cfg.PosseTalk ? "on" : "off") + ".");

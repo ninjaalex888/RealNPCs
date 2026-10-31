@@ -25,6 +25,8 @@ namespace EnrageWestworld.InGame
         private Stalker _stalker;
         private Fallen _stalkerFallen;
         private uint _stalkerModel;
+        private int _stalkerOutfit = -1;     // the preset he's dressed in when he appears (-1: as the game makes him)
+        private string _stalkerBlackSaid;    // the configured model wasn't valid: said once
         private string _stalkerLabel;
         private bool _stalkerWoman;
         private int _stalkerPendingUntil;
@@ -208,6 +210,12 @@ namespace EnrageWestworld.InGame
 
         private void StalkerTick(int now)
         {
+            StalkerOutfitStep(now);   // the Testing row's candidate in black goes after 90 s (WestworldScript.StalkerOutfit.cs)
+            StalkerTickOn(now);
+        }
+
+        private void StalkerTickOn(int now)
+        {
             if (_stalkerRequested)
             {
                 _stalkerRequested = false;
@@ -236,7 +244,7 @@ namespace EnrageWestworld.InGame
                 }
                 if (_stalkerPendingUntil > 0 && _stalker.Handle == 0)
                 {
-                    if (_stalker.TrySpawn(_stalkerModel, Game.Player.Character))
+                    if (_stalker.TrySpawn(_stalkerModel, Game.Player.Character, _stalkerOutfit))
                     {
                         _stalkerPendingUntil = 0;
                         _stalkFails = 0;
@@ -325,6 +333,16 @@ namespace EnrageWestworld.InGame
             }
 
             string wait = blocked;
+            if (wait == null && _cfg.StalkerBlack)
+            {
+                // the man in black (Lex, 2026-10-31): always a stranger spawned out of sight and dressed there; nobody near is
+                // turned, and none of enRAGE's people (enRAGE knows them by their clothes)
+                bool test = _stalkDueTest;
+                _stalkDueSince = 0;
+                _stalkWait = null;
+                BeginStalker(null, BlackStalkerModel(), false, "A man in black", now, test, _cfg.StalkerBlackOutfit);
+                return;
+            }
             if (wait == null)
             {
                 string why;
@@ -489,8 +507,31 @@ namespace EnrageWestworld.InGame
             Log.Write("STALKER begins: " + _stalkerLabel + (_stalkerIsTest ? " (key)" : "") + ", game time " + Clock(Bridge.Now()));
         }
 
-        private void BeginStalker(Fallen f, uint model, bool woman, string label, int now, bool test)
+        /// The stalker in black's model: the ini's, else (not a model the game knows) the first of the candidates that is,
+        /// said once, so a typo never leaves him failing to appear for good.
+        private uint BlackStalkerModel()
         {
+            uint m = Natives.Hash(_cfg.StalkerBlackModel);
+            if (STREAMING.IS_MODEL_VALID(m))
+                return m;
+            foreach (string c in Stalker.BlackCandidates)
+            {
+                uint cm = Natives.Hash(c);
+                if (!STREAMING.IS_MODEL_VALID(cm))
+                    continue;
+                if (_stalkerBlackSaid != _cfg.StalkerBlackModel)
+                {
+                    _stalkerBlackSaid = _cfg.StalkerBlackModel;
+                    Log.Write("STALKER: [Stalkers] StalkerBlackModel " + _cfg.StalkerBlackModel + " is not a model the game knows; " + c + " instead");
+                }
+                return cm;
+            }
+            return m;
+        }
+
+        private void BeginStalker(Fallen f, uint model, bool woman, string label, int now, bool test, int outfit = -1)
+        {
+            _stalkerOutfit = outfit;   // only the stranger in black is dressed; a revenant comes back as he was
             _stalkerFallen = f;
             _stalkerRecord = false;
             _stalkerModel = model;
@@ -515,7 +556,9 @@ namespace EnrageWestworld.InGame
             else
                 due = _cfg.Stalkers && _nextStalkRoll > 0 ? "next roll in " + Math.Max(0, (_nextStalkRoll - now) / 1000) + " s" : "none waiting";
             string blocked = StalkBlocker();
-            return (_cfg.Stalkers ? _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min, someone within " + _cfg.StalkerNearbyMetres + " m" + (_cfg.StalkerStrangers ? " (else a stranger)" : "") : "off") +
+            return (_cfg.Stalkers ? _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min, " +
+                                    (_cfg.StalkerBlack ? "a stranger in black (" + _cfg.StalkerBlackModel + " preset " + _cfg.StalkerBlackOutfit + ")"
+                                                       : "black off: someone within " + _cfg.StalkerNearbyMetres + " m" + (_cfg.StalkerStrangers ? " (else a stranger)" : "")) : "off") +
                    ", " + due + ", game time " + Clock(Bridge.Now()) + ", in the way now: " + (blocked ?? "nothing") + ", failed spawns " + _stalkFails + ", key " + _stalkerKey;
         }
 
