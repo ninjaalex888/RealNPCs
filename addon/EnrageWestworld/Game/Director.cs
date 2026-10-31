@@ -545,7 +545,7 @@ namespace EnrageWestworld.InGame
                 foreach (int[] j in l.Joiners)
                     if (ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
                         KeepFists(new Ped(j[0]));
-                bool hurt = Health(l, 0) < 0.6f || Health(l, 1) < 0.6f;
+                bool hurt = (Health(l, 0) < 0.6f || Health(l, 1) < 0.6f) && !(FightMostMs > 20000 && l.Joiners.Count >= 2);   // a brawl goes on past the first two's bruises ([Mind] MindBrawls), to its time
                 if (now < l.FightUntil && !hurt)
                     return;
                 l.Fighting = false;
@@ -1184,8 +1184,55 @@ namespace EnrageWestworld.InGame
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
             WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
             TASK.TASK_COMBAT_PED(h, target, 0, 16);
-            l.FightUntil = Math.Min(Game.GameTime + 20000, Math.Max(l.FightUntil, Game.GameTime + 6000));   // a fight with more in it lasts a little longer
+            l.FightUntil = Math.Min(Game.GameTime + FightMostMs, Math.Max(l.FightUntil, Game.GameTime + 6000));   // a fight with more in it lasts a little longer
             return true;
+        }
+
+        /// How long a fight may be kept going by those joining it, from the last who joined (20 s; [Mind] MindBrawls makes it
+        /// longer, so a brawl can grow a wave at a time).
+        public int FightMostMs = 20000;
+
+        /// Everyone swinging in the fight now: the two who began it and those who joined (0 when no fists fly).
+        public int FightingCount
+        {
+            get
+            {
+                Live l = _live;
+                return l != null && l.Fighting && l.FightOn ? 2 + l.Joiners.Count : 0;
+            }
+        }
+
+        /// Whom this fighter is going for: the other of the two for those who began it, a joiner's own target; 0 for none.
+        public int TargetOf(int h)
+        {
+            Live l = _live;
+            if (l == null || !l.Fighting)
+                return 0;
+            if (h == l.FightA)
+                return l.FightB;
+            if (h == l.FightB)
+                return l.FightA;
+            foreach (int[] j in l.Joiners)
+                if (j[0] == h)
+                    return j.Length > 2 ? j[2] : 0;
+            return 0;
+        }
+
+        /// A joiner turns on someone else (the player, in a brawl that comes at him): his target in the list follows, so
+        /// Attackers says whom he's at.
+        public bool Retarget(int h, int target)
+        {
+            Live l = _live;
+            if (l == null || !l.Fighting || !l.FightOn || target == 0 || !ENTITY.DOES_ENTITY_EXIST(h))
+                return false;
+            foreach (int[] j in l.Joiners)
+                if (j[0] == h && j.Length > 2)
+                {
+                    j[2] = target;
+                    TASK.TASK_COMBAT_PED(h, target, 0, 16);
+                    return true;
+                }
+            return false;
         }
 
         /// The fight is over: those who joined stop, and their own combat ways come back (End puts back the attributes).

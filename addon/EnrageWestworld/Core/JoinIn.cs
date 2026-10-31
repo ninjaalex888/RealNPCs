@@ -37,15 +37,23 @@ namespace EnrageWestworld.Core
         /// the tie between two ids (-3..3, 0 none); witnesses: how many watch; saloon: a saloon's fights draw the drunk and
         /// the hot; joined: how many have joined already.
         public static JoinTake Weigh(string id, Traits t, bool woman, bool drunk, IList<Fighter>[] sides, Func<string, string, int> warmth,
-                                     int witnesses, bool lawNear, bool saloon, bool womenFight, int joined, string seed)
+                                     int witnesses, bool lawNear, bool saloon, bool womenFight, int joined, string seed,
+                                     int mostJoiners = MostJoiners, bool brawls = false, bool sure = false)
         {
             var no = new JoinTake();
-            if (t == null || sides == null || sides.Length != 2 || joined >= MostJoiners)
+            if (t == null || sides == null || sides.Length != 2 || joined >= mostJoiners)
                 return no;
+            // with [Mind] MindBrawls (Core/Brawl.cs): the law at hand holds most back, not all, and the brawl's own size pulls
+            int fighting = sides[0].Count + sides[1].Count;
+            float momentum = brawls ? Brawl.Momentum(fighting, saloon) : 0f, lawFactor = 1f;
             if (lawNear)
             {
-                no.Why = "the law at hand";
-                return no;
+                if (!brawls)
+                {
+                    no.Why = "the law at hand";
+                    return no;
+                }
+                lawFactor = Brawl.LawHolds(saloon, fighting);
             }
             if (woman && !womenFight)
             {
@@ -85,22 +93,24 @@ namespace EnrageWestworld.Core
                 float tie = friend > 0 ? 0.22f + 0.08f * friend : 0f;
                 if (foe < 0)
                     tie = Math.Max(tie, 0.18f + 0.08f * -foe);
-                float score = tie + heat;
+                float score = tie + heat + momentum;
                 // a stranger to both sides must clear the crowd's bar and more; a friend or a foe is moved by their own
                 float bar = tie > 0f ? 0.25f : Appraisal.CrowdBar(witnesses) + 0.25f;
-                if (score <= bar)
+                if (score <= bar && !sure)   // sure: the Testing row's waves, no bar and no roll (the sex rules still hold)
                 {
                     if (best.Side < 0 && score > best.Score)
-                        best = new JoinTake { Score = score, Bar = bar, Why = Words(friend, foe, heat, drunk) + ": not enough to join" };
+                        best = new JoinTake { Score = score, Bar = bar, Why = Words(friend, foe, heat, drunk) + (momentum > 0f ? ", the brawl's pull" : "") + ": not enough to join" };
                     continue;
                 }
-                float chance = Math.Min(0.8f, (score - bar) * 2.5f);
+                float chance = Math.Max(0f, Math.Min(0.8f, (score - bar) * 2.5f));
                 if (woman)
                     chance *= 0.5f;   // half as often as a man, as for a quarrel (WomenInFights)
                 if (!woman && theirs[target].Woman)
                     chance *= 0.1f;   // a man's hand against a woman, at a tenth (1899; Lex, 2026-10-30)
-                bool goes = Voice.Chance(seed + "|join|" + s, (int)Math.Round(chance * 100));
-                var take = new JoinTake { Side = goes ? s : -1, Target = target, Score = score, Bar = bar, Why = Words(friend, foe, heat, drunk) + " (" + (int)Math.Round(chance * 100) + "%)" };
+                chance *= lawFactor;
+                bool goes = sure ? !(!woman && theirs[target].Woman) : Voice.Chance(seed + "|join|" + s, (int)Math.Round(chance * 100));
+                string why = Words(friend, foe, heat, drunk) + (momentum > 0f ? ", the brawl's pull" : "") + (lawFactor < 1f ? ", the law at hand" : "");
+                var take = new JoinTake { Side = goes ? s : -1, Target = target, Score = score, Bar = bar, Why = why + " (" + (int)Math.Round(chance * 100) + "%)" };
                 if (goes && (best.Side < 0 || score > best.Score))
                     best = take;
                 else if (best.Side < 0 && score > best.Score)

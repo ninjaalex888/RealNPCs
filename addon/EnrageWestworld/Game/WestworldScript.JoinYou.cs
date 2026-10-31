@@ -45,7 +45,7 @@ namespace EnrageWestworld.InGame
                 _youFightFoe = foe;
                 _youJoiners.Clear();
             }
-            if (_youJoiners.Count >= JoinIn.MostJoiners)
+            if (_youJoiners.Count >= (BrawlsOn ? Math.Min(5, MostJoinersNow) : JoinIn.MostJoiners))   // a brawl of yours may draw a few more ([Mind] MindBrawls)
                 return;
             try
             {
@@ -126,7 +126,7 @@ namespace EnrageWestworld.InGame
                 Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
                 Func<string, string, int> warm = (x, y) => y == "player" ? (regard.ContainsKey(x) ? regard[x] : 0) : LadderWarmth(x, y);
                 JoinTake take = JoinIn.Weigh(w.Id, t, !PED.IS_PED_MALE(p.Handle), InHisCups(p, w.P), sides, warm, witnesses, law, _placeKind == "saloon",
-                                             _cfg.WomenInFights, _youJoiners.Count, "you|" + foe + "|" + _youJoiners.Count + "|" + w.Id);
+                                             _cfg.WomenInFights, _youJoiners.Count, "you|" + foe + "|" + _youJoiners.Count + "|" + w.Id, BrawlsOn ? Math.Min(5, MostJoinersNow) : JoinIn.MostJoiners, BrawlsOn);
                 if (take.Side >= 0 && (best == null || take.Score > best.Score))
                 {
                     best = take;

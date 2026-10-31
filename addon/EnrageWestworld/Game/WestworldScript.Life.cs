@@ -50,6 +50,7 @@ namespace EnrageWestworld.InGame
             }
             if (_after != null)
                 AftermathStep(me, now);   // what follows a fight: a friend tends the loser, the law has a word (WestworldScript.Aftermath.cs)
+            BrawlStep(me, now);   // the law breaks up a brawl, a brawl comes at you, a gun drawn in one (WestworldScript.Brawl.cs)
             if (_director.FightOver == null)
                 _director.FightOver = OnFightOver;
             if (!_director.Busy && _ring.Count > 0)

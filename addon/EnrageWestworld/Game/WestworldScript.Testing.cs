@@ -388,6 +388,9 @@ namespace EnrageWestworld.InGame
                 case "space":
                     skipped = "standing a metre off for two seconds, the 20 s between and the five minutes a person";
                     return SpaceTest(now);   // WestworldScript.Space.cs
+                case "brawltown":
+                    skipped = "the reason and the rests for the fight, then for a minute and a half the joining's bar and roll (the waves still come one look at a time), and the lawman's sight (anyone within 70 m, once five fight or 15 s)";
+                    return BrawlTest(now, seed, out said);   // WestworldScript.Brawl.cs
                 case "lonely":
                     skipped = "being lonely, knowing you, being in a town and the pace";
                     return LonelyTest(now);   // WestworldScript.Lonely.cs

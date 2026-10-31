@@ -256,6 +256,8 @@ namespace EnrageWestworld.InGame
                 LayingHands(at.Key, at.Value, now, player);   // and someone waking who has turned on another (WestworldScript.WakeHold.cs)
             foreach (int[] at in _director.Attackers())
                 LayingHands(at[0], at[1], now, player);
+            foreach (KeyValuePair<int, int> at in _brawlHoldouts)
+                LayingHands(at.Key, at.Value, now, player);   // still swinging after the law's word, or a gun drawn in a brawl (WestworldScript.Brawl.cs)
             RescuedStep(now, player);
             if (_bullyDots.Count > 0)
                 foreach (int h in _bullyDots.Keys.Where(x => !LayingHands(x, now) || !ENTITY.DOES_ENTITY_EXIST(x) || ENTITY.IS_ENTITY_DEAD(x)).ToList())

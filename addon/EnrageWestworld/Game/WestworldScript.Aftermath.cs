@@ -68,7 +68,8 @@ namespace EnrageWestworld.InGame
                 if (a.Step == 1)
                 {
                     a.Step = 2;
-                    AfterLaw(a, me, now);
+                    if (now >= _brawlLawAfterUntil)
+                        AfterLaw(a, me, now);   // unless a lawman broke it up himself and has said his word (WestworldScript.Brawl.cs)
                 }
             }
             catch (Exception ex)
