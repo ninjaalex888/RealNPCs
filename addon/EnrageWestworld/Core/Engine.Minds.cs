@@ -182,6 +182,24 @@ namespace EnrageWestworld.Core
             return st != null && st.Has("grudge:" + what);
         }
 
+        /// He told them his name (the interaction menu): they know it from now on, as the old talk's asking does (letters,
+        /// thoughts and scorn say it). Kept even for someone with nothing saved yet.
+        public void LearnName(string id, string name)
+        {
+            PersonState st = MindOf(id, name);
+            if (st == null || st.KnowsName)
+                return;
+            st.KnowsName = true;
+            st.NameAt = Store.LastGameMin;
+        }
+
+        /// Whether they know his name.
+        public bool KnowsYourName(string id)
+        {
+            PersonState st = id != null ? Store.Find(id) : null;
+            return st != null && st.KnowsName;
+        }
+
         /// Whether they've thanked him for this kindness already (Thanks.Due's key).
         public bool Thanked(string id, string key)
         {

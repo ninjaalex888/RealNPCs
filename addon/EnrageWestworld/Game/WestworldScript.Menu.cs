@@ -2,7 +2,7 @@
 // adult RealNPCs knows (a resident, one of enRAGE's townsfolk or records), the game's lock-on menu also offers "Talk" on Q
 // (a pad's RB: INPUT_INTERACT_LOCKON_TARGET_INFO, free in the people's lock-on menu; the clerk's Reset prompt uses it
 // only in a station clerk's list, and Talk stands aside there). Pressing it opens a short list above the ticker: up and
-// down (or the D-pad, or 1 to 6) to choose, Enter (A) to say it, Backspace (B) to leave; the keyboard's keys while the
+// down (or the D-pad, or 1 to 7) to choose, Enter (A) to say it, Backspace (B) to leave; the keyboard's keys while the
 // keyboard is in use, the pad's buttons while a pad is. Arthur's words show as a subtitle, then their answer in their
 // own voice with its subtitle (afraid or hostile when they are), and what it is (a round, charity, a warning) is written
 // down as a happening for the mind, so gratitude, fear, the greetings and the memories follow; the money goes when the
@@ -26,8 +26,8 @@ namespace EnrageWestworld.InGame
         private sealed class TalkMenu
         {
             public int Handle;
-            public string Id, Name, First, Temper, Worry, Trade, FolkId, Regard, Rumour;
-            public bool Woman, Devout, MoneyWorry, Seated, KeepOrders;
+            public string Id, Name, First, Temper, Worry, Trade, FolkId, Regard, Rumour, Self;   // Self: their own first name, when they have one (the friendly give it back)
+            public bool Woman, Devout, MoneyWorry, Seated, KeepOrders, KnowsName;
             public float Reach;
             public List<InteractOption> Options;
             public int Sel, OpenedAt, LastAt, AnswerAt, ThoughtAt, CloseAt, FaceAt;
@@ -49,7 +49,7 @@ namespace EnrageWestworld.InGame
         private TalkMenu _menu;
         private int _talkPrompt, _talkPromptFor, _talkPromptGroup, _talkOpened, _talkSaid, _talkSettled;
         private readonly HashSet<string> _talkConfided = new HashSet<string>();   // who has told him their worry this session (a money worry he knows of: the gift is five dollars)
-        private readonly bool[] _talkKeys = new bool[10];
+        private readonly bool[] _talkKeys = new bool[11];
         private string _talkLast;
         private Action _aTalkPrompt;
 
@@ -178,7 +178,7 @@ namespace EnrageWestworld.InGame
                 Woman = !PED.IS_PED_MALE(h), Devout = w != null && w.Traits != null && w.Traits[Traits.Piety] > 1.2f, MoneyWorry = worry == "debt" || worry == "savings" || worry == "bank",
                 Trade = w != null && w.P != null ? w.P.Trade : null, FolkId = ac != null ? ac.Id : null, Seated = PED.IS_PED_USING_ANY_SCENARIO(h),
                 Regard = SightRegard(p, id), Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
-                Reach = reach, OpenedAt = now, LastAt = now, From = me.Position
+                Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name != null ? Person.FirstOf(name) : null
             };
             TalkRefreshOptions();
             TalkFace(_menu, me, true);
@@ -212,7 +212,7 @@ namespace EnrageWestworld.InGame
                 cash = 0;   // no reading: the money options stay greyed
             }
             bool told = _talkConfided.Contains(_menu.Id);
-            _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, _menu.Worry == "debt" && told);
+            _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, _menu.Worry == "debt" && told, _menu.KnowsName ? null : YourFirstName());
             if (_menu.Sel >= _menu.Options.Count)
                 _menu.Sel = 0;
             _menu.Rows = null;
@@ -286,7 +286,7 @@ namespace EnrageWestworld.InGame
                 down = TalkKey(1, 0x28);
                 accept = TalkKey(2, 0x0D);
                 cancel = TalkKey(3, 0x08);
-                for (int i = 0; i < 6; i++)
+                for (int i = 0; i < 7; i++)
                     if (TalkKey(4 + i, 0x31 + i) && i < t.Options.Count)
                         pick = i;
             }
@@ -342,7 +342,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             bool confides = Interact.Confides(t.Regard, Interact.KindLately(_store.WorldLog, t.Id, _store.LastGameMin), t.Worry, t.Temper);
-            InteractAnswer a = Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(t.Id), seed);
+            InteractAnswer a = Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(t.Id), seed, YourFirstName(), t.Self);
             SpeechCaption(Arthur(), o.Label, Game.Player.Character.Handle, 1600, false);
             t.Pending = a;
             t.PendingId = o.Id;
@@ -391,6 +391,11 @@ namespace EnrageWestworld.InGame
                 _bridge.LikeMore(t.FolkId, a.LikeDelta);   // enRAGE's own method for its own townsfolk
             if (a.Confided)
                 _talkConfided.Add(t.Id);
+            if (a.LearnsName)
+            {
+                _engine.LearnName(t.Id, t.Name);   // they know his name from now on (letters, thoughts and greetings say it)
+                t.KnowsName = true;
+            }
             if (a.Settles)
             {
                 _engine.SettleWorry(t.Id);   // the rest of the debt's run reads as ended well, for them and the one they owed
@@ -430,7 +435,7 @@ namespace EnrageWestworld.InGame
             t.ThoughtAt = now + 2600;
             TalkRefreshOptions();
             Log.Write("TALK " + t.Name + ": " + t.PendingId + " -> \"" + a.Line + "\"" + (a.Event != null ? " (" + a.Event + " for the mind)" : again ? " (the same within the hour: not counted again)" : "") +
-                      (a.Cents > 0 ? ", $" + (a.Cents / 100.0).ToString("0.00") : "") + (a.Then != "stay" ? ", " + a.Then : "") + (a.Confided ? ", told you their worry" : "") + (a.Settles ? ", their debt settled" : ""));
+                      (a.Cents > 0 ? ", $" + (a.Cents / 100.0).ToString("0.00") : "") + (a.Then != "stay" ? ", " + a.Then : "") + (a.Confided ? ", told you their worry" : "") + (a.Settles ? ", their debt settled" : "") + (a.LearnsName ? ", they know your name now" : ""));
         }
 
         private void TalkThink(TalkMenu t)
@@ -451,6 +456,12 @@ namespace EnrageWestworld.InGame
             if (voice != null && !Speech.Busy(h))
                 voice();
             SpeechCaption(t.First, a.Line, h, Math.Min(6000, 1800 + a.Line.Length * 55), true);
+        }
+
+        /// His first name for telling, or null when the engine has none.
+        private string YourFirstName()
+        {
+            return _engine != null && _engine.Player != null && !string.IsNullOrEmpty(_engine.Player.FullName) && !string.IsNullOrEmpty(_engine.Player.FirstName) ? _engine.Player.FirstName : null;
         }
 
         private string Arthur()
