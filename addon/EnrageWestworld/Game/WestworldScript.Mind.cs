@@ -657,6 +657,7 @@ namespace EnrageWestworld.InGame
             AppraisalEvent ae = _engine.AppraiseFor(ev, w.P, heardOnly, _mindEvSaw);   // the doer and the warmth from the ties (Core/Engine.Appraise.cs)
             if (ae == null)
                 return;
+            ae.Novelty = TownNovelty(ev, now);   // the same trouble seen again in the town this week moves an onlooker less (NIGHT3 item 5)
             Feeling f = Appraisal.Of(ae, w.Traits);
             if (f.Kind == "none")
                 return;
@@ -802,7 +803,8 @@ namespace EnrageWestworld.InGame
                 Weather = _engine.NowWeather, Indoors = _engine.NowIndoors, Place = _engine.NowPlace, Others = Math.Max(0, _mindNear.Count - 1),
                 Drunk = InHisCups(new Ped(h), w.P), Feared = _engine.SawYouViolent(w.Id, 3), WakeStage = st != null ? st.WakeStage : 0, Memories = st != null ? st.Mind : null,
                 AteAt = w.AteAt,   // the shadow's own meal, if its choice was to eat
-                Recent = w.Recent  // and its other brief acts: a rest rests, a talk keeps company (after item 14)
+                Recent = w.Recent, // and its other brief acts: a rest rests, a talk keeps company (after item 14)
+                TownFear = TownFearNow(now).Level   // the town on edge after a killing (WestworldScript.TownMood.cs; NIGHT3 item 5)
             };
             w.Needs = Needs.Of(w.P, w.Traits, c);
             w.Concerns = Needs.Of(w.P, c.GameDay, c.GameDay >= 0 ? Links.Against(_store.Links, w.Id, c.GameDay) : null);
@@ -1048,6 +1050,8 @@ namespace EnrageWestworld.InGame
                                                            CLOCK.GET_CLOCK_HOURS(), CLOCK.GET_CLOCK_YEAR(), _engine.NowWeather, held);
             if (r == null)
                 why = "no request could be built for " + w.Name;
+            if (r != null)
+                r.TownMood = TownMood.Words(TownFearNow(now), _store.LastGameMin);   // the town on edge, for the model (NIGHT3 item 5)
             return r;
         }
 

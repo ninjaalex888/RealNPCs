@@ -243,6 +243,8 @@ namespace EnrageWestworld.InGame
                 _liftsBack++;
                 Feed.Notice("Your money back", how == "law" ? "The deputy hands you back your " + Cents(t.Amount) + "." : "You take back your " + Cents(t.Amount) + ".");
                 _liftLast = (how == "law" ? "the law caught him" : how == "killed" ? "killed" : "caught") + ", " + Cents(t.Amount) + " back";
+                if (how == "caught" && t.Thief != null)
+                    ArthurSays("caught", t.Thief.Handle);   // his own words as he takes it back (WestworldScript.ArthurLines.cs)
             }
             Log.Write("LIFT " + _liftLast);
         }

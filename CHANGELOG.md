@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Lawmen clear the dead from the street (roadmap 33; Lex, 2026-10-31)
+
+- A body left lying in a town street for 20 s or more, with no fight or pursuit near and nobody carrying it: the nearest lawman on foot within 50 m walks over, lifts it with the game's own carry, takes it about 20 m off the street (away from you), sets it down and goes back to his rounds; up to three people near turn to watch him. One at a time, each body once, a minute between; never the story's own or another script's. A lawman lifting a body is new to the game's people, so every step is logged (`LAW clears:`), and if the game won't let him lift it the log says so. `[World] LawClearsBodies` (settings version 150). Testing row "A lawman clears a body"; F7 `TEST law clears bodies:`.
+
+### Arthur's own fighting words (roadmap 34)
+
+- Arthur now says one of his own recorded fighting lines (the ones the game rarely plays, which the Cut Dialogue Restoration and Enhancement mod is built on: his taunts at one man, near or far) when someone comes at him, the first time the self-defence watch sees each, and when he catches the pickpocket himself. Nothing is taken from that mod: they're the game's own recordings, played by name. Never over a line already playing on him (that mod's, the game's or RealNPCs'), and 20 s between. `[World] ArthurSpeaks` (settings version 151). Testing row "Arthur's own line"; F7 `TEST arthur:`; log `ARTHUR says`.
+
+### Talk to people: the interaction menu (roadmap 6; Lex chose a new lock-on prompt)
+
+- Locked on to an adult RealNPCs knows, the lock-on menu now also offers **Talk** (Q, or a pad's RB). It opens a short list above the ticker: "What's the news?", "Let me stand you a drink." (in a saloon), "Here, take this" ($1, or $5 to someone worried about money), "Watch yourself.", "Goodbye." Up and down (the D-pad, or 1 to 4) to choose, Enter (A) to say it, Backspace (B) to leave. They turn to you and wait; Arthur's words show, then their answer in their own voice, from who they are: the news is what the town says about you, or, to someone who's warmed to you (or asked before), their own worry in their words ("My little one's had a fever three days now."); the proud won't take your money, the devout won't take a drink, the coward steps back from a warning and the hothead squares up. What it was is written down for their mind (a round or charity as kindness, a warning as a challenge), so their gratitude or fear, how they greet you after, what witnesses make of it and what they remember all follow from what exists; enRAGE's own townsfolk also warm to you through its own method. Money comes from your pocket. It closes when you walk off, draw, fight, a mission starts or a scene takes them. `[World] InteractionMenu` (settings version 148). Testing row "Talk to the nearest person you know"; F7 `TEST talk:`.
+
+### A town on edge (the psychologist's lens: fear spreads beyond those who saw it, and fades)
+
+- A killing, a robbery or a mugging leaves the whole town on edge for about a day, worst in the first hours (0.94 at once, about half after six hours, gone in a day): everyone's safety need there rises, more at night, so people out go home, keep clear and keep watch, and the model is told ("The town: badly frightened since a killing just now"), so their thoughts say why. Two killings frighten more than one, not twice as much. And the same trouble seen again in a town that week moves onlookers less each time (the third brawl draws a look, not a gasp); the one it happens to feels it in full. Worked out from the happenings already kept: nothing new is saved. `[Mind] MindTownMood` (on, with MindLive; settings version 149). F7 `TEST town mood:`.
+
 ### The model reaches further, and says how it keeps up (step 3 of the model plan; Lex: "control as many NPCs as possible")
 
 - The model now picks for people up to 25 m away (15 before) and for up to 8 at once (4 before), both settings: `[Mind] PickMetres` and `PicksAtOnce` (settings version 147). Past 15 m each person's choices go to the model half as often, the rest are the mind's own. The model's own queue holds up to 16 (6 before).

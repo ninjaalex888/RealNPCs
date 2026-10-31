@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
         public int Witnesses, Doers = 1, WakeStage;
         public string DoerName, TargetName;   // for the log: whom the feeling is about
         public string DoerId, TargetId;       // the same by id ("player" for him; null unknown), for the thought's words
+        public float Novelty = 1f;       // how new such a sight is to the town this week (TownMood.Novelty; NIGHT3 item 5): an onlooker's feeling is scaled by it
     }
 
     /// The feeling named, how strong, and the urge.
@@ -349,6 +350,9 @@ namespace EnrageWestworld.Core
             // joy: good to me or mine (a kindness done me is mostly gratitude); a thief's take, for the grasping and the reckless
             a[11] = myGain * (0.6f + 0.12f * soc - 0.08f * anxiety) * (m.Feared > 0 ? 0.95f : 1f) * (m.Intent > 0 && !m.Self ? 0.6f : 1f)
                     + (doer && m.Gain > 0 ? m.Gain * Math.Max(0f, 0.3f - 0.25f * honesty + 0.1f * risk - 0.15f * compassion) : 0f);
+            if (e.Role == "onlooker" && e.Novelty < 1f)
+                for (int i = 0; i < a.Length; i++)
+                    a[i] *= e.Novelty;   // the third brawl this week: a look, not a gasp (habituation; the one it happens to feels it in full)
             for (int i = 0; i < a.Length; i++)
                 a[i] = Clamp(a[i]);
             int best = -1;

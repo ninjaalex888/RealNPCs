@@ -1147,6 +1147,10 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST language: " + LanguageStatus());
 			Log.Write("TEST picks: " + PicksStatus());
 			Log.Write("TEST model: " + ModelStatus());
+			Log.Write("TEST talk: " + TalkStatus());
+			Log.Write("TEST town mood: " + TownMoodStatus());
+			Log.Write("TEST law clears bodies: " + BodiesStatus());
+			Log.Write("TEST arthur: " + ArthurStatus());
 			Log.Write("TEST aloud: " + AloudStatus());
 			Log.Write("TEST mind shadow: " + MindShadowStatus());
 			Log.Write("TEST mind choices: " + MindChoicesStatus());

@@ -26,6 +26,7 @@ namespace EnrageWestworld.Core
         public bool Feared;                     // someone they fear is near (the player they saw do violence, a foe)
         public int WakeStage;                   // the Awakening (0-4)
         public long AteAt = -1;                 // the game minute they last ate, when it's known (Choosing's eat); -1: their meal hours alone
+        public float TownFear;                  // their town on edge after a killing or a robbery (TownMood.Fear, 0..1; NIGHT3 item 5): the safety need rises for everyone there, more at night
         public List<MindMemory> Memories;       // theirs, if they keep any (null for the unsaved)
         public RecentActs Recent;               // the brief things they did lately and when (the shadow's choosing), so a rest rests, a talk keeps company, a prayer gives meaning for a while (after item 14); null: unknown
 
@@ -152,7 +153,7 @@ namespace EnrageWestworld.Core
                 baseMoney += c.Weekday == 6 ? -0.12f : c.Weekday == 0 ? -0.06f : 0.03f * c.Weekday;   // Monday to Friday it tightens; Saturday's wages ease it
             n.V[NeedState.Money] = Clamp(baseMoney - 0.06f * z(Traits.Honesty));   // the sly feel the pinch more
             // safety: violence near them lately, night out of doors, someone they fear; anxiety sees more of it
-            float danger = 0.05f + night * 0.6f + (c.Feared ? 0.35f : 0f);
+            float danger = 0.05f + night * 0.6f + (c.Feared ? 0.35f : 0f) + c.TownFear * (0.35f + 0.25f * night);   // the town on edge (TownMood): heard of, not only seen
             // standing, company, meaning: who they are first
             float standing = 0.15f + 0.08f * z(Traits.Assertiveness) - 0.06f * z(Traits.Honesty);
             float company = 0.2f + 0.1f * z(Traits.Sociability) + (c.Others == 0 ? 0.15f : c.Others >= 4 ? -0.1f : 0f) + (p.Family == "widower" ? 0.15f : 0f);

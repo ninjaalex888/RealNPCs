@@ -36,6 +36,7 @@ namespace EnrageWestworld.Core
         public string AvoidLine;             // the written line the fallback would give (the model must not copy it)
         public List<string> Options = new List<string>();    // Kind "pick": what they might do, in words (Language.Pick.cs); "say": the remarks their voice has (ThoughtVoice.cs)
         public string Thought;               // Kind "say": the thought showing now
+        public string TownMood;              // their town on edge, in a few words (TownMood.Words: "on edge since a killing today"), or null
         public bool WithThought;             // Kind "pick": the thought as well as the choice, in one answer (Lex, 2026-10-31: what they think and do should agree)
         public int WakeStage;                // Kind "pick" for the waking (WakeOdd.PickOptions): their stage, 2 to 4, so the brief says what they have come to see
 
@@ -124,6 +125,7 @@ namespace EnrageWestworld.Core
             if (!string.IsNullOrEmpty(r.Worry)) b.Append("On their mind: ").Append(r.Worry).Append(".\n");
             foreach (string m in r.Memories.Take(2)) b.Append("Remembers: ").Append(m).Append(".\n");
             if (r.Beliefs.Count > 0) b.Append("Holds: ").Append(string.Join("; ", r.Beliefs.Take(3))).Append(".\n");
+            if (!string.IsNullOrEmpty(r.TownMood)) b.Append("The town: ").Append(r.TownMood).Append(".\n");
             if (r.Near.Count > 0) b.Append("In sight: ").Append(string.Join(", ", r.Near.Take(4))).Append(".\n");
             return b.ToString();
         }

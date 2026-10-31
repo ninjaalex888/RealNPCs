@@ -553,6 +553,7 @@ namespace EnrageWestworld.InGame
                 _reader.Render();
                 return;
             }
+            TalkMenuFrame(now);   // the interaction menu, ticker or no ticker (WestworldScript.Menu.cs)
             if (_engine == null || !_cfg.Ticker)
                 return;
             if (!TickerVisible(now))
@@ -1060,6 +1061,8 @@ namespace EnrageWestworld.InGame
             SubtitleStep(now);
             TerritoryStep(now);
             FlirtPromptStep();
+            TalkPromptStep();     // Talk in the lock-on menu, and the interaction menu (WestworldScript.Menu.cs)
+            BodiesStep(_now);     // a lawman carries a body off the street (WestworldScript.Bodies.cs)
             ForgetPromptStep();   // Reset RealNPCs Memory in a station clerk's list (WestworldScript.Forget.cs)
             RoughStep(now);
             Safe("pleading", _aPlead);

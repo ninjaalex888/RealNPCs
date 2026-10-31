@@ -297,6 +297,8 @@ namespace EnrageWestworld.InGame
 
         private bool IsAcknowledging(int h)
         {
+            if (_menu != null && _menu.Handle == h)
+                return true;   // listening to the player in the interaction menu (WestworldScript.Menu.cs)
             if (_animTest != null && _animTest.Handle == h)
                 return true;   // the Testing page's animation rows have them (WestworldScript.AnimTest.cs)
             if (IsOnlooking(h))

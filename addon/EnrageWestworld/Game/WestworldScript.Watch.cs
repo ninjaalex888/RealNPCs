@@ -238,6 +238,7 @@ namespace EnrageWestworld.InGame
                 if (_aimedAt.TryGetValue(h, out at) && now - at < 10000)
                     continue;   // he drew on them first: they're answering him
                 _cameAtYouSeen[h] = now;
+                ArthurSays("attacked", h);   // his own fighting words, once for each who comes at him (WestworldScript.ArthurLines.cs)
             }
             // a bully laying hands on someone: the rough move stepping in or playing (WestworldScript.Roughs.cs). Stepping in to
             // stop him is defending the man he has hold of, only while he does it and a moment after (Lex, 2026-10-30: "mark a

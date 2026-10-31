@@ -376,6 +376,15 @@ namespace EnrageWestworld.InGame
                         return "nobody 3-16 m off to glitch";
                     skipped = "the 7-15 minutes between glitches";
                     return null;
+                case "arthur":
+                    skipped = "the moment itself and the 20 s between";
+                    return ArthurTest(now);   // WestworldScript.ArthurLines.cs
+                case "lawbody":
+                    skipped = "the 20 s the body must lie, being in a town, and the minute between";
+                    return BodiesTick(now, true);   // WestworldScript.Bodies.cs
+                case "talk":
+                    skipped = "the lock-on (the row opens the menu on the nearest one you know)";
+                    return TalkTest(now);   // WestworldScript.Menu.cs
                 case "mindscene":
                     skipped = "the street's own timing and the person's choice changing first (the rests between the same two kept)";
                     return MindSceneTest(now);   // WestworldScript.MindScenes.cs
