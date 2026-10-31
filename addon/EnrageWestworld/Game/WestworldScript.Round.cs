@@ -77,7 +77,7 @@ namespace EnrageWestworld.InGame
                 string wk;
                 int ws;
                 bool good;
-                bool news = InnerLife.WorryNow(c.Who.P, g / 1440, out wk, out ws, out good) && ws >= 3 && good;
+                bool news = InnerLife.WorryNow(c.Who.P, g / 1440, out wk, out ws, out good) && ws >= 3 && good && !InnerLife.IsSettled(c.Who.Id, g / 1440);   // a debt he paid for them is no reason to stand the house a round
                 string w = couple != null && c.Who.Temper != "Greedy" && c.Who.Id != wed.AId && c.Who.Id != wed.BId && !AgainstCouple(c.Who.Id, wed) ? "wedding" :   // not the newlyweds themselves
                             Scenes.RoundWhy(news, c.Who.Mood, c.Who.P.Outgoing, c.Who.WellOff, c.Who.Temper, c.Who.Woman, InnerLife.TradeGroup(c.Who.P.Trade) == "girl") ?? (test ? "glad" : null);
                 int r = Array.IndexOf(Scenes.RoundWhys, w);

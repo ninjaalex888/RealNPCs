@@ -62,9 +62,9 @@ namespace EnrageWestworld.Core
                     "{who} has my watch now. Keep reaching for it. Pocket's empty.",
                     "{who} was civil about it. Took the saddle and said he was sorry. Civil is worse." },
                 Settled = new[] {
-                    "A stranger put eleven dollars in my hand. Paid {who} before I could think better of it.",
+                    "A man I hardly know put eleven dollars in my hand. Paid {who} before I could think better of it.",
                     "Square with {who}, and not a cent of it mine. Grateful and ashamed by turns.",
-                    "Paid {who} with a stranger's money. He tipped his hat like I'd earned it." },
+                    "Paid {who} with another man's money. He tipped his hat like I'd earned it." },
                 AfterGood = new[] { "Don't owe a soul in this town. Say it out loud sometimes, to hear it.", "Pass {who}'s porch now and tip my hat. Just a hat. Nothing attached to it.", "Jar's filling again. Slowly. Mine this time, every penny." },
                 AfterBad = new[] { "Still see my mule in {who}'s field. He works it harder than I did.", "Walk to the field now. The mule would've carried me. {who} knows it.", "Owed and paid in kind. Folk still say it kindly. Kindly is the part that lasts." }
             },

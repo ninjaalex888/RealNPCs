@@ -386,7 +386,7 @@ namespace EnrageWestworld.InGame
             }
             TalkSay(t, a);
             if (a.Event != null)
-                RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h, a.Settles ? Thanks.DebtOutcome : "the interaction menu");
+                RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h, a.Settles ? Thanks.DebtOutcome : a.Event == "charity" ? "gave $" + a.Cents / 100 : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf)
             if (a.LikeDelta != 0 && t.FolkId != null)
                 _bridge.LikeMore(t.FolkId, a.LikeDelta);   // enRAGE's own method for its own townsfolk
             if (a.Confided)
@@ -399,6 +399,8 @@ namespace EnrageWestworld.InGame
             if (a.Settles)
             {
                 _engine.SettleWorry(t.Id);   // the rest of the debt's run reads as ended well, for them and the one they owed
+                if (a.Loan)
+                    _engine.MarkThanked(t.Id, Thanks.LoanKey(_store.LastGameMin), t.Name);   // they said it was a loan: they'll bring it back (late thanks)
                 t.Worry = null;
                 t.MoneyWorry = false;
                 _talkSettled++;

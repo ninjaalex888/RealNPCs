@@ -1,9 +1,13 @@
 // Late, specific thanks (NIGHT3; the research list's "late, specific thanks", the psychologist's reciprocity): someone
 // Arthur did a kindness to through the interaction menu (a drink stood, money given, a debt settled: the world log has
-// each, with him as the doer and them as the one it was done to) who sees him again in town some hours later, up to a
-// week on, comes over and thanks him for that very thing in their own words; the proud, who took his eleven dollars for
-// their debt as a loan, pay it back. The cold give a nod and keep it to themselves; the greedy don't come. Once for each
-// kindness (a mark on them). Plain C#, no game; all words original to this add-on.
+// each, with him as the doer and them as the one it was done to, and the save keeps the day he settled a debt) who sees
+// him again in town some hours or days later may come over and thank him for that very thing in their own words. Not
+// everyone: a drink stood is answered with a drink some day, not a speech, so few come for one; most come for five
+// dollars, nearly all for a debt (a roll once per kindness, by its key: a miss is never mentioned). The biggest kindness
+// is the one they thank him for, and that thanks covers the rest. A wrong he did them since (a warning, a slight, a blow,
+// a theft) cancels what came before it. The proud who took his eleven dollars as a loan pay it back, three days on at the
+// soonest. The cold, anyone sitting, and a woman after dark or indoors (crossing a saloon to a strange man, in 1899, said
+// something else) give a nod and keep it to themselves; the greedy don't come. Plain C#, no game; all words original.
 using System;
 using System.Collections.Generic;
 
@@ -14,12 +18,16 @@ namespace EnrageWestworld.Core
         public string Kind;      // drink, money, debt
         public long At;          // the game minute he did it
         public string Key;       // the mark that says it's been thanked for
+        public int Cents;        // the money given (100 or 500), else 0
+        public bool Loan;        // a debt they took as a loan: they bring the money back (Thanks.Repays)
+        public List<string> Keys = new List<string>();   // every kindness this thanks covers (all marked at once)
     }
 
     public static class Thanks
     {
         public const long After = 360;          // six game hours at least: thanks later, not on the spot
-        public const long Within = 7 * 1440;    // a week at most
+        public const long Within = 7 * 1440;    // a week at most (the world log, kept to its last 400, may forget a drink sooner)
+        public const long RepayAfter = 3 * 1440; // a loan of eleven dollars, from a man with four and a button, takes days to raise
         public const string DebtOutcome = "settled their debt";   // the menu's outcome on the help it records for a debt
 
         /// What the kindness was, for the words: drink, money, debt; null for anything else.
@@ -36,31 +44,99 @@ namespace EnrageWestworld.Core
             }
         }
 
-        /// The kindness this person owes him thanks for, or null: the latest he did them in the world log, at least
-        /// After and at most Within ago (a test: any age within the week), not yet thanked (`thanked`: their marks).
-        public static ThanksOwed Due(List<Happening> log, string id, long now, Func<string, bool> thanked, bool test = false)
+        /// A wrong from him that cancels the kindnesses before it: a warning, a slight, a blow or a theft.
+        public static bool Wrong(Happening e)
         {
-            if (log == null || id == null)
-                return null;
-            for (int i = log.Count - 1; i >= 0; i--)
-            {
-                Happening e = log[i];
-                if (e == null || e.TargetId != id || e.At > now || now - e.At >= Within || (!test && now - e.At < After))
-                    continue;
-                string kind = KindOf(e);
-                if (kind == null)
-                    continue;
-                string key = "thanks:" + e.Kind + "|" + e.At;
-                if (thanked != null && thanked(key))
-                    continue;
-                return new ThanksOwed { Kind = kind, At = e.At, Key = key };
-            }
-            return null;
+            if (e == null || e.DoerId != "player" || e.Kind == null)
+                return false;
+            if (e.Kind == "threat" || e.Kind == "faced")
+                return true;
+            if (!e.Kind.StartsWith("deed:", StringComparison.Ordinal))
+                return false;
+            string g = Minds.DeedGroup(e.Kind.Substring(5));
+            return g == "deed:violence" || g == "deed:theft";
         }
 
-        /// Whether anyone at all is owed thanks now (the cheap look before any scan of the street).
-        public static bool AnyDue(List<Happening> log, long now, bool test = false)
+        /// The cents a charity happening was for (the menu writes "gave $5"), else 0.
+        public static int CentsOf(Happening e)
         {
+            return e != null && e.Kind == "charity" ? (e.Outcome == "gave $5" ? 500 : 100) : 0;
+        }
+
+        /// Whether they come at all for this kindness: once per kindness, by its key (drink 15%, a dollar 35%, five 60%,
+        /// a debt 90%). A test always comes.
+        public static bool Comes(string kind, int cents, string key, bool test)
+        {
+            if (test)
+                return true;
+            int chance = kind == "debt" ? 90 : kind == "money" ? (cents >= 500 ? 60 : 35) : 15;
+            return Voice.Hash(key + "|comes") % 100 < chance;
+        }
+
+        private static int Rank(string kind)
+        {
+            return kind == "debt" ? 3 : kind == "money" ? 2 : 1;
+        }
+
+        /// The kindness this person would thank him for now, or null: the biggest he did them (a debt, then money, then a
+        /// drink; the latest of a kind) at least After and at most Within ago, not cancelled by a wrong since, not thanked
+        /// for yet (`thanked`: their marks), and one they'd come for (Comes). `settledAt`: the game minute the save says he
+        /// settled their debt, or -1 (the log may have let it go). `loanAt`: whether the debt settled at that minute was
+        /// taken as a loan (a mark the menu left): a loan always comes, with the money, and not before RepayAfter, and
+        /// nothing else thanked meanwhile covers it. A test skips the waits and the roll, not the week.
+        public static ThanksOwed Due(List<Happening> log, string id, long now, Func<string, bool> thanked, bool test = false, long settledAt = -1, Func<long, bool> loanAt = null)
+        {
+            if (id == null)
+                return null;
+            long wrongAt = -1;
+            var owed = new List<ThanksOwed>();
+            if (log != null)
+                for (int i = log.Count - 1; i >= 0; i--)
+                {
+                    Happening e = log[i];
+                    if (e == null || e.TargetId != id || e.At > now || now - e.At >= Within)
+                        continue;
+                    if (Wrong(e))
+                    {
+                        wrongAt = Math.Max(wrongAt, e.At);
+                        continue;
+                    }
+                    string kind = KindOf(e);
+                    if (kind != null)
+                        owed.Add(new ThanksOwed { Kind = kind, At = e.At, Key = "thanks:" + e.Kind + "|" + e.At, Cents = CentsOf(e) });
+                }
+            if (settledAt >= 0 && settledAt <= now && now - settledAt < Within && !owed.Exists(o => o.Key == "thanks:help|" + settledAt))
+                owed.Add(new ThanksOwed { Kind = "debt", At = settledAt, Key = "thanks:help|" + settledAt });
+            ThanksOwed best = null;
+            var keys = new List<string>();
+            foreach (ThanksOwed o in owed)
+            {
+                if (o.At <= wrongAt || (thanked != null && thanked(o.Key)))
+                    continue;   // cancelled by what he did since, or thanked for already
+                o.Loan = o.Kind == "debt" && loanAt != null && loanAt(o.At);
+                bool fresh = !test && now - o.At < (o.Loan ? RepayAfter : After);
+                if (o.Loan && fresh)
+                    continue;   // they'll come when they have the money: not covered by anything thanked meanwhile
+                keys.Add(o.Key);
+                if (fresh || (!o.Loan && !Comes(o.Kind, o.Cents, o.Key, test)))
+                    continue;
+                if (best == null || Rank(o.Kind) > Rank(best.Kind) || (Rank(o.Kind) == Rank(best.Kind) && o.At > best.At))
+                    best = o;
+            }
+            if (best == null)
+                return null;
+            best.Keys = keys;   // the thanks covers every kindness still owed (the beer before the debt isn't thanked for again tomorrow)
+            return best;
+        }
+
+        /// Whether anyone at all may be owed thanks now (the cheap look before any scan of the street): a kindness in the
+        /// window in the log, or a debt settled in it.
+        public static bool AnyDue(List<Happening> log, long now, bool test = false, IEnumerable<long> settled = null)
+        {
+            if (settled != null)
+                foreach (long at in settled)
+                    if (at <= now && now - at < Within && (test || now - at >= After))
+                        return true;
             if (log == null)
                 return false;
             for (int i = log.Count - 1; i >= 0; i--)
@@ -72,45 +148,55 @@ namespace EnrageWestworld.Core
             return false;
         }
 
-        /// How they take it: "walk" (they come over and say it), "nod" (the Cold: a look and a thought), or null (the
-        /// Greedy, and anyone who fears or hates him now).
-        public static string Way(string temper, string regard)
+        /// How they take it: "walk" (they come over and say it), "nod" (a look and a thought: the cold, anyone sitting,
+        /// and a woman after dark or indoors), or null (the greedy, and anyone who fears or hates him now).
+        public static string Way(string temper, string regard, bool woman, bool nightOrIndoors, bool seated)
         {
             if (regard == "afraid" || regard == "hostile" || temper == "Greedy")
                 return null;
-            return temper == "Cold" ? "nod" : "walk";
+            return temper == "Cold" || seated || (woman && nightOrIndoors) ? "nod" : "walk";
         }
 
-        /// The cents they pay him back: the proud, for the debt he settled (they took it as a loan).
-        public static int Repays(string kind, string temper)
+        /// The cents they pay him back: a debt they said was a loan (the proud, for the debt he settled), three days on at
+        /// the soonest (Due holds it till then); else 0.
+        public static int Repays(ThanksOwed o, long now)
         {
-            return kind == "debt" && temper == "Proud" ? Interact.SettleCents : 0;
+            return o != null && o.Kind == "debt" && o.Loan && now - o.At >= RepayAfter ? Interact.SettleCents : 0;
         }
 
-        /// What they say to his face, for this kindness.
-        public static string Line(string kind, string temper, bool woman, string seed)
+        /// The mark the menu leaves when a debt was settled as a loan (the proud said so), and Due's loanAt reads.
+        public static string LoanKey(long at)
         {
-            if (Repays(kind, temper) > 0)
+            return "loan:" + at;
+        }
+
+        /// What they say to his face, for this kindness. `sameDay`: it was today (no "the other day", no "every night since").
+        public static string Line(string kind, string temper, bool woman, string seed, bool sameDay, int repays = 0)
+        {
+            if (repays > 0)
                 return woman ? "Here. Eleven dollars. I said I'd see it back to you, and I have."
                              : "Eleven dollars, every cent of it. I told you it was a loan.";
             bool shy = temper == "Coward";
             switch (kind)
             {
                 case "drink":
-                    return shy ? "That drink you stood me. I never said. It was kind."
-                               : Pick(seed + "|tdr", "Never did thank you proper for that drink. I'm thanking you now.", "That whiskey the other day. Kind of you. I didn't say so then.", "You stood me a drink a while back. I haven't forgotten it.");
+                    return shy ? "That drink you stood me. It was kind."
+                               : sameDay ? Pick(seed + "|tdr", "Next one's on me, mister. Don't let me forget it.", "I owe you a drink. I'll not forget.")
+                                         : Pick(seed + "|tdr", "That whiskey the other day. Next one's mine.", "Still owe you a drink, mister. I keep a tally.");
                 case "money":
                     return shy ? "The money you gave me. It went further than you'd think."
-                               : Pick(seed + "|tmo", "What you gave me the other day. Bought bread with it, and then some. Thank you.", "Meant to tell you: that money mattered. Folks don't give, mostly.", "That money of yours did more good than you know. I wanted you told.");
+                               : sameDay ? Pick(seed + "|tmo", "Meant to tell you: that money mattered. Folks don't give, mostly.", "That money of yours is bread on the table tonight. Thank you.")
+                                         : Pick(seed + "|tmo", "What you gave me the other day. Bought bread with it, and then some. Thank you.", "That money of yours did more good than you know. I wanted you told.");
                 case "debt":
-                    return shy ? "You paid what I owed. I sleep now. That's all I came to say."
-                               : Pick(seed + "|tde", "You paid my debt and never asked a thing back. I won't forget it.", "Slept easy every night since you settled that for me. I wanted you to know.", "Square with the man I owed, thanks to you. I tell folks so.");
+                    return shy ? "You paid what I owed. That's all I came to say. Thank you."
+                               : sameDay ? Pick(seed + "|tde", "You paid my debt and never asked a thing back. I won't forget it.", "Square with the man I owed, thanks to you. I'll tell folks so.")
+                                         : Pick(seed + "|tde", "Slept easy every night since you settled that for me. I wanted you to know.", "You paid my debt and never asked a thing back. I haven't forgotten it.");
                 default:
                     return "Wanted to say thank you. That's all.";
             }
         }
 
-        /// What the Cold think instead, with a nod his way.
+        /// What they think instead, with a nod his way.
         public static string Nod(string kind, string seed)
         {
             switch (kind)
@@ -132,7 +218,8 @@ namespace EnrageWestworld.Core
                 foreach (string temper in new[] { null, "Coward", "Proud", "Hothead" })
                     for (int i = 0; i < 6; i++)
                         foreach (bool w in new[] { false, true })
-                            yield return Line(kind, temper, w, "all" + i);
+                            foreach (bool same in new[] { false, true })
+                                yield return Line(kind, temper, w, "all" + i, same, kind == "debt" && temper == "Proud" && i == 0 ? Interact.SettleCents : 0);
             foreach (string kind in new[] { "drink", "money", "debt" })
                 for (int i = 0; i < 4; i++)
                     yield return Nod(kind, "all" + i);

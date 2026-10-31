@@ -228,6 +228,8 @@ namespace EnrageWestworld.InGame
         /// Tick04: the one walking up to you, and now and then a look for someone grieving one you killed.
         private void GrudgesStep(int now)
         {
+            if (!_cfg.Grudges && _grudgeWalk != null)
+                GrudgesAbort();   // switched off mid-walk: let them go (else they'd stay busy, and the thanks would wait for ever)
             if (!_cfg.Grudges || _store == null || (_grudgeWalk == null && now < _nextGrudgeYou))
                 return;
             if (_aGrudges == null)

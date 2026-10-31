@@ -32,6 +32,7 @@ namespace EnrageWestworld.Core
         public bool Friendly;
         public bool Settles;     // he paid their debt: the worry is over (Engine.SettleWorry)
         public bool LearnsName;  // he told them his name: they know it from now on (Engine.LearnName)
+        public bool Loan;        // the debt he settled they took as a loan, and said so: they'll bring it back (Thanks)
     }
 
     public static class Interact
@@ -183,6 +184,7 @@ namespace EnrageWestworld.Core
                             break;
                         case "Proud":
                             a.Line = woman ? "Then it's a loan, and I'll see every cent of it back to you." : "Then it's a loan. Every cent back, you have my word on it.";
+                            a.Loan = true;
                             a.Thought = "Beholden to a stranger. I'll make it right if it takes a year.";
                             break;
                         case "Greedy":
@@ -194,8 +196,8 @@ namespace EnrageWestworld.Core
                             a.Thought = "Nobody pays another man's debts for nothing. Still. It's paid.";
                             break;
                         default:
-                            a.Line = Pick(seed + "|set", "You'd do that? For me? Lord love you, mister.", "Eleven dollars... I can pay him. I can pay him Saturday!", "I hardly know what to say. I'm in your debt now, not his.");
-                            a.Thought = Pick(seed + "|sett", "Square by Saturday. I can breathe again.", "A stranger did that. Wait till I tell them at home.", "Can't think why he'd do it. Won't ask, either.");
+                            a.Line = Pick(seed + "|set", "You'd do that? For me? Lord love you, mister.", "Eleven dollars... I can pay him. I can pay him today!", "I hardly know what to say. I'm in your debt now, not his.");
+                            a.Thought = Pick(seed + "|sett", "Square today. I can breathe again.", "A man I hardly know did that. Wait till I tell them at home.", "Can't think why he'd do it. Won't ask, either.");
                             break;
                     }
                     return a;
@@ -339,7 +341,7 @@ namespace EnrageWestworld.Core
             switch (worry)
             {
                 case "tooth": return "This tooth's been killing me all week.";
-                case "debt": return Pick(seed + "|debt", "I owe money I don't have, and the man wants it Friday.", "There's a debt hanging over me. Can't sleep for it.");
+                case "debt": return Pick(seed + "|debt", "I owe eleven dollars I don't have, and the man wants it Saturday.", "There's a debt hanging over me. Can't sleep for it.");
                 case "fever": return "My little one's had a fever three days now.";
                 case "feud": return "My neighbour's moved the fence line again. It'll come to blows.";
                 case "letter": return "Waiting on a letter that never comes.";
