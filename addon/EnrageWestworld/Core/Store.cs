@@ -52,6 +52,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<Plan> Plans = new List<Plan>();   // what people mean to do about each other over the next days (Plans.cs)
         [DataMember(EmitDefaultValue = false)] public List<PlaceSpot> Spots = new List<PlaceSpot>();   // where each town's places are, learned from their keepers (Places.cs)
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, long> WorrySettled;   // id -> the game minute the player settled their worry (InnerLife.SettledAt; roadmap 9); null until one is
+        [DataMember(EmitDefaultValue = false)] public Dictionary<string, string> WorrySeedOf;   // enRAGE's person id -> the resident id whose worry they live on with (Engine.CarryPerson; NIGHT3 For Lex 9a); null until one is taken up
         [DataMember(EmitDefaultValue = false)] public PaceState Pace = new PaceState();                           // when things may happen again (Pacing.cs)
         public List<string> RewoundShares = new List<string>();   // deaths we told enRAGE of that a reload undid; the game side takes them back
         private Dictionary<string, DeathEntry> _deathIndex;

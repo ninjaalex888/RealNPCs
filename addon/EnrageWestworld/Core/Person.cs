@@ -153,6 +153,15 @@ namespace EnrageWestworld.Core
         {
             get { ThoughtItem t = TopThought; return t != null ? t.Mood : "Steady"; }
         }
+
+        /// The same person under another id (a shallow copy: its lists are shared), for the worry they keep from the id
+        /// they had before enRAGE took them up (Engine.WorrySelfOf). Only read.
+        public Person WithId(string id)
+        {
+            Person c = (Person)MemberwiseClone();
+            c.Id = id;
+            return c;
+        }
     }
 
     public sealed class PastItem

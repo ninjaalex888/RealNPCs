@@ -1482,18 +1482,19 @@ namespace EnrageWestworld.Core
             long now = Store.LastGameMin, day = now > 0 ? now / 1440 : -1;
             if (p == null || p.Home == null || day < 0 || !Lasting(p.Id))
                 return;
+            Person w = WorrySelfOf(p);   // the worry and its link are the resident's, once enRAGE has taken them up (NIGHT3 For Lex 9a)
             string kind;
             int stage;
             bool good;
             bool worried = InnerLife.WorryNow(p, day, out kind, out stage, out good);
-            long arc = InnerLife.ArcFor(p.Id, day);
+            long arc = InnerLife.ArcFor(w.Id, day);
             if (worried)
-                Store.Links.RemoveAll(l => l.Id == p.Id && l.Arc == arc && l.Kind != kind);   // a link for a worry they no longer have (a worry kind added in an update)
+                Store.Links.RemoveAll(l => l.Id == w.Id && l.Arc == arc && l.Kind != kind);   // a link for a worry they no longer have (a worry kind added in an update)
             if (!worried || !Links.Linkable(kind))
                 return;
-            if (Links.Of(Store.Links, p.Id, kind, arc) != null)
+            if (Links.Of(Store.Links, w.Id, kind, arc) != null)
                 return;
-            string key = p.Id + "|" + arc;
+            string key = w.Id + "|" + arc;
             long until;
             if (_noLinkUntil.TryGetValue(key, out until) && now < until)
                 return;
@@ -1505,7 +1506,7 @@ namespace EnrageWestworld.Core
                     _noLinkUntil.Clear();
                 return;
             }
-            Store.Links.Add(new WorryLink { Id = p.Id, Name = p.Name, Kind = kind, Arc = arc, OtherId = other.Id, OtherName = other.Name, Town = p.Home, At = now });
+            Store.Links.Add(new WorryLink { Id = w.Id, Name = p.Name, Kind = kind, Arc = arc, OtherId = other.Id, OtherName = other.Name, Town = p.Home, At = now });
             Links.Prune(Store.Links, day);
             Log("LINK " + p.Name + "'s " + kind + ": " + (kind == "debt" ? "owes " : kind == "feud" ? "at odds with " : "sweet on ") + other.Name + " (a regular in " + p.Home + ")");
         }
@@ -1537,7 +1538,44 @@ namespace EnrageWestworld.Core
             foreach (string old in Store.WorrySettled.Where(kv => now - kv.Value > 3L * InnerLife.WorryDays * 1440).Select(kv => kv.Key).ToList())
                 Store.WorrySettled.Remove(old);
             Store.WorrySettled[id] = now;
-            Log("WORRY settled by you: " + id + " (the rest of its run reads as ended well)");
+            string seed = WorryIdOf(id);
+            if (seed != id)
+                Store.WorrySettled[seed] = now;   // the worry is the resident's they were before enRAGE took them up: mended there too
+            Log("WORRY settled by you: " + id + (seed != id ? " (their worry kept from " + seed + ")" : "") + " (the rest of its run reads as ended well)");
+        }
+
+        /// The id whose worry this person lives on with: the resident enRAGE took up (Store.WorrySeedOf, followed to its
+        /// root), else the id itself (InnerLife.WorryIdOf; NIGHT3 For Lex 9a).
+        public string WorryIdOf(string id)
+        {
+            if (id == null || Store.WorrySeedOf == null)
+                return id;
+            string at = id, next;
+            for (int guard = 0; guard < 4 && Store.WorrySeedOf.TryGetValue(at, out next) && next != null && next != at; guard++)
+                at = next;
+            return at;
+        }
+
+        private readonly Dictionary<string, Person> _worrySelf = new Dictionary<string, Person>();
+
+        /// The person a worry is worked out from (InnerLife.WorrySelf): the resident enRAGE took up, with their own facts
+        /// (trade, age, kin) when the resident is still kept, else this person under the resident's id; else themselves.
+        private Person WorrySelfOf(Person p)
+        {
+            if (p == null || p.Id == null || Store.WorrySeedOf == null)
+                return p;
+            string seed = WorryIdOf(p.Id);
+            if (seed == p.Id)
+                return p;
+            Person c;
+            if (_worrySelf.TryGetValue(p.Id, out c) && c.Id == seed)
+                return c;   // worked out once (no search of the residents each time a thought is asked for)
+            Resident r = Store.FindResident(seed);
+            c = r != null ? PersonOfResident(r) : p.WithId(seed);
+            if (_worrySelf.Count > 200)
+                _worrySelf.Clear();
+            _worrySelf[p.Id] = c;
+            return c;
         }
 
         /// Whether the one linked to this worry has died (InnerLife then sets the worry aside).

@@ -76,20 +76,26 @@ namespace EnrageWestworld.Core
         /// enRAGE took up one of our residents: what they knew of him goes with them too (Lex's test, 2026-10-31: Hugh
         /// Lambert was told the name, was greeted into enRAGE's townsfolk seconds later, and the next Talk offered the name
         /// again; his talks and memories were left behind on the resident's id). Once per pair (a mark on the new state),
-        /// whatever the waking. The worry isn't carried: it follows from the id, so enRAGE's person has a worry of their
-        /// own, and a mended worry (Store.WorrySettled) stays with the resident's, not to end a different one. Returns
-        /// what moved, for the log, or null when nothing did.
-        public string CarryPerson(string fromId, Person to)
+        /// whatever the waking. The worry goes too (NIGHT3 For Lex 9a): enRAGE's person lives on with the resident's worry
+        /// (Store.WorrySeedOf: the same kind, stage and people, worked out from the resident's id and facts, the resident
+        /// kept for it), and a worry Arthur mended (Store.WorrySettled) follows to the new id. Returns what moved, for the
+        /// log, or null when nothing did.
+        public string CarryPerson(string fromId, Person to, Resident fromRes = null)
         {
-            PersonState from = Store.Find(fromId);
-            if (from == null || to == null || to.Id == fromId)
+            if (fromId == null || to == null || to.Id == null || to.Id == fromId)
                 return null;
+            bool worry = KeepWorry(fromId, to.Id, fromRes);   // before the mark: a pair carried by an earlier build gets it too
+            PersonState from = Store.Find(fromId);
+            if (from == null)
+                return worry ? "their worry" : null;
             PersonState st = Store.Get(to);
             string mark = "carried:" + fromId;
             if (st.Has(mark))
-                return null;
+                return worry ? "their worry" : null;
             st.Mark(mark);
             var moved = new List<string>();
+            if (worry)
+                moved.Add("their worry");
             if (from.KnowsName)
             {
                 if (!st.KnowsName)
@@ -137,6 +143,37 @@ namespace EnrageWestworld.Core
             if (memories > 0)
                 moved.Add(memories + (memories == 1 ? " memory" : " memories"));
             return moved.Count > 0 ? string.Join(", ", moved) : null;
+        }
+
+        /// enRAGE's person `toId` lives on with the worry of the resident `fromId` (InnerLife works it out from the
+        /// resident's id and facts), the resident kept so their facts last, and a worry Arthur mended for the resident
+        /// counts for the new id too. True when this is new.
+        public bool KeepWorry(string fromId, string toId, Resident fromRes = null)
+        {
+            if (fromId == null || toId == null || fromId == toId)
+                return false;
+            string root = WorryIdOf(fromId);
+            if (root == toId)
+                return false;   // never a loop
+            if (Store.WorrySeedOf == null)
+                Store.WorrySeedOf = new Dictionary<string, string>();
+            string was;
+            bool fresh = !Store.WorrySeedOf.TryGetValue(toId, out was);   // the first take-up decides: their worry never changes again
+            if (!fresh)
+                return false;
+            Store.WorrySeedOf[toId] = root;
+            _worrySelf.Remove(toId);
+            if (fromRes != null && fromRes.Id == fromId && Store.FindResident(fromId) == null)
+                Store.KeepResident(fromRes, Store.LastGameMin);   // their trade, age and kin, which the worry is worked out from
+            long at;
+            if (Store.WorrySettled != null && Store.WorrySettled.TryGetValue(fromId, out at))
+            {
+                long mine;
+                if (!Store.WorrySettled.TryGetValue(toId, out mine) || mine < at)
+                    Store.WorrySettled[toId] = at;   // the mend follows to the new id (Thanks and the menu read it by id)
+            }
+            Log("WORRY kept: " + toId + " lives on with the worry of " + fromId + (root != fromId ? " (from " + root + ")" : "") + (Store.FindResident(root) != null ? " (" + InnerLife.WorryStatus(PersonOfResident(Store.FindResident(root)), Store.LastGameMin / 1440) + ")" : ""));
+            return true;
         }
 
         public int StageOf(Person p)

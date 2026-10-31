@@ -476,6 +476,23 @@ namespace EnrageWestworld.Core
         /// The game minute the player settled this person's worry (the engine's Store.WorrySettled), or -1. Only reads.
         public static Func<string, long> SettledAt;
 
+        /// The id whose worry this person lives on with (the engine's Store.WorrySeedOf: enRAGE's person keeps the worry of
+        /// the resident it took up, NIGHT3 For Lex 9a), or the id itself. Only reads.
+        public static Func<string, string> WorryIdOf;
+
+        /// The person their worry is worked out from (the resident enRAGE took up, else themselves). Only reads.
+        public static Func<Person, Person> WorrySelf;
+
+        private static string Wid(string id)
+        {
+            return WorryIdOf != null && id != null ? WorryIdOf(id) ?? id : id;
+        }
+
+        private static Person Self(Person p)
+        {
+            return WorrySelf != null && p != null && p.Id != null ? WorrySelf(p) ?? p : p;
+        }
+
         /// Whether the player settled this person's worry in this run, on or before this game day.
         private static bool SettledIn(string id, long arc, long gameDay)
         {
@@ -489,6 +506,7 @@ namespace EnrageWestworld.Core
         /// Whether the player paid to mend this person's worry on this very game day.
         public static bool PaidOn(string id, long gameDay)
         {
+            id = Wid(id);
             long at = SettledAt != null && id != null ? SettledAt(id) : -1;
             return at >= 0 && at / 1440 == gameDay;
         }
@@ -496,6 +514,7 @@ namespace EnrageWestworld.Core
         /// Whether the worry this person is living through today is one the player settled for them.
         public static bool IsSettled(string id, long gameDay)
         {
+            id = Wid(id);
             int dayIn;
             return id != null && gameDay >= 0 && SettledIn(id, ArcOf(id, gameDay, out dayIn), gameDay);
         }
@@ -570,6 +589,7 @@ namespace EnrageWestworld.Core
         /// A thought about the worry this person is living through today, or null if nothing fits them.
         public static string WorryThought(Person p, long gameDay, string seed, List<string> told)
         {
+            p = Self(p);   // enRAGE's person lives on with the worry of the resident it took up
             if (p == null || p.Id == null || gameDay < 0)
                 return null;
             List<WorryKind> fits = FitsFor(p);
@@ -601,6 +621,7 @@ namespace EnrageWestworld.Core
 
         public static string WorrySaid(Person p, long gameDay, string seed, List<string> told = null)
         {
+            p = Self(p);   // enRAGE's person lives on with the worry of the resident it took up
             if (p == null || p.Id == null || gameDay < 0)
                 return null;
             List<WorryKind> fits = FitsFor(p);
@@ -623,6 +644,7 @@ namespace EnrageWestworld.Core
         /// crisis, 3 how it ended) and whether it ends well. False if nothing fits them.
         public static bool WorryNow(Person p, long gameDay, out string kind, out int stage, out bool good)
         {
+            p = Self(p);   // enRAGE's person lives on with the worry of the resident it took up
             kind = null;
             stage = 0;
             good = false;
@@ -658,6 +680,7 @@ namespace EnrageWestworld.Core
         /// Which run of WorryDays this game day is in for this person (by their id alone).
         public static long ArcFor(string id, long gameDay)
         {
+            id = Wid(id);
             int dayIn;
             return ArcOf(new Person { Id = id }, gameDay, out dayIn);
         }
@@ -665,6 +688,7 @@ namespace EnrageWestworld.Core
         /// The stage of this person's worry today (0 it begins .. 3 how it ended), by their id alone.
         public static int StageFor(string id, long gameDay)
         {
+            id = Wid(id);
             int dayIn;
             long arc = ArcOf(id, gameDay, out dayIn);
             return StageOn(id, arc, dayIn, gameDay);
@@ -673,6 +697,7 @@ namespace EnrageWestworld.Core
         /// Whether a worry of this kind, in this run, ends well for this person (by their id alone).
         public static bool EndsWellFor(string id, string kind, long arc)
         {
+            id = Wid(id);
             WorryKind k = Worries.FirstOrDefault(w => w.Key == kind);
             return k != null && EndsWell(new Person { Id = id }, k, arc);
         }
@@ -681,6 +706,7 @@ namespace EnrageWestworld.Core
         /// {place}): the same names their own thoughts use.
         public static string WorryFill(Person p, long gameDay, string line)
         {
+            p = Self(p);   // enRAGE's person lives on with the worry of the resident it took up
             if (p == null || p.Id == null || gameDay < 0 || line == null)
                 return line;
             List<WorryKind> fits = FitsFor(p);
@@ -694,6 +720,7 @@ namespace EnrageWestworld.Core
         /// What this person is going through, for the log and the F7 dump: "debt (Pruitt), worse, day 4 of 8".
         public static string WorryStatus(Person p, long gameDay)
         {
+            p = Self(p);   // enRAGE's person lives on with the worry of the resident it took up
             if (p == null || p.Id == null || gameDay < 0)
                 return "none";
             List<WorryKind> fits = FitsFor(p);

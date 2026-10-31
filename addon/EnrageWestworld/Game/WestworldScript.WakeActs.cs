@@ -166,7 +166,7 @@ namespace EnrageWestworld.InGame
                 Folk f = Snapshot.Of(a);
                 p = _engine.PersonOfFolk(f.Key, f.Name, f.Woman, f.Town, Bridge.Now());
             }
-            string kept = _engine.CarryPerson(b.R.Id, p);   // what they knew of him first: his name, the talks, their memories (Lex's test, 2026-10-31)
+            string kept = _engine.CarryPerson(b.R.Id, p, b.R);   // what they knew of him first: his name, the talks, their memories (Lex's test, 2026-10-31)
             if (kept != null)
                 Log.Write("CARRY: " + b.R.Name + " is one of enRAGE's townsfolk now and keeps what they knew of you (" + kept + ")");
             if (_engine.CarryWake(b.R.Id, p))
