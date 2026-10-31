@@ -25,6 +25,8 @@ namespace EnrageWestworld.Core
             public int GoodChance = 55;                   // percent that it ends well
             public string[] Begin, Worse, Crisis, Good, Bad, AfterGood, AfterBad;
             public string[] Settled;                      // the player settled it for them (roadmap 9): said in place of Good
+            public string[] PaidToday;                    // the day he paid, before it's come good (the doctor not yet out): thought in place of Settled
+            public string[] ToHimToday, ToHimSince;       // said to his face when he asks after it, that day and after (the Settled lines speak of him)
         }
 
         private static readonly string[] NoFamily = { "trapper", "rough", "girl", "soldier", "card" };
@@ -65,6 +67,8 @@ namespace EnrageWestworld.Core
                     "A man I hardly know put eleven dollars in my hand. Paid {who} before I could think better of it.",
                     "Square with {who}, and not a cent of it mine. Grateful and ashamed by turns.",
                     "Paid {who} with another man's money. He tipped his hat like I'd earned it." },
+                ToHimToday = new[] { "Paid {who} already. Walked straight there with your money.", "Square with {who} this very hour, on your money. I can hardly credit it." },
+                ToHimSince = new[] { "Square with {who}, thanks to you. I sleep nights now.", "Owe nobody but you, and you won't take it. Well." },
                 AfterGood = new[] { "Don't owe a soul in this town. Say it out loud sometimes, to hear it.", "Pass {who}'s porch now and tip my hat. Just a hat. Nothing attached to it.", "Jar's filling again. Slowly. Mine this time, every penny." },
                 AfterBad = new[] { "Still see my mule in {who}'s field. He works it harder than I did.", "Walk to the field now. The mule would've carried me. {who} knows it.", "Owed and paid in kind. Folk still say it kindly. Kindly is the part that lasts." }
             },
@@ -95,6 +99,11 @@ namespace EnrageWestworld.Core
                     "A man I hardly know paid the doctor's two dollars. He came by noon. {who}'s fever broke by night.",
                     "Doctor's paid, and not with my money. {who} sat up this morning and asked for broth.",
                     "Owe a man I hardly know for {who}'s mending. Can't think how to thank him." },
+                PaidToday = new[] {
+                    "Two dollars from a man I hardly know, and the doctor's riding out. Now we wait.",
+                    "Doctor's coming. Somebody paid him. Lord, let it be in time." },
+                ToHimToday = new[] { "The doctor's on his way out to us, on your two dollars. Now we wait.", "Sent for the doctor straight off. He's coming. Because of you." },
+                ToHimSince = new[] { "{who}'s through the worst. The doctor came, on your money.", "Mending, thank God. That was your two dollars." },
                 AfterGood = new[] {
                     "Still feel {who}'s forehead every night. Habit now. Can't stop.",
                     "Heard {who} cough in the yard and my heart stopped. Just the dust. Just the dust.",
@@ -340,6 +349,11 @@ namespace EnrageWestworld.Core
                     "Five dollars from a man I hardly know. Can's full. Bought the ticket to {place} before my nerve went.",
                     "Ticket to {place} in my coat. Somebody else made up the fare. I keep touching the pocket.",
                     "Never asked him for a cent. He gave it anyhow. {place}, then. {place} at last." },
+                PaidToday = new[] {
+                    "The can's enough now. Ticket office opens at eight.",
+                    "Fare's made up, and not by me. Haven't told a soul yet." },
+                ToHimToday = new[] { "I'll buy the ticket before I lose my nerve. Your five dollars made it.", "The can's full, thanks to you. I keep lifting the lid to look." },
+                ToHimSince = new[] { "Got the ticket to {place}, thanks to you. I take it out and look at it, nights.", "{place}. Soon. I'd not be going but for you." },
                 AfterGood = new[] { "Ticket's in my coat. Haven't gone yet. Can't say why.", "Train leaves Tuesdays. Been three Tuesdays. The ticket's patient. I'm not sure I am.", "Said {place} out loud at the store. Clerk didn't look up. It's just a word to him." },
                 AfterBad = new[] { "Started a new can. Same bed. Same dream. Smaller can.", "Found a dime in the road. Put it in the new can. Laughed at myself. Did it anyway.", "A man off the train said {place} is nothing special. Wanted to hit him. Thanked him instead." }
             },
@@ -370,6 +384,11 @@ namespace EnrageWestworld.Core
                     "Saint Denis dentist, on another man's three dollars. Gas and all. The ache went with the tooth.",
                     "Ate on both sides of my mouth today. Thanks to a man I'd barely met.",
                     "No barber's pliers for me. A proper dentist, and a man I hardly know paid him. Still can't credit it." },
+                PaidToday = new[] {
+                    "A man I hardly know paid for a proper dentist. One more night of this, then.",
+                    "Saint Denis tomorrow, and a real dentist, paid for. Tonight, the clove oil." },
+                ToHimToday = new[] { "Off to the dentist first thing, thanks to you. My jaw's counting the hours.", "Still throbbing. But tomorrow it's the dentist, thanks to you." },
+                ToHimSince = new[] { "Tooth's out, and good riddance. Your three dollars did that.", "A real dentist, mister, on your money. Didn't feel a thing. Well. Not much." },
                 AfterGood = new[] { "Tongue keeps finding the gap. Like a dog at a hole in the fence.", "Smile with my mouth shut now. Folk think I've turned serious.", "Barber waves at me in the street. Waves. Like we're friends. We're not." },
                 AfterBad = new[] { "Whistle through the gap when I talk. Children laugh. Let them.", "Chew on one side still. Jaw's learned a lean to it.", "Hear a man groan at the barber's and my hand goes to my own jaw." }
             },
@@ -465,6 +484,13 @@ namespace EnrageWestworld.Core
                 return false;
             int dayIn;
             return ArcOf(id, at / 1440, out dayIn) == arc;
+        }
+
+        /// Whether the player paid to mend this person's worry on this very game day.
+        public static bool PaidOn(string id, long gameDay)
+        {
+            long at = SettledAt != null && id != null ? SettledAt(id) : -1;
+            return at >= 0 && at / 1440 == gameDay;
         }
 
         /// Whether the worry this person is living through today is one the player settled for them.
@@ -563,7 +589,9 @@ namespace EnrageWestworld.Core
             WorryKind k = KindAt(p, fits, arc);
             if (LinkedDead(p, k, arc))
                 return null;
-            string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? k.Settled : EndsWell(p, k, arc) ? k.Good : k.Bad;
+            string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis
+                          : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? (k.PaidToday != null && PaidOn(p.Id, gameDay) ? k.PaidToday : k.Settled)   // the day he paid: not mended yet
+                          : EndsWell(p, k, arc) ? k.Good : k.Bad;
             return Fill(Pick(pool, p, seed, told), p, k, arc);
         }
 
@@ -584,6 +612,8 @@ namespace EnrageWestworld.Core
             WorryKind k = KindAt(p, fits, arc);
             if (LinkedDead(p, k, arc))
                 return null;
+            if (stage == 3 && k.ToHimToday != null && SettledIn(p.Id, arc, gameDay))
+                return Fill(Pick(PaidOn(p.Id, gameDay) ? k.ToHimToday : k.ToHimSince, p, seed, told), p, k, arc);   // to the man who paid: the Settled lines speak of him (the review)
             string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? k.Settled : EndsWell(p, k, arc) ? k.Good : k.Bad;
             string[] said = pool.Where(l => !NotSaid.Any(n => l.Contains(n))).ToArray();
             return Fill(Pick(said.Length > 0 ? said : pool, p, seed, told), p, k, arc);   // `told`: not their ticker thought said again

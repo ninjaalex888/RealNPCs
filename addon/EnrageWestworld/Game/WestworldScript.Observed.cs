@@ -31,7 +31,7 @@ namespace EnrageWestworld.InGame
                 if (p == null || p.Handle == doer.Handle || (other != null && p.Handle == other.Handle) || (me != null && p.Handle == me.Handle))
                     continue;
                 float d = p.Position.DistanceTo(at);   // the distance first: two natives fewer for each far body
-                if (d >= bestD || !p.Exists() || p.IsDead || !Natives.IsLaw(p) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, doer.Handle, 17))
+                if (d >= bestD || !p.Exists() || p.IsDead || !Natives.IsLaw(p) || !Facing(p, at, 75f) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, doer.Handle, 17))   // looking their way, not just a clear line (the review)
                     continue;
                 best = p;
                 bestD = d;
@@ -47,7 +47,8 @@ namespace EnrageWestworld.InGame
                    church.DistanceTo2D(p.Position) < Observed.ChurchMetres;
         }
 
-        /// The chance meeting: whether the law looks on either of them (or it's Sunday by the church), so it keeps to words.
+        /// The chance meeting, once it has chosen trouble: whether the law looks on either of them (or it's Sunday by the
+        /// church), so it keeps to words.
         private bool ChanceWatched(Ped a, Ped b)
         {
             if (!_cfg.BeingWatched || !(LawWatching(a, b) != null || LawWatching(b, a) != null || ByChurchOnSunday(a)))
@@ -66,17 +67,19 @@ namespace EnrageWestworld.InGame
             bool church = law == null && ByChurchOnSunday(doerPed);
             if (law == null && !church)
                 return false;
-            if (!Observed.Waits(kind, law != null, church, doer != null ? doer.Temper : null, doer != null && doer.Drunk, doer != null && doer.P != null ? doer.P.Devotion : null, seed))
+            // one roll a day for each doer and kind (the review: seeded by the minute, a hothead swung within three ticks)
+            string daySeed = (doer != null ? doer.Id : doerPed.Handle.ToString()) + "|" + kind + "|" + _store.LastGameMin / 1440;
+            if (!Observed.Waits(kind, law != null, church, doer != null ? doer.Temper : null, doer != null && doer.Drunk, doer != null && doer.P != null ? doer.P.Devotion : null, daySeed))
                 return false;
+            int next;
+            if (_watchedThoughtAt.TryGetValue(doerPed.Handle, out next) && now < next)
+                return true;   // held again: counted, logged and thought once in five minutes (the reason comes back every tick)
             if (law != null)
                 _watchedLaw++;
             else
                 _watchedChurch++;
             string name = doer != null ? doer.Name : "someone";
             Log.Detail("WATCHED " + name + ": " + kind + " waits (" + (law != null ? "a lawman " + (int)law.Position.DistanceTo(doerPed.Position) + " m off has them in sight" : "a Sunday morning by the church") + ")");
-            int next;
-            if (_watchedThoughtAt.TryGetValue(doerPed.Handle, out next) && now < next)
-                return true;
             if (_watchedThoughtAt.Count > 64)
                 _watchedThoughtAt.Clear();
             _watchedThoughtAt[doerPed.Handle] = now + 300000;

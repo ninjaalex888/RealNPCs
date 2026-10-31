@@ -28,6 +28,7 @@ namespace EnrageWestworld.InGame
             public int Handle;
             public string Id, Name, First, Temper, Worry, Trade, FolkId, Regard, Rumour, Self, AskWorry;   // AskWorry: this run's worry at any stage (asked after even once it's over)
             public long WorryArc;   // Self: their own whole name, when they have one (the friendly men give it back)
+            public int WorryStage;  // how far along the worry is (a fever past its crisis can't be mended)
             public bool Woman, Devout, MoneyWorry, Seated, KeepOrders, KnowsName;
             public Person P;           // who they are to the mind, for their worry's words when he asks after it
             public float Reach;
@@ -165,6 +166,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             MindWho w = MindKnown(h, now);
             string worry = null, askWorry = null;
+            int worryStage = 0;
             if (w != null && w.P != null)
             {
                 string kind;
@@ -175,6 +177,7 @@ namespace EnrageWestworld.InGame
                     askWorry = kind;   // how did it turn out? still worth the asking
                     if (stage <= 2)
                         worry = kind;   // while it lasts: once it's come out one way or the other (stage 3) it's no worry now
+                    worryStage = stage;
                 }
             }
             if (w != null && w.Traits == null && w.Src != null)
@@ -187,7 +190,7 @@ namespace EnrageWestworld.InGame
                 Woman = !PED.IS_PED_MALE(h), Devout = w != null && w.Traits != null && w.Traits[Traits.Piety] > 1.2f, MoneyWorry = worry == "debt" || worry == "savings" || worry == "bank",
                 Trade = w != null && w.P != null ? w.P.Trade : null, FolkId = ac != null ? ac.Id : null, Seated = PED.IS_PED_USING_ANY_SCENARIO(h), P = w != null ? w.P : null,
                 Regard = SightRegard(p, id), Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
-                Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440)
+                Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440), WorryStage = worryStage
             };
             TalkRefreshOptions();
             TalkFace(_menu, me, true);
@@ -223,7 +226,7 @@ namespace EnrageWestworld.InGame
             bool told = _talkConfided.Contains(TalkToldKey(_menu));
             string selId = _menu.Options != null && _menu.Sel < _menu.Options.Count ? _menu.Options[_menu.Sel].Id : null;
             Happening wrong = Interact.LastWrong(_store.WorldLog, _menu.Id, _store.LastGameMin);
-            _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, told && Interact.FixCents(_menu.Worry) > 0, _menu.KnowsName ? null : YourFullName(),
+            _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, told && Interact.Mendable(_menu.Worry, _menu.WorryStage), _menu.KnowsName ? null : YourFullName(),
                                              told && _menu.P != null ? _menu.AskWorry : null, wrong != null, wrong != null && _store.LastGameMin - wrong.At < 60, _menu.Worry);   // a worry money can mend: the debt, the doctor, a dentist, the fare
             int at = selId != null ? _menu.Options.FindIndex(x => x.Id == selId) : -1;
             _menu.Sel = at >= 0 ? at : 0;   // the same option stays chosen (by index, "Watch yourself." slid under the cursor after an apology)
@@ -670,7 +673,7 @@ namespace EnrageWestworld.InGame
         private string TalkStatus()
         {
             return (_cfg.InteractionMenu ? "on (Talk on Q, a pad's RB, in the lock-on menu)" : "off ([World] InteractionMenu)") + "; opened " + _talkOpened + " times, " + _talkSaid + " things said" +
-                   (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_talkSettled > 0 ? ", " + _talkSettled + " debts settled" : "") +
+                   (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_talkSettled > 0 ? ", " + _talkSettled + " worries mended" : "") +
                    (_talkModelAsked > 0 ? "; the model worded " + _talkModelSaid + " of " + _talkModelAsked + " answers (" + _talkModelHeld + " held by the checks, " + _talkModelLate + " late)" : "") + (_menu != null ? "; open on " + _menu.Name : "");
         }
     }

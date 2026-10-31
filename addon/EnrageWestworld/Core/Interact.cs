@@ -58,6 +58,13 @@ namespace EnrageWestworld.Core
             }
         }
 
+        /// Whether a sum of his can still mend it at this stage: a fever only before its crisis (by then the doctor has come
+        /// and "tonight will tell": two dollars would buy a fated death off; the review).
+        public static bool Mendable(string worry, int stage)
+        {
+            return FixCents(worry) > 0 && !(worry == "fever" && stage >= 2);
+        }
+
         /// The option's words for that fix.
         public static string FixLabel(string worry)
         {
@@ -92,8 +99,9 @@ namespace EnrageWestworld.Core
             if (ask != null)
                 list.Add(new InteractOption { Id = "ask", Label = ask });
             list.Add(new InteractOption { Id = "drink", Label = "Let me stand you a drink.", Why = !saloon ? "only in a saloon" : cash < DrinkCents ? "not enough money" : null });
-            list.Add(new InteractOption { Id = "give", Label = "Here, take this ($" + gift / 100 + ")", Why = cash < gift ? "not enough money" : null });
             int fix = FixCents(fixKind);
+            if (!(fixKnown && fix > 0 && fixKind == "savings"))   // for the fare the five dollars toward it is the gift (not two rows, ten dollars for one fare)
+                list.Add(new InteractOption { Id = "give", Label = "Here, take this ($" + gift / 100 + ")", Why = cash < gift ? "not enough money" : null });
             if (fixKnown && fix > 0)
                 list.Add(new InteractOption { Id = "settle", Label = FixLabel(fixKind), Why = cash < fix ? "not enough money" : null });
             if (sorry)
@@ -324,9 +332,21 @@ namespace EnrageWestworld.Core
                     return Introduced(temper, regard, woman, you ?? "Smith", woman ? null : self, seed);
                 case "settle":
                     string fixing = FixCents(worry) > 0 ? worry : "debt";
+                    if (hostile && fixing == "fever")
+                    {
+                        // for the sick at home most would take it from anyone, grudging (the review)
+                        a.Line = "For their sake, not yours. ...Give it here.";
+                        a.Thought = "Took his money. For them. I'd take the devil's, for them.";
+                        a.Event = "help";
+                        a.Cents = FixCents(fixing);
+                        a.Settles = true;
+                        a.LikeDelta = 5;
+                        a.VoiceHate = 20;
+                        return a;
+                    }
                     if (hostile)
                     {
-                        a.Line = "I'd sooner owe the devil than owe you.";
+                        a.Line = fixing == "debt" ? "I'd sooner owe the devil than owe you." : "I'll not take a cent from you.";
                         a.VoiceHate = 40;
                         return a;
                     }
@@ -361,7 +381,7 @@ namespace EnrageWestworld.Core
                             switch (fixing)
                             {
                                 case "fever":
-                                    a.Line = Pick(seed + "|set", "You'd do that? For me? Lord love you, mister.", "Two dollars... I'll fetch him now. This minute!", "God bless you. He'll be out to us by noon.");
+                                    a.Line = Pick(seed + "|set", "You'd do that? For me? Lord love you, mister.", "Two dollars... I'll have him out to us today. Today!", "God bless you. He'll be out to us by noon.");
                                     a.Thought = Pick(seed + "|sett", "The doctor's coming. Somebody paid. I could weep.", "He paid the doctor. I'll pray for him tonight, whoever he is.", "Two dollars. All that stood between us and the doctor.");
                                     break;
                                 case "tooth":

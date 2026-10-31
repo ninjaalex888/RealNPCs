@@ -268,7 +268,8 @@ namespace EnrageWestworld.Core
                     Dictionary<string, string> news = glad ? GoodNews : BadNews;
                     if (worry == null || !news.ContainsKey(worry))
                         return null;
-                    s.Add(0, fill(news[worry]), glad ? "cheer" : "chatbad", "face");
+                    string newsLine = glad && worry == "tooth" && a.P != null && InnerLife.IsSettled(a.P.Id, day) ? "A real dentist pulled it, in Saint Denis. Look at that gap. Handsome, ain't it?" : news[worry];   // he paid for no barber
+                    s.Add(0, fill(newsLine), glad ? "cheer" : "chatbad", "face");
                     if (glad)
                         Answer(s, manner, fill, seed, KindToGood, ColdToGood, SharpToGood);
                     else

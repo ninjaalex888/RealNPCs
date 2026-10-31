@@ -237,6 +237,9 @@ namespace EnrageWestworld.Core
                 {
                     WorrySettled.Remove(id);   // not settled yet, as far as the loaded game knows
                     n++;
+                    Happening before = WorldLog != null ? WorldLog.LastOrDefault(e => e != null && e.Kind == "help" && e.DoerId == "player" && e.TargetId == id && e.At <= cut && Thanks.KindOf(e) != null) : null;
+                    if (before != null)
+                        WorrySettled[id] = before.At;   // an earlier mend for them, which the later one overwrote: back from the log (the review)
                 }
             Pacing.Rewind(Pace, cut);
             if (Deaths != null)

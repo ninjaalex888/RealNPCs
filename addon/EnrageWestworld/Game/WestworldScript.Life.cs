@@ -171,9 +171,6 @@ namespace EnrageWestworld.InGame
             if (_hush)
                 foreach (string k in new[] { "brawl", "standoff", "pickpocket", "rough", "drunk" })
                     cast.Off.Add(k);   // a hushed street: no chance brawl either (the review: a held-back reason fell through to this)
-            if (ChanceWatched(a, b))
-                foreach (string k in new[] { "brawl", "standoff", "pickpocket", "rough" })
-                    cast.Off.Add(k);   // being watched (Core/Observed.cs): with the law looking on, a chance meeting keeps to words
             Scene s = null;
             List<Ped> people = new List<Ped> { a, b };
             if (!cast.AWoman && cast.BWoman || cast.AWoman && !cast.BWoman)
@@ -207,6 +204,8 @@ namespace EnrageWestworld.InGame
                     s = Scenes.Argue(cast, seed);
                 if (s != null && s.Kind == "pickpocket" && (cast.AWoman || _theft != null))
                     s = Scenes.SmallTalk(cast, seed);
+                if (s != null && Observed.Holds(s.Kind) && ChanceWatched(a, b))
+                    s = s.Kind == "pickpocket" ? Scenes.SmallTalk(cast, seed) : Scenes.Argue(cast, seed);   // being watched (Core/Observed.cs): with the law looking on, words (looked for only once trouble is chosen)
                 if (s != null && s.Cast > 2 && crowd != null)
                     people.Add(crowd);
             }

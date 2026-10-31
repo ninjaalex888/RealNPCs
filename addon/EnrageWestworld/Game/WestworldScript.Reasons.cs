@@ -330,7 +330,7 @@ namespace EnrageWestworld.InGame
                 Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + kind + " held back (the town is hushed)");
                 return false;   // the street's own trouble waits while the town is shaken (a mind's own pick still decides)
             }
-            if (by == null && !side && WatchedHolds(kind, first, doer, second, me, seed, now))
+            if (!side && (by == null || Observed.Thieving(kind)) && WatchedHolds(kind, first, doer, second, me, seed, now))   // (a mind's own theft too: its words never say it's one)
                 return false;   // being watched: it waits for the law to look away (Core/Observed.cs); the pair's reason stays theirs
             if (side && TroubleKinds.Contains(kind))
                 return false;

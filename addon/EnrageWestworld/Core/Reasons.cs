@@ -263,7 +263,7 @@ namespace EnrageWestworld.Core
             }
             if (x.WakeStage >= 2 && y.WakeStage >= 1)
                 all.Add(new Reason { Kind = "hosts", Strength = 45, Why = "both are waking" });
-            if (worry && stage == 3)
+            if (worry && stage == 3 && !(good && kind != "debt" && InnerLife.PaidOn(x.Id, gameDay)))   // mended today: the doctor, the dentist, the ticket are still to come
                 all.Add(new Reason { Kind = good ? "x:goodnews" : "x:badnews", Strength = 42, Why = x.Name + "'s " + kind + " ended " + (good ? "well" : "badly") + ", and they say so" });
             if (where.DeedsHere && where.Rumours)
                 all.Add(new Reason { Kind = "gossip", Strength = 40, Why = "the town is talking about what the stranger did" });

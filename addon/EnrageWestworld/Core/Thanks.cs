@@ -124,8 +124,8 @@ namespace EnrageWestworld.Core
                     if (kind != null)
                         owed.Add(new ThanksOwed { Kind = kind, At = e.At, Key = "thanks:" + e.Kind + "|" + e.At, Cents = CentsOf(e) });
                 }
-            if (settledAt >= 0 && settledAt <= now && now - settledAt < Within && !owed.Exists(o => o.Key == "thanks:help|" + settledAt))
-                owed.Add(new ThanksOwed { Kind = settledKind ?? "debt", At = settledAt, Key = "thanks:help|" + settledAt });   // (the worry it mended, when the game could read it)
+            if (settledKind != null && settledAt >= 0 && settledAt <= now && now - settledAt < Within && !owed.Exists(o => o.Key == "thanks:help|" + settledAt))   // (null: the game couldn't tell which worry: no words rather than the wrong ones)
+                owed.Add(new ThanksOwed { Kind = settledKind, At = settledAt, Key = "thanks:help|" + settledAt });   // the worry it mended
             ThanksOwed best = null;
             var keys = new List<string>();
             foreach (ThanksOwed o in owed)
@@ -213,15 +213,15 @@ namespace EnrageWestworld.Core
                 case "doctor":
                     return shy ? "The doctor you paid for. They're mending at home. Thank you."
                                : sameDay ? Pick(seed + "|tdo", "The doctor's been out to us, thanks to you. I wanted you told.", "Two dollars, and the doctor came. I'll not forget who paid him.")
-                                         : Pick(seed + "|tdo", "Everyone's mending at home since the doctor came. You paid him. I haven't forgotten.", "That doctor you paid for. Best two dollars anybody ever spent on us.");
+                                         : Pick(seed + "|tdo", "We're through the worst since the doctor came. You paid him. I haven't forgotten.", "That doctor you paid for. Best two dollars anybody ever spent on us.");
                 case "tooth":
                     return shy ? "The dentist. I can eat again. Thank you."
                                : sameDay ? Pick(seed + "|tto", "Tooth's out and I'm still standing. I've you to thank for that.", "No more clove oil, thanks to you, mister.")
                                          : Pick(seed + "|tto", "Eating on both sides again, mister. That was your three dollars.", "Not a twinge since you paid the dentist. Wanted you told.");
                 case "ticket":
                     return shy ? "The money for the fare. I'm going, thanks to you."
-                               : sameDay ? Pick(seed + "|tti", "Got the ticket in my pocket. Wanted you to see it.", "Fare's paid, mister. I'm on the next train out.")
-                                         : Pick(seed + "|tti", "Leaving on the morning train. Wouldn't be, but for you.", "Bags are packed. I'll think of you when the train pulls out.");
+                               : sameDay ? Pick(seed + "|tti", "Got the ticket in my pocket. Wanted you to see it.", "Fare's paid, mister. Now I only want the nerve.")
+                                         : Pick(seed + "|tti", "I'll be leaving one of these mornings. Wouldn't be, but for you.", "When I go, I'll think of you as the train pulls out.");
                 default:
                     return "Wanted to say thank you. That's all.";
             }

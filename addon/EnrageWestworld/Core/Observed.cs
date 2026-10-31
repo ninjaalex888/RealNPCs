@@ -44,8 +44,8 @@ namespace EnrageWestworld.Core
             if (law)
                 return Thieving(kind) ? Voice.Pick(seed + "|wt", "Lawman's eye on the street. Later, then.", "Under a lawman's nose? I'm not that green.", "Lawman right there. Hands in your own pockets.")
                                       : Voice.Pick(seed + "|wl", "It'll keep. The law's standing right there.", "Law's watching. Another day, then.", "I'd settle it now, if the law weren't looking on.");
-            return Thieving(kind) ? Voice.Pick(seed + "|wc", "Every soul in town's at church. Too many eyes.", "Church folk everywhere. Leave it be.")
-                                  : Voice.Pick(seed + "|ws", "On the Lord's day? It'll wait.", "Sunday. It can wait till tomorrow.", "The church is letting out. Some other time.");
+            return Thieving(kind) ? Voice.Pick(seed + "|wc", "Church folk on every step in their Sunday best. Too many eyes.", "Church folk everywhere. Leave it be.")
+                                  : Voice.Pick(seed + "|ws", "On the Lord's day? It'll wait.", "Sunday. It can wait till tomorrow.", "The whole town's in its Sunday best. Some other time.");
         }
     }
 }
