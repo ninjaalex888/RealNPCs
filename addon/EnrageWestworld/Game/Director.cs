@@ -183,6 +183,8 @@ namespace EnrageWestworld.InGame
             Live l = _live;
             if (l != null)
             {
+                if (l.Fighting && (handle == l.FightA || handle == l.FightB))
+                    return true;   // a joiner leading a side since its first man went down is in neither list below
                 foreach (Ped p in l.Cast)   // loops, not Any: no closure (the busy test asks this every frame for the mind's acts)
                     if (p != null && p.Handle == handle)
                         return true;
@@ -391,6 +393,7 @@ namespace EnrageWestworld.InGame
             {
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(l.Shooter, false);
                 TASK.CLEAR_PED_TASKS(l.Shooter, true, false);
+                FleeOrdered?.Invoke(l.Shooter);   // the run is a run, not cowering ([World] Bravery)
                 TASK.TASK_SMART_FLEE_PED(l.Shooter, l.ShotAt != 0 && ENTITY.DOES_ENTITY_EXIST(l.ShotAt) ? l.ShotAt : _player, 150f, -1, 0, 3f, 0);   // he runs from what he's done
             }
             if (l.FightAttrs != null)
@@ -916,7 +919,8 @@ namespace EnrageWestworld.InGame
                     {
                         l.FightAttrs[p] = FightAttrIds.Select(id => PED._GET_PED_COMBAT_ATTRIBUTE(p, id)).ToArray();
                         foreach (int id in FightAttrIds)
-                            PED.SET_PED_COMBAT_ATTRIBUTES(p, id, true);
+                            if (FightAttrMine(id))
+                                PED.SET_PED_COMBAT_ATTRIBUTES(p, id, true);
                     }
                     FightOrder(l);
                     return 1000;
@@ -994,6 +998,7 @@ namespace EnrageWestworld.InGame
                         return 600;
                     }
                 case "flee":
+                    FleeOrdered?.Invoke(h);
                     if (Bravery.Holds(BraveryNow, l.Seed + "|flee|" + who))
                         TASK.TASK_SMART_FLEE_PED(h, t, 10f, 6000, 0, 1f, 0);   // brave ([World] Bravery): backs off a few steps, at a walk
                     else
@@ -1059,6 +1064,7 @@ namespace EnrageWestworld.InGame
                         TASK.TASK_COMBAT_PED(h, t, 0, 16);
                         uint theirs = WEAPON.GET_BEST_PED_WEAPON(t, false, false);
                         bool armed = theirs != 0 && theirs != Natives.Hash("WEAPON_UNARMED");
+                        FleeOrdered?.Invoke(t);   // he may run: the run is a run ([World] Bravery)
                         if (armed)
                         {
                             WEAPON.SET_CURRENT_PED_WEAPON(t, theirs, true, 0, false, false);
@@ -1118,6 +1124,7 @@ namespace EnrageWestworld.InGame
                     return 900;
                 case "run":
                     TASK.CLEAR_PED_TASKS(h, true, false);
+                    FleeOrdered?.Invoke(h);
                     TASK.TASK_SMART_FLEE_PED(h, _player != 0 ? _player : t, 180f, -1, 0, 3f, 0);
                     return 300;
                 case "faceplayer":
@@ -1179,6 +1186,13 @@ namespace EnrageWestworld.InGame
         // lists, no script seen setting it); every one of them put back when the scene ends
         private static readonly int[] FightAttrIds = { 5, 46, 58, 77, 78 };
 
+        /// Whether the fight sets this one of FightAttrIds: 77 and 78 are Bravery's half, so at [World] Bravery 0 a fight
+        /// leaves them as the game has them (the review, 2026-10-31); all five are read and put back either way.
+        private bool FightAttrMine(int id)
+        {
+            return (id != 77 && id != 78) || BraveryNow > 0;
+        }
+
         /// The order to fight, once both are on their feet: a man sat or leaning is told to stop (the clear lets him get
         /// up) and, still in it after 3 s, taken out of it at once. Given again every 2 s until they're at it.
         /// The fight going on now, as two sides: who started it on each, and who has joined each (Core/JoinIn.cs); false when
@@ -1229,7 +1243,7 @@ namespace EnrageWestworld.InGame
                 return false;
             if (l.Out.Contains(target) || ENTITY.IS_ENTITY_DEAD(target))
             {
-                target = LeastAttacked(l, 1 - side);   // the man he got up for is down already: the least beset over there
+                target = LeastAttacked(l, 1 - side, PED.IS_PED_MALE(h));   // the man he got up for is down already: the least beset over there (a man before a woman for a man)
                 if (target == 0)
                     return false;
             }
@@ -1242,7 +1256,8 @@ namespace EnrageWestworld.InGame
             if (!l.FightAttrs.ContainsKey(h))
                 l.FightAttrs[h] = FightAttrIds.Select(id => PED._GET_PED_COMBAT_ATTRIBUTE(h, id)).ToArray();
             foreach (int id in FightAttrIds)
-                PED.SET_PED_COMBAT_ATTRIBUTES(h, id, true);
+                if (FightAttrMine(id))
+                    PED.SET_PED_COMBAT_ATTRIBUTES(h, id, true);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
             WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
             TASK.TASK_COMBAT_PED(h, target, 0, 16);
@@ -1268,8 +1283,11 @@ namespace EnrageWestworld.InGame
         public int TargetOf(int h)
         {
             Live l = _live;
-            if (l == null || !l.Fighting)
-                return 0;
+            return l != null && l.Fighting ? TargetOf(l, h) : 0;
+        }
+
+        private static int TargetOf(Live l, int h)
+        {
             if (h == l.FightA)
                 return l.FightB;
             if (h == l.FightB)
@@ -1298,15 +1316,32 @@ namespace EnrageWestworld.InGame
         }
 
         /// The fight is over: those who joined stop, and their own combat ways come back (End puts back the attributes).
+        /// A joiner who came to lead a side once its first man went down is let go the same way: he is in neither the
+        /// joiners nor the first two of the cast (the review, 2026-10-31: he fought on after the scene, off our hold).
         private static void LetJoinersGo(Live l)
         {
             foreach (int[] j in l.Joiners)
-                if (ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
-                {
-                    if (PED.IS_PED_IN_COMBAT(j[0], 0))
-                        TASK.CLEAR_PED_TASKS(j[0], true, false);
-                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(j[0], !l.Ended);   // held until the scene ends, as endfight holds the two; let go then
-                }
+                LetFighterGo(l, j[0]);
+            for (int k = 0; k < 2; k++)
+            {
+                int h = k == 0 ? l.FightA : l.FightB;
+                if (h == 0 || l.Out.Contains(h))
+                    continue;   // down, or gone for his gun: the game layer has him
+                bool first = false;
+                for (int i = 0; i < l.Cast.Length && i < 2; i++)
+                    first |= l.Cast[i] != null && l.Cast[i].Handle == h;
+                if (!first)
+                    LetFighterGo(l, h);
+            }
+        }
+
+        private static void LetFighterGo(Live l, int h)
+        {
+            if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                return;
+            if (PED.IS_PED_IN_COMBAT(h, 0))
+                TASK.CLEAR_PED_TASKS(h, true, false);
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, !l.Ended);   // held until the scene ends, as endfight holds the two; let go then
         }
 
         private static void FightOrder(Live l)
@@ -1371,6 +1406,12 @@ namespace EnrageWestworld.InGame
         /// Called once per man per fight, from the frame tick.
         public Action<int, int, int, bool> FighterDown;
 
+        /// Someone in a scene is about to be sent running (the game layer gives him back his own flight first: [World] Bravery).
+        public Action<int> FleeOrdered;
+
+        /// The two sides as they stood the moment the last man went down, him included (read in FighterDown).
+        public readonly List<int> DownSideA = new List<int>(), DownSideB = new List<int>();
+
         /// Under this share of his start health a fighter is down: the fate is rolled before the game's own blow kills him.
         private const float DownShare = 0.30f;
 
@@ -1432,29 +1473,30 @@ namespace EnrageWestworld.InGame
             return -1;
         }
 
-        /// The man on that side with the fewest on him, still up (0: none).
-        private static int LeastAttacked(Live l, int side)
+        /// The man on that side with the fewest on him, still up (0: none). For a man's hand (byMan), a man before a woman
+        /// whenever a man is still up over there, as JoinIn.Spread has it (the review, 2026-10-31: the turn after a down
+        /// sent men onto a woman with no regard for the 1899 rule).
+        private static int LeastAttacked(Live l, int side, bool byMan)
         {
-            int best = 0, bestOn = int.MaxValue;
-            int lead = side == 0 ? l.FightA : l.FightB;
-            if (lead != 0 && !l.Out.Contains(lead) && ENTITY.DOES_ENTITY_EXIST(lead) && !ENTITY.IS_ENTITY_DEAD(lead))
+            int best = 0, bestOn = int.MaxValue, bestMan = 0, bestManOn = int.MaxValue;
+            for (int i = -1; i < l.Joiners.Count; i++)
             {
-                best = lead;
-                bestOn = AttackersOn(l, lead);
-            }
-            for (int i = 0; i < l.Joiners.Count; i++)
-            {
-                int[] j = l.Joiners[i];
-                if (j[1] != side || l.Out.Contains(j[0]) || !ENTITY.DOES_ENTITY_EXIST(j[0]) || ENTITY.IS_ENTITY_DEAD(j[0]))
+                int h = i < 0 ? (side == 0 ? l.FightA : l.FightB) : l.Joiners[i][1] == side ? l.Joiners[i][0] : 0;
+                if (h == 0 || l.Out.Contains(h) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                     continue;
-                int on = AttackersOn(l, j[0]);
+                int on = AttackersOn(l, h);
                 if (on < bestOn)
                 {
-                    best = j[0];
+                    best = h;
                     bestOn = on;
                 }
+                if (byMan && on < bestManOn && PED.IS_PED_MALE(h))
+                {
+                    bestMan = h;
+                    bestManOn = on;
+                }
             }
-            return best;
+            return bestMan != 0 ? bestMan : best;
         }
 
         /// Every frame of a fight: the first man found beaten down (or killed) is dropped. Loops over handles only.
@@ -1467,8 +1509,10 @@ namespace EnrageWestworld.InGame
                     continue;
                 if (k < 0 && !l.WasBig)
                     continue;   // the first two in a fight of a few: the 60% rule ends it before this
-                bool dead = ENTITY.IS_ENTITY_DEAD(h) || PED.IS_PED_INCAPACITATED(h);
-                if (dead || HealthOf(l, h) < DownShare)
+                // only the dead count as killed by the game's blow; a man the game has incapacitated is a down like any
+                // other and his fate is rolled (the review, 2026-10-31: he was killed whatever BrawlFistsFatal said)
+                bool dead = ENTITY.IS_ENTITY_DEAD(h);
+                if (dead || PED.IS_PED_INCAPACITATED(h) || HealthOf(l, h) < DownShare)
                 {
                     FightDown(l, h, dead);
                     return;   // one a frame: the lists have changed
@@ -1481,6 +1525,25 @@ namespace EnrageWestworld.InGame
         private void FightDown(Live l, int h, bool dead)
         {
             int by = AttackerOf(l, h), on = AttackersOn(l, h);
+            if (by == 0)
+            {
+                // nobody listed on him (a joiner beaten by the man he went for, who fights back by the game's own ways): that
+                // man, else the least beset of the other side, so the blow and the death are someone's, never his own hand
+                int t = TargetOf(l, h), side = SideOf(l, h);
+                by = t != 0 && !l.Out.Contains(t) && ENTITY.DOES_ENTITY_EXIST(t) && !ENTITY.IS_ENTITY_DEAD(t) ? t
+                   : side >= 0 ? LeastAttacked(l, 1 - side, true) : 0;
+            }
+            // the sides as they stood when he went down, for his fate's fair fight and friend in it (after the drop a side may be
+            // gone, and FightSides says nothing)
+            DownSideA.Clear();
+            DownSideB.Clear();
+            if (l.FightA != 0 && (h == l.FightA || !l.Out.Contains(l.FightA)))
+                DownSideA.Add(l.FightA);
+            if (l.FightB != 0 && (h == l.FightB || !l.Out.Contains(l.FightB)))
+                DownSideB.Add(l.FightB);
+            foreach (int[] j in l.Joiners)
+                if (j[0] == h || !l.Out.Contains(j[0]))
+                    (j[1] == 0 ? DownSideA : DownSideB).Add(j[0]);
             DropFromFight(l, h);
             try
             {
@@ -1509,14 +1572,20 @@ namespace EnrageWestworld.InGame
             bool lead = h == l.FightA || h == l.FightB;
             if (lead)
             {
+                // a man of his side leads it before a woman, so the other side's leader isn't sent onto her first (1899)
                 int idx = -1;
                 for (int i = 0; i < l.Joiners.Count; i++)
                 {
                     int[] j = l.Joiners[i];
                     if (j[1] == side && !l.Out.Contains(j[0]) && ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
                     {
-                        idx = i;
-                        break;
+                        if (idx < 0)
+                            idx = i;
+                        if (PED.IS_PED_MALE(j[0]))
+                        {
+                            idx = i;
+                            break;
+                        }
                     }
                 }
                 if (idx < 0)
@@ -1548,7 +1617,7 @@ namespace EnrageWestworld.InGame
                 int[] j = l.Joiners[i];
                 if (j.Length < 3 || j[2] != h)
                     continue;
-                int t = LeastAttacked(l, 1 - j[1]);
+                int t = LeastAttacked(l, 1 - j[1], ENTITY.DOES_ENTITY_EXIST(j[0]) && PED.IS_PED_MALE(j[0]));
                 if (t == 0)
                     continue;
                 j[2] = t;

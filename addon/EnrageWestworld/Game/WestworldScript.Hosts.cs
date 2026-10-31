@@ -231,8 +231,9 @@ namespace EnrageWestworld.InGame
                     _stalkerCooldown = 0;
                     _nextStalkCheck = 0;
                     _stalkWait = null;
-                    Log.Write("STALKER key (" + _stalkerKey + "): someone near you will start following you as soon as nothing is in the way.");
-                    News("Stalkers", "someone near you will start following you. Go about your business, and check behind you from time to time.", "news");
+                    string comes = _cfg.StalkerBlack ? "a stranger dressed in black will turn up behind you, out of sight" : "someone near you will start following you";   // with black on only the stranger comes (the review, 2026-10-31)
+                    Log.Write("STALKER key (" + _stalkerKey + "): " + comes + (_cfg.StalkerBlack ? "." : " as soon as nothing is in the way."));
+                    News("Stalkers", comes + ". Go about your business, and check behind you from time to time.", "news");
                 }
             }
             if (_stalker != null)
@@ -315,7 +316,7 @@ namespace EnrageWestworld.InGame
                 {
                     _nextStalkRoll = now + every;
                     bool hit = _rng.Next(100) < _cfg.StalkerChance;
-                    Log.Write("Stalker roll (" + _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min): " + (hit ? "someone near you will start following you." : "nobody this time."));
+                    Log.Write("Stalker roll (" + _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min): " + (hit ? (_cfg.StalkerBlack ? "a stranger in black will turn up behind you, out of sight." : "someone near you will start following you.") : "nobody this time."));
                     if (hit)
                     {
                         _stalkDueSince = now;

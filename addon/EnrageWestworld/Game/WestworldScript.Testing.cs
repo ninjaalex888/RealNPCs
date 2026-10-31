@@ -492,7 +492,7 @@ namespace EnrageWestworld.InGame
             if (people.Count < 2)
                 // anyone free is given a name on the spot; what stood in the way, counted (Lex, 2026-10-31: refused 14 times
                 // in busy Saint Denis with only "fewer than two named people")
-                return "fewer than two free people within " + (int)ReasonRange + " m (" + people.Count + " free; everyone within " + (int)ReasonRange + " m: " + CrowdCounted(me, ReasonRange) + ")";
+                return "fewer than two free people within " + (int)ReasonRange + " m (" + people.Count + " free; everyone within " + (int)ReasonRange + " m, by what kept them out: " + ReasonRejects(me, now) + ")";
             string courtAnswer = kind == "court" ? new[] { "yes", "maybe", "no" }[_courtTurn++ % 3] : null;
             bool standUp = kind == "standup";
             bool ladder = kind == "ladder";

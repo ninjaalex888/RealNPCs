@@ -268,6 +268,7 @@ namespace EnrageWestworld.InGame
             {
                 int h = m.Ped.Handle;
                 TASK.CLEAR_PED_TASKS(h, true, false);
+                BraveRelease(h);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
                 if (Bravery.Holds(_cfg.Bravery, "scatter|" + h))
                     TASK.TASK_SMART_FLEE_PED(h, me.Handle, 40f, 20000, 0, 1.3f, 0);   // brave ([World] Bravery): walks off from you, unhurried
                 else

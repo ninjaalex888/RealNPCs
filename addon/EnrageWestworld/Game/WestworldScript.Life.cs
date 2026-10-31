@@ -42,6 +42,7 @@ namespace EnrageWestworld.InGame
             PatientStep(now);   // the doctor's patient on the way there and back (WestworldScript.Patient.cs)
             ThrownOutStep(now);   // the card cheat on the boardwalk
             SabbathWatchStep(now);   // the one who saw the kneel thinks of it, a few seconds on
+            _director.BraveryNow = _cfg.Bravery;   // before the scene ticks: a fight whose first beat comes before JoinStep has run still gets Bravery's CA 77 and 78
             if (_director.AnyPlaying)
             {
                 if (_director.Busy)
@@ -1060,6 +1061,7 @@ namespace EnrageWestworld.InGame
                     WanderLater(p.Handle, Game.GameTime + 5000);
                     continue;
                 }
+                BraveRelease(p.Handle);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
                 TASK.TASK_SMART_FLEE_PED(p.Handle, me.Handle, 120f, -1, 0, 3f, 0);
                 if (!screamed)
                     screamed = Speech.SayAny(p.Handle, Speech.Scared, me.Handle);

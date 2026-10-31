@@ -63,6 +63,41 @@ namespace EnrageWestworld.InGame
             return list;
         }
 
+        /// For a test's refusal only: everyone within ReasonRange counted by the first of ReasonCandidates' own rules that
+        /// keeps them out, in its order (the review, 2026-10-31: the brawl test was refused 14 times in busy Saint Denis, and
+        /// the crowd count by other rules couldn't say which of these it was). Keep it in step with ReasonCandidates.
+        private string ReasonRejects(Ped me, int now)
+        {
+            var why = new Dictionary<string, int>();
+            Action<string> add = k => why[k] = why.TryGetValue(k, out int n) ? n + 1 : 1;
+            Vector3 at = me.Position;
+            foreach (Ped p in World.GetAllPeds())
+            {
+                int h = p.Handle;
+                if (h == me.Handle || !p.Exists() || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(at) > ReasonRange)
+                    continue;
+                string w = ENTITY.IS_ENTITY_DEAD(h) ? "dead"
+                    : Natives.IsChild(p) ? "children"
+                    : Natives.IsLaw(p) ? "lawmen"
+                    : PED.IS_PED_IN_COMBAT(h, 0) ? "in combat"
+                    : PED.IS_PED_FLEEING(h) ? "fleeing"
+                    : Natives.OtherScripts(h) && !IsRecord(h) ? "another script's"
+                    : Spawner.IsOurs(h) ? "the add-on's own"
+                    : MayDirectWhyNot(p) != null ? "not ours to direct (" + MayDirectWhyNot(p) + ")"
+                    : PostKindOf(p) != null ? "at a counter"
+                    : IsHermit(h) || IsGatherer(h) || IsExecutionPed(h) ? "a hermit, a gathering or an execution"
+                    : _wakeActs.Any(x => x.Handle == h) ? "in a waking act"
+                    : IsAcknowledging(h) ? "nodding to you"
+                    : InTalk(h) ? "in a conversation"
+                    : _director.Involves(h) ? "in a scene"
+                    : PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_ON_MOUNT(h) ? "riding or in a wagon"
+                    : SomeoneOf(p) == null ? "no identity (" + (ResidentWhy(p) ?? "none made") + ")"
+                    : "free";
+                add(w);
+            }
+            return why.Count == 0 ? "nobody" : string.Join(", ", why.OrderByDescending(kv => kv.Value).Select(kv => kv.Value + " " + kv.Key));
+        }
+
         /// Who this person is to the reasons: one of enRAGE's townsfolk, or a resident (made on the spot if need be).
         private Someone SomeoneOf(Ped p)
         {

@@ -63,7 +63,11 @@ namespace EnrageWestworld.InGame
                 return;
             _nextLedger = now + 500;
             if (MISC.GET_MISSION_FLAG())
+            {
+                if (_brave.Count > 0)
+                    BraveRestoreAll("a story mission");   // the street as the game has it for the mission (the review, 2026-10-31); asked afresh after it
                 return;   // story missions are left alone, deaths in them too
+            }
             Ped me = Game.Player.Character;
             Vector3 at = me.Position;
             BraveSweepBegin(now);   // every 2 s this pass is also the bravery sweep (WestworldScript.Bravery.cs): no array of its own

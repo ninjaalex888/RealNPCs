@@ -34,6 +34,8 @@ namespace EnrageWestworld.InGame
             _director.FightMostMs = BrawlsOn ? 45000 : 20000;
             _director.BraveryNow = _cfg.Bravery;   // the scene's own frights hold their ground by [World] Bravery
             _director.DownsOn = BrawlsOn;   // a man beaten down in a brawl: killed or knocked out, and it goes on (WestworldScript.Brawl.cs)
+            if (_director.FleeOrdered == null)
+                _director.FleeOrdered = BraveRelease;
             if (_director.FighterDown == null)
                 _director.FighterDown = OnFighterDown;
             if (!_cfg.MindLive || !_cfg.MindJoinFights || _joinFailed || now < _joinNextAt)
@@ -48,6 +50,8 @@ namespace EnrageWestworld.InGame
             if (a.Count + b.Count > _brawlBiggest)
                 _brawlBiggest = a.Count + b.Count;
             JoinPendingStep(now);
+            if (!_director.FightSides(out a, out b))
+                return;   // the sides again: those who got up to join are on them now, so the balance sees them (the review, 2026-10-31)
             if (_director.JoinerCount + _joinPending.Count >= MostJoinersNow)
                 return;
             try

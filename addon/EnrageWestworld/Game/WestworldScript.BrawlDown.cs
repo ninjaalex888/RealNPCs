@@ -27,7 +27,7 @@ namespace EnrageWestworld.InGame
 
         private sealed class FatalDue
         {
-            public int Handle, At, Until;
+            public int Handle, By, At, Until;
             public string Id, Name, Kind;
         }
 
@@ -56,8 +56,10 @@ namespace EnrageWestworld.InGame
             Vector3 pos = p.Position;
             bool lawNear = BrawlFindLaw(pos, 30f, false, 0) != null;
             bool friendNear = false, fair = false;
-            List<int> sa, sb;
-            if (_director.FightSides(out sa, out sb))
+            // the sides as they stood when he went down (the Director's own snapshot: after the drop the last down of a brawl
+            // leaves a side empty, and the fair fight and the friend in it were never counted for him; the review, 2026-10-31)
+            List<int> sa = _director.DownSideA, sb = _director.DownSideB;
+            if (sa.Count > 0 && sb.Count > 0)
             {
                 if (v != null && v.Id != null)
                     foreach (int f in sa.Concat(sb))
@@ -99,19 +101,23 @@ namespace EnrageWestworld.InGame
                     return;
                 }
                 _brawlFatal.Add(h);
+                // the last blow is the man on him (the Director names one whenever anyone is still up on the other side): the
+                // source of the death is his, so the ledger books it as another's hand with his name, never "their own"
+                int src = by != 0 && ENTITY.DOES_ENTITY_EXIST(by) ? by : h;
                 if (!dead)
                 {
                     TASK.CLEAR_PED_TASKS(h, true, false);
-                    PED.APPLY_DAMAGE_TO_PED(h, Math.Max(50, ENTITY.GET_ENTITY_HEALTH(h) + 50), 0, 0, by != 0 ? by : h);   // the last blow, his: the source of the death is the man on him
+                    PED.APPLY_DAMAGE_TO_PED(h, Math.Max(50, ENTITY.GET_ENTITY_HEALTH(h) + 50), 0, 0, src);
                 }
                 if (k != null && k.Id != null)
-                    _brawlFatalDue.Add(new FatalDue { Handle = h, Id = k.Id, Name = k.Name, Kind = k.Kind, At = now + 600, Until = now + 6000 });
+                    _brawlFatalDue.Add(new FatalDue { Handle = h, By = src != h ? src : 0, Id = k.Id, Name = k.Name, Kind = k.Kind, At = now + 600, Until = now + 6000 });
                 Log.Write("BRAWL down: " + name + " is beaten to death by " + byName + " (" + why + ", " + on + " on him)");
                 return;
             }
             _brawlKnockedOut++;
             ENTITY.SET_ENTITY_INVINCIBLE(h, true);   // nobody finishes a knocked-out man; undone when he comes to, and on a reload
-            TASK.CLEAR_PED_TASKS(h, true, false);
+            if (!PED.IS_PED_INCAPACITATED(h))
+                TASK.CLEAR_PED_TASKS(h, true, false);   // one the game has down already is left down its own way
             PED.SET_PED_TO_RAGDOLL(h, 20000, 30000, 0, false, false, "");
             int ms = Brawl.KnockoutMs(seed);
             _brawlOut[h] = new BrawlKo { Until = now + ms, Model = ENTITY.GET_ENTITY_MODEL(h), Name = name };
@@ -157,7 +163,8 @@ namespace EnrageWestworld.InGame
                 bool there = ENTITY.DOES_ENTITY_EXIST(d.Handle);
                 if (there && !ENTITY.IS_ENTITY_DEAD(d.Handle) && now < d.Until)
                 {
-                    PED.APPLY_DAMAGE_TO_PED(d.Handle, Math.Max(50, ENTITY.GET_ENTITY_HEALTH(d.Handle) + 50), 0, 0, d.Handle);   // the blow didn't take: again
+                    int src = d.By != 0 && ENTITY.DOES_ENTITY_EXIST(d.By) ? d.By : d.Handle;
+                    PED.APPLY_DAMAGE_TO_PED(d.Handle, Math.Max(50, ENTITY.GET_ENTITY_HEALTH(d.Handle) + 50), 0, 0, src);   // the blow didn't take: again, his
                     d.At = now + 1500;
                     continue;
                 }
@@ -170,6 +177,11 @@ namespace EnrageWestworld.InGame
                 if (_deadNoted.Contains(d.Handle))
                     continue;   // the ledger's own pass booked it first
                 _deadNoted.Add(d.Handle);
+                if (d.By != 0 && ENTITY.DOES_ENTITY_EXIST(d.By))
+                {
+                    _known.Remove(d.By);   // the killer too may be cached as nobody from before the brawl named him: his name for the book
+                    KnownAt(new Ped(d.By), now);
+                }
                 LedgerNote(d.Handle, d.Id, d.Name, d.Kind, "a beating", null);
             }
             if (_brawlFatal.Count > 200)

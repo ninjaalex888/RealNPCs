@@ -293,6 +293,7 @@ namespace EnrageWestworld.InGame
                 case "flee":
                     _hermitAway.Add(o.R.Id);
                     TASK.CLEAR_PED_TASKS(h, true, false);
+                    BraveRelease(h);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
                     TASK.TASK_SMART_FLEE_PED(h, me, 150f, -1, 0, 3f, 0);
                     Feed.Say(o.R.Name, Encounters.Pick(Encounters.HermitFlee, o.R.Id + "|f|" + now / 1000), Speech.When(h, "getaway", me), toYou: true);
                     break;

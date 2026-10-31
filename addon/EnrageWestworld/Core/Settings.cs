@@ -630,8 +630,14 @@ namespace EnrageWestworld.Core
             foreach (TestActions.Entry te in TestActions.All)
                 testMissing |= !testSeen.Contains(te.KeySetting);
             if (testMissing && s.SettingsVersion >= CurrentVersion)
-                s.SettingsVersion = CurrentVersion - 1;   // a Testing key missing from the file: written again with all of them (values kept)
-            if (s.SettingsVersion < CurrentVersion)
+            {
+                // a Testing key missing from the file: written again with all of them, values kept and nothing moved (lowering the
+                // version for it ran the last version's default moves again over values of the player's own; the review, 2026-10-31)
+                s.SettingsVersion = CurrentVersion;
+                Write(path, s);
+                log?.Invoke("Settings: " + Path.GetFileName(path) + " written again with every Testing row (your values kept).");
+            }
+            else if (s.SettingsVersion < CurrentVersion)
             {
                 if (s.SettingsVersion < 3 && s.TestKey != null && s.TestKey.Replace(" ", "").Equals("Ctrl+F7", StringComparison.OrdinalIgnoreCase))
                     s.TestKey = "F7";

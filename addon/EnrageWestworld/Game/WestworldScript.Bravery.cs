@@ -111,6 +111,7 @@ namespace EnrageWestworld.InGame
             catch (Exception ex)
             {
                 _braveFailed = true;
+                _braveDue = false;   // the rest of this pass too: nobody made braver after the failure (the review, 2026-10-31)
                 Log.Write("BRAVERY failed once, off for this session (people are left as the game has them): " + ex.Message);
                 BraveRestoreAll("it failed");
             }
@@ -144,8 +145,17 @@ namespace EnrageWestworld.InGame
                 return;
             int t = 0;
             ulong slot = 0;
-            if (PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle) && PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(Game.Player.Handle, (int*)&slot))
-                t = (int)slot;
+            if (PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle))
+            {
+                if (PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(Game.Player.Handle, (int*)&slot))
+                    t = (int)(uint)slot;
+                if (t == 0)
+                {
+                    slot = 0;
+                    if (PLAYER.GET_PLAYER_TARGET_ENTITY(Game.Player.Handle, (int*)&slot))
+                        t = (int)(uint)slot;   // aim assist's lock-on, as the gunpoint code reads it (Frontier.cs; the review, 2026-10-31)
+                }
+            }
             if (t == 0)
             {
                 int lock0 = 0;
@@ -162,6 +172,19 @@ namespace EnrageWestworld.InGame
                 _braveAimed++;
             }
             r.HeldUntil = now + 20000;
+        }
+
+        /// Someone the mod is about to send running (a pickpocket, a shooter, a thief, a scene's fright): PCF 44 put back as
+        /// the game had it first and left so for two minutes, so the run isn't turned into cowering where he stands (the
+        /// review, 2026-10-31; whether the game's smart flee heeds PCF 44 at all is not yet seen in game). A lookup, nothing
+        /// for one never made braver.
+        private void BraveRelease(int h)
+        {
+            BraveRec r;
+            if (h == 0 || !_brave.TryGetValue(h, out r))
+                return;
+            BraveRestore(h, r);
+            r.HeldUntil = Game.GameTime + 120000;
         }
 
         private void BraveRestore(int h, BraveRec r)

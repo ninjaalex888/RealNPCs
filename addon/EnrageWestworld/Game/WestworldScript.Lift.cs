@@ -39,6 +39,7 @@ namespace EnrageWestworld.InGame
                     // beat him up with no Wanted bounty, as well as easier to track on the minimap")
                     MarkThief(r, Game.GameTime);
                     TASK.CLEAR_PED_TASKS(r.Handle, true, false);
+                    BraveRelease(r.Handle);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
                     TASK.TASK_SMART_FLEE_PED(r.Handle, Game.Player.Character.Handle, 200f, -1, 0, 3f, 0);
                 }
                 Feed.Notice("Pickpocketed", "Your pocket's lighter by " + Cents(_liftRunTake) + ". The man who bumped you is running.");
