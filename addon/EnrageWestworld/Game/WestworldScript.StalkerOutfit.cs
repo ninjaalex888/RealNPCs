@@ -13,7 +13,7 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private int _soModel, _soPreset = -1, _soOutfits, _soUntil;
+        private int _soModel, _soPreset = -1, _soOutfits, _soUntil, _soAt;
         private Ped _soPed;
 
         private string StalkerOutfitNext(int now, out string said)
@@ -39,6 +39,10 @@ namespace EnrageWestworld.InGame
             }
             if (!Spawner.Ready(model))
                 return all[mi] + " is loading: press again in a moment";
+            // one at a time: the game went down when presses a second apart took a man away while his clothes were still
+            // going on (Lex, 2026-10-31, the 11th press); the next only once he is dressed and 4 s have passed
+            if (_soPed != null && _soPed.Exists() && (now - _soAt < 4000 || !PED.IS_PED_READY_TO_RENDER(_soPed.Handle)))
+                return "a moment: the last one is still being dressed (one every 4 s)";
             StalkerOutfitClear();
             Vector3 f = me.ForwardVector;
             Vector3 want = me.Position + new Vector3(f.X, f.Y, 0f) * 4f, at;
@@ -68,6 +72,7 @@ namespace EnrageWestworld.InGame
             _soPreset = n > 0 ? preset : 0;
             _soOutfits = Math.Max(1, n);
             _soUntil = now + 90000;
+            _soAt = now;
             string line = all[mi] + " preset " + _soPreset + " of " + n + " (model " + (mi + 1) + " of " + all.Length + "): ini StalkerBlackModel = " + all[mi] + ", StalkerBlackOutfit = " + _soPreset;
             Log.Write("STALKER OUTFIT candidate " + line);
             Hint("Stalker outfit: " + line, 12000);
