@@ -74,6 +74,7 @@ namespace EnrageWestworld.InGame
         private static readonly uint NavTask = Natives.Hash("SCRIPT_TASK_FOLLOW_NAV_MESH_TO_COORD");
         private static readonly uint SeqTask = Natives.Hash("SCRIPT_TASK_PERFORM_SEQUENCE");
         private static readonly uint PlaceTask = Natives.Hash("SCRIPT_TASK_PLACE_CARRIED_ENTITY_AT_COORD");
+        private const float CarryMoveSpeed = 2f;   // a jog with the body (Lex, 2026-10-31: from about 1 m/s to 2); the undertaker walks at 1, the set-down stays 1
         private static readonly uint Unarmed = Natives.Hash("WEAPON_UNARMED");
 
         // the stages (the undertaker's func_13 state in brackets)
@@ -101,7 +102,7 @@ namespace EnrageWestworld.InGame
         {
             int seq = 0;
             TASK.OPEN_SEQUENCE_TASK(&seq);
-            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(0, goal.X, goal.Y, goal.Z, 1f, -1, 0.25f, 1, 40000f);
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(0, goal.X, goal.Y, goal.Z, CarryMoveSpeed, -1, 0.25f, 1, 40000f);
             TASK.CLOSE_SEQUENCE_TASK(seq);
             TASK.TASK_PERFORM_SEQUENCE(law, seq);
             TASK.CLEAR_SEQUENCE_TASK(&seq);
@@ -112,7 +113,7 @@ namespace EnrageWestworld.InGame
         {
             int seq = 0;
             TASK.OPEN_SEQUENCE_TASK(&seq);
-            TASK.TASK_GO_STRAIGHT_TO_COORD(0, goal.X, goal.Y, goal.Z, 1f, 20000, 40000f, 0.25f, 0);
+            TASK.TASK_GO_STRAIGHT_TO_COORD(0, goal.X, goal.Y, goal.Z, CarryMoveSpeed, 20000, 40000f, 0.25f, 0);
             TASK.CLOSE_SEQUENCE_TASK(seq);
             TASK.TASK_PERFORM_SEQUENCE(law, seq);
             TASK.CLEAR_SEQUENCE_TASK(&seq);
@@ -519,7 +520,7 @@ namespace EnrageWestworld.InGame
                         BodyDropped(c, bodyAt);
                     else if (LawUnarmed(c.Law) || now - c.StageAt > 4000)
                     {
-                        TASK.TASK_PLACE_CARRIED_ENTITY_AT_COORD(c.Law, c.Body, c.Goal.X, c.Goal.Y, c.Goal.Z, 1f, 0);
+                        TASK.TASK_PLACE_CARRIED_ENTITY_AT_COORD(c.Law, c.Body, c.Goal.X, c.Goal.Y, c.Goal.Z, CarryMoveSpeed, 0);
                         Log.Detail("LAW clears: hands free after " + (now - c.StageAt) / 1000 + " s; the place order takes it towards spot 1 of " + c.Spots.Count + ", " + (int)lawAt.DistanceTo(c.Goal) +
                                    " m off (flags 0; " + c.Spots[0].How + "; " + CarryWords(c.Law, c.Body) + ")");
                         c.Stage = BcPlaceWalk;
