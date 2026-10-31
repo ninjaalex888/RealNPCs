@@ -61,6 +61,7 @@ namespace EnrageWestworld.Core
             public float Trouble = 1f;   // [Scenes] TroubleWeight: every chance of blows or a quarrel scaled by it (Lex, 2026-10-28)
             public bool WomenFight;      // [Scenes] WomenInFights: a woman may come to blows too, half as often a woman (Lex, 2026-10-29); off (and in the old harnesses), two men only
             public bool MindDecides;   // the quarrel ladder plays the quarrel (MindLive, QuarrelLadder): MayFight leaves blows to it (Lex, 2026-10-30)
+            public bool Strain;        // [Mind] MindTempers: what weighs on someone at once adds up (Strains; NIGHT3)
         }
 
         /// For each woman in a fight, this percent of a man's chance (Lex, 2026-10-29: half as likely, until the mind decides it).
@@ -184,6 +185,29 @@ namespace EnrageWestworld.Core
             return ab;
         }
 
+        /// What weighs on someone at once (Own's strain): a worry at its worst or gone wrong today, a slight or a beating
+        /// not answered, a friend's death, a face in the bar or a purse gone lately, a sore day. In words, for the log.
+        public static List<string> Strains(Someone x, long gameDay)
+        {
+            var s = new List<string>();
+            if (x == null)
+                return s;
+            string kind;
+            int stage;
+            bool good;
+            if (x.P != null && InnerLife.WorryNow(x.P, gameDay, out kind, out stage, out good) && (stage == 2 || (stage == 3 && !good)))
+                s.Add(stage == 2 ? kind + " at its worst" : kind + " gone wrong");
+            if (x.Shamed != null)
+                s.Add(x.Shamed + " earlier");
+            if (x.Grief != null)
+                s.Add("grieving " + x.Grief);
+            if (x.Hurt != null)
+                s.Add(x.Hurt == "rough" ? "roughed up" : "robbed");
+            if (x.Mood == "sore")
+                s.Add("a sore day");
+            return s;
+        }
+
         /// The two ids in a fixed order, so a roll between them is the same whichever comes first in a scan.
         private static string PairKey(Someone a, Someone b)
         {
@@ -215,6 +239,27 @@ namespace EnrageWestworld.Core
             // out on someone who won't hit back; the one who shamed him isn't the one who pays
             if (x.Shamed != null && x.Id != y.Id && !Hot(y) && (y.Temper == "Coward" || Voice.Chance(x.Id + y.Id + gameDay + "kick", 40)))
                 all.Add(new Reason { Kind = "x:snap", Strength = Hot(x) ? 52 : 46, Why = x.Name + " was " + x.Shamed + " earlier, and takes it out on " + y.Name });
+            // stress that builds (NIGHT3, the psychologist's lens): one trouble is borne; two or more at once and they snap at
+            // whoever is there and won't hit back, the more the harder (a snap they'd have anyway comes harder)
+            if (where.Strain && x.Id != y.Id && !Hot(y))
+            {
+                List<string> strains = Strains(x, gameDay);
+                if (strains.Count >= 2)
+                {
+                    int bump = 4 * (strains.Count - 1);
+                    Reason snap = null;
+                    foreach (Reason r in all)
+                        if (r.Kind == "x:snap")
+                            snap = r;
+                    if (snap != null)
+                    {
+                        snap.Strength = Math.Min(64, snap.Strength + bump);
+                        snap.Why += "; and too much at once (" + string.Join(", ", strains) + ")";
+                    }
+                    else
+                        all.Add(new Reason { Kind = "x:snap", Strength = Math.Min(60, 46 + bump), Why = x.Name + " has too much at once (" + string.Join(", ", strains) + ") and snaps at " + y.Name });
+                }
+            }
             if (x.WakeStage >= 2 && y.WakeStage >= 1)
                 all.Add(new Reason { Kind = "hosts", Strength = 45, Why = "both are waking" });
             if (worry && stage == 3)

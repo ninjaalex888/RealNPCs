@@ -17,6 +17,7 @@
 
 ### Tempers carry, and honour rules in Lemoyne (the psychologist's lens)
 
+- **Stress that builds.** One trouble is borne; two or more at once (a worry at its worst or gone wrong today, a slight or a beating not answered, a friend's death, a face in the bar or a purse gone, a sore day) and someone snaps at whoever is there and won't hit back, the harder the more there is. The log says what was weighing on them ("Silas has too much at once (grieving Ruth, robbed) and snaps at Ezra"), and the one who snaps thinks it as they go over. Part of `[Mind] MindTempers`.
 - **Displaced aggression:** someone slighted, spoken to hard or beaten in the last four game hours (their own memories) may take it out on someone near who won't hit back, a timid man above all: one trouble leads to the next ("Hiram was beaten earlier, and takes it out on Amos"). The one who shamed him isn't the one who pays.
 - **The culture of honour** (Nisbett and Cohen's Southern "culture of honor"): in Lemoyne's towns and country an insult must be answered, so the quarrel ladder climbs a little faster there (more over nothing, a slight or a woman) and backing down costs more before a crowd. Offline: 74 of 400 quarrels reach blows where honour rules, against 61 elsewhere.
 - `[Mind] MindTempers` (on, with MindLive; settings version 152).
