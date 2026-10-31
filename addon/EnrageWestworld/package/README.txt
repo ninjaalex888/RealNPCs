@@ -1,4 +1,4 @@
-RealNPCs 0.7.10 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.11 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -54,6 +54,108 @@ Set it up once:
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
 
+
+NEW IN 0.7.11
+-------------
+- Talk. Locked on to a grown-up RealNPCs knows, the game's menu offers Talk on Q (a pad's RB).
+  Q is the game's own lock-on "target info" control: rebind it in the game's Settings >
+  Controls and Talk and its icon follow. A short list opens above the ticker: "What's the
+  news?", a drink (in a saloon), "Here, take this" ($1, or $5 once they've told you of money
+  trouble), "Watch yourself.", "Goodbye.", and when they apply: "The name's Arthur Morgan.",
+  asking after a worry they told you of, settling a debt ($11), "Here, for the doctor ($2)",
+  "Here, see a proper dentist ($3)", "Here, toward that ticket ($5)" and "I'm sorry about
+  before." Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
+  Backspace (B) to leave. They answer from who they are and how they stand with you, in their
+  own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
+  it takes longer than 2.8 s). A settled debt or a mended trouble changes their story and is
+  kept in the save; tell someone your name and they say it from then on; someone you helped may
+  come and thank you hours or days later (the proud pay the $11 back); someone lonely who knows
+  you may come over hoping for a word. While you talk, nothing else of RealNPCs' takes them.
+  [World] InteractionMenu, TalkKey.
+  Talk is basic for now: a fixed list of lines. The aim is real-time talk by microphone, and
+  typed text, with the model, where your hardware allows.
+- Brawls that grow. A fistfight draws people in a wave at a time, up to [Mind] BrawlMost (12)
+  fighting: friends and grudges first, from up to BrawlJoinMetres (30) away, most of all in a
+  saloon with drink in it. Those sitting or leaning get up to join. The sides balance, a man
+  going down no longer ends it (another of his side leads), and it lasts at least
+  BrawlLeastSeconds (45) unless a side is all down. A crowd of up to 16 rings it and cheers,
+  from BrawlCrowdMetres (40). The law breaks it up (BrawlLaw): those who stop are let off with a
+  word, those who keep swinging get the lawman's fists and are hogtied, and a second lawman
+  comes when three or more hold out. In a brawl of four or more near you, someone may turn on
+  you (BrawlPullsYouIn); rarely, a losing armed man draws (BrawlDraws, BrawlDrawShare 40).
+  Every man beaten down is knocked out (down 20-40 s, then up and on his way) or killed
+  (BrawlFistsFatal, 50, moved by who is in the fight; booked as "a beating"). One of enRAGE's
+  people is only ever knocked out. Not yet seen in game: fists that kill or knock out.
+- A braver town ([World] Bravery, 85, on the Essentials page). Brave townsfolk stand their
+  ground where the game would send them running (the odd coward still runs), fistfighters
+  don't scatter the street, and the mod's own frights send fewer running. Whoever you aim at or
+  lock on to gets the game's own reaction back for 20 s, so hold-ups and robberies work as
+  before. Never children, story characters, lawmen, enRAGE's people or other scripts' people;
+  everyone is put back when a story mission starts. 0 is everything as before. Not yet seen in
+  game: whether witnesses still run for the law, and how a brave robbery victim answers.
+- The stalker in black, and more often ([Stalkers], on the Essentials page). StalkerBlack (on):
+  the stalker is a stranger who turns up out of sight behind you, in StalkerBlackOutfit of
+  StalkerBlackModel. StalkerEveryMinutes 15 (was 34) and StalkerChance 35 (was 20): about once
+  in 45 minutes of play, where it was about once in three hours. An ini on the old stock values
+  moves to the new ones; values of your own are kept. Which outfit is truly black isn't known
+  yet: the Testing row "Stalker outfit: show the next candidate" (TestStalkerOutfitKey) shows
+  each and says the two lines to copy.
+- The free local AI model turns itself on. AI MODEL (OLLAMA) ([Mind] Language) is the large
+  gold switch at the top of the settings panel, with its status beside it ("on, answering",
+  "on, NOT ANSWERING", "off"...). At each start RealNPCs asks Ollama; if it runs and holds
+  llama3.1:8b, and you have never chosen, the model is turned on and a notice says so once.
+  Turn it off and it stays off ([Mind] LanguageChosen). See HIGHLY RECOMMENDED above.
+- Hook up is on H now, the same key as Flirt: after her yes, once she has said it, the H prompt
+  reads Hook up. Nothing of RealNPCs' is on G (enRAGE's Give Money). With CasualHookups, press B
+  for its scene when it takes her kind; for a kind it won't take, RealNPCs' own night follows
+  (at once, or after 15 s with no scene), so her yes is never left hanging.
+- Thoughts that vary ([Mind] LanguageVariety, with the model): each thought is about one thing,
+  in a shape of its own, and steers clear of their last few (the weather came up in 23% of
+  sampled thoughts before, 10% now). Nobody wonders whether the world is real without cause. A
+  doubt the model voices can start the waking (ModelWakes). The model picks for people farther
+  off and more at once (PickMetres 25, PicksAtOnce 8), and can choose a person's own reason with
+  someone near, which starts that scene (MindStartsScenes). [WestWorld] AwakeningShare 2.25
+  (was 3).
+- Word of a killing travels slowly, and only from witnesses. Seen, it reaches the dead man's
+  kin in 2-5 game days ([Features] KinWordDaysMin, KinWordDaysMax; it was 12-60 game hours).
+  With nobody alive within 35 m, or in self-defence, word goes only once the body is found, or
+  after 5-10 days (UnseenKinWordDaysMin, UnseenKinWordDaysMax), and doesn't name you: no
+  letter, nobody rides after you. The telegram says how, where and when. Not yet seen in game.
+- Gatherings of the awake at any hour ([Encounters] GatheringHours any, or night): by day too,
+  out in the wilds or just outside a town's edge, never in the street or indoors.
+  GatheringGapHours (6) between them.
+- Lawmen carry bodies off the street ([World] LawClearsBodies): a body left 20 s or more in a
+  town street is lifted by the nearest lawman on foot within 50 m, the game undertaker's way,
+  and carried to a spot he can reach. Testing row "A lawman clears a body". Not yet seen in
+  game.
+- Name plates stay up in crowds and after a saloon: the nearest eight are always drawn. After
+  going in and out of a saloon every name could go for minutes, because the list of people in
+  the world came back empty; RealNPCs now reads it from Script Hook itself, and keeps the last
+  good list while there's trouble.
+- Bold thieves ([Scenes] BoldThieves, 25): that percent of would-be thieves try it anyway with
+  the law looking on (a hothead, a greedy one or a drunk 38%). By the church on a Sunday every
+  thief still waits.
+- Whoever you aim at, or lock on to with a gun out, is let go at once from anything of
+  RealNPCs' that held them (a street scene, a fight, the ring, a waking act, Talk, a walk-up to
+  you, a lawman's job, Bravery), so the game's own reaction takes over: hands up, begging.
+- Also new, mostly not yet seen in game: the street's trouble waits while a lawman within 25 m
+  is looking, and on a Sunday morning by the church ([Scenes] BeingWatched); the street hushes
+  after a killing, and the town is on edge for about a day ([Mind] MindTownMood); onlookers run
+  from real danger, and fright spreads; stress that builds, and honour rules in Lemoyne ([Mind]
+  MindTempers); personal space ([World] PersonalSpace); why a scene starts, as a thought
+  ([Scenes] ReasonThoughts); the bully turns on whoever stepped in; Arthur's own recorded
+  fighting lines ([World] ArthurSpeaks); a lawman steps in on a waking lash-out ([Scenes]
+  LawChases); a worry, and what they knew of you, carry over when enRAGE takes someone up.
+- Fixes: the people list after a saloon; the lawman's carry (the lift cancelled, standing still
+  and dropping the body, taken back by the game, dropped at a catalogue or the barber); the
+  game's own knockouts after a fight went unrolled; one man picked for both sides; every
+  joiner going for one man; one thing at a time for each person (chance meetings no longer take
+  the person you're talking to; one walk-up at a time; no greeting straight after goodbye; no
+  pickpocket during a scene); one name on the lock-on prompt and over the head; carrying a body
+  you didn't kill is no crime, for good; subtitles between others only for speakers on screen;
+  an ini missing only a Testing row no longer undoes your own values; the reload fix; smoother
+  frames.
+- Settings version 164.
 
 NEW IN 0.7.10
 -------------
@@ -975,7 +1077,7 @@ in the file. The new ones:
             NameCardsAlways (true): a name over everyone in range, hidden only by walls,
             NameCardsBesideEnrage (false): ours even while enRAGE draws its own
 [WestWorld] WestWorld (true): the master switch. false turns off everything below it.
-            AwakeningShare (5), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
+            AwakeningShare (2.25), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
             or awake person falls apart), AwakeningDespair (75, 0-100, see the content note above),
             WakeVoices (true): the waking say the game's own lines in the wrong places, more each stage,
             WakeHold (true): from the second stage they stay strange between acts instead of going
@@ -989,7 +1091,9 @@ in the file. The new ones:
             Reveries (true), ReturnChance (35), StrangerReturnChance (15)
 [Stalkers]  Stalkers (true): the master switch. StalkerRecords (true): one of enRAGE's people may be
             the stalker while enRAGE has no use for them. StalkerKey (]): make one now,
-            StalkerEveryMinutes (34): real minutes between rolls, StalkerChance (20, percent per roll),
+            StalkerEveryMinutes (15): real minutes between rolls, StalkerChance (35, percent per roll),
+            StalkerBlack (true): the stalker is a stranger in black who turns up out of sight behind
+            you, StalkerBlackModel (a_m_o_sdupperclass_01), StalkerBlackOutfit (0); with StalkerBlack off:
             StalkerNearbyMetres (60): someone this close becomes the stalker, StalkerStrangers (true):
             a stranger if nobody near can, StalkerMinutes (120), StalkerAppearMin (45) /
             StalkerAppearMax (70): how far behind you a stranger first turns up, StalkerFollowMetres (26), StalkerStareMetres (34),
@@ -1006,7 +1110,8 @@ in the file. The new ones:
             towns, once a day), CryingWoman (true), CryingWomanChance (15, percent per roll, 10 pm to
             4 am in the wilds), Hermits (true, needs WestWorld), HermitChance (25, a new
             camp's chance per roll in the wilds), Gatherings (true, needs WestWorld),
-            GatheringChance (15, percent per roll, midnight to 3:30 am in the wilds), ExecutionKey ([),
+            GatheringChance (15, percent per roll), GatheringHours (any | night): with any, a ring
+            may stand by day too, in the wilds or just outside a town, GatheringGapHours (6), ExecutionKey ([),
             CryingWomanKey, HermitKey, GatheringKey (None): bring one out near you now, for testing
             NightVisitor (true), NightVisitorChance (18): after midnight in a town, a pale figure over a
             body, gone when you look away; the town talks of it next morning
@@ -1021,6 +1126,13 @@ in the file. The new ones:
             Regulars (true), RegularsPerTown (30), RegularsDress (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
+            Bravery (85, 0-100): the brave stand their ground where the game would send them running;
+            0 is the game's own way. InteractionMenu (true): Talk in the lock-on menu, TalkKey (Q:
+            the game's lock-on target-info control; another key, e.g. T, is read directly while the
+            prompt is up; None: a pad's RB only). LawClearsBodies (true), PersonalSpace (true) with
+            SpaceMetres (0.95), SpaceSaloonMetres (0.75), SpaceSeconds (1.8), ArthurSpeaks (true)
+[Features]  KinWordDaysMin (2), KinWordDaysMax (5): game days for word of a killing someone saw to
+            reach kin; UnseenKinWordDaysMin (5), UnseenKinWordDaysMax (10): for one nobody saw
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
             SmallTalk, Pickpockets, PosseTalk, Mourners, Pleading, ArrivalTalk (all true),
             ScenesAtOnce (4): the scene and quiet talks beside it elsewhere on the street (1-6),
@@ -1054,6 +1166,9 @@ in the file. The new ones:
             enRAGE has them busy (a fight, a job, a ride)
             RealVoiceTalk (true), RealVoiceTalkSeconds (120): people near you talk to each other in
             their real recorded voices; CrudeTalk (true): the game's crude remarks among them
+            BeingWatched (true): the street's trouble waits while a lawman is looking (WatchedLawMetres
+            25, WatchedRecklessChance 40, WatchedChurchMetres 60); BoldThieves (25): percent of thieves
+            who try it anyway; LonelyRegulars (true), LateThanks (true), ReasonThoughts (true)
 [Romance]   NpcFlirting (true): people near you make eyes at each other and court, each answering by
             what they make of the other; their thoughts on the ticker show it as it happens;
             sweethearts fall out now and then, and one comes back with a small gift to make it up
@@ -1083,7 +1198,10 @@ in the file. The new ones:
             MindLevels (false, in testing): the mind's work spread by distance and a budget a frame.
             MindActs (true, under MindLive): people near you do what their minds choose (a stroll, the
             nearest bench, chair, bar or work spot, off home, clear of you or a foe, over to a friend).
-            MindJoinFights (true, under MindLive): onlookers may join a fistfight on a side (at most three).
+            MindJoinFights (true, under MindLive): onlookers may join a fistfight on a side. MindBrawls
+            (true): a fight grows into a brawl, up to BrawlMost (12); BrawlLaw, BrawlPullsYouIn,
+            BrawlDraws (all true), BrawlDrawShare (40), BrawlFistsFatal (50: percent of men beaten down
+            who die; the rest are knocked out).
             BrawlJoinMetres (30): they join from within this many metres; those over 10 m off run over,
             counted for their side on the way. BrawlCrowdMetres (40): people this close walk over to watch
             and cheer (FightCrowds; up to 6 round two men, 16 round a brawl). BrawlLeastSeconds (45): a
@@ -1105,6 +1223,10 @@ in the file. The new ones:
             LanguagePicks (true, with Language): the model picks what people near you do, from the few
             things their minds allow; ThoughtsAloud (true, with Language): a thought is said aloud in
             their own recorded voice when one of their remarks fits it.
+            LanguageVariety, LanguageTalk (true, in testing, with Language); ModelWakes (true, in
+            testing, with Language, MindWakes and LanguageVariety); MindStartsScenes (true, in
+            testing, with LanguagePicks); PickMetres (25), PicksAtOnce (8); MindTownMood,
+            MindTempers (true, in testing).
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left
@@ -1152,7 +1274,8 @@ F7  what the nearest person enRAGE knows thinks of you (and a status line in the
 H         locked on to someone, Flirt (FlirtPrompt); after her yes, the same H is Hook up. FlirtKey can set
           a keyboard key as well (None; it was F2).
 N         read your letters, diaries and clippings (or take a diary you've just found; ReaderKey)
-]         make a stalker now: someone near you, or a stranger (StalkerKey)
+]         make a stalker now: with StalkerBlack on, a stranger in black behind you; off, someone
+          near you, or a stranger (StalkerKey)
 [         stage an execution on the road near you, out of sight, to see one now (ExecutionKey)
 Y         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
 Shift+F7  two people near you talk in their real voices (TestTalkKey)
@@ -1166,6 +1289,8 @@ Q         locked on to someone RealNPCs knows: Talk (TalkKey; a pad's RB). It is
           lock-on "target info" control, with its own icon: rebind that control in the game's
           Settings > Controls to use another key (e.g. T), and the icon follows (rebound to T, the
           same press also turns the ticker, and next to a telegraph clerk opens enRAGE's telegraph).
+          In the list: D-pad or mouse wheel to move, Space or Enter (A) to say it, Backspace (B) to
+          leave.
 T         the next line on the ticker now (on a long line, its next part first;
           TickerNextKey). T is enRAGE's telegraph key too: near a telegraph clerk, both happen.
 None of the others are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's

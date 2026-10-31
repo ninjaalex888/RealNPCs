@@ -1,6 +1,16 @@
 # Changelog
 
-## Unreleased
+## 0.7.11 (2026-10-31)
+
+Talk to people, brawls that grow, a braver town, the stalker in black, and the free AI model that turns itself on.
+
+- **Talk** (Q, locked on to someone RealNPCs knows; rebind the game's lock-on "target info" control in Settings > Controls for another key). A short list of things to say: the news, a drink, money, a warning, your name, asking after their worry, settling a debt or paying for the doctor, the dentist or a ticket, an apology, goodbye. They answer from who they are and how they stand with you, in their own voice, and what you did is remembered: a settled debt changes their story, someone you told your name says it, someone you helped may come and thank you days later, and a lonely regular may come over hoping for a word. With the AI model on, they answer in their own words. **Talk is basic for now**: a fixed list of lines. The aim is real-time talk by microphone, and typed text, with the model, where your hardware allows.
+- **Brawls that grow.** A fistfight draws people in a wave at a time, from both sides, up to 12 fighting (`[Mind] BrawlMost`), friends and grudges first, most of all in a saloon with drink in it. A crowd of up to 16 gathers round and cheers. A man going down no longer ends it: another of his side leads, and it runs until a side is all down. The law runs over and breaks it up: those who stop are let off with a word, those who don't get his fists and are hogtied. Every man beaten down is knocked out (up again in 20-40 s) or killed.
+- **A braver town** (`[World] Bravery` 85, on the Essentials page). Brave townsfolk stand their ground where the game would send them running, and a fight draws a crowd instead of scattering it. Whoever you aim at or lock on to reacts as the game has them, so hold-ups and robberies work as before.
+- **The stalker in black, and more often** (`[Stalkers] StalkerBlack`, on): a stranger in black who turns up out of sight behind you, about once in 45 minutes of play (it was about once in three hours).
+- **The free local AI model** (Ollama with llama3.1:8b) is now highly recommended, and RealNPCs finds it and turns it on by itself. **AI MODEL (OLLAMA)** is the switch at the top of the settings panel (Alt+R), with whether it's answering beside it.
+- Also: thoughts that vary (the weather in 10% of model thoughts, 23% before); word of a killing travels slowly (2-5 game days) and only from witnesses; gatherings of the awake at any hour; lawmen carry bodies off the street; name plates stay up in crowds and after a saloon; bold thieves who try it with the law looking on; whoever you aim at is let go to the game's own reaction; Hook up on H after her yes (nothing of RealNPCs' on G); and many fixes.
+- Seen in game by Lex in Saint Denis: a brawl growing to six with nine more getting up to join (before its reach and crowd were raised); in the log, a lawman lifting a body but not getting it away (the carry was redone after); and three troubles, fixed here but not yet seen fixed: townsfolk who didn't react when aimed at, the names going after a saloon, and Hook up with CasualHookups showing no prompt. Not yet seen in game: word of a killing reaching kin, what Bravery does to witnesses and robbery victims, which stalker outfit is truly black, fists that kill or knock out, and the lawman carrying a body to a spot he can reach (and jogging with it).
 
 ### Nobody about after a saloon: the list of people no longer comes back empty
 - From Lex's test in Saint Denis: after going in and out of the saloon every name plate went for minutes, and F7 showed nobody near with people standing about. The list of everyone in the world, which every part of RealNPCs reads, came back empty: the API's own call gives an empty list, without a word, whenever anything goes wrong underneath.
@@ -70,10 +80,11 @@
 ### Talk on Q, rebindable in the game (settings version 164)
 - Talk in the lock-on menu of someone RealNPCs knows is on Q, the game's own lock-on "target info" control (`INPUT_INTERACT_LOCKON_TARGET_INFO`; a pad's RB), with that control's own icon beside "Talk". To use another key (e.g. T), rebind that control in the game's Settings > Controls: Talk and its icon follow. A control rebound to T also turns the ticker on the same press (`TickerNextKey` is T), and next to a telegraph clerk opens enRAGE's telegraph too (T is its key).
 - `[World] TalkKey` (new, `Q`) sets it, on the settings panel's Hotkeys page. Q means the control itself, whatever key the game gives it. Any other key (e.g. T) is read by RealNPCs itself while the Talk prompt is up: the prompt then reads "Talk (T)" beside the control's own icon (a script can't change the icon), the control's own press does nothing for it, a pad's RB still works, and that key opens Talk in place of whatever it does otherwise (a T set here doesn't turn the ticker while the prompt is up). Only on that path does Talk stand aside on the keyboard next to a station or telegraph clerk (within 3.5 m), because T is enRAGE's telegraph key there (log `TALK stands aside`). `None`: no keyboard key, a pad's RB only.
-- A day's build had Talk on T, read directly, while the prompt showed the game's Q icon (Lex: back to Q, with the icon to match, and rebindable). An ini on that build's `TalkKey = T` keeps T, read directly, until it is set to Q.
+- An ini that holds `TalkKey = T` keeps T, read directly, until it is set back to Q.
 - Log `TALK key: the game's lock-on target-info control (...)` (or `TALK key: T read directly by RealNPCs (TalkKey isn't Q) ...`) at the start and whenever TalkKey changes, and `TALK menu opened on ... (the Talk control (Q unless rebound))`, `(the Talk prompt (RB))` or `(T, read directly)`. F7's Talk line says which.
 
-### The lawman walks with the body
+### The lawman jogs with the body
+- He jogs with it now (move speed 2; it was 1), on the walk to the spot, the nav-mesh walk and the straight walk; the final set-down keeps the undertaker's 1. The log's speed line shows whether the game lets a man carrying a body go that fast.
 - The lawman who lifts a body now carries it somewhere he can get to: a walkable spot about `[Mind] PickMetres` less 3 m from you (12 m at least; 22 m with 25), on the far side of the body from you, not inside, near the body's level, one by a wall first. A body already lying that far out is carried 6 to 10 m further. Before, the spot was a random bearing he often couldn't reach, so he picked the body up, stood still with it and dropped it. Up to four spots are found, again from where you stand once he has hold of it. If he stands still on one (after 2.5 s: under 0.2 m/s and less than a metre gained), he tries the next; after two have failed he walks straight when the line is clear. Only when every spot fails does he set the body down where he stands, logged `no reachable spot` with how far he got. Every check logs his speed and the metres gained. The old `he stopped carrying it ... sent again` (he was still carrying it) now reads `he stands still with it, N m off (...); trying spot 2 of 4`. The game's safe spot is never inside a building now, for every feature that asks for one.
 
 ### Pre-release review fixes
@@ -265,6 +276,7 @@
 - The strange-acts row's words stay on screen until the act they describe ends (up to a minute).
 - Every Testing row says what it's doing above the ticker when it starts (Lex, 2026-10-31), and the strange-acts row in detail: which turn of nine, who, what they do and to whom, what to watch for, and what the next press does. Long words wrap over several lines.
 - The hang watch (2026-10-31: three game hangs in Saint Denis): if any part of RealNPCs holds the game thread for 2 s, a background thread writes `HANG watch: ... inside <part> > <step>` to the log, again at 8 s and 30 s. The sights steps are marked one by one.
+
 ## 0.7.10 (2026-10-31)
 
 A fix: the game froze in busy towns.
