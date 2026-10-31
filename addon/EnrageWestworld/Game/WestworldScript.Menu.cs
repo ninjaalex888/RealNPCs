@@ -2,7 +2,7 @@
 // adult RealNPCs knows (a resident, one of enRAGE's townsfolk or records), the game's lock-on menu also offers "Talk" on Q
 // (a pad's RB: INPUT_INTERACT_LOCKON_TARGET_INFO, free in the people's lock-on menu; the clerk's Reset prompt uses it
 // only in a station clerk's list, and Talk stands aside there). Pressing it opens a short list above the ticker: up and
-// down (or the D-pad) to choose, Space or Enter (A) to say it, Backspace (B) to leave; the keyboard's keys while the
+// down (or the D-pad, or the mouse wheel) to choose, Space or Enter (A) to say it, Backspace (B) to leave; the keyboard's keys while the
 // keyboard is in use, the pad's buttons while a pad is. Arthur's words show as a subtitle, then their answer in their
 // own voice with its subtitle (afraid or hostile when they are), and what it is (a round, charity, a warning) is written
 // down as a happening for the mind, so gratitude, fear, the greetings and the memories follow; the money goes when the
@@ -50,7 +50,18 @@ namespace EnrageWestworld.InGame
         private const uint TalkControl = 0x31219490;   // INPUT_INTERACT_LOCKON_TARGET_INFO: Q, or a pad's RB (as the clerk's Reset prompt)
         private const uint MenuUp = 1662638961u, MenuDown = 97156178u, MenuAccept = 3350541322u, MenuCancel = 359624985u;   // the settings panel's pad buttons
         private const uint InputJump = 0xD9D0E1C0;   // INPUT_JUMP: Space says the chosen line, so Arthur doesn't jump with it
-        private static readonly uint[] MenuButtons = { MenuUp, MenuDown, MenuAccept, MenuCancel, InputJump };
+        // the mouse wheel, as the settings panel reads it: the cursor's scroll, then the weapon and menu-scroll controls it is during play
+        private static readonly uint[] WheelUps = { 1652558994u, 0x81457A1Au, 0xCC1075A7u, 0xF78D7337u }, WheelDowns = { 2346611779u, 0x9DA42644u, 0xFD0F0C2Cu, 0xD0842EDFu };
+        private static readonly uint[] MenuButtons = { MenuUp, MenuDown, MenuAccept, MenuCancel, InputJump,
+                                                        1652558994u, 0x81457A1Au, 0xCC1075A7u, 0xF78D7337u, 2346611779u, 0x9DA42644u, 0xFD0F0C2Cu, 0xD0842EDFu };   // the wheel too: it moves the list, not Arthur's weapon
+
+        private static bool WheelMoved(uint[] controls)
+        {
+            foreach (uint c in controls)
+                if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, c))
+                    return true;
+            return false;
+        }
         private const float MenuReach = 4f;
         private static IntPtr _talkWord;
         private TalkMenu _menu;
@@ -313,8 +324,9 @@ namespace EnrageWestworld.InGame
             bool up, down, accept, cancel;
             if (PAD.IS_USING_KEYBOARD_AND_MOUSE(0))
             {
-                up = TalkKey(0, 0x26);
-                down = TalkKey(1, 0x28);
+                bool wheelUp = WheelMoved(WheelUps), wheelDown = !wheelUp && WheelMoved(WheelDowns);   // one notch, one row (Lex, 2026-10-31)
+                up = TalkKey(0, 0x26) || wheelUp;
+                down = TalkKey(1, 0x28) || wheelDown;
                 bool space = TalkKey(4, 0x20);   // Space or Enter says the chosen line (Lex, 2026-10-31: no numbers)
                 accept = TalkKey(2, 0x0D) || space;
                 cancel = TalkKey(3, 0x08);
