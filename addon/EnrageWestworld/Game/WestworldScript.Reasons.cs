@@ -323,6 +323,12 @@ namespace EnrageWestworld.InGame
             }
             if (cast.Off.Contains(kind) || (kind == "debt" && !_cfg.Debts) || (kind == "hosts" && cast.HostTier < 0) || (kind == "gossip" && cast.Rumours.Count == 0))
                 return false;
+            if (_hush && by == null && TownMood.Hushed(kind))
+            {
+                _hushHeld++;
+                Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + kind + " held back (the town is hushed)");
+                return false;   // the street's own trouble waits while the town is shaken (a mind's own pick still decides)
+            }
             if (side && TroubleKinds.Contains(kind))
                 return false;
             Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);

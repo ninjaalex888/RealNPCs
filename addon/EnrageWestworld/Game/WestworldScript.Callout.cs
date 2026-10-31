@@ -33,6 +33,11 @@ namespace EnrageWestworld.InGame
                 why = "not out in a town's street";
                 return false;
             }
+            if (_hush && !test)
+            {
+                why = "the town is hushed after what happened (TownMood)";
+                return false;
+            }
             int clock = CLOCK.GET_CLOCK_HOURS() * 60 + CLOCK.GET_CLOCK_MINUTES();
             if (!test && (now < _nextCallout || clock < 11 * 60 + 30 || clock > 12 * 60 + 30))
                 return false;

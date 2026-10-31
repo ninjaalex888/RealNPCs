@@ -37,6 +37,7 @@
 
 ### A town on edge (the psychologist's lens: fear spreads beyond those who saw it, and fades)
 
+- **The street hushes after something big** (the game developer's "drama director"). For about five hours after a killing (while the town's fear is at half or more), the street's own timing holds back its fights, shoves, drunken trouble, thefts and noon callouts, and leaves longer between scenes (half as long again); condolences, gossip, words and small talk go on. A scene a mind picks for itself still decides; the quarrel ladder keeps its own rules. Part of `[Mind] MindTownMood`. F7 `TEST town mood:` says when the street is hushed and how many scenes it held back.
 - A killing, a robbery or a mugging leaves the whole town on edge for about a day, worst in the first hours (0.94 at once, about half after six hours, gone in a day): everyone's safety need there rises, more at night, so people out go home, keep clear and keep watch, and the model is told ("The town: badly frightened since a killing just now"), so their thoughts say why. Two killings frighten more than one, not twice as much. And the same trouble seen again in a town that week moves onlookers less each time (the third brawl draws a look, not a gasp); the one it happens to feels it in full. Worked out from the happenings already kept: nothing new is saved. `[Mind] MindTownMood` (on, with MindLive; settings version 149). F7 `TEST town mood:`.
 
 ### The model reaches further, and says how it keeps up (step 3 of the model plan; Lex: "control as many NPCs as possible")

@@ -103,6 +103,7 @@ namespace EnrageWestworld.InGame
                 return;   // (and never gossip beside a figure crouched over a corpse)
             }
             _nextDrama = now + 8000;
+            _hush = TownMoodOn && _placeTown != null && TownMood.Hushes(TownFearNow(now));   // quiet after something big
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
                 return;
@@ -420,7 +421,7 @@ namespace EnrageWestworld.InGame
             }
             if (_director.Start(s, people, names, seed, () => { }, cast))
             {
-                _nextDrama = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.75 + _rng.NextDouble() * 0.5));
+                _nextDrama = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.75 + _rng.NextDouble() * 0.5) * (_hush && !test ? TownMood.HushGap : 1f));
                 if (TroubleKinds.Contains(s.Kind))
                 {
                     int c;

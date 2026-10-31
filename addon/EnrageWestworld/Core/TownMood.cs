@@ -3,7 +3,10 @@
 // so nothing new is saved. A killing makes a whole town afraid for about a day, worst in the first hours: the safety
 // need rises for everyone there (more so at night), so people out go home, keep clear and watch; a gunfight between
 // gangs, a robbery, a mugging weigh less; a brawl or a rough little. And the same kind of trouble seen again in a town
-// within the week moves an onlooker less each time: the third brawl draws a look, not a gasp. Plain C#, no game.
+// within the week moves an onlooker less each time: the third brawl draws a look, not a gasp. And while the fear is
+// high (Hushes: about the first five or six hours after a killing) the street is hushed (the game developer's "drama
+// director": quiet after something big): the street's timing holds back the fights, the shoves, the drunken trouble,
+// the thefts and the noon callouts, and leaves longer between scenes. Plain C#, no game.
 using System;
 using System.Collections.Generic;
 
@@ -21,6 +24,28 @@ namespace EnrageWestworld.Core
         public const float HalfLifeHours = 6f;     // the fear halves every six game hours: about a day before it's gone
         public const long WindowMinutes = 1440 * 2;
         public const long NoveltyMinutes = 1440 * 7;
+
+        /// The fear at which the street is hushed (a killing within about five hours; two robberies close together).
+        public const float HushLevel = 0.5f;
+        public const float HushGap = 1.5f;   // the scenes' gap, stretched while hushed
+
+        /// Whether the town is too shaken for the street's own trouble.
+        public static bool Hushes(TownFear f)
+        {
+            return f != null && f.Level >= HushLevel;
+        }
+
+        /// The scenes a hushed street holds back: blows, shoves, drunken trouble, thefts, a callout.
+        public static bool Hushed(string kind)
+        {
+            switch (kind)
+            {
+                case "rough": case "brawl": case "drunk": case "pickpocket": case "lift": case "standoff": case "callout":
+                    return true;
+                default:
+                    return false;
+            }
+        }
 
         /// How much a happening of this kind frightens a town (0: not at all).
         public static float Weight(string kind)
