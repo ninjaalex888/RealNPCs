@@ -324,7 +324,7 @@ namespace EnrageWestworld.InGame
             }
             if (cast.Off.Contains(kind) || (kind == "debt" && !_cfg.Debts) || (kind == "hosts" && cast.HostTier < 0) || (kind == "gossip" && cast.Rumours.Count == 0))
                 return false;
-            if (_hush && by == null && TownMood.Hushed(kind))
+            if (_hush && by == null && !side && TownMood.Hushed(kind))
             {
                 _hushHeld++;
                 Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + kind + " held back (the town is hushed)");
@@ -342,7 +342,10 @@ namespace EnrageWestworld.InGame
             NotePairPlayed(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);
             if (side)
                 return StartScene(s, cast2, cast, seed, now, side: true);
+            Scene unladdered = s;
             s = LadderScene(s, first, second, doer, done, cast, seed, pr.Why.Matter, cast2, now);   // an argue or a brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs)
+            if (_hush && by == null && s != unladdered && TownMood.Hushed(s.Kind))
+                s = unladdered;   // hushed: the quarrel stays words (the ladder would take it to blows or a gun)
             AddMeet(s, kind, first, second, pr.Apart);
             AddBarkeep(s, cast2, cast, seed, saloon);
             string stood;

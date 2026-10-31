@@ -25,10 +25,12 @@ namespace EnrageWestworld.InGame
         private sealed class OnlookerAct
         {
             public int Handle, From, QueuedAt;   // QueuedAt: when the witness was taken
+            public int NotBefore;                // a follow-up (the hurry after a freeze) waits till then
             public uint Model;
-            public string Id, Name, Act, Why;
+            public string Id, Name, Act, Why, Role;   // Role: the appraisal's (onlooker, friend)
             public bool Woman;
             public Feeling Felt;
+            public Vector3 At;                   // where it happened (run from there when there's nobody to run from)
         }
 
         private const int OnlookQueueMost = 8, OnlookPendingMost = 12, OnlookStaleMs = 15000, OnlookDelayMs = 2500;
@@ -38,6 +40,7 @@ namespace EnrageWestworld.InGame
         private readonly List<string> _onlookIds = new List<string>();
         private readonly List<Feeling> _onlookFelt = new List<Feeling>();
         private readonly List<string> _onlookActs = new List<string>();
+        private readonly List<string> _onlookRoles = new List<string>();
         private int _onlooked, _onlookSkipped, _onlookStale;
         private readonly Dictionary<int, int> _onlookBusy = new Dictionary<int, int>();   // handle -> until: acting on what they saw
 
@@ -78,6 +81,7 @@ namespace EnrageWestworld.InGame
                 if (from == 0)
                     from = MindHandleById(ev.TargetId);
                 _onlookPending.Add(new OnlookerAct { Handle = h, Model = ENTITY.GET_ENTITY_MODEL(h), From = from, QueuedAt = _now, Id = id, Name = w.Name, Woman = w.P != null && w.P.Woman, Act = act, Felt = f,
+                                                     Role = ae.Role, At = new Vector3(ev.X, ev.Y, ev.Z),
                                                      Why = ev.Kind + (ev.DoerName != null ? " (" + (ev.DoerId == "player" ? "you" : ev.DoerName) + (ev.TargetName != null ? " and " + ev.TargetName : "") + ")" : "") });
             }
             catch (Exception ex)
@@ -97,14 +101,16 @@ namespace EnrageWestworld.InGame
                 _onlookIds.Clear();
                 _onlookFelt.Clear();
                 _onlookActs.Clear();
+                _onlookRoles.Clear();
                 foreach (OnlookerAct a in _onlookPending)
                 {
                     _onlookIds.Add(a.Id);
                     _onlookFelt.Add(a.Felt);
                     _onlookActs.Add(a.Act);
+                    _onlookRoles.Add(a.Role);
                 }
                 List<int> picked = Onlooking.Pick(_onlookIds, _onlookFelt, _onlookActs);
-                foreach (int i in Onlooking.Spread(_onlookIds, _onlookFelt, _onlookActs, picked))   // one runs, and the frightened near go too
+                foreach (int i in Onlooking.Spread(_onlookIds, _onlookFelt, _onlookActs, picked, Onlooking.MostRunning, _onlookRoles))   // one runs, and the frightened near go too (never a friend of one in it)
                     if (_onlookQueue.Count < OnlookQueueMost)
                     {
                         if (_onlookPending[i].Act != _onlookActs[i])
@@ -141,6 +147,8 @@ namespace EnrageWestworld.InGame
                 _onlookQueue.Clear();
                 return;
             }
+            if (now < a.NotBefore)
+                return;   // a follow-up's moment hasn't come (the hurry after the freeze)
             if (now >= a.QueuedAt && now - a.QueuedAt < OnlookDelayMs)
                 return;   // the trouble shows first: it waits, first in line
             _onlookQueue.RemoveAt(0);
@@ -194,7 +202,7 @@ namespace EnrageWestworld.InGame
                     {
                         // badly frightened by real danger: a glance at it, then off at a run, away from it (the moves the sights'
                         // "turn and go" uses; the flee task is still unproven), and on their way after
-                        Vector3 src = from != 0 ? ENTITY.GET_ENTITY_COORDS(from, true, true) : (me != null ? me.Position : p.Position);
+                        Vector3 src = from != 0 ? ENTITY.GET_ENTITY_COORDS(from, true, true) : a.At.X != 0f || a.At.Y != 0f ? a.At : (me != null ? me.Position : p.Position);   // from what frightened them, or where it happened
                         Vector3 away = p.Position - src;
                         away.Z = 0f;
                         Vector3 to = p.Position + (away.Length() < 0.5f ? new Vector3(0f, 1f, 0f) : away.Normalized) * 20f;
@@ -215,6 +223,9 @@ namespace EnrageWestworld.InGame
                         TASK.TASK_LOOK_AT_ENTITY(h, from, Onlooking.HoldMs("freeze"), 0, 51, 0);
                     TASK.TASK_STAND_STILL(h, Onlooking.HoldMs("freeze"));
                     did = "stands rooted";
+                    if (Onlooking.FreezeThenRun(a.Felt, a.Role) && _onlookQueue.Count < OnlookQueueMost)
+                        _onlookQueue.Add(new OnlookerAct { Handle = a.Handle, Model = a.Model, From = a.From, QueuedAt = now, NotBefore = now + Onlooking.HoldMs("freeze"), Id = a.Id, Name = a.Name,
+                                                           Woman = a.Woman, Act = "hurry", Felt = a.Felt, Role = a.Role, At = a.At, Why = a.Why });   // rooted a moment by the killing, then away (the review)
                     break;
                 case "watch":
                     if (from == 0)

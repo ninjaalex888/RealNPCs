@@ -47,7 +47,7 @@ namespace EnrageWestworld.Core
         /// he knows of: a gift is five dollars, not one), a debt he knows of and hasn't settled (he can pay it off), and
         /// his whole name when they don't know it yet (he can tell them), the worry they've told him of (he can ask after
         /// it: AskLabel), and a wrong of his lately they're owed an apology for.
-        public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool debtKnown = false, string tellName = null, string askAbout = null, bool sorry = false)
+        public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool debtKnown = false, string tellName = null, string askAbout = null, bool sorry = false, bool sorryJustNow = false)
         {
             int gift = moneyWorry ? 500 : 100;
             var list = new List<InteractOption> { new InteractOption { Id = "news", Label = "What's the news?" } };
@@ -61,7 +61,7 @@ namespace EnrageWestworld.Core
             if (debtKnown)
                 list.Add(new InteractOption { Id = "settle", Label = "Let me settle that debt ($" + SettleCents / 100 + ")", Why = cash < SettleCents ? "not enough money" : null });
             if (sorry)
-                list.Add(new InteractOption { Id = "sorry", Label = "I'm sorry about before." });
+                list.Add(new InteractOption { Id = "sorry", Label = sorryJustNow ? "I didn't mean that." : "I'm sorry about before." });   // minutes after a warning, a quick word; later, an apology
             list.Add(new InteractOption { Id = "threaten", Label = "Watch yourself." });
             list.Add(new InteractOption { Id = "bye", Label = "Goodbye." });
             return list;
@@ -93,20 +93,23 @@ namespace EnrageWestworld.Core
         public static InteractAnswer AskedAfter(string worryNow, string temper, string seed)
         {
             var a = new InteractAnswer { Then = "stay", Event = "comfort", LikeDelta = 4, Friendly = temper != "Cold" };
-            a.Line = !string.IsNullOrEmpty(worryNow) ? worryNow : Pick(seed + "|ak", "Same as ever. But thank you for asking.", "No better, no worse. Kind of you to ask.");
+            string opening = temper == "Cold" ? "If you must know." : temper == "Proud" ? "Not that I go about complaining." : temper == "Coward" ? "Oh! Well..." : Pick(seed + "|ako", "Since you ask.", "Truth be told?", "Well.");   // a few words first: it's said to him, not thought
+            a.Line = !string.IsNullOrEmpty(worryNow) ? opening + " " + worryNow : Pick(seed + "|ak", "Same as ever. But thank you for asking.", "No better, no worse. Kind of you to ask.");
             a.Thought = temper == "Cold" ? "Why should he care? ...Still. He asked." : Pick(seed + "|akt", "Nobody asks. He asked.", "Remembered, did he. Fancy that.", "Didn't think he'd been listening.");
             return a;
         }
 
         /// Their answer to his apology for a wrong of his lately (a warning, a slight, a blow): by how they stand with him
         /// and their temper; written down as an apology (a kindness to the mind), less from someone who hates him.
-        public static InteractAnswer Sorry(string temper, string regard, string seed)
+        public static InteractAnswer Sorry(string temper, string regard, string seed, string wrongKind = null)
         {
             var a = new InteractAnswer { Then = "stay", Event = "apology", LikeDelta = 6, Friendly = true };
+            bool blow = wrongKind != null && wrongKind.StartsWith("deed:", StringComparison.Ordinal);   // a blow or a theft, not words: not so easily forgotten (the review)
             if (regard == "afraid")
             {
                 a.Line = "It's forgotten, mister. All forgotten.";
                 a.Friendly = false;
+                a.LikeDelta = 2;   // said to placate him, as the thought says
                 a.VoiceFear = 30;
                 a.Thought = "Says he's sorry. I'll still not turn my back on him.";
                 return a;
@@ -118,6 +121,13 @@ namespace EnrageWestworld.Core
                 a.LikeDelta = 2;
                 a.VoiceHate = 40;
                 a.Thought = "Let him be sorry. I'll still remember.";
+                return a;
+            }
+            if (blow && temper != "Coward")
+            {
+                a.Line = Pick(seed + "|sob", "I'll take it. I'll not forget it, mind.", "Sorry, he says. My jaw says otherwise. ...All right.");
+                a.LikeDelta = 3;
+                a.Thought = "Sorry's a start. It's only a start.";
                 return a;
             }
             switch (temper)
@@ -428,7 +438,7 @@ namespace EnrageWestworld.Core
             for (int i = log.Count - 1; i >= 0; i--)
             {
                 Happening e = log[i];
-                if (e != null && e.Kind == kind && e.DoerId == "player" && e.TargetId == id && e.At <= now && now - e.At < AgainMinutes)
+                if (e != null && e.Kind == kind && e.DoerId == "player" && e.TargetId == id && e.At <= now && now - e.At < (kind == "comfort" || kind == "apology" ? KindMinutes : AgainMinutes))   // being asked after, or sorry, counts once a day
                     return true;
             }
             return false;
@@ -505,12 +515,13 @@ namespace EnrageWestworld.Core
                     yield return ak.Thought;
                     foreach (string r in new[] { null, "afraid", "hostile", "fond" })
                     {
-                        InteractAnswer so = Sorry(t, r, "so" + i);
+                        InteractAnswer so = Sorry(t, r, "so" + i, i % 2 == 0 ? "deed:assault" : "threat");
                         yield return so.Line;
                         yield return so.Thought;
                     }
                 }
             yield return "I'm sorry about before.";
+            yield return "I didn't mean that.";
         }
     }
 }

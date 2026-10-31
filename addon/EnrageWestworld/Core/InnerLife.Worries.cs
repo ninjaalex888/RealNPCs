@@ -557,7 +557,9 @@ namespace EnrageWestworld.Core
 
         /// The worry's own words today, for saying aloud when asked after it (the interaction menu): the line for the run
         /// they're in now, never the last run's after-thought; null if nothing fits them.
-        public static string WorrySaid(Person p, long gameDay, string seed)
+        private static readonly string[] NotSaid = { "asked after my health", "Don't let them see" };   // a jab at whoever asks; talking to oneself
+
+        public static string WorrySaid(Person p, long gameDay, string seed, List<string> told = null)
         {
             if (p == null || p.Id == null || gameDay < 0)
                 return null;
@@ -571,7 +573,8 @@ namespace EnrageWestworld.Core
             if (LinkedDead(p, k, arc))
                 return null;
             string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? k.Settled : EndsWell(p, k, arc) ? k.Good : k.Bad;
-            return Fill(Pick(pool, p, seed, null), p, k, arc);
+            string[] said = pool.Where(l => !NotSaid.Any(n => l.Contains(n))).ToArray();
+            return Fill(Pick(said.Length > 0 ? said : pool, p, seed, told), p, k, arc);   // `told`: not their ticker thought said again
         }
 
         /// The worry this person is living through today: its kind ("debt"), the stage (0 it begins, 1 worse, 2 the

@@ -251,9 +251,10 @@ namespace EnrageWestworld.Core
             switch (kind)
             {
                 case "x:snap":
-                    if (worry == null || !Snap.ContainsKey(worry))
-                        return null;
-                    s.Add(1, fill(Voice.Pick(seed + "h", Hello)), "familiar", "face").Add(0, fill(Snap[worry]), "replybad");
+                    // their worry's own words at its worst; else (a shame, a pile of troubles, a worry settled) a plain snap (the review)
+                    string snapLine = worry != null && stage == 2 && Snap.ContainsKey(worry) ? Snap[worry]
+                                    : Voice.Pick(seed + "ps", "Not now. It's one thing on top of another.", "Leave me be. I've had a day of it.", "Can't a body get a minute's peace?");
+                    s.Add(1, fill(Voice.Pick(seed + "h", Hello)), "familiar", "face").Add(0, fill(snapLine), "replybad");
                     Answer(s, manner, fill, seed, KindToTrouble, ColdToTrouble, SharpToTrouble);
                     if (manner == "sharp")
                         s.Add(0, fill(Voice.Pick(seed + "sb", SnapBack)), "angry", "walkaway");

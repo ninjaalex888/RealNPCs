@@ -26,7 +26,8 @@ namespace EnrageWestworld.InGame
         private sealed class TalkMenu
         {
             public int Handle;
-            public string Id, Name, First, Temper, Worry, Trade, FolkId, Regard, Rumour, Self;   // Self: their own whole name, when they have one (the friendly men give it back)
+            public string Id, Name, First, Temper, Worry, Trade, FolkId, Regard, Rumour, Self, AskWorry;   // AskWorry: this run's worry at any stage (asked after even once it's over)
+            public long WorryArc;   // Self: their own whole name, when they have one (the friendly men give it back)
             public bool Woman, Devout, MoneyWorry, Seated, KeepOrders, KnowsName;
             public Person P;           // who they are to the mind, for their worry's words when he asks after it
             public float Reach;
@@ -163,14 +164,18 @@ namespace EnrageWestworld.InGame
             int h = p.Handle, now = Game.GameTime;
             Ped me = Game.Player.Character;
             MindWho w = MindKnown(h, now);
-            string worry = null;
+            string worry = null, askWorry = null;
             if (w != null && w.P != null)
             {
                 string kind;
                 int stage;
                 bool good;
-                if (InnerLife.WorryNow(w.P, _store.LastGameMin / 1440, out kind, out stage, out good) && stage <= 2)
-                    worry = kind;   // while it lasts: once it's come out one way or the other (stage 3) it's no worry now
+                if (InnerLife.WorryNow(w.P, _store.LastGameMin / 1440, out kind, out stage, out good))
+                {
+                    askWorry = kind;   // how did it turn out? still worth the asking
+                    if (stage <= 2)
+                        worry = kind;   // while it lasts: once it's come out one way or the other (stage 3) it's no worry now
+                }
             }
             if (w != null && w.Traits == null && w.Src != null)
                 w.Traits = _engine.Shadow.TraitsOf(w.Src);
@@ -182,7 +187,7 @@ namespace EnrageWestworld.InGame
                 Woman = !PED.IS_PED_MALE(h), Devout = w != null && w.Traits != null && w.Traits[Traits.Piety] > 1.2f, MoneyWorry = worry == "debt" || worry == "savings" || worry == "bank",
                 Trade = w != null && w.P != null ? w.P.Trade : null, FolkId = ac != null ? ac.Id : null, Seated = PED.IS_PED_USING_ANY_SCENARIO(h), P = w != null ? w.P : null,
                 Regard = SightRegard(p, id), Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
-                Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name
+                Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440)
             };
             TalkRefreshOptions();
             TalkFace(_menu, me, true);
@@ -215,11 +220,13 @@ namespace EnrageWestworld.InGame
             {
                 cash = 0;   // no reading: the money options stay greyed
             }
-            bool told = _talkConfided.Contains(_menu.Id);
+            bool told = _talkConfided.Contains(TalkToldKey(_menu));
+            string selId = _menu.Options != null && _menu.Sel < _menu.Options.Count ? _menu.Options[_menu.Sel].Id : null;
+            Happening wrong = Interact.LastWrong(_store.WorldLog, _menu.Id, _store.LastGameMin);
             _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, _menu.Worry == "debt" && told, _menu.KnowsName ? null : YourFullName(),
-                                             told && _menu.P != null ? _menu.Worry : null, Interact.LastWrong(_store.WorldLog, _menu.Id, _store.LastGameMin) != null);
-            if (_menu.Sel >= _menu.Options.Count)
-                _menu.Sel = 0;
+                                             told && _menu.P != null ? _menu.AskWorry : null, wrong != null, wrong != null && _store.LastGameMin - wrong.At < 60);
+            int at = selId != null ? _menu.Options.FindIndex(x => x.Id == selId) : -1;
+            _menu.Sel = at >= 0 ? at : 0;   // the same option stays chosen (by index, "Watch yourself." slid under the cursor after an apology)
             _menu.Rows = null;
         }
 
@@ -347,9 +354,11 @@ namespace EnrageWestworld.InGame
                 return;
             }
             bool confides = Interact.Confides(t.Regard, Interact.KindLately(_store.WorldLog, t.Id, _store.LastGameMin), t.Worry, t.Temper);
-            InteractAnswer a = o.Id == "ask" ? Interact.AskedAfter(InnerLife.WorrySaid(t.P, _store.LastGameMin / 1440, seed), t.Temper, seed)   // how it stands today, in their words
-                             : o.Id == "sorry" ? Interact.Sorry(t.Temper, t.Regard, seed)
-                             : Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(t.Id), seed, YourSurname(), t.Self);
+            PersonState pst = _store.Find(t.Id);
+            Happening wrong = o.Id == "sorry" ? Interact.LastWrong(_store.WorldLog, t.Id, _store.LastGameMin) : null;
+            InteractAnswer a = o.Id == "ask" ? Interact.AskedAfter(InnerLife.WorrySaid(t.P, _store.LastGameMin / 1440, seed, pst != null ? pst.Musings : null), t.Temper, seed)   // how it stands today, in their words
+                             : o.Id == "sorry" ? Interact.Sorry(t.Temper, t.Regard, seed, wrong != null ? wrong.Kind : null)
+                             : Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), seed, YourSurname(), t.Self);
             SpeechCaption(Arthur(), o.Label, Game.Player.Character.Handle, 1600, false);
             t.Pending = a;
             t.PendingId = o.Id;
@@ -403,7 +412,7 @@ namespace EnrageWestworld.InGame
             if (a.LikeDelta != 0 && t.FolkId != null)
                 _bridge.LikeMore(t.FolkId, a.LikeDelta);   // enRAGE's own method for its own townsfolk
             if (a.Confided)
-                _talkConfided.Add(t.Id);
+                _talkConfided.Add(TalkToldKey(t));
             if (a.LearnsName)
             {
                 _engine.LearnName(t.Id, t.Name);   // they know his name from now on (letters, thoughts and greetings say it)
@@ -472,7 +481,7 @@ namespace EnrageWestworld.InGame
             if (r == null)
                 return;
             r.Kind = "talk";
-            r.Said = Language.TalkSaid(o.Id, o.Id == "give" && t.MoneyWorry && _talkConfided.Contains(t.Id) ? 500 : 100);
+            r.Said = Language.TalkSaid(o.Id, o.Id == "give" && t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)) ? 500 : 100);
             r.Mean = a.Line;
             r.Near.Clear();       // no names but his own (the model called him by whoever was in sight)
             r.Memories.Clear();
@@ -559,6 +568,12 @@ namespace EnrageWestworld.InGame
         private string YourSurname()
         {
             return _engine != null && _engine.Player != null && !string.IsNullOrEmpty(_engine.Player.FullName) && !string.IsNullOrEmpty(_engine.Player.Surname) ? _engine.Player.Surname : null;
+        }
+
+        /// What they told him is kept by person, run and kind: a new worry (the next run's) hasn't been told (the review).
+        private static string TalkToldKey(TalkMenu t)
+        {
+            return t.Id + "|" + t.WorryArc + "|" + (t.AskWorry ?? t.Worry);
         }
 
         private string Arthur()

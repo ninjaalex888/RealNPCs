@@ -127,7 +127,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 int h = _wanderLater[i].Key;
                 _wanderLater.RemoveAt(i);
-                if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !NotFree(h) && !PED.IS_PED_USING_ANY_SCENARIO(h))
+                if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !NotFree(h) && !IsMindActing(h) && !PED.IS_PED_FLEEING(h) && !PED.IS_PED_USING_ANY_SCENARIO(h))   // never over a mind's own act or the game's flee
                     TASK.TASK_WANDER_STANDARD(h, 10f, 10);
             }
         }

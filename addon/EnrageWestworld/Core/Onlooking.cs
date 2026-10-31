@@ -104,10 +104,17 @@ namespace EnrageWestworld.Core
             return picked;
         }
 
+        /// Whether someone rooted by fright then runs (the review: a killing is always armed, so strong fear froze and nobody
+        /// hurried): an onlooker's strong fear, shown, after the freeze's moment.
+        public static bool FreezeThenRun(Feeling f, string role)
+        {
+            return f != null && f.Kind == "fear" && f.Intensity >= Appraisal.Strong && role == "onlooker" && f.Shows != "masked";
+        }
+
         /// Emotional contagion (NIGHT3, the psychologist's list): one of the picked hurries off, and the others who were
         /// frightened at all, and showed it, go with them, the most frightened first, up to MostRunning in all; their acts
         /// become "hurry" (`acts` is changed). Returns the picked with the ones who caught it after. No hurry, no change.
-        public static List<int> Spread(IList<string> ids, IList<Feeling> felt, IList<string> acts, List<int> picked, int most = MostRunning)
+        public static List<int> Spread(IList<string> ids, IList<Feeling> felt, IList<string> acts, List<int> picked, int most = MostRunning, IList<string> roles = null)
         {
             bool runs = false;
             foreach (int i in picked)
@@ -119,8 +126,9 @@ namespace EnrageWestworld.Core
                 seen.Add(ids[i]);
             var catching = new List<int>();
             for (int i = 0; i < ids.Count; i++)
-                if (!seen.Contains(ids[i]) && felt[i] != null && felt[i].Kind == "fear" && felt[i].Intensity >= Appraisal.Felt && (acts[i] == "leave" || acts[i] == "watch" || acts[i] == "freeze"))
-                    catching.Add(i);   // masked fear (slip), a bristle and a disapproval keep their own ways
+                if (!seen.Contains(ids[i]) && felt[i] != null && felt[i].Kind == "fear" && felt[i].Intensity >= Appraisal.Felt && (acts[i] == "leave" || acts[i] == "watch" || acts[i] == "freeze") &&
+                    (roles == null || i >= roles.Count || roles[i] != "friend"))
+                    catching.Add(i);   // masked fear (slip), a bristle and a disapproval keep their own ways; a friend of one in it goes toward them, not away
             catching.Sort((x, y) =>
             {
                 int c = felt[y].Intensity.CompareTo(felt[x].Intensity);

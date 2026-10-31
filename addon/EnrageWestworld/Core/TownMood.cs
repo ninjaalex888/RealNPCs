@@ -25,14 +25,15 @@ namespace EnrageWestworld.Core
         public const long WindowMinutes = 1440 * 2;
         public const long NoveltyMinutes = 1440 * 7;
 
-        /// The fear at which the street is hushed (a killing within about five hours; two robberies close together).
-        public const float HushLevel = 0.5f;
+        /// The fear at which the street is hushed (a killing within about six hours; two robberies close together); a city
+        /// as big as Saint Denis takes more (one killing there doesn't quiet every street: the review).
+        public const float HushLevel = 0.5f, CityHushLevel = 0.8f;
         public const float HushGap = 1.5f;   // the scenes' gap, stretched while hushed
 
         /// Whether the town is too shaken for the street's own trouble.
-        public static bool Hushes(TownFear f)
+        public static bool Hushes(TownFear f, string town = null)
         {
-            return f != null && f.Level >= HushLevel;
+            return f != null && f.Level >= (town == "Saint Denis" ? CityHushLevel : HushLevel);
         }
 
         /// The scenes a hushed street holds back: blows, shoves, drunken trouble, thefts, a callout.

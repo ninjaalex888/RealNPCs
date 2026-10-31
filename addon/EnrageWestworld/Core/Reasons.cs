@@ -201,11 +201,9 @@ namespace EnrageWestworld.Core
                 s.Add(x.Shamed + " earlier");
             if (x.Grief != null)
                 s.Add("grieving " + x.Grief);
-            if (x.Hurt != null)
-                s.Add(x.Hurt == "rough" ? "roughed up" : "robbed");
-            if (x.Mood == "sore")
-                s.Add("a sore day");
-            return s;
+            if (x.Hurt != null && x.Shamed == null)
+                s.Add(x.Hurt == "rough" ? "roughed up" : "robbed");   // the same rough as the shame: counted once (the review)
+            return s;   // (a sore day is these added up already: not counted again)
         }
 
         /// The two ids in a fixed order, so a roll between them is the same whichever comes first in a scan.
@@ -241,7 +239,10 @@ namespace EnrageWestworld.Core
                 all.Add(new Reason { Kind = "x:snap", Strength = Hot(x) ? 52 : 46, Why = x.Name + " was " + x.Shamed + " earlier, and takes it out on " + y.Name });
             // stress that builds (NIGHT3, the psychologist's lens): one trouble is borne; two or more at once and they snap at
             // whoever is there and won't hit back, the more the harder (a snap they'd have anyway comes harder)
-            if (where.Strain && x.Id != y.Id && !Hot(y))
+            // (the timid and the loyal withdraw rather than snap; the anger picks a safe target: not someone well-off, and a
+            // man doesn't take it out on a strange woman; and not at everyone: the shamed rule's roll)
+            if (where.Strain && x.Id != y.Id && !Hot(y) && x.Temper != "Coward" && x.Temper != "Loyal" && !y.WellOff && (x.Woman || !y.Woman) &&
+                (y.Temper == "Coward" || Voice.Chance(x.Id + y.Id + gameDay + "strain", 40)))
             {
                 List<string> strains = Strains(x, gameDay);
                 if (strains.Count >= 2)

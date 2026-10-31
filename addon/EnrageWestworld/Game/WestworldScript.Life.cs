@@ -103,7 +103,7 @@ namespace EnrageWestworld.InGame
                 return;   // (and never gossip beside a figure crouched over a corpse)
             }
             _nextDrama = now + 8000;
-            _hush = TownMoodOn && _placeTown != null && TownMood.Hushes(TownFearNow(now));   // quiet after something big
+            _hush = TownMoodOn && _placeTown != null && TownMood.Hushes(TownFearNow(now), _placeTown);   // quiet after something big
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
                 return;
@@ -168,6 +168,9 @@ namespace EnrageWestworld.InGame
             Ped crowd = pool.Where(p => p != a && p != b && p.Position.DistanceTo(a.Position) < 9f).OrderBy(p => p.Position.DistanceTo(a.Position)).FirstOrDefault();
             SceneCast cast = BuildCast(a, b, crowd, saloon, me, now, seed);
             cast.Off.Add("debt");   // debts come from people's own worries (Links, Reasons), never from a chance meeting
+            if (_hush)
+                foreach (string k in new[] { "brawl", "standoff", "pickpocket", "rough", "drunk" })
+                    cast.Off.Add(k);   // a hushed street: no chance brawl either (the review: a held-back reason fell through to this)
             Scene s = null;
             List<Ped> people = new List<Ped> { a, b };
             if (!cast.AWoman && cast.BWoman || cast.AWoman && !cast.BWoman)
@@ -208,7 +211,10 @@ namespace EnrageWestworld.InGame
                 return;
             if (s.Kind == "gossip" && saloon && _cfg.JobRumours)
                 AddJobTalk(s, seed);
+            Scene unladdered = s;
             s = LadderScene(s, a, b, null, null, cast, seed, null, people, now);   // a chance meeting's argue or brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs)
+            if (_hush && s != unladdered && TownMood.Hushed(s.Kind))
+                s = unladdered;   // hushed: words, not the ladder's blows or guns
             AddMeet(s, s.Kind, a, b, a.Position.DistanceTo(b.Position));   // a few steps apart: one walks over first
             AddBarkeep(s, people, cast, seed, saloon);
             string stood;
