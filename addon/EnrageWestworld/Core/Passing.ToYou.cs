@@ -17,8 +17,9 @@ namespace EnrageWestworld.Core
         public const long MindAfter = 15;
 
         /// What someone does as the player passes, by what they feel about him; null for nothing. `spokeToday`: they gave
-        /// him a spoken greeting already this game day (a nod after that).
-        public static Act ToYou(List<FeltAt> felt, bool woman, string temper, long now, string seed, bool spokeToday = false)
+        /// him a spoken greeting already this game day (a nod after that). `you`: his first name when they know it (he told
+        /// them, or they asked): the greeting says it, and the grateful and the sore think of him by it, not as a stranger.
+        public static Act ToYou(List<FeltAt> felt, bool woman, string temper, long now, string seed, bool spokeToday = false, string you = null)
         {
             if (felt == null)
                 return null;
@@ -83,9 +84,44 @@ namespace EnrageWestworld.Core
                 a.Speaks = false;
                 a.LookMs = Math.Min(a.LookMs, 1000);
             }
-            string[] p = YouPools[pool];
-            a.Thought = p[Voice.Hash(seed + "|you|" + pool) % p.Length];
+            string[] p;
+            if (you != null && YouNamedPools.TryGetValue(pool, out p))
+                a.Thought = p[Voice.Hash(seed + "|you|" + pool) % p.Length].Replace("{you}", you);
+            else
+            {
+                p = YouPools[pool];
+                a.Thought = p[Voice.Hash(seed + "|you|" + pool) % p.Length];
+            }
+            if (a.Speaks && you != null)
+                a.Greeting = ByName(you, (int)(now / 60 % 24), seed);
             return a;
+        }
+
+        /// A greeting to him by name, by the hour.
+        public static string ByName(string you, int hour, string seed)
+        {
+            string time = hour >= 5 && hour < 12 ? "Morning" : hour >= 12 && hour < 18 ? "Afternoon" : hour >= 18 && hour < 23 ? "Evening" : null;
+            int r = Voice.Hash(seed + "|byname") % 3;
+            if (r == 0 && time != null)
+                return time + ", " + you + ".";
+            return r == 1 ? "Well, if it isn't " + you + "." : time == null ? you + ". Late to be about." : "There's " + you + ". " + time + ".";
+        }
+
+        /// The grateful and the sore, once they know his name: the same feelings, thought of by name.
+        internal static readonly Dictionary<string, string[]> YouNamedPools = new Dictionary<string, string[]>
+        {
+            { "grateful", new[] { "There's {you}. Stood by me when he didn't have to.", "{you}. I owe that man more than a good day.", "Good. {you}'s in town.", "{you}, of all people. I'm glad of it." } },
+            { "sore", new[] { "{you}. I haven't forgotten. I won't.", "Keep walking, {you}. I remember.", "{you} again, swaggering about like he owns the street." } },
+        };
+
+        public static IEnumerable<string> YouNamedLines(string you)
+        {
+            foreach (string[] p in YouNamedPools.Values)
+                foreach (string l in p)
+                    yield return l.Replace("{you}", you);
+            for (int h = 0; h < 24; h++)
+                for (int i = 0; i < 6; i++)
+                    yield return ByName(you, h, "all" + i);
         }
 
         /// Their thoughts as the player passes (kept apart from Pools, whose count the tests hold).

@@ -19,7 +19,7 @@ namespace EnrageWestworld.InGame
         private sealed class YouNod
         {
             public int Handle, At;
-            public string Id, Name, Gesture, Thought;
+            public string Id, Name, Gesture, Thought, Greeting;
             public bool Woman, Speaks, GestureDone, ThoughtDone;
         }
 
@@ -80,7 +80,8 @@ namespace EnrageWestworld.InGame
                         continue;
                     long day;
                     bool spoke = _youSpokeDay.TryGetValue(w.Id, out day) && day == g / 1440;
-                    Passing.Act a = Passing.ToYou(_engine.Shadow.Felt(w.Id), w.P.Woman, w.Src != null ? w.Src.Temper : null, g, w.Id + "|" + (g / 60), spoke);   // the cheap test first
+                    Passing.Act a = Passing.ToYou(_engine.Shadow.Felt(w.Id), w.P.Woman, w.Src != null ? w.Src.Temper : null, g, w.Id + "|" + (g / 60), spoke,
+                                                  _engine.KnowsYourName(w.Id) ? YourFirstName() : null);   // the cheap test first (his name, if they know it)
                     if (a == null)
                         continue;
                     if (_director.Involves(h) || _director.Leaving(h) || IsOnlooking(h) || IsRescuer(h) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || w.Model != ENTITY.GET_ENTITY_MODEL(h))
@@ -100,7 +101,7 @@ namespace EnrageWestworld.InGame
                     }
                     if (a.LookMs > 0)
                         TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, a.LookMs, 0, 51, 0);
-                    _youNod = new YouNod { Handle = h, At = now, Id = w.Id, Name = w.Name, Gesture = a.Gesture, Thought = a.Thought, Woman = w.P.Woman, Speaks = a.Speaks };
+                    _youNod = new YouNod { Handle = h, At = now, Id = w.Id, Name = w.Name, Gesture = a.Gesture, Thought = a.Thought, Woman = w.P.Woman, Speaks = a.Speaks, Greeting = a.Greeting };
                     _youNods++;
                     _youNodLast = w.Name + " (" + a.Kind.Substring(4) + ")";
                     Log.Detail("NOD you: " + w.Name + " " + a.Kind.Substring(4) + " about you: " + a.Gesture + (a.Speaks ? " and a greeting" : "") + ", looks " + a.LookMs + " ms");
@@ -131,7 +132,9 @@ namespace EnrageWestworld.InGame
                 if (MayDirectWhyNot(p) == null)
                 {
                     NodGesture(p, me, n.Gesture, n.Woman, n.Id + "|you", n.Name);
-                    if (n.Speaks)
+                    if (n.Speaks && n.Greeting != null)
+                        Feed.Say(n.Name, n.Greeting, Speech.WhenFirst(n.Handle, YouGreet, me.Handle), n.Handle, toYou: true);   // by his name: said to him, subtitled
+                    else if (n.Speaks)
                         Speech.SayAny(n.Handle, YouGreet, me.Handle);
                 }
             }
