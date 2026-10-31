@@ -45,6 +45,7 @@ namespace EnrageWestworld.InGame
                 return;
             int now = Game.GameTime;
             Ped p = new Ped(h);
+            _known.Remove(h);   // the ledger may have him as nobody from before the brawl gave him a name (its 10 s cache)
             Known k = KnownAt(p, now);
             string name = k != null && k.Name != null ? k.Name : MindNameOf(h) ?? Director.Kind(p, !PED.IS_PED_MALE(h));
             MindWho v = MindKnown(h, now), a = by != 0 && ENTITY.DOES_ENTITY_EXIST(by) ? MindKnown(by, now) : null;
