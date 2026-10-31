@@ -572,13 +572,17 @@ namespace EnrageWestworld.InGame
             }
             // a brawl, while it lasts, runs past the scene's 90 s to its least time and a minute more, and holds within 80 m
             // (Lex, 2026-10-31: brawls reach further and last longer)
-            bool brawl = l.Fighting && l.FightOn && l.WasBig;
+            // a brawl here is any fight with fists flying and a joiner in it or on the way (the review, 2026-10-31: one joiner
+            // and two coming were cut at 90 s from the quarrel's first words), and its cap covers the fight's own furthest
+            // end (FightOnAt + BrawlLeastMs + FightMostMs for those coming), so the fight's rules end it, not this
+            bool brawl = l.Fighting && l.FightOn && (l.WasBig || l.Joiners.Count > 0 || ComingFor(0) + ComingFor(1) > 0);
             int mostMs = l.Scene.Ladder != null ? 150000 : 90000;   // a ladder quarrel that climbs the whole way runs past 90 s (the review)
             if (brawl)
-                mostMs = Math.Max(mostMs, l.FightOnAt - l.StartedAt + BrawlLeastMs + 60000);
-            if (l.Cast.Min(p => p.Position.DistanceTo(player.Position)) > (brawl ? 80f : 50f) || now - l.StartedAt > mostMs)
+                mostMs = Math.Max(mostMs, l.FightOnAt - l.StartedAt + BrawlLeastMs + Math.Max(60000, FightMostMs + 15000));
+            bool far = l.Cast.Min(p => p.Position.DistanceTo(player.Position)) > (brawl ? 80f : 50f);
+            if (far || now - l.StartedAt > mostMs)
             {
-                Stop(l, "the player left");
+                Stop(l, far ? "the player left" : "it ran out of time (" + mostMs / 1000 + " s)");
                 return;
             }
             if (l.Fighting)
@@ -1383,6 +1387,8 @@ namespace EnrageWestworld.InGame
             EndedFighters.Clear();
             EndedAt = now;
             EndedFightId = l.FightId;
+            if (!(l.WasBig || l.Joiners.Count > 0 || ComingFor(0) + ComingFor(1) > 0))
+                return;   // a plain two-man fistfight nobody joined: never a brawl, so no fate after it either (FightDownStep spares the two in it too; the review, 2026-10-31)
             if (l.FightA != 0 && !l.Out.Contains(l.FightA))
                 EndedFighters.Add(new[] { l.FightA, 0, l.FightB });
             if (l.FightB != 0 && !l.Out.Contains(l.FightB))
@@ -1408,6 +1414,14 @@ namespace EnrageWestworld.InGame
             for (int i = EndedFighters.Count - 1; i >= 0; i--)
                 if (EndedFighters[i][0] == h)
                     EndedFighters.RemoveAt(i);
+            // one still in a scene that's playing its after-fight words: out of it, and the scene ends (its words would be a
+            // downed man's; the review, 2026-10-31: the beats went on tasking a man the fate had just put down)
+            foreach (Live l in _live != null ? new[] { _live }.Concat(_side).ToArray() : _side.ToArray())
+                if (!l.Ended && l.Cast.Any(p => p != null && p.Handle == h))
+                {
+                    l.Out.Add(h);
+                    Stop(l, "a man down after the fight");
+                }
             try
             {
                 FighterDown?.Invoke(h, by, Math.Max(1, on), dead);

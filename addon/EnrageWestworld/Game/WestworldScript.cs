@@ -1336,6 +1336,8 @@ namespace EnrageWestworld.InGame
 
 		private unsafe void Flirt()
 		{
+			bool hookAsk = _hookAsk;
+			_hookAsk = false;   // taken once, whatever this press comes to: an early return below never leaves the next Flirt read as the Hook up ask (the review, 2026-10-31)
 			Ped character = Game.Player.Character;
 			int num = 0;
 			if (!PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle))
@@ -1375,10 +1377,9 @@ namespace EnrageWestworld.InGame
 				Log.Write("FLIRT ignored: one of the story's own people.");   // never anyone the story holds
 				return;
 			}
-			if (_hookAsk)
+			if (hookAsk)
 			{
 				// the H prompt made as Hook up (after her yes): the ask, never another flirt (Lex, 2026-10-29; on H since 2026-10-31, G is enRAGE's)
-				_hookAsk = false;
 				if (!TrystAsked(ped))
 					Log.Write("TRYST Hook up pressed, but she isn't willing now (or it timed out)");
 				return;

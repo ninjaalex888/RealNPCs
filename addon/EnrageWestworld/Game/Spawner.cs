@@ -57,6 +57,22 @@ namespace EnrageWestworld.InGame
             return Borrowed.Contains(handle);
         }
 
+        /// Hands someone borrowed back with no orders of ours (aimed at: the game's own answer to the gun takes over):
+        /// unblocked, KEEP_TASK off, nothing cleared and no wander given.
+        public static unsafe void GiveToGame(int h)
+        {
+            if (!Borrowed.Contains(h))
+                return;
+            bool light = Light.Contains(h), cast = Cast.Contains(h);
+            Quiet.Add(h);
+            GiveBack(h);   // out of ours, stood up, unblocked; quiet: no tasks cleared, no wander
+            if (!ENTITY.DOES_ENTITY_EXIST(h))
+                return;
+            PED.SET_PED_KEEP_TASK(h, false);
+            if (!light && !cast)
+                ENTITY.SET_PED_AS_NO_LONGER_NEEDED(&h);
+        }
+
         /// Hands someone borrowed back to the game, going about their day again.
         private static unsafe void GiveBack(int h)
         {

@@ -116,7 +116,7 @@ namespace EnrageWestworld.InGame
                     continue;   // knocked out in it, or killed: not getting up to join
                 if (Spawner.IsOurs(h) || Natives.StoryModel(p) || !IsGrownUp(p) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) || _wakeActs.Any(w => w.Handle == h) ||
                     (PED.IS_PED_USING_ANY_SCENARIO(h) && !(BrawlsOn && a.Count + b.Count >= 3)) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || MayDirectWhyNot(p) != null ||
-                    JoinIsPending(h))
+                    JoinIsPending(h) || AimedLately(h, now))
                     continue;   // the sat and the leaning stay put (pulled off a bar they went into a T pose); in a brawl they get up first (JoinPending)
                 looking.Add(p);
             }

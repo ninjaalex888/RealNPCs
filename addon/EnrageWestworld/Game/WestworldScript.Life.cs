@@ -419,6 +419,11 @@ namespace EnrageWestworld.InGame
 
         private bool StartScene(Scene s, List<Ped> people, SceneCast cast, string seed, int now, bool test = false, bool side = false)
         {
+            if (s != null && people != null && people.Take(s.Cast).Any(p => p != null && AimedLately(p.Handle, now)))
+            {
+                Log.Detail("SCENE " + s.Kind + " not started: one of its cast was aimed at a moment ago");   // the game's answer to the gun stands (the aftermath's tend included)
+                return false;
+            }
             // the labels over the lines say the names the lines were written with (cast.Names, set by BuildCast)
             string[] names = cast.Names ?? new string[0];
             if (side)

@@ -197,7 +197,7 @@ namespace EnrageWestworld.InGame
             _brawlOut.Clear();
         }
 
-        private int _brawlAfterDowns, _brawlAfterQuietAt;
+        private int _brawlAfterDowns, _brawlAfterQuietAt, _brawlAfterFor;
 
         /// Every frame for 15 s after a fight ends (Director.EndedFighters): the game's own melee carries on a moment after
         /// we let them go, and its blows knocked men out before any roll (Lex's Saint Denis brawl, 2026-10-31: two "out cold"
@@ -205,12 +205,21 @@ namespace EnrageWestworld.InGame
         /// fight, the man he was going for as the one on him. The watch ends early once nobody of it is in melee for 2 s.
         private void BrawlAfterStep(int now)
         {
+            if (_director.EndedAt != _brawlAfterFor)
+            {
+                _brawlAfterFor = _director.EndedAt;   // a new fight's watch: never the last one's quiet moment (the review, 2026-10-31: a stale one ended it at once)
+                _brawlAfterQuietAt = 0;
+            }
             List<int[]> ended = _director.EndedFighters;
             if (ended.Count == 0)
+            {
+                _brawlAfterQuietAt = 0;
                 return;
+            }
             if (!BrawlsOn || now - _director.EndedAt > 15000 || now - _director.EndedAt < 0)
             {
                 ended.Clear();
+                _brawlAfterQuietAt = 0;
                 return;
             }
             bool melee = false;

@@ -31,6 +31,20 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// enRAGE would question this man (one of its outlaws): its own test alone, not whether it questions anyone now.
+        public bool EnrageCanQuestion(Ped p, Ped player, float range)
+        {
+            ResolveGunpoint();
+            try
+            {
+                return _interrogable != null && p != null && (bool)_interrogable.Invoke(Mod, new object[] { p, player, range });
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         /// enRAGE would question this man (one of its outlaws), or is questioning someone right now.
         public bool EnrageHandlesAtGunpoint(Ped p, Ped player, float range)
         {

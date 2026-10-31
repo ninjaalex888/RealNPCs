@@ -163,6 +163,8 @@ namespace EnrageWestworld.InGame
                 return;   // gone, or the handle is someone else's now
             Ped p = new Ped(h);
             string skip = me != null ? SightCant(p, me) : "no player";   // the street reactions' own check: a bystander, not busy, MayDirect
+            if (skip == null && AimedLately(h, now))
+                skip = "aimed at a moment ago: the game's answer to the gun stands";
             if (skip == null)
             {
                 if (PED.IS_PED_USING_ANY_SCENARIO(h)) skip = "sitting or leaning";

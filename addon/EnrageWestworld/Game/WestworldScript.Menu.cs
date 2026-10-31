@@ -153,7 +153,11 @@ namespace EnrageWestworld.InGame
             }
             bool keyboard = PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
             string key = TalkKeyName();
-            if (keyboard && (key == null || TelegraphClerkNear(me)))
+            // TalkKey set to the control's own keyboard key (Q, the old key): the prompt's own completion is Talk's press
+            // (the review, 2026-10-31: else the press was thrown away below and Talk never opened on Q); and no standing aside
+            // by a clerk then, since only T is enRAGE's telegraph key
+            bool keyIsControl = key != null && key.Equals("Q", StringComparison.OrdinalIgnoreCase);
+            if (keyboard && (key == null || (!keyIsControl && TelegraphClerkNear(me))))
             {
                 // on the keyboard Talk is its key alone: none set, or a clerk beside him whose T is enRAGE's telegraph
                 if (key != null && _clerkNotedFor != target)
@@ -174,13 +178,13 @@ namespace EnrageWestworld.InGame
                 _talkPromptKeyboard = keyboard;
             }
             bool completed = HUD._UI_PROMPT_HAS_STANDARD_MODE_COMPLETED(_talkPrompt, 0);
-            if (keyboard && completed)
+            if (keyboard && completed && !keyIsControl && !_talkKeyRequested)
             {
                 // the control's Q on the keyboard: not Talk's key now, so the prompt is made afresh and nothing opens
                 TalkPromptEnd();
                 return;
             }
-            bool byKey = keyboard && _talkKeyRequested;
+            bool byKey = keyboard && (_talkKeyRequested || (completed && keyIsControl));
             _talkKeyRequested = false;
             if (completed || byKey)
             {

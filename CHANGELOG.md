@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### Keys, brawls, aim: review fixes
+- Flirt on H: a Hook up press that came to nothing (she was in a fight, the lock-on dropped, too far off) no longer makes the next Flirt press, even on another woman, the Hook up ask. Every press is read once.
+- Talk: `[World] TalkKey = Q` (the old key) works again. Q's press of the prompt opens Talk, where before it was thrown away as "not Talk's key". With Q, Talk no longer stands aside by a clerk (only T is enRAGE's telegraph key).
+- A plain two-man fistfight that nobody joined or came to join gets no fate roll after it ends. During it, those two were already spared. A man who goes down after a brawl while its scene still plays its after-fight words is taken out of that scene, and the scene ends ("a man down after the fight").
+- The 15 s watch after a fight starts afresh each fight. A quiet moment left over from the last fight ended the next one's watch at once, so the game's own knockouts went unrolled again.
+- A fight with even one joiner, or someone on the way, now counts as a brawl for the scene's own cap: it holds within 80 m, and runs to the fight's furthest end (`BrawlLeastSeconds` plus the time people coming may keep it going), so the fight's own rules end it. When the cap does end it, the log says `it ran out of time (N s)`, not `the player left`.
+- Aimed at:
+  - A walk-up to Arthur is now ended for real: a grudge, a thanks, a lonely one, a relative (not one made for the part), a pickpocket's walk into you. Before, it was only named, and the grudge walker said his line over the hands-up, then walked off. A rescue's thanks ends too.
+  - The pickpocket about to run, a theft's thief and a wedding are kept on purpose, and logged as `kept: ...`. They no longer count as a hold let go, or bring the 5 s second look.
+  - An onlooker's acts still to come (the hurry after a freeze) and any wander of ours due later go with the onlooking, and their stand-still or anim is cleared.
+  - A lawman on a job of ours (a body to clear, a fight to break up) has the job ended. He's handed straight back to the game: events unblocked, KEEP_TASK off, no wander. Before, he was "an encounter of RealNPCs'" and carried on deaf to the gun.
+  - A waker on despair's last steps, handed back by the act's end, is now logged as let go, not "left to it".
+  - Only the man enRAGE can question is left to it. Before, while enRAGE questioned anyone, everyone else Arthur aimed at was left held for a minute. One of enRAGE's people is still left alone while it questions, and looked at again 3 s later.
+  - For 10 s after the aim, nothing of ours takes them up again: a brawl's join, a street scene (the aftermath's tend included), an onlooker's act or a wander. The mind's acts, the ring and a conversation already waited.
+
 ### Aimed at, let go to the game
 - From Lex in Saint Denis: the first few townsfolk he aimed at didn't react ("stuck from previous scenes possibly"). Later a woman put her hands up and begged, the game's own answer.
 - Every frame, whoever Arthur free-aims at, or locks on to with a gun in his hand, is looked at once per person (again after a minute, or 5 s after something of ours was let go). Whatever of RealNPCs' still holds them ends at once, so the game's own reaction takes over. The unarmed lock-on that Talk and Flirt use never counts.
