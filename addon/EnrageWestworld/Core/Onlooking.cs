@@ -38,6 +38,7 @@ namespace EnrageWestworld.Core
         /// At most this many onlookers act on one happening (the run's rule: two a scene).
         public const int MostAScene = 2;
         public const int MostRunning = 4;   // a fright that spreads (Spread): up to this many run from one happening
+        public static int Running = MostRunning;   // [Mind] OnlookersRunning (set from the settings)
 
         /// How strong a stranger's fright must be to send them off from someone else's trouble (a milder one watches it
         /// warily): between felt (0.12) and moderate (0.35).

@@ -27,7 +27,7 @@ namespace EnrageWestworld.Core
 
         /// The fear at which the street is hushed (a killing within about six hours; two robberies close together); a city
         /// as big as Saint Denis takes more (one killing there doesn't quiet every street: the review).
-        public const float HushLevel = 0.5f, CityHushLevel = 0.8f;
+        public static float HushLevel = 0.5f, CityHushLevel = 0.8f;   // [Mind] HushFear, HushFearSaintDenis
         public const float HushGap = 1.5f;   // the scenes' gap, stretched while hushed
 
         /// Whether the town is too shaken for the street's own trouble.

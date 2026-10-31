@@ -495,7 +495,7 @@ namespace EnrageWestworld.InGame
                       (a.Cents > 0 ? ", $" + (a.Cents / 100.0).ToString("0.00") : "") + (a.Then != "stay" ? ", " + a.Then : "") + (a.Confided ? ", told you their worry" : "") + (a.Settles ? ", their worry mended" : "") + (a.LearnsName ? ", they know your name now" : ""));
         }
 
-        private const int TalkModelWaitMs = 2800;   // from Arthur's words: past this, the written line
+        private int TalkModelWaitMs { get { return (int)(_cfg.TalkModelWaitSeconds * 1000f); } }   // from Arthur's words: past this, the written line ([Mind] TalkModelWaitSeconds, 2.8 as built)
         private int _talkModelAsked, _talkModelSaid, _talkModelHeld, _talkModelLate;
 
         /// With [Mind] LanguageTalk: asks the model to word their answer (its meaning is the written line), through the

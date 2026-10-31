@@ -205,7 +205,7 @@ namespace EnrageWestworld.InGame
                         Vector3 src = from != 0 ? ENTITY.GET_ENTITY_COORDS(from, true, true) : a.At.X != 0f || a.At.Y != 0f ? a.At : (me != null ? me.Position : p.Position);   // from what frightened them, or where it happened
                         Vector3 away = p.Position - src;
                         away.Z = 0f;
-                        Vector3 to = p.Position + (away.Length() < 0.5f ? new Vector3(0f, 1f, 0f) : away.Normalized) * 20f;
+                        Vector3 to = p.Position + (away.Length() < 0.5f ? new Vector3(0f, 1f, 0f) : away.Normalized) * _cfg.OnlookersRunMetres;   // [Mind] OnlookersRunMetres (20 as built)
                         if (from != 0)
                             TASK.TASK_LOOK_AT_ENTITY(h, from, 800, 0, 51, 0);
                         TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, to.X, to.Y, to.Z, 2.0f, 12000, 1f, 0, 0f);

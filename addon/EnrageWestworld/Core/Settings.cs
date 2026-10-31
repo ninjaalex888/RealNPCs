@@ -257,6 +257,28 @@ namespace EnrageWestworld.Core
         public bool ReasonThoughts = true;   // [Scenes] when a street scene starts for a reason between two people, the one whose reason it is thinks why as they go over (settings version 155; NIGHT3)
         public bool LonelyRegulars = true;   // [Scenes] someone lonely who knows Arthur comes over hoping for a word; glad if he stops to talk, stung if he walks on (with MindLive; settings version 157; NIGHT3)
         public bool BeingWatched = true;   // [Scenes] the street's own trouble (thefts, shoves, fights, standoffs, the noon callout) waits while a lawman has the one who'd start it in sight, or on a Sunday morning by the church; they think why (settings version 158; NIGHT3)
+        // NIGHT3's numbers as settings (For Lex item 8; Lex, 2026-10-31; settings version 163): each default is the number built
+        public float WatchedLawMetres = 25f;       // [Scenes] a lawman this near, facing them with a clear sight, is watching
+        public int WatchedRecklessChance = 40;     // [Scenes] a hothead or a drunk goes ahead anyway (percent, one roll a day)
+        public float WatchedChurchMetres = 60f;    // [Scenes] "by the church" on a Sunday morning
+        public float LonelyNeed = 0.65f;           // [Scenes] the company need (0-1) at least this for someone to come over hoping for a word
+        public int LonelyLookSeconds = 45;         // [Scenes] how often a lonely one is looked for in town
+        public float LonelyMetres = 18f;           // [Scenes] how near they must be
+        public int LonelyWaitSeconds = 15;         // [Scenes] how long they stand hoping
+        public int LonelyRestDays = 3;             // [Scenes] walked past: game days before they try again
+        public int ThanksAfterHours = 6;           // [Scenes] late thanks: game hours at least after the kindness
+        public int ThanksWithinDays = 7;           // [Scenes] ... and game days at most
+        public int ThanksDrinkChance = 15, ThanksDollarChance = 35, ThanksFiveChance = 60, ThanksMendedChance = 90;   // [Scenes] percent thanked later: a drink, a dollar, five dollars, a worry mended
+        public int ThanksLoanDays = 3;             // [Scenes] the proud pay a loan back after this many game days
+        public float SpaceMetres = 0.95f, SpaceSaloonMetres = 0.75f;   // [World] personal space: nearer than this (at a saloon's bar, this) ...
+        public float SpaceSeconds = 1.8f;          // [World] ... both still this long, and it's minded
+        public int BullyTurnsHothead = 55, BullyTurnsProud = 40, BullyTurnsColdGreedy = 25, BullyTurnsCoward = 3, BullyTurnsOthers = 15;   // [Mind] percent a bully holding his ground turns on whoever stepped in, by his temper
+        public int BullyTurnsDrunk = 15, BullyTurnsMeant = 10;   // [Mind] more when he's drunk; less when the one who stepped in looks like he means it (Proud, Hothead)
+        public float OnlookersRunMetres = 20f;     // [Mind] how far the badly frightened run
+        public int OnlookersRunning = 4;           // [Mind] how many may run from one happening (fewer with Bravery)
+        public float TalkModelWaitSeconds = 2.8f;  // [Mind] Talk: how long the model may take before the written line
+        public float HushFear = 0.5f, HushFearSaintDenis = 0.8f;   // [Mind] the town's fear (0-1) from which the street hushes (about six hours after a killing; Saint Denis about two)
+        public int StrainChance = 40;              // [Mind] stress that builds: percent they snap at someone who won't hit back (a coward always)
         public int BoldThieves = 25;   // with BeingWatched: percent of would-be thieves who try it with the law looking on, once a day each; the hothead, the greedy and the drunk half as likely again (Lex, 2026-10-31: "less realistic, more exciting"; settings version 163)
         public bool LateThanks = true;   // [Scenes] someone Arthur stood a drink, gave money or whose debt he settled comes over hours or days later and thanks him for it; the proud repay a debt (settings version 153; NIGHT3)
         public bool DoctorsPatient = true;   // [Scenes] someone goes to the doctor for what ails them, tells him, hears his word, and walks home (night 2026-10-28, item 14; widened 2026-10-29; settings version 90)
@@ -740,6 +762,39 @@ namespace EnrageWestworld.Core
             GatheringHours = (GatheringHours ?? "").Trim().ToLowerInvariant() == "night" ? "night" : "any";
             GatheringGapHours = Math.Max(1, Math.Min(72, GatheringGapHours));
             BoldThieves = Math.Max(0, Math.Min(100, BoldThieves));
+            WatchedLawMetres = Math.Max(5f, Math.Min(60f, WatchedLawMetres));
+            WatchedRecklessChance = Math.Max(0, Math.Min(100, WatchedRecklessChance));
+            WatchedChurchMetres = Math.Max(10f, Math.Min(200f, WatchedChurchMetres));
+            LonelyNeed = Math.Max(0.3f, Math.Min(1f, LonelyNeed));
+            LonelyLookSeconds = Math.Max(10, Math.Min(600, LonelyLookSeconds));
+            LonelyMetres = Math.Max(5f, Math.Min(40f, LonelyMetres));
+            LonelyWaitSeconds = Math.Max(5, Math.Min(60, LonelyWaitSeconds));
+            LonelyRestDays = Math.Max(0, Math.Min(14, LonelyRestDays));
+            ThanksAfterHours = Math.Max(0, Math.Min(72, ThanksAfterHours));
+            ThanksWithinDays = Math.Max(1, Math.Min(14, ThanksWithinDays));
+            if (ThanksWithinDays * 24 <= ThanksAfterHours)
+                ThanksWithinDays = ThanksAfterHours / 24 + 1;   // the window must close after it opens
+            ThanksDrinkChance = Math.Max(0, Math.Min(100, ThanksDrinkChance));
+            ThanksDollarChance = Math.Max(0, Math.Min(100, ThanksDollarChance));
+            ThanksFiveChance = Math.Max(0, Math.Min(100, ThanksFiveChance));
+            ThanksMendedChance = Math.Max(0, Math.Min(100, ThanksMendedChance));
+            ThanksLoanDays = Math.Max(0, Math.Min(14, ThanksLoanDays));
+            SpaceMetres = Math.Max(0.5f, Math.Min(2f, SpaceMetres));
+            SpaceSaloonMetres = Math.Max(0.4f, Math.Min(2f, SpaceSaloonMetres));
+            SpaceSeconds = Math.Max(0.5f, Math.Min(10f, SpaceSeconds));
+            BullyTurnsHothead = Math.Max(0, Math.Min(100, BullyTurnsHothead));
+            BullyTurnsProud = Math.Max(0, Math.Min(100, BullyTurnsProud));
+            BullyTurnsColdGreedy = Math.Max(0, Math.Min(100, BullyTurnsColdGreedy));
+            BullyTurnsCoward = Math.Max(0, Math.Min(100, BullyTurnsCoward));
+            BullyTurnsOthers = Math.Max(0, Math.Min(100, BullyTurnsOthers));
+            BullyTurnsDrunk = Math.Max(0, Math.Min(100, BullyTurnsDrunk));
+            BullyTurnsMeant = Math.Max(0, Math.Min(100, BullyTurnsMeant));
+            OnlookersRunMetres = Math.Max(5f, Math.Min(60f, OnlookersRunMetres));
+            OnlookersRunning = Math.Max(1, Math.Min(12, OnlookersRunning));
+            TalkModelWaitSeconds = Math.Max(1f, Math.Min(10f, TalkModelWaitSeconds));
+            HushFear = Math.Max(0.1f, Math.Min(1f, HushFear));
+            HushFearSaintDenis = Math.Max(0.1f, Math.Min(1f, HushFearSaintDenis));
+            StrainChance = Math.Max(0, Math.Min(100, StrainChance));
             TownPostsAfterDeath = (TownPostsAfterDeath ?? "").Trim().ToLowerInvariant() == "successor" ? "successor" : "survive";
             RegularsPerTown = Math.Max(5, Math.Min(80, RegularsPerTown));            StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
             StalkerMinutes = Math.Max(1, Math.Min(240, StalkerMinutes));
@@ -843,6 +898,13 @@ namespace EnrageWestworld.Core
             b.AppendLine("QuarrelLadder = " + B(QuarrelLadder) + "   ; with MindLive on: an argue or a brawl between two people the mind knows climbs or cools by the quarrel ladder (words, a shove, blows, a gun drawn; an apology, a joke, backing down, a friend stepping in, a drink, the law in sight) from their natures and the surroundings; the shot is never fired. Off: the fixed scenes");
             b.AppendLine("ThoughtVariety = " + B(ThoughtVariety) + "   ; no two people near you think the same thought-shape within an hour (the names aside), and a kind of thought that has had the last few turns gives way to the others (the weather, the place, the day), so a town doesn't read as one worried chorus; false: the old choice");
             b.AppendLine("MindStandUp = " + B(MindStandUp) + "   ; with MindLive on: who steps into a rough or a brawl between two others comes from the onlookers' own minds (what it means to them, how many are watching, what a man or a woman of 1899 may let show), and the bully backs down or goes on from his; false: the old roll");
+            b.AppendLine("BullyTurnsHothead = " + BullyTurnsHothead + "   ; with MindStandUp on: percent a hot-tempered bully who holds his ground turns on the man who stepped in (a shove, a word, and off) instead (0-100)");
+            b.AppendLine("BullyTurnsProud = " + BullyTurnsProud + "   ; ... a proud bully (0-100)");
+            b.AppendLine("BullyTurnsColdGreedy = " + BullyTurnsColdGreedy + "   ; ... a cold or a greedy one (0-100)");
+            b.AppendLine("BullyTurnsCoward = " + BullyTurnsCoward + "   ; ... a coward (0-100)");
+            b.AppendLine("BullyTurnsOthers = " + BullyTurnsOthers + "   ; ... any other bully (0-100)");
+            b.AppendLine("BullyTurnsDrunk = " + BullyTurnsDrunk + "   ; added when the bully is drunk (0-100)");
+            b.AppendLine("BullyTurnsMeant = " + BullyTurnsMeant + "   ; taken off when the one who stepped in looks like he means it (a proud or hot-tempered man) (0-100). Never on a woman who steps in");
             b.AppendLine("MindPlans = " + B(MindPlans) + "   ; with MindLive on: people carry plans over the next few days (to get even with someone who wronged them, to thank someone who helped, to pay a debt back, to court a sweetheart); near you, they go to find that person, and the scene it wants plays between them");
             b.AppendLine("MindActs = " + B(MindActs) + "   ; with MindLive on: people near you do what their minds choose: take a stroll, sit down on the nearest bench or chair, go to the bar or the card table, get on with the work, head off home, keep clear of you or of someone they can't abide, go over to a friend for a word; never someone already sat or busy, a few at a time");
             b.AppendLine("LadderShots = " + B(LadderShots) + "   ; with MindLive on: a quarrel that climbs all the way to the shot is fired: the one who pushed it there fires, the other fires back if he carries a gun or runs, and whoever falls stays dead; never in a saloon, with the law near, or unless both carry guns. false: the standoff breaks off");
@@ -855,6 +917,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("BrawlDrawShare = " + BrawlDrawShare + "   ; with BrawlDraws on: how much of the quarrel ladder's own odds for the gun a man losing a brawl has, in percent (0-100; 40 as built, a quarter before)");
             b.AppendLine("BrawlFistsFatal = " + BrawlFistsFatal + "   ; with MindBrawls on: a man beaten down in a brawl is killed this percent of the time in a plain beating, else knocked out for 20-40 s and up again; more often with several on him, a drunk or a hothead at him, bad blood or an old man down, less with the law close, a friend of his in it or a fair fight; one of enRAGE's people is only ever knocked out (0-100; 0: nobody dies of fists)");
             b.AppendLine("MindOnlookers = " + B(MindOnlookers) + "   ; with MindLive on: someone who only watched a quarrel, a fight or something you did acts on what they feel about it, by their nature and what 1899 lets them show (the frightened walk off, a man who keeps his fear off his face slips away, a gun or something uncanny roots them to the spot, contempt shakes its head, the pious walk off disapproving, a keen eye turns to watch), at most two each time; false: they only turn their heads");
+            b.AppendLine("OnlookersRunMetres = " + F(OnlookersRunMetres) + "   ; with MindOnlookers on: how far, in metres, an onlooker badly frightened by real danger runs from it (5-60)");
+            b.AppendLine("OnlookersRunning = " + OnlookersRunning + "   ; how many onlookers may run from one happening once one does, the fright spreading (1-12; fewer the braver the town, [World] Bravery)");
             b.AppendLine("MindWakes = " + B(MindWakes) + "   ; with MindLive and West World on: the Awakening follows what people have lived through: the uncanny, a killing or a buried man seen walking shake their sense that things are as they seem, so they wake sooner, a good turn steadies them, and the moment that sense gives way they begin to stir; someone who saw a man die and sees him walk again is frightened by it and begins to wake (with MindOnlookers on, backs away from him, or, struck hard, stands rooted); false: the Awakening by its own roll alone");
             b.AppendLine("MindPassing = " + B(MindPassing) + "   ; with MindLive on: when two who know each other pass, the greeting follows how the first feels about the other lately and the day they are having: sore at a friend, a nod and no word; afraid, eyes away; ashamed before them, eyes down; grateful, a warm word; a sore day, a nod; a glad one, a word for anyone they know; and someone who feels something about you from a while back shows it as you pass (grateful, a hat tip and a word; sore, a hard look; afraid or shamed, eyes away); false: the greeting the tie gives");
             b.AppendLine("MindHelps = " + B(MindHelps) + "   ; with MindLive on: when someone takes a fall, the one most moved by it of those who saw it is the one who comes, and how they help comes from what they feel (a hand up, a gruff one, or walking past); a foe still sneers; false: the nearest, by the tie and a roll");
@@ -866,12 +930,16 @@ namespace EnrageWestworld.Core
             b.AppendLine("LanguageVariety = " + B(LanguageVariety) + "   ; (in testing) with Language on: the model's thoughts vary: each one goes to one thing (their work, someone in sight, a memory, the body, the worry, money, kin, faith, the town's talk, a small thing seen; the weather only now and then) in a shape of its own (fragments, a plain sentence, a question, a reckoning, an opinion, a saying half-remembered), never opening the way their last few did; and nobody doubts the world is real without cause (from the second stage of waking, or after something strange: a buried man seen walking, the night visitor, a death they woke from)");
             b.AppendLine("ModelWakes = " + B(ModelWakes) + "   ; (in testing) with Language, MindWakes and LanguageVariety on: someone with cause who wonders at the world in a thought of their own is shaken a little more by it, so the model's own wondering can start them stirring; off, only what they live through moves them");
             b.AppendLine("LanguageTalk = " + B(LanguageTalk) + "   ; (in testing) with Language on: when you Talk to someone, the model words their answer by their nature, mood and what's on their mind (what it means stays the same: the drink taken, the money refused); if it's slow or says something it shouldn't, the written line");
+            b.AppendLine("TalkModelWaitSeconds = " + F(TalkModelWaitSeconds) + "   ; with LanguageTalk on: how long, in seconds, the model may take to word a Talk answer before the written line is said instead (1-10)");
             b.AppendLine("LanguagePicks = " + B(LanguagePicks) + "   ; (in testing) with Language on: for people near you, the model picks what they do next from the few things their mind allows (the best three, and a plan's step), by their nature and how they feel; if it's slow or says nothing sensible, their mind's own choice stands");
             b.AppendLine("MindStartsScenes = " + B(MindStartsScenes) + "   ; (in testing) with LanguagePicks on: when the model picks what someone near does, their own reasons with someone else near (a quarrel to pick up, a friend to comfort, a debt to call in, someone to court) are among the choices, and picking one starts that scene, as the street would; false: scenes start only from the street's own timing");
             b.AppendLine("PickMetres = " + PickMetres + "   ; how far from you (metres, 5 to 60) the model picks what people do; past 15 m each person is asked half as often; the mind itself looks 25 m out, so more than 25 changes nothing yet");
             b.AppendLine("PicksAtOnce = " + PicksAtOnce + "   ; how many people's picks may wait on the model at once (1 to 16); F7's TEST model: line shows how long answers take, so you can raise it while they stay quick");
             b.AppendLine("MindTownMood = " + B(MindTownMood) + "   ; (in testing) with MindLive on: a killing, a robbery or a mugging leaves the whole town on edge for about a day, worst in the first hours and at night (people out go home, keep clear, keep watch; their thoughts say why), and the same kind of trouble seen again in a town that week moves onlookers less each time");
             b.AppendLine("MindTempers = " + B(MindTempers) + "   ; (in testing) with MindLive on: someone slighted, quarrelled with or beaten in the last few hours may take it out on someone who won't hit back; and in Lemoyne's towns, where honour rules, quarrels climb a little faster and backing down costs more");
+            b.AppendLine("HushFear = " + F(HushFear) + "   ; with MindTownMood on: the town's fear (0.1-1; 1 just after a killing, halving every six game hours) from which the street hushes: no street fights, thefts or noon callouts from its own timing. 0.5 is about six game hours after a killing");
+            b.AppendLine("HushFearSaintDenis = " + F(HushFearSaintDenis) + "   ; the same for Saint Denis, a city used to trouble (0.1-1; 0.8 is about two game hours)");
+            b.AppendLine("StrainChance = " + StrainChance + "   ; with MindTempers on: someone with two or more troubles at once snaps at someone who won't hit back this percent of the time when they meet (0-100; a coward is always picked on; the timid and the loyal never snap)");
             b.AppendLine("ThoughtsAloud = " + B(ThoughtsAloud) + "   ; (in testing) with Language on: as a thought shows over someone within 12 m, the model looks through the remarks their own voice has recorded and, if one fits, they say it aloud (most thoughts stay unspoken); the words show in the lower subtitle box when your local word list has them");
             b.AppendLine("LanguageUrl = " + LanguageUrl + "   ; where Ollama listens");
             b.AppendLine("LanguageModel = " + LanguageModel + "   ; the model it holds (ollama pull <name>)");
@@ -1003,6 +1071,9 @@ namespace EnrageWestworld.Core
             b.AppendLine("InteractionMenu = " + B(InteractionMenu) + "   ; Talk (Q, a pad's RB) in the lock-on menu of someone RealNPCs knows: a short list to ask the news, tell them your name, ask after a worry they've told you of, stand a drink in a saloon, give money, pay toward a trouble they've told you of (their debt, the doctor for a fever at home, a proper dentist, the fare they're saving), say you're sorry for a wrong of yours lately, or warn them; they answer in their own voice and by how they feel about you, and the mind remembers it (gratitude, fear, how they greet you after)");
             b.AppendLine("LawClearsBodies = " + B(LawClearsBodies) + "   ; a body left lying in a town street for a while: the nearest lawman on foot carries it off the street, sets it down out of the way and goes back to his rounds (never while there's a fight or a pursuit, never the story's own)");
             b.AppendLine("PersonalSpace = " + B(PersonalSpace) + "   ; stand right up against someone (under a metre, closer in a saloon) for a couple of seconds and they mind it as their nature says: a step back and a word, a look, or, from the hot-tempered, a word to back off; never the law, anyone sitting or at the bar, or anyone busy (needs [Scenes] SightReactions)");
+            b.AppendLine("SpaceMetres = " + F(SpaceMetres) + "   ; with PersonalSpace on: standing nearer than this to someone, in metres, is too close (0.5-2)");
+            b.AppendLine("SpaceSaloonMetres = " + F(SpaceSaloonMetres) + "   ; the same at a saloon's bar, shoulder to shoulder (0.4-2)");
+            b.AppendLine("SpaceSeconds = " + F(SpaceSeconds) + "   ; how long, in seconds, you both stand still that close before they mind it (0.5-10)");
             b.AppendLine("ArthurSpeaks = " + B(ArthurSpeaks) + "   ; Arthur says one of his own recorded fighting lines when someone comes at him or when he catches the pickpocket himself; never over a line already playing on him, 20 s between");
             b.AppendLine("Drama = " + B(Drama) + "   ; strangers argue, flirt, brawl, propose and gossip around you");
             b.AppendLine("DramaGapSeconds = " + DramaGapSeconds + "   ; at most one street scene this often (seconds); a chance meeting between two people with no reason of their own waits one and a half times this. Lower for a livelier street");
@@ -1022,9 +1093,24 @@ namespace EnrageWestworld.Core
             b.AppendLine("Grudges = " + B(Grudges) + "   ; grudges that travel: a friend of someone wronged has it out with the one who did it; and someone whose friend you killed may come up and say so to your face (never violent)");
             b.AppendLine("ReasonThoughts = " + B(ReasonThoughts) + "   ; when a street scene starts for a reason between two people (a quarrel over money, a friend to comfort, good news to tell), the one whose reason it is thinks why over their head as they go over, so you can follow what led to it");
             b.AppendLine("LonelyRegulars = " + B(LonelyRegulars) + "   ; (with MindLive) someone lonely who knows you (your name, or a kindness of yours lately) may come over when they see you in town, on foot and stopped, hoping for a word; stop and Talk, or greet them, and they're glad of it; walk on and it stings them, and they leave you be a few days. Never someone afraid of you, sore at you, wronged by you lately or mourning one you killed");
-            b.AppendLine("BeingWatched = " + B(BeingWatched) + "   ; people behave better when they're watched: a theft, a shove, a fight, a standoff or the noon callout from the street's own timing waits while a lawman within 25 m has the one who'd start it in sight (a hothead or a drunk goes ahead now and then; a thief only if bold, BoldThieves), and on a Sunday morning by the church (but for the godless; a thief always waits there); they glance at the law and think why. A chance meeting with the law looking keeps to words");
+            b.AppendLine("LonelyNeed = " + F(LonelyNeed) + "   ; with LonelyRegulars on: how lonely (their need for company, 0.3-1) someone who knows you must be to come over hoping for a word");
+            b.AppendLine("LonelyLookSeconds = " + LonelyLookSeconds + "   ; how often, in seconds, someone lonely is looked for in town (10-600)");
+            b.AppendLine("LonelyMetres = " + F(LonelyMetres) + "   ; how near you they must be, in metres (5-40)");
+            b.AppendLine("LonelyWaitSeconds = " + LonelyWaitSeconds + "   ; how long, in seconds, they stand facing you hoping you'll Talk (5-60)");
+            b.AppendLine("LonelyRestDays = " + LonelyRestDays + "   ; walked past once, game days before they try again (0-14)");
+            b.AppendLine("BeingWatched = " + B(BeingWatched) + "   ; people behave better when they're watched: a theft, a shove, a fight, a standoff or the noon callout from the street's own timing waits while a lawman within WatchedLawMetres (25 m) has the one who'd start it in sight (a hothead or a drunk goes ahead now and then, WatchedRecklessChance; a thief only if bold, BoldThieves), and on a Sunday morning by the church (but for the godless; a thief always waits there); they glance at the law and think why. A chance meeting with the law looking keeps to words");
             b.AppendLine("BoldThieves = " + BoldThieves + "   ; with BeingWatched on: percent of would-be thieves (a pickpocket in the street, a lift on you) who try it anyway with a lawman looking on, one roll a day each; a hothead, a greedy one or a drunk half as likely again (0 never, as before; 100 the law stops no thief)");
+            b.AppendLine("WatchedLawMetres = " + F(WatchedLawMetres) + "   ; with BeingWatched on: a lawman this near, in metres, facing them with a clear sight, is watching (5-60)");
+            b.AppendLine("WatchedRecklessChance = " + WatchedRecklessChance + "   ; percent of hot-tempered or drunk would-be troublemakers (a shove, a fight, a standoff, a callout) who go ahead anyway, one roll a day each (0-100)");
+            b.AppendLine("WatchedChurchMetres = " + F(WatchedChurchMetres) + "   ; how near the church, in metres, counts as by the church on a Sunday morning (10-200)");
             b.AppendLine("LateThanks = " + B(LateThanks) + "   ; people you were good to through the Talk menu (a drink, money, a debt paid, the doctor, a dentist or the fare paid for) may seek you out when they next see you, some hours or a few days on, and say what it meant to them (few for a drink, most for money, nearly all for a trouble mended); the proud pay back a debt they called a loan, days later; the cold, the seated and women after dark just nod");
+            b.AppendLine("ThanksAfterHours = " + ThanksAfterHours + "   ; with LateThanks on: game hours at least between a kindness and their thanks (0-72)");
+            b.AppendLine("ThanksWithinDays = " + ThanksWithinDays + "   ; game days at most (1-14; the world remembers its last 400 happenings, so a drink may be forgotten sooner in a busy town)");
+            b.AppendLine("ThanksDrinkChance = " + ThanksDrinkChance + "   ; percent who come to thank you for a drink you stood them (0-100)");
+            b.AppendLine("ThanksDollarChance = " + ThanksDollarChance + "   ; ... for a dollar (0-100)");
+            b.AppendLine("ThanksFiveChance = " + ThanksFiveChance + "   ; ... for five dollars (0-100)");
+            b.AppendLine("ThanksMendedChance = " + ThanksMendedChance + "   ; ... for a trouble you mended with money: a debt, the doctor, the dentist, the fare (0-100)");
+            b.AppendLine("ThanksLoanDays = " + ThanksLoanDays + "   ; a proud one who took your money for their debt as a loan pays it back after this many game days (0-14)");
             b.AppendLine("DoctorsPatient = " + B(DoctorsPatient) + "   ; by day in a town with its doctor (Valentine, Rhodes, Saint Denis), someone near you walks to him for what ails them (a child's fever, a tooth, ribs after a fight, a back, a cough...), tells him, hears his word, and walks home thinking it over");
             b.AppendLine("ErrandPace = " + F(ErrandPace) + "   ; how fast people walk on their errands here (to a scene, to the doctor, to a talk, to a camp seat, home again): 1 an ordinary walk, 2 brisk, 3 a run");
             b.AppendLine("LawChases = " + B(LawChases) + "   ; when a pickpocket runs and a lawman is near, the lawman gives chase, brings him down and holds him for arrest");

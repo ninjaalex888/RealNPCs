@@ -17,7 +17,7 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private const int LonelyLookMs = 45000;
+        private int LonelyLookMs { get { return _cfg.LonelyLookSeconds * 1000; } }   // [Scenes] LonelyLookSeconds (45 as built)
 
         private sealed class LonelyWalk
         {
@@ -118,7 +118,7 @@ namespace EnrageWestworld.InGame
                 if (woman && !test && (Natives.Night() || _engine.NowIndoors))
                     continue;   // a woman doesn't walk up to a man after dark or in a saloon (the thanks' manners)
                 Ped p = new Ped(h);
-                if (p.Position.DistanceTo(mePos) > 18f || !NodInView(me, p) || MayDirectWhyNot(p) != null || NotFree(h) || _director.Involves(h) || PED.IS_PED_USING_ANY_SCENARIO(h))
+                if (p.Position.DistanceTo(mePos) > _cfg.LonelyMetres || !NodInView(me, p) || MayDirectWhyNot(p) != null || NotFree(h) || _director.Involves(h) || PED.IS_PED_USING_ANY_SCENARIO(h))
                     continue;
                 bool knows = _engine.KnowsYourName(w.Id), kind = Interact.KindLately(_store.WorldLog, w.Id, g);
                 string temper = w.Src != null ? w.Src.Temper : null, regard = SightRegard(p, w.Id);

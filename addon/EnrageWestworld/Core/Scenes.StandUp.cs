@@ -47,6 +47,9 @@ namespace EnrageWestworld.Core
             return Voice.Chance(seed + "|takeaway", friendOfB ? 60 : 35);
         }
 
+        /// The chances below, in percent ([Mind] BullyTurnsHothead and the rest; set from the settings, as built by default).
+        public static int TurnsHothead = 55, TurnsProud = 40, TurnsColdGreedy = 25, TurnsCoward = 3, TurnsOthers = 15, TurnsDrunk = 15, TurnsMeant = 10;
+
         /// Whether the bully, holding his ground, turns on the one who stepped in instead (NIGHT3, the buffer's first item):
         /// never on a woman; a Hothead more than half the time, the proud now and then, the cold and the greedy a quarter,
         /// most men seldom, a coward hardly ever; drink makes it likelier, a man stepping in who looks like he means it
@@ -55,11 +58,11 @@ namespace EnrageWestworld.Core
         {
             if (standerWoman)
                 return false;
-            int p = bullyTemper == "Hothead" ? 55 : bullyTemper == "Proud" ? 40 : bullyTemper == "Cold" || bullyTemper == "Greedy" ? 25 : bullyTemper == "Coward" ? 3 : 15;
+            int p = bullyTemper == "Hothead" ? TurnsHothead : bullyTemper == "Proud" ? TurnsProud : bullyTemper == "Cold" || bullyTemper == "Greedy" ? TurnsColdGreedy : bullyTemper == "Coward" ? TurnsCoward : TurnsOthers;
             if (drunk)
-                p += 15;
+                p += TurnsDrunk;
             if (standerTemper == "Proud" || standerTemper == "Hothead")
-                p -= 10;
+                p -= TurnsMeant;
             return Voice.Chance(seed + "|turnson", Math.Max(0, p));
         }
 

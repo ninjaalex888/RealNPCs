@@ -66,6 +66,7 @@ namespace EnrageWestworld.Core
 
         /// For each woman in a fight, this percent of a man's chance (Lex, 2026-10-29: half as likely, until the mind decides it).
         public const int WomanFightPercent = 50;
+        public static int StrainChance = 40;   // [Mind] StrainChance: stress that builds snaps at someone who won't hit back this percent of the time (but a coward, always)
 
         /// Whether these two may come to blows at all: two men always, as before; with a woman in it (WomenFight on) on a
         /// seeded roll of WomanFightPercent for each woman, by the pair and what it's over, so the same quarrel gives the same
@@ -242,7 +243,7 @@ namespace EnrageWestworld.Core
             // (the timid and the loyal withdraw rather than snap; the anger picks a safe target: not someone well-off, and a
             // man doesn't take it out on a strange woman; and not at everyone: the shamed rule's roll)
             if (where.Strain && x.Id != y.Id && !Hot(y) && x.Temper != "Coward" && x.Temper != "Loyal" && !y.WellOff && (x.Woman || !y.Woman) &&
-                (y.Temper == "Coward" || Voice.Chance(x.Id + y.Id + gameDay + "strain", 40)))
+                (y.Temper == "Coward" || Voice.Chance(x.Id + y.Id + gameDay + "strain", StrainChance)))
             {
                 List<string> strains = Strains(x, gameDay);
                 if (strains.Count >= 2)

@@ -10,8 +10,8 @@ namespace EnrageWestworld.Core
 {
     public static class Space
     {
-        public const float Metres = 0.95f, SaloonMetres = 0.75f;   // a saloon's bar is shoulder to shoulder
-        public const int LingerMs = 1800;                          // both still this long before it's minded
+        public static float Metres = 0.95f, SaloonMetres = 0.75f;   // [World] SpaceMetres, SpaceSaloonMetres: a saloon's bar is shoulder to shoulder
+        public static int LingerMs = 1800;  // [World] SpaceSeconds: both still this long before it's minded
         public const int AgainMs = 300000;                         // the same person minds it again after five minutes at the soonest
 
         /// How they take it: regard (afraid, hostile, fond, or null) first, then their temper.

@@ -25,9 +25,10 @@ namespace EnrageWestworld.Core
 
     public static class Thanks
     {
-        public const long After = 360;          // six game hours at least: thanks later, not on the spot
-        public const long Within = 7 * 1440;    // a week at most (the world log, kept to its last 400, may forget a drink sooner)
-        public const long RepayAfter = 3 * 1440; // a loan of eleven dollars, from a man with four and a button, takes days to raise
+        public static long After = 360;  // [Scenes] ThanksAfterHours: six game hours at least: thanks later, not on the spot
+        public static long Within = 7 * 1440;   // [Scenes] ThanksWithinDays: a week at most (the world log, kept to its last 400, may forget a drink sooner)
+        public static long RepayAfter = 3 * 1440;   // [Scenes] ThanksLoanDays: a loan of eleven dollars, from a man with four and a button, takes days to raise
+        public static int DrinkChance = 15, DollarChance = 35, FiveChance = 60, MendedChance = 90;   // [Scenes] ThanksDrinkChance, ThanksDollarChance, ThanksFiveChance, ThanksMendedChance: how often each kindness is thanked later
         public const string DebtOutcome = "settled their debt";   // the menu's outcome on the help it records for a debt
         public const string DoctorOutcome = "paid the doctor for them", ToothOutcome = "paid their dentist", FareOutcome = "made up their fare";
 
@@ -88,7 +89,7 @@ namespace EnrageWestworld.Core
         {
             if (test)
                 return true;
-            int chance = Mended(kind) ? 90 : kind == "money" ? (cents >= 500 ? 60 : 35) : 15;
+            int chance = Mended(kind) ? MendedChance : kind == "money" ? (cents >= 500 ? FiveChance : DollarChance) : DrinkChance;
             return Voice.Hash(key + "|comes") % 100 < chance;
         }
 

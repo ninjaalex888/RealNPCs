@@ -82,7 +82,7 @@ namespace EnrageWestworld.Core
         /// How many run from one happening when one does (Onlooking.MostRunning as built, one at 85).
         public static int MostRunning(int bravery)
         {
-            return bravery <= 0 ? Onlooking.MostRunning : Math.Max(1, (int)Math.Round(Onlooking.MostRunning * (1f - Share(bravery))));
+            return bravery <= 0 ? Onlooking.Running : Math.Max(1, (int)Math.Round(Onlooking.Running * (1f - Share(bravery))));
         }
     }
 }

@@ -8,9 +8,9 @@ namespace EnrageWestworld.Core
 {
     public static class Observed
     {
-        public const float LawMetres = 25f;      // a lawman this near, with a clear sight of them
-        public const float ChurchMetres = 60f;   // the Sabbath scenes' "by the church"
-        public const int RecklessChance = 40;    // a hothead or a drunk who goes ahead anyway
+        public static float LawMetres = 25f;     // ([Scenes] WatchedLawMetres) a lawman this near, with a clear sight of them
+        public static float ChurchMetres = 60f;  // ([Scenes] WatchedChurchMetres) the Sabbath scenes' "by the church"
+        public static int RecklessChance = 40;   // ([Scenes] WatchedRecklessChance) a hothead or a drunk who goes ahead anyway
 
         /// A thief who tries it with the law looking on, in percent ([Scenes] BoldThieves; Lex, 2026-10-31: "less realistic,
         /// more exciting"); a hothead, a greedy one or a drunk half as likely again. Set from the settings.

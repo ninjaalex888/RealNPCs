@@ -7,10 +7,10 @@ namespace EnrageWestworld.Core
 {
     public static class Lonely
     {
-        public const float CompanyBar = 0.65f;   // the company need at least this (Needs: 0..1, pressing past 0.5)
-        public const int WaitMs = 15000;         // how long they stand hoping for a word once they've spoken
+        public static float CompanyBar = 0.65f;  // [Scenes] LonelyNeed: the company need at least this (Needs: 0..1, pressing past 0.5)
+        public static int WaitMs = 15000;  // [Scenes] LonelyWaitSeconds: how long they stand hoping for a word once they've spoken
         public const float SoreLeft = 0.1f;      // a feeling about him still this strong keeps them away
-        public const long StungRest = 3 * 1440;  // walked past once: three game days before they try again (the review)
+        public static long StungRest = 3 * 1440;   // [Scenes] LonelyRestDays: walked past once: three game days before they try again (the review)
 
         /// Whether something he did still sits with them (the mind's feelings, any age): anger, contempt, fear or shame he
         /// caused, or grief for someone he killed. Nobody comes over glad to the man they're sore at, or mourning by (the
