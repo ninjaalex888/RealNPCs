@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Tempers carry, and honour rules in Lemoyne (the psychologist's lens)
+
+- **Displaced aggression:** someone slighted, spoken to hard or beaten in the last four game hours (their own memories) may take it out on someone near who won't hit back, a timid man above all: one trouble leads to the next ("Hiram was beaten earlier, and takes it out on Amos"). The one who shamed him isn't the one who pays.
+- **The culture of honour** (Nisbett and Cohen's Southern "culture of honor"): in Lemoyne's towns and country an insult must be answered, so the quarrel ladder climbs a little faster there (more over nothing, a slight or a woman) and backing down costs more before a crowd. Offline: 74 of 400 quarrels reach blows where honour rules, against 61 elsewhere.
+- `[Mind] MindTempers` (on, with MindLive; settings version 152).
+
 ### Lawmen clear the dead from the street (roadmap 33; Lex, 2026-10-31)
 
 - A body left lying in a town street for 20 s or more, with no fight or pursuit near and nobody carrying it: the nearest lawman on foot within 50 m walks over, lifts it with the game's own carry, takes it about 20 m off the street (away from you), sets it down and goes back to his rounds; up to three people near turn to watch him. One at a time, each body once, a minute between; never the story's own or another script's. A lawman lifting a body is new to the game's people, so every step is logged (`LAW clears:`), and if the game won't let him lift it the log says so. `[World] LawClearsBodies` (settings version 150). Testing row "A lawman clears a body"; F7 `TEST law clears bodies:`.

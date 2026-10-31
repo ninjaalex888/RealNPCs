@@ -31,6 +31,7 @@ namespace EnrageWestworld.Core
         public string GriefId;    // the dead friend's id (null when unknown)
         public Func<string, bool> HeardOf;   // whether word of this death (by the dead one's id) has reached them; null: not asked
         public bool Known;        // known lately for a face in the bar or a hand in a coat
+        public string Shamed;     // slighted, had words or beaten in the last four hours and not answered it ("slighted", "had words", "beaten"), else null (NIGHT3: displaced aggression)
     }
 
     public sealed class Reason
@@ -210,6 +211,10 @@ namespace EnrageWestworld.Core
                 else
                     all.Add(new Reason { Kind = "x:snap", Strength = hot ? 55 : 45, Why = x.Name + " is at the worst of it (" + kind + ")" });
             }
+            // displaced aggression (NIGHT3, the psychologist's lens): shamed earlier and unable to answer it there, a man takes it
+            // out on someone who won't hit back; the one who shamed him isn't the one who pays
+            if (x.Shamed != null && x.Id != y.Id && !Hot(y) && (y.Temper == "Coward" || Voice.Chance(x.Id + y.Id + gameDay + "kick", 40)))
+                all.Add(new Reason { Kind = "x:snap", Strength = Hot(x) ? 52 : 46, Why = x.Name + " was " + x.Shamed + " earlier, and takes it out on " + y.Name });
             if (x.WakeStage >= 2 && y.WakeStage >= 1)
                 all.Add(new Reason { Kind = "hosts", Strength = 45, Why = "both are waking" });
             if (worry && stage == 3)

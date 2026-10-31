@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 151;
+        public const int CurrentVersion = 152;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -85,6 +85,7 @@ namespace EnrageWestworld.Core
         public int PickMetres = 25;    // how far from the player the model picks for people (15 until settings version 147; NIGHT3 item 2); past 15 m it's asked half as often
         public int PicksAtOnce = 8;    // how many picks may wait on the model at once (4 until settings version 147)
         public bool MindTownMood = true;   // with MindLive: a town on edge for a day after a killing (the safety need for all, the model told), and the same trouble seen again moving onlookers less (settings version 149; NIGHT3 item 5)
+        public bool MindTempers = true;   // with MindLive: displaced aggression (shamed earlier, they take it out on someone who won't hit back) and the culture of honour in Lemoyne (quarrels climb faster, backing down costs more) (settings version 152; NIGHT3)
         public bool Language = false;        // the language layer (2026-10-29; roadmap 15): with MindLive, the mind's own thoughts worded by a local model (Ollama at LanguageUrl, LanguageModel) through Language.Check, the written line always the fallback; off until the generated thoughts pass the checks at scale (settings version 94)
         public string LanguageUrl = "http://127.0.0.1:11434";   // the local server; nothing leaves the machine
         public string LanguageModel = "llama3.1:8b";           // the model Ollama holds (ollama pull <name>)
@@ -792,6 +793,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("PickMetres = " + PickMetres + "   ; how far from you (metres, 5 to 60) the model picks what people do; past 15 m each person is asked half as often; the mind itself looks 25 m out, so more than 25 changes nothing yet");
             b.AppendLine("PicksAtOnce = " + PicksAtOnce + "   ; how many people's picks may wait on the model at once (1 to 16); F7's TEST model: line shows how long answers take, so you can raise it while they stay quick");
             b.AppendLine("MindTownMood = " + B(MindTownMood) + "   ; (in testing) with MindLive on: a killing, a robbery or a mugging leaves the whole town on edge for about a day, worst in the first hours and at night (people out go home, keep clear, keep watch; their thoughts say why), and the same kind of trouble seen again in a town that week moves onlookers less each time");
+            b.AppendLine("MindTempers = " + B(MindTempers) + "   ; (in testing) with MindLive on: someone slighted, quarrelled with or beaten in the last few hours may take it out on someone who won't hit back; and in Lemoyne's towns, where honour rules, quarrels climb a little faster and backing down costs more");
             b.AppendLine("ThoughtsAloud = " + B(ThoughtsAloud) + "   ; (in testing) with Language on: as a thought shows over someone within 12 m, the model looks through the remarks their own voice has recorded and, if one fits, they say it aloud (most thoughts stay unspoken); the words show in the lower subtitle box when your local word list has them");
             b.AppendLine("LanguageUrl = " + LanguageUrl + "   ; where Ollama listens");
             b.AppendLine("LanguageModel = " + LanguageModel + "   ; the model it holds (ollama pull <name>)");

@@ -35,6 +35,7 @@ namespace EnrageWestworld.Core
         public int Warmth;                   // the pair's tie, -3..3 (friends cool, foes heat)
         public int History;                  // quarrels between them before
         public string Matter = "nothing";    // drink honour money land woman nothing (a look or a word over nothing was the honour matter of the age)
+        public bool Honour;                  // the culture of honour (Lemoyne; NIGHT3): an insult must be answered, backing down costs more
         public string Aggrieved;             // "a" or "b": the one wronged, when the ties say (he pushes harder); null when nobody knows
     }
 
@@ -92,6 +93,8 @@ namespace EnrageWestworld.Core
                     h += 0.01f * Math.Min(seen, 3);   // a friend at the shoulder eggs on before a crowd
             }
             h += (gun ? 0.02f : 0.04f) * Math.Min(Math.Max(0, c.History), 4);
+            if (c.Honour)
+                h += gun ? 0.03f : c.Matter == "honour" || c.Matter == "nothing" || c.Matter == "woman" ? 0.07f : 0.04f;   // the South: a word must be answered (Nisbett and Cohen's culture of honour)
             // a friend's words sting less, and nobody draws on a friend; a foe's sting more
             int warmth = Warmth(c);
             h -= warmth > 0 ? (gun ? 0.15f : 0.08f) * warmth : (gun ? 0.03f : 0.08f) * warmth;
@@ -145,6 +148,8 @@ namespace EnrageWestworld.Core
             if (c.Place == "saloon" && (c.Hour >= 20 || c.Hour < 4))
                 k -= 0.05f;
             k -= 0.02f * Seen(c);   // backing down before a crowd costs
+            if (c.Honour)
+                k -= 0.06f + 0.02f * Math.Min(Seen(c), 3);   // and costs more where honour rules
             k += 0.06f * Warmth(c);
             return Clamp(k);
         }

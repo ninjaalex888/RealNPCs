@@ -97,6 +97,24 @@ namespace EnrageWestworld.InGame
             return Heart(new Someone { Id = r.Id, Name = ShownName(h, r.Name), Woman = r.Woman, Temper = r.Personality, P = rp, WakeStage = _engine.StageOf(r.Id), WellOff = WellOff(p), Drunk = InHisCups(p, rp), Hurt = HurtLately(r.Id) });
         }
 
+        /// Slighted, spoken to hard or beaten in the last four game hours, by their own memories (as the one it was done to),
+        /// in a word for the reason, or null (NIGHT3: displaced aggression).
+        private string ShamedLately(string id, long g)
+        {
+            PersonState st = id != null ? _store.Find(id) : null;
+            if (st == null || st.Mind == null || g < 0)
+                return null;
+            foreach (MindMemory m in st.Mind)
+            {
+                if (m.Role != "done" || m.At > g || g - m.At > 240)
+                    continue;
+                if (m.Kind == "blows") return "beaten";
+                if (m.Kind == "slight") return "slighted";
+                if (m.Kind == "quarrel") return "spoken to hard";
+            }
+            return null;
+        }
+
         /// What a street scene's reasons need to know of someone's heart and day: spoken for, their mood today, and
         /// whether they're known lately for a face in the bar or a hand in a coat (Reasons.Courtship).
         internal Someone Heart(Someone s)
@@ -107,6 +125,7 @@ namespace EnrageWestworld.InGame
             s.Taken = _engine.SpokenFor(s.Id);
             s.Known = _store.Ties.Any(t => t.Doer == s.Id && (t.Kind == "rough" || t.Kind == "pickpocket") && g - t.At >= 0 && g - t.At < 3 * 1440);
             s.Mood = s.P != null ? _engine.MoodToday(s.P, s.P.Home ?? _placeTown) : null;
+            s.Shamed = _cfg.MindLive && _cfg.MindTempers ? ShamedLately(s.Id, g) : null;   // displaced aggression (NIGHT3): who's been shamed today
             long griefAt;
             string griefId;
             s.Grief = _engine.GriefFor(s.Id, 3 * 1440, out griefAt, out griefId);

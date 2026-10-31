@@ -81,6 +81,7 @@ namespace EnrageWestworld.InGame
                     WomanA = cast.AWoman,
                     WomanB = cast.BWoman,
                     WomenFight = _cfg.WomenInFights,
+                    Honour = _cfg.MindLive && _cfg.MindTempers && Honour.Holds(_placeTown),   // the culture of honour in Lemoyne (NIGHT3)
                     LawNear = LawmanNear(first, 30f),
                     GunsBanned = false,   // no town's rule is known to the add-on (For Lex)
                     Warmth = tie != null ? tie.Warmth : 0,
