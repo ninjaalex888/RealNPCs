@@ -19,10 +19,12 @@ namespace EnrageWestworld.InGame
         private bool _hush;   // the street hushed this drama tick (TownMood.Hushes)
         private int _hushHeld;
 
+        private static readonly TownFear CalmTown = new TownFear();
+
         private TownFear TownFearNow(int now)
         {
             if (!TownMoodOn || _placeTown == null)
-                return _townFear = new TownFear();
+                return _townFear = CalmTown;   // one, not one a call (the cost audit: the needs ask about thirty times a second; nobody writes to it)
             if (now - _townFearAt >= 5000 || now < _townFearAt || _townFearFor != _placeTown)
             {
                 _townFearAt = now;

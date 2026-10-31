@@ -52,12 +52,20 @@ namespace EnrageWestworld.InGame
                     Ped me = Game.Player.Character;
                     if (me == null || !me.Exists() || me.IsDead)
                         return;
-                    ThanksWalkStep(me, _now);
-                    if (_thanksWalk == null && _now >= _nextThanks)
+                    if (_thanksWalk != null)
+                    {
+                        if (_now < _thanksStepAt)
+                            return;
+                        _thanksStepAt = _now + 250;   // a quarter second is plenty for a walk (the cost audit: MayDirectWhyNot's reflection every frame)
+                        ThanksWalkStep(me, _now);
+                    }
+                    else if (_now >= _nextThanks)
                         ThanksLook(me, _now, false);
                 };
             Safe("late thanks", _aThanks);
         }
+
+        private int _thanksStepAt;
 
         /// Someone near who owes him thanks comes over (or nods). Null if it started, else why not.
         private string ThanksLook(Ped me, int now, bool test)

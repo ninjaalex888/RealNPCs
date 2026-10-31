@@ -720,8 +720,8 @@ namespace EnrageWestworld.InGame
             act.LawLookAt = now + 1500;
             int h = act.Handle;
             Vector3 at = new Ped(h).Position;
-            Ped law = World.GetAllPeds().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Handle != h && Natives.IsLaw(p) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
-                                                    !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_IN_COMBAT(p.Handle, me.Handle) && p.Position.DistanceTo(at) < 30f && !NotFree(p.Handle) &&
+            Ped law = World.GetAllPeds().Where(p => p != null && p.Position.DistanceTo(at) < 30f && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Handle != h && Natives.IsLaw(p) &&   // the distance first (the cost audit)
+                                                    !PED.IS_PED_ON_MOUNT(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_IN_COMBAT(p.Handle, me.Handle) && !NotFree(p.Handle) &&
                                                     ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, h, 17))   // (not one carrying a body or after a thief: the cross-cutting review)
                                         .OrderBy(p => p.Position.DistanceTo(at)).FirstOrDefault();
             if (law == null)

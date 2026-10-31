@@ -83,7 +83,16 @@ namespace EnrageWestworld.InGame
             int target = 0;
             if (_cfg.InteractionMenu && !PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle))
                 PLAYER.GET_PLAYER_INTERACTION_TARGET_ENTITY(Game.Player.Handle, &target, false, false);
-            string why = target != 0 ? TalkWhyNot(target, me, MenuReach) : "nobody";
+            string why;
+            if (target != 0 && target == _talkWhyFor && _now - _talkWhyAt >= 0 && _now - _talkWhyAt < 250)
+                why = _talkWhyLast;   // the same target a quarter second ago: the same answer (the cost audit: ~25 natives and reflection a frame)
+            else
+            {
+                why = target != 0 ? TalkWhyNot(target, me, MenuReach) : "nobody";
+                _talkWhyFor = target;
+                _talkWhyAt = _now;
+                _talkWhyLast = why;
+            }
             if (why != null || (_forgetPrompt != 0 && _forgetPromptFor == target))
             {
                 TalkPromptEnd();
@@ -100,9 +109,14 @@ namespace EnrageWestworld.InGame
             if (HUD._UI_PROMPT_HAS_STANDARD_MODE_COMPLETED(_talkPrompt, 0))
             {
                 TalkPromptEnd();
-                TalkOpen(new Ped(target), "the Talk prompt", MenuReach);
+                _talkWhyFor = 0;
+                if (TalkWhyNot(target, me, MenuReach) == null)   // asked afresh: the cached answer may be a quarter second old
+                    TalkOpen(new Ped(target), "the Talk prompt", MenuReach);
             }
         }
+
+        private int _talkWhyFor, _talkWhyAt;
+        private string _talkWhyLast;
 
         /// Why this person can't be talked to through the menu now, or null: within `reach` metres, and not busy with
         /// anything else (MayDirect's rules, less the setting that keeps enRAGE's people out of our scenes: this is

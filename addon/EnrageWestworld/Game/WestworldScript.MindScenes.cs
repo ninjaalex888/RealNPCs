@@ -18,7 +18,7 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private const int MindReasonsMs = 3000;   // the pair reasons near the player, worked out at most this often for the picks
+        private const int MindReasonsMs = 10000;   // the pair reasons near the player, worked out at most this often for the picks (3 s until the cost audit: a 1-3 ms frame each time in a crowd)
         private const int MindScenesOffered = 2;  // at most this many of a person's own reasons join one pick's list
         private List<PairReason> _mindReasons = new List<PairReason>();
         private int _mindReasonsAt = -100000;
@@ -48,10 +48,10 @@ namespace EnrageWestworld.InGame
                 _mindReasonsAt = now;
                 int w = WatchEnter("mind scenes: the pair reasons");
                 List<Candidate> people = ReasonCandidates(Game.Player.Character, now, test);
-                _mindReasons = people.Count >= 2 ? PairReasons(people, _placeKind == "saloon") : new List<PairReason>();
+                _mindReasons = people.Count >= 2 ? PairReasons(people, _placeKind == "saloon").OrderByDescending(x => x.Why.Strength).ToList() : new List<PairReason>();   // sorted once, strongest first
                 WatchLeave(w);
             }
-            foreach (PairReason pr in _mindReasons.OrderByDescending(x => x.Why.Strength))
+            foreach (PairReason pr in _mindReasons)
             {
                 Candidate first = pr.Why.BFirst ? pr.B : pr.A, second = pr.Why.BFirst ? pr.A : pr.B;
                 Candidate chooser = Reasons.ChosenBySecond(pr.Why, first.Who, Bridge.Now() / 1440) ? second : first, other = chooser == first ? second : first;   // the friend offers sympathy, the wronged keep clear, the one owed calls it in

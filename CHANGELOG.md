@@ -9,6 +9,7 @@
 - Fixed: a lawman carrying a body off, stepping in on a lash-out or chasing a thief is no longer picked for another job or sent strolling by another part, and nobody is sent strolling out of a fight.
 - Fixed: someone the mind had sent on an errand stops it, with no new orders, once Talk, a walk-up or a scene has them; a model's answer that comes back for someone taken up since is dropped (no thought over their talk with you); a mind's own scene needs both people free.
 - Fixed: right after you say goodbye in Talk, or someone thanks you or has it out with you, they don't also tip their hat and greet you as you pass. Greeting someone you're in Talk with no longer starts a second conversation over it. A friend's grudge in a hushed town, or with a lawman looking on, stays words.
+- Smoother frames: the Talk prompt's check, a thanks walk and a lawman carrying a body off now step four times a second rather than every frame, the body search tests the distance first and rests after a refusal, the mind's own scene options are worked out every 10 s rather than 3, and the hint above the ticker is laid out once rather than every frame.
 
 ### The bully turns on whoever stepped in (the run's buffer)
 

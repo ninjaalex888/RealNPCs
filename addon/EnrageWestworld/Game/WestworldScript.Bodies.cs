@@ -30,6 +30,8 @@ namespace EnrageWestworld.InGame
         private string _bodyLast;
         private Action _aBodies;
 
+        private int _bodyStepAt, _bodyRetryAt;
+
         private void BodiesStep(int now)
         {
             if (_aBodies == null)
@@ -43,10 +45,14 @@ namespace EnrageWestworld.InGame
         {
             if (_bodyClear != null)
             {
-                BodyClearStep(_bodyClear, now);
+                if (now - _bodyStepAt >= 250 || now < _bodyStepAt)
+                {
+                    _bodyStepAt = now;   // a quarter second is plenty for a walk and a carry: its stages only read state (the cost audit)
+                    BodyClearStep(_bodyClear, now);
+                }
                 return test ? "a lawman is already clearing a body" : null;
             }
-            if (!test && (now < _bodyNextLook || now < _bodyNextStart))
+            if (!test && (now < _bodyNextLook || now < _bodyNextStart || now < _bodyRetryAt))
                 return null;
             _bodyNextLook = now + 3000;
             if (MISC.GET_MISSION_FLAG() || _missionPaused)
@@ -57,10 +63,11 @@ namespace EnrageWestworld.InGame
             if (PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0 || PED.IS_PED_IN_COMBAT(me.Handle, 0))
                 return "you're wanted or fighting";
             Ped body = null;
+            Vector3 mePos = me.Position;
             foreach (Ped p in World.GetAllPeds())
             {
-                if (p == null || !p.Exists() || !p.IsDead || !PED.IS_PED_HUMAN(p.Handle) || p.Position.DistanceTo(me.Position) > 40f)
-                    continue;
+                if (p == null || p.Position.DistanceTo(mePos) > 40f || !p.Exists() || !p.IsDead || !PED.IS_PED_HUMAN(p.Handle))
+                    continue;   // (the distance first: the cost audit)
                 int h = p.Handle;
                 int first;
                 if (!_bodyFirstSeen.TryGetValue(h, out first))
@@ -81,13 +88,21 @@ namespace EnrageWestworld.InGame
                     _bodyFirstSeen.Remove(k);
             if (body == null)
                 return "no body lying in the street within 40 m" + (test ? "" : " for 20 s or more");
-            if (World.GetAllPeds().Any(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_IN_COMBAT(x.Handle, 0) && x.Position.DistanceTo(body.Position) < 35f))
+            Vector3 bodyAt = body.Position;
+            float lawMetres = test ? 80f : 50f;
+            if (World.GetAllPeds().Any(x => x != null && x.Position.DistanceTo(bodyAt) < 35f && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_IN_COMBAT(x.Handle, 0)))
+            {
+                _bodyRetryAt = now + 20000;   // a fight near it: look again in a while, not every 3 s (the cost audit)
                 return "a fight near the body";
-            Ped law = World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && Natives.IsLaw(x) && !PED.IS_PED_ON_MOUNT(x.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(x.Handle, false) &&
-                                                    !PED.IS_PED_IN_COMBAT(x.Handle, 0) && !_director.Involves(x.Handle) && !NotFree(x.Handle) && x.Position.DistanceTo(body.Position) < (test ? 80f : 50f))
-                                        .OrderBy(x => x.Position.DistanceTo(body.Position)).FirstOrDefault();
+            }
+            Ped law = World.GetAllPeds().Where(x => x != null && x.Position.DistanceTo(bodyAt) < lawMetres && x.Exists() && !x.IsDead && Natives.IsLaw(x) && !PED.IS_PED_ON_MOUNT(x.Handle) &&
+                                                    !PED.IS_PED_IN_ANY_VEHICLE(x.Handle, false) && !PED.IS_PED_IN_COMBAT(x.Handle, 0) && !_director.Involves(x.Handle) && !NotFree(x.Handle))
+                                        .OrderBy(x => x.Position.DistanceTo(bodyAt)).FirstOrDefault();
             if (law == null)
+            {
+                _bodyRetryAt = now + 20000;   // no lawman near: look again in a while
                 return "no lawman on foot within " + (test ? 80 : 50) + " m of the body";
+            }
             Vector3 goal;
             if (!BodyGoal(body.Position, me.Position, out goal))
                 return "nowhere off the street to take it";

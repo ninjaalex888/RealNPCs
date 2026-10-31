@@ -48,6 +48,10 @@ namespace EnrageWestworld.InGame
         private int _nextNear, _nextIni, _nextUi, _controlOffAt = -1;
         private bool _uiOpen;
         private string _hint;          // a prompt shown above the ticker ("[N] take the diary")
+        private string _hintRowsFor;   // the hint its rows were wrapped for
+        private List<string> _hintRows;
+        private float[] _hintRowW;
+        private float _hintW, _hintRowsScale;
         private int _hintUntil;
         private int _now, _nextTickerUpdate;
         private TickerLine _tickerLine;
@@ -613,13 +617,26 @@ namespace EnrageWestworld.InGame
             {
                 float s = _cfg.TickerScale * 0.9f;
                 // wrapped to the screen, the lines stacked upward from where the one line was (a Testing row's words run long)
-                List<string> rows = Draw.Wrap(_hint, s, 0.9f);
+                if (_hint != _hintRowsFor || s != _hintRowsScale)
+                {
+                    _hintRows = Draw.Wrap(_hint, s, 0.9f);   // once a hint, not every frame (the cost audit: a Testing row's long words, ~100 allocations a frame)
+                    _hintRowW = new float[_hintRows.Count];
+                    _hintW = 0f;
+                    for (int i = 0; i < _hintRows.Count; i++)
+                    {
+                        _hintRowW[i] = Draw.Width(_hintRows[i], s);
+                        _hintW = Math.Max(_hintW, _hintRowW[i]);
+                    }
+                    _hintRowsFor = _hint;
+                    _hintRowsScale = s;
+                }
+                List<string> rows = _hintRows;
                 float lh = Draw.LineHeight(s);
                 float y = _cfg.TickerY - Draw.LineHeight(_cfg.TickerScale) * 1.4f - (line != null && line.Text != null && line.Text.Length > 90 ? Draw.LineHeight(_cfg.TickerScale) : 0f) - (rows.Count - 1) * lh;
-                float w = rows.Max(r => Draw.Width(r, s));
+                float w = _hintW;
                 Draw.Rect(0.5f - w / 2f - 0.006f, y - 0.003f, w + 0.012f, lh * rows.Count + 0.006f, 12, 10, 8, 170);
                 for (int i = 0; i < rows.Count; i++)
-                    Draw.Text(rows[i], 0.5f - Draw.Width(rows[i], s) / 2f, y + i * lh, s, 236, 214, 160);
+                    Draw.Text(rows[i], 0.5f - _hintRowW[i] / 2f, y + i * lh, s, 236, 214, 160);
             }
         }
 
