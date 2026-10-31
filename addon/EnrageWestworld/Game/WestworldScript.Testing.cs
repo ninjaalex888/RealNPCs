@@ -376,6 +376,9 @@ namespace EnrageWestworld.InGame
                         return "nobody 3-16 m off to glitch";
                     skipped = "the 7-15 minutes between glitches";
                     return null;
+                case "mindscene":
+                    skipped = "the street's own timing and the person's choice changing first (the rests between the same two kept)";
+                    return MindSceneTest(now);   // WestworldScript.MindScenes.cs
                 case "wakestrange":
                     skipped = "the stage's roll, the hold's turn and, for stripping, its chance and the once-a-person mark";
                     {

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 145;
+        public const int CurrentVersion = 146;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -78,6 +78,7 @@ namespace EnrageWestworld.Core
         public bool MindMeetings = true;     // with MindLive: the street's chance meetings lean by the two's moods today and how much they want company (Core/Reasons.Mood.cs; roadmaps 18 and 30; night 2026-10-29, item 6e; settings version 115); off, by the reasons alone
         public bool ThoughtsAloud = true;   // with Language: a thought over someone near is said aloud in their own recorded voice when one of their remarks fits it (settings version 143)
         public bool LanguagePicks = true;   // with Language: the model picks what people near you do, from the few things the mind allows (settings version 142)
+        public bool MindStartsScenes = true;   // with LanguagePicks: a person's own reasons with someone near (a quarrel, a friend to comfort, a debt) join the model's list, and a pick starts the scene (settings version 146; NIGHT3 item 1)
         public bool Language = false;        // the language layer (2026-10-29; roadmap 15): with MindLive, the mind's own thoughts worded by a local model (Ollama at LanguageUrl, LanguageModel) through Language.Check, the written line always the fallback; off until the generated thoughts pass the checks at scale (settings version 94)
         public string LanguageUrl = "http://127.0.0.1:11434";   // the local server; nothing leaves the machine
         public string LanguageModel = "llama3.1:8b";           // the model Ollama holds (ollama pull <name>)
@@ -779,6 +780,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("MindMeetings = " + B(MindMeetings) + "   ; with MindLive on: what passes between two people who meet near you leans by the day they are having: two sore people come to words sooner than small talk, two glad ones the other way, and someone lonely stops for a word; false: by their reasons alone");
             b.AppendLine("Language = " + B(Language) + "   ; (in testing) with MindLive on, the mind's own thoughts are worded by a local language model running on your own PC (Ollama; nothing leaves the machine); every answer is checked for the period, the names and the length, and the written line shows whenever the model's won't do");
             b.AppendLine("LanguagePicks = " + B(LanguagePicks) + "   ; (in testing) with Language on: for people near you, the model picks what they do next from the few things their mind allows (the best three, and a plan's step), by their nature and how they feel; if it's slow or says nothing sensible, their mind's own choice stands");
+            b.AppendLine("MindStartsScenes = " + B(MindStartsScenes) + "   ; (in testing) with LanguagePicks on: when the model picks what someone near does, their own reasons with someone else near (a quarrel to pick up, a friend to comfort, a debt to call in, someone to court) are among the choices, and picking one starts that scene, as the street would; false: scenes start only from the street's own timing");
             b.AppendLine("ThoughtsAloud = " + B(ThoughtsAloud) + "   ; (in testing) with Language on: as a thought shows over someone within 12 m, the model looks through the remarks their own voice has recorded and, if one fits, they say it aloud (most thoughts stay unspoken); the words show in the lower subtitle box when your local word list has them");
             b.AppendLine("LanguageUrl = " + LanguageUrl + "   ; where Ollama listens");
             b.AppendLine("LanguageModel = " + LanguageModel + "   ; the model it holds (ollama pull <name>)");

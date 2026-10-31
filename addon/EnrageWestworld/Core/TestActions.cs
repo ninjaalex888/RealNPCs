@@ -58,6 +58,7 @@ namespace EnrageWestworld.Core
             new Entry("despairanims", "People", "Despair animations, one by one", "TestDespairAnimsKey", needs: "someone free within 12 m"),
             new Entry("stageanims", "People", "Wake stage gestures, one by one", "TestStageAnimsKey", needs: "someone free within 12 m"),
             new Entry("wakestrange", "People", "Strange waking acts, the next in turn", "TestWakeStrangeKey", needs: "West World on, someone unravelling or awake (stage 3+) within 15 m, someone else near them (stripping: someone awake). Order: close up, wave, follow, not real, preach, lash out at you, lash out at another, strip, dazed"),
+            new Entry("mindscene", "People", "A mind starts a scene (their own reason)", "TestMindSceneKey", needs: "named people near with a reason between them (a quarrel, a friend grieving, a debt); [Mind] Language and LanguagePicks for the model to pick, else their strongest reason plays"),
             new Entry("gunshot", "People", "Gunshots at the ground, six ways (which can you hear?)", "TestGunshotKey", needs: "someone free 2-12 m off; best out of town (people near may run, and the law may come)"),
             new Entry("fall", "People", "Someone takes a fall (and is helped up, or not)", "TestFallKey", needs: "two named people outdoors, one of them within 14 m and in view"),
             new Entry("preacher", "People", "A street preacher (Sunday afternoons)", "TestPreacherKey", needs: "a town street, a devout named person and another within 8 m"),

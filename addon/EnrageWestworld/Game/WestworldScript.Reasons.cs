@@ -276,49 +276,55 @@ namespace EnrageWestworld.InGame
                 // don't need to be checking the player camera ... just the radius"; once it needed one of the two in plain view)
                 if (side && pr.Apart > 2.6f)
                     continue;   // a talk beside has no walk-over
-                Ped first = pr.Why.BFirst ? pr.B.Ped : pr.A.Ped, second = pr.Why.BFirst ? pr.A.Ped : pr.B.Ped;
-                string seed = first.Handle + "|" + second.Handle + "|" + now / 60000;
-                SceneCast cast = BuildCast(first, second, null, saloon, me, now, seed);
-                string kind = pr.Why.Kind;
-                Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
-                // the trouble scenes (Scenes.Trouble.cs): each needs its setting, and the rough move a surface by the victim;
-                // when one can't be played the reason falls back (a fistfight, or words) or the pair is passed over
-                string cant = TroubleCant(kind, first, second, cast);
-                if (cant != null)
-                {
-                    Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + kind + " can't be played (" + cant + ")" + (pr.Why.Fallback != null ? ", so " + pr.Why.Fallback : ""));
-                    if (pr.Why.Fallback == null || TroubleCant(pr.Why.Fallback, first, second, cast) != null)
-                        continue;
-                    kind = pr.Why.Fallback;
-                }
-                if (cast.Off.Contains(kind) || (kind == "debt" && !_cfg.Debts) || (kind == "hosts" && cast.HostTier < 0) || (kind == "gossip" && cast.Rumours.Count == 0))
-                    continue;
-                if (side && TroubleKinds.Contains(kind))
-                    continue;
-                Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);
-                if (s == null || (side && !Director.Quiet(s)))
-                    continue;
-                Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
-                          " (strength " + pr.Why.Strength + (pr.Why.Leaned != null ? ", the mind: " + pr.Why.Leaned : "") + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you)");
-                List<Ped> cast2 = new List<Ped> { first, second };
-                NotePairPlayed(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);
-                if (side)
-                {
-                    if (!StartScene(s, cast2, cast, seed, now, side: true))
-                        continue;
+                if (PlayPairReason(pr, me, saloon, now, side, null))
                     return true;
-                }
-                s = LadderScene(s, first, second, doer, done, cast, seed, pr.Why.Matter, cast2, now);   // an argue or a brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs)
-                AddMeet(s, kind, first, second, pr.Apart);
-                AddBarkeep(s, cast2, cast, seed, saloon);
-                string stood;
-                if (s.Ladder == null || s.Cast == 2)   // (the ladder found no friend of its own: a stranger may still step in, the review)
-                    StandUpFor(s, cast2, cast, seed, now, false, out stood);   // someone may step in before the blow (WestworldScript.StandUp.cs); the ladder has its own friend
-                AddBystander(s, cast2, cast, seed, now);
-                StartScene(s, cast2, cast, seed, now);
-                return true;
             }
             return false;
+        }
+
+        /// One pair's reason played: the cast, the trouble kinds' settings and their fallback, the scene, the ladder, the
+        /// walk-over, the barkeep, someone stepping in, a bystander. Shared by the Director's own pick (ReasonScene) and a
+        /// person's own (the model's pick, WestworldScript.MindScenes.cs; `by` says so in the log). False when it can't be played.
+        private bool PlayPairReason(PairReason pr, Ped me, bool saloon, int now, bool side, string by)
+        {
+            Ped first = pr.Why.BFirst ? pr.B.Ped : pr.A.Ped, second = pr.Why.BFirst ? pr.A.Ped : pr.B.Ped;
+            string seed = first.Handle + "|" + second.Handle + "|" + now / 60000;
+            SceneCast cast = BuildCast(first, second, null, saloon, me, now, seed);
+            string kind = pr.Why.Kind;
+            Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
+            // the trouble scenes (Scenes.Trouble.cs): each needs its setting, and the rough move a surface by the victim;
+            // when one can't be played the reason falls back (a fistfight, or words) or the pair is passed over
+            string cant = TroubleCant(kind, first, second, cast);
+            if (cant != null)
+            {
+                Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + kind + " can't be played (" + cant + ")" + (pr.Why.Fallback != null ? ", so " + pr.Why.Fallback : ""));
+                if (pr.Why.Fallback == null || TroubleCant(pr.Why.Fallback, first, second, cast) != null)
+                    return false;
+                kind = pr.Why.Fallback;
+            }
+            if (cast.Off.Contains(kind) || (kind == "debt" && !_cfg.Debts) || (kind == "hosts" && cast.HostTier < 0) || (kind == "gossip" && cast.Rumours.Count == 0))
+                return false;
+            if (side && TroubleKinds.Contains(kind))
+                return false;
+            Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);
+            if (s == null || (side && !Director.Quiet(s)))
+                return false;
+            Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
+                      " (strength " + pr.Why.Strength + (pr.Why.Leaned != null ? ", the mind: " + pr.Why.Leaned : "") + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you" +
+                      (by != null ? "; " + by : "") + ")");
+            List<Ped> cast2 = new List<Ped> { first, second };
+            NotePairPlayed(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);
+            if (side)
+                return StartScene(s, cast2, cast, seed, now, side: true);
+            s = LadderScene(s, first, second, doer, done, cast, seed, pr.Why.Matter, cast2, now);   // an argue or a brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs)
+            AddMeet(s, kind, first, second, pr.Apart);
+            AddBarkeep(s, cast2, cast, seed, saloon);
+            string stood;
+            if (s.Ladder == null || s.Cast == 2)   // (the ladder found no friend of its own: a stranger may still step in, the review)
+                StandUpFor(s, cast2, cast, seed, now, false, out stood);   // someone may step in before the blow (WestworldScript.StandUp.cs); the ladder has its own friend
+            AddBystander(s, cast2, cast, seed, now);
+            StartScene(s, cast2, cast, seed, now);
+            return true;
         }
 
         /// The scene for a kind between first and second (the one who does it first): the trouble kinds, a courtship, an

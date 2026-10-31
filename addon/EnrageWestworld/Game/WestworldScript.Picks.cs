@@ -23,6 +23,8 @@ namespace EnrageWestworld.InGame
             public List<string> Ids, Words;
             public Plan Plan;
             public LanguageRequest Req;   // for the thought's check (it came with the choice)
+            public List<PairReason> Scenes;   // the person's own reasons offered too (ids "scene:N"; WestworldScript.MindScenes.cs)
+            public bool Test;                 // the Testing row asked it
         }
 
         private const float PickMetres = 15f;
@@ -75,6 +77,7 @@ namespace EnrageWestworld.InGame
                 ids.RemoveAt(drop);
                 words.RemoveAt(drop);
             }
+            List<PairReason> scenes = _cfg.MindStartsScenes ? MindScenesInto(w, now, ids, words) : null;   // their own reasons with someone near, in their words (step 2)
             if (ids.Count < 2)
                 return false;
             string why;
@@ -88,7 +91,7 @@ namespace EnrageWestworld.InGame
             if (!_engine.LanguageAnswers.AskPick(new LanguageAsk { Key = key, Name = w.Name, PersonId = w.Id, Request = r, AskedAtMs = Environment.TickCount }))
                 return false;
             _picksAsked++;
-            _pending.Add(new PendingPick { W = w, Handle = h, Key = key, Mind = w.Choice, Ids = ids, Words = words, Plan = ids.Contains("plan:seek") ? plan : null, AskedAt = now, Deadline = now + PickWaitMs, Req = r });
+            _pending.Add(new PendingPick { W = w, Handle = h, Key = key, Mind = w.Choice, Ids = ids, Words = words, Plan = ids.Contains("plan:seek") ? plan : null, AskedAt = now, Deadline = now + PickWaitMs, Req = r, Scenes = scenes });
             return true;
         }
 
@@ -150,6 +153,16 @@ namespace EnrageWestworld.InGame
                 PickThought(w.Name, h, thought, pp.Req);   // the thought it chose by, over their head as they go
             string picked = idx >= 0 ? pp.Ids[idx] : pp.Mind;
             _pickLast = w.Name + ": " + (idx >= 0 ? pp.Words[idx] : Choosing.WordsOf(pp.Mind) + " (the mind's)");
+            if (picked != null && picked.StartsWith("scene:", StringComparison.Ordinal))
+            {
+                // one of their own reasons with someone near: the scene it is, played as the Director would (WestworldScript.MindScenes.cs)
+                int si;
+                if (pp.Scenes != null && int.TryParse(picked.Substring(6), out si) && si < pp.Scenes.Count &&
+                    MindStartScene(pp.Scenes[si], w, pp.Words[idx], pp.Test ? "the Testing row, the model's pick" : "the model's pick", now))
+                    return;
+                MindActOn(w, h, now);   // the street couldn't take it: the mind's own
+                return;
+            }
             if (picked == pp.Mind)
             {
                 if (idx >= 0)
@@ -209,7 +222,7 @@ namespace EnrageWestworld.InGame
             string store = _engine != null ? ", store: " + _engine.LanguageAnswers.PicksAsked + " queued, " + _engine.LanguageAnswers.PicksAnswered + " answered, " + _engine.LanguageAnswers.PicksFailed + " failed, " +
                            _engine.LanguageAnswers.PicksDropped + " dropped" : "";
             return (_langReady ? "on" : "on, the server not ready") + ": " + _picksAsked + " asked this session, " + _picksTaken + " picked (" + _picksSame + " the mind's own, " + _picksPlan + " a plan's step), " +
-                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting; thoughts with them " + _pickThoughtsShown + " shown, " + _pickThoughtsHeld + " held by the check" + store + (_pickLast != null ? "; last: " + _pickLast : "");
+                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting; thoughts with them " + _pickThoughtsShown + " shown, " + _pickThoughtsHeld + " held by the check" + store + (_pickLast != null ? "; last: " + _pickLast : "") + "; scenes from their own reasons: " + MindScenesStatus();
         }
     }
 }
