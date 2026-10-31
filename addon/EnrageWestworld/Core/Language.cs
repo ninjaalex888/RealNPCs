@@ -40,6 +40,19 @@ namespace EnrageWestworld.Core
         public bool WithThought;             // Kind "pick": the thought as well as the choice, in one answer (Lex, 2026-10-31: what they think and do should agree)
         public int WakeStage;                // Kind "pick" for the waking (WakeOdd.PickOptions): their stage, 2 to 4, so the brief says what they have come to see
         public string Said, Mean;            // Kind "talk" (Language.Talk.cs): what he said to them, and what their answer means (the written line)
+        // [Mind] LanguageVariety (Language.Variety.cs): one focus and a shape per ask, their thoughts lately, doubt only with cause
+        public bool Variety;                 // the new rules apply (set by Language.Vary)
+        public int Stage;                    // their waking stage, 0 to 4, for every kind (WakeStage above is the waking pick's own)
+        public List<string> Uncanny = new List<string>();   // the strange things they've lived through, in words: filled only when there is something
+        public string Focus, FocusId, Shape; // what their mind goes to this time, and the thought's shape
+        public bool WeatherOff;              // the weather left out (it isn't the focus)
+        public List<string> Recent = new List<string>();    // their last thoughts shown (the model is told to think of something else)
+
+        /// The variety rules apply here: set, and a thought or a pick (Talk's answers and the remarks said aloud keep their own).
+        public bool Varied
+        {
+            get { return Variety && (Kind == "thought" || Kind == "pick"); }
+        }
 
         /// Every name the answer may use: their own, whom it's about, those near, the town, any in the memories.
         public HashSet<string> Names()
@@ -53,6 +66,7 @@ namespace EnrageWestworld.Core
             add(Worry);
             foreach (string s in Memories) add(s);
             foreach (string s in Near) add(s);
+            foreach (string s in Recent) add(s);   // names in their own thoughts lately were given then
             add(Said);   // a talk answer may echo the names in what he said or what it means
             add(Mean);
             return n;
@@ -87,12 +101,14 @@ namespace EnrageWestworld.Core
         public static string Brief(LanguageRequest r)
         {
             int year = r != null && r.Year > 0 ? r.Year : 1899;
-            return "You write one private thought for a person living in " + year + ", in the American West and South. Short fragments, the way people think, not speak: " +
-                   "two or three clipped sentences, " + MaxWords + " words at most, " + MaxChars + " characters at most. One thing the body notices or the eye falls on. " +
+            bool varied = r != null && r.Varied;   // the shape and what their mind goes to come with the ask (Language.Variety.cs)
+            return "You write one private thought for a person living in " + year + ", in the American West and South. " +
+                   (varied ? "Short, the way people think, not speak: " + MaxWords + " words at most, " + MaxChars + " characters at most. One thing, the one their mind goes to. "
+                           : "Short fragments, the way people think, not speak: two or three clipped sentences, " + MaxWords + " words at most, " + MaxChars + " characters at most. One thing the body notices or the eye falls on. ") +
                    "Plain words of the time: no modern words or phrases, no poetry, no similes. Never name anyone you were not given. " +
                    "The thought says what is really felt, even when the face hides it. Never mention video games, being in a story, or being written. " +
                    "The shape, not the words, of these: " + Examples[0] + " | " + Examples[1] + " | " + Examples[2] + " " +
-                   "Answer with the thought alone: no quotation marks, no name before it, nothing else.";
+                   "Answer with the thought alone: no quotation marks, no name before it, nothing else." + VarietyBrief(r);
         }
 
         /// The request in words (the prompt's second half; the brief is the first). The same request gives the same text.
@@ -111,7 +127,7 @@ namespace EnrageWestworld.Core
             b.Append(".\n");
             if (!string.IsNullOrEmpty(r.TraitWords)) b.Append("Nature: ").Append(r.TraitWords).Append(".\n");
             b.Append("Where: ").Append(r.Place ?? "the street").Append(r.Town != null ? " in " + r.Town : " away from any town").Append(", ")
-             .Append(HourWords(r.Hour)).Append(", ").Append(r.Year).Append(r.Weather != null ? ", " + r.Weather : "").Append(".\n");
+             .Append(HourWords(r.Hour)).Append(", ").Append(r.Year).Append(r.Weather != null && !r.WeatherOff ? ", " + r.Weather : "").Append(".\n");
             if (!string.IsNullOrEmpty(r.Mood)) b.Append("Mood: ").Append(r.Mood).Append(".\n");
             if (!string.IsNullOrEmpty(r.Feeling))
             {
@@ -124,12 +140,18 @@ namespace EnrageWestworld.Core
                     b.Append("; their face ").Append(r.Shows == "masked" ? "hides it" : r.Shows == "softened" ? "shows less of it" : "shows something else");
                 b.Append(".\n");
             }
-            if (!string.IsNullOrEmpty(r.Need)) b.Append("The body: ").Append(r.Need).Append(".\n");
+            if (!string.IsNullOrEmpty(r.Need)) b.Append("The body: ").Append(NeedWords(r)).Append(".\n");
             if (!string.IsNullOrEmpty(r.Worry)) b.Append("On their mind: ").Append(r.Worry).Append(".\n");
             foreach (string m in r.Memories.Take(2)) b.Append("Remembers: ").Append(m).Append(".\n");
             if (r.Beliefs.Count > 0) b.Append("Holds: ").Append(string.Join("; ", r.Beliefs.Take(3))).Append(".\n");
             if (!string.IsNullOrEmpty(r.TownMood)) b.Append("The town: ").Append(r.TownMood).Append(".\n");
             if (r.Near.Count > 0) b.Append("In sight: ").Append(string.Join(", ", r.Near.Take(4))).Append(".\n");
+            if (r.Varied)
+            {
+                if (r.Uncanny.Count > 0 && r.Stage < Awakening.Questioning) b.Append("Strange things lately: ").Append(string.Join("; ", r.Uncanny.Take(3))).Append(".\n");
+                if (!string.IsNullOrEmpty(r.Focus)) b.Append("Their mind goes to: ").Append(r.Focus).Append(".\n");
+                if (r.Recent.Count > 0) b.Append("Their thoughts lately (think of something else): ").Append(string.Join(" | ", r.Recent.Take(3))).Append(".\n");
+            }
             return b.ToString();
         }
 
@@ -201,6 +223,15 @@ namespace EnrageWestworld.Core
                     return "copies an example";
             if (Words.Matches(a).Count > MaxWords + 4)
                 return "too many words (" + Words.Matches(a).Count + ")";
+            if (r != null && r.Varied)
+            {
+                string doubt = MayDoubt(r) ? null : DoubtIn(a);
+                if (doubt != null)
+                    return "doubts the world without cause (" + doubt + ")";
+                string same = SameAsLately(r, a);
+                if (same != null)
+                    return same;
+            }
             return null;
         }
 

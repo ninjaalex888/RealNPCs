@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Thoughts that vary, and the waking the model finds
+- With `[Mind] Language` on, each thought the model words now goes to one thing their mind is on: their work, someone in sight, a memory, the body, the worry, the place, money, family, faith, the town's talk, a small thing seen, what they'll do later, and only now and then the weather. It takes a shape of its own (fragments, one plain sentence, a question to themselves, a reckoning, a blunt opinion, a saying half-remembered, something looked forward to or dreaded, a grudge or a fond thought). The model is told their last few thoughts and to think of something else, and an answer that opens the same way or is too like one is held. The joined thought-and-choice asks a little more freely (0.85). Sampled against today's situations in game: 157 different openings in 180 thoughts (was 138), the weather in 10% of them (was 23%). `[Mind] LanguageVariety`, on (settings version 159).
+- Nobody doubts the world is real without cause: below the second stage of waking, and with nothing strange lived through (a buried man seen walking, the night visitor, a death they woke from), a thought that wonders whether the world is real, a trick or painted on is held and the written line shows. The need that read as "searching for a reason" is put to the model as wanting their days to count for something. "Real" as a plain word ("a real good cup of coffee") still passes.
+- The waking found by the model: someone with cause who wonders at the world in a thought of their own is shaken a little more by it ("things are as they seem" chipped 0.04 a thought, at most 0.5), and when that tips the belief they begin to stir, as from any doubt. Log detail `MIND doubt voiced`. `[Mind] ModelWakes`, on.
+- Fewer stirring, a little: `AwakeningShare` 3 as built is now 2.25, and an ini at 0.6 goes to 0.45 (a value of your own is kept).
+- A joined pick whose thought came without its "Thought:" label still reads its choice (3 in 90 in the sampling).
+- Subtitles between other people show only for speakers on screen (the voice under the floor still heard); the default range stays, Lex's ini set to 6 m.
+
 ### Remembered after enRAGE takes them up
 
 - Fixed: when enRAGE took up one of RealNPCs' townspeople as its own (a greeting does it), what they knew of you stayed behind: tell someone your name in Talk, greet them, and the next Talk offered the name again. Now your name, your talks, how they feel about you, what they've seen of you and their memories go with them. Their worry is still their own after the change.

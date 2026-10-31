@@ -160,7 +160,7 @@ namespace EnrageWestworld.InGame
             }
             (_picksLogged++ < PicksLoud ? (Action<string>)Log.Write : Log.Detail)("MIND pick: " + w.Name + " offered " + offered + " -> " + outcome + ", " + ms + " ms");
             if (idx >= 0)
-                PickThought(w.Name, h, thought, pp.Req);   // the thought it chose by, over their head as they go
+                PickThought(w.Name, h, thought, pp.Req, w.Id);   // the thought it chose by, over their head as they go
             string picked = idx >= 0 ? pp.Ids[idx] : pp.Mind;
             _pickLast = w.Name + ": " + (idx >= 0 ? pp.Words[idx] : Choosing.WordsOf(pp.Mind) + " (the mind's)");
             if (picked != null && picked.StartsWith("scene:", StringComparison.Ordinal))
@@ -207,7 +207,7 @@ namespace EnrageWestworld.InGame
         private int _pickThoughtsShown, _pickThoughtsHeld;
 
         /// The thought that came with a pick, shown over them when it passes the same check as any other thought.
-        private void PickThought(string name, int h, string thought, LanguageRequest r)
+        private void PickThought(string name, int h, string thought, LanguageRequest r, string id)
         {
             if (string.IsNullOrEmpty(thought))
                 return;
@@ -220,6 +220,7 @@ namespace EnrageWestworld.InGame
             }
             _pickThoughtsShown++;
             _ticker.Push(name + ", thinking", thought, "near", h);
+            ThoughtNoted(id, h, thought, r);   // one of their thoughts lately; a wondering of their own may shake them (ModelWakes)
             (_picksLogged < PicksLoud ? (Action<string>)Log.Write : Log.Detail)("MIND pick thought: " + name + ": \"" + thought + "\"");
         }
 

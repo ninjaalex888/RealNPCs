@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 158;
+        public const int CurrentVersion = 159;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -81,6 +81,8 @@ namespace EnrageWestworld.Core
         public int RescueChance = 60;        // with MindRescue: of the despairs where someone near is moved to go to them, this share in percent where they do (the rest hesitate too long); seeded (settings version 114)
         public bool MindMeetings = true;     // with MindLive: the street's chance meetings lean by the two's moods today and how much they want company (Core/Reasons.Mood.cs; roadmaps 18 and 30; night 2026-10-29, item 6e; settings version 115); off, by the reasons alone
         public bool ThoughtsAloud = true;   // with Language: a thought over someone near is said aloud in their own recorded voice when one of their remarks fits it (settings version 143)
+        public bool LanguageVariety = true;   // with Language: each thought the model words gets one thing their mind goes to and a shape, their thoughts lately to steer clear of, and no doubting the world without cause (Core/Language.Variety.cs; settings version 159)
+        public bool ModelWakes = true;        // with Language, MindWakes and LanguageVariety: someone with cause who wonders at the world in a thought of their own chips "things are as they seem", so the model's wondering can start them stirring (settings version 159)
         public bool LanguageTalk = true;   // with Language: what people answer in Talk is said in the model's words (the meaning stays the menu's; the written line if it's slow or fails the checks) (settings version 156; NIGHT3)
         public bool LanguagePicks = true;   // with Language: the model picks what people near you do, from the few things the mind allows (settings version 142)
         public bool MindStartsScenes = true;   // with LanguagePicks: a person's own reasons with someone near (a quarrel, a friend to comfort, a debt) join the model's list, and a pick starts the scene (settings version 146; NIGHT3 item 1)
@@ -108,7 +110,7 @@ namespace EnrageWestworld.Core
 
         // [WestWorld] - the master switch and everything under it
         public bool WestWorld = true;
-        public float AwakeningShare = 3f;   // a share of a percent too (0.6); 5 until settings version 138 (Lex, 2026-10-30: fewer waking)
+        public float AwakeningShare = 2.25f;   // a share of a percent too (0.6); 5 until settings version 138 (Lex, 2026-10-30: fewer waking), 3 until 159 (Lex, 2026-10-31: fewer stirring, a little)
         public int AwakeningDays = 5;   // 1 until settings version 138 (Lex, 2026-10-30: "very slow how fast they progress the stages")
         public int AwakeningBreakdown = 90;
         public int AwakeningDespair = 75;
@@ -481,6 +483,13 @@ namespace EnrageWestworld.Core
                 s.DramaGapSeconds = 90;
                 raised.Add("DramaGapSeconds 150 -> 90");
             }
+            if (s.SettingsVersion < 159)
+            {
+                // 2026-10-31 (Lex): fewer stirring, a little; the waking more from what they live through and the model's
+                // own wondering ([Mind] ModelWakes). The two shares as built go down a quarter; a value of your own is kept
+                if (Math.Abs(s.AwakeningShare - 3f) < 0.01f) { s.AwakeningShare = 2.25f; raised.Add("AwakeningShare 3 -> 2.25"); }
+                else if (Math.Abs(s.AwakeningShare - 0.6f) < 0.01f) { s.AwakeningShare = 0.45f; raised.Add("AwakeningShare 0.6 -> 0.45"); }
+            }
             if (s.SettingsVersion < 140 && s.ScenesAtOnce == 2)
             {
                 s.ScenesAtOnce = 4;   // 2026-10-30 (Lex): more of the street at once; a number of your own is kept
@@ -794,6 +803,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("RescueChance = " + RescueChance + "   ; with MindRescue on: of the despairs where someone near is moved to step in, how often in percent they really do before it is too late (0-100); lower it to see more despair, raise it to see more people saved");
             b.AppendLine("MindMeetings = " + B(MindMeetings) + "   ; with MindLive on: what passes between two people who meet near you leans by the day they are having: two sore people come to words sooner than small talk, two glad ones the other way, and someone lonely stops for a word; false: by their reasons alone");
             b.AppendLine("Language = " + B(Language) + "   ; (in testing) with MindLive on, the mind's own thoughts are worded by a local language model running on your own PC (Ollama; nothing leaves the machine); every answer is checked for the period, the names and the length, and the written line shows whenever the model's won't do");
+            b.AppendLine("LanguageVariety = " + B(LanguageVariety) + "   ; (in testing) with Language on: the model's thoughts vary: each one goes to one thing (their work, someone in sight, a memory, the body, the worry, money, kin, faith, the town's talk, a small thing seen; the weather only now and then) in a shape of its own (fragments, a plain sentence, a question, a reckoning, an opinion, a saying half-remembered), never opening the way their last few did; and nobody doubts the world is real without cause (from the second stage of waking, or after something strange: a buried man seen walking, the night visitor, a death they woke from)");
+            b.AppendLine("ModelWakes = " + B(ModelWakes) + "   ; (in testing) with Language, MindWakes and LanguageVariety on: someone with cause who wonders at the world in a thought of their own is shaken a little more by it, so the model's own wondering can start them stirring; off, only what they live through moves them");
             b.AppendLine("LanguageTalk = " + B(LanguageTalk) + "   ; (in testing) with Language on: when you Talk to someone, the model words their answer by their nature, mood and what's on their mind (what it means stays the same: the drink taken, the money refused); if it's slow or says something it shouldn't, the written line");
             b.AppendLine("LanguagePicks = " + B(LanguagePicks) + "   ; (in testing) with Language on: for people near you, the model picks what they do next from the few things their mind allows (the best three, and a plan's step), by their nature and how they feel; if it's slow or says nothing sensible, their mind's own choice stands");
             b.AppendLine("MindStartsScenes = " + B(MindStartsScenes) + "   ; (in testing) with LanguagePicks on: when the model picks what someone near does, their own reasons with someone else near (a quarrel to pick up, a friend to comfort, a debt to call in, someone to court) are among the choices, and picking one starts that scene, as the street would; false: scenes start only from the street's own timing");

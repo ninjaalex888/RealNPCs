@@ -582,7 +582,7 @@ namespace EnrageWestworld.InGame
                 string thought;
                 int idx = Language.ParseThinkPick(answer, act.PickIds.Count, out thought);
                 if (idx >= 0)
-                    PickThought(act.Name, act.Handle, thought, act.PickReq);   // over their head as the act they chose begins
+                    PickThought(act.Name, act.Handle, thought, act.PickReq, act.P != null ? act.P.Id : null);   // over their head as the act they chose begins
                 if (idx < 0)
                 {
                     _wakePicksUnread++;

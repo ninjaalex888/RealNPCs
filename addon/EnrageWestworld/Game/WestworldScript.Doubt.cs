@@ -25,6 +25,49 @@ namespace EnrageWestworld.InGame
 
         private bool DoubtActsOn { get { return _cfg != null && _cfg.MindLive && _cfg.MindWakes && _cfg.WestWorld; } }
 
+        /// A model thought shown over someone (LANGUAGE shown, a pick's thought): one of their thoughts lately from now on;
+        /// and with [Mind] ModelWakes, a wondering at the world of their own (with cause) chips "things are as they seem",
+        /// and if that is what makes it give way, they stir as from any doubt (Lex, 2026-10-31: the waking found by the model).
+        private void ThoughtNoted(string id, int handle, string line, LanguageRequest r)
+        {
+            try
+            {
+                if (_engine == null || id == null || line == null)
+                    return;
+                MindWho w = r != null && r.Varied && _cfg.ModelWakes && DoubtActsOn ? MindKnown(handle, Game.GameTime) : null;
+                if (w == null || w.P == null || w.Traits == null || w.Id != id)
+                {
+                    _engine.ThoughtShown(id, line, null);   // remembered only
+                    return;
+                }
+                PersonState st = _store.Find(id);
+                if (w.TradeGroup == null)
+                    w.TradeGroup = InnerLife.TradeGroup(w.P.Trade);
+                _mindBeliefCtx.WakeStage = st != null ? st.WakeStage : 0;
+                _mindBeliefCtx.Memories = st != null ? st.Mind : null;
+                _mindBeliefCtx.Standing = Beliefs.StandingOf(w.TradeGroup);
+                Beliefs.Fill(_mindBaseline, w.P, w.Traits, _mindBeliefCtx);
+                BeliefState bs = _engine.Shadow.BeliefsOf(id);
+                if (!bs.Seen)
+                {
+                    bs.Held = Beliefs.HeldBits(_mindBaseline, bs.Moved);
+                    bs.Seen = true;
+                }
+                if (!_engine.ThoughtShown(id, line, r))
+                    return;
+                Log.Detail("MIND doubt voiced: " + w.Name + " wondered at the world (\"" + line + "\"); things are as they seem " +
+                           Beliefs.Of(_mindBaseline, bs.Moved, Beliefs.World).ToString("0.00") + " now");
+                int held = Beliefs.HeldBits(_mindBaseline, bs.Moved), was = bs.Held;
+                bs.Held = held;
+                if ((was & (1 << Beliefs.World)) != 0 && (held & (1 << Beliefs.World)) == 0)
+                    DoubtGaveWay(w, id);   // their own wondering tipped it: they stir (once a session, as any doubt)
+            }
+            catch (Exception ex)
+            {
+                Log.Detail("MIND doubt voiced failed: " + ex.Message);
+            }
+        }
+
         /// From MindBelieve: "things are as they seem" has just given way in them. With MindWakes they stir.
         private void DoubtGaveWay(MindWho w, string id)
         {

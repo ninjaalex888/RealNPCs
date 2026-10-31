@@ -219,9 +219,62 @@ namespace EnrageWestworld.Core
                 left = 0f;
             float pull;
             KeyValuePair<string, string> say = MindSay(p, hour, p.Id + "|request|" + now / 45, null, now, false, out pull, true);   // the line the fallback would give: the need's too, without its roll
-            return Language.RequestFor(p, t, Shadow.MoodOf(p.Id, t, now), feeling, left, about, you, needs, concerns, st != null ? st.Mind : null, nearFirstNames,
-                                       town, place, hour, year, weather, now, say.Key, beliefs);
+            LanguageRequest r = Language.RequestFor(p, t, Shadow.MoodOf(p.Id, t, now), feeling, left, about, you, needs, concerns, st != null ? st.Mind : null, nearFirstNames,
+                                                    town, place, hour, year, weather, now, say.Key, beliefs);
+            if (r != null)
+                VaryRequest(r, p, t, st, now);
+            return r;
         }
+
+        // ---- thoughts that vary, and the waking found by the model (Language.Variety.cs; Lex, 2026-10-31) -------------
+
+        /// Their thoughts lately, by id (the model is told them and the check holds a repeat).
+        public readonly RecentThoughts Recent = new RecentThoughts();
+
+        /// How far "things are as they seem" has been chipped in them (above 0 shaken), whatever the switches; 0 for nothing kept.
+        private float WorldShaken(string id)
+        {
+            BeliefState b = Shadow != null ? Shadow.BeliefsPeek(id) : null;
+            return b == null ? 0f : -b.Moved[Beliefs.World];
+        }
+
+        /// The waking stage, the strange things lived through, their thoughts lately, and this ask's focus and shape
+        /// ([Mind] LanguageVariety). The focus and shape hold for twenty game minutes, so the cache key stays put a while.
+        private void VaryRequest(LanguageRequest r, Person p, Traits t, PersonState st, long now)
+        {
+            r.Stage = st != null ? st.WakeStage : 0;
+            if (Cfg == null || !Cfg.LanguageVariety)
+                return;
+            if (WorldShaken(p.Id) >= 0.05f)
+                r.Uncanny.Add("something seen lately that shouldn't have been");
+            if (st != null && st.Deaths > 0)
+                r.Uncanny.Add("woke once from what should have been their death");
+            if (st != null && st.Glitches > 0)
+                r.Uncanny.Add("moments that came round again, just as before");
+            r.Recent = Recent.Of(p.Id);
+            Language.Vary(r, Voice.Hash(p.Id) + (int)(now / 20) * 7919, t != null && t[Traits.Piety] > 1.2f);
+        }
+
+        /// A thought was shown for them: kept as one of their thoughts lately; and with ModelWakes, when someone with cause
+        /// below the second stage wondered at the world of their own accord, "things are as they seem" is chipped a little
+        /// (ModelDoubtChip, to ModelDoubtFloor at most). True when it chipped (the game side then sees whether it gave way).
+        public bool ThoughtShown(string id, string line, LanguageRequest r)
+        {
+            if (id == null || line == null)
+                return false;
+            Recent.Note(id, line);
+            if (r == null || !r.Varied || !Cfg.ModelWakes || !DoubtOn || r.Stage >= Awakening.Questioning || !Language.MayDoubt(r) || Language.DoubtIn(line) == null)
+                return false;
+            BeliefState b = Shadow.BeliefsOf(id);
+            if (b.Moved[Beliefs.World] <= -ModelDoubtFloor)
+                return false;
+            b.Moved[Beliefs.World] = Math.Max(-ModelDoubtFloor, b.Moved[Beliefs.World] - ModelDoubtChip);
+            ModelDoubts++;
+            return true;
+        }
+
+        public const float ModelDoubtChip = 0.04f, ModelDoubtFloor = 0.5f;
+        public int ModelDoubts;
 
         private void WhomOf(Person p, FeltAt f, string kind, InnerLife.Context day, out string whom, out string who, out string you)
         {

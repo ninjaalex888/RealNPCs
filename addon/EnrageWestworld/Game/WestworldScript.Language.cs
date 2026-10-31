@@ -100,6 +100,7 @@ namespace EnrageWestworld.InGame
                     _langShownLast.Clear();
                 _langShownLast[p.Id] = kept;
                 _engine.LanguageAnswers.Shown("model", kept);
+                ThoughtNoted(p.Id, handle, kept, r);   // one of their thoughts lately; a wondering of their own may shake them (ModelWakes)
                 (_langLoudShown++ < 25 ? (Action<string>)Log.Write : Log.Detail)("LANGUAGE shown for " + w.Name + " (" + source + "): \"" + kept + "\" in place of \"" + written + "\"");
                 return kept;
             }

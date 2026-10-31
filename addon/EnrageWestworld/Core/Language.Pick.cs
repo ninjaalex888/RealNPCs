@@ -73,9 +73,9 @@ namespace EnrageWestworld.Core
         public static string ThinkPickBrief(LanguageRequest r)
         {
             return PickBrief(r).Replace(" Answer with its number alone.", "") +
-                   " First write the private thought in their head as they decide: short fragments, the way people think, not speak, " + MaxWords + " words at most, " +
+                   " First write the private thought in their head as they decide: " + (r != null && r.Varied ? "short" : "short fragments") + ", the way people think, not speak, " + MaxWords + " words at most, " +
                    "plain words of the time, no modern words, no poetry, never a name you were not given, never a mention of video games. Then the number of what they do. " +
-                   "Answer in exactly two lines, nothing else:\nThought: the thought\nChoice: the number";
+                   "Answer in exactly two lines, nothing else:\nThought: the thought\nChoice: the number" + VarietyBrief(r);
         }
 
         public static string ThinkPickPrompt(LanguageRequest r)
@@ -87,7 +87,7 @@ namespace EnrageWestworld.Core
         {
             var b = new StringBuilder(1024);
             b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(ThinkPickBrief(r))).Append(",\"prompt\":").Append(JsonString(ThinkPickPrompt(r)));
-            b.Append(",\"stream\":false,\"keep_alive\":\"30m\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append(0.7.ToString("0.00", CultureInfo.InvariantCulture))
+            b.Append(",\"stream\":false,\"keep_alive\":\"30m\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append((r != null && r.Varied ? 0.85 : 0.7).ToString("0.00", CultureInfo.InvariantCulture))   // a little more freedom for the varied thought (the choice still reads)
              .Append(",\"num_predict\":72,\"stop\":[\"\\n\\n\\n\"]}}");   // a blank line comes between the two: stopping at one lost the choice (sampled 2026-10-31)
             return b.ToString();
         }
@@ -100,6 +100,7 @@ namespace EnrageWestworld.Core
             if (string.IsNullOrWhiteSpace(answer))
                 return -1;
             int choice = -1;
+            bool unlabeled = false;
             foreach (string raw in answer.Replace("\r", "").Split('\n'))
             {
                 string line = raw.Trim();
@@ -109,7 +110,14 @@ namespace EnrageWestworld.Core
                     choice = ParsePick(line.Substring(7), count);
                 else if (choice < 0 && thought != null && line.Length > 0 && line.Length <= 4 && char.IsDigit(line[0]))
                     choice = ParsePick(line, count);   // a bare number on the line after the thought (seen in sampling)
+                else if (thought == null && choice < 0 && line.Length > 4 && !char.IsDigit(line[0]))
+                {
+                    thought = Tidy(line);   // the thought without its label, a number lines below (sampled 2026-10-31: 3 in 90)
+                    unlabeled = true;
+                }
             }
+            if (choice < 0 && unlabeled)
+                choice = ParsePick(answer, count);   // one unlabeled line with the number in it reads as it always did
             if (thought != null && thought.Length > 1 && char.IsLower(thought[0]))
                 thought = char.ToUpperInvariant(thought[0]) + thought.Substring(1);
             if (choice < 0 && thought == null)
