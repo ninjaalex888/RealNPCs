@@ -35,6 +35,9 @@ namespace EnrageWestworld.InGame
             public Vector3 From;
             public InteractAnswer Pending;
             public string PendingId, PendingLabel;
+            public string TalkKey;     // the model's answer asked for (LanguageTalk), or null
+            public LanguageRequest TalkRequest;
+            public int TalkAskedAt;
             public string Title;
             public string[] Rows;     // the list as drawn, kept until the choice or the options change
             public float Wide;
@@ -351,6 +354,7 @@ namespace EnrageWestworld.InGame
             t.Pending = a;
             t.PendingId = o.Id;
             t.PendingLabel = o.Label;
+            TalkAskModel(t, o, a, now);   // their words from the model, if it answers in time
             t.AnswerAt = now + 1400;
             _talkSaid++;
         }
@@ -360,6 +364,11 @@ namespace EnrageWestworld.InGame
         private void TalkAnswer(TalkMenu t, int now)
         {
             InteractAnswer a = t.Pending;
+            if (!TalkModelLine(t, a, now))
+            {
+                t.AnswerAt = now + 150;   // the model's answer may yet come: a moment more
+                return;
+            }
             t.Pending = null;
             Ped me = Game.Player.Character;
             int h = t.Handle;
@@ -442,6 +451,80 @@ namespace EnrageWestworld.InGame
             TalkRefreshOptions();
             Log.Write("TALK " + t.Name + ": " + t.PendingId + " -> \"" + a.Line + "\"" + (a.Event != null ? " (" + a.Event + " for the mind)" : again ? " (the same within the hour: not counted again)" : "") +
                       (a.Cents > 0 ? ", $" + (a.Cents / 100.0).ToString("0.00") : "") + (a.Then != "stay" ? ", " + a.Then : "") + (a.Confided ? ", told you their worry" : "") + (a.Settles ? ", their debt settled" : "") + (a.LearnsName ? ", they know your name now" : ""));
+        }
+
+        private const int TalkModelWaitMs = 2800;   // from Arthur's words: past this, the written line
+        private int _talkModelAsked, _talkModelSaid, _talkModelHeld, _talkModelLate;
+
+        /// With [Mind] LanguageTalk: asks the model to word their answer (its meaning is the written line), through the
+        /// picks' channel, ahead of any thought.
+        private void TalkAskModel(TalkMenu t, InteractOption o, InteractAnswer a, int now)
+        {
+            t.TalkKey = null;
+            t.TalkRequest = null;
+            if (!_cfg.LanguageTalk || !_cfg.Language || !_cfg.MindLive || _engine == null || a == null || string.IsNullOrEmpty(a.Line))
+                return;
+            MindWho w = MindKnown(t.Handle, now);
+            if (w == null || w.P == null)
+                return;
+            string why;
+            LanguageRequest r = MindRequestOf(w, t.Handle, now, out why);
+            if (r == null)
+                return;
+            r.Kind = "talk";
+            r.Said = Language.TalkSaid(o.Id, o.Id == "give" && t.MoneyWorry && _talkConfided.Contains(t.Id) ? 500 : 100);
+            r.Mean = a.Line;
+            r.Near.Clear();       // no names but his own (the model called him by whoever was in sight)
+            r.Memories.Clear();
+            r.Beliefs.Clear();
+            r.Worry = null;       // the meaning carries the worry where it belongs (it crept into every answer)
+            if (t.KnowsName && YourSurname() != null)
+                r.YouAs = "Mr. " + YourSurname();   // they know his name: they may say it
+            string key = "talk|" + t.Id + "|" + now;
+            var ask = new LanguageAsk { Key = key, Name = t.Name, PersonId = t.Id, Request = r, Written = a.Line, AskedAtMs = Environment.TickCount };
+            if (!_engine.LanguageAnswers.AskPick(ask))
+                return;
+            if (_langThread == null)
+                LanguageStart();
+            t.TalkKey = key;
+            t.TalkRequest = r;
+            t.TalkAskedAt = now;
+            _talkModelAsked++;
+        }
+
+        /// The model's words in place of the written line when they've come and pass the checks; false while they may
+        /// still come (the answer waits a moment), true once it's settled either way.
+        private bool TalkModelLine(TalkMenu t, InteractAnswer a, int now)
+        {
+            if (t.TalkKey == null || a == null)
+                return true;
+            string answer;
+            long ms;
+            if (!_engine.LanguageAnswers.TakePick(t.TalkKey, out answer, out ms))
+            {
+                if (now - t.TalkAskedAt < TalkModelWaitMs)
+                    return false;
+                _talkModelLate++;
+                Log.Detail("TALK model: no answer for " + t.Name + " in " + TalkModelWaitMs + " ms; the written line");
+                t.TalkKey = null;
+                return true;
+            }
+            t.TalkKey = null;
+            string clean = Language.StripAddress(Language.Tidy(answer), t.KnowsName ? YourSurname() : null, t.Name);   // a name it made up for him, out
+            bool accepts = a.Event == "round" || a.Event == "charity" || a.Event == "help" || a.Settles;
+            string why = clean == null ? "empty" : Language.TalkCheck(t.TalkRequest, clean, accepts);
+            if (why == null)
+            {
+                _talkModelSaid++;
+                Log.Write("TALK model for " + t.Name + " in " + ms + " ms: \"" + clean + "\" (written: \"" + a.Line + "\")");
+                a.Line = clean;
+            }
+            else
+            {
+                _talkModelHeld++;
+                Log.Detail("TALK model for " + t.Name + ": held (" + why + "): \"" + (clean ?? "") + "\"; the written line");
+            }
+            return true;
         }
 
         private void TalkThink(TalkMenu t)
@@ -564,7 +647,8 @@ namespace EnrageWestworld.InGame
         private string TalkStatus()
         {
             return (_cfg.InteractionMenu ? "on (Talk on Q, a pad's RB, in the lock-on menu)" : "off ([World] InteractionMenu)") + "; opened " + _talkOpened + " times, " + _talkSaid + " things said" +
-                   (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_talkSettled > 0 ? ", " + _talkSettled + " debts settled" : "") + (_menu != null ? "; open on " + _menu.Name : "");
+                   (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_talkSettled > 0 ? ", " + _talkSettled + " debts settled" : "") +
+                   (_talkModelAsked > 0 ? "; the model worded " + _talkModelSaid + " of " + _talkModelAsked + " answers (" + _talkModelHeld + " held by the checks, " + _talkModelLate + " late)" : "") + (_menu != null ? "; open on " + _menu.Name : "");
         }
     }
 }

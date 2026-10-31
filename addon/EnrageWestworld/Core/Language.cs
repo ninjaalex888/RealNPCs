@@ -39,6 +39,7 @@ namespace EnrageWestworld.Core
         public string TownMood;              // their town on edge, in a few words (TownMood.Words: "on edge since a killing today"), or null
         public bool WithThought;             // Kind "pick": the thought as well as the choice, in one answer (Lex, 2026-10-31: what they think and do should agree)
         public int WakeStage;                // Kind "pick" for the waking (WakeOdd.PickOptions): their stage, 2 to 4, so the brief says what they have come to see
+        public string Said, Mean;            // Kind "talk" (Language.Talk.cs): what he said to them, and what their answer means (the written line)
 
         /// Every name the answer may use: their own, whom it's about, those near, the town, any in the memories.
         public HashSet<string> Names()
@@ -52,6 +53,8 @@ namespace EnrageWestworld.Core
             add(Worry);
             foreach (string s in Memories) add(s);
             foreach (string s in Near) add(s);
+            add(Said);   // a talk answer may echo the names in what he said or what it means
+            add(Mean);
             return n;
         }
     }
