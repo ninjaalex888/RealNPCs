@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Personal space (the psychologist's list)
+
+- Stand right up against someone (under a metre, a little closer in a saloon) for a couple of seconds, both of you still, and they mind it as their nature and their feeling for you say: the plain ask for a little room and step back ("You mind? You're right on top of me."), the timid and anyone afraid of you step back with a glance, the proud tell you to mind yourself and step aside, the hot-tempered and anyone against you stand their ground and tell you to back off, the cold only look, a friend makes light of it. Spoken lines come with a subtitle and a recorded voice; the thought shows over them. Never the law, anyone sitting or at the bar, anyone busy, or while you ride, aim or fight; once a person in five minutes. `[World] PersonalSpace` (on, with `[Scenes] SightReactions`; settings version 154). Testing row "Someone minds you standing so close"; F7 `TEST personal space:`; log `SPACE`.
+
 ### Thanks, later (what players love: kindness remembered and repaid)
 
 - Someone you stood a drink, gave money or whose debt you settled through Talk may come over when they next see you in town, six game hours to a week later, and thank you for that very thing in their own words and their own voice ("That whiskey the other day. Kind of you. I didn't say so then."), then go on their way. The proud pay back the eleven dollars of a debt you settled (they took it as a loan, and said so). The cold give you a nod and keep it to themselves; the greedy don't come; nobody who fears or hates you now. Once for each kindness, never while you're wanted or fighting. `[Scenes] LateThanks` (on; settings version 153). Testing row "Someone you helped thanks you" (skips the six hours); F7 `TEST thanks:`; log `THANKS`.

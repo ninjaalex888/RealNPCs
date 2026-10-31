@@ -26,6 +26,7 @@ namespace EnrageWestworld.Core
             public int LookMs;
             public string Thought;
             public bool Leaves;       // shocked: they turn and go once they've looked (a woman, or a pious man, before a naked one)
+            public bool StepsBack;    // stood too close to (Space.cs): a step back from him once they've looked
         }
 
         /// What someone makes of the sight: what they already think of him first (regard: afraid, hostile, fond, or

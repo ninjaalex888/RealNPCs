@@ -1083,6 +1083,7 @@ namespace EnrageWestworld.InGame
             Safe("court thoughts", _aCourtThoughts);
             PassingStep(now);   // people who know each other acknowledge it as they pass (WestworldScript.Passing.cs)
             SightsStep(now);    // people notice how you look (WestworldScript.Sights.cs)
+            SpaceStep(now);     // and mind you standing too close (WestworldScript.Space.cs)
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             BelowStep(now);     // the voice below the saloon floor, late at night (WestworldScript.Below.cs)

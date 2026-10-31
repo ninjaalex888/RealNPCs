@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 153;
+        public const int CurrentVersion = 154;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -31,6 +31,7 @@ namespace EnrageWestworld.Core
         public bool FlirtPrompt = true;
         public bool InteractionMenu = true;   // Talk (Q) in the lock-on menu opens a short list: the news, a drink, money, a warning (settings version 148; NIGHT3 item 4)
         public bool LawClearsBodies = true;   // a lawman carries a body off the town street (roadmap 33; settings version 150; NIGHT3 item 6)
+        public bool PersonalSpace = true;   // someone he stands right up against for a couple of seconds minds it: steps back, asks for room, or stands their ground (NIGHT3; settings version 154; plays through SightReactions)
         public bool ArthurSpeaks = true;   // Arthur says a recorded line of his own when someone comes at him or he catches the pickpocket (roadmap 34; settings version 151; NIGHT3 item 7)
         public bool NpcFlirting = true;
         public bool Trysts = true;
@@ -919,6 +920,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("OwnLooks = " + B(OwnLooks) + "   ; (in testing) without enRAGE: someone you met is known again by how they look (the same clothes on the same build), so the townsman you spoke to yesterday is the same man today, not a stranger with his face; with enRAGE running, its own knowing by look is used instead; false: a new stranger each time a body is met again");
             b.AppendLine("InteractionMenu = " + B(InteractionMenu) + "   ; Talk (Q, a pad's RB) in the lock-on menu of someone RealNPCs knows: a short list to ask the news, stand a drink in a saloon, give money, or warn them; they answer in their own voice, and the mind remembers it (gratitude, fear, how they greet you after)");
             b.AppendLine("LawClearsBodies = " + B(LawClearsBodies) + "   ; a body left lying in a town street for a while: the nearest lawman on foot carries it off the street, sets it down out of the way and goes back to his rounds (never while there's a fight or a pursuit, never the story's own)");
+            b.AppendLine("PersonalSpace = " + B(PersonalSpace) + "   ; stand right up against someone (under a metre, closer in a saloon) for a couple of seconds and they mind it as their nature says: a step back and a word, a look, or, from the hot-tempered, a word to back off; never the law, anyone sitting or at the bar, or anyone busy (needs [Scenes] SightReactions)");
             b.AppendLine("ArthurSpeaks = " + B(ArthurSpeaks) + "   ; Arthur says one of his own recorded fighting lines when someone comes at him or when he catches the pickpocket himself; never over a line already playing on him, 20 s between");
             b.AppendLine("Drama = " + B(Drama) + "   ; strangers argue, flirt, brawl, propose and gossip around you");
             b.AppendLine("DramaGapSeconds = " + DramaGapSeconds + "   ; at most one street scene this often (seconds); a chance meeting between two people with no reason of their own waits one and a half times this. Lower for a livelier street");
