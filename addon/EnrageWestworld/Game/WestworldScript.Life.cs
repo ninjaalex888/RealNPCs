@@ -518,6 +518,7 @@ namespace EnrageWestworld.InGame
                 id = f.Key;
                 name = f.Name;
                 temper = f.Temper;
+                CarryWakeToEnrage(p.Handle, ac);   // one of our residents enRAGE took up: what they knew of him comes too (once a handle)
                 return true;
             }
             ResBind b;

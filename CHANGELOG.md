@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Remembered after enRAGE takes them up
+
+- Fixed: when enRAGE took up one of RealNPCs' townspeople as its own (a greeting does it), what they knew of you stayed behind: tell someone your name in Talk, greet them, and the next Talk offered the name again. Now your name, your talks, how they feel about you, what they've seen of you and their memories go with them. Their worry is still their own after the change.
+
 ### One thing at a time for each person (a review across tonight's features)
 
 - Fixed: the street's chance meetings and quiet talks could take someone already busy with you or with another part of the mod: the person you were talking to in Talk (the list vanished as they turned to chat with a neighbour), a lonely regular waiting for a word, someone come to thank you, or a lawman at work. They take nobody another part has now.

@@ -146,9 +146,11 @@ namespace EnrageWestworld.InGame
             return st != null && st.WakeStage > 0;
         }
 
-        /// One of our residents enRAGE has taken up as its own (a greeting does it): their waking moves to the state kept for
-        /// enRAGE's person, which is who they are looked up as from now on (Lex, 2026-10-31: greeted at stage 1, the stages
-        /// went; Y started them again at 1). Once a handle; p: enRAGE's person if already made.
+        /// One of our residents enRAGE has taken up as its own (a greeting does it): what they knew of him and their waking
+        /// move to the state kept for enRAGE's person, which is who they are looked up as from now on (Lex, 2026-10-31:
+        /// greeted at stage 1, the stages went; Y started them again at 1; later the same day a name told was lost the same
+        /// way). Called wherever a handle is found to be enRAGE's (LastingId, the waking, the name at a greeting), so no
+        /// take-up is missed. Once a handle; p: enRAGE's person if already made.
         private readonly HashSet<int> _wakeCarried = new HashSet<int>();
 
         private void CarryWakeToEnrage(int h, FolkRef a, Person p = null)
@@ -164,6 +166,9 @@ namespace EnrageWestworld.InGame
                 Folk f = Snapshot.Of(a);
                 p = _engine.PersonOfFolk(f.Key, f.Name, f.Woman, f.Town, Bridge.Now());
             }
+            string kept = _engine.CarryPerson(b.R.Id, p);   // what they knew of him first: his name, the talks, their memories (Lex's test, 2026-10-31)
+            if (kept != null)
+                Log.Write("CARRY: " + b.R.Name + " is one of enRAGE's townsfolk now and keeps what they knew of you (" + kept + ")");
             if (_engine.CarryWake(b.R.Id, p))
                 Log.Write("WAKE carried: " + b.R.Name + " is one of enRAGE's townsfolk now; their waking goes with them (" + Awakening.StageName(_engine.StageOf(p)) + ")");
         }

@@ -73,6 +73,72 @@ namespace EnrageWestworld.Core
             return true;
         }
 
+        /// enRAGE took up one of our residents: what they knew of him goes with them too (Lex's test, 2026-10-31: Hugh
+        /// Lambert was told the name, was greeted into enRAGE's townsfolk seconds later, and the next Talk offered the name
+        /// again; his talks and memories were left behind on the resident's id). Once per pair (a mark on the new state),
+        /// whatever the waking. The worry isn't carried: it follows from the id, so enRAGE's person has a worry of their
+        /// own, and a mended worry (Store.WorrySettled) stays with the resident's, not to end a different one. Returns
+        /// what moved, for the log, or null when nothing did.
+        public string CarryPerson(string fromId, Person to)
+        {
+            PersonState from = Store.Find(fromId);
+            if (from == null || to == null || to.Id == fromId)
+                return null;
+            PersonState st = Store.Get(to);
+            string mark = "carried:" + fromId;
+            if (st.Has(mark))
+                return null;
+            st.Mark(mark);
+            var moved = new List<string>();
+            if (from.KnowsName)
+            {
+                if (!st.KnowsName)
+                    moved.Add("your name");
+                st.KnowsName = true;
+                if (from.NameAt > 0 && (st.NameAt == 0 || from.NameAt < st.NameAt))
+                    st.NameAt = from.NameAt;
+            }
+            if (from.Talks > 0)
+                moved.Add(from.Talks + (from.Talks == 1 ? " talk" : " talks"));
+            st.Talks += from.Talks;
+            st.Sightings += from.Sightings;
+            st.LastTalkAt = Math.Max(st.LastTalkAt, from.LastTalkAt);
+            st.LastSeenAt = Math.Max(st.LastSeenAt, from.LastSeenAt);
+            st.LastRemarkAt = Math.Max(st.LastRemarkAt, from.LastRemarkAt);
+            st.ContactAt = Math.Max(st.ContactAt, from.ContactAt);
+            st.FlirtedAt = Math.Max(st.FlirtedAt, from.FlirtedAt);
+            st.Flirts += from.Flirts;
+            if (from.FirstSeenAt > 0 && (st.FirstSeenAt == 0 || from.FirstSeenAt < st.FirstSeenAt))
+            {
+                st.FirstSeenAt = from.FirstSeenAt;
+                st.FirstSeenTown = from.FirstSeenTown ?? st.FirstSeenTown;
+            }
+            if (from.Affection != 0 || from.Heart != 0)
+                moved.Add("how they feel about you");
+            st.Affection += from.Affection;
+            if (Math.Abs(from.Heart) > Math.Abs(st.Heart))
+            {
+                st.Heart = from.Heart;
+                st.HeartAt = from.HeartAt;
+            }
+            foreach (string t in from.Told)
+                if (!t.StartsWith("carried:"))
+                    st.Mark(t);
+            foreach (string d in from.KnownDeeds)
+                if (!st.KnownDeeds.Contains(d))
+                    st.KnownDeeds.Add(d);
+            foreach (string d in from.SawDeeds)
+                if (!st.SawDeeds.Contains(d))
+                    st.SawDeeds.Add(d);
+            int memories = 0;
+            foreach (MindMemory m in from.Mind)
+                if (Minds.Note(st.Mind, m, Store.LastGameMin) == m)
+                    memories++;   // new to them (the same thing noted twice is one; over the cap the weakest goes)
+            if (memories > 0)
+                moved.Add(memories + (memories == 1 ? " memory" : " memories"));
+            return moved.Count > 0 ? string.Join(", ", moved) : null;
+        }
+
         public int StageOf(Person p)
         {
             return StageOf(p.Id);
