@@ -38,6 +38,7 @@ namespace EnrageWestworld.InGame
             HorseThiefStep(me, now);   // a horse thief on his way to it, or away on it (WestworldScript.HorseThief.cs)
             FallWanderStep(now);
             WanderLaterStep(now);
+            LawGiveBackStep(now);   // lawmen we took for a job, handed back (WestworldScript.LawTake.cs)
             PatientStep(now);   // the doctor's patient on the way there and back (WestworldScript.Patient.cs)
             ThrownOutStep(now);   // the card cheat on the boardwalk
             SabbathWatchStep(now);   // the one who saw the kneel thinks of it, a few seconds on

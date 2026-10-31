@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Lawmen the game no longer takes back
+
+- A lawman sent to carry a body off the street, or to break up a brawl, was taken back by the game before he got there (14 of 15 bodies "never reached it"; the one lifted was set down 3 s later). He's now taken over for the job and handed back after it (another script's lawman is only directed, never let go of for the game to clear), sent by the nav mesh to where the body lies, and watched: stopped for 3 s, he's sent again, twice at most. The carry follows the game's own undertaker: the body is marked carriable and the carrier kept at it every frame, he walks it off, and sets it down with the game's own flags; never left holding it. The log says each step and, when it fails, what state he was in (`LAW clears: ...`); the brawl's lawman says how far off he was when he shouted, or that the fight was over before he got there (`LAW breaks up: ...`).
+
 ### Names stay up in a crowd
 
 - In a busy street with a test running, every name over a head could vanish at once: the frame's 48 pieces of text were spent before the names were drawn (the bar, a thought, a test's long words, the subtitles), and the names left the rest to the Testing overlays. Now the nearest eight always get their name (the overlays take what's left), a name goes without its second line when text is short, and a test's words above the ticker are cut to two lines (the whole of them is in the log). When names are held back the log says what spent the frame's text, once a minute: `NAME cards held back: ...`; F7's name card line counts the frames.

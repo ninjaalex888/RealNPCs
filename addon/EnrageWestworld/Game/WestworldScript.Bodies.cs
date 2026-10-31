@@ -4,6 +4,10 @@
 // away from the player, sets it down and goes back to his rounds. Up to three people near turn to watch him do it. One
 // at a time, each body once, a minute between. Every step is logged (LAW clears:) since an NPC lifting a body is new:
 // the log says where it stopped if the game won't let him. [World] LawClearsBodies. Testing row "A lawman clears a body".
+// 2026-10-31 (Lex: he lifted it, the body stayed and the game took the officer back): he is taken over for the job
+// (LawTake: ours, or lightly if another script has him), sent by the nav mesh with a watchdog, and the carry is done the
+// game's own undertaker's way (the carriable flag on the body and reset flag 49 on him every frame, a walk with it, the
+// set-down's flags 1).
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +22,37 @@ namespace EnrageWestworld.InGame
     {
         private sealed class BodyClear
         {
-            public int Law, Body, Stage, Since, StageAt;
+            public int Law, Body, Stage, Since, StageAt, CheckAt, Resent;
+            public float LastDist;    // how far he was at the last progress check (the watchdog)
+            public bool Owned;        // another script had him: taken lightly (LawTake)
             public Vector3 Goal;
             public string Who;
+        }
+
+        // the game's own way, from its undertaker script (Lex, 2026-10-31): every frame of the carry the body is marked
+        // carriable by a ped (carrying flag 7) and the carrier keeps reset flag 49; the set-down's flags are 1, not 0
+        private const ulong SetCarryingFlag = 0xC3ABCFBC7D74AFA5;   // _SET_ENTITY_CARRYING_FLAG (by hash: wrapper builds name it differently)
+        private static readonly uint NavTask = Natives.Hash("SCRIPT_TASK_FOLLOW_NAV_MESH_TO_COORD");
+
+        private static void LawNavTo(int law, Vector3 to, float speed)
+        {
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(law, to.X, to.Y, to.Z, speed, -1, 1f, 0, 0f);
+        }
+
+        /// Every frame while a clearing runs (the flags are a frame's): the game's undertaker does the same.
+        private void BodyClearFrame()
+        {
+            BodyClear c = _bodyClear;
+            if (c == null || !ENTITY.DOES_ENTITY_EXIST(c.Body) || !ENTITY.DOES_ENTITY_EXIST(c.Law))
+                return;
+            Function.Call(SetCarryingFlag, c.Body, 7, true);
+            PED.SET_PED_RESET_FLAG(c.Law, 49, true);
+        }
+
+        private string LawState(int law)
+        {
+            return "a mission entity " + (ENTITY.IS_ENTITY_A_MISSION_ENTITY(law) ? "yes" : "no") + ", ours " + (Spawner.IsBorrowed(law) ? "yes" : "no") +
+                   ", in a scenario " + (PED.IS_PED_USING_ANY_SCENARIO(law) ? "yes" : "no") + ", the walk's status " + TASK.GET_SCRIPT_TASK_STATUS(law, NavTask, true);
         }
 
         private BodyClear _bodyClear;
@@ -45,6 +77,7 @@ namespace EnrageWestworld.InGame
         {
             if (_bodyClear != null)
             {
+                BodyClearFrame();
                 if (now - _bodyStepAt >= 250 || now < _bodyStepAt)
                 {
                     _bodyStepAt = now;   // a quarter second is plenty for a walk and a carry: its stages only read state (the cost audit)
@@ -96,7 +129,8 @@ namespace EnrageWestworld.InGame
                 return "a fight near the body";
             }
             Ped law = World.GetAllPeds().Where(x => x != null && x.Position.DistanceTo(bodyAt) < lawMetres && x.Exists() && !x.IsDead && Natives.IsLaw(x) && !PED.IS_PED_ON_MOUNT(x.Handle) &&
-                                                    !PED.IS_PED_IN_ANY_VEHICLE(x.Handle, false) && !PED.IS_PED_IN_COMBAT(x.Handle, 0) && !_director.Involves(x.Handle) && !NotFree(x.Handle))
+                                                    !PED.IS_PED_IN_ANY_VEHICLE(x.Handle, false) && !PED.IS_PED_IN_COMBAT(x.Handle, 0) && !_director.Involves(x.Handle) && !NotFree(x.Handle) &&
+                                                    !Spawner.IsBorrowed(x.Handle) && !_brawlLaw.Exists(b => b.Law == x.Handle))   // not one already on another job of ours
                                         .OrderBy(x => x.Position.DistanceTo(bodyAt)).FirstOrDefault();
             if (law == null)
             {
@@ -106,12 +140,13 @@ namespace EnrageWestworld.InGame
             Vector3 goal;
             if (!BodyGoal(body.Position, me.Position, out goal))
                 return "nowhere off the street to take it";
-            _bodyClear = new BodyClear { Law = law.Handle, Body = body.Handle, Stage = 0, Since = now, StageAt = now, Goal = goal, Who = NameToShow(body.Handle) ?? "a body" };
+            float far = law.Position.DistanceTo(body.Position);
+            _bodyClear = new BodyClear { Law = law.Handle, Body = body.Handle, Stage = 0, Since = now, StageAt = now, Goal = goal, Who = NameToShow(body.Handle) ?? "a body", LastDist = far, CheckAt = now + 3000 };
             _bodiesTaken.Add(body.Handle);
-            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(law.Handle, true);
+            _bodyClear.Owned = LawTake(law.Handle);   // ours while he works: the game took him back before (Lex, 2026-10-31)
             TASK.CLEAR_PED_TASKS(law.Handle, true, false);
-            TASK.TASK_GO_TO_ENTITY(law.Handle, body.Handle, 20000, 1.2f, 1.0f, 0f, 0);
-            Log.Write("LAW clears: a lawman " + (int)law.Position.DistanceTo(body.Position) + " m off goes to " + _bodyClear.Who + " to take it off the street" + (test ? " (the Testing row)" : ""));
+            LawNavTo(law.Handle, body.Position, far > 12f ? 2f : 1f);   // by the nav mesh to where it lies, not a go-to on a dead body
+            Log.Write("LAW clears: a lawman " + (int)far + " m off goes to " + _bodyClear.Who + " to take it off the street (" + LawTakeWords(_bodyClear.Owned) + ")" + (test ? " (the Testing row)" : ""));
             return null;
         }
 
@@ -136,46 +171,102 @@ namespace EnrageWestworld.InGame
             if (!ENTITY.DOES_ENTITY_EXIST(c.Law) || ENTITY.IS_ENTITY_DEAD(c.Law)) fail = "no lawman any more";
             else if (!ENTITY.DOES_ENTITY_EXIST(c.Body)) fail = "the body is gone";
             else if (PED.IS_PED_IN_COMBAT(c.Law, 0) || MISC.GET_MISSION_FLAG()) fail = "a fight or a mission";
-            else if (now - c.Since > 90000) fail = "it took too long";
+            else if (PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0) fail = "you're wanted: he's the law's again";
+            else if (now - c.Since > 120000) fail = "it took too long";
             if (fail != null)
             {
                 BodyClearEnd(c, fail, false);
                 return;
             }
             Ped law = new Ped(c.Law), body = new Ped(c.Body);
+            bool carrying = PED.IS_PED_CARRYING_SOMETHING(c.Law) && PED._GET_FIRST_ENTITY_PED_IS_CARRYING(c.Law) == c.Body;
             switch (c.Stage)
             {
                 case 0:   // walking over
-                    if (law.Position.DistanceTo(body.Position) < 1.8f)
                     {
-                        TASK.CLEAR_PED_TASKS(c.Law, true, false);
-                        TASK.TASK_PICKUP_CARRIABLE_ENTITY(c.Law, c.Body);
-                        c.Stage = 1;
-                        c.StageAt = now;
-                        BodyWatchers(body.Position, c.Law, c.Body);
+                        float d = law.Position.DistanceTo(body.Position);
+                        if (d < 1.8f)
+                        {
+                            TASK.CLEAR_PED_TASKS(c.Law, true, false);
+                            TASK.TASK_PICKUP_CARRIABLE_ENTITY(c.Law, c.Body);
+                            Log.Detail("LAW clears: he reaches " + c.Who + " after " + (now - c.StageAt) / 1000 + " s and bends to lift it");
+                            c.Stage = 1;
+                            c.StageAt = now;
+                            BodyWatchers(body.Position, c.Law, c.Body);
+                        }
+                        else if (now - c.StageAt > 45000)
+                            BodyClearEnd(c, "he never reached it, " + (int)d + " m off (" + LawState(c.Law) + ")", false);
+                        else if (now >= c.CheckAt)
+                            BodyWatch(c, d, body.Position, d > 12f ? 2f : 1f, "on his way to it", now);
+                        break;
                     }
-                    else if (now - c.StageAt > 25000)
-                        BodyClearEnd(c, "he never reached it", false);
-                    break;
                 case 1:   // lifting
-                    if (PED.IS_PED_CARRYING_SOMETHING(c.Law) && PED._GET_FIRST_ENTITY_PED_IS_CARRYING(c.Law) == c.Body)
+                    if (carrying)
                     {
-                        Log.Write("LAW clears: the lawman lifts " + c.Who);
-                        TASK.TASK_PLACE_CARRIED_ENTITY_AT_COORD(c.Law, c.Body, c.Goal.X, c.Goal.Y, c.Goal.Z, 1.0f, 0);
+                        Log.Write("LAW clears: the lawman lifts " + c.Who + " and carries it " + (int)law.Position.DistanceTo(c.Goal) + " m off the street");
+                        LawNavTo(c.Law, c.Goal, 1f);   // walking with it, the game's undertaker's way (no clear first: the carry stays)
                         c.Stage = 2;
                         c.StageAt = now;
+                        c.Resent = 0;
+                        c.LastDist = law.Position.DistanceTo(c.Goal);
+                        c.CheckAt = now + 3000;
                     }
                     else if (now - c.StageAt > 8000)
-                        BodyClearEnd(c, "the game wouldn't let him lift it (no carry after 8 s)", false);
+                        BodyClearEnd(c, "the game wouldn't let him lift it (no carry after 8 s; " + LawState(c.Law) + ")", false);
                     break;
-                case 2:   // carrying it off and setting it down
-                    bool carrying = PED.IS_PED_CARRYING_SOMETHING(c.Law);
-                    if (!carrying && now - c.StageAt > 2500)
+                case 2:   // carrying it off
+                    {
+                        float d = law.Position.DistanceTo(c.Goal);
+                        if (!carrying)
+                            BodyClearEnd(c, "he dropped it on the way, " + (int)body.Position.DistanceTo(c.Goal) + " m short of the spot (" + LawState(c.Law) + ")", body.Position.DistanceTo(c.Goal) < 4f);
+                        else if (d < 2.5f || now - c.StageAt > 40000 || (now >= c.CheckAt && c.Resent >= 2 && c.LastDist - d < 1f))
+                            BodySetDown(c, d, now);   // there, or as near as he'll get
+                        else if (now >= c.CheckAt)
+                            BodyWatch(c, d, c.Goal, 1f, "carrying it", now);
+                        break;
+                    }
+                case 3:   // setting it down
+                    if (!carrying)
                         BodyClearEnd(c, body.Position.DistanceTo(c.Goal) < 4f ? "set down off the street" : "set down short of the spot (" + (int)body.Position.DistanceTo(c.Goal) + " m)", true);
-                    else if (now - c.StageAt > 40000)
-                        BodyClearEnd(c, "still carrying after 40 s", false);
+                    else if (now - c.StageAt > 6000)
+                    {
+                        TASK.CLEAR_PED_TASKS(c.Law, true, false);   // never left holding it
+                        BodyClearEnd(c, "dropped where he stood: the set-down didn't finish in 6 s (" + (int)body.Position.DistanceTo(c.Goal) + " m from the spot)", body.Position.DistanceTo(c.Goal) < 4f);
+                    }
                     break;
             }
+        }
+
+        /// The watchdog: no metre gained in 3 s and he's sent again (twice at most); after that, on the way to the body, the
+        /// game has him (with the carry, the set-down follows wherever he is).
+        private void BodyWatch(BodyClear c, float d, Vector3 to, float speed, string doing, int now)
+        {
+            c.CheckAt = now + 3000;
+            if (c.LastDist - d >= 1f)
+            {
+                c.LastDist = d;
+                return;
+            }
+            c.LastDist = d;
+            if (c.Resent >= 2)
+            {
+                if (c.Stage == 0)
+                    BodyClearEnd(c, "the game kept him: stopped " + (int)d + " m off after being sent three times (" + LawState(c.Law) + ")", false);
+                return;
+            }
+            c.Resent++;
+            Log.Write("LAW clears: he stopped " + doing + ", " + (int)d + " m off (" + LawState(c.Law) + "); sent again");
+            LawNavTo(c.Law, to, speed);
+        }
+
+        private void BodySetDown(BodyClear c, float d, int now)
+        {
+            Vector3 at = ENTITY.GET_ENTITY_COORDS(c.Law, true, true);
+            Vector3 put = d < 2.5f ? c.Goal : at;
+            TASK.TASK_PLACE_CARRIED_ENTITY_AT_COORD(c.Law, c.Body, put.X, put.Y, put.Z, 1f, 1);   // the game's own undertaker: 1f, flags 1
+            Log.Detail("LAW clears: he sets " + c.Who + " down " + (d < 2.5f ? "at the spot" : (int)d + " m short of it"));
+            c.Stage = 3;
+            c.StageAt = now;
         }
 
         /// Up to three people near turn to watch the lawman at his work.
@@ -202,8 +293,13 @@ namespace EnrageWestworld.InGame
             {
                 if (PED.IS_PED_CARRYING_SOMETHING(c.Law))
                     TASK.CLEAR_PED_TASKS(c.Law, true, false);   // never left holding it
-                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(c.Law, false);
-                WanderLater(c.Law, Game.GameTime + 4000);
+                if (Spawner.IsBorrowed(c.Law))
+                    LawGiveBack(c.Law, Game.GameTime + 1500);   // back to the game and his rounds (Spawner.Release: unblocked, wandering)
+                else
+                {
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(c.Law, false);
+                    WanderLater(c.Law, Game.GameTime + 4000);
+                }
             }
             if (done)
                 _bodyClears++;

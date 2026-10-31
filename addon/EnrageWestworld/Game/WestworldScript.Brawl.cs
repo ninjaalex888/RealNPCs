@@ -23,12 +23,13 @@ namespace EnrageWestworld.InGame
         private sealed class LawHand
         {
             public int Law, Target, Since, At, Phase;   // phase 0 coming, 1 shouted (the word to those who stopped next), 2 fighting Target, 3 tying Target
-            public bool Gun;
+            public bool Gun, Tied;   // Tied: a rope of his to finish before he goes back to his rounds
             public string Seed;
             public List<int> Stopped = new List<int>(), Queue = new List<int>();
         }
 
         private readonly List<LawHand> _brawlLaw = new List<LawHand>();
+        private RDR2.Math.Vector3 _brawlLawAt;   // where the fight was when the last lawman set off (the log)
         private readonly Dictionary<int, int> _brawlHoldouts = new Dictionary<int, int>();   // still swinging after the word, or drew: whom they're at (fair game)
         private readonly HashSet<int> _brawlDrawRolled = new HashSet<int>();
         private int _brawlNextAt, _brawlTestUntil, _brawlLawFor, _brawlFightFor, _brawlFightSince, _brawlAtYouN, _brawlLawAfterUntil;
@@ -89,7 +90,7 @@ namespace EnrageWestworld.InGame
                     continue;   // the distance first (the cost audit)
                 int h = p.Handle;
                 if (h == me.Handle || !p.Exists() || p.IsDead || !Natives.IsLaw(p) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) ||
-                    PED.IS_PED_IN_COMBAT(h, me.Handle) || NotFree(h) || _director.Involves(h) || _brawlLaw.Any(x => x.Law == h) ||
+                    PED.IS_PED_IN_COMBAT(h, me.Handle) || NotFree(h) || _director.Involves(h) || _brawlLaw.Any(x => x.Law == h) || Spawner.IsBorrowed(h) ||   // not one on another job of ours (a body, a stalker)
                     (_theft != null && _theft.Lawman != null && _theft.Lawman.Handle == h))
                     continue;
                 if (sight && seen != 0 && !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(h, seen, 17))
@@ -121,10 +122,11 @@ namespace EnrageWestworld.InGame
             _brawlLawFor = a[0];
             var lh = new LawHand { Law = law.Handle, Since = now, Phase = 0, Seed = a[0] + "|" + now / 1000 };
             _brawlLaw.Add(lh);
-            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(lh.Law, true);
+            _brawlLawAt = mid;
+            bool owned = LawTake(lh.Law);   // ours while he works (WestworldScript.LawTake.cs): the game took lawmen back before they got there
             TASK.CLEAR_PED_TASKS(lh.Law, true, false);
             TASK.TASK_GO_TO_ENTITY(lh.Law, a[0], -1, 4f, 2f, 0f, 0);   // at a run
-            Log.Write("LAW breaks up: a lawman " + (int)law.Position.DistanceTo(mid) + " m off sees the fight (" + (a.Count + b.Count) + " fighting) and comes over" + (test ? ", a test" : ""));
+            Log.Write("LAW breaks up: a lawman " + (int)law.Position.DistanceTo(mid) + " m off sees the fight (" + (a.Count + b.Count) + " fighting) and comes over (" + LawTakeWords(owned) + ")" + (test ? ", a test" : ""));
         }
 
         /// The word: who stops and who keeps swinging, from their minds; the fight is ended, and those who won't stop go on.
@@ -134,6 +136,7 @@ namespace EnrageWestworld.InGame
             Ped law = new Ped(lh.Law);
             if (!_director.FightSides(out a, out b))
             {
+                Log.Write("LAW breaks up: the fight was over as he got there (" + (now - lh.Since) / 1000 + " s after he set off)");
                 lh.Phase = 9;   // over before he got there: the aftermath's word does
                 return;
             }
@@ -198,7 +201,7 @@ namespace EnrageWestworld.InGame
                         lh2.Queue.Add(lh.Queue[i]);
                         lh.Queue.RemoveAt(i);
                     }
-                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(lh2.Law, true);
+                    LawTake(lh2.Law);
                     _brawlLaw.Add(lh2);
                     Log.Write("LAW breaks up: a second lawman comes to help with " + lh2.Queue.Count);
                 }
@@ -206,7 +209,7 @@ namespace EnrageWestworld.InGame
             lh.Phase = 1;
             lh.At = now + 2500;
             _brawlLast = said.Count + " fighting: " + string.Join("; ", said);
-            Log.Write("LAW breaks up: the lawman shouts; " + _brawlLast);
+            Log.Write("LAW breaks up: the lawman shouts, " + (int)law.Position.DistanceTo(ENTITY.GET_ENTITY_COORDS(all.Count > 0 ? all[0] : lh.Law, true, true)) + " m from the fight, " + (now - lh.Since) / 1000 + " s after he set off; " + _brawlLast);
         }
 
         private void BrawlFists(int h)
@@ -227,8 +230,7 @@ namespace EnrageWestworld.InGame
                 {
                     if (ENTITY.DOES_ENTITY_EXIST(lh.Law) && !ENTITY.IS_ENTITY_DEAD(lh.Law))
                     {
-                        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(lh.Law, false);   // two minutes at it: back to his rounds
-                        WanderLater(lh.Law, now + 2000);
+                        LawRoundsAgain(lh.Law, now + 2000);   // two minutes at it: back to his rounds
                     }
                     _brawlLaw.RemoveAt(i);
                     continue;
@@ -241,6 +243,7 @@ namespace EnrageWestworld.InGame
                             List<int> a, b;
                             if (!_director.FightSides(out a, out b))
                             {
+                                Log.Write("LAW breaks up: the fight was over before he got there (" + (int)law.Position.DistanceTo(_brawlLawAt) + " m off, " + (now - lh.Since) / 1000 + " s after he set off)");
                                 lh.Phase = 9;   // it ended before he got there
                                 break;
                             }
@@ -284,6 +287,7 @@ namespace EnrageWestworld.InGame
                             PED.SET_PED_TO_RAGDOLL(t, 1500, 2500, 0, false, false, "");
                             TASK.CLEAR_PED_TASKS(lh.Law, true, false);
                             TASK.TASK_HOGTIE_TARGET_PED(lh.Law, t);
+                            lh.Tied = true;
                             _brawlHoldouts.Remove(t);
                             _brawlTied++;
                             LawSay(law, "The lawman", Brawl.LawTakes(lh.Seed + "|" + t), "WON_FIGHT");
@@ -329,9 +333,7 @@ namespace EnrageWestworld.InGame
                 }
                 if (lh.Phase == 9)
                 {
-                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(lh.Law, false);
-                    if (!PED.IS_PED_IN_COMBAT(lh.Law, Game.Player.Character.Handle))
-                        WanderLater(lh.Law, now + 15000);   // back to his rounds once the rope is done
+                    LawRoundsAgain(lh.Law, now + (lh.Tied ? 15000 : 2000));   // back to his rounds once the rope is done
                     _brawlLaw.RemoveAt(i);
                 }
             }
