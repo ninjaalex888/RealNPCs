@@ -22,7 +22,6 @@ namespace EnrageWestworld.Core
             public int LookMs;        // how long the first one's eyes stay on the other
             public bool BThinks;      // the thought is the other's (else the first one's)
             public string Thought;
-            public string Greeting;   // the greeting's words to him, by his name, when they know it (Passing.ToYou), else null: the voice alone
         }
 
         public static readonly string[] Kinds = { "warm", "sweet", "hostile", "known" };

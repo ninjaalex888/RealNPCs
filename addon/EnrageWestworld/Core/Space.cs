@@ -20,7 +20,7 @@ namespace EnrageWestworld.Core
             if (regard == "afraid")
                 return "afraid";
             if (regard == "hostile")
-                return "bristle";
+                return temper == "Coward" ? "timid" : "bristle";   // sore at him and timid with it: they back off (anger and fear together withdraw)
             if (regard == "fond")
                 return "easy";
             switch (temper)
@@ -34,7 +34,7 @@ namespace EnrageWestworld.Core
         }
 
         /// The whole reaction, for the street reactions' player.
-        public static Sights.Look Look(string temper, string regard, bool woman, string seed)
+        public static Sights.Look Look(string temper, string regard, bool woman, string seed, bool indoors = false)
         {
             string feel = Feeling(temper, regard);
             var l = new Sights.Look { State = "close", Feeling = feel };
@@ -60,7 +60,7 @@ namespace EnrageWestworld.Core
                     l.Gesture = "none";
                     l.LookMs = 2600;   // a level look, and stays put
                     l.Voice = new[] { "WHATS_YOUR_PROBLEM" };
-                    l.Spoken = woman ? Pick(seed, "Step back, mister. I won't ask twice.", "You'd best find somewhere else to stand.")
+                    l.Spoken = woman ? Pick(seed, "Step back, sir, or I'll call the marshal.", "You'd best find somewhere else to stand, sir.")
                                      : Pick(seed, "Back off. You're standing on my boots.", "Something you want? Then back up and say it.", "Give me room, friend, or give me a reason.");
                     break;
                 case "stiff":
@@ -70,7 +70,7 @@ namespace EnrageWestworld.Core
                     if (r < 70)
                     {
                         l.Voice = new[] { "PLAYER_LOOKING_WEIRD" };
-                        l.Spoken = woman ? "I'll thank you to keep your distance, sir." : Pick(seed, "I'll thank you to give a man room.", "Mind yourself, mister. There's a whole street.");
+                        l.Spoken = woman ? "I'll thank you to keep your distance, sir." : Pick(seed, "I'll thank you to give a man room.", indoors ? "Mind yourself, mister. There's room enough." : "Mind yourself, mister. There's a whole street.");
                     }
                     break;
                 case "cold":
@@ -83,7 +83,7 @@ namespace EnrageWestworld.Core
                     if (r < 60)
                     {
                         l.Voice = new[] { "GREET_GENERAL_FAMILIAR" };
-                        l.Spoken = Pick(seed, "Close enough to share a hat, friend.", "Planning to whisper something, are you?");
+                        l.Spoken = woman ? Pick(seed, "Folks will talk, you standing so close.", "Mind, now. People will talk.") : Pick(seed, "Close enough to share a hat, friend.", "Planning to whisper something, are you?");
                     }
                     break;
                 default:   // uneasy
@@ -98,12 +98,14 @@ namespace EnrageWestworld.Core
                     }
                     break;
             }
-            l.Thought = Thought(feel, woman, seed);
+            l.Thought = Thought(feel, woman, seed, temper);
             return l;
         }
 
-        private static string Thought(string feel, bool woman, string seed)
+        private static string Thought(string feel, bool woman, string seed, string temper)
         {
+            if (feel == "cold" && temper == "Greedy")
+                return Pick(seed + "|t", "Close as that. Hand on the purse.", "That's how a purse goes missing. Not mine.");   // jostling was how pickpockets worked
             switch (feel)
             {
                 case "afraid": return Pick(seed + "|t", "Right up against me. Like he's deciding something.", "Don't look at him. Step away. Slow.");
@@ -129,7 +131,7 @@ namespace EnrageWestworld.Core
                     for (int i = 0; i < 12; i++)
                         foreach (bool w in new[] { false, true })
                         {
-                            Sights.Look l = Look(temper, regard, w, "all" + i);
+                            Sights.Look l = Look(temper, regard, w, "all" + i, i % 2 == 1);
                             if (l.Spoken != null) yield return l.Spoken;
                             if (l.Thought != null) yield return l.Thought;
                         }

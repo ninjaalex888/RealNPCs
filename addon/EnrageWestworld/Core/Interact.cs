@@ -44,7 +44,7 @@ namespace EnrageWestworld.Core
 
         /// The list for this person now: saloon (a drink can be stood), cash (cents in Arthur's pocket), money worry (one
         /// he knows of: a gift is five dollars, not one), a debt he knows of and hasn't settled (he can pay it off), and
-        /// his first name when they don't know it yet (he can tell them).
+        /// his whole name when they don't know it yet (he can tell them).
         public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool debtKnown = false, string tellName = null)
         {
             int gift = moneyWorry ? 500 : 100;
@@ -79,8 +79,8 @@ namespace EnrageWestworld.Core
         /// Their answer: temper (Hothead, Coward, Proud, Cold, Greedy, Loyal, Drifter or null), devout (no drink), regard
         /// (how they stand with him already: afraid, hostile, fond or null), the rumour to pass on (Rumours.Version, about
         /// Arthur's deeds) or null, their worry's kind (InnerLife, while it lasts) or null, whether they'd tell him it
-        /// (Confides), a money worry he knows of (the gift is five dollars), and a seed; for his name, his first name (you)
-        /// and theirs (self), which the friendly give back.
+        /// (Confides), a money worry he knows of (the gift is five dollars), and a seed; for his name, his surname (you) and
+        /// their whole name (self), which the friendly men give back.
         public static InteractAnswer Answer(string option, string temper, bool woman, bool devout, string regard, string rumour, string worry, bool confides, bool moneyWorry, string seed, string you = null, string self = null)
         {
             var a = new InteractAnswer { Then = "stay" };
@@ -163,7 +163,7 @@ namespace EnrageWestworld.Core
                     a.Thought = afraid ? "What does he want for it? What will he want?" : moneyWorry ? "Somebody's looking out for me after all." : temper == "Greedy" ? "A soft touch. I'll remember his face." : "Money for nothing. Folks don't do that.";
                     return a;
                 case "name":
-                    return Introduced(temper, regard, you ?? "mister", self, seed);
+                    return Introduced(temper, regard, woman, you ?? "Smith", woman ? null : self, seed);
                 case "settle":
                     if (hostile)
                     {
@@ -254,12 +254,15 @@ namespace EnrageWestworld.Core
         }
 
         /// He tells them his name: they know it from now on, whatever they make of him; the friendly give theirs back.
-        private static InteractAnswer Introduced(string temper, string regard, string you, string self, string seed)
+        private static InteractAnswer Introduced(string temper, string regard, bool woman, string you, string self, string seed)
         {
+            // `you`: his surname. In 1899 a stranger told "Arthur Morgan" says "Mr. Morgan", a man among men "Morgan"; a
+            // woman doesn't give a strange man her first name, and the friendly man gives his whole one back (the review)
+            string mister = "Mr. " + you;
             var a = new InteractAnswer { Then = "stay", LearnsName = true };
             if (regard == "afraid")
             {
-                a.Line = you + ". Yes. I'll... I'll remember it.";
+                a.Line = mister + ". Yes. I'll... I'll remember it.";
                 a.VoiceFear = 40;
                 a.Thought = "His name. Now I'll hear it in my sleep.";
                 return a;
@@ -275,28 +278,29 @@ namespace EnrageWestworld.Core
             switch (temper)
             {
                 case "Cold":
-                    a.Line = you + ".";
+                    a.Line = (woman ? mister : you) + ".";
                     a.Friendly = false;
                     a.Thought = "A name. Means nothing to me. Yet.";
                     break;
                 case "Proud":
-                    a.Line = self != null ? self + ", and pleased to make your acquaintance, " + you + "." : "Then I'll know you when I see you, " + you + ".";
+                    a.Line = woman ? mister + ". I shall remember it." : self != null ? self + ", and pleased to make your acquaintance, " + mister + "." : "Then I'll know you when I see you, " + mister + ".";
                     a.Thought = "Has manners, at least. More than most.";
                     break;
                 case "Greedy":
-                    a.Line = you + ". A man with a name and a full purse, I hope.";
+                    a.Line = woman ? mister + ". And what is it you want?" : you + ". A man with a name and a full purse, I hope.";
                     a.Thought = "Names come cheap. What's he carrying?";
                     break;
                 case "Hothead":
-                    a.Line = you + ", is it? Well. Now we know each other.";
+                    a.Line = woman ? mister + ", is it? Well." : you + ", is it? Well. Now we know each other.";
                     a.Thought = "Wants me to know his name. Fine. I know it.";
                     break;
                 case "Coward":
-                    a.Line = "P-pleased to know you, " + you + ".";
+                    a.Line = "P-pleased to know you, " + mister + ".";
                     a.Thought = "Why'd he tell me? What's he want me to do with it?";
                     break;
                 default:
-                    a.Line = Pick(seed + "|nm", self != null ? self + ". Pleased to know you, " + you + "." : "Pleased to know you, " + you + ".", you + ", is it? Good to put a name to a face.", "I'll remember that, " + you + ".");
+                    a.Line = woman ? Pick(seed + "|nm", "Pleased to know you, " + mister + ".", mister + ". I'll remember it.")
+                                   : Pick(seed + "|nm", self != null ? self + ". Pleased to know you, " + you + "." : "Pleased to know you, " + mister + ".", you + ", is it? Good to put a name to a face.", "I'll remember that, " + mister + ".");
                     a.Thought = Pick(seed + "|nmt", you + ". Decent enough, for a man with that many guns.", you + ". Now I'll know who folk mean.", you + ". Plain name. Hard face.");
                     break;
             }
@@ -369,7 +373,7 @@ namespace EnrageWestworld.Core
                         for (int i = 0; i < 6; i++)
                             foreach (bool w in new[] { false, true })
                             {
-                                InteractAnswer a = Answer(opt, temper, w, i == 5, regard, i % 2 == 0 ? "a man called Morgan shot a ranch hand" : null, i == 3 ? "debt" : null, i == 3, i == 4, "all" + i, "Arthur", i % 2 == 0 ? "Ruth" : null);
+                                InteractAnswer a = Answer(opt, temper, w, i == 5, regard, i % 2 == 0 ? "a man called Morgan shot a ranch hand" : null, i == 3 ? "debt" : null, i == 3, i == 4, "all" + i, "Morgan", i % 2 == 0 ? "Hiram Cobb" : null);
                                 if (a.Line != null) yield return a.Line;
                                 if (a.Thought != null) yield return a.Thought;
                             }

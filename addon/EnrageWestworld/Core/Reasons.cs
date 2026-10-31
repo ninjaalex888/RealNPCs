@@ -169,7 +169,7 @@ namespace EnrageWestworld.Core
                     if (!ask && where.Courting && Scenes.TiffNow(aCross || bCross, tie.Stage, PairKey(a, b) + tie.Count))
                         return new Reason { Kind = "tiff", Strength = 60, BFirst = !aCross,
                                             Why = "sweethearts, and " + (aCross ? a.Name : b.Name) + " has a grievance" };
-                    return new Reason { Kind = ask ? "propose" : tie.Stage == 0 ? "flirt" : "x:sweet", Strength = 60 + 10 * tie.Warmth,
+                    return new Reason { Kind = ask ? "propose" : tie.Stage == 0 ? "flirt" : "x:sweet", Strength = 60 + 10 * tie.Warmth, BFirst = ask && a.Woman && !b.Woman,   // the man asks (Scenes.Propose kneels the man)
                                         Why = ask ? "they've been courting long enough for one to ask" : "they're sweet on each other" };
                 }
                 if (tie.Warmth > 0)

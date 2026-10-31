@@ -350,20 +350,23 @@ namespace EnrageWestworld.InGame
                 StandUpFor(s, cast2, cast, seed, now, false, out stood);   // someone may step in before the blow (WestworldScript.StandUp.cs); the ladder has its own friend
             AddBystander(s, cast2, cast, seed, now);
             if (StartScene(s, cast2, cast, seed, now) && by == null)
-                ReasonThought(pr, me, seed);   // why, over the one whose reason it is (a mind's own pick has the model's thought)
+                ReasonThought(pr, me, seed, cast);   // why, over the one whose reason it is (a mind's own pick has the model's thought)
             return true;
         }
 
         /// The reason, shown: the one whose reason it is thinks why as they go over, when he can see them.
-        private void ReasonThought(PairReason pr, Ped me, string seed)
+        private void ReasonThought(PairReason pr, Ped me, string seed, SceneCast cast)
         {
             if (!_cfg.ReasonThoughts)
                 return;
             Candidate first = pr.Why.BFirst ? pr.B : pr.A, second = pr.Why.BFirst ? pr.A : pr.B;
-            Candidate chooser = Reasons.ChosenBySecond(pr.Why.Kind) ? second : first, other = chooser == first ? second : first;
+            Candidate chooser = Reasons.ChosenBySecond(pr.Why, first.Who, Bridge.Now() / 1440) ? second : first, other = chooser == first ? second : first;
             if (chooser.Ped == null || !chooser.Ped.Exists() || chooser.Ped.Position.DistanceTo(me.Position) > 25f || !NodInView(me, chooser.Ped))
                 return;
-            string thought = Reasons.Thought(pr.Why, other.Who != null ? Person.FirstOf(other.Who.Name) : null, seed + "|why");
+            // whether the chooser knows the other by name (the cast's own: the scene calls a stranger "mister" too)
+            int otherAt = chooser == first ? 1 : 0;
+            bool known = cast == null || cast.Knows == null || (cast.Knows.Length > otherAt && cast.Knows[otherAt]);
+            string thought = Reasons.Thought(pr.Why, other.Who != null ? Person.FirstOf(other.Who.Name) : null, seed + "|why", known, other.Who != null && other.Who.Woman);
             if (thought == null)
                 return;
             _ticker.Push(chooser.Who.Name + ", thinking", thought, "near", chooser.Ped.Handle);

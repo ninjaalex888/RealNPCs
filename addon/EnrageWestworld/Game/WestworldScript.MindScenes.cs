@@ -54,7 +54,7 @@ namespace EnrageWestworld.InGame
             foreach (PairReason pr in _mindReasons.OrderByDescending(x => x.Why.Strength))
             {
                 Candidate first = pr.Why.BFirst ? pr.B : pr.A, second = pr.Why.BFirst ? pr.A : pr.B;
-                Candidate chooser = Reasons.ChosenBySecond(pr.Why.Kind) ? second : first, other = chooser == first ? second : first;   // the friend offers sympathy, the wronged keep clear
+                Candidate chooser = Reasons.ChosenBySecond(pr.Why, first.Who, Bridge.Now() / 1440) ? second : first, other = chooser == first ? second : first;   // the friend offers sympathy, the wronged keep clear, the one owed calls it in
                 if (chooser.Who == null || chooser.Who.Id != id || other.Who == null)
                     continue;
                 string words = Reasons.ActWords(pr.Why, Person.FirstOf(other.Who.Name));

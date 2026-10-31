@@ -17,8 +17,9 @@ namespace EnrageWestworld.Core
         public const long MindAfter = 15;
 
         /// What someone does as the player passes, by what they feel about him; null for nothing. `spokeToday`: they gave
-        /// him a spoken greeting already this game day (a nod after that). `you`: his first name when they know it (he told
-        /// them, or they asked): the greeting says it, and the grateful and the sore think of him by it, not as a stranger.
+        /// him a spoken greeting already this game day (a nod after that). `you`: his surname when they know his name (he
+        /// told them, or they asked): the grateful, the sore and the shamed think of him by it, not as a stranger. The
+        /// spoken greeting stays the voice's own (its recorded words, not ours: the review).
         public static Act ToYou(List<FeltAt> felt, bool woman, string temper, long now, string seed, bool spokeToday = false, string you = null)
         {
             if (felt == null)
@@ -92,19 +93,7 @@ namespace EnrageWestworld.Core
                 p = YouPools[pool];
                 a.Thought = p[Voice.Hash(seed + "|you|" + pool) % p.Length];
             }
-            if (a.Speaks && you != null)
-                a.Greeting = ByName(you, (int)(now / 60 % 24), seed);
             return a;
-        }
-
-        /// A greeting to him by name, by the hour.
-        public static string ByName(string you, int hour, string seed)
-        {
-            string time = hour >= 5 && hour < 12 ? "Morning" : hour >= 12 && hour < 18 ? "Afternoon" : hour >= 18 && hour < 23 ? "Evening" : null;
-            int r = Voice.Hash(seed + "|byname") % 3;
-            if (r == 0 && time != null)
-                return time + ", " + you + ".";
-            return r == 1 ? "Well, if it isn't " + you + "." : time == null ? you + ". Late to be about." : "There's " + you + ". " + time + ".";
         }
 
         /// The grateful and the sore, once they know his name: the same feelings, thought of by name.
@@ -112,6 +101,7 @@ namespace EnrageWestworld.Core
         {
             { "grateful", new[] { "There's {you}. Stood by me when he didn't have to.", "{you}. I owe that man more than a good day.", "Good. {you}'s in town.", "{you}, of all people. I'm glad of it." } },
             { "sore", new[] { "{you}. I haven't forgotten. I won't.", "Keep walking, {you}. I remember.", "{you} again, swaggering about like he owns the street." } },
+            { "shamed", new[] { "{you}. Of all the people to see me so.", "{you} saw it all. I can't meet his eye.", "Eyes on my boots till {you}'s gone by." } },
         };
 
         public static IEnumerable<string> YouNamedLines(string you)
@@ -119,9 +109,6 @@ namespace EnrageWestworld.Core
             foreach (string[] p in YouNamedPools.Values)
                 foreach (string l in p)
                     yield return l.Replace("{you}", you);
-            for (int h = 0; h < 24; h++)
-                for (int i = 0; i < 6; i++)
-                    yield return ByName(you, h, "all" + i);
         }
 
         /// Their thoughts as the player passes (kept apart from Pools, whose count the tests hold).

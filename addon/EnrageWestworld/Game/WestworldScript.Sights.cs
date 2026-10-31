@@ -497,6 +497,7 @@ namespace EnrageWestworld.InGame
                         off.Z = 0f;
                         Vector3 to = r.By.Position + (off.Length() < 0.2f ? new Vector3(0f, 1f, 0f) : off.Normalized) * 1.4f;
                         TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, to.X, to.Y, to.Z, 1.0f, 3000, 0.3f, 0, 0f);
+                        SpaceTurnLater(h, now + SpaceTurnMs);   // then a look back at him, and on their way (not left with their back to him)
                         Log.Detail("SPACE " + r.Name + " steps back");
                     }
                     if (r.Look.Leaves && MayDirectWhyNot(r.By) == null && !PED.IS_PED_USING_ANY_SCENARIO(h))

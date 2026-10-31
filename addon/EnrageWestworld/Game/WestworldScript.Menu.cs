@@ -26,7 +26,7 @@ namespace EnrageWestworld.InGame
         private sealed class TalkMenu
         {
             public int Handle;
-            public string Id, Name, First, Temper, Worry, Trade, FolkId, Regard, Rumour, Self;   // Self: their own first name, when they have one (the friendly give it back)
+            public string Id, Name, First, Temper, Worry, Trade, FolkId, Regard, Rumour, Self;   // Self: their own whole name, when they have one (the friendly men give it back)
             public bool Woman, Devout, MoneyWorry, Seated, KeepOrders, KnowsName;
             public float Reach;
             public List<InteractOption> Options;
@@ -178,7 +178,7 @@ namespace EnrageWestworld.InGame
                 Woman = !PED.IS_PED_MALE(h), Devout = w != null && w.Traits != null && w.Traits[Traits.Piety] > 1.2f, MoneyWorry = worry == "debt" || worry == "savings" || worry == "bank",
                 Trade = w != null && w.P != null ? w.P.Trade : null, FolkId = ac != null ? ac.Id : null, Seated = PED.IS_PED_USING_ANY_SCENARIO(h),
                 Regard = SightRegard(p, id), Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
-                Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name != null ? Person.FirstOf(name) : null
+                Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name
             };
             TalkRefreshOptions();
             TalkFace(_menu, me, true);
@@ -212,7 +212,7 @@ namespace EnrageWestworld.InGame
                 cash = 0;   // no reading: the money options stay greyed
             }
             bool told = _talkConfided.Contains(_menu.Id);
-            _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, _menu.Worry == "debt" && told, _menu.KnowsName ? null : YourFirstName());
+            _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, _menu.Worry == "debt" && told, _menu.KnowsName ? null : YourFullName());
             if (_menu.Sel >= _menu.Options.Count)
                 _menu.Sel = 0;
             _menu.Rows = null;
@@ -342,7 +342,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             bool confides = Interact.Confides(t.Regard, Interact.KindLately(_store.WorldLog, t.Id, _store.LastGameMin), t.Worry, t.Temper);
-            InteractAnswer a = Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(t.Id), seed, YourFirstName(), t.Self);
+            InteractAnswer a = Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(t.Id), seed, YourSurname(), t.Self);
             SpeechCaption(Arthur(), o.Label, Game.Player.Character.Handle, 1600, false);
             t.Pending = a;
             t.PendingId = o.Id;
@@ -460,10 +460,16 @@ namespace EnrageWestworld.InGame
             SpeechCaption(t.First, a.Line, h, Math.Min(6000, 1800 + a.Line.Length * 55), true);
         }
 
-        /// His first name for telling, or null when the engine has none.
-        private string YourFirstName()
+        /// His whole name for telling ("Arthur Morgan", as the old talk gives it), or null when the engine has none.
+        private string YourFullName()
         {
-            return _engine != null && _engine.Player != null && !string.IsNullOrEmpty(_engine.Player.FullName) && !string.IsNullOrEmpty(_engine.Player.FirstName) ? _engine.Player.FirstName : null;
+            return _engine != null && _engine.Player != null && !string.IsNullOrEmpty(_engine.Player.FullName) ? _engine.Player.FullName : null;
+        }
+
+        /// His surname (what people who know his name call him), or null.
+        private string YourSurname()
+        {
+            return _engine != null && _engine.Player != null && !string.IsNullOrEmpty(_engine.Player.FullName) && !string.IsNullOrEmpty(_engine.Player.Surname) ? _engine.Player.Surname : null;
         }
 
         private string Arthur()
@@ -479,6 +485,7 @@ namespace EnrageWestworld.InGame
                 return;
             if (t.ThoughtAt > 0 && _talkLast != null)
                 TalkThink(t);
+            _spaceAgain[t.Handle] = Game.GameTime + 60000;   // stood close to talk: no "a little room" from them straight after
             if (ENTITY.DOES_ENTITY_EXIST(t.Handle) && !ENTITY.IS_ENTITY_DEAD(t.Handle) && !_director.Involves(t.Handle))
             {
                 TASK.TASK_CLEAR_LOOK_AT(t.Handle);
