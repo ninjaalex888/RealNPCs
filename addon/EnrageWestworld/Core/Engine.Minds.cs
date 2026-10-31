@@ -175,6 +175,25 @@ namespace EnrageWestworld.Core
             return null;
         }
 
+        /// Whether this person mourns a friend the player killed in the last `days` (our own death record says "by the
+        /// player"), whether or not they've had it out with him yet: nobody comes over glad to him then (Lonely; the review).
+        public bool MournsYourKill(string id, int days)
+        {
+            PersonState st = id != null ? Store.Find(id) : null;
+            if (st == null || st.Mind == null)
+                return false;
+            long now = Store.LastGameMin;
+            foreach (MindMemory m in st.Mind)
+            {
+                if (m.Kind != "death" || m.Sub != "friend" || m.Who == null || m.Who.Count == 0 || Math.Max(m.At, m.DueAt) > now || now - m.At >= days * 1440L)
+                    continue;
+                DeathEntry d = Store.DeathOf(m.Who[0]);
+                if (d != null && d.By == "player")
+                    return true;
+            }
+            return false;
+        }
+
         /// Whether this person has already had it out over this (a mark; saved).
         public bool Grudged(string id, string what)
         {

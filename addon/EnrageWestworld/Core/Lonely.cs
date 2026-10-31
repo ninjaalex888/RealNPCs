@@ -9,6 +9,25 @@ namespace EnrageWestworld.Core
     {
         public const float CompanyBar = 0.65f;   // the company need at least this (Needs: 0..1, pressing past 0.5)
         public const int WaitMs = 15000;         // how long they stand hoping for a word once they've spoken
+        public const float SoreLeft = 0.1f;      // a feeling about him still this strong keeps them away
+        public const long StungRest = 3 * 1440;  // walked past once: three game days before they try again (the review)
+
+        /// Whether something he did still sits with them (the mind's feelings, any age): anger, contempt, fear or shame he
+        /// caused, or grief for someone he killed. Nobody comes over glad to the man they're sore at, or mourning by (the
+        /// review: the grieving are the loneliest, and a friend of a man he shot came up hoping for a word).
+        public static bool Sore(System.Collections.Generic.List<FeltAt> felt, long now)
+        {
+            if (felt == null)
+                return false;
+            foreach (FeltAt f in felt)
+            {
+                string k = f.Kind >= 0 && f.Kind < Feeling.Kinds.Length ? Feeling.Kinds[f.Kind] : null;
+                bool his = k == "grief" ? f.DoerId == "player" : (k == "anger" || k == "contempt" || k == "fear" || k == "shame") && Passing.AboutB(f, "player");
+                if (his && Mood.Weight(f, now) >= SoreLeft)   // the mood's slower fading: hours for a slight, days for grief
+                    return true;
+            }
+            return false;
+        }
 
         /// Whether they'd come over: lonely enough, knowing him (his name, or a kindness from him lately), and not
         /// afraid of him or against him; nor the cold, who don't seek company out.
@@ -26,6 +45,9 @@ namespace EnrageWestworld.Core
         {
             if (temper == "Coward")
                 return "Oh... hello again. Nice, to see you about, is all.";
+            if (temper == "Proud")   // never owns to being lonely (the review)
+                return woman ? (you != null ? "Mr. " + you + ". " : "Mister. ") + "I happened to be passing. You've a minute, I hope?"
+                             : (you != null ? "Mr. " + you + ". " : "Mister. ") + "A word, if you've a minute. Nothing pressing.";
             if (you != null)
                 return woman ? Pick(seed, "Mr. " + you + ". I hoped I'd see you. Might you spare a minute?", "Good day, Mr. " + you + ". It's good to see a face I know.")
                              : Pick(seed, "Mr. " + you + "! Hoped I'd run into you. Got a minute for a fellow?", "There he is. How are you keeping, " + you + "?", you + "! Hold up a minute. Haven't had a soul to talk to all day.");

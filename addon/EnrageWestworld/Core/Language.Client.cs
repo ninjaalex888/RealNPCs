@@ -33,6 +33,8 @@ namespace EnrageWestworld.Core
         // the model's picks (Language.Pick.cs): their own queue, served first, and their answers by key until taken
         public const int MostPicksWaiting = 16;   // 6 until NIGHT3 item 2, when the game side's PicksAtOnce became a setting (up to 16)
         private readonly Queue<LanguageAsk> _picks = new Queue<LanguageAsk>();
+        private readonly Queue<LanguageAsk> _talks = new Queue<LanguageAsk>();   // Talk's answers, ahead of every pick: a man waits on them face to face (the review)
+        public const int MostTalksWaiting = 4;
         private readonly Dictionary<string, KeyValuePair<string, long>> _picked = new Dictionary<string, KeyValuePair<string, long>>(StringComparer.Ordinal);
         public int PicksAsked, PicksAnswered, PicksFailed, PicksDropped;
 
@@ -43,12 +45,13 @@ namespace EnrageWestworld.Core
                 return false;
             lock (_lock)
             {
-                if (_picks.Count >= MostPicksWaiting)
+                bool talk = ask.Request.Kind == "talk";
+                if (talk ? _talks.Count >= MostTalksWaiting : _picks.Count >= MostPicksWaiting)
                 {
                     PicksDropped++;
                     return false;
                 }
-                _picks.Enqueue(ask);
+                (talk ? _talks : _picks).Enqueue(ask);
                 PicksAsked++;
                 return true;
             }
@@ -131,7 +134,7 @@ namespace EnrageWestworld.Core
         public LanguageAsk Next()
         {
             lock (_lock)
-                return _picks.Count > 0 ? _picks.Dequeue() : _queue.Count > 0 ? _queue.Dequeue() : null;
+                return _talks.Count > 0 ? _talks.Dequeue() : _picks.Count > 0 ? _picks.Dequeue() : _queue.Count > 0 ? _queue.Dequeue() : null;
         }
 
         public int Waiting

@@ -33,6 +33,7 @@ namespace EnrageWestworld.Core
         public bool Settles;     // he paid their debt: the worry is over (Engine.SettleWorry)
         public bool LearnsName;  // he told them his name: they know it from now on (Engine.LearnName)
         public bool Loan;        // the debt he settled they took as a loan, and said so: they'll bring it back (Thanks)
+        public string WrittenLine;   // the menu's own line when the model's words took its place: the voice is chosen by it
     }
 
     public static class Interact

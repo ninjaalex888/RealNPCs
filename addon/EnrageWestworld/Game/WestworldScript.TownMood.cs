@@ -51,7 +51,7 @@ namespace EnrageWestworld.InGame
             return (_placeTown ?? "out of the towns") + ": fear " + f.Level.ToString("0.00") + (words != null ? " (" + words + ")" : " (calm)") +
                    (f.Worst != null ? "; the worst: " + f.Worst.Kind + " " + Math.Max(0, _store.LastGameMin - f.Worst.At) + " game min ago" : "") +
                    "; onlookers moved less by a sight seen again: " + _townNoveltyLess + " this session" +
-                   (TownMood.Hushes(f) ? "; the street is hushed (no fights, thefts or callouts from the street's timing)" : "") + (_hushHeld > 0 ? "; scenes held back while hushed: " + _hushHeld : "");
+                   (TownMood.Hushes(f, _placeTown) ? "; the street is hushed (no fights, thefts or callouts from the street's timing)" : "") + (_hushHeld > 0 ? "; scenes held back while hushed: " + _hushHeld : "");
         }
     }
 }

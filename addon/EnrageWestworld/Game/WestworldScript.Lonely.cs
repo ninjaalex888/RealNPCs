@@ -24,12 +24,15 @@ namespace EnrageWestworld.InGame
             public Ped Ped;
             public string Id, Name, Line;
             public int Until, SaidAt;
+            public float Nearest = float.MaxValue;   // the closest they've come: past it by 3 m, he's walked on
             public bool Test;
         }
 
         private LonelyWalk _lonelyWalk;
         private int _nextLonely, _lonelyCame, _lonelyGlad, _lonelyStung;
         private string _lonelyLast, _lonelyWhyNot;
+        private int _lonelyStepAt, _lonelyStillSince, _lonelyLookedAt;
+        private readonly Dictionary<string, long> _lonelyStungUntil = new Dictionary<string, long>();   // by id: walked past, they leave him be a while
         private Action _aLonely;
 
         /// Tick04: the one walking over or waiting for a word, and now and then a look for someone lonely who knows him.
@@ -49,8 +52,14 @@ namespace EnrageWestworld.InGame
                     Ped me = Game.Player.Character;
                     if (me == null || !me.Exists() || me.IsDead)
                         return;
-                    LonelyWalkStep(me, _now);
-                    if (_lonelyWalk == null && _now >= _nextLonely)
+                    if (_lonelyWalk != null)
+                    {
+                        if (_now < _lonelyStepAt)
+                            return;
+                        _lonelyStepAt = _now + 250;   // a quarter second is plenty for a walk (the review: MayDirectWhyNot allocates)
+                        LonelyWalkStep(me, _now);
+                    }
+                    else if (_now >= _nextLonely)
                         LonelyLook(me, _now, false);
                 };
             Safe("lonely regulars", _aLonely);
@@ -72,6 +81,21 @@ namespace EnrageWestworld.InGame
                 return _lonelyWhyNot = _placeTown == null ? "out of the towns" : "a scene is going on";
             if (MISC.GET_MISSION_FLAG() || PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0 || PED.IS_PED_IN_COMBAT(me.Handle, 0) || PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle))
                 return _lonelyWhyNot = "a mission, or you're wanted, fighting or aiming";
+            if (PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false))
+                return _lonelyWhyNot = "you're riding";
+            // they come to a man who has stopped, two seconds still (the review: they trailed a walking Arthur); sampled a
+            // second apart while he's on the move
+            bool still = ENTITY.GET_ENTITY_SPEED(me.Handle) <= 0.4f;
+            if (!still)
+                _lonelyStillSince = 0;
+            else if (_lonelyStillSince == 0 || now - _lonelyLookedAt > 1500)
+                _lonelyStillSince = now;
+            _lonelyLookedAt = now;
+            if (!test && (_lonelyStillSince == 0 || now - _lonelyStillSince < 2000))
+            {
+                _nextLonely = now + 1000;
+                return _lonelyWhyNot = "you're on the move (they come to a man who has stopped)";
+            }
             long g = _store.LastGameMin;
             string skipped;
             string pre = Pacing.WhyNot(_store.Pace, "lonely", _placeTown, null, g, _rng.Next(100), test, out skipped);
@@ -81,8 +105,18 @@ namespace EnrageWestworld.InGame
             foreach (int h in _mindNear)
             {
                 MindWho w;
-                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || (!test && w.Needs == null) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || (!test && (w.Needs == null || w.Needs[NeedState.Company] < Lonely.CompanyBar)))
+                    continue;   // the pure tests first: the company need before any native (the review)
+                long stungUntil;
+                if (!test && _lonelyStungUntil.TryGetValue(w.Id, out stungUntil) && g < stungUntil)
+                    continue;   // walked past lately: they'll not try again so soon
+                if (Lonely.Sore(_engine.Shadow.Felt(w.Id), g) || Interact.LastWrong(_store.WorldLog, w.Id, g) != null || _engine.MournsYourKill(w.Id, 7))
+                    continue;   // sore at him, afraid, shamed, wronged by him lately (no apology since), or mourning a friend he killed this week
+                if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                     continue;
+                bool woman = !PED.IS_PED_MALE(h);
+                if (woman && !test && (Natives.Night() || _engine.NowIndoors))
+                    continue;   // a woman doesn't walk up to a man after dark or in a saloon (the thanks' manners)
                 Ped p = new Ped(h);
                 if (p.Position.DistanceTo(mePos) > 18f || !NodInView(me, p) || MayDirectWhyNot(p) != null || NotFree(h) || _director.Involves(h) || PED.IS_PED_USING_ANY_SCENARIO(h))
                     continue;
@@ -102,7 +136,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, walkMs + Lonely.WaitMs, 0, 51, 0);
                 _lonelyWalk = new LonelyWalk
                 {
-                    Ped = p, Id = w.Id, Name = w.Name, Line = Lonely.Hello(temper, !PED.IS_PED_MALE(h), knows ? YourSurname() : null, w.Id + "|" + g / 60), Until = now + walkMs, Test = test
+                    Ped = p, Id = w.Id, Name = w.Name, Line = Lonely.Hello(temper, woman, knows ? YourSurname() : null, w.Id + "|" + g / 60), Until = now + walkMs, Test = test
                 };
                 _lonelyCame++;
                 Log.Write("LONELY " + w.Name + " (" + (temper ?? "plain") + ", company " + company.ToString("0.00") + (knows ? ", knows your name" : "") + (kind ? ", a kindness from you lately" : "") +
@@ -124,8 +158,22 @@ namespace EnrageWestworld.InGame
                 return;
             }
             int h = w.Ped.Handle;
+            if (_menu != null && _menu.Handle == h)
+            {
+                LonelyGlad(w, h, now, "you stopped to talk");   // (even before they'd spoken: the review)
+                return;
+            }
             if (w.SaidAt == 0)
             {
+                float d = w.Ped.Position.DistanceTo(me.Position);
+                if (d < w.Nearest)
+                    w.Nearest = d;
+                if (d > w.Nearest + 3f || PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false))
+                {
+                    LonelyLetGo(h);   // he went on before they reached him: nothing to be stung by, he may not have seen them
+                    Log.Write("LONELY " + w.Name + ": you went on before they reached you; they let it be");
+                    return;
+                }
                 if (_menu != null || _grudgeWalk != null || _thanksWalk != null)
                 {
                     LonelyLetGo(h);   // he's taken up with someone else: another time
@@ -146,19 +194,15 @@ namespace EnrageWestworld.InGame
                 }
                 return;
             }
-            if (_menu != null && _menu.Handle == h)
-            {
-                _lonelyGlad++;
-                string glad = Lonely.After(true, w.Id + "|" + now / 60000);
-                _ticker.Push(w.Name + ", thinking", glad, "near", h);
-                _lonelyLast = w.Name + ": glad you stopped" + (w.Test ? " (a test)" : "");
-                Log.Write("LONELY " + w.Name + ": you stopped to talk; thinks: " + glad);
-                _lonelyWalk = null;   // the menu has them now
-                return;
-            }
             if (me.Position.DistanceTo(w.Ped.Position) > 6f || now - w.SaidAt > Lonely.WaitMs)
             {
                 _lonelyStung++;
+                if (!w.Test)
+                {
+                    if (_lonelyStungUntil.Count > 200)
+                        _lonelyStungUntil.Clear();
+                    _lonelyStungUntil[w.Id] = _store.LastGameMin + Lonely.StungRest;   // stung once: not back tomorrow just as eager
+                }
                 string hurt = Lonely.After(false, w.Id + "|" + now / 60000);
                 if (NodInView(me, w.Ped) || me.Position.DistanceTo(w.Ped.Position) < 15f)
                     _ticker.Push(w.Name + ", thinking", hurt, "near", h);
@@ -166,6 +210,26 @@ namespace EnrageWestworld.InGame
                 Log.Write("LONELY " + w.Name + ": you didn't stop; thinks: " + hurt);
                 LonelyLetGo(h);
             }
+        }
+
+        /// Glad of him: the thought, counted; the menu or the game's greeting has them now.
+        private void LonelyGlad(LonelyWalk w, int h, int now, string how)
+        {
+            _lonelyGlad++;
+            string glad = Lonely.After(true, w.Id + "|" + now / 60000);
+            _ticker.Push(w.Name + ", thinking", glad, "near", h);
+            _lonelyLast = w.Name + ": glad, " + how + (w.Test ? " (a test)" : "");
+            Log.Write("LONELY " + w.Name + ": " + how + "; thinks: " + glad);
+            _lonelyWalk = null;
+        }
+
+        /// The game's Greet to the one coming over or waiting: as good as stopping to talk (the review). From GreetedSpecial;
+        /// the greeting's own handling goes on (a conversation, if one comes of it).
+        private void LonelyGreeted(int handle)
+        {
+            LonelyWalk w = _lonelyWalk;
+            if (w != null && w.Ped != null && w.Ped.Handle == handle)
+                LonelyGlad(w, handle, _now, "you greeted them");
         }
 
         private void LonelyLetGo(int h)

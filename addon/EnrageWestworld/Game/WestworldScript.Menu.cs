@@ -473,6 +473,10 @@ namespace EnrageWestworld.InGame
             t.TalkRequest = null;
             if (!_cfg.LanguageTalk || !_cfg.Language || !_cfg.MindLive || _engine == null || a == null || string.IsNullOrEmpty(a.Line))
                 return;
+            if ((o.Id == "drink" || o.Id == "give" || o.Id == "settle") && a.Cents == 0)
+                return;   // a drink or money turned down keeps its written words: the check can't tell a refusal worded as thanks (the review)
+            if (!string.IsNullOrEmpty(t.Self) && a.Line.Contains(t.Self))
+                return;   // their own name given back: the model may not say it (TalkCheck holds it), so the written line (the review)
             MindWho w = MindKnown(t.Handle, now);
             if (w == null || w.P == null)
                 return;
@@ -487,6 +491,7 @@ namespace EnrageWestworld.InGame
             r.Memories.Clear();
             r.Beliefs.Clear();
             r.Worry = null;       // the meaning carries the worry where it belongs (it crept into every answer)
+            r.YouAs = null;       // not how they think of him ("the man I fought" read as knowing him): his name, or a stranger (the review)
             if ((t.KnowsName || o.Id == "name") && YourSurname() != null)
                 r.YouAs = "Mr. " + YourSurname();   // they know his name (or he's telling it them now): they may say it
             if (o.Id == "name" && YourFullName() != null)
@@ -521,13 +526,14 @@ namespace EnrageWestworld.InGame
                 return true;
             }
             t.TalkKey = null;
-            string clean = Language.StripAddress(Language.Tidy(answer), t.KnowsName ? YourSurname() : null, t.Name);   // a name it made up for him, out
+            string clean = Language.StripAddress(Language.Tidy(answer), t.KnowsName || t.PendingId == "name" ? YourSurname() : null, t.Name);   // a name it made up for him, out (his own, being told it now, stays)
             bool accepts = a.Event == "round" || a.Event == "charity" || a.Event == "help" || a.Settles;
-            string why = clean == null ? "empty" : Language.TalkCheck(t.TalkRequest, clean, accepts);
+            string why = clean == null ? "empty" : Language.TalkCheck(t.TalkRequest, clean, accepts, a.Loan);
             if (why == null)
             {
                 _talkModelSaid++;
                 Log.Write("TALK model for " + t.Name + " in " + ms + " ms: \"" + clean + "\" (written: \"" + a.Line + "\")");
+                a.WrittenLine = a.Line;   // the voice is chosen by what it means, not the model's wording (the review)
                 a.Line = clean;
             }
             else
@@ -552,7 +558,7 @@ namespace EnrageWestworld.InGame
             if (a == null || string.IsNullOrEmpty(a.Line))
                 return;
             int h = t.Handle;
-            Func<string> voice = Speech.For(h, a.Line, Game.Player.Character.Handle, a.VoiceHate, a.VoiceFear, a.Friendly, "chat");
+            Func<string> voice = Speech.For(h, a.WrittenLine ?? a.Line, Game.Player.Character.Handle, a.VoiceHate, a.VoiceFear, a.Friendly, "chat");
             if (voice != null && !Speech.Busy(h))
                 voice();
             SpeechCaption(t.First, a.Line, h, Math.Min(6000, 1800 + a.Line.Length * 55), true);

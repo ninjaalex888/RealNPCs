@@ -1636,6 +1636,7 @@ namespace EnrageWestworld.InGame
         /// The player greeted someone special: the stalker, or kin met on the street.
         private bool GreetedSpecial(int handle)
         {
+            LonelyGreeted(handle);   // a lonely one coming over: a greeting is what they hoped for (the rest goes on as usual)
             if (TravellerGreeted(handle, true))
                 return true;   // the traveller asking the way: a greeting is an answer (WestworldScript.Travellers.cs)
             if (SupperGreeted(handle, true))

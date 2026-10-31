@@ -34,7 +34,7 @@ namespace EnrageWestworld.Core
         public static string TalkBrief(LanguageRequest r)
         {
             int year = r != null && r.Year > 0 ? r.Year : 1899;
-            return "You write what one person says aloud, in " + year + ", in the American West and South, answering a stranger who has just spoken to them. " +
+            return "You write what one person says aloud, in " + year + ", in the American West and South, answering a man who has just spoken to them. " +
                    "One or two short sentences, " + MaxWords + " words at most, the way people of the time talked: plain words, no modern words or phrases, no poetry. " +
                    "Say exactly what you are told the answer means, no more and nothing else: if it accepts, accept; if it refuses, refuse; bring up nothing else. " +
                    "Use no names at all unless you are told his: not his, not your own, not your family's; call him mister, or nothing. Never mention video games, being in a story, or being written. " +
@@ -95,7 +95,7 @@ namespace EnrageWestworld.Core
         /// Whether a spoken answer may be said; why not otherwise. The thought's checks first; then what the live sample
         /// showed: never a name for him but the one they know (the model made one up, or used the speaker's own), never
         /// their own name to him, and an answer that accepts (a drink, money, a debt paid) with no refusal in it.
-        public static string TalkCheck(LanguageRequest r, string answer, bool accepts)
+        public static string TalkCheck(LanguageRequest r, string answer, bool accepts, bool loan = false)
         {
             string why = Check(r, answer);
             if (why != null)
@@ -108,9 +108,12 @@ namespace EnrageWestworld.Core
                 foreach (string part in r.Name.Split(' '))
                     if (part.Length > 1 && System.Text.RegularExpressions.Regex.IsMatch(answer, @"\b" + System.Text.RegularExpressions.Regex.Escape(part) + @"\b"))
                         return "their own name in it (" + part + ")";
+            string lower = answer.ToLowerInvariant();
+            if (loan && !lower.Contains("loan") && !lower.Contains("back") && !lower.Contains("repay"))
+                return "a loan the words don't say (they'll bring it back days on, as a loan)";
             if (accepts)
             {
-                string low = answer.ToLowerInvariant();
+                string low = lower;
                 foreach (string w in Refusing)
                     if (low.Contains(w))
                         return "refuses what the answer accepts (" + w + ")";
