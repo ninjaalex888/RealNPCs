@@ -52,6 +52,8 @@ namespace EnrageWestworld.InGame
         private Action _aNameCards;
         private int _nameCardsProbedIn = -1, _nameCardsProbeAt = -100000;
         private const int NameCardsMost = 10, NameCardsMostAlways = 16, NameCardsRefreshMs = 3000;
+        private const int NameCardFloor = 8;   // the nearest this many always get their name, even from the overlays' share of the frame's text (Lex, 2026-10-31)
+        private int _nameHeldLogAt = -100000, _nameHeldFrames;
         private const float NameCardAbove = 0.32f, NameCardSteady = 2.5f, NameCardLead = 1f;
         private static readonly int[] ColourTitle = { 245, 244, 240 }, ColourStranger = { 170, 168, 160 }, ColourDim = { 146, 144, 138 };
 
@@ -115,6 +117,7 @@ namespace EnrageWestworld.InGame
             // always on, the cards are drawn before the Testing overlays: they leave those their room (Lex, 2026-10-30: a wake
             // stage tag went the moment her Fondness bar came, the frame's text all spent on names)
             int keep = !_cfg.NameCardsAlways ? 0 : (_cfg.ShowWakeStages && _cfg.WestWorld ? WakeTagMax : 0) + (_cfg.ShowMinds ? 12 : 0) + 2;
+            bool held = false;   // cards that wanted drawing and had no text left (logged once a minute: what spent it)
             foreach (NameCard c in _nameCardsNow)
             {
                 int h = c.Handle;
@@ -206,8 +209,12 @@ namespace EnrageWestworld.InGame
                 int a = (int)(255f * alpha);
                 if (a < 8)
                     continue;
-                if (keep > 0 && Draw.Left - 2 < keep)
-                    break;   // the rest of the frame's text is the overlays'
+                bool tight = keep > 0 && Draw.Left - 2 < keep;
+                if ((tight && up >= NameCardFloor) || Draw.Left <= 0)
+                {
+                    held = true;   // the rest of the frame's text is the overlays' (the nearest NameCardFloor get theirs all the same: names are kept, the overlays are test aids)
+                    break;
+                }
                 // smaller with distance: the title 0.25 down to 0.19, the line under it 0.175 down to 0.145
                 float far = Math.Max(0f, Math.Min(1f, (c.Metres - 6f) / Math.Max(1f, c.Range - 6f)));
                 float s1 = 0.25f - 0.06f * far, s2 = 0.175f - 0.03f * far;
@@ -219,7 +226,7 @@ namespace EnrageWestworld.InGame
                     c.Units = TitleUnits(c.Name);
                 }
                 Draw.TextFormed(c.Formed, x - c.Units * s1 * 0.0205f / 2f, y - h1 - h2 + 0.002f, s1, c.R, c.G, c.B, a);
-                if (_cfg.NameCardsSecondLine && !string.IsNullOrEmpty(c.Line2))   // off: the name alone (players, 2026-10-30)
+                if (_cfg.NameCardsSecondLine && !string.IsNullOrEmpty(c.Line2) && !tight && Draw.Left > 0)   // off: the name alone (players, 2026-10-30); short of text, the name alone too
                 {
                     if (!ReferenceEquals(c.Formed2Of, c.Line2))
                     {
@@ -234,6 +241,13 @@ namespace EnrageWestworld.InGame
                     Log.Write("NAME cards: the first, over " + c.Name + (c.Line2 != null && c.Line2.Length > 0 ? " (" + c.Line2 + ")" : "") + ", " + (int)c.Metres + " m off");
             }
             _nameCardsUp = up;
+            if (held && (now - _nameHeldLogAt > 60000 || now < _nameHeldLogAt))
+            {
+                _nameHeldLogAt = now;
+                Log.Write("NAME cards held back: " + up + " drawn of " + _nameCardsNow.Count + " near; the frame's text: " + Draw.Spent());
+            }
+            if (held)
+                _nameHeldFrames++;
             if (_nameCardsFrame % 120 == 0)
                 foreach (int gone in _nameCards.Where(kv => _nameCardsFrame - kv.Value.SeenFrame > 60 && now - kv.Value.FirstSeen > 5000 && !_nameCardsNow.Contains(kv.Value)).Select(kv => kv.Key).ToList())
                     _nameCards.Remove(gone);
@@ -558,7 +572,7 @@ namespace EnrageWestworld.InGame
             if (_cfg.NameCards == "off")
                 return "off ([Display] NameCards)";
             string left = _bridge != null && _bridge.Present && NameCardsLeftToEnrage(_now) ? "; left to enRAGE's own cards (NameCardsBesideEnrage off)" : "";
-            return _cfg.NameCards + (_cfg.NameCardsSecondLine ? "" : ", names alone") + " within " + (int)_cfg.NameCardsMetres + "/" + (int)_cfg.NameCardsKnownMetres + " m; " + _nameCardsUp + " up now, " + _nameCardsNow.Count +
+            return _cfg.NameCards + (_cfg.NameCardsSecondLine ? "" : ", names alone") + " within " + (int)_cfg.NameCardsMetres + "/" + (int)_cfg.NameCardsKnownMetres + " m; " + _nameCardsUp + " up now" + (_nameHeldFrames > 0 ? " (short of the frame's text in " + _nameHeldFrames + " frames this session)" : "") + ", " + _nameCardsNow.Count +
                    " in range, " + _nameCards.Count + " kept; " + _nameCardsMade + " drawn this session" + left;
         }
     }

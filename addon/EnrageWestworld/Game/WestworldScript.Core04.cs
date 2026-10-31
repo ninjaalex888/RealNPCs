@@ -521,21 +521,31 @@ namespace EnrageWestworld.InGame
         private void Frame(int now)
         {
             _now = now;
+            Draw.Part = Draw.PartOther;   // each step says who it is, so a frame's text can be told apart (Draw.Spent)
             Safe("ticker", _aFrame);
+            Draw.Part = Draw.PartFeelings;
             FeelingsStep(now);
             if (_cfg.NameCardsAlways)
             {
+                Draw.Part = Draw.PartSubtitles;
                 SubtitleDraw(now);
+                Draw.Part = Draw.PartNameCards;
                 NameCardsStep(now);   // always on: before the Testing overlays, so a crowd's cards aren't the ones the frame's text budget drops (Lex, 2026-10-30)
             }
+            Draw.Part = Draw.PartMinds;
             ShowMindsStep(now);   // the Testing page's cards over people (WestworldScript.ShowMinds.cs)
+            Draw.Part = Draw.PartWake;
             WakeTagsStep(now);    // and its wake stages over heads (WestworldScript.WakeTags.cs)
+            Draw.Part = Draw.PartNews;
             NewsStep(now);
             if (!_cfg.NameCardsAlways)
             {
+                Draw.Part = Draw.PartSubtitles;
                 SubtitleDraw(now);
+                Draw.Part = Draw.PartNameCards;
                 NameCardsStep(now);   // names over heads, last: the least to lose if the frame's text budget runs out (WestworldScript.NameCards.cs)
             }
+            Draw.Part = Draw.PartOther;
         }
 
         // a line being said near you (a scene, the doctor, a hello), as a subtitle in the game's style for its own time, never
@@ -565,7 +575,9 @@ namespace EnrageWestworld.InGame
                 _reader.Render();
                 return;
             }
+            Draw.Part = Draw.PartTalk;
             TalkMenuFrame(now);   // the interaction menu, ticker or no ticker (WestworldScript.Menu.cs)
+            Draw.Part = Draw.PartOther;
             if (_engine == null || !_cfg.Ticker)
                 return;
             if (!TickerVisible(now))
@@ -603,7 +615,9 @@ namespace EnrageWestworld.InGame
             _overHeadDrawn = false;
             if (_aOverHead == null)
                 _aOverHead = () => _overHeadDrawn = DespairOverHead(_now) || ThoughtOverHead(_tickerLine, _now);   // despair's words first, while they last (WestworldScript.Despair.cs)
+            Draw.Part = Draw.PartThought;
             Safe("thoughts over heads", _aOverHead);
+            Draw.Part = Draw.PartBar;
             TickerLine scene = _cfg.TickerShowsScene ? SceneOnBar() : null;   // the street scene near you takes the bar while it plays
             if (!_overHeadDrawn && OverHeadOnly(line, now))
             {
@@ -618,6 +632,7 @@ namespace EnrageWestworld.InGame
                 if (_cfg.ThoughtMarker)
                     DrawThinkingMark(line);
             }
+            Draw.Part = Draw.PartHint;
             if (_hint != null && now < _hintUntil)
             {
                 float s = _cfg.TickerScale * 0.9f;
@@ -625,6 +640,8 @@ namespace EnrageWestworld.InGame
                 if (_hint != _hintRowsFor || s != _hintRowsScale)
                 {
                     _hintRows = Draw.Wrap(_hint, s, 0.9f);   // once a hint, not every frame (the cost audit: a Testing row's long words, ~100 allocations a frame)
+                    if (_hintRows.Count > 2)   // two lines at most: a test's long words took the frame's text from the names (Lex, 2026-10-31); the whole of it is in the log
+                        _hintRows = new List<string> { _hintRows[0], Draw.Fit(string.Join(" ", _hintRows.Skip(1)), s, 0.9f) };
                     _hintRowW = new float[_hintRows.Count];
                     _hintW = 0f;
                     for (int i = 0; i < _hintRows.Count; i++)

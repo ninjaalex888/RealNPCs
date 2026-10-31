@@ -131,11 +131,38 @@ namespace EnrageWestworld.InGame
             {
                 _frame = frame;
                 _used = 0;
+                _refused = 0;
+                Array.Clear(_by, 0, Parts);
             }
             if (_used + n > FrameBudget)
+            {
+                _refused += n;
                 return false;
+            }
             _used += n;
+            _by[Part < 0 || Part >= Parts ? PartOther : Part] += n;
             return true;
+        }
+
+        // who spent the frame's text (Lex, 2026-10-31: in a crowd in Saint Denis every name went): the frame's steps set
+        // Part as they draw, and Take counts each part's pieces this frame; nothing is made until Spent is asked (the log)
+        public const int PartOther = 0, PartTalk = 1, PartThought = 2, PartBar = 3, PartHint = 4, PartFeelings = 5, PartSubtitles = 6,
+                         PartNameCards = 7, PartMinds = 8, PartWake = 9, PartNews = 10, Parts = 11;
+        private static readonly string[] PartWords = { "other", "the Talk menu", "the thought over a head", "the bar", "a test's words", "the feelings bars",
+                                                       "the subtitles", "the name cards", "the mind cards", "the wake tags", "the news" };
+        public static int Part;
+        private static readonly int[] _by = new int[Parts];
+        private static int _refused;
+
+        /// What took this frame's text so far, for the log: "the bar 3, the subtitles 4; 0 of 48 left, 6 refused".
+        public static string Spent()
+        {
+            bool now = Game.FrameCount == _frame;
+            var b = new StringBuilder(160);
+            for (int i = 0; i < Parts; i++)
+                if (now && _by[i] > 0)
+                    b.Append(b.Length > 0 ? ", " : "").Append(PartWords[i]).Append(' ').Append(_by[i]);
+            return (b.Length > 0 ? b.ToString() : "nothing") + "; " + Left + " of " + FrameBudget + " left" + (now && _refused > 0 ? ", " + _refused + " refused" : "");
         }
 
         /// Width / height of the game window (16:9 = 1.78).

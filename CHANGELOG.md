@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Names stay up in a crowd
+
+- In a busy street with a test running, every name over a head could vanish at once: the frame's 48 pieces of text were spent before the names were drawn (the bar, a thought, a test's long words, the subtitles), and the names left the rest to the Testing overlays. Now the nearest eight always get their name (the overlays take what's left), a name goes without its second line when text is short, and a test's words above the ticker are cut to two lines (the whole of them is in the log). When names are held back the log says what spent the frame's text, once a minute: `NAME cards held back: ...`; F7's name card line counts the frames.
+
 ### Brawls that grow, and the law that stops them (settings version 160)
 - A fistfight can grow into a brawl a wave at a time: one joins at a look while it's a few, two or three once it's four or more, one more in a saloon. Friends and grudges pull people in, and the bigger it gets the less it takes, most of all in a saloon with drink in it; on the street most still watch. Up to `[Mind] BrawlMost` (12) fighting at once. Someone sat at the bar or leaning gets up the game's way before wading in. `[Mind] MindBrawls`, with MindLive and MindJoinFights; off, the old rule stands (three at most, nobody with the law near).
 - The law at hand now holds most back rather than everyone: on the street a sixth as many join, in a saloon riot about a third.
