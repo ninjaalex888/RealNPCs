@@ -545,6 +545,11 @@ namespace EnrageWestworld.InGame
         {
             if (string.IsNullOrEmpty(text))
                 return;
+            if (!toYou && handle != 0 && ENTITY.DOES_ENTITY_EXIST(handle) && !ENTITY.IS_ENTITY_ON_SCREEN(handle))
+            {
+                Log.Detail("CAPTION " + label + ": " + text + " (no subtitle: off screen)");   // between others, only who you can see (Lex, 2026-10-31: hard to tell where it came from)
+                return;
+            }
             bool shown = toYou ? Feed.ToYouCaption(label, text, Math.Max(1500, ms)) : Feed.Overheard(label, text, Math.Max(1500, ms));   // to the player: the top box; else the one under it
             Log.Detail("CAPTION " + (toYou ? "(to you) " : "") + label + ": " + text + (shown ? "" : " (no subtitle: [Output] Subtitles off)"));
         }
