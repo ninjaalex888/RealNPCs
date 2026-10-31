@@ -44,6 +44,7 @@ namespace EnrageWestworld.InGame
             public bool Blows;                   // and blows were traded (FightOn came): only then is there an aftermath (FightOver)
             public int CarryUntil, CarryBy, CarryWho;   // "carry": the game's own carry asked for, waited on until then
             public int Shooter, ShotAt, ShootUntil;   // "shoot": who fired at whom, and until when the gunplay is let run
+            public int Shover, Shoved, ShoveUntil;    // "shove": who shoved whom, and until when stopping him is no crime
             public int MeetWalker = 1;           // who walks over in "meet" (the second, or the first for trouble)
             public int MeetGoAt;                 // the walker was sitting or leaning: he sets off once he's up (0: on his way)
             public bool Downed;                  // "passout" played: he's lying there until "cometo", or the end gets him up
@@ -785,6 +786,9 @@ namespace EnrageWestworld.InGame
                 case "shove":
                     Ped victim = who == 2 ? l.Cast[0] : them;
                     PED.SET_PED_TO_RAGDOLL(victim.Handle, 900, 1600, 0, false, false, "");
+                    l.Shover = h;
+                    l.Shoved = victim.Handle;
+                    l.ShoveUntil = Game.GameTime + 4000;   // a man who shoves another: fair game a moment (the review: the bully turning on the one who stepped in)
                     Speech.SayAny(victim.Handle, Speech.Scared, h);
                     return 1800;
                 case "hurt":
@@ -1150,6 +1154,8 @@ namespace EnrageWestworld.InGame
                 all.Add(new[] { l.Cast[0].Handle, l.Cast[1] != null ? l.Cast[1].Handle : 0 });   // a man robbing another: stopping him is no crime
             if (l.ShootUntil > 0 && l.Shooter != 0 && ENTITY.DOES_ENTITY_EXIST(l.Shooter) && !ENTITY.IS_ENTITY_DEAD(l.Shooter))
                 all.Add(new[] { l.Shooter, l.ShotAt });
+            if (l.ShoveUntil > Game.GameTime && l.Shover != 0 && ENTITY.DOES_ENTITY_EXIST(l.Shover) && !ENTITY.IS_ENTITY_DEAD(l.Shover))
+                all.Add(new[] { l.Shover, l.Shoved });
             return all;
         }
 

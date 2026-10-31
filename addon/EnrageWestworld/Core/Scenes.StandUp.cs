@@ -2,9 +2,10 @@
 // watching steps in before the blow lands. A friend of the one being picked on, or a steady man (Loyal or Proud, never a
 // Coward) who can't abide it. The bully backs off (the scene ends early, as words) or tells him to keep out and goes on.
 // C is the one who steps in, A the bully, B the one he picked on. Whether he backs off comes from A's temper and C's.
-// (Built tonight: backs off, ignores him. Not built: the bully turning on the one who stepped in, which would need the
-// Director to recast a fight already going; OVERNIGHT.md.) Night 2026-10-29: with the mind deciding, a bully who holds his
-// ground may see the one who stepped in take the other away instead (TakesAway). All lines are original to this add-on.
+// (Built 2026-10-27: backs off, ignores him.) Night 2026-10-29: with the mind deciding, a bully who holds his ground may
+// see the one who stepped in take the other away instead (TakesAway). NIGHT3: or he turns on the one who stepped in: a
+// shove, a word to the street, and off (TurnsOn; only a shove: trading blows with the third would mean the Director
+// recasting a fistfight already under way). All lines are original to this add-on.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +47,23 @@ namespace EnrageWestworld.Core
             return Voice.Chance(seed + "|takeaway", friendOfB ? 60 : 35);
         }
 
-        public static bool StandUp(Scene s, SceneCast c, string seed, bool backsOff, bool far = false, bool takeAway = false, bool? cKnowsB = null)
+        /// Whether the bully, holding his ground, turns on the one who stepped in instead (NIGHT3, the buffer's first item):
+        /// never on a woman; a Hothead more than half the time, the proud now and then, the cold and the greedy a quarter,
+        /// most men seldom, a coward hardly ever; drink makes it likelier, a man stepping in who looks like he means it
+        /// (Proud, Hothead) less (seeded).
+        public static bool TurnsOn(string bullyTemper, string standerTemper, bool standerWoman, bool drunk, string seed)
+        {
+            if (standerWoman)
+                return false;
+            int p = bullyTemper == "Hothead" ? 55 : bullyTemper == "Proud" ? 40 : bullyTemper == "Cold" || bullyTemper == "Greedy" ? 25 : bullyTemper == "Coward" ? 3 : 15;
+            if (drunk)
+                p += 15;
+            if (standerTemper == "Proud" || standerTemper == "Hothead")
+                p -= 10;
+            return Voice.Chance(seed + "|turnson", Math.Max(0, p));
+        }
+
+        public static bool StandUp(Scene s, SceneCast c, string seed, bool backsOff, bool far = false, bool takeAway = false, bool? cKnowsB = null, bool turnsOn = false)
         {
             int at = s.Beats.FindIndex(x => x.Act == "slam" || x.Act == "fight");
             if (at < 0)
@@ -109,6 +126,33 @@ namespace EnrageWestworld.Core
                 s.Summary = rough ? "someone stepped in and took the one picked on away" : "someone stepped in and took one of them away before it came to blows";
                 s.Cast = 3;
                 return true;
+            }
+            else if (turnsOn && !c.CWoman)
+            {
+                // he turns on the one who stepped in, who has come up to him (StandUpFor walks C over, and the Director waits
+                // on the third's walk): a look, the hard shove with his word on it (the Director's "shove" at C), the cue
+                // that it happened, a word to the street and off; B goes to C, who answers by his own temper. It never came
+                // to blows between the two
+                string part = c.BWoman ? "her" : "his";
+                string cByB = cKnowsB == true && c.Names != null && c.Names.Length > 2 && !string.IsNullOrEmpty(c.Names[2]) ? c.Names[2] : cn;   // B's friend by name
+                add.Add(new Beat(0, null, null, "faceone") { To = 2 });
+                add.Add(new Beat(0, rough ? Voice.Pick(seed + "so", "You want some too, " + cn + "? Here.", "Taking " + part + " part, are you? Then take this.", "Think you're the law, " + cn + "?")
+                                          : Voice.Pick(seed + "so", "You want in, " + cn + "? Here.", "Nobody asked you, " + cn + "!"), "angry", "shove") { To = 2 });   // the word and the shove together
+                add.Add(new Beat(0, null, null, "cb:shoved"));   // remembered once it has happened (WestworldScript.StandUp.cs)
+                add.Add(new Beat(0, Voice.Pick(seed + "sq", "Anybody else want to play the hero?", "Stay out of what don't concern you.", "That's what comes of meddling."), "storm", "walkaway"));
+                add.Add(new Beat(1, null, null, "faceone") { To = 2 });
+                add.Add(new Beat(1, rough ? Voice.Pick(seed + "sr", "Lord, " + cByB + ", are you hurt? That was meant for me.", "You all right? I'm sorry, " + cByB + ". I truly am.")
+                                          : Voice.Pick(seed + "sr", "You all right, " + cByB + "? That wasn't yours to take.", "Sorry, " + cByB + ". It got out of hand."), "mild") { To = 2 });
+                add.Add(new Beat(2, null, null, "faceone") { To = 1 });
+                string ct = c.Tempers != null && c.Tempers.Length > 2 ? c.Tempers[2] : null;
+                add.Add(new Beat(2, ct == "Hothead" || ct == "Proud" ? Voice.Pick(seed + "sv", "That's right. Keep walking.", "He'll keep. Next time I'll not be so polite.")
+                                  : ct == "Coward" ? "...I'm all right. I'm all right."
+                                  : Voice.Pick(seed + "sv", "I'll live.", "...I've had worse.", "Shoves like a mule kicks, that one."), ct == "Hothead" || ct == "Proud" ? "angry" : "mild") { To = 1 });   // by his own temper (the review)
+                s.Beats.RemoveRange(at, s.Beats.Count - at);
+                s.Beats.AddRange(add);
+                s.Kind = "argue";   // between the two it was words in the end; the shove was the third's
+                s.NoteAtCue = true;
+                s.Summary = rough ? "someone stepped in, and the bully shoved them and stormed off" : "someone broke up a fight, and got a shove for it";
             }
             else
             {

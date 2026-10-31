@@ -20,10 +20,10 @@ namespace EnrageWestworld.InGame
         {
             public Ped C, A, B;
             public string CName, AName, BName;
-            public bool Backs, Test, Rough, TookAway;
+            public bool Backs, Test, Rough, TookAway, TurnedOn;
         }
 
-        private StandUpNote _standUp;
+        private StandUpNote _standUp, _shoveNote;   // _shoveNote: he turned on the one who stepped in; noted when the shove lands ("cb:shoved")
         private int _standUps, _standUpBacked, _standUpTestTurn;
         private string _standUpLast, _standUpWhyNot;
 
@@ -107,20 +107,27 @@ namespace EnrageWestworld.InGame
             bool bullyKnown = mind && BullyFaced(people[0], a, by, crowd, place, law, now, out mindBacks, out bullyMind);
             // a test takes turns: the fight, then the backing off, and with the mind on a third, the take-away, so the one new
             // Director act can be seen on demand (the advisor, night 2026-10-29: by chance it comes in about one stand-up in five)
-            int turn = test ? _standUpTestTurn++ % (mind ? 3 : 2) : -1;
+            int turn = test ? _standUpTestTurn++ % (mind ? 4 : 3) : -1;   // (the last turn: he turns on the one who stepped in)
             bool backs = test ? turn == 1 : bullyKnown ? mindBacks : Scenes.BacksOff(a.Temper, by.Who.Temper, by.Who.Woman, seed);
             bool rough = s.Kind == "rough";
-            bool far = by.Ped.Position.DistanceTo(people[0].Position) > 3.5f;
+            // he holds his ground and may turn on the one who stepped in: a shove, a word, and off (NIGHT3; never on a woman;
+            // rolled before the take-away, so a hothead is the hothead he is: the review)
+            bool turnsOn = !backs && !by.Who.Woman && (test ? turn == (mind ? 3 : 2) : Scenes.TurnsOn(a.Temper, by.Who.Temper, by.Who.Woman, a.Drunk, seed + "|" + by.Who.Id));
+            // the one who stepped in walks up first when he's off a way, and always when the bully will turn on him (the
+            // Director waits on the third's walk; the bully, maybe leaning on the bar, never has to move: the review)
+            bool far = turnsOn || by.Ped.Position.DistanceTo(people[0].Position) > 3.5f;
             // with the mind deciding: when the bully holds his ground, the one who stepped in may take the one picked on away
             bool cFriend = TieWarmth(by.Who.Id, b) > 0;
-            bool takeAway = test ? turn == 2 : took != null && !backs && Scenes.TakesAway(cFriend, seed + "|" + by.Who.Id);
+            bool takeAway = test ? mind && turn == 2 : took != null && !backs && !turnsOn && Scenes.TakesAway(cFriend, seed + "|" + by.Who.Id);
             cast.Names[2] = Person.FirstOf(by.Who.Name);
             cast.Tempers[2] = by.Who.Temper;
             cast.CWoman = by.Who.Woman;
+            if (cast.Knows != null && cast.Knows.Length > 2)
+                cast.Knows[2] = CastKnows(people[0], people[1], by.Ped)[2];   // the one who stepped in, known to them or not (it was the crowd's flag: a friend got "mister"; the review)
             // C names B by his own knowing (any tie between them) on the mind's path only (the take-away's test turn too); the
             // old path names B as A knows him, as before
-            bool? cKnowsB = took != null || takeAway ? (bool?)_store.Ties.Any(t => t.Has(by.Who.Id) && t.Has(b.Id)) : null;
-            if (!Scenes.StandUp(s, cast, seed, backs, far, takeAway, cKnowsB))
+            bool? cKnowsB = took != null || takeAway || turnsOn ? (bool?)_store.Ties.Any(t => t.Has(by.Who.Id) && t.Has(b.Id)) : null;
+            if (!Scenes.StandUp(s, cast, seed, backs, far, takeAway, cKnowsB, turnsOn))
             {
                 cast.Names[2] = null;
                 cast.Tempers[2] = null;
@@ -133,18 +140,18 @@ namespace EnrageWestworld.InGame
             if (bullyKnown && !test)
                 _standUpBullyMind++;
             Pacing.Note(_store.Pace, "standup", _placeTown, by.Who.Id, g);
-            _standUp = new StandUpNote { C = by.Ped, A = people[0], B = people[1], CName = by.Who.Name, AName = a.Name, BName = b.Name, Backs = backs, Test = test, Rough = rough, TookAway = takeAway };
-            _standUpLast = by.Who.Name + " for " + b.Name + " against " + a.Name + ": " + (backs ? "he backed off" : takeAway ? "they took " + Person.FirstOf(b.Name) + " away" : "he went on") + (test ? " (a test)" : "");
-            Log.Write("KIND stood up: " + by.Who.Name + " steps in for " + b.Name + " against " + a.Name + " -> " + (backs ? "backs off" : takeAway ? "holds his ground, so they take " + Person.FirstOf(b.Name) + " away" : "tells them to keep out") + " (" +
+            _standUp = new StandUpNote { C = by.Ped, A = people[0], B = people[1], CName = by.Who.Name, AName = a.Name, BName = b.Name, Backs = backs, Test = test, Rough = rough, TookAway = takeAway, TurnedOn = turnsOn };
+            _standUpLast = by.Who.Name + " for " + b.Name + " against " + a.Name + ": " + (backs ? "he backed off" : takeAway ? "they took " + Person.FirstOf(b.Name) + " away" : turnsOn ? "he shoved them and stormed off" : "he went on") + (test ? " (a test)" : "");
+            Log.Write("KIND stood up: " + by.Who.Name + " steps in for " + b.Name + " against " + a.Name + " -> " + (backs ? "backs off" : takeAway ? "holds his ground, so they take " + Person.FirstOf(b.Name) + " away" : turnsOn ? "turns on them: a shove, and off" : "tells them to keep out") + " (" +
                       (TieWarmth(by.Who.Id, b) > 0 ? "a friend of " + Person.FirstOf(b.Name) : "a " + (by.Who.Temper ?? "plain") + " " + (by.Who.Woman ? "woman" : "man")) + ", " + s.Kind + ")" +
                       (took != null ? "; the mind: " + mindWhy : testPick ? "; the mind: nobody would (" + mindWhy + "), so the test's own pick" : "") +
                       (bullyKnown ? "; " + Person.FirstOf(a.Name) + "'s mind: " + bullyMind : "") +
-                      (test ? ", a test (it takes turns: the fight goes on, then he backs off" + (mind ? ", then they take him away" : "") + ")" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
+                      (test ? ", a test (it takes turns: the fight goes on, then he backs off" + (mind ? ", then they take him away" : "") + ", then he turns on them)" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
             return true;
         }
 
         private const float StandUpCrowdMetres = 15f;   // everyone this near the trouble watches it, whether or not RealNPCs could move them
-        private int _standUpByMind, _standUpNobody, _standUpBullyMind, _standUpTookAway;
+        private int _standUpByMind, _standUpNobody, _standUpBullyMind, _standUpTookAway, _standUpTurned;
         private bool _standUpMindFailed;
 
         /// Who steps in comes from their own minds: with [Mind] MindLive and [Mind] MindStandUp (roadmap 39).
@@ -263,12 +270,14 @@ namespace EnrageWestworld.InGame
             if (n == null)
                 return;
             _standUps++;
-            if (n.Backs || n.TookAway)
+            if (n.Backs || n.TookAway || n.TurnedOn)
             {
                 if (n.Backs)
                     _standUpBacked++;
-                else
+                else if (n.TookAway)
                     _standUpTookAway++;
+                else
+                    _standUpTurned++;
                 // it came to words: the two who squared up are noted now (not at the start: a walk-over that never got
                 // there leaves nothing), and sit the fight's rest out, so "this ain't over" isn't two minutes later
                 Pending p = _pendingNote;
@@ -286,21 +295,24 @@ namespace EnrageWestworld.InGame
                         _restMsOf[x.Handle] = FoughtRestMs;
                     }
             }
-            if (n.Test || (!n.Rough && !n.TookAway))
-                return;   // a test notes nothing; breaking up a brawl takes nobody's side
+            if (n.Test || (!n.Rough && !n.TookAway && !n.TurnedOn))
+                return;   // a test notes nothing; breaking up a brawl takes nobody's side (unless the shove came of it)
             // taking one of a brawl's two away does take his side (the mind's take-away only, night 2026-10-29): defend with
             // him, as in a rough, but nothing with the other, who wasn't faced down
             bool brawlSide = !n.Rough;
+            bool defended = n.Rough || n.TookAway, faced = !brawlSide && !n.TurnedOn;   // (turned on: faced when the shove lands, ShoveLanded)
+            if (n.TurnedOn)
+                _shoveNote = n;
             string cId, cName, aId, aName, bId, bName;
             bool c = LastingId(n.C, out cId, out cName), a = LastingId(n.A, out aId, out aName), b = LastingId(n.B, out bId, out bName);
             long g = Bridge.Now();
-            if (c && b)
+            if (c && b && defended)
             {
                 SceneTie t = Ties.Note(_store.Ties, cId, cName, bId, bName, _placeTown, "defend", g);
                 if (t != null)
                     Log.Write("TIE " + t.AName + " & " + t.BName + ": defend (" + (t.Warmth > 0 ? "warm" : t.Warmth < 0 ? "hostile" : "acquainted") + ", " + t.Count + " scenes between them)");
             }
-            if (c && a && !brawlSide)
+            if (c && a && faced)
             {
                 SceneTie t = Ties.Note(_store.Ties, cId, cName, aId, aName, _placeTown, "faced", g);
                 if (t != null)
@@ -310,10 +322,34 @@ namespace EnrageWestworld.InGame
             {
                 string place = _engine.NowIndoors ? _engine.NowPlace : null;
                 Minds.Party pc = PartyOf(n.C, false), pa = PartyOf(n.A, false), pb = PartyOf(n.B, false);
-                if (pc != null && pb != null)
+                if (pc != null && pb != null && defended)
                     _engine.RememberScene("defend", pc, pb, null, _placeTown, place);
-                if (pc != null && pa != null && !brawlSide)
+                if (pc != null && pa != null && faced)
                     _engine.RememberScene("faced", pc, pa, null, _placeTown, place);
+            });
+        }
+
+        /// The shove has landed (the scene's "cb:shoved"): the one who stepped in faced the bully down and was shoved for it;
+        /// noted now, not at the cue (the review: a scene stopped between them left a shove that never came). A faced tie
+        /// and memory, not a beating: one shove is no blows.
+        private void ShoveLanded()
+        {
+            StandUpNote n = _shoveNote;
+            _shoveNote = null;
+            if (n == null || n.Test)
+                return;
+            string cId, cName, aId, aName;
+            if (LastingId(n.C, out cId, out cName) && LastingId(n.A, out aId, out aName))
+            {
+                SceneTie t = Ties.Note(_store.Ties, cId, cName, aId, aName, _placeTown, "faced", Bridge.Now());
+                if (t != null)
+                    Log.Write("TIE " + t.AName + " & " + t.BName + ": faced, and shoved for it (" + (t.Warmth > 0 ? "warm" : t.Warmth < 0 ? "hostile" : "acquainted") + ", " + t.Count + " scenes between them)");
+            }
+            Safe("minds", () =>
+            {
+                Minds.Party pc = PartyOf(n.C, false), pa = PartyOf(n.A, false);
+                if (pc != null && pa != null)
+                    _engine.RememberScene("faced", pc, pa, null, _placeTown, _engine.NowIndoors ? _engine.NowPlace : null);
             });
         }
 
@@ -325,7 +361,7 @@ namespace EnrageWestworld.InGame
             string who = !_cfg.MindLive || !_cfg.MindStandUp ? "who steps in by the roll ([Mind] " + (!_cfg.MindLive ? "MindLive" : "MindStandUp") + " off)"
                        : _standUpMindFailed ? "who steps in by the roll (the mind's part FAILED this session)"
                        : "who steps in from their minds: " + _standUpByMind + " chosen so, " + _standUpNobody + " times nobody's mind moved them, the bully's own mind " + _standUpBullyMind + " times";
-            return _standUps + " stepped in this session, " + _standUpBacked + " times the bully backed off, " + _standUpTookAway + " times they took the one picked on away; " + who + (_standUpLast != null ? "; last: " + _standUpLast : "") +
+            return _standUps + " stepped in this session, " + _standUpBacked + " times the bully backed off, " + _standUpTookAway + " times they took the one picked on away, " + _standUpTurned + " times he turned on them; " + who + (_standUpLast != null ? "; last: " + _standUpLast : "") +
                    (_standUpWhyNot != null ? "; the last time nobody did: " + _standUpWhyNot : "");
         }
     }

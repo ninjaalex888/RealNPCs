@@ -790,6 +790,11 @@ namespace EnrageWestworld.InGame
                 StoodUp();   // WestworldScript.StandUp.cs
                 return;
             }
+            if (what == "shoved")
+            {
+                ShoveLanded();   // the bully's shove at the one who stepped in has landed (WestworldScript.StandUp.cs)
+                return;
+            }
             if (what == "round")
             {
                 RoundGoesAround();   // WestworldScript.Round.cs
