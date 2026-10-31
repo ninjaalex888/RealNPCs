@@ -16,7 +16,7 @@ RealNPCs works fully on its own: every thought, answer and choice has a written 
 
 - **think in their own words**, from who they are, how they feel and what's on their mind, so no two think alike;
 - **choose what they do next** from what their own mind allows: head home, pick a quarrel, call in a debt, court someone;
-- **answer you in their own words** when you Talk to them (Q);
+- **answer you in their own words** when you Talk to them (T, locked on);
 - **say some of their thoughts aloud** in their own recorded voice;
 - and with West World on, **those waking up choose their own strange acts**.
 
@@ -90,7 +90,8 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 | (none) | Everything else RealNPCs can make happen near you now is a row on the settings panel's Testing page: Space fires it, Enter sets a key for it ([Testing] in the ini; a key another test has moves over). "Bring the test cast here" brings eight people the tests need (a mother, two old men, a preacher and a listener, three men for a bully), kept in the save so the same people come each time |
 | RB + D-pad (controller) | Hold RB and press D-pad up for the settings panel, left for the F7 status, right for your letters. Set them from the controller on the panel's Hotkeys page, or in [Controller] (PlayStation names work: R1+Up). Never in the game's own menus |
 | Y | Wake the person you are facing one stage (West World), so you can see what each stage does |
-| T | The next line on the ticker now (on a long line, its next part first). T is enRAGE's telegraph key too: near a telegraph clerk, both happen |
+| T | Locked on to someone RealNPCs knows: Talk (`TalkKey`; a pad's RB). The prompt shows the game's Q glyph beside "Talk (T)": press T, Q does nothing for it. Next to a station or telegraph clerk Talk stands aside, so T is enRAGE's telegraph there |
+| T | Otherwise the next line on the ticker now (on a long line, its next part first). T is enRAGE's telegraph key too: near a telegraph clerk, both happen |
 
 Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings. Only on enRAGE 0.9.5.3 does RealNPCs open its panel there in place of enRAGE's (`ReplaceEnrageSettings = false` gives it back); on other enRAGE versions Alt+F11 opens enRAGE's own panel, and Alt+R or Alt+F is the way in. About 15 seconds after loading, a notice says which key to use.
 

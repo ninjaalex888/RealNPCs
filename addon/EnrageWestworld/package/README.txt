@@ -27,7 +27,7 @@ local AI model. With it on, the people near you:
   two think alike;
 - choose what they do next from what their own mind allows: head home, pick a quarrel, call in
   a debt, court someone;
-- answer you in their own words when you Talk to them (Q);
+- answer you in their own words when you Talk to them (T, locked on);
 - say some of their thoughts aloud in their own recorded voice;
 - and with West World on, those waking up choose their own strange acts.
 
@@ -1147,8 +1147,11 @@ Ctrl+F2   Show minds on or off for this session: the card over people near you (
           the settings panel's Testing page has the switch that's saved)
           These seven (], [, Y, Ctrl+F2 and the three Shift keys) are the Testing page's; the rest of its
           rows have no key as they come.
-T         the next line on the ticker now (on a long line, its next part first; TickerNextKey).
-          T is enRAGE's telegraph key too: near a telegraph clerk, both happen.
+T         locked on to someone RealNPCs knows: Talk (TalkKey; a pad's RB). The prompt shows the
+          game's Q glyph beside "Talk (T)": press T, Q does nothing for it. Next to a station or
+          telegraph clerk Talk stands aside, so T is enRAGE's telegraph there.
+T         otherwise, the next line on the ticker now (on a long line, its next part first;
+          TickerNextKey). T is enRAGE's telegraph key too: near a telegraph clerk, both happen.
 None of the others are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's
 console (F8) or Faster Looting (F9, F10). If the game or another mod already uses one, change it
 in the ini or the panel (e.g. ReaderKey = Ctrl+N).

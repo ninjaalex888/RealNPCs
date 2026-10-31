@@ -1,7 +1,10 @@
 // The interaction menu, the game side (NIGHT3 item 4; Core/Interact.cs holds the choosing and the words). Locked on to an
-// adult RealNPCs knows (a resident, one of enRAGE's townsfolk or records), the game's lock-on menu also offers "Talk" on Q
-// (a pad's RB: INPUT_INTERACT_LOCKON_TARGET_INFO, free in the people's lock-on menu; the clerk's Reset prompt uses it
-// only in a station clerk's list, and Talk stands aside there). Pressing it opens a short list above the ticker: up and
+// adult RealNPCs knows (a resident, one of enRAGE's townsfolk or records), the game's lock-on menu also offers "Talk" on T
+// ([World] TalkKey, since 2026-10-31; Q before). No game control has T as its keyboard key (femga's Controls list goes from
+// Space to Tab to U), so the key is read by RealNPCs itself (KeyDown04) while the prompt is up; the prompt stays on
+// INPUT_INTERACT_LOCKON_TARGET_INFO so a pad's RB and its glyph still work, reads "Talk (T)" on the keyboard and its Q
+// press does nothing there. The clerk's Reset prompt uses that control only in a station clerk's list, and Talk stands
+// aside there, and on the keyboard next to any station or telegraph clerk (T is enRAGE's telegraph key). Pressing it opens a short list above the ticker: up and
 // down (or the D-pad, or the mouse wheel) to choose, Space or Enter (A) to say it, Backspace (B) to leave; the keyboard's keys while the
 // keyboard is in use, the pad's buttons while a pad is. Arthur's words show as a subtitle, then their answer in their
 // own voice with its subtitle (afraid or hostile when they are), and what it is (a round, charity, a warning) is written
@@ -49,7 +52,7 @@ namespace EnrageWestworld.InGame
             public string Foot;        // the hint under the list: which key says it and which leaves
         }
 
-        private const uint TalkControl = 0x31219490;   // INPUT_INTERACT_LOCKON_TARGET_INFO: Q, or a pad's RB (as the clerk's Reset prompt)
+        private const uint TalkControl = 0x31219490;   // INPUT_INTERACT_LOCKON_TARGET_INFO: a pad's RB (Q on the keyboard, which Talk ignores: T is read itself)
         private const uint MenuUp = 1662638961u, MenuDown = 97156178u, MenuAccept = 3350541322u, MenuCancel = 359624985u;   // the settings panel's pad buttons
         private const uint InputJump = 0xD9D0E1C0;   // INPUT_JUMP: Space says the chosen line, so Arthur doesn't jump with it
         // the mouse wheel, as the settings panel reads it: the cursor's scroll, then the weapon and menu-scroll controls it is during play
@@ -65,9 +68,12 @@ namespace EnrageWestworld.InGame
             return false;
         }
         private const float MenuReach = 4f;
-        private static IntPtr _talkWord;
+        private static IntPtr _talkWord, _talkWordKey;
+        private static string _talkWordKeyFor;
         private TalkMenu _menu;
         private int _talkPrompt, _talkPromptFor, _talkPromptGroup, _talkOpened, _talkSaid, _talkSettled;
+        private bool _talkPromptKeyboard;   // the prompt as made: "Talk (T)" for the keyboard, "Talk" for a pad
+        private bool _talkKeyRequested, _talkKeyNoted;   // TalkKey pressed while the prompt was up (KeyDown04); the start's log line said
         private readonly HashSet<string> _talkConfided = new HashSet<string>();   // who has told him their worry this session (a money worry he knows of: the gift is five dollars)
         private readonly bool[] _talkKeys = new bool[13];
         private string _talkLast;
@@ -80,9 +86,42 @@ namespace EnrageWestworld.InGame
         {
             if (_aTalkPrompt == null)
                 _aTalkPrompt = TalkPromptTick;
+            if (_cfg.InteractionMenu && !_talkKeyNoted)
+            {
+                _talkKeyNoted = true;
+                Log.Write("TALK key: " + TalkKeyName() + " read directly (no game control defaults to T); prompt shown on INPUT_INTERACT_LOCKON_TARGET_INFO (pad RB)");
+            }
             if (_cfg.InteractionMenu || _talkPrompt != 0 || _menu != null)
                 Safe("talk menu", _aTalkPrompt);
+            _talkKeyRequested = false;   // a press is for this frame's prompt only
         }
+
+        /// TalkKey as the prompt names it ("T"), or null with none set.
+        private string TalkKeyName()
+        {
+            string k = _cfg != null ? (_cfg.TalkKey ?? "").Trim() : "";
+            return k.Length == 0 || k.Equals("None", StringComparison.OrdinalIgnoreCase) ? null : k;
+        }
+
+        /// A station or telegraph clerk within 3.5 m of Arthur: enRAGE's telegraph opens on T there, so Talk's T stands aside.
+        private bool TelegraphClerkNear(Ped me)
+        {
+            if (_now - _clerkNearAt >= 0 && _now - _clerkNearAt < 750)
+                return _clerkNear;   // looked a moment ago: the pool isn't walked every frame
+            _clerkNearAt = _now;
+            _clerkNear = false;
+            Vector3 at = me.Position;
+            foreach (Ped p in World.GetAllPeds())
+                if (p != null && p.Handle != me.Handle && p.Exists() && !p.IsDead && p.Position.DistanceTo(at) < 3.5f && StationClerk(p))
+                {
+                    _clerkNear = true;
+                    break;
+                }
+            return _clerkNear;
+        }
+        private int _clerkNearAt = -100000;
+        private bool _clerkNear;
+        private int _clerkNotedFor;
 
         private unsafe void TalkPromptTick()
         {
@@ -112,20 +151,43 @@ namespace EnrageWestworld.InGame
                 TalkPromptEnd();
                 return;
             }
+            bool keyboard = PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
+            string key = TalkKeyName();
+            if (keyboard && (key == null || TelegraphClerkNear(me)))
+            {
+                // on the keyboard Talk is its key alone: none set, or a clerk beside him whose T is enRAGE's telegraph
+                if (key != null && _clerkNotedFor != target)
+                {
+                    _clerkNotedFor = target;
+                    Log.Write("TALK stands aside: a station or telegraph clerk is within 3.5 m (" + key + " is enRAGE's telegraph there)");
+                }
+                TalkPromptEnd();
+                return;
+            }
             int group = HUD._UI_PROMPT_GET_GROUP_ID_FOR_TARGET_ENTITY(target);
-            if (_talkPrompt == 0 || !HUD._UI_PROMPT_IS_VALID(_talkPrompt) || _talkPromptFor != target || _talkPromptGroup != group)
+            if (_talkPrompt == 0 || !HUD._UI_PROMPT_IS_VALID(_talkPrompt) || _talkPromptFor != target || _talkPromptGroup != group || _talkPromptKeyboard != keyboard)
             {
                 TalkPromptEnd();
-                _talkPrompt = NewTalkPrompt(group);
+                _talkPrompt = NewTalkPrompt(group, keyboard ? key : null);   // made again when the keyboard or a pad takes over: its words differ
                 _talkPromptFor = target;
                 _talkPromptGroup = group;
+                _talkPromptKeyboard = keyboard;
             }
-            if (HUD._UI_PROMPT_HAS_STANDARD_MODE_COMPLETED(_talkPrompt, 0))
+            bool completed = HUD._UI_PROMPT_HAS_STANDARD_MODE_COMPLETED(_talkPrompt, 0);
+            if (keyboard && completed)
+            {
+                // the control's Q on the keyboard: not Talk's key now, so the prompt is made afresh and nothing opens
+                TalkPromptEnd();
+                return;
+            }
+            bool byKey = keyboard && _talkKeyRequested;
+            _talkKeyRequested = false;
+            if (completed || byKey)
             {
                 TalkPromptEnd();
                 _talkWhyFor = 0;
                 if (TalkWhyNot(target, me, MenuReach) == null)   // asked afresh: the cached answer may be a quarter second old
-                    TalkOpen(new Ped(target), "the Talk prompt", MenuReach);
+                    TalkOpen(new Ped(target), byKey ? key : "the Talk prompt", MenuReach);
             }
         }
 
@@ -155,15 +217,22 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
-        private static int NewTalkPrompt(int group)
+        /// The Talk prompt in this target's group; `key` names the keyboard key in its words ("Talk (T)"), null for a pad's "Talk".
+        private static int NewTalkPrompt(int group, string key)
         {
             if (_literalTag == IntPtr.Zero)
                 _literalTag = Kept("LITERAL_STRING");
             if (_talkWord == IntPtr.Zero)
                 _talkWord = Kept("Talk");
+            if (key != null && (_talkWordKey == IntPtr.Zero || _talkWordKeyFor != key))
+            {
+                _talkWordKey = Kept("Talk (" + key + ")");   // kept for the session, like the rest (a key changed in the ini makes one more)
+                _talkWordKeyFor = key;
+            }
+            IntPtr text = key != null ? _talkWordKey : _talkWord;
             int prompt = HUD._UI_PROMPT_REGISTER_BEGIN();
             HUD._UI_PROMPT_SET_CONTROL_ACTION(prompt, TalkControl);
-            ulong word = Function.Call<ulong>(VarText, 10, new InputArgument((ulong)_literalTag.ToInt64()), new InputArgument((ulong)_talkWord.ToInt64()));
+            ulong word = Function.Call<ulong>(VarText, 10, new InputArgument((ulong)_literalTag.ToInt64()), new InputArgument((ulong)text.ToInt64()));
             Function.Call(SetPromptText, prompt, new InputArgument(word));
             HUD._UI_PROMPT_SET_STANDARD_MODE(prompt, true);
             HUD._UI_PROMPT_SET_GROUP(prompt, group, 0);
@@ -710,7 +779,7 @@ namespace EnrageWestworld.InGame
 
         private string TalkStatus()
         {
-            return (_cfg.InteractionMenu ? "on (Talk on Q, a pad's RB, in the lock-on menu)" : "off ([World] InteractionMenu)") + "; opened " + _talkOpened + " times, " + _talkSaid + " things said" +
+            return (_cfg.InteractionMenu ? "on (Talk on " + (TalkKeyName() ?? "no key") + ", read directly, or a pad's RB, in the lock-on menu)" : "off ([World] InteractionMenu)") + "; opened " + _talkOpened + " times, " + _talkSaid + " things said" +
                    (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_talkSettled > 0 ? ", " + _talkSettled + " worries mended" : "") +
                    (_talkModelAsked > 0 ? "; the model worded " + _talkModelSaid + " of " + _talkModelAsked + " answers (" + _talkModelHeld + " held by the checks, " + _talkModelLate + " late)" : "") + (_menu != null ? "; open on " + _menu.Name : "");
         }

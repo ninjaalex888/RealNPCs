@@ -43,6 +43,7 @@ namespace EnrageWestworld.InGame
         private bool _readerRequested;
         private KeySpec _tickerNextKey;
         private bool _tickerNextRequested;
+        private KeySpec _talkHotkey;   // [World] TalkKey: Talk while its prompt is up (WestworldScript.Menu.cs)
         private string _iniPath;
         private DateTime _iniStamp;
         private int _nextNear, _nextIni, _nextUi, _controlOffAt = -1;
@@ -244,6 +245,7 @@ namespace EnrageWestworld.InGame
             _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);
             _settingsKey2 = KeySpec.Parse(_cfg.SettingsKey2, Keys.None);   // None (or nothing): no second key
             _tickerNextKey = KeySpec.Parse(_cfg.TickerNextKey, Keys.T);
+            _talkHotkey = KeySpec.Parse(_cfg.TalkKey, Keys.T);
             Speech.ShoutsCarry = _cfg.ShoutsCarry;
             Observed.BoldThiefChance = _cfg.BoldThieves;   // a thief who tries it with the law looking on ([Scenes] BoldThieves)
             ApplyTunedNumbers();
@@ -323,7 +325,7 @@ namespace EnrageWestworld.InGame
         /// press counts once the key has been let go (T tapped through a long ticker line).
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
-            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || IsTestingKey(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e)))
+            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || IsTestingKey(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e) || _talkHotkey.Matches(e)))
                 return false;
             int t = Environment.TickCount;
             bool repeat = e.KeyCode == _lastHotkey && !_hotkeyLetGo && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
@@ -373,6 +375,13 @@ namespace EnrageWestworld.InGame
             // for its fire, which the tick does (WestworldScript.Testing.cs)
             if (TestKeyHit(e))
                 return true;
+            // Talk's key (T) while its prompt is up for someone locked on to: the press is Talk's, not the ticker's; with no
+            // prompt up it falls through, so T still turns the ticker (both are T as they come)
+            if (_talkHotkey.Matches(e) && _cfg.InteractionMenu && _talkPrompt != 0 && _menu == null)
+            {
+                _talkKeyRequested = true;
+                return true;
+            }
             if (_tickerNextKey.Matches(e) && _cfg.Ticker)
             {
                 _tickerNextRequested = true;

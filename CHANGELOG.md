@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Talk is T (settings version 164)
+- Talk in the lock-on menu of someone RealNPCs knows is on T now (Lex: Q to T). `[World] TalkKey` (new, `T`) sets it. It sits on the settings panel's Hotkeys page and shares T with `TickerNextKey` on purpose, so setting one never takes the key from the other.
+- No game control has T as its keyboard key (the Controls list in femga's rdr3_discoveries goes from Space to Tab to U), so RealNPCs reads T itself while the Talk prompt is up. The prompt stays on `INPUT_INTERACT_LOCKON_TARGET_INFO`, so a pad's RB and its glyph work as before. On the keyboard it reads "Talk (T)" beside the game's own Q glyph (a script can't change the glyph), and Q does nothing for Talk. The prompt is made again when you change between keyboard and pad.
+- With a Talk prompt up, T opens Talk and the ticker doesn't move on. With none up, T is the ticker's key as before.
+- Next to a station or telegraph clerk (within 3.5 m), Talk stands aside on the keyboard, because T is enRAGE's telegraph key there. A pad's RB still works there. Log `TALK stands aside: a station or telegraph clerk is within 3.5 m`.
+- Log `TALK key: T read directly (no game control defaults to T); prompt shown on INPUT_INTERACT_LOCKON_TARGET_INFO (pad RB)` once at the start, and `TALK menu opened on ... (T)` when the key opens it. F7's Talk line names the key.
+
 ### The lawman walks with the body
 - The lawman who lifts a body now carries it somewhere he can get to: a walkable spot about `[Mind] PickMetres` less 3 m from you (12 m at least; 22 m with 25), on the far side of the body from you, not inside, near the body's level, one by a wall first. A body already lying that far out is carried 6 to 10 m further. Before, the spot was a random bearing he often couldn't reach, so he picked the body up, stood still with it and dropped it. Up to four spots are found, again from where you stand once he has hold of it. If he stands still on one (after 2.5 s: under 0.2 m/s and less than a metre gained), he tries the next; after two have failed he walks straight when the line is clear. Only when every spot fails does he set the body down where he stands, logged `no reachable spot` with how far he got. Every check logs his speed and the metres gained. The old `he stopped carrying it ... sent again` (he was still carrying it) now reads `he stands still with it, N m off (...); trying spot 2 of 4`. The game's safe spot is never inside a building now, for every feature that asks for one.
 

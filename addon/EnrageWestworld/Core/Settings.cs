@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 163;
+        public const int CurrentVersion = 164;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -35,7 +35,8 @@ namespace EnrageWestworld.Core
         // [Romance]
         public bool Romance = true;
         public bool FlirtPrompt = true;
-        public bool InteractionMenu = true;   // Talk (Q) in the lock-on menu opens a short list: the news, your name, their worry asked after, a drink, money, a debt to settle, an apology, a warning (settings version 148; NIGHT3 item 4)
+        public string TalkKey = "T";   // Talk while locked on to someone you know: read from the keyboard itself, since no game control has T (settings version 164; Q before)
+        public bool InteractionMenu = true;   // Talk (T; a pad's RB) in the lock-on menu opens a short list: the news, your name, their worry asked after, a drink, money, a debt to settle, an apology, a warning (settings version 148; NIGHT3 item 4)
         public bool LawClearsBodies = true;   // a lawman carries a body off the town street (roadmap 33; settings version 150; NIGHT3 item 6)
         public bool PersonalSpace = true;   // someone he stands right up against for a couple of seconds minds it: steps back, asks for room, or stands their ground (NIGHT3; settings version 154; plays through SightReactions)
         public bool ArthurSpeaks = true;   // Arthur says a recorded line of his own when someone comes at him or he catches the pickpocket (roadmap 34; settings version 151; NIGHT3 item 7)
@@ -1068,7 +1069,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("CastRelatives = " + B(CastRelatives) + "   ; in their town, folk on the street turn out to be someone's relative");
             b.AppendLine("CastRelativesSpawn = " + B(CastRelativesSpawn) + "   ; when nobody free is on the street (a well-played town: enRAGE has named most walkers by their looks, and the test cast carry names), the relative is made out of sight behind you and let go to the game once they have spoken; false: the walk-up waits for a free passer-by");
             b.AppendLine("OwnLooks = " + B(OwnLooks) + "   ; (in testing) without enRAGE: someone you met is known again by how they look (the same clothes on the same build), so the townsman you spoke to yesterday is the same man today, not a stranger with his face; with enRAGE running, its own knowing by look is used instead; false: a new stranger each time a body is met again");
-            b.AppendLine("InteractionMenu = " + B(InteractionMenu) + "   ; Talk (Q, a pad's RB) in the lock-on menu of someone RealNPCs knows: a short list to ask the news, tell them your name, ask after a worry they've told you of, stand a drink in a saloon, give money, pay toward a trouble they've told you of (their debt, the doctor for a fever at home, a proper dentist, the fare they're saving), say you're sorry for a wrong of yours lately, or warn them; they answer in their own voice and by how they feel about you, and the mind remembers it (gratitude, fear, how they greet you after)");
+            b.AppendLine("InteractionMenu = " + B(InteractionMenu) + "   ; Talk (TalkKey, T; a pad's RB) in the lock-on menu of someone RealNPCs knows: a short list to ask the news, tell them your name, ask after a worry they've told you of, stand a drink in a saloon, give money, pay toward a trouble they've told you of (their debt, the doctor for a fever at home, a proper dentist, the fare they're saving), say you're sorry for a wrong of yours lately, or warn them; they answer in their own voice and by how they feel about you, and the mind remembers it (gratitude, fear, how they greet you after)");
+            b.AppendLine("TalkKey = " + TalkKey + "   ; with InteractionMenu: locked on to someone you know, this key opens Talk (T; it was Q). No game control has T, so RealNPCs reads the key itself: the prompt reads \"Talk (T)\" beside the game's Q glyph, and Q does nothing for it. Whenever no Talk prompt is up, T is the ticker's key as before. Next to a station or telegraph clerk Talk stands aside on the keyboard (T is enRAGE's telegraph key there). A pad's RB opens Talk as before");
             b.AppendLine("LawClearsBodies = " + B(LawClearsBodies) + "   ; a body left lying in a town street for a while: the nearest lawman on foot carries it off the street, sets it down out of the way and goes back to his rounds (never while there's a fight or a pursuit, never the story's own)");
             b.AppendLine("PersonalSpace = " + B(PersonalSpace) + "   ; stand right up against someone (under a metre, closer in a saloon) for a couple of seconds and they mind it as their nature says: a step back and a word, a look, or, from the hot-tempered, a word to back off; never the law, anyone sitting or at the bar, or anyone busy (needs [Scenes] SightReactions)");
             b.AppendLine("SpaceMetres = " + F(SpaceMetres) + "   ; with PersonalSpace on: standing nearer than this to someone, in metres, is too close (0.5-2)");
