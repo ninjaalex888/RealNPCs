@@ -21,7 +21,7 @@ namespace EnrageWestworld.InGame
     {
         private const int BufferSize = 2048, LogGapMs = 60000;
 
-        [DllImport("ScriptHookRDR2.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "worldGetAllPeds")]
+        [DllImport("ScriptHookRDR2.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "?worldGetAllPeds@@YAHPEAHH@Z")]   // the C++ name ScriptHookRDR2.dll exports (int __cdecl worldGetAllPeds(int*, int)); the plain name isn't exported
         private static extern int worldGetAllPeds([In, Out] int[] arr, int arrSize);
 
         private static readonly int[] Buffer = new int[BufferSize];
