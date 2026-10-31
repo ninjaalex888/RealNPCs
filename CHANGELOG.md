@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+### Aimed at, let go to the game
+- From Lex in Saint Denis: the first few townsfolk he aimed at didn't react ("stuck from previous scenes possibly"). Later a woman put her hands up and begged, the game's own answer.
+- Every frame, whoever Arthur free-aims at, or locks on to with a gun in his hand, is looked at once per person (again after a minute). Whatever of RealNPCs' still holds them ends at once, so the game's own reaction takes over. The unarmed lock-on that Talk and Flirt use never counts.
+- What is ended:
+  - A street scene they're cast in (stopped: "someone in it was aimed at"), or their place in its fight (dropped from the sides).
+  - The fight's ring, or their walk over to join.
+  - A waking act or hold.
+  - A mind's act.
+  - An onlooker's act.
+  - The Talk menu.
+  - A conversation in real voices.
+  - Bravery's PCF 44, put back as the game had it for 20 s.
+- Walk-ups to Arthur, a rescue's thanks and a wedding are named in the log. A man knocked out in a brawl is left down. RealNPCs' own encounter cast (made or borrowed) is only logged ("left to it").
+- As a safety net, an ambient person's events are always unblocked. One of enRAGE's people is unblocked only when a hold of ours had them. Another script's people are never touched. Never during enRAGE's questioning, or for a man it can question at gunpoint: log `AIM: <name> left to enRAGE's questioning`.
+- Log `AIM: <name> was held by <what, what>; let go to the game (events unblocked)`, or `AIM: <name>: nothing of ours held them`, so a stuck case shows either way. F7 `TEST aim:` counts them.
+- For 10 s after he aims at someone, nothing of ours starts on them: the mind's acts, the fight ring, or a conversation in real voices. A RealVoice talk began on a man at gunpoint at 15:46:03.
+
 ### Brawls reach further, gather a crowd, last longer (settings version 164)
 - From Lex's Saint Denis brawl (15:35): it grew to six with nine more getting up to join from both sides, but it was over about 15 s after the first blow. The lawman 41 m off found it over, and two men were knocked out by the game's own blows after it ended, before any roll.
 - `[Mind] BrawlJoinMetres` (new, 30; 10-60): onlookers within this many metres may join (18 fixed before). The pool is scanned 12 m beyond it. The brawl that comes at you (`BrawlPullsYouIn`) keeps its 18 m: it's the people beside you, not the street.

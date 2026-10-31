@@ -178,6 +178,40 @@ namespace EnrageWestworld.InGame
             return all;
         }
 
+        /// Arthur aims at this one (WestworldScript.AimLetGo.cs): let go of him at once, so the game's own answer to a gun
+        /// takes over. One of a scene's cast ends that scene; one in the fight who isn't of the cast (a joiner, or a joiner
+        /// leading a side) is dropped from it and his events let go. What held him ("a street scene (kind)"), or null.
+        public string LetGo(int h)
+        {
+            if (h == 0)
+                return null;
+            foreach (Live l in _live != null ? new[] { _live }.Concat(_side).ToArray() : _side.ToArray())
+            {
+                foreach (Ped p in l.Cast)
+                    if (p != null && p.Handle == h)
+                    {
+                        string kind = l.Scene.Kind;
+                        Stop(l, "someone in it was aimed at");
+                        return "a Director scene (" + kind + ")";
+                    }
+                if (l.Fighting && SideOf(l, h) >= 0 && !l.Out.Contains(h))
+                {
+                    string kind = l.Scene.Kind;
+                    if (l.FightOn)
+                        DropFromFight(l, h);
+                    else
+                        l.Joiners.RemoveAll(j => j[0] == h);
+                    if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h))
+                    {
+                        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+                        TASK.CLEAR_PED_TASKS(h, true, false);
+                    }
+                    return "a Director scene (" + kind + ", in the fight)";
+                }
+            }
+            return null;
+        }
+
         public bool Involves(int handle)
         {
             if (handle == 0)

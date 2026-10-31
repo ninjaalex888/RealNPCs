@@ -316,6 +316,8 @@ namespace EnrageWestworld.InGame
             int h = p.Handle;
             if (!Natives.Bystander(p, me.Handle, IsRecord(h)))
                 return Natives.OtherScripts(h) ? "a mission or mod character" : Natives.IsLaw(p) ? "the law" : PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) ? "fighting or fleeing" : "not a bystander";
+            if (AimedLately(h, Game.GameTime))
+                return "aimed at just now";
             if (Spawner.IsOurs(h))
                 return "one of RealNPCs' own";
             if (Natives.StoryModel(p))

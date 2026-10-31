@@ -1171,6 +1171,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST joining fights: " + JoinStatus());
 			Log.Write("TEST brawl: " + BrawlStatus());
 			Log.Write("TEST bravery: " + BraveryStatus());
+			Log.Write("TEST aim: " + Guarded(AimStatus));
 			Log.Write("TEST minds acting: " + MindActsStatus());
 			Log.Write("TEST after fights: " + AftermathStatus());
 			Log.Write("TEST gangs: " + GangStatus());

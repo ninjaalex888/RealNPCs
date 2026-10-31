@@ -78,10 +78,15 @@ namespace EnrageWestworld.InGame
                     continue;   // the distance first
                 int h = p.Handle;
                 if (h == me.Handle || _ring.Contains(h) || p.IsDead || !PED.IS_PED_HUMAN(h) || Natives.IsLaw(p) || PED.IS_PED_IN_COMBAT(h, 0) ||
-                    PED.IS_PED_FLEEING(h) || _director.Involves(h) || JoinIsPending(h) || MindActWhyNot(p, h) != null)
+                    PED.IS_PED_FLEEING(h) || _director.Involves(h) || JoinIsPending(h))
                     continue;
-                if (PED.IS_PED_USING_ANY_SCENARIO(h) && !brawl)
+                bool sat = PED.IS_PED_USING_ANY_SCENARIO(h);
+                if (sat && !brawl)
                     continue;   // round two men the sat and the leaning stay put; a brawl gets them up
+                // the mind's own acts' rules, less "sat" for those a brawl gets up
+                string why = sat ? (NotFree(h) || Spawner.IsOurs(h) || Natives.StoryModel(p) || !IsGrownUp(p) || AimedLately(h, now) ? "busy" : MayDirectWhyNot(p)) : MindActWhyNot(p, h);
+                if (why != null)
+                    continue;
                 Traits t = TraitsAt(p, now);
                 if (t == null || t.Z[Traits.Anxiety] > 0.4f)
                     continue;   // the mind's: nobody it doesn't know, and the fearful keep away

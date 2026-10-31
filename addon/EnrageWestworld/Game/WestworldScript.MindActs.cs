@@ -165,6 +165,8 @@ namespace EnrageWestworld.InGame
         {
             if (!p.Exists() || p.IsDead)
                 return "gone";
+            if (AimedLately(h, Game.GameTime))
+                return "aimed at just now";   // left to the game's own answer to a gun (WestworldScript.AimLetGo.cs)
             if (Natives.StoryModel(p) || !IsGrownUp(p) || Natives.IsLaw(p))
                 return "the story's, a child or the law";
             if (PED.IS_PED_USING_ANY_SCENARIO(h))
