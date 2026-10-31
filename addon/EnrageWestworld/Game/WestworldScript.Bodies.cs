@@ -338,7 +338,6 @@ namespace EnrageWestworld.InGame
                         }
                         Log.Detail("LAW clears: the place order ended after " + (now - c.StageAt) / 1000 + " s, " + (int)d + " m from the spot, still carrying (" +
                                    CarryWords(c.Law, c.Body) + "); he walks the rest by the nav mesh");
-                        TASK.CLEAR_PED_TASKS(c.Law, true, false);   // (the undertaker's sequence replaces the order; a clear first, as at the lift)
                         LawCarryWalk(c.Law, c.Goal);
                         c.Stage = BcNavWalk;
                         c.StageAt = now;
@@ -359,16 +358,16 @@ namespace EnrageWestworld.InGame
                             BodyWatch(c, d, c.Goal, 1f, "carrying it", now);
                         break;
                     }
-                case BcSetDown:   // the undertaker's state 5: done when the carry ends (func_14 false)
-                    if (!CarrySettled(c.Law, c.Body))
+                case BcSetDown:   // the undertaker's state 5 (func_14 false), here once the body is out of his hands: the carry state leaves 5/7 as he bends
+                    if (!his)
                     {
                         float off = bodyAt.DistanceTo(c.Goal);
                         BodyClearEnd(c, (off < 4f ? "set down off the street" : "set down short of the spot (" + (int)off + " m)") + " (" + CarryWords(c.Law, c.Body) + ")", true);
                     }
-                    else if (now - c.StageAt > 6000)
+                    else if (now - c.StageAt > 10000)
                     {
                         TASK.CLEAR_PED_TASKS(c.Law, true, false);   // never left holding it
-                        BodyClearEnd(c, "dropped where he stood: the set-down didn't finish in 6 s (" + (int)bodyAt.DistanceTo(c.Goal) + " m from the spot; " + CarryWords(c.Law, c.Body) + ")",
+                        BodyClearEnd(c, "dropped where he stood: the set-down didn't finish in 10 s (" + (int)bodyAt.DistanceTo(c.Goal) + " m from the spot; " + CarryWords(c.Law, c.Body) + ")",
                                      bodyAt.DistanceTo(c.Goal) < 4f);
                     }
                     break;
