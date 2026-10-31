@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Why a scene starts, as a thought (the game developer's "legible reasons")
+
+- When a street scene starts for a reason between two people, the one whose reason it is thinks why over their head as they go over, so you can follow what led to it: "That money. Hiram hears about it now.", "Ruth lost someone. Somebody ought to say a word.", "Got to tell Abe. Can't keep it in." Only when you can see them; a scene the model chose has the model's own thought instead. `[Scenes] ReasonThoughts` (on; settings version 155).
+- Fixed: when the model chose for someone near, a condolence was offered to the grieving one ("goes to offer Ruth sympathy", with Ruth the friend) and keeping clear to the one who did the wrong; both now go to the one whose choice it is.
+
 ### Personal space (the psychologist's list)
 
 - Stand right up against someone (under a metre, a little closer in a saloon) for a couple of seconds, both of you still, and they mind it as their nature and their feeling for you say: the plain ask for a little room and step back ("You mind? You're right on top of me."), the timid and anyone afraid of you step back with a glance, the proud tell you to mind yourself and step aside, the hot-tempered and anyone against you stand their ground and tell you to back off, the cold only look, a friend makes light of it. Spoken lines come with a subtitle and a recorded voice; the thought shows over them. Never the law, anyone sitting or at the bar, anyone busy, or while you ride, aim or fight; once a person in five minutes. `[World] PersonalSpace` (on, with `[Scenes] SightReactions`; settings version 154). Testing row "Someone minds you standing so close"; F7 `TEST personal space:`; log `SPACE`.

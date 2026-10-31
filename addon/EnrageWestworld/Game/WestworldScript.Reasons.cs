@@ -342,8 +342,25 @@ namespace EnrageWestworld.InGame
             if (s.Ladder == null || s.Cast == 2)   // (the ladder found no friend of its own: a stranger may still step in, the review)
                 StandUpFor(s, cast2, cast, seed, now, false, out stood);   // someone may step in before the blow (WestworldScript.StandUp.cs); the ladder has its own friend
             AddBystander(s, cast2, cast, seed, now);
-            StartScene(s, cast2, cast, seed, now);
+            if (StartScene(s, cast2, cast, seed, now) && by == null)
+                ReasonThought(pr, me, seed);   // why, over the one whose reason it is (a mind's own pick has the model's thought)
             return true;
+        }
+
+        /// The reason, shown: the one whose reason it is thinks why as they go over, when he can see them.
+        private void ReasonThought(PairReason pr, Ped me, string seed)
+        {
+            if (!_cfg.ReasonThoughts)
+                return;
+            Candidate first = pr.Why.BFirst ? pr.B : pr.A, second = pr.Why.BFirst ? pr.A : pr.B;
+            Candidate chooser = Reasons.ChosenBySecond(pr.Why.Kind) ? second : first, other = chooser == first ? second : first;
+            if (chooser.Ped == null || !chooser.Ped.Exists() || chooser.Ped.Position.DistanceTo(me.Position) > 25f || !NodInView(me, chooser.Ped))
+                return;
+            string thought = Reasons.Thought(pr.Why, other.Who != null ? Person.FirstOf(other.Who.Name) : null, seed + "|why");
+            if (thought == null)
+                return;
+            _ticker.Push(chooser.Who.Name + ", thinking", thought, "near", chooser.Ped.Handle);
+            Log.Detail("REASON thought, " + chooser.Who.Name + ": " + thought);
         }
 
         /// The scene for a kind between first and second (the one who does it first): the trouble kinds, a courtship, an

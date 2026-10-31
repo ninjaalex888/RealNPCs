@@ -1,12 +1,21 @@
 // A reason between two people, as something one of them might choose to do (NIGHT3 item 1; Lex, 2026-10-31: "NPCs can
 // start acting upon their inner thoughts with our current NPC interactions"). The model is asked what someone near does;
 // the reasons the street already has for them and another (Reasons.Between: a quarrel to pick up, a friend to comfort, a
-// debt to call in, someone to court) join the list in the words of the one who would start it. Only the one who starts a
-// scene (the reason's first) is offered it: the other's part is to answer. Plain C#, no game.
+// debt to call in, someone to court) join the list in the words of the one who would start it. Only the one whose reason
+// it is (ChosenBySecond: the reason's first, except a condolence and keeping clear) is offered it: the other's part is to
+// answer. Plain C#, no game.
 namespace EnrageWestworld.Core
 {
     public static partial class Reasons
     {
+        /// Whether the one whose choice it is plays second in the scene: a condolence (the scene's first is the grieving
+        /// one; the friend goes to them) and keeping clear (the first is the one who did the wrong; the other keeps clear
+        /// of him). Every other reason is the first's to choose.
+        public static bool ChosenBySecond(string kind)
+        {
+            return kind == "condole" || kind == "avoid";
+        }
+
         /// What the one who starts this reason's scene would be doing, in their words (lowercase, for the model's list);
         /// `other`: the other's first name. Null for a reason that isn't anyone's choice to make.
         public static string ActWords(Reason r, string other)

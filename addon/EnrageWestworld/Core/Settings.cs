@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 154;
+        public const int CurrentVersion = 155;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -231,6 +231,7 @@ namespace EnrageWestworld.Core
         public bool Kindnesses = true;
         public bool Vices = true;
         public bool Grudges = true;
+        public bool ReasonThoughts = true;   // [Scenes] when a street scene starts for a reason between two people, the one whose reason it is thinks why as they go over (settings version 155; NIGHT3)
         public bool LateThanks = true;   // [Scenes] someone Arthur stood a drink, gave money or whose debt he settled comes over hours or days later and thanks him for it; the proud repay a debt (settings version 153; NIGHT3)
         public bool DoctorsPatient = true;   // [Scenes] someone goes to the doctor for what ails them, tells him, hears his word, and walks home (night 2026-10-28, item 14; widened 2026-10-29; settings version 90)
         public float ErrandPace = 2.0f;   // [Scenes] how fast people walk on errands for RealNPCs: 1 a walk, 2 brisk (was about 1-1.4), 3 a run (Lex, 2026-10-29)
@@ -938,6 +939,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("EnragePeopleJoinIn = " + B(EnragePeopleJoinIn) + "   ; enRAGE's own people (its nemeses, gang men and named folk) take part in street scenes, reactions, talk and waking acts like anyone else, unless enRAGE has them busy (a fight, a job, a ride)");
             b.AppendLine("Reactions = " + B(Reactions) + "   ; street scenes: the one spoken to reacts to the words by their nature (bristles, flinches, shakes their head, nods), and a man whose face goes into the bar reels");
             b.AppendLine("Grudges = " + B(Grudges) + "   ; grudges that travel: a friend of someone wronged has it out with the one who did it; and someone whose friend you killed may come up and say so to your face (never violent)");
+            b.AppendLine("ReasonThoughts = " + B(ReasonThoughts) + "   ; when a street scene starts for a reason between two people (a quarrel over money, a friend to comfort, good news to tell), the one whose reason it is thinks why over their head as they go over, so you can follow what led to it");
             b.AppendLine("LateThanks = " + B(LateThanks) + "   ; people you were good to through the Talk menu (a drink, money, a debt paid) may seek you out when they next see you, six game hours to a week on, and say what it meant to them; the proud pay back a debt you settled; the cold just nod");
             b.AppendLine("DoctorsPatient = " + B(DoctorsPatient) + "   ; by day in a town with its doctor (Valentine, Rhodes, Saint Denis), someone near you walks to him for what ails them (a child's fever, a tooth, ribs after a fight, a back, a cough...), tells him, hears his word, and walks home thinking it over");
             b.AppendLine("ErrandPace = " + F(ErrandPace) + "   ; how fast people walk on their errands here (to a scene, to the doctor, to a talk, to a camp seat, home again): 1 an ordinary walk, 2 brisk, 3 a run");
