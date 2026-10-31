@@ -330,6 +330,8 @@ namespace EnrageWestworld.InGame
                 Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + kind + " held back (the town is hushed)");
                 return false;   // the street's own trouble waits while the town is shaken (a mind's own pick still decides)
             }
+            if (by == null && !side && WatchedHolds(kind, first, doer, second, me, seed, now))
+                return false;   // being watched: it waits for the law to look away (Core/Observed.cs); the pair's reason stays theirs
             if (side && TroubleKinds.Contains(kind))
                 return false;
             Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);

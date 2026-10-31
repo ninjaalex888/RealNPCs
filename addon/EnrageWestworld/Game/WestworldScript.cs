@@ -1153,6 +1153,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST arthur: " + ArthurStatus());
 			Log.Write("TEST thanks: " + ThanksStatus());
 			Log.Write("TEST lonely: " + LonelyStatus());
+			Log.Write("TEST watched: " + WatchedStatus());
 			Log.Write("TEST personal space: " + SpaceStatus());
 			Log.Write("TEST reason thoughts: " + ReasonThoughtsStatus());
 			Log.Write("TEST aloud: " + AloudStatus());

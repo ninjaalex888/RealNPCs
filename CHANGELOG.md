@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Being watched (the psychologist's list: people behave better when they're seen)
+
+- When the street's own timing would start trouble for a reason between two people (a pickpocket, a theft, a shove, a fistfight, a standoff, the noon callout) and a lawman within 25 m has the one who'd start it in view, it waits: they glance at the law and think why ("Law's watching. Another day, then.", "Lawman right there. Hands in your own pockets."), and the reason is still theirs once he's gone. A thief always waits; a hothead or a drunk goes ahead about four times in ten. On a Sunday morning by the church the same ("Sunday. It can wait till tomorrow."), but the godless don't mind it. A chance meeting with the law looking keeps to words. A scene a mind picks for itself still decides, and the quarrel ladder keeps its own rule for the law. `[Scenes] BeingWatched` (on; settings version 158). F7 `TEST watched:` counts what waited; log detail `WATCHED`.
+
 ### Why a scene starts, as a thought (the game developer's "legible reasons")
 
 - When a street scene starts for a reason between two people, the one whose reason it is thinks why over their head as they go over, so you can follow what led to it: "That money. Hiram hears about it now.", "Ruth lost someone. Somebody ought to say a word.", "Got to tell Abe. Can't keep it in." Someone they know they think of by name; a stranger as "that fellow" or "the lady", and only for what a stranger can be part of (a snap, drink, a coin asked for, news, a flirt). Only when you can see them; a scene the model chose has the model's own thought instead. `[Scenes] ReasonThoughts` (on; settings version 155). F7 `TEST reason thoughts:` counts them.

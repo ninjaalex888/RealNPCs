@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 157;
+        public const int CurrentVersion = 158;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -234,6 +234,7 @@ namespace EnrageWestworld.Core
         public bool Grudges = true;
         public bool ReasonThoughts = true;   // [Scenes] when a street scene starts for a reason between two people, the one whose reason it is thinks why as they go over (settings version 155; NIGHT3)
         public bool LonelyRegulars = true;   // [Scenes] someone lonely who knows Arthur comes over hoping for a word; glad if he stops to talk, stung if he walks on (with MindLive; settings version 157; NIGHT3)
+        public bool BeingWatched = true;   // [Scenes] the street's own trouble (thefts, shoves, fights, standoffs, the noon callout) waits while a lawman has the one who'd start it in sight, or on a Sunday morning by the church; they think why (settings version 158; NIGHT3)
         public bool LateThanks = true;   // [Scenes] someone Arthur stood a drink, gave money or whose debt he settled comes over hours or days later and thanks him for it; the proud repay a debt (settings version 153; NIGHT3)
         public bool DoctorsPatient = true;   // [Scenes] someone goes to the doctor for what ails them, tells him, hears his word, and walks home (night 2026-10-28, item 14; widened 2026-10-29; settings version 90)
         public float ErrandPace = 2.0f;   // [Scenes] how fast people walk on errands for RealNPCs: 1 a walk, 2 brisk (was about 1-1.4), 3 a run (Lex, 2026-10-29)
@@ -944,6 +945,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Grudges = " + B(Grudges) + "   ; grudges that travel: a friend of someone wronged has it out with the one who did it; and someone whose friend you killed may come up and say so to your face (never violent)");
             b.AppendLine("ReasonThoughts = " + B(ReasonThoughts) + "   ; when a street scene starts for a reason between two people (a quarrel over money, a friend to comfort, good news to tell), the one whose reason it is thinks why over their head as they go over, so you can follow what led to it");
             b.AppendLine("LonelyRegulars = " + B(LonelyRegulars) + "   ; (with MindLive) someone lonely who knows you (your name, or a kindness of yours lately) may come over when they see you in town, hoping for a word; stop and Talk and they're glad of it, walk on and it stings them");
+            b.AppendLine("BeingWatched = " + B(BeingWatched) + "   ; people behave better when they're watched: a theft, a shove, a fight, a standoff or the noon callout from the street's own timing waits while a lawman within 25 m has the one who'd start it in sight (a hothead or a drunk goes ahead now and then; a thief never), and on a Sunday morning by the church (but for the godless); they glance at the law and think why. A chance meeting with the law looking keeps to words");
             b.AppendLine("LateThanks = " + B(LateThanks) + "   ; people you were good to through the Talk menu (a drink, money, a debt paid) may seek you out when they next see you, some hours or a few days on, and say what it meant to them (few for a drink, most for money, nearly all for a debt); the proud pay back a debt they called a loan, days later; the cold, the seated and women after dark just nod");
             b.AppendLine("DoctorsPatient = " + B(DoctorsPatient) + "   ; by day in a town with its doctor (Valentine, Rhodes, Saint Denis), someone near you walks to him for what ails them (a child's fever, a tooth, ribs after a fight, a back, a cough...), tells him, hears his word, and walks home thinking it over");
             b.AppendLine("ErrandPace = " + F(ErrandPace) + "   ; how fast people walk on their errands here (to a scene, to the doctor, to a talk, to a camp seat, home again): 1 an ordinary walk, 2 brisk, 3 a run");

@@ -87,6 +87,11 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             string seed = pair + "|callout|" + g / 1440;
+            if (!test && WatchedHolds("callout", caller.Ped, caller.Who, called.Ped, me, seed, now))
+            {
+                why = _calloutWhyNot = "being watched: the law has them in sight, or it's Sunday by the church";
+                return false;
+            }
             Vector3 mid = (caller.Ped.Position + called.Ped.Position) * 0.5f;
             Ped crowd = World.GetAllPeds().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Handle != caller.Ped.Handle && p.Handle != called.Ped.Handle &&
                                                      p.Position.DistanceTo(mid) < 14f && Natives.Bystander(p, me.Handle, IsRecord(p.Handle)) && !Spawner.IsOurs(p.Handle) &&

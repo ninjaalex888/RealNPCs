@@ -171,6 +171,9 @@ namespace EnrageWestworld.InGame
             if (_hush)
                 foreach (string k in new[] { "brawl", "standoff", "pickpocket", "rough", "drunk" })
                     cast.Off.Add(k);   // a hushed street: no chance brawl either (the review: a held-back reason fell through to this)
+            if (ChanceWatched(a, b))
+                foreach (string k in new[] { "brawl", "standoff", "pickpocket", "rough" })
+                    cast.Off.Add(k);   // being watched (Core/Observed.cs): with the law looking on, a chance meeting keeps to words
             Scene s = null;
             List<Ped> people = new List<Ped> { a, b };
             if (!cast.AWoman && cast.BWoman || cast.AWoman && !cast.BWoman)
