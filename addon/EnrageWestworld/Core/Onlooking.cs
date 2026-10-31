@@ -16,7 +16,7 @@ namespace EnrageWestworld.Core
     public static class Onlooking
     {
         /// The acts, in the words the log uses.
-        public static readonly string[] Acts = { "leave", "slip", "freeze", "dismiss", "disapprove", "bristle", "watch" };
+        public static readonly string[] Acts = { "leave", "hurry", "slip", "freeze", "dismiss", "disapprove", "bristle", "watch" };
 
         /// The happenings onlookers act on: trouble between people (never one meant not to be seen: a pickpocket, a lift,
         /// someone helped up), and what the player did.
@@ -61,6 +61,8 @@ namespace EnrageWestworld.Core
                         return "bristle";   // fear shown as bluster stands and glares instead
                     if (role == "onlooker" && f.Intensity < LeaveBar)
                         return f.Kind == "fear" ? "watch" : null;   // a stranger's mild fright doesn't send them off: they watch it warily (the advisor, after StreetVolumeTest: two in three fights had someone walk off)
+                    if (strong && f.Kind == "fear" && role == "onlooker")
+                        return "hurry";   // real danger, badly frightened: they hurry off, not stroll (NIGHT3; a brisk walk away, the flee still unproven)
                     return saloon && !strong ? "watch" : "leave";   // a saloon's fights were nothing new: a mild fright there stays to watch
                 case "freeze":
                     return "freeze";
@@ -108,7 +110,7 @@ namespace EnrageWestworld.Core
             {
                 case "freeze": return 4000;
                 case "watch": return 6000;
-                case "leave": case "slip": case "disapprove": return 9000;
+                case "leave": case "slip": case "disapprove": case "hurry": return 9000;
                 default: return 3000;
             }
         }

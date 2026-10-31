@@ -184,6 +184,21 @@ namespace EnrageWestworld.InGame
                         did = "walks off from it, disapproving";
                         break;
                     }
+                case "hurry":
+                    {
+                        // badly frightened by real danger: a glance at it, then off at a run, away from it (the moves the sights'
+                        // "turn and go" uses; the flee task is still unproven), and on their way after
+                        Vector3 src = from != 0 ? ENTITY.GET_ENTITY_COORDS(from, true, true) : (me != null ? me.Position : p.Position);
+                        Vector3 away = p.Position - src;
+                        away.Z = 0f;
+                        Vector3 to = p.Position + (away.Length() < 0.5f ? new Vector3(0f, 1f, 0f) : away.Normalized) * 20f;
+                        if (from != 0)
+                            TASK.TASK_LOOK_AT_ENTITY(h, from, 800, 0, 51, 0);
+                        TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, to.X, to.Y, to.Z, 2.0f, 12000, 1f, 0, 0f);
+                        WanderLater(h, Game.GameTime + 10000);
+                        did = "hurries off from it";
+                        break;
+                    }
                 case "slip":
                     // masked fear: no hurry, nothing shown; a look away from it and off about their business
                     TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // the scenes' walkaway
