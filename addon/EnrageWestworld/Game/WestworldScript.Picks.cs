@@ -155,7 +155,7 @@ namespace EnrageWestworld.InGame
             _pickLast = w.Name + ": " + (idx >= 0 ? pp.Words[idx] : Choosing.WordsOf(pp.Mind) + " (the mind's)");
             if (picked != null && picked.StartsWith("scene:", StringComparison.Ordinal))
             {
-                // one of their own reasons with someone near: the scene it is, played as the Director would (WestworldScript.MindScenes.cs)
+                // a reason the person has with someone near: that scene, played the way the Director plays it (WestworldScript.MindScenes.cs)
                 int si;
                 if (pp.Scenes != null && int.TryParse(picked.Substring(6), out si) && si < pp.Scenes.Count &&
                     MindStartScene(pp.Scenes[si], w, pp.Words[idx], pp.Test ? "the Testing row, the model's pick" : "the model's pick", now))

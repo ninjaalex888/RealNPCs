@@ -34,7 +34,7 @@ namespace EnrageWestworld.Core
                 case "gossip": return "goes to pass on the talk to " + o;
                 case "smalltalk": return "goes over for a word with " + o;
                 case "x:debt": return "goes to see " + o + " about the money between them";
-                case "x:feud": return "goes to have it out with " + o + " over their feud";
+                case "x:feud": return "goes to settle the feud with " + o;
                 case "x:snap": return "takes a bad week out on " + o;
                 case "x:goodnews": return "goes to tell " + o + " the good news";
                 case "x:badnews": return "goes to tell " + o + " the bad news";
