@@ -55,6 +55,9 @@ namespace EnrageWestworld.InGame
             BrawlStep(me, now);   // the law breaks up a brawl, a brawl comes at you, a gun drawn in one (WestworldScript.Brawl.cs)
             if (_director.FightOver == null)
                 _director.FightOver = OnFightOver;
+            BrawlAfterStep(now);   // the blows the game lands after a brawl is over still get their fate (WestworldScript.BrawlDown.cs)
+            if (!_director.Busy && _joinPending.Count > 0)
+                JoinPendingDrop("the scene is over");
             if (!_director.Busy && _ring.Count > 0)
                 RingBreak();   // the scene ended with the fight
             if (_director.Busy)

@@ -197,10 +197,78 @@ namespace EnrageWestworld.InGame
             _brawlOut.Clear();
         }
 
+        private int _brawlAfterDowns, _brawlAfterQuietAt;
+
+        /// Every frame for 15 s after a fight ends (Director.EndedFighters): the game's own melee carries on a moment after
+        /// we let them go, and its blows knocked men out before any roll (Lex's Saint Denis brawl, 2026-10-31: two "out cold"
+        /// 4 and 9 s after it was over). Anyone of it found incapacitated, or dead by fists, gets his fate rolled as in the
+        /// fight, the man he was going for as the one on him. The watch ends early once nobody of it is in melee for 2 s.
+        private void BrawlAfterStep(int now)
+        {
+            List<int[]> ended = _director.EndedFighters;
+            if (ended.Count == 0)
+                return;
+            if (!BrawlsOn || now - _director.EndedAt > 15000 || now - _director.EndedAt < 0)
+            {
+                ended.Clear();
+                return;
+            }
+            bool melee = false;
+            for (int i = ended.Count - 1; i >= 0; i--)
+            {
+                int h = ended[i][0];
+                if (!ENTITY.DOES_ENTITY_EXIST(h) || _brawlOut.ContainsKey(h) || _brawlFatal.Contains(h) || _director.Involves(h))
+                {
+                    ended.RemoveAt(i);   // gone, already down and rolled, or in a fight again
+                    continue;
+                }
+                bool dead = ENTITY.IS_ENTITY_DEAD(h);
+                if (dead)
+                {
+                    uint cause = PED.GET_PED_CAUSE_OF_DEATH(h);
+                    if (cause != 0 && !DeathLedger.KnockedOut(false, false, WEAPON.GET_WEAPONTYPE_GROUP(cause)))
+                    {
+                        ended.RemoveAt(i);   // shot or cut after the fight: not a beating, the ledger's own
+                        continue;
+                    }
+                }
+                if (dead || PED.IS_PED_INCAPACITATED(h))
+                {
+                    int by = ended[i][2];
+                    if (by == 0 || !ENTITY.DOES_ENTITY_EXIST(by) || ENTITY.IS_ENTITY_DEAD(by))
+                    {
+                        by = 0;
+                        foreach (int[] f in ended)
+                            if (f[1] != ended[i][1] && ENTITY.DOES_ENTITY_EXIST(f[0]) && !ENTITY.IS_ENTITY_DEAD(f[0]))
+                            {
+                                by = f[0];   // the man he went for is down too: one of the other side still standing
+                                break;
+                            }
+                    }
+                    _brawlAfterDowns++;
+                    Log.Write("BRAWL down (after the fight): " + (MindNameOf(h) ?? "a man") + " " + (dead ? "lies dead" : "is down") + " " + ((now - _director.EndedAt) / 1000.0).ToString("0.0") + " s after it ended; his fate is rolled");
+                    _director.DownAfter(h, by, dead);   // removes him from the watch
+                    return;   // one a frame
+                }
+                if (PED.IS_PED_IN_MELEE_COMBAT(h))
+                    melee = true;
+            }
+            if (melee)
+                _brawlAfterQuietAt = 0;
+            else if (_brawlAfterQuietAt == 0)
+                _brawlAfterQuietAt = now;
+            else if (now - _brawlAfterQuietAt > 2000)
+            {
+                ended.Clear();   // nobody of it is swinging now: the watch ends
+                _brawlAfterQuietAt = 0;
+            }
+        }
+
         private string BrawlDownStatus()
         {
             return "beaten down in brawls " + (_brawlKnockedOut + _brawlKilled) + ": " + _brawlKnockedOut + " knocked out (" + _brawlCameTo + " came to, " + _brawlOut.Count + " out now), " + _brawlKilled + " killed" +
-                   (_brawlGameFirst > 0 ? " (" + _brawlGameFirst + " by the game's blow before the roll)" : "") + "; fatal share " + _cfg.BrawlFistsFatal + "%" + (_brawlDownLast != null ? "; last: " + _brawlDownLast : "");
+                   (_brawlGameFirst > 0 ? " (" + _brawlGameFirst + " by the game's blow before the roll)" : "") + (_brawlAfterDowns > 0 ? " (" + _brawlAfterDowns + " after the fight was over)" : "") +
+                   "; fatal share " + _cfg.BrawlFistsFatal + "%" + (_brawlDownLast != null ? "; last: " + _brawlDownLast : "");
         }
     }
 }

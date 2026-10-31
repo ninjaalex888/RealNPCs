@@ -112,7 +112,7 @@ namespace EnrageWestworld.InGame
             bool test = BrawlTesting(now);
             if (test && a.Count + b.Count < 5 && now - _brawlFightSince < 15000)
                 return;   // the Testing row lets it grow first, so both halves are seen
-            Ped law = BrawlFindLaw(mid, test ? 70f : 35f, !test, a[0]);
+            Ped law = BrawlFindLaw(mid, test ? 70f : Math.Max(35f, _cfg.BrawlCrowdMetres + 5f), !test, a[0]);   // the law notices from as far as the crowd does ([Mind] BrawlCrowdMetres)
             if (law == null)
             {
                 if (test && now - _brawlFightSince > 20000 && _brawlLawFor != -_director.FightId)

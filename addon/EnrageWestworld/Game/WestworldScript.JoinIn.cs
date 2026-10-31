@@ -16,7 +16,11 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private const int JoinEveryMs = 2500;
-        private const float JoinMetres = 18f;   // 12 until 2026-10-31 (Lex, in busy Saint Denis: more of the street should join)
+        // [Mind] BrawlJoinMetres (30): 12 until 2026-10-31, then 18 fixed (Lex, in busy Saint Denis: more of the street should join; later
+        // that day "brawls reach further": a lawman 41 m off arrived to find it over)
+        private float JoinMetres { get { return _cfg.BrawlJoinMetres; } }
+        private const float JoinYouMetres = 18f;   // the brawl that comes at you (WestworldScript.JoinYou.cs) keeps its 18 m: those beside you, not the street
+        private const float JoinWalkFrom = 10f, JoinArriveMetres = 6f;   // a joiner farther than this runs over first, and is in it once this close
         private const int JoinMeetMost = 6;     // strangers given a resident's identity on the spot in one look, the nearest first (the cost)
         private int _joinNextAt, _joinTotal, _joinMet;
         private bool _joinFailed;
@@ -25,31 +29,48 @@ namespace EnrageWestworld.InGame
         // [Mind] MindBrawls (Core/Brawl.cs): the cap, the waves, and the sat and the leaning who get up first
         private bool BrawlsOn { get { return _cfg.MindLive && _cfg.MindJoinFights && _cfg.MindBrawls; } }
         private int MostJoinersNow { get { return BrawlsOn ? Brawl.MostJoiners(_cfg.BrawlMost) : JoinIn.MostJoiners; } }
-        private sealed class JoinPending { public int Handle, Side, Target, At, Until; public string Name, Why; }
+        private sealed class JoinPending { public int Handle, Side, Target, At, Until, Since; public bool Walk, Pulled; public string Name, Why, With; }   // Walk: running over from afar (events held till he is in it)
         private readonly List<JoinPending> _joinPending = new List<JoinPending>();
-        private int _brawlBiggest;
+        private readonly Dictionary<int, int> _joinSideOf = new Dictionary<int, int>();   // this fight's picks: whose side each took, kept for the fight
+        private int _brawlBiggest, _joinPendingAt, _joinSidesFor, _joinCameOver, _joinGaveUp;
 
         private void JoinStep(int now)
         {
-            _director.FightMostMs = BrawlsOn ? 45000 : 20000;
+            int least = _cfg.BrawlLeastSeconds * 1000;
+            _director.BrawlLeastMs = least;   // [Mind] BrawlLeastSeconds: a brawl lasts at least this long from its first blows
+            _director.FightMostMs = BrawlsOn ? Math.Max(45000, least + 15000) : 20000;
             _director.BraveryNow = _cfg.Bravery;   // the scene's own frights hold their ground by [World] Bravery
             _director.DownsOn = BrawlsOn;   // a man beaten down in a brawl: killed or knocked out, and it goes on (WestworldScript.Brawl.cs)
             if (_director.FleeOrdered == null)
                 _director.FleeOrdered = BraveRelease;
             if (_director.FighterDown == null)
                 _director.FighterDown = OnFighterDown;
+            List<int> a, b;
+            if (_joinPending.Count > 0 && now - _joinPendingAt >= 0)
+            {
+                // those on their way, every half second: in once they're close (or up off the bar), and counted for their
+                // side meanwhile, so the fight doesn't end before they get there
+                _joinPendingAt = now + 500;
+                if (!_director.FightSides(out a, out b))
+                    JoinPendingDrop("the fight is over");
+                else
+                    JoinPendingStep(now);
+            }
             if (!_cfg.MindLive || !_cfg.MindJoinFights || _joinFailed || now < _joinNextAt)
                 return;
             _joinNextAt = now + JoinEveryMs;
-            List<int> a, b;
             if (!_director.FightSides(out a, out b))
             {
-                _joinPending.Clear();
+                JoinPendingDrop("the fight is over");
                 return;
+            }
+            if (_joinSidesFor != _director.FightId)
+            {
+                _joinSidesFor = _director.FightId;
+                _joinSideOf.Clear();   // a new fight: nobody's side is taken yet
             }
             if (a.Count + b.Count > _brawlBiggest)
                 _brawlBiggest = a.Count + b.Count;
-            JoinPendingStep(now);
             if (!_director.FightSides(out a, out b))
                 return;   // the sides again: those who got up to join are on them now, so the balance sees them (the review, 2026-10-31)
             if (_director.JoinerCount + _joinPending.Count >= MostJoinersNow)
@@ -77,7 +98,7 @@ namespace EnrageWestworld.InGame
             bool law = false;
             foreach (Ped p in World.GetAllPeds())
             {
-                if (p == null || p.Position.DistanceTo(mid) > JoinMetres + 18f)
+                if (p == null || p.Position.DistanceTo(mid) > JoinMetres + 12f)
                     continue;   // the distance first
                 int h = p.Handle;
                 if (h == me.Handle || !p.Exists() || p.IsDead || !PED.IS_PED_HUMAN(h))
@@ -152,8 +173,15 @@ namespace EnrageWestworld.InGame
                     if (best.Side < 0)
                         continue;
                 }
+                int took;
+                if (_joinSideOf.TryGetValue(bestPed.Handle, out took) && took != best.Side)
+                {
+                    Log.Detail("BRAWL " + bestName + " stays with the side he first took");   // picked before for the other side: nobody switches sides mid-fight
+                    continue;
+                }
                 placed++;
                 joinedNow++;
+                _joinSideOf[bestPed.Handle] = best.Side;
                 List<int> theirs = best.Side == 0 ? b : a;
                 if (BrawlsOn)
                 {
@@ -163,15 +191,73 @@ namespace EnrageWestworld.InGame
                 int target = theirs[Math.Max(0, Math.Min(theirs.Count - 1, best.Target))];
                 string with = NameOfFighter(best.Side == 0 ? a[0] : b[0]), at = NameOfFighter(target);
                 string why = best.Why + "; " + witnesses + " watching" + (saloon ? ", a saloon" : "") + (sure ? ", a test" : "") + "; " + (a.Count + b.Count) + " fighting";
-                if (PED.IS_PED_USING_ANY_SCENARIO(bestPed.Handle))
+                bool sat = PED.IS_PED_USING_ANY_SCENARIO(bestPed.Handle);
+                float off = bestPed.Position.DistanceTo(ENTITY.GET_ENTITY_COORDS(target, true, true));
+                if (sat || off > JoinWalkFrom)
                 {
-                    TASK.CLEAR_PED_TASKS(bestPed.Handle, true, false);   // up off the bar the game's way first; in once they're on their feet
-                    _joinPending.Add(new JoinPending { Handle = bestPed.Handle, Side = best.Side, Target = target, At = now + 1500, Until = now + 8000, Name = bestName, Why = with + "'s side and goes for " + at + " (" + why + ")" });
-                    Log.Detail("BRAWL " + bestName + " gets up to join in, for " + with);
+                    // up off the bar the game's way first, or a run over from afar: counted for his side on the way (the
+                    // Director's Coming), in once he's close (Lex, 2026-10-31: nine got up to join, and it was over first)
+                    var j = new JoinPending { Handle = bestPed.Handle, Side = best.Side, Target = target, Since = now, At = now + (sat ? 1500 : 0), Until = now + JoinWaitMs(off, sat),
+                                              Name = bestName, With = with, Why = with + "'s side and goes for " + at + " (" + why + ")" };
+                    _joinPending.Add(j);
+                    if (sat)
+                        TASK.CLEAR_PED_TASKS(bestPed.Handle, true, false);
+                    else
+                        JoinRunOver(j);
+                    Log.Write("BRAWL " + bestName + (sat ? " gets up to join in" : " runs over to join in, " + off.ToString("0") + " m off") + ", for " + with);
                     continue;
                 }
                 JoinAdd(bestPed.Handle, best.Side, target, bestName, with + "'s side and goes for " + at + " (" + why + ")", with, at);
             }
+            JoinComingCount();
+        }
+
+        /// How long one on his way may take: about 1.6 s a metre and 4 s more, 30 s at most (10 s at least for one getting up).
+        private static int JoinWaitMs(float metres, bool sat)
+        {
+            return Math.Max(sat ? 10000 : 6000, Math.Min(30000, 4000 + (int)(metres * 1600f)));
+        }
+
+        /// He runs to the man he's going for; the fight's own events don't send him off on the way.
+        private static void JoinRunOver(JoinPending j)
+        {
+            j.Walk = true;
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(j.Handle, true);
+            TASK.TASK_GO_TO_ENTITY(j.Handle, j.Target, 30000, 3f, JoinArriveMetres - 2f, 0f, 0);
+        }
+
+        /// The fight's sides learn who is on the way to each.
+        private void JoinComingCount()
+        {
+            int c0 = 0, c1 = 0;
+            foreach (JoinPending j in _joinPending)
+                if (j.Side == 0)
+                    c0++;
+                else
+                    c1++;
+            _director.SetComing(c0, c1);
+        }
+
+        /// Everyone on the way let go to the game (the fight is over, or the add-on stopping).
+        private void JoinPendingDrop(string why)
+        {
+            if (_joinPending.Count > 0)
+            {
+                foreach (JoinPending j in _joinPending)
+                    JoinLetWalkerGo(j);
+                Log.Detail("BRAWL " + _joinPending.Count + " on their way to join let go: " + why);
+                _joinGaveUp += _joinPending.Count;
+            }
+            _joinPending.Clear();
+            _director.SetComing(0, 0);
+        }
+
+        private static void JoinLetWalkerGo(JoinPending j)
+        {
+            if (!j.Walk || !ENTITY.DOES_ENTITY_EXIST(j.Handle) || ENTITY.IS_ENTITY_DEAD(j.Handle))
+                return;
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(j.Handle, false);
+            TASK.CLEAR_PED_TASKS(j.Handle, true, false);
         }
 
         private bool JoinIsPending(int h)
@@ -192,23 +278,70 @@ namespace EnrageWestworld.InGame
             Safe("join tie", () => NoteSceneTie("brawl", new List<Ped> { new Ped(h), new Ped(target) }));
         }
 
-        /// Those getting up to join: in once they're off the bar or the chair, or dropped after 8 s still in it.
+        /// Those on their way to join, every half second. One getting up: still on the bar or the chair 6 s on, taken off it
+        /// at once (as the Director does for the two who began it); once up, in if he's close, else he runs over. One running
+        /// over: in once he's within 6 m of the man he's going for (another of that side if that one is down). Each is
+        /// dropped when his time is up (about 1.6 s a metre).
         private void JoinPendingStep(int now)
         {
+            List<int> a, b;
+            _director.FightSides(out a, out b);
             for (int i = _joinPending.Count - 1; i >= 0; i--)
             {
                 JoinPending j = _joinPending[i];
-                if (!ENTITY.DOES_ENTITY_EXIST(j.Handle) || ENTITY.IS_ENTITY_DEAD(j.Handle) || now > j.Until)
+                bool gone = !ENTITY.DOES_ENTITY_EXIST(j.Handle) || ENTITY.IS_ENTITY_DEAD(j.Handle);
+                if (gone || now > j.Until || PED.IS_PED_IN_COMBAT(j.Handle, Game.Player.Character.Handle) || PED.IS_PED_FLEEING(j.Handle) || _director.Involves(j.Handle))
                 {
+                    if (!gone && !_director.Involves(j.Handle))
+                        JoinLetWalkerGo(j);
                     _joinPending.RemoveAt(i);
+                    if (!gone && now > j.Until)
+                    {
+                        _joinGaveUp++;
+                        Log.Detail("BRAWL " + j.Name + " never got there (" + (now - j.Since) / 1000 + " s on the way)");
+                    }
                     continue;
                 }
-                if (now < j.At || PED.IS_PED_USING_ANY_SCENARIO(j.Handle))
+                if (_director.IsOut(j.Target) || !ENTITY.DOES_ENTITY_EXIST(j.Target) || ENTITY.IS_ENTITY_DEAD(j.Target))
+                {
+                    List<int> theirs = j.Side == 0 ? b : a;
+                    int t = theirs != null ? theirs.FirstOrDefault(x => x != j.Target && !_director.IsOut(x) && ENTITY.DOES_ENTITY_EXIST(x) && !ENTITY.IS_ENTITY_DEAD(x)) : 0;
+                    if (t == 0)
+                        continue;   // nobody over there to go for just now: he keeps coming, and AddFighter finds one
+                    j.Target = t;
+                    if (j.Walk)
+                        JoinRunOver(j);
+                }
+                if (now < j.At)
                     continue;
+                if (!j.Walk && PED.IS_PED_USING_ANY_SCENARIO(j.Handle))
+                {
+                    if (!j.Pulled && now - j.Since > 6000)
+                    {
+                        j.Pulled = true;
+                        TASK.CLEAR_PED_TASKS_IMMEDIATELY(j.Handle, false, true);
+                        Log.Write("BRAWL " + j.Name + " was still sat or leaning " + (now - j.Since) / 1000 + " s on: pulled out of it to join in");
+                    }
+                    continue;
+                }
+                float off = ENTITY.GET_ENTITY_COORDS(j.Handle, true, true).DistanceTo(ENTITY.GET_ENTITY_COORDS(j.Target, true, true));
+                if (off > JoinArriveMetres)
+                {
+                    if (!j.Walk)
+                    {
+                        JoinRunOver(j);   // up off the bar, and the fight is across the street: he runs to it
+                        j.Until = Math.Max(j.Until, now + JoinWaitMs(off, false));
+                    }
+                    continue;
+                }
                 _joinPending.RemoveAt(i);
-                if (ENTITY.DOES_ENTITY_EXIST(j.Target) && !ENTITY.IS_ENTITY_DEAD(j.Target))
-                    JoinAdd(j.Handle, j.Side, j.Target, j.Name, j.Why, NameOfFighter(j.Target), NameOfFighter(j.Target));
+                if (j.Walk)
+                    _joinCameOver++;
+                JoinAdd(j.Handle, j.Side, j.Target, j.Name, j.Why, j.With ?? NameOfFighter(j.Target), NameOfFighter(j.Target));
+                if (!_director.Involves(j.Handle))
+                    JoinLetWalkerGo(j);   // the fight wouldn't take him after all
             }
+            JoinComingCount();
         }
 
         private Fighter FighterOf(int h)
@@ -228,7 +361,7 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.MindLive || !_cfg.MindJoinFights)
                 return "off ([Mind] MindJoinFights, with MindLive)";
-            return _joinFailed ? "FAILED once this session (see the log)" : _joinTotal + " joined a fight this session" + (BrawlsOn ? ", the biggest " + _brawlBiggest + " fighting (cap " + _cfg.BrawlMost + "), " + _joinMet + " onlookers given a name to weigh" : "") + (_joinLast != null ? " (last: " + _joinLast + ")" : "");
+            return _joinFailed ? "FAILED once this session (see the log)" : _joinTotal + " joined a fight this session" + (BrawlsOn ? ", the biggest " + _brawlBiggest + " fighting (cap " + _cfg.BrawlMost + "), " + _joinMet + " onlookers given a name to weigh, a brawl lasts " + _cfg.BrawlLeastSeconds + " s at least" : "") + "; joining from within " + JoinMetres.ToString("0") + " m, " + _joinCameOver + " ran over from afar, " + _joinGaveUp + " never got there, " + _joinPending.Count + " on the way now; the ring " + _ring.Count + " now" + (_joinLast != null ? " (last: " + _joinLast + ")" : "");
         }
     }
 }

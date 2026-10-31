@@ -36,6 +36,8 @@ namespace EnrageWestworld.InGame
             public int FightId;                  // this fight's own number, the same however its leaders change (seeds, "this fight has had its lawman")
             public bool WasBig;                  // two or more joined it once: a brawl, which a man going down doesn't end
             public bool SideGone;                // everyone on one side is down or out: the fight ends
+            public int FightOnAt;                // when the blows began (FightOn): a brawl lasts BrawlLeastMs from then
+            public int WaitSide = -1, WaitUntil;  // a side with nobody left standing waits this long for one of its own on the way (Coming)
             public readonly HashSet<int> Out = new HashSet<int>();   // down (knocked out or killed) or gone from the fight (a gun drawn): no longer in it, and never a reason to stop the scene
             public string Seed;
             public Action Done;
@@ -387,6 +389,8 @@ namespace EnrageWestworld.InGame
             // a third still walking over when it ended (the player left, someone in it was hurt) is let go on their way
             if (l.ApproachUntil > 0 && l.Cast.Length > 2 && l.Cast[2] != null && l.Cast[2].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[2].Handle))
                 TASK.TASK_WANDER_STANDARD(l.Cast[2].Handle, 10f, 10);
+            if (l.Fighting && l.FightOn)
+                SnapEnd(l, Game.GameTime);   // cut short with fists still flying: the aftermath watch sees the blows after
             l.Ended = true;
             LetJoinersGo(l);
             if (l.Shooter != 0 && ENTITY.DOES_ENTITY_EXIST(l.Shooter) && !ENTITY.IS_ENTITY_DEAD(l.Shooter))
@@ -520,7 +524,7 @@ namespace EnrageWestworld.InGame
                 if (p != null && l.Out.Count > 0 && l.Out.Contains(p.Handle))
                     continue;   // down or out of the fight already: a brawl goes on without him (Lex, 2026-10-31)
                 bool gone = p == null || !p.Exists() || p.IsDead;
-                if (gone && p != null && p.Exists() && DownsOn && l.Fighting && l.FightOn && l.WasBig && (p.Handle == l.FightA || p.Handle == l.FightB))
+                if (gone && p != null && p.Exists() && DownsOn && l.Fighting && l.FightOn && (l.WasBig || l.Joiners.Count > 0) && (p.Handle == l.FightA || p.Handle == l.FightB))
                 {
                     FightDown(l, p.Handle, true);   // killed in a brawl before the down check saw him: dropped from the sides, and it goes on
                     continue;
@@ -532,7 +536,13 @@ namespace EnrageWestworld.InGame
                     return;
                 }
             }
-            if (l.Cast.Min(p => p.Position.DistanceTo(player.Position)) > 50f || now - l.StartedAt > (l.Scene.Ladder != null ? 150000 : 90000))   // a ladder quarrel that climbs the whole way runs past 90 s (the review)
+            // a brawl, while it lasts, runs past the scene's 90 s to its least time and a minute more, and holds within 80 m
+            // (Lex, 2026-10-31: brawls reach further and last longer)
+            bool brawl = l.Fighting && l.FightOn && l.WasBig;
+            int mostMs = l.Scene.Ladder != null ? 150000 : 90000;   // a ladder quarrel that climbs the whole way runs past 90 s (the review)
+            if (brawl)
+                mostMs = Math.Max(mostMs, l.FightOnAt - l.StartedAt + BrawlLeastMs + 60000);
+            if (l.Cast.Min(p => p.Position.DistanceTo(player.Position)) > (brawl ? 80f : 50f) || now - l.StartedAt > mostMs)
             {
                 Stop(l, "the player left");
                 return;
@@ -548,6 +558,7 @@ namespace EnrageWestworld.InGame
                     {
                         l.FightOn = true;
                         l.Blows = true;
+                        l.FightOnAt = now;
                         l.FightUntil = now + l.FightMs;
                         Log.Write("SCENE fight: at it " + ((now - l.FightAskedAt) / 1000.0).ToString("0.0") + " s after the word");
                     }
@@ -570,10 +581,22 @@ namespace EnrageWestworld.InGame
                         KeepFists(j[0]);
                 if (DownsOn && !l.SideGone)
                     FightDownStep(l);   // a man beaten down: killed or knocked out (the game layer rolls it), and the brawl goes on
-                bool hurt = (HealthOf(l, l.FightA) < 0.6f || HealthOf(l, l.FightB) < 0.6f) && !(FightMostMs > 20000 && (l.Joiners.Count >= 2 || l.WasBig));   // a brawl goes on past the first two's bruises ([Mind] MindBrawls), to its time
+                if (l.WaitSide >= 0 && !l.SideGone && (now >= l.WaitUntil || ComingFor(l.WaitSide) == 0))
+                {
+                    Log.Write("SCENE fight: nobody of the fallen side came in time" + (now >= l.WaitUntil ? " (waited " + WaitMs / 1000 + " s)" : ""));
+                    l.SideGone = true;   // the one on his way gave up or was taken off: the side is gone after all
+                    l.FightUntil = 0;
+                }
+                int coming = ComingFor(0) + ComingFor(1);
+                if (l.WasBig && !l.SideGone)
+                    l.FightUntil = Math.Max(l.FightUntil, l.FightOnAt + BrawlLeastMs);   // a brawl lasts its least time ([Mind] BrawlLeastSeconds)
+                if (coming > 0 && !l.SideGone)
+                    l.FightUntil = Math.Max(l.FightUntil, Math.Min(now + 6000, l.FightOnAt + BrawlLeastMs + FightMostMs));   // those on their way to it keep it going a while
+                bool hurt = (HealthOf(l, l.FightA) < 0.6f || HealthOf(l, l.FightB) < 0.6f) && !(FightMostMs > 20000 && (l.Joiners.Count >= 2 || l.WasBig || coming > 0));   // a brawl goes on past the first two's bruises ([Mind] MindBrawls), to its time
                 if (now < l.FightUntil && !hurt && !l.SideGone)
                     return;
                 l.Fighting = false;
+                SnapEnd(l, now);   // who was still at it, for the blows the game lands after (the aftermath watch)
                 LetJoinersGo(l);
                 if (l.Out.Count > 0)
                 {
@@ -899,6 +922,8 @@ namespace EnrageWestworld.InGame
                     l.FightId = ++_fightSeq;
                     l.WasBig = false;
                     l.SideGone = false;
+                    l.WaitSide = -1;
+                    l.FightOnAt = 0;
                     l.Out.Clear();
                     l.Fighting = true;
                     // the fight's own seconds start when they're at it (Tick): two men leaning or sat, ordered to fight
@@ -1247,7 +1272,20 @@ namespace EnrageWestworld.InGame
                 if (target == 0)
                     return false;
             }
-            l.Joiners.Add(new[] { h, side, target });
+            bool leads = l.WaitSide == side && (side == 0 ? l.FightA : l.FightB) != 0 && l.Out.Contains(side == 0 ? l.FightA : l.FightB);
+            if (leads)
+            {
+                // his side's last man went down as he came: he leads it now, against the other side's leader
+                if (side == 0)
+                    l.FightA = h;
+                else
+                    l.FightB = h;
+                l.WaitSide = -1;
+                target = side == 0 ? l.FightB : l.FightA;
+                Log.Write("SCENE fight: one of the fallen side's own comes and leads it now");
+            }
+            else
+                l.Joiners.Add(new[] { h, side, target });
             l.StartHp[h] = Math.Max(1, ENTITY.GET_ENTITY_HEALTH(h));
             if (l.Joiners.Count >= 2)
                 l.WasBig = true;
@@ -1261,6 +1299,17 @@ namespace EnrageWestworld.InGame
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
             WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
             TASK.TASK_COMBAT_PED(h, target, 0, 16);
+            if (leads)
+            {
+                if (ENTITY.DOES_ENTITY_EXIST(target) && !ENTITY.IS_ENTITY_DEAD(target))
+                    TASK.TASK_COMBAT_PED(target, h, 0, 16);   // the other side's leader turns on him
+                foreach (int[] j in l.Joiners)
+                    if (j[1] != side && j.Length > 2 && l.Out.Contains(j[2]) && ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
+                    {
+                        j[2] = h;   // those left with a downed man for a target go for the one who came
+                        TASK.TASK_COMBAT_PED(j[0], h, 0, 16);
+                    }
+            }
             l.FightUntil = Math.Min(Game.GameTime + FightMostMs, Math.Max(l.FightUntil, Game.GameTime + 6000));   // a fight with more in it lasts a little longer
             return true;
         }
@@ -1268,6 +1317,72 @@ namespace EnrageWestworld.InGame
         /// How long a fight may be kept going by those joining it, from the last who joined (20 s; [Mind] MindBrawls makes it
         /// longer, so a brawl can grow a wave at a time).
         public int FightMostMs = 20000;
+
+        /// [Mind] BrawlLeastSeconds, set by the game layer every look: a brawl (WasBig) lasts at least this long from its
+        /// first blows, unless a side is all down.
+        public int BrawlLeastMs = 45000;
+
+        /// How long a side with nobody left standing waits for one of its own on the way.
+        private const int WaitMs = 10000;
+
+        private readonly int[] _coming = new int[2];
+
+        /// Those on their way to join, by side (the game layer, every half second): they count for their side, so the fight
+        /// doesn't end while they come.
+        public void SetComing(int sideA, int sideB)
+        {
+            _coming[0] = Math.Max(0, sideA);
+            _coming[1] = Math.Max(0, sideB);
+        }
+
+        private int ComingFor(int side)
+        {
+            return side == 0 || side == 1 ? _coming[side] : 0;
+        }
+
+        /// The fight just over, as it stood: { handle, side, target } for each still in it, the leaders first, and when.
+        public readonly List<int[]> EndedFighters = new List<int[]>();
+        public int EndedAt, EndedFightId;
+
+        private void SnapEnd(Live l, int now)
+        {
+            EndedFighters.Clear();
+            EndedAt = now;
+            EndedFightId = l.FightId;
+            if (l.FightA != 0 && !l.Out.Contains(l.FightA))
+                EndedFighters.Add(new[] { l.FightA, 0, l.FightB });
+            if (l.FightB != 0 && !l.Out.Contains(l.FightB))
+                EndedFighters.Add(new[] { l.FightB, 1, l.FightA });
+            foreach (int[] j in l.Joiners)
+                if (!l.Out.Contains(j[0]))
+                    EndedFighters.Add(new[] { j[0], j[1], j.Length > 2 ? j[2] : 0 });
+        }
+
+        /// One of the fight just over goes down after it (the game's own melee carried on): the sides as they stood at the
+        /// end, him among them, put where FighterDown reads them (DownSideA/B), and he is told down once.
+        public void DownAfter(int h, int by, bool dead)
+        {
+            DownSideA.Clear();
+            DownSideB.Clear();
+            int on = 0;
+            foreach (int[] f in EndedFighters)
+            {
+                (f[1] == 0 ? DownSideA : DownSideB).Add(f[0]);
+                if (f[0] != h && f[2] == h)
+                    on++;
+            }
+            for (int i = EndedFighters.Count - 1; i >= 0; i--)
+                if (EndedFighters[i][0] == h)
+                    EndedFighters.RemoveAt(i);
+            try
+            {
+                FighterDown?.Invoke(h, by, Math.Max(1, on), dead);
+            }
+            catch (Exception ex)
+            {
+                Log.Write("SCENE fight: a man down after it, the fate failed: " + ex.Message);
+            }
+        }
 
         /// Everyone swinging in the fight now: the two who began it and those who joined (0 when no fists fly).
         public int FightingCount
@@ -1413,7 +1528,7 @@ namespace EnrageWestworld.InGame
         public readonly List<int> DownSideA = new List<int>(), DownSideB = new List<int>();
 
         /// Under this share of his start health a fighter is down: the fate is rolled before the game's own blow kills him.
-        private const float DownShare = 0.30f;
+        private const float DownShare = 0.45f;   // 0.30 until 2026-10-31: one blow took a man from over it to dead before the check saw him
 
         /// The fight going on now's own number (0: none).
         public int FightId { get { Live l = _live; return l != null && l.Fighting ? l.FightId : 0; } }
@@ -1507,8 +1622,8 @@ namespace EnrageWestworld.InGame
                 int h = k == -2 ? l.FightA : k == -1 ? l.FightB : l.Joiners[k][0];
                 if (h == 0 || (l.Out.Count > 0 && l.Out.Contains(h)) || !ENTITY.DOES_ENTITY_EXIST(h))
                     continue;
-                if (k < 0 && !l.WasBig)
-                    continue;   // the first two in a fight of a few: the 60% rule ends it before this
+                if (k < 0 && !l.WasBig && l.Joiners.Count == 0 && ComingFor(0) + ComingFor(1) == 0)
+                    continue;   // the first two alone, nobody joined or coming: the 60% rule ends it before this
                 // only the dead count as killed by the game's blow; a man the game has incapacitated is a down like any
                 // other and his fate is rolled (the review, 2026-10-31: he was killed whatever BrawlFistsFatal said)
                 bool dead = ENTITY.IS_ENTITY_DEAD(h);
@@ -1565,7 +1680,7 @@ namespace EnrageWestworld.InGame
             return !l.SideGone;
         }
 
-        private static void DropFromFight(Live l, int h)
+        private void DropFromFight(Live l, int h)
         {
             int side = SideOf(l, h);
             l.Out.Add(h);
@@ -1587,6 +1702,15 @@ namespace EnrageWestworld.InGame
                             break;
                         }
                     }
+                }
+                if (idx < 0 && ComingFor(side) > 0 && l.WaitSide < 0)
+                {
+                    // nobody left standing on his side, but one of theirs is on the way: the side waits for him (10 s at most),
+                    // and he leads it when he comes (AddFighter)
+                    l.WaitSide = side;
+                    l.WaitUntil = Game.GameTime + WaitMs;
+                    Log.Write("SCENE fight: a man down, the last of his side standing; " + ComingFor(side) + " of theirs on the way, so it waits for them");
+                    return;
                 }
                 if (idx < 0)
                 {

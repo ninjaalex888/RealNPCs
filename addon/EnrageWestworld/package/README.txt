@@ -1074,6 +1074,10 @@ in the file. The new ones:
             MindActs (true, under MindLive): people near you do what their minds choose (a stroll, the
             nearest bench, chair, bar or work spot, off home, clear of you or a foe, over to a friend).
             MindJoinFights (true, under MindLive): onlookers may join a fistfight on a side (at most three).
+            BrawlJoinMetres (30): they join from within this many metres; those over 10 m off run over,
+            counted for their side on the way. BrawlCrowdMetres (40): people this close walk over to watch
+            and cheer (FightCrowds; up to 6 round two men, 16 round a brawl). BrawlLeastSeconds (45): a
+            brawl goes on at least this long from its first blows, unless one side is all down.
             MindPlans (true, under MindLive): plans over days (get even, thank, pay a debt, court) that send
             people to find each other and shape their day. LadderShots (true, under MindLive): a quarrel
             may end in shots when one of them is armed.

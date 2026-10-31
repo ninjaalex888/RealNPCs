@@ -1,8 +1,11 @@
 // A crowd makes a ring round a street fight (the NPC-life run, step 5, the fight ring; Lex, 2026-10-30: crowds joining in,
-// one thing drawing the next). While two people trade blows, up to six of those within 20 m who aren't of a fearful nature
-// (the mind's anxiety), free and on their feet, walk over and stand round it, about 4.5 m out, facing in, and cheer it on
-// now and then; close enough that a friend of one may yet join in (WestworldScript.JoinIn.cs). When the fight is over they
-// go back to their own ways. Behind [Scenes] FightCrowds and MindLive.
+// one thing drawing the next). While people trade blows, those within [Mind] BrawlCrowdMetres (40; 20 fixed until
+// 2026-10-31, Lex: "a crowd that gathers") who aren't of a fearful nature (the mind's anxiety), free and on their feet,
+// walk over and stand round it, facing in, and cheer it on: up to 6 round two men, about 4.5 m out; up to 16 round a
+// brawl (three or more fighting), a second ring 7 m out, and in a brawl the sat and the leaning get up to come and see. A
+// busy street fills it to the cap, a few a look. Close enough that a friend of one may yet join in (WestworldScript.JoinIn.cs).
+// The ring is the fight's (its own number), so it stays when a downed leader is replaced. When the fight is over they go
+// back to their own ways. Behind [Scenes] FightCrowds and MindLive.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,11 +18,13 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private const int RingMost = 6;
-        private const float RingFrom = 20f, RingRadius = 4.5f;
+        private const int RingMostPair = 6, RingMostBrawl = 16, RingInner = 6, RingPerLook = 4;
+        private const float RingRadius = 4.5f, RingOuterRadius = 7f;
+        private float RingFrom { get { return _cfg.BrawlCrowdMetres; } }
         private string _ringKey;
         private readonly List<int> _ring = new List<int>();
-        private int _ringNextCheer, _ringNextLook, _rings;
+        private readonly List<int[]> _ringRising = new List<int[]>();   // { handle, when to walk over, spot index, since }: getting up off a bench or the bar first
+        private int _ringNextCheer, _ringNextLook, _rings, _ringBiggest;
 
         private void RingStep(int now)
         {
@@ -31,7 +36,7 @@ namespace EnrageWestworld.InGame
                     RingBreak();
                 return;
             }
-            string key = a[0] + "|" + b[0];
+            string key = _director.FightId != 0 ? "f" + _director.FightId : a[0] + "|" + b[0];   // the fight's, not its leaders': a downed leader replaced keeps the ring
             if (key != _ringKey)
             {
                 RingBreak();
@@ -41,54 +46,108 @@ namespace EnrageWestworld.InGame
             if (!ENTITY.DOES_ENTITY_EXIST(a[0]) || !ENTITY.DOES_ENTITY_EXIST(b[0]))
                 return;
             Vector3 mid = (ENTITY.GET_ENTITY_COORDS(a[0], true, true) + ENTITY.GET_ENTITY_COORDS(b[0], true, true)) * 0.5f;
-            if (now >= _ringNextLook && _ring.Count < RingMost)
+            int fighting = a.Count + b.Count;
+            int most = fighting >= 3 ? RingMostBrawl : RingMostPair;
+            if (now >= _ringNextLook && _ring.Count < most)
             {
                 _ringNextLook = now + 2000;
-                RingGather(mid, now);
+                RingGather(mid, now, most, fighting >= 3);
             }
+            if (_ringRising.Count > 0)
+                RingRiseStep(mid, now);
             if (now >= _ringNextCheer && _ring.Count > 0)
             {
-                _ringNextCheer = now + 2500 + _rng.Next(2500);
+                // a bigger ring cheers more often: one voice every 2.5-5 s round two men, about three times as often round sixteen
+                _ringNextCheer = now + Math.Max(800, (2500 + _rng.Next(2500)) * RingMostPair / Math.Max(RingMostPair, _ring.Count));
                 int h = _ring[_rng.Next(_ring.Count)];
-                if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !_director.Involves(h) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(mid) < RingRadius + 3f)
+                if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !_director.Involves(h) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(mid) < RingOuterRadius + 3f)
                     Speech.SayTag(h, _rng.Next(3) == 0 ? "mock" : "cheer", a[0]);
             }
         }
 
-        private void RingGather(Vector3 mid, int now)
+        private void RingGather(Vector3 mid, int now, int most, bool brawl)
         {
             Ped me = Game.Player.Character;
             var taken = new List<Ped>();
+            float from = RingFrom;
             foreach (Ped p in World.GetAllPeds())
             {
-                if (_ring.Count + taken.Count >= RingMost)
+                if (_ring.Count + taken.Count >= most || taken.Count >= RingPerLook)
                     break;
-                if (p == null || p.Position.DistanceTo(mid) > RingFrom)
+                if (p == null || p.Position.DistanceTo(mid) > from)
                     continue;   // the distance first
                 int h = p.Handle;
-                if (h == me.Handle || _ring.Contains(h) || p.IsDead || !PED.IS_PED_HUMAN(h) || Natives.IsLaw(p) || PED.IS_PED_USING_ANY_SCENARIO(h) || PED.IS_PED_IN_COMBAT(h, 0) ||
-                    PED.IS_PED_FLEEING(h) || _director.Involves(h) || MindActWhyNot(p, h) != null)
+                if (h == me.Handle || _ring.Contains(h) || p.IsDead || !PED.IS_PED_HUMAN(h) || Natives.IsLaw(p) || PED.IS_PED_IN_COMBAT(h, 0) ||
+                    PED.IS_PED_FLEEING(h) || _director.Involves(h) || JoinIsPending(h) || MindActWhyNot(p, h) != null)
                     continue;
+                if (PED.IS_PED_USING_ANY_SCENARIO(h) && !brawl)
+                    continue;   // round two men the sat and the leaning stay put; a brawl gets them up
                 Traits t = TraitsAt(p, now);
                 if (t == null || t.Z[Traits.Anxiety] > 0.4f)
                     continue;   // the mind's: nobody it doesn't know, and the fearful keep away
                 taken.Add(p);
             }
+            int rose = 0;
             foreach (Ped p in taken)
             {
                 int i = _ring.Count;
                 _ring.Add(p.Handle);
-                double ang = (i * 60 + Voice.Hash(_ringKey ?? "") % 60) * Math.PI / 180.0;
-                Vector3 spot = mid + new Vector3((float)Math.Cos(ang), (float)Math.Sin(ang), 0f) * RingRadius;
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, true);   // the fight doesn't send them off: they came to see it
-                TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(p.Handle, spot.X, spot.Y, spot.Z, 1.3f, 10000, 0.8f, 0, 0f);
-                TASK.TASK_LOOK_AT_ENTITY(p.Handle, _director.CastAt(0) != null ? _director.CastAt(0).Handle : 0, 20000, 0, 51, 0);
+                if (PED.IS_PED_USING_ANY_SCENARIO(p.Handle))
+                {
+                    TASK.CLEAR_PED_TASKS(p.Handle, true, false);   // up the game's way first; over once they're on their feet
+                    _ringRising.Add(new[] { p.Handle, now + 1500, i, now });
+                    rose++;
+                    continue;
+                }
+                RingWalk(p.Handle, mid, i);
             }
             if (taken.Count > 0)
             {
                 if (_ring.Count == taken.Count)
                     _rings++;
-                Log.Write("RING " + taken.Count + " gather round the fight (" + _ring.Count + " in the ring)");
+                if (_ring.Count > _ringBiggest)
+                    _ringBiggest = _ring.Count;
+                Log.Write("RING " + taken.Count + " gather round the fight (" + _ring.Count + " in the ring, up to " + most + ", from within " + from.ToString("0") + " m" + (rose > 0 ? "; " + rose + " get up to come" : "") + ")");
+            }
+        }
+
+        /// Their spot: the first six on the inner ring (60 degrees apart), the rest on the outer (30 apart, offset), facing in.
+        private void RingWalk(int h, Vector3 mid, int i)
+        {
+            int off = Voice.Hash(_ringKey ?? "") % 60;
+            double ang = (i < RingInner ? i * 60 + off : (i - RingInner) * 30 + off + 15) * Math.PI / 180.0;
+            float r = i < RingInner ? RingRadius : RingOuterRadius;
+            Vector3 spot = mid + new Vector3((float)Math.Cos(ang), (float)Math.Sin(ang), 0f) * r;
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, spot.X, spot.Y, spot.Z, 1.3f, 40000, 0.8f, 0, 0f);   // 40 s: from 40 m off they get there (10 s until 2026-10-31)
+            TASK.TASK_LOOK_AT_ENTITY(h, _director.CastAt(0) != null ? _director.CastAt(0).Handle : 0, 40000, 0, 51, 0);
+        }
+
+        /// Those getting up to come and see: walked over once off the bench or the bar; still on it 6 s on, left where they are.
+        private void RingRiseStep(Vector3 mid, int now)
+        {
+            for (int k = _ringRising.Count - 1; k >= 0; k--)
+            {
+                int[] r = _ringRising[k];
+                if (now < r[1])
+                    continue;
+                if (!ENTITY.DOES_ENTITY_EXIST(r[0]) || ENTITY.IS_ENTITY_DEAD(r[0]) || !_ring.Contains(r[0]))
+                {
+                    _ringRising.RemoveAt(k);
+                    continue;
+                }
+                if (PED.IS_PED_USING_ANY_SCENARIO(r[0]))
+                {
+                    if (now - r[3] > 6000)
+                    {
+                        _ringRising.RemoveAt(k);
+                        _ring.Remove(r[0]);
+                        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(r[0], false);   // still sat: watches from there, as the game has him
+                    }
+                    continue;
+                }
+                _ringRising.RemoveAt(k);
+                RingWalk(r[0], mid, r[2]);
             }
         }
 
@@ -103,12 +162,13 @@ namespace EnrageWestworld.InGame
             if (_ring.Count > 0)
                 Log.Detail("RING breaks up (" + _ring.Count + ")");
             _ring.Clear();
+            _ringRising.Clear();
             _ringKey = null;
         }
 
         private string RingStatus()
         {
-            return !_cfg.FightCrowds ? "off ([Scenes] FightCrowds)" : _rings + " fights drew a ring this session" + (_ring.Count > 0 ? "; one now (" + _ring.Count + ")" : "");
+            return !_cfg.FightCrowds ? "off ([Scenes] FightCrowds)" : _rings + " fights drew a ring this session (the biggest " + _ringBiggest + "; from within " + RingFrom.ToString("0") + " m, up to " + RingMostPair + " round two, " + RingMostBrawl + " round a brawl)" + (_ring.Count > 0 ? "; one now (" + _ring.Count + ")" : "");
         }
     }
 }

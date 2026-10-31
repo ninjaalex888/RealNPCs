@@ -88,7 +88,7 @@ namespace EnrageWestworld.InGame
             bool law = false;
             foreach (Ped p in World.GetAllPeds())
             {
-                if (p == null || p.Position.DistanceTo(mid) > JoinMetres + 18f)
+                if (p == null || p.Position.DistanceTo(mid) > JoinYouMetres + 18f)
                     continue;
                 int h = p.Handle;
                 if (h == me.Handle || h == foe || !p.Exists() || p.IsDead || !PED.IS_PED_HUMAN(h))
@@ -99,7 +99,7 @@ namespace EnrageWestworld.InGame
                         law = true;
                     continue;
                 }
-                if (p.Position.DistanceTo(mid) > JoinMetres || _youJoiners.Contains(h))
+                if (p.Position.DistanceTo(mid) > JoinYouMetres || _youJoiners.Contains(h))
                     continue;
                 witnesses++;
                 if (Spawner.IsOurs(h) || Natives.StoryModel(p) || !IsGrownUp(p) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) ||
