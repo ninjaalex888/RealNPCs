@@ -74,7 +74,7 @@ namespace EnrageWestworld.InGame
                 int h = MindHandleById(id);
                 if (h == 0 || _director.Involves(h) || IsAcknowledging(h) || _wakeActs.Any(a => a.Handle == h))
                     return;   // nobody near now, one of the scene's own (the one who stepped in: a witness too), or busy elsewhere (a nod, a rescue, a greeting to you)
-                string act = Onlooking.ActFor(f, f.Shows, ae.Role, PED.IS_PED_USING_ANY_SCENARIO(h), ev.Place, w.Traits);
+                string act = Onlooking.ActFor(f, f.Shows, ae.Role, PED.IS_PED_USING_ANY_SCENARIO(h), ev.Place, w.Traits, _cfg.Bravery);
                 if (act == null)
                     return;
                 int from = ev.DoerId == "player" ? Game.Player.Character.Handle : MindHandleById(ev.DoerId);
@@ -110,7 +110,7 @@ namespace EnrageWestworld.InGame
                     _onlookRoles.Add(a.Role);
                 }
                 List<int> picked = Onlooking.Pick(_onlookIds, _onlookFelt, _onlookActs);
-                foreach (int i in Onlooking.Spread(_onlookIds, _onlookFelt, _onlookActs, picked, Onlooking.MostRunning, _onlookRoles))   // one runs, and the frightened near go too (never a friend of one in it)
+                foreach (int i in Onlooking.Spread(_onlookIds, _onlookFelt, _onlookActs, picked, Bravery.MostRunning(_cfg.Bravery), _onlookRoles))   // one runs, and the frightened near go too (never a friend of one in it)
                     if (_onlookQueue.Count < OnlookQueueMost)
                     {
                         if (_onlookPending[i].Act != _onlookActs[i])
@@ -223,7 +223,7 @@ namespace EnrageWestworld.InGame
                         TASK.TASK_LOOK_AT_ENTITY(h, from, Onlooking.HoldMs("freeze"), 0, 51, 0);
                     TASK.TASK_STAND_STILL(h, Onlooking.HoldMs("freeze"));
                     did = "stands rooted";
-                    if (Onlooking.FreezeThenRun(a.Felt, a.Role) && _onlookQueue.Count < OnlookQueueMost)
+                    if (Onlooking.FreezeThenRun(a.Felt, a.Role, _cfg.Bravery) && _onlookQueue.Count < OnlookQueueMost)
                         _onlookQueue.Add(new OnlookerAct { Handle = a.Handle, Model = a.Model, From = a.From, QueuedAt = now, NotBefore = now + Onlooking.HoldMs("freeze"), Id = a.Id, Name = a.Name,
                                                            Woman = a.Woman, Act = "hurry", Felt = a.Felt, Role = a.Role, At = a.At, Why = a.Why });   // rooted a moment by the killing, then away (the review)
                     break;

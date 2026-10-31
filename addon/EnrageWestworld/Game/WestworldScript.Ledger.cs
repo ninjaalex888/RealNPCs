@@ -66,12 +66,15 @@ namespace EnrageWestworld.InGame
                 return;   // story missions are left alone, deaths in them too
             Ped me = Game.Player.Character;
             Vector3 at = me.Position;
+            BraveSweepBegin(now);   // every 2 s this pass is also the bravery sweep (WestworldScript.Bravery.cs): no array of its own
             foreach (Ped p in World.GetAllPeds())
             {
                 if (p == null || !p.Exists() || p.Handle == me.Handle || !PED.IS_PED_HUMAN(p.Handle) || p.Position.DistanceTo(at) > LedgerRange)
                     continue;
                 int h = p.Handle;
-                if (p.Position.DistanceTo(at) < 60f)
+                float dist = p.Position.DistanceTo(at);
+                BraveOne(p, h, dist);
+                if (dist < 60f)
                     WatchDowned(p, now);
                 Known k = KnownAt(p, now);
                 if (k == null || _deadNoted.Contains(h) || !ENTITY.IS_ENTITY_DEAD(h) || KnockedOutWhy(h) != null)
@@ -79,6 +82,7 @@ namespace EnrageWestworld.InGame
                 _deadNoted.Add(h);
                 LedgerNote(h, k.Id, k.Name, k.Kind, null, null);
             }
+            BraveSweepEnd(now);
             foreach (int h in _known.Keys.Where(x => !ENTITY.DOES_ENTITY_EXIST(x)).ToList())
             {
                 _known.Remove(h);

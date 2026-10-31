@@ -418,7 +418,8 @@ namespace EnrageWestworld.InGame
                 Vector3 away = other.Position - new Ped(act.Handle).Position;
                 away.Z = 0f;
                 Vector3 to = other.Position + (away.Length() < 0.5f ? new Vector3(0f, 1f, 0f) : away.Normalized) * 16f;
-                TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(o, to.X, to.Y, to.Z, answer == "fright" ? 2.2f : 1.3f, 12000, 1f, 0, 0f);
+                bool runs = answer == "fright" && !Bravery.Holds(_cfg.Bravery, seed + "|fright");   // the brave ([World] Bravery) walk off from it
+                TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(o, to.X, to.Y, to.Z, runs ? 2.2f : 1.3f, 12000, 1f, 0, 0f);
             }
             int n;
             _answers.TryGetValue(answer, out n);

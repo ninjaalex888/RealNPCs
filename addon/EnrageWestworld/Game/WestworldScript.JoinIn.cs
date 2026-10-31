@@ -32,6 +32,7 @@ namespace EnrageWestworld.InGame
         private void JoinStep(int now)
         {
             _director.FightMostMs = BrawlsOn ? 45000 : 20000;
+            _director.BraveryNow = _cfg.Bravery;   // the scene's own frights hold their ground by [World] Bravery
             _director.DownsOn = BrawlsOn;   // a man beaten down in a brawl: killed or knocked out, and it goes on (WestworldScript.Brawl.cs)
             if (_director.FighterDown == null)
                 _director.FighterDown = OnFighterDown;

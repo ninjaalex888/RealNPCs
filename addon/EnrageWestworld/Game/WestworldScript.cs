@@ -542,6 +542,7 @@ namespace EnrageWestworld.InGame
 		{
 			LawPulseEnd(0, true);
 			try { BrawlDownsRelease(); } catch { }   // nobody knocked out in a brawl stays unhurtable after a reload
+			try { BraveRestoreAll("the script stopped"); } catch { }   // the braver put back as the game had them
 			Shutdown04();
 			Save();
 			WatchStop();   // our own threads ended before Script Hook unloads us (a reload froze waiting on one, 2026-10-31)
@@ -1168,6 +1169,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST ladder: " + LadderStatus());
 			Log.Write("TEST joining fights: " + JoinStatus());
 			Log.Write("TEST brawl: " + BrawlStatus());
+			Log.Write("TEST bravery: " + BraveryStatus());
 			Log.Write("TEST minds acting: " + MindActsStatus());
 			Log.Write("TEST after fights: " + AftermathStatus());
 			Log.Write("TEST gangs: " + GangStatus());

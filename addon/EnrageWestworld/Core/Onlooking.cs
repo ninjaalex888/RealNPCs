@@ -45,10 +45,12 @@ namespace EnrageWestworld.Core
 
         /// What this onlooker does about it, or null for nothing beyond the look they already gave. `role`: the
         /// appraisal's (onlooker or friend; the two in it are the scene's, never this); `sitting`: in a scenario; `place`:
-        /// the happening's (saloon...); `t`: their nature (the pious and the orderly disapprove).
-        public static string ActFor(Feeling f, string shows, string role, bool sitting, string place = null, Traits t = null)
+        /// the happening's (saloon...); `t`: their nature (the pious and the orderly disapprove); `bravery`: [World] Bravery
+        /// (0 as built, the bars as they were; higher, a fright must be worse to send them off, and the rest stay to watch).
+        public static string ActFor(Feeling f, string shows, string role, bool sitting, string place = null, Traits t = null, int bravery = 0)
         {
             bool saloon = place == "saloon", strong = f != null && f.Intensity >= Appraisal.Strong;
+            float hurryBar = Bravery.HurryBar(bravery), leaveBar = Bravery.LeaveBar(bravery);
             if (f == null || f.Kind == "none" || sitting)
                 return null;
             if (role != "onlooker" && role != "friend")
@@ -60,10 +62,12 @@ namespace EnrageWestworld.Core
                 case "avoid":
                     if (shows == "turned")
                         return "bristle";   // fear shown as bluster stands and glares instead
-                    if (role == "onlooker" && f.Intensity < LeaveBar)
+                    if (role == "onlooker" && f.Intensity < leaveBar)
                         return f.Kind == "fear" ? "watch" : null;   // a stranger's mild fright doesn't send them off: they watch it warily (the advisor, after StreetVolumeTest: two in three fights had someone walk off)
-                    if (strong && f.Kind == "fear" && role == "onlooker")
-                        return "hurry";   // real danger, badly frightened: they hurry off, not stroll (NIGHT3; a brisk walk away, the flee still unproven)
+                    if (f.Intensity >= hurryBar && f.Kind == "fear" && role == "onlooker")
+                        return "hurry";
+                    if (bravery > 0 && strong && f.Kind == "fear" && role == "onlooker")
+                        return "watch";   // badly frightened, and brave: stands back and watches it (Lex, 2026-10-31)   // real danger, badly frightened: they hurry off, not stroll (NIGHT3; a brisk walk away, the flee still unproven)
                     return saloon && !strong ? "watch" : "leave";   // a saloon's fights were nothing new: a mild fright there stays to watch
                 case "freeze":
                     return "freeze";
@@ -106,9 +110,9 @@ namespace EnrageWestworld.Core
 
         /// Whether someone rooted by fright then runs (the review: a killing is always armed, so strong fear froze and nobody
         /// hurried): an onlooker's strong fear, shown, after the freeze's moment.
-        public static bool FreezeThenRun(Feeling f, string role)
+        public static bool FreezeThenRun(Feeling f, string role, int bravery = 0)
         {
-            return f != null && f.Kind == "fear" && f.Intensity >= Appraisal.Strong && role == "onlooker" && f.Shows != "masked";
+            return f != null && f.Kind == "fear" && f.Intensity >= Bravery.HurryBar(bravery) && role == "onlooker" && f.Shows != "masked";
         }
 
         /// Emotional contagion (NIGHT3, the psychologist's list): one of the picked hurries off, and the others who were

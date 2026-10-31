@@ -463,7 +463,10 @@ namespace EnrageWestworld.InGame
                 else
                 {
                     TASK.TASK_AIM_GUN_AT_ENTITY(h, target, 6000, false, 0);
-                    TASK.TASK_SMART_FLEE_PED(target, h, 40f, 8000, 0, 3f, 0);
+                    if (Bravery.Holds(_cfg.Bravery, _brawlFightFor + "|drawn|" + target))
+                        TASK.TASK_HANDS_UP(target, 8000, h, -1, false);   // brave ([World] Bravery): the gun held on him, he stands with his hands up
+                    else
+                        TASK.TASK_SMART_FLEE_PED(target, h, 40f, 8000, 0, 3f, 0);
                     WanderLater(h, now + 9000);
                 }
                 _brawlDrew++;

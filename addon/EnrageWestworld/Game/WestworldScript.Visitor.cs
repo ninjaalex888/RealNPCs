@@ -270,11 +270,15 @@ namespace EnrageWestworld.InGame
                     !Natives.Bystander(p, me.Handle, IsRecord(p.Handle)) || MayDirectWhyNot(p) != null || NotFree(p.Handle) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, v.Figure.Handle, 17))
                     continue;
                 v.Fled = true;
-                TASK.TASK_SMART_FLEE_PED(p.Handle, v.Figure.Handle, 60f, 20000, 0, 3f, 0);
+                bool stands = Bravery.Holds(_cfg.Bravery, "visitor|" + p.Handle);   // brave ([World] Bravery): stands and stares at it, then backs off at a walk
+                if (stands)
+                    TASK.TASK_SMART_FLEE_PED(p.Handle, v.Figure.Handle, 15f, 12000, 0, 1f, 0);
+                else
+                    TASK.TASK_SMART_FLEE_PED(p.Handle, v.Figure.Handle, 60f, 20000, 0, 3f, 0);
                 Speech.SayTag(p.Handle, "scared", 0);
                 if (NodInView(me, p))
                     _ticker.Push(Grammar.UpperFirst(Director.Kind(p, !PED.IS_PED_MALE(p.Handle))) + ", thinking", Visitor.Fled(p.Handle + "|" + now), "near", p.Handle);
-                Log.Write("VISITOR: " + Director.Kind(p, !PED.IS_PED_MALE(p.Handle)) + " out late came upon it, and ran");
+                Log.Write("VISITOR: " + Director.Kind(p, !PED.IS_PED_MALE(p.Handle)) + " out late came upon it, and " + (stands ? "backed off from it" : "ran"));
                 return;
             }
         }

@@ -207,6 +207,7 @@ namespace EnrageWestworld.Core
         public int AvengerGapHours = 48;    // game hours between one avenger's arrival and the next's
         public bool CastRelatives = true;
         public bool CastRelativesSpawn = true;   // when nobody free is on the street (enRAGE has named most walkers in a well-played town), the relative is made out of sight behind you and let go to the game after (Lex, 2026-10-29; settings version 95)
+        public int Bravery = EnrageWestworld.Core.Bravery.AsBuilt;   // [World] how brave the townsfolk are, 0-100: the brave hold their ground where the game would send them running (PCF 44, cower instead of flee), and stand back from the mod's own frights; 0 as the game has it (Lex, 2026-10-31; settings version 161)
         public bool OwnLooks = false;   // [World] standing alone: an ordinary person is known again by the look of the body they were met in (the model and every piece they wear), so the same townsman met again is the same man (roadmap 34, phase A; night 2026-10-29, item 5; settings version 110); off as it comes until seen in game; with enRAGE running, its own knowing by look is used and this never
         public bool Drama = true;
         public int DramaGapSeconds = 60;   // 150 until settings version 87, 90 until 101 (Lex, 2026-10-28 and 10-29: the world lively)
@@ -679,6 +680,7 @@ namespace EnrageWestworld.Core
             BrawlMost = Math.Max(Brawl.LeastAtAll, Math.Min(Brawl.MostAtAll, BrawlMost));
             BrawlDrawShare = Math.Max(0, Math.Min(100, BrawlDrawShare));
             BrawlFistsFatal = Math.Max(0, Math.Min(100, BrawlFistsFatal));
+            Bravery = Math.Max(0, Math.Min(100, Bravery));
             // stalker hours: the stalker day still runs 05:00 to 05:00; day hours stay in daylight, night hours cross midnight
             StalkerEveryMinutes = Math.Max(1, Math.Min(120, StalkerEveryMinutes));
             StalkerNearbyMetres = Math.Max(20, Math.Min(150, StalkerNearbyMetres));
@@ -933,6 +935,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("GatheringChance = " + GatheringChance + "   ; percent on each roll, between midnight and half past three");
             b.AppendLine();
             b.AppendLine("[World]");
+            b.AppendLine("Bravery = " + Bravery + "   ; how brave the townsfolk are, 0-100: in a fistfight nobody runs, they gather and watch; with guns most hold their ground and the odd coward still runs; the mod's own frights (an onlooker hurrying off, a fright that spreads, a man a gun is drawn on) mostly stand back and watch instead. Someone you aim at or lock on to is left as the game has them, so hold-ups and robbery work as before. Never lawmen, story characters, mission people or enRAGE's. 0: as the game has it");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");
             b.AppendLine("SelfDefenceNoBounty = " + B(SelfDefenceNoBounty) + "   ; killing or hurting someone who came at you (soldiers too) doesn't raise your bounty or make you wanted: RealNPCs puts it back, unless you also hurt someone who didn't, or did another crime");
             b.AppendLine("TownPosts = " + B(TownPosts) + "   ; the shopkeepers, barkeeps, gunsmiths, doctors and station agents are each one person for good, who knows you; when one dies, a relative or a newcomer takes the counter");

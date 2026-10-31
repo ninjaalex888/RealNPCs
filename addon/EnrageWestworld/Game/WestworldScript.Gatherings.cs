@@ -268,7 +268,10 @@ namespace EnrageWestworld.InGame
             {
                 int h = m.Ped.Handle;
                 TASK.CLEAR_PED_TASKS(h, true, false);
-                TASK.TASK_SMART_FLEE_PED(h, me.Handle, 200f, -1, 0, 3f, 0);
+                if (Bravery.Holds(_cfg.Bravery, "scatter|" + h))
+                    TASK.TASK_SMART_FLEE_PED(h, me.Handle, 40f, 20000, 0, 1.3f, 0);   // brave ([World] Bravery): walks off from you, unhurried
+                else
+                    TASK.TASK_SMART_FLEE_PED(h, me.Handle, 200f, -1, 0, 3f, 0);
             }
             if (live.Count > 0)
                 Feed.Say("The ring breaks", Encounters.Pick(Encounters.GatherScatter, "scatter|" + now / 1000), Speech.When(live[0].Ped.Handle, "scared", me.Handle), toYou: true);

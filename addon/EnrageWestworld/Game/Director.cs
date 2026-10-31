@@ -994,7 +994,10 @@ namespace EnrageWestworld.InGame
                         return 600;
                     }
                 case "flee":
-                    TASK.TASK_SMART_FLEE_PED(h, t, 40f, -1, 0, 2f, 0);
+                    if (Bravery.Holds(BraveryNow, l.Seed + "|flee|" + who))
+                        TASK.TASK_SMART_FLEE_PED(h, t, 10f, 6000, 0, 1f, 0);   // brave ([World] Bravery): backs off a few steps, at a walk
+                    else
+                        TASK.TASK_SMART_FLEE_PED(h, t, 40f, -1, 0, 2f, 0);
                     return 600;
                 case "kneel":
                     TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Crouch, 9000, true, 0u, -1f, false);
@@ -1062,6 +1065,8 @@ namespace EnrageWestworld.InGame
                             PED.SET_PED_COMBAT_ATTRIBUTES(t, 5, false);
                             TASK.TASK_COMBAT_PED(t, h, 0, 16);
                         }
+                        else if (Bravery.Holds(BraveryNow, l.Seed + "|drawn"))
+                            TASK.TASK_HANDS_UP(t, 8000, h, -1, false);   // brave ([World] Bravery): unarmed, he stands his ground with his hands up
                         else
                             TASK.TASK_SMART_FLEE_PED(t, h, 80f, -1, 0, 3f, 0);
                         l.Shooter = h;
@@ -1167,7 +1172,12 @@ namespace EnrageWestworld.InGame
 
         /// A brawl stays a brawl: if a fighter reaches for a gun or a knife, it goes back in the holster.
         private const int FightStartMs = 16000;   // 12 s until 2026-10-30: a man getting up off the bar is given 8 s before he's pulled off it
-        private static readonly int[] FightAttrIds = { 5, 46, 58 };   // fight unarmed, always fight, never flee the fight
+        // 5 and 46 together make them fight with fists (femga and Halen84 name them CA_ALWAYS_FIGHT and
+        // CA_CAN_FIGHT_ARMED_PEDS_WHEN_NOT_ARMED), 58 CA_DISABLE_FLEE_FROM_COMBAT; since 2026-10-31 ([World] Bravery's half for
+        // fights) 77 CA_DISABLE_RESPONDED_TO_THREAT_BROADCAST, as the game's own street fight sets on its fighters
+        // (beat_street_fight.c), so the fight doesn't send the crowd running, and 78 CA_DISABLE_ALL_RANDOMS_FLEE (named in both
+        // lists, no script seen setting it); every one of them put back when the scene ends
+        private static readonly int[] FightAttrIds = { 5, 46, 58, 77, 78 };
 
         /// The order to fight, once both are on their feet: a man sat or leaning is told to stop (the clear lets him get
         /// up) and, still in it after 3 s, taken out of it at once. Given again every 2 s until they're at it.
@@ -1348,6 +1358,10 @@ namespace EnrageWestworld.InGame
         // ---- a man down in a brawl (Lex, 2026-10-31: "a death does not end a big brawl"; fists fatal or a knockout) ----
 
         private static int _fightSeq;
+
+        /// [World] Bravery, set by the game layer every look: the scene's own frights (a man backing off, the unarmed man a
+        /// gun is drawn on) hold their ground this percent of the time (0: they run, as before).
+        public int BraveryNow;
 
         /// With [Mind] MindBrawls (set by the game layer every look): a fighter beaten down is dropped from the sides and the
         /// fight goes on; FighterDown is told so it can roll his fate.

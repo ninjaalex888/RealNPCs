@@ -1089,6 +1089,8 @@ namespace EnrageWestworld.InGame
             }
             Safe("lines", _aLater);
             LedgerStep(now);   // deaths are noted whether or not the player has control (not in story missions)
+            if (_brave.Count > 0)
+                Safe("bravery aim", _aBraveAim ?? (_aBraveAim = () => BraveAimStep(_now)));   // whoever you aim at gets the game's own answer back that frame (WestworldScript.Bravery.cs)
             DeedEyesStep(now);   // who saw a killing is still alive to tell it (WestworldScript.Watch.cs)
             RecordFatesStep(now);   // a record's death RealNPCs caused, written into its record (WestworldScript.Directing.cs)
             TrystWatchdog(now);   // never left dark (outside the trysts' own guard)

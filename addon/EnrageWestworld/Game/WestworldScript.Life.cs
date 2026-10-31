@@ -1054,6 +1054,12 @@ namespace EnrageWestworld.InGame
                 }
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, false);
                 TASK.CLEAR_PED_TASKS(p.Handle, true, false);
+                if (Bravery.Holds(_cfg.Bravery, "wedding|" + p.Handle))
+                {
+                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(p.Handle, me.Handle, 4000, 0f, 0f, 0f);   // brave ([World] Bravery): stands and stares at you, then goes
+                    WanderLater(p.Handle, Game.GameTime + 5000);
+                    continue;
+                }
                 TASK.TASK_SMART_FLEE_PED(p.Handle, me.Handle, 120f, -1, 0, 3f, 0);
                 if (!screamed)
                     screamed = Speech.SayAny(p.Handle, Speech.Scared, me.Handle);

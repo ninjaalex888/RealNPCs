@@ -143,7 +143,7 @@ namespace EnrageWestworld.InGame
                         _revivedLast = w.Name + " saw " + r.Name + " walking";
                         MindLog(now, "MIND revived: " + w.Name + " sees " + r.Name + ", whom they saw die " + (days <= 0 ? "today" : days == 1 ? "yesterday" : days + " days ago") + ": " + f.Kind + " (" + f.Strength + "), urge " + f.Urge + ", shows " + f.Shows);
                         MindBelieve(w, w.Id, f, ae, now);   // the belief breaks on its own (Beliefs.Move: the revived), so they stir (DoubtGaveWay)
-                        string act = _cfg.MindOnlookers ? Onlooking.ActFor(f, f.Shows, "onlooker", PED.IS_PED_USING_ANY_SCENARIO(wh), ae.Place, w.Traits) : null;
+                        string act = _cfg.MindOnlookers ? Onlooking.ActFor(f, f.Shows, "onlooker", PED.IS_PED_USING_ANY_SCENARIO(wh), ae.Place, w.Traits, _cfg.Bravery) : null;
                         if (act != null && _onlookQueue.Count < OnlookQueueMost)
                             _onlookQueue.Add(new OnlookerAct { Handle = wh, Model = ENTITY.GET_ENTITY_MODEL(wh), From = rh, QueuedAt = now - OnlookDelayMs, Id = w.Id, Name = w.Name, Woman = w.P.Woman, Act = act, Felt = f,
                                                                Why = "the revived dead: " + r.Name });
