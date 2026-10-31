@@ -905,11 +905,12 @@ INSTALL
    RealNPCs\backup\CasualHookups.ini.before-realnpcs. Restart the game once after that: it may
    only read its settings when the game starts. Its settings are on the panel's Romance page.
    After Hook up (H), press B for its scene. It shows no prompt at all for some kinds of women
-   (Saint Denis' working girls, for one): if none of its scenes begins within 15 seconds,
-   RealNPCs remembers that kind and the night is its own fade instead. With CasualHookupsDecides
-   (or Romance, or Trysts) off, RealNPCs gives CasualHookups its own chances back from that copy
-   (from the next start), and sets them again when it's back on; chances you set on the panel
-   yourself are left alone.
+   (Saint Denis' working girls, for one): if none of its scenes begins within 15 seconds, the
+   night is RealNPCs' own fade instead, and once B came to nothing on her (or twice with no
+   B), RealNPCs remembers that kind. With CasualHookupsDecides (or Romance, or Trysts) off,
+   RealNPCs gives CasualHookups its own chances back from that copy (from the next start; until
+   then it holds CasualHookups' Flirt key on every woman), and sets them again when it's back
+   on; chances you set on the panel yourself are left alone.
 
 To uninstall, delete RealNPCs.dll. You can also delete the RealNPCs folder in
 Documents if you don't want to keep what people remembered.
@@ -947,7 +948,8 @@ Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\
                             kept separately for each character
     diaries\                one text file per diary, e.g. "arthur - Elihu Starling.txt"
     backup\                 NemesisMod.ini and CasualHookups.ini as they were before RealNPCs
-                            changed them
+                            changed them (and CasualHookups.chances-at-start: the chances
+                            it started the current game with)
 
 If you load an older save, the add-on notices that game time went backwards and forgets anything
 that hadn't happened yet.
@@ -1163,7 +1165,7 @@ Ctrl+F2   Show minds on or off for this session: the card over people near you (
 Q         locked on to someone RealNPCs knows: Talk (TalkKey; a pad's RB). It is the game's own
           lock-on "target info" control, with its own icon: rebind that control in the game's
           Settings > Controls to use another key (e.g. T), and the icon follows (rebound to T, the
-          same press also turns the ticker).
+          same press also turns the ticker, and next to a telegraph clerk opens enRAGE's telegraph).
 T         the next line on the ticker now (on a long line, its next part first;
           TickerNextKey). T is enRAGE's telegraph key too: near a telegraph clerk, both happen.
 None of the others are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's

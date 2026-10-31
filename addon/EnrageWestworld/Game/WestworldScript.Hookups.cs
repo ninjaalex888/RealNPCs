@@ -11,17 +11,21 @@
 //     B is the lock-on menu's horse-brush key; on foot B also opens the satchel, which the first test will show.
 // Not known yet: whether the hold stops its prompt, and whether it reads its ini while running or only at the start.
 // The log says what happened (HOOKUPS ...): the key pressed, held, and whether a scene seemed to follow (the player's
-// controls off or his undressing, or the two of them within 0.9 m, for 3 s; judged from his side, since its strings
-// speak of hiding the woman and replacing a stale one), with her handle's state, so a night still counts here.
+// controls off or his undressing, for 3 s; judged from his side, since its strings speak of hiding the woman and replacing
+// a stale one), with her handle's state, so a night still counts here. The two of them within 0.9 m counts only for a
+// woman who never said yes (did the hold hold): a willing woman stands that close at the ask anyway (review, 2026-10-31).
 // Hook up (H) on a willing woman (Lex, 2026-10-31, after Opal Ackerman's yes led nowhere: CasualHookups shows no prompt
 // at all for a kind it won't take, so B was never there to press): a kind it is known to take (Store.Counts
 // "hookups takes:<model>", learned when its scene follows a B press on a willing woman) is told to press B; a kind it
 // is known not to take gets RealNPCs' own night at once (the fade); an unknown kind is told to press B, and if no scene
-// of its starts within HookupAskWaitMs (15 s) that kind is learned as "won't" and the night is RealNPCs' own, with a
-// short notice, so the player is never left waiting on a prompt that isn't there.
+// of its starts within HookupAskWaitMs (15 s) the night is RealNPCs' own, with a short notice, so the player is never
+// left waiting on a prompt that isn't there. That kind is learned as "won't" when B was pressed on her and nothing
+// followed, or after two asks with B never pressed (a missed press alone proves nothing), and never while CasualHookups
+// may be rolling its own chances (_hookupsStartOdds: what it loaded at the game's start isn't 0/100/0).
 // Not deciding (Romance, Trysts or CasualHookupsDecides off): its own chances are put back from the copy in
 // RealNPCs\backup (only while they are still RealNPCs' 0/100/0), and 0/100/0 again when RealNPCs decides once more (only
-// while they are still that copy's), so the panel's own numbers stand. Its key stays on B (G is enRAGE's).
+// while they are still that copy's), so the panel's own numbers stand. Its key stays on B (G is enRAGE's). It may read
+// them only at the start, so while it started this game on 0/100/0 its key is held on every woman (never G) till then.
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -50,6 +54,9 @@ namespace EnrageWestworld.InGame
             public bool SawScene;  // the player's side of a scene seen (controls off, undressing): enough to learn "takes"
             public int AskedAt;
         }
+
+        private string _hookupsStartOdds = "?";   // the chances CasualHookups loaded when the game started, as far as known
+        private bool _hookupsToldUnlinked;
 
         private const int HookupFallbackMs = 10000;   // no sign of its scene this long after its key: RealNPCs' own night
         private const int HookupAskWaitMs = 15000;    // a kind not known yet: this long after the ask for its scene to begin
@@ -101,6 +108,7 @@ namespace EnrageWestworld.InGame
             HookupsRead();
             _hookupsStartHash = _hookupsKeyHash;
             _hookupsStartKey = _hookupsKey;
+            HookupsStartOdds();
             try
             {
                 // RealNPCs moved its key after this game started (and was reloaded since, with Insert): it may still be on
@@ -128,6 +136,68 @@ namespace EnrageWestworld.InGame
             Log.Write("HOOKUPS: CasualHookups found (its Flirt on " + HookupsKeyText + ", chances " + _hookupsOdds + " turned down / yes at once / a second try). " +
                       (HookupsLinked ? "It works only on a woman who has said yes to your flirting here; RealNPCs doesn't fade to black itself." : "RealNPCs leaves it alone ([Romance] CasualHookupsDecides off, or Trysts or Romance off), with its own chances."));
         }
+
+        /// The chances CasualHookups loaded when this game started (it may read its ini only then): the file's as RealNPCs
+        /// first saw it in this game, kept in RealNPCs\backup\CasualHookups.chances-at-start, so an Insert reload after
+        /// RealNPCs changed them still knows.
+        private void HookupsStartOdds()
+        {
+            _hookupsStartOdds = _hookupsOdds;
+            try
+            {
+                string f = Path.Combine(_dir, "backup", "CasualHookups.chances-at-start");
+                if (File.Exists(f) && File.GetLastWriteTimeUtc(f) > System.Diagnostics.Process.GetCurrentProcess().StartTime.ToUniversalTime())
+                    _hookupsStartOdds = File.ReadAllText(f).Trim();
+                else
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(f));
+                    File.WriteAllText(f, _hookupsOdds);
+                }
+            }
+            catch
+            {
+            }
+            Log.Write("HOOKUPS: CasualHookups started this game with chances " + _hookupsStartOdds + (_hookupsStartOdds == "0/100/0" ? "" : " (if it reads them only at the start, it rolls its own dice till the next start, so till then RealNPCs learns no kind it won't take)"));
+        }
+
+        /// CasualHookups may be rolling its own dice this game: a willing woman's B can fail on its chances, not her kind.
+        private bool HookupsOwnDice
+        {
+            get { return _hookupsStartOdds != "0/100/0"; }
+        }
+
+        /// Its own chances, as in the copy in RealNPCs\backup (null if there's none or it lacks one).
+        private string HookupsBackupOdds()
+        {
+            if (_hookupsBackupOdds != null)
+                return _hookupsBackupOdds.Length > 0 ? _hookupsBackupOdds : null;
+            _hookupsBackupOdds = "";
+            try
+            {
+                string mark = Path.Combine(_dir, "backup", "CasualHookups.ini.before-realnpcs");
+                if (!File.Exists(mark))
+                    return null;   // looked at again at the next change of HookupsLinked (SetUpOnce may make it)
+                IniDoc was = IniDoc.Read(mark, false);
+                if (was.Error != null)
+                    return null;
+                string[] keys = { "notInterested", "givesInImmediately", "needsSecondFlirt" };
+                string[] orig = new string[3];
+                for (int i = 0; i < 3; i++)
+                {
+                    IniEntry e = was.FindKey(keys[i]);
+                    orig[i] = e != null ? e.Value.Trim() : "";
+                    if (orig[i].Length == 0)
+                        return null;
+                }
+                _hookupsBackupOdds = string.Join("/", orig);
+            }
+            catch
+            {
+            }
+            return _hookupsBackupOdds.Length > 0 ? _hookupsBackupOdds : null;
+        }
+
+        private string _hookupsBackupOdds;
 
         /// Its chances to always give in, and its key off enRAGE's G, once (the backup copy is the mark).
         private void HookupsSetUpOnce()
@@ -249,13 +319,37 @@ namespace EnrageWestworld.InGame
                 HookupsChances(HookupsLinked);
             }
             HookupsWatch(now);
-            if (!HookupsLinked || _hookupsKeyHash == 0 || !PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle))
+            bool linked = HookupsLinked;
+            // not deciding, but it started this game always giving in (0/100/0) and its own chances aren't that: put back
+            // in the file, they may count only from the next start, so till then its key is held on every woman (never G)
+            string own = linked || _hookupsIni == null ? null : HookupsBackupOdds();
+            bool holdAll = own != null && own != "0/100/0" && _hookupsStartOdds == "0/100/0";
+            if (!linked && _hookupsIni != null && !_hookupsToldUnlinked)
+            {
+                _hookupsToldUnlinked = true;
+                Log.Write(holdAll ? "HOOKUPS: RealNPCs doesn't decide, but CasualHookups started this game always giving in (0/100/0), so its Flirt (" + HookupsKeyText + ") is held on every woman until the game restarts (never G); from then on it has its own chances (" + own + ")"
+                                  : "HOOKUPS: RealNPCs doesn't decide, and CasualHookups started this game with chances " + _hookupsStartOdds + ", so it's left alone with its own dice");
+            }
+            if (linked)
+                _hookupsToldUnlinked = false;
+            if ((!linked && !holdAll) || _hookupsKeyHash == 0 || !PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle))
                 return;
             int target = 0;
             if (!PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle))
                 PLAYER.GET_PLAYER_INTERACTION_TARGET_ENTITY(Game.Player.Handle, &target, false, false);
             if (target == 0 || !ENTITY.DOES_ENTITY_EXIST(target) || !ENTITY.IS_ENTITY_A_PED(target) || !PED.IS_PED_HUMAN(target) || PED.IS_PED_MALE(target) || PED.IS_PED_A_PLAYER(target))
                 return;
+            if (!linked)
+            {
+                // nobody is willing for it while RealNPCs doesn't decide: held, no watch, no hint
+                bool heldAll = HookupsHold(_hookupsKeyHash) | (_hookupsStartHash != _hookupsKeyHash && HookupsHold(_hookupsStartHash));
+                if (heldAll && (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, _hookupsKeyHash) || (_hookupsStartHash != 0 && PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, _hookupsStartHash))))
+                {
+                    _hookupsHeld++;
+                    Log.Write("HOOKUPS held (not deciding): CasualHookups' Flirt on " + TalkName(new Ped(target)) + ", until the game restarts with its own chances");
+                }
+                return;
+            }
             TrystOffer o = _trystOffer;
             bool willing = o != null && o.Hookups && o.Night && o.Handle == target && now <= o.Until;
             if (!willing)
@@ -370,14 +464,16 @@ namespace EnrageWestworld.InGame
                 Log.Write("HOOKUPS: no longer watching " + _hookRun.Name + " (Hook up asked of " + o.Name + ")");
             _hookRun = new HookupRun { Handle = o.Handle, Name = o.Name, Kind = o.Kind, Who = o.Who, Offer = o, AskedAt = now, Willing = true, FromAsk = true };
             Log.Write("HOOKUPS ask: " + o.Name + " (" + model + "): not known yet whether CasualHookups takes her kind; press " + HookupsKeyText + ", and if no scene of its begins within " + HookupAskWaitMs / 1000 + " s the night is RealNPCs' own");
-            Feed.Notice("RealNPCs", "Press " + key + " (CasualHookups' Flirt) for its scene with " + o.Name + ". If it shows no prompt for her, wait: RealNPCs' own night follows.");
+            Feed.Notice("RealNPCs", "Press " + key + " (CasualHookups' Flirt) within " + HookupAskWaitMs / 1000 + " s for its scene with " + o.Name + ". If it shows no prompt for her, wait: RealNPCs' own night follows.");
         }
 
         /// Its chances follow whether RealNPCs decides: 0/100/0 while it does, its own (the copy in RealNPCs\backup) while it
         /// doesn't. Only between those two, so numbers set on the panel stand. Its key is left where it is (off G, enRAGE's).
-        /// Chosen over holding its key on every woman: off means "the two mods apart", which is CasualHookups with its own dice.
+        /// Chosen over holding its key on every woman for good: off means "the two mods apart", which is CasualHookups with its
+        /// own dice. Only while it may still have RealNPCs' 0/100/0 from the game's start is its key held (HookupsTick).
         private void HookupsChances(bool linked)
         {
+            _hookupsBackupOdds = null;
             string mark = Path.Combine(_dir, "backup", "CasualHookups.ini.before-realnpcs");
             if (!File.Exists(mark))
             {
@@ -476,9 +572,13 @@ namespace EnrageWestworld.InGame
             bool inScene = PlayerInScene(me.Handle, controlOff);   // from his side: she may be hidden or stood in for
             if (h.StartedAt == 0)
             {
-                // before any press of its key only his side counts: she stands close to him at the ask anyway
-                bool sign = inScene || (h.Pressed && there && d < 0.9f);
-                if (sign)
+                // a willing woman stands close to him at the ask anyway, so for her only his side begins a scene (review,
+                // 2026-10-31: her standing distance after a B press with no prompt counted as its scene, and the fallback
+                // never came); the two close still stirs a watch on a pressed known kind (the 60 s end falls back), and
+                // begins one for a woman who never said yes (did the hold hold)
+                bool close = h.Pressed && there && d < 0.9f;
+                bool sign = h.Willing ? inScene : inScene || close;
+                if (sign || (close && !h.FromAsk))
                     h.Stirred = true;
                 if (inScene)
                     h.SawScene = true;
@@ -490,12 +590,29 @@ namespace EnrageWestworld.InGame
                     // 2026-10-26; it showed no prompt at all for Opal Ackerman, 2026-10-31): the night is RealNPCs' own, so
                     // what she said and what happens agree (Lex)
                     bool takes = HookupsTakes(h.Handle);
-                    Log.Write("HOOKUPS with " + h.Name + " (" + (ModelOf(h.Handle) ?? "?") + "): no sign of its scene " +
-                              (h.FromAsk ? (now - h.AskedAt) / 1000 + " s after Hook up (its key " + (h.Pressed ? "pressed " + (now - h.PressedAt) / 1000 + " s ago" : "never pressed: its prompt likely never showed") + ")"
+                    string model = ModelOf(h.Handle);
+                    Log.Write("HOOKUPS with " + h.Name + " (" + (model ?? "?") + "): no sign of its scene " +
+                              (h.FromAsk ? (now - h.AskedAt) / 1000 + " s after Hook up (its key " + (h.Pressed ? "pressed " + (now - h.PressedAt) / 1000 + " s ago" : "never seen pressed: its prompt may never have shown") + ")"
                                          : (now - h.PressedAt) / 1000 + " s after its key") +
                               (takes ? ", though it has taken her kind before" : "") + " (her: " + HerState(h.Handle) + ")");
-                    if (!takes)
+                    // learned as "won't" only from a press that came to nothing (or two asks with none), and only while its
+                    // chances are surely RealNPCs' 0/100/0 (else its own dice may have said no)
+                    if (takes || model == null || _store == null)
+                    {
+                    }
+                    else if (HookupsOwnDice)
+                        Log.Write("HOOKUPS: " + model + " not learned as a kind it won't take: its chances may be its own (" + _hookupsStartOdds + ") until the next start");
+                    else if (h.Pressed)
                         HookupsLearnWont(h.Handle, h.Name);
+                    else
+                    {
+                        string miss = "hookups no press:" + model.ToLowerInvariant();
+                        _store.Bump(miss, 1);
+                        if (_store.Count(miss) >= 2)
+                            HookupsLearnWont(h.Handle, h.Name);
+                        else
+                            Log.Write("HOOKUPS: " + model + " not learned yet: its key was never seen pressed (once; twice and it's learned as a kind it won't take)");
+                    }
                     _hookRun = null;
                     _hookupsLast = h.Name + ": CasualHookups started nothing, RealNPCs' night instead";
                     TrystFallback(h.Offer, "CasualHookups started nothing", h.Offer == null || !h.Offer.Asked, true);   // asked: her yes was just said
@@ -511,8 +628,7 @@ namespace EnrageWestworld.InGame
                         _hookupsScenes++;
                         if (h.Willing)
                         {
-                            if (h.SawScene)
-                                HookupsLearnTakes(h.Handle, h.Name);   // his side of its scene seen, not only the two of them close
+                            HookupsLearnTakes(h.Handle, h.Name);   // his side of its scene seen (a willing watch begins on nothing else)
                             h.After = _engine.Tryst(h.Who, h.Kind, Bridge.Now());
                             _trystOffer = null;
                             _trystCount++;
