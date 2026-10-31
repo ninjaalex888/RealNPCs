@@ -43,6 +43,8 @@ namespace EnrageWestworld.InGame
                 return;
             // a kind CasualHookups turns down, or no to the night: the night is ours, or nobody's
             bool hookups = r.Night && HookupsLinked && !HookupsWont(ped);
+            if (r.Night && HookupsLinked && !hookups)
+                Log.Write("HOOKUPS: CasualHookups won't take " + name + "'s kind (" + (ModelOf(ped) ?? "?") + "), so her Hook up is RealNPCs' own night (the fade)");
             _trystOffer = new TrystOffer { Handle = ped, Name = name, Kind = r.TrystKind, Who = r.Who, Hookups = hookups, Night = r.Night, Greeted = r.Greeted,
                                            Until = Game.GameTime + (hookups ? HookupWillingMs : Trysts.OfferMs) };
             Log.Write("TRYST offered: " + name + " (" + r.TrystKind + ", chance " + r.Chance + "%, the night " + r.NightChance + "% -> " + (r.Night ? "yes" : "no") +
@@ -86,12 +88,19 @@ namespace EnrageWestworld.InGame
             }
             Feed.Say(o.Name, yes, FlirtVoice(o.Name, Speech.WhenFirst(her.Handle, FlirtVoices.Night(o.Kind, seed), me.Handle)), toYou: true, ahead: true);
             _flirtSaidUntil = Game.GameTime + 7000;
+            if (o.Hookups && (!HookupsLinked || HookupsWont(her.Handle)))
+            {
+                // learned since her yes that CasualHookups won't take her kind (or RealNPCs no longer decides): our own night
+                o.Hookups = false;
+                Log.Write("HOOKUPS: " + o.Name + "'s night is RealNPCs' own after all (" + (HookupsLinked ? "CasualHookups won't take her kind, " + (ModelOf(her.Handle) ?? "?") : "RealNPCs no longer decides for CasualHookups") + ")");
+            }
             if (o.Hookups)
             {
                 // the night is CasualHookups': the words only, and she stays willing a while longer
                 o.Until = Math.Max(o.Until, Game.GameTime + HookupWillingMs);
                 o.Asked = true;   // asked: the prompt goes back to Flirt, and CasualHookups' own Flirt takes it on
                 Log.Write("TRYST asked: " + o.Name + " (" + o.Kind + "): " + ask + " -> " + yes + "; CasualHookups' Flirt (" + HookupsKeyText + ") next");
+                HookupsAsked(o, Game.GameTime);   // press B for a kind it takes; else a watch, and RealNPCs' own night if nothing begins
                 return true;
             }
             _tryst = new TrystRun { Offer = o, Phase = 0, At = Game.GameTime + 4500 };
@@ -101,8 +110,9 @@ namespace EnrageWestworld.InGame
         }
 
         /// She said yes and CasualHookups started nothing: she says yes again, in her voice, and the night is RealNPCs' own,
-        /// so her words and what happens agree (2026-10-26, Lex). If now won't do, a second flirt still asks her.
-        private void TrystFallback(TrystOffer o, string why)
+        /// so her words and what happens agree (2026-10-26, Lex). If now won't do, a second flirt still asks her. `sayYes`
+        /// false: she said yes to Hook up a moment ago, so straight to the dark without saying it twice.
+        private void TrystFallback(TrystOffer o, string why, bool sayYes = true, bool tell = false)
         {
             if (o == null || _tryst != null)
                 return;
@@ -117,15 +127,22 @@ namespace EnrageWestworld.InGame
                 o.Until = Game.GameTime + Trysts.OfferMs;
                 _trystOffer = there ? o : null;
                 Log.Write("TRYST " + o.Name + ": " + why + ", and RealNPCs' own night can't be now (" + cant + ")" + (there ? "; Hook up (H) to ask her again" : ""));
+                if (tell && there)
+                    Feed.Notice("RealNPCs", "CasualHookups didn't take " + o.Name + ". Hook up (H) to ask her again.");
                 return;
             }
+            if (tell)
+                Feed.Notice("RealNPCs", "CasualHookups didn't take " + o.Name + ": RealNPCs' own night instead.");
             string seed = o.Who.Id + "|" + Bridge.Now() / 60;
-            string yes = Trysts.Yes(o.Kind, seed);
-            Feed.Say(o.Name, yes, FlirtVoice(o.Name, Speech.WhenFirst(o.Handle, FlirtVoices.Night(o.Kind, seed), me.Handle)), toYou: true, ahead: true);
-            _flirtSaidUntil = Game.GameTime + 7000;
+            string yes = sayYes ? Trysts.Yes(o.Kind, seed) : null;
+            if (sayYes)
+            {
+                Feed.Say(o.Name, yes, FlirtVoice(o.Name, Speech.WhenFirst(o.Handle, FlirtVoices.Night(o.Kind, seed), me.Handle)), toYou: true, ahead: true);
+                _flirtSaidUntil = Game.GameTime + 7000;
+            }
             _trystOffer = null;
-            _tryst = new TrystRun { Offer = o, Phase = 0, At = Game.GameTime + 4500 };
-            Log.Write("TRYST " + o.Name + " (" + o.Kind + "): " + why + ", so RealNPCs' own night: " + yes);
+            _tryst = new TrystRun { Offer = o, Phase = 0, At = Game.GameTime + (sayYes ? 4500 : 1500) };
+            Log.Write("TRYST " + o.Name + " (" + o.Kind + "): " + why + ", so RealNPCs' own night" + (sayYes ? ": " + yes : " (her yes to Hook up already said)"));
         }
 
         private void TrystStep(int now)

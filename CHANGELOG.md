@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Hook up with CasualHookups: never stuck without its prompt
+- From Lex's test: Opal Ackerman, a saloon woman, said yes to the flirting and to Hook up, and the hint said to press CasualHookups' Flirt (B) next, but CasualHookups showed no B prompt at all. It shows none for a kind of woman it won't take, so nothing happened.
+- Now Hook up (H) on a willing woman goes by what is known of her kind (her model):
+  - CasualHookups is known to take her kind: the hint says press B for its scene. A kind is learned as taken (`hookups takes:<model>` in the save) when its scene follows a B press on a willing woman, seen from your side (your controls off or Arthur undressing), not just the two of you standing close.
+  - Known not to take her kind: RealNPCs' own night at once (the fade).
+  - Not known yet: the hint says press B, and if it shows no prompt for her, to wait. If no scene of CasualHookups' begins within 15 s of Hook up (10 s after a B press, if that's later), her kind is learned as one it won't take, a short notice says so, and RealNPCs' own night follows without her saying yes a second time. Before a B press, her standing close to you doesn't count as its scene beginning.
+  - A watch that saw the two of you close but never a scene, after 60 s, now gives RealNPCs' own night too (if she's still there), so her yes is never left hanging.
+- Every branch is logged: `HOOKUPS ask: ... has taken her kind before, so press B`, `HOOKUPS ask: ... not known yet whether CasualHookups takes her kind; press B, and if no scene of its begins within 15 s the night is RealNPCs' own`, `HOOKUPS key pressed on ... N s after Hook up`, `HOOKUPS with ... no sign of its scene N s after Hook up (its key never pressed: its prompt likely never showed)`, `HOOKUPS: CasualHookups takes <model>` / `won't take <model>`, and `HOOKUPS: CasualHookups won't take <name>'s kind (<model>), so her Hook up is RealNPCs' own night` at her yes.
+- With RealNPCs not deciding (`[Romance] Romance`, `Trysts` or `CasualHookupsDecides` off), CasualHookups now gets its own chances back. Before, RealNPCs left it alone but its chances stayed at RealNPCs' "always gives in" (0/100/0), so its B Flirt worked on every woman. RealNPCs puts back the three chances from its copy in `RealNPCs\backup\CasualHookups.ini.before-realnpcs`, and sets 0/100/0 again when it decides once more. It only moves between those two sets, so chances you set on the panel stand. Its key stays on B (G is enRAGE's). This was chosen over holding its key on every woman: off means the two mods apart, which is CasualHookups with its own dice. CasualHookups may read its settings only when the game starts, so a change takes effect from the next start. Log `HOOKUPS: RealNPCs doesn't decide now, so CasualHookups has its own chances back` / `RealNPCs decides again`.
+
 ### Keys, brawls, aim: review fixes
 - Flirt on H: a Hook up press that came to nothing (she was in a fight, the lock-on dropped, too far off) no longer makes the next Flirt press, even on another woman, the Hook up ask. Every press is read once.
 - Talk: `[World] TalkKey = Q` (the old key) works again. Q's press of the prompt opens Talk, where before it was thrown away as "not Talk's key". With Q, Talk no longer stands aside by a clerk (only T is enRAGE's telegraph key).

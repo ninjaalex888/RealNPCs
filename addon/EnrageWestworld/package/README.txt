@@ -904,6 +904,12 @@ INSTALL
    it always gives in, since she has already said yes. The original file is kept as
    RealNPCs\backup\CasualHookups.ini.before-realnpcs. Restart the game once after that: it may
    only read its settings when the game starts. Its settings are on the panel's Romance page.
+   After Hook up (H), press B for its scene. It shows no prompt at all for some kinds of women
+   (Saint Denis' working girls, for one): if none of its scenes begins within 15 seconds,
+   RealNPCs remembers that kind and the night is its own fade instead. With CasualHookupsDecides
+   (or Romance, or Trysts) off, RealNPCs gives CasualHookups its own chances back from that copy
+   (from the next start), and sets them again when it's back on; chances you set on the panel
+   yourself are left alone.
 
 To uninstall, delete RealNPCs.dll. You can also delete the RealNPCs folder in
 Documents if you don't want to keep what people remembered.
@@ -1057,7 +1063,9 @@ in the file. The new ones:
             Trysts (true): when she says yes, the same H is Hook up (once she's said it) for two minutes; her answer
             to that is its own (better after a greeting), then the screen goes dark, an hour passes
             CasualHookupsDecides (true): with CasualHookups installed, its Flirt works only on a
-            woman who has said yes to you, and RealNPCs doesn't fade to black itself
+            woman who has said yes to you, and RealNPCs doesn't fade to black itself (unless
+            CasualHookups won't take her kind: then the fade, at once or after 15 s); off: its own
+            chances back
 [Output]    PerfMeter (true): times every part of RealNPCs each frame; F7 writes the costliest,
             and the log says when it goes over budget (PERF)
 [Mind]      Minds (true): people think about what is most on their minds, from what they lived through;
