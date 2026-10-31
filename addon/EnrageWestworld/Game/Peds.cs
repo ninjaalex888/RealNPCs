@@ -4,10 +4,12 @@
 // array without a word, so every part of the add-on went blind at once. Peds.All() calls ScriptHookRDR2.dll's export
 // itself (int worldGetAllPeds(int *arr, int arrSize)) into a reused buffer, builds the Ped[] once a game frame and hands
 // the same array to every caller that frame: never write into it (copy first). A failure, or a 0 (never true in the
-// world: Arthur is in the pool himself), within LastGoodMs of a good list gives that list back, cut to the handles that
-// still exist, and is logged once a minute and counted for F7 "TEST peds:". With the export missing it falls back to
+// world: Arthur is in the pool himself) gives the last good list back, cut to the handles that still exist and are still
+// peds, for as long as the trouble lasts; logged once a minute (and once when it's over), counted for F7 "TEST peds:".
+// With the export missing it falls back to
 // World.GetAllPeds and says so once. Script thread only: a call from another thread is logged once and gets nothing.
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using RDR2;
@@ -17,7 +19,7 @@ namespace EnrageWestworld.InGame
 {
     internal static class Peds
     {
-        private const int BufferSize = 2048, LastGoodMs = 5000, LogGapMs = 60000;
+        private const int BufferSize = 2048, LogGapMs = 60000;
 
         [DllImport("ScriptHookRDR2.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "worldGetAllPeds")]
         private static extern int worldGetAllPeds([In, Out] int[] arr, int arrSize);
@@ -28,7 +30,10 @@ namespace EnrageWestworld.InGame
         private static int _frame = -1, _lastGoodAt, _thread, _loggedAt = -LogGapMs, _lastCount;
         private static bool _haveFrame, _apiOnly, _otherThreadLogged;
         private static int _calls, _empties, _failures, _keptFrames, _lastKept, _lastFailAt, _peak;
+        private static int _failingSince;
+        private static bool _failing, _everGood;
         private static string _lastWhy;
+        private static readonly List<Ped> Kept = new List<Ped>(BufferSize);
 
         // Every ped in the world this frame. The array is shared by every caller this frame: read it, don't change it.
         public static Ped[] All()
@@ -103,6 +108,12 @@ namespace EnrageWestworld.InGame
 
         private static Ped[] Good(Ped[] list, int now)
         {
+            if (_failing)
+            {
+                _failing = false;
+                Log.Write("PEDS list: back, " + list.Length + " peds after " + (now - _failingSince) / 1000 + " s of trouble");
+            }
+            _everGood = true;
             _lastGood = list;
             _lastGoodAt = now;
             _lastCount = list.Length;
@@ -111,7 +122,10 @@ namespace EnrageWestworld.InGame
             return list;
         }
 
-        // A failure or an empty list: the last good one, if it's recent, cut to who still exists.
+        // A failure or an empty list: the last good one, cut to who is still a ped in the world, for as long as the trouble
+        // lasts (Lex's went on for minutes; a 5 s cutoff left him as blind as before). The survivors become the last good
+        // list, so each frame checks only them: one DOES_ENTITY_EXIST and one IS_ENTITY_A_PED a ped (a handle freed by a
+        // ped that went can be handed to a wagon or a prop). Nobody new shows until the export gives a list again.
         private static Ped[] Bad(string why, int now)
         {
             if (why == "empty")
@@ -120,19 +134,23 @@ namespace EnrageWestworld.InGame
                 _failures++;
             _lastWhy = why;
             _lastFailAt = now;
-            Ped[] kept = None;
-            bool recent = _lastGood.Length > 0 && now - _lastGoodAt <= LastGoodMs;
-            if (recent)
+            if (!_failing)
             {
-                int count = 0;
+                _failing = true;
+                _failingSince = now;
+            }
+            Ped[] kept = None;
+            if (_lastGood.Length > 0)
+            {
+                Kept.Clear();
                 for (int i = 0; i < _lastGood.Length; i++)
-                    if (ENTITY.DOES_ENTITY_EXIST(_lastGood[i].Handle))
-                        count++;
-                kept = new Ped[count];
-                int k = 0;
-                for (int i = 0; i < _lastGood.Length; i++)
-                    if (ENTITY.DOES_ENTITY_EXIST(_lastGood[i].Handle))
-                        kept[k++] = _lastGood[i];
+                {
+                    Ped p = _lastGood[i];
+                    if (p != null && ENTITY.DOES_ENTITY_EXIST(p.Handle) && ENTITY.IS_ENTITY_A_PED(p.Handle))
+                        Kept.Add(p);
+                }
+                kept = Kept.Count == _lastGood.Length ? _lastGood : Kept.ToArray();
+                _lastGood = kept;
                 _keptFrames++;
             }
             _lastKept = kept.Length;
@@ -140,9 +158,9 @@ namespace EnrageWestworld.InGame
             if (now - _loggedAt >= LogGapMs)
             {
                 _loggedAt = now;
-                Log.Write("PEDS list: " + why + " (" + Where() + "; " + (recent
-                    ? kept.Length + " kept from the last good list, " + (now - _lastGoodAt) / 1000 + " s old"
-                    : "nothing kept: the last good list is " + (_lastGood.Length == 0 ? "empty" : (now - _lastGoodAt) / 1000 + " s old")) + ")");
+                Log.Write("PEDS list: " + why + " (" + Where() + "; " + (!_everGood
+                    ? "nothing kept: no good list yet"
+                    : kept.Length + " kept from the last good list, " + (now - _lastGoodAt) / 1000 + " s old") + ")");
             }
             return kept;
         }
