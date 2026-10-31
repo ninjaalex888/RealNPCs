@@ -1,10 +1,13 @@
 // The interaction menu, the game side (NIGHT3 item 4; Core/Interact.cs holds the choosing and the words). Locked on to an
-// adult RealNPCs knows (a resident, one of enRAGE's townsfolk or records), the game's lock-on menu also offers "Talk" on T
-// ([World] TalkKey, since 2026-10-31; Q before). No game control has T as its keyboard key (femga's Controls list goes from
-// Space to Tab to U), so the key is read by RealNPCs itself (KeyDown04) while the prompt is up; the prompt stays on
-// INPUT_INTERACT_LOCKON_TARGET_INFO so a pad's RB and its glyph still work, reads "Talk (T)" on the keyboard and its Q
-// press does nothing there. The clerk's Reset prompt uses that control only in a station clerk's list, and Talk stands
-// aside there, and on the keyboard next to any station or telegraph clerk (T is enRAGE's telegraph key). Pressing it opens a short list above the ticker: up and
+// adult RealNPCs knows (a resident, one of enRAGE's townsfolk or records), the game's lock-on menu also offers "Talk" on
+// the game's own INPUT_INTERACT_LOCKON_TARGET_INFO control (Q on the keyboard, RB on a pad), with its own icon. [World]
+// TalkKey = Q (the default; Lex, 2026-10-31, after a day on T) means exactly that control: a player who rebinds it in the
+// game's Settings > Controls (to T, or anything) gets that key and its icon. Any other TalkKey is the direct-read path: no
+// game control has T as its keyboard key (femga's Controls list goes from Space to Tab to U), so RealNPCs reads that key
+// itself (KeyDown04) while the prompt is up; the prompt still shows the control's icon, reads "Talk (T)" on the keyboard,
+// and the control's own press does nothing there; that path alone stands aside on the keyboard next to a station or
+// telegraph clerk (T is enRAGE's telegraph key). TalkKey = None: no keyboard prompt, a pad's RB only. Either way Talk stands
+// aside while the clerk's Reset prompt (the same control) is up for the same person. Pressing it opens a short list above the ticker: up and
 // down (or the D-pad, or the mouse wheel) to choose, Space or Enter (A) to say it, Backspace (B) to leave; the keyboard's keys while the
 // keyboard is in use, the pad's buttons while a pad is. Arthur's words show as a subtitle, then their answer in their
 // own voice with its subtitle (afraid or hostile when they are), and what it is (a round, charity, a warning) is written
@@ -52,7 +55,7 @@ namespace EnrageWestworld.InGame
             public string Foot;        // the hint under the list: which key says it and which leaves
         }
 
-        private const uint TalkControl = 0x31219490;   // INPUT_INTERACT_LOCKON_TARGET_INFO: a pad's RB (Q on the keyboard, which Talk ignores: T is read itself)
+        private const uint TalkControl = 0x31219490;   // INPUT_INTERACT_LOCKON_TARGET_INFO: Q on the keyboard as the game comes (rebindable in its Controls menu), a pad's RB
         private const uint MenuUp = 1662638961u, MenuDown = 97156178u, MenuAccept = 3350541322u, MenuCancel = 359624985u;   // the settings panel's pad buttons
         private const uint InputJump = 0xD9D0E1C0;   // INPUT_JUMP: Space says the chosen line, so Arthur doesn't jump with it
         // the mouse wheel, as the settings panel reads it: the cursor's scroll, then the weapon and menu-scroll controls it is during play
@@ -72,8 +75,9 @@ namespace EnrageWestworld.InGame
         private static string _talkWordKeyFor;
         private TalkMenu _menu;
         private int _talkPrompt, _talkPromptFor, _talkPromptGroup, _talkOpened, _talkSaid, _talkSettled;
-        private bool _talkPromptKeyboard;   // the prompt as made: "Talk (T)" for the keyboard, "Talk" for a pad
-        private bool _talkKeyRequested, _talkKeyNoted;   // TalkKey pressed while the prompt was up (KeyDown04); the start's log line said
+        private string _talkPromptWords;   // the prompt as made: the key in "Talk (T)" for a key read directly on the keyboard, else null ("Talk")
+        private bool _talkKeyRequested, _talkKeyNoted;   // a direct-read TalkKey pressed while the prompt was up (KeyDown04); the key's log line said
+        private string _talkKeyNotedFor;   // the TalkKey that line was for (said again when it changes)
         private readonly HashSet<string> _talkConfided = new HashSet<string>();   // who has told him their worry this session (a money worry he knows of: the gift is five dollars)
         private readonly bool[] _talkKeys = new bool[13];
         private string _talkLast;
@@ -86,10 +90,14 @@ namespace EnrageWestworld.InGame
         {
             if (_aTalkPrompt == null)
                 _aTalkPrompt = TalkPromptTick;
-            if (_cfg.InteractionMenu && !_talkKeyNoted)
+            if (_cfg.InteractionMenu && (!_talkKeyNoted || _talkKeyNotedFor != _cfg.TalkKey))
             {
                 _talkKeyNoted = true;
-                Log.Write("TALK key: " + TalkKeyName() + " read directly (no game control defaults to T); prompt shown on INPUT_INTERACT_LOCKON_TARGET_INFO (pad RB)");
+                _talkKeyNotedFor = _cfg.TalkKey;
+                string k = TalkKeyName();
+                Log.Write(TalkOnControl() ? "TALK key: the game's lock-on target-info control (INPUT_INTERACT_LOCKON_TARGET_INFO: Q as the game comes, a pad's RB), its own icon; rebind that control in the game's Settings > Controls for another key"
+                          : k == null ? "TALK key: none on the keyboard ([World] TalkKey None); a pad's RB on INPUT_INTERACT_LOCKON_TARGET_INFO only"
+                          : "TALK key: " + k + " read directly by RealNPCs (TalkKey isn't Q); the prompt reads \"Talk (" + k + ")\" beside the control's own icon, which a press of that control does nothing for; a pad's RB as ever");
             }
             if (_cfg.InteractionMenu || _talkPrompt != 0 || _menu != null)
                 Safe("talk menu", _aTalkPrompt);
@@ -101,6 +109,14 @@ namespace EnrageWestworld.InGame
         {
             string k = _cfg != null ? (_cfg.TalkKey ?? "").Trim() : "";
             return k.Length == 0 || k.Equals("None", StringComparison.OrdinalIgnoreCase) ? null : k;
+        }
+
+        /// TalkKey = Q (the default): Talk is the game's own control itself, on whatever key the game's Controls menu has it
+        /// (Q as it comes), with its icon. Any other key is read directly (KeyDown04).
+        private bool TalkOnControl()
+        {
+            string k = TalkKeyName();
+            return k != null && k.Equals("Q", StringComparison.OrdinalIgnoreCase);
         }
 
         /// A station or telegraph clerk within 3.5 m of Arthur: enRAGE's telegraph opens on T there, so Talk's T stands aside.
@@ -153,45 +169,46 @@ namespace EnrageWestworld.InGame
             }
             bool keyboard = PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
             string key = TalkKeyName();
-            // TalkKey set to the control's own keyboard key (Q, the old key): the prompt's own completion is Talk's press
-            // (the review, 2026-10-31: else the press was thrown away below and Talk never opened on Q); and no standing aside
-            // by a clerk then, since only T is enRAGE's telegraph key
-            bool keyIsControl = key != null && key.Equals("Q", StringComparison.OrdinalIgnoreCase);
-            if (keyboard && (key == null || (!keyIsControl && TelegraphClerkNear(me))))
+            // TalkKey = Q (the default): the control itself, keyboard or pad, whatever key the game's Controls menu gives it
+            // and with its own icon; no standing aside by a clerk (that was only for a read T, enRAGE's telegraph key)
+            bool onControl = TalkOnControl();
+            if (keyboard && !onControl && (key == null || TelegraphClerkNear(me)))
             {
-                // on the keyboard Talk is its key alone: none set, or a clerk beside him whose T is enRAGE's telegraph
+                // the direct-read path on the keyboard: no key set, or a clerk beside him whose T is enRAGE's telegraph
                 if (key != null && _clerkNotedFor != target)
                 {
                     _clerkNotedFor = target;
-                    Log.Write("TALK stands aside: a station or telegraph clerk is within 3.5 m (" + key + " is enRAGE's telegraph there)");
+                    Log.Write("TALK stands aside: a station or telegraph clerk is within 3.5 m (" + key + ", read directly, is enRAGE's telegraph there)");
                 }
                 TalkPromptEnd();
                 return;
             }
+            string words = keyboard && !onControl ? key : null;   // "Talk (T)" only for a key read directly; else "Talk" by the control's icon
             int group = HUD._UI_PROMPT_GET_GROUP_ID_FOR_TARGET_ENTITY(target);
-            if (_talkPrompt == 0 || !HUD._UI_PROMPT_IS_VALID(_talkPrompt) || _talkPromptFor != target || _talkPromptGroup != group || _talkPromptKeyboard != keyboard)
+            if (_talkPrompt == 0 || !HUD._UI_PROMPT_IS_VALID(_talkPrompt) || _talkPromptFor != target || _talkPromptGroup != group || _talkPromptWords != words)
             {
                 TalkPromptEnd();
-                _talkPrompt = NewTalkPrompt(group, keyboard ? key : null);   // made again when the keyboard or a pad takes over: its words differ
+                _talkPrompt = NewTalkPrompt(group, words);   // made again when its words change (keyboard or pad, or TalkKey)
                 _talkPromptFor = target;
                 _talkPromptGroup = group;
-                _talkPromptKeyboard = keyboard;
+                _talkPromptWords = words;
             }
             bool completed = HUD._UI_PROMPT_HAS_STANDARD_MODE_COMPLETED(_talkPrompt, 0);
-            if (keyboard && completed && !keyIsControl && !_talkKeyRequested)
+            if (keyboard && !onControl && completed && !_talkKeyRequested)
             {
-                // the control's Q on the keyboard: not Talk's key now, so the prompt is made afresh and nothing opens
+                // the direct-read path: the control's own key on the keyboard isn't Talk's key, so the prompt is made afresh
+                // and nothing opens
                 TalkPromptEnd();
                 return;
             }
-            bool byKey = keyboard && (_talkKeyRequested || (completed && keyIsControl));
+            bool byKey = keyboard && !onControl && _talkKeyRequested;
             _talkKeyRequested = false;
             if (completed || byKey)
             {
                 TalkPromptEnd();
                 _talkWhyFor = 0;
                 if (TalkWhyNot(target, me, MenuReach) == null)   // asked afresh: the cached answer may be a quarter second old
-                    TalkOpen(new Ped(target), byKey ? key : "the Talk prompt", MenuReach);
+                    TalkOpen(new Ped(target), byKey ? key + ", read directly" : keyboard ? "the Talk control (Q unless rebound)" : "the Talk prompt (RB)", MenuReach);
             }
         }
 
@@ -783,7 +800,7 @@ namespace EnrageWestworld.InGame
 
         private string TalkStatus()
         {
-            return (_cfg.InteractionMenu ? "on (Talk on " + (TalkKeyName() ?? "no key") + ", read directly, or a pad's RB, in the lock-on menu)" : "off ([World] InteractionMenu)") + "; opened " + _talkOpened + " times, " + _talkSaid + " things said" +
+            return (_cfg.InteractionMenu ? "on (Talk in the lock-on menu on " + (TalkOnControl() ? "the game's lock-on target-info control: Q unless rebound in its Controls menu, a pad's RB" : TalkKeyName() != null ? TalkKeyName() + ", read directly, or a pad's RB" : "a pad's RB only (TalkKey None)") + ")" : "off ([World] InteractionMenu)") + "; opened " + _talkOpened + " times, " + _talkSaid + " things said" +
                    (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_talkSettled > 0 ? ", " + _talkSettled + " worries mended" : "") +
                    (_talkModelAsked > 0 ? "; the model worded " + _talkModelSaid + " of " + _talkModelAsked + " answers (" + _talkModelHeld + " held by the checks, " + _talkModelLate + " late)" : "") + (_menu != null ? "; open on " + _menu.Name : "");
         }

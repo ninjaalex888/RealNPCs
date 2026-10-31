@@ -148,7 +148,7 @@ namespace EnrageWestworld.InGame
             // counts too, unless that exact combination is another of RealNPCs' keys (players, 2026-10-30: Alt+R stopped working)
             if (!(_settingsKey.MatchesLoose(e) || _settingsKey2.MatchesLoose(e)))
                 return false;
-            if (_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _tickerNextKey.Matches(e) || _talkHotkey.Matches(e) || IsTestingKey(e))
+            if (_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _tickerNextKey.Matches(e) || (!TalkOnControl() && _talkHotkey.Matches(e)) || IsTestingKey(e))
                 return false;
             if (!_looseKeyNoted)
             {
