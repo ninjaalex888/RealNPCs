@@ -16,8 +16,9 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private const int JoinEveryMs = 2500;
-        private const float JoinMetres = 12f;
-        private int _joinNextAt, _joinTotal;
+        private const float JoinMetres = 18f;   // 12 until 2026-10-31 (Lex, in busy Saint Denis: more of the street should join)
+        private const int JoinMeetMost = 6;     // strangers given a resident's identity on the spot in one look, the nearest first (the cost)
+        private int _joinNextAt, _joinTotal, _joinMet;
         private bool _joinFailed;
         private string _joinLast;
 
@@ -31,6 +32,9 @@ namespace EnrageWestworld.InGame
         private void JoinStep(int now)
         {
             _director.FightMostMs = BrawlsOn ? 45000 : 20000;
+            _director.DownsOn = BrawlsOn;   // a man beaten down in a brawl: killed or knocked out, and it goes on (WestworldScript.Brawl.cs)
+            if (_director.FighterDown == null)
+                _director.FighterDown = OnFighterDown;
             if (!_cfg.MindLive || !_cfg.MindJoinFights || _joinFailed || now < _joinNextAt)
                 return;
             _joinNextAt = now + JoinEveryMs;
@@ -82,6 +86,8 @@ namespace EnrageWestworld.InGame
                 if (p.Position.DistanceTo(mid) > JoinMetres || _director.Involves(h))
                     continue;
                 witnesses++;
+                if (_director.IsOut(h) || _brawlOut.ContainsKey(h) || _brawlFatal.Contains(h))
+                    continue;   // knocked out in it, or killed: not getting up to join
                 if (Spawner.IsOurs(h) || Natives.StoryModel(p) || !IsGrownUp(p) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) || _wakeActs.Any(w => w.Handle == h) ||
                     (PED.IS_PED_USING_ANY_SCENARIO(h) && !(BrawlsOn && a.Count + b.Count >= 3)) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || MayDirectWhyNot(p) != null ||
                     JoinIsPending(h))
@@ -90,30 +96,65 @@ namespace EnrageWestworld.InGame
             }
             if (looking.Count == 0)
                 return;
-            string fight = a[0] + "|" + b[0] + "|" + (a.Count + b.Count);
+            string fight = (_director.FightId != 0 ? "f" + _director.FightId : a[0] + "|" + b[0]) + "|" + (a.Count + b.Count);
             bool saloon = _placeKind == "saloon", sure = BrawlsOn && now < _brawlTestUntil;   // the Testing row: the waves without the bar or the roll
             int most = MostJoinersNow, room = most - _director.JoinerCount - _joinPending.Count;
-            int wave = BrawlsOn ? Brawl.Wave(a.Count + b.Count, saloon, room) : Math.Min(1, room);
-            var takes = new List<KeyValuePair<JoinTake, KeyValuePair<Ped, string>>>();
+            int wave = BrawlsOn ? Brawl.Wave(a.Count + b.Count, saloon, room, witnesses) : Math.Min(1, room);
+            var takes = new List<KeyValuePair<JoinTake, KeyValuePair<Ped, MindWho>>>();
+            int met = 0;
+            if (BrawlsOn && !OwnLooksOn)
+                looking = looking.OrderBy(p => p.Position.DistanceTo(mid)).ToList();   // the nearest strangers are the ones given a name
             foreach (Ped p in looking)
             {
                 MindWho w = MindKnown(p.Handle, now);
+                // with brawls on, anyone near may join (Lex, 2026-10-31: in Saint Denis only people the mind had met could):
+                // a stranger is given a resident's identity on the spot, as the street scenes do, a few a look; never with
+                // OwnLooks on (its reading of clothes is the kind that froze the game)
+                if (BrawlsOn && !OwnLooksOn && (w == null || w.Id == null) && met < JoinMeetMost && ResidentEligible(p))
+                {
+                    met++;
+                    if (ResidentOf(p) != null)
+                    {
+                        _mindWho.Remove(p.Handle);   // the cache had them as nobody a moment ago
+                        w = MindKnown(p.Handle, now);
+                        _joinMet++;
+                    }
+                }
                 if (w == null || w.Id == null || w.Src == null)
                     continue;   // the mind decides who joins: nobody it doesn't know
                 Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
                 JoinTake take = JoinIn.Weigh(w.Id, t, !PED.IS_PED_MALE(p.Handle), InHisCups(p, w.P), sides, LadderWarmth, witnesses, law, saloon,
                                              _cfg.WomenInFights, _director.JoinerCount + _joinPending.Count, fight + "|" + w.Id, most, BrawlsOn, sure);
                 if (take.Side >= 0)
-                    takes.Add(new KeyValuePair<JoinTake, KeyValuePair<Ped, string>>(take, new KeyValuePair<Ped, string>(p, w.Name)));
+                    takes.Add(new KeyValuePair<JoinTake, KeyValuePair<Ped, MindWho>>(take, new KeyValuePair<Ped, MindWho>(p, w)));
                 else if (take.Why != null && take.Score > 0.2f)
                     Log.Detail("BRAWL " + w.Name + " stays out: " + take.Why);
             }
-            foreach (var kv in takes.OrderByDescending(x => x.Key.Score).Take(wave))
+            int placed = 0, joinedNow = _director.JoinerCount + _joinPending.Count;
+            foreach (var kv in takes.OrderByDescending(x => x.Key.Score))
             {
+                if (placed >= wave)
+                    break;
                 JoinTake best = kv.Key;
                 Ped bestPed = kv.Value.Key;
-                string bestName = kv.Value.Value;
+                MindWho bw = kv.Value.Value;
+                string bestName = bw.Name;
+                if (BrawlsOn && placed > 0)
+                {
+                    // weighed again against the sides as this wave has left them, so a wave doesn't all pile onto one man
+                    best = JoinIn.Weigh(bw.Id, bw.Traits, !PED.IS_PED_MALE(bestPed.Handle), InHisCups(bestPed, bw.P), sides, LadderWarmth, witnesses, law, saloon,
+                                        _cfg.WomenInFights, joinedNow, fight + "|" + bw.Id, most, BrawlsOn, sure);
+                    if (best.Side < 0)
+                        continue;
+                }
+                placed++;
+                joinedNow++;
                 List<int> theirs = best.Side == 0 ? b : a;
+                if (BrawlsOn)
+                {
+                    JoinIn.Join(sides, best, new Fighter { Id = bw.Id, Woman = !PED.IS_PED_MALE(bestPed.Handle) });
+                    (best.Side == 0 ? a : b).Add(bestPed.Handle);   // the handles kept beside the sides, index for index
+                }
                 int target = theirs[Math.Max(0, Math.Min(theirs.Count - 1, best.Target))];
                 string with = NameOfFighter(best.Side == 0 ? a[0] : b[0]), at = NameOfFighter(target);
                 string why = best.Why + "; " + witnesses + " watching" + (saloon ? ", a saloon" : "") + (sure ? ", a test" : "") + "; " + (a.Count + b.Count) + " fighting";
@@ -168,7 +209,7 @@ namespace EnrageWestworld.InGame
         private Fighter FighterOf(int h)
         {
             MindWho w = ENTITY.DOES_ENTITY_EXIST(h) ? MindKnown(h, Game.GameTime) : null;
-            return new Fighter { Id = w != null ? w.Id : null, Woman = ENTITY.DOES_ENTITY_EXIST(h) && !PED.IS_PED_MALE(h) };
+            return new Fighter { Id = w != null ? w.Id : null, Woman = ENTITY.DOES_ENTITY_EXIST(h) && !PED.IS_PED_MALE(h), On = _director.AttackersOn(h) };
         }
 
         private string NameOfFighter(int h)
@@ -182,7 +223,7 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.MindLive || !_cfg.MindJoinFights)
                 return "off ([Mind] MindJoinFights, with MindLive)";
-            return _joinFailed ? "FAILED once this session (see the log)" : _joinTotal + " joined a fight this session" + (BrawlsOn ? ", the biggest " + _brawlBiggest + " fighting (cap " + _cfg.BrawlMost + ")" : "") + (_joinLast != null ? " (last: " + _joinLast + ")" : "");
+            return _joinFailed ? "FAILED once this session (see the log)" : _joinTotal + " joined a fight this session" + (BrawlsOn ? ", the biggest " + _brawlBiggest + " fighting (cap " + _cfg.BrawlMost + "), " + _joinMet + " onlookers given a name to weigh" : "") + (_joinLast != null ? " (last: " + _joinLast + ")" : "");
         }
     }
 }

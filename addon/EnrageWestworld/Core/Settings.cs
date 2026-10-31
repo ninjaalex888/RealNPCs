@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 160;
+        public const int CurrentVersion = 161;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -78,6 +78,8 @@ namespace EnrageWestworld.Core
         public bool BrawlLaw = true;         // with MindLive: a lawman who sees a brawl shouts to break it up, lets off those who stop and fights and hogties those who don't
         public bool BrawlPullsYouIn = true;  // with MindBrawls: in a brawl of four or more near you, someone you hit, someone against you or a drunk hothead may come at you (fair game)
         public bool BrawlDraws = true;       // with MindBrawls and LadderShots: rarely, an armed man losing a brawl draws, by the quarrel ladder's own heat for the gun
+        public int BrawlDrawShare = Brawl.DrawShare;   // with BrawlDraws: the share of the quarrel ladder's draw odds a losing man has, in percent (0-100; 25 until settings version 161, 2026-10-31)
+        public int BrawlFistsFatal = Brawl.FistsFatal; // with MindBrawls: a man beaten down in a brawl is killed this percent of the plain time, else knocked out and up again (0-100; Lex, 2026-10-31; settings version 161)
         public bool MindOnlookers = true;    // with MindLive: someone who only watched a quarrel, a fight or something you did acts on what they feel about it (walks off from it, stands rooted at a gun, shakes their head, bristles, turns to watch), two a happening at most (Core/Onlooking.cs; roadmap 39; night 2026-10-29, item 3; settings version 108); off, they only turn their heads
         public bool MindWakes = true;        // with MindLive and West World: what someone has lived through (the shadow's doubts about "things are as they seem") leans the Awakening, a buried man seen walking breaks that belief, and the moment it gives way they stir (Core/Engine.Doubt.cs; the mind doc's step 10; night 2026-10-29, item 4; settings version 109); off, the Awakening by its own roll alone
         public bool MindPassing = true;      // with MindLive: a greeting in passing follows what the first one feels about the other lately and their mood (Core/Passing.Mind.cs; roadmap 39; night 2026-10-29, item 6; settings version 111); and how someone shows you what they feel about you from a while back as you pass (Core/Passing.ToYou.cs, item 6f); off, the tie's greeting
@@ -675,6 +677,8 @@ namespace EnrageWestworld.Core
             PickMetres = Math.Max(5, Math.Min(60, PickMetres));
             PicksAtOnce = Math.Max(1, Math.Min(16, PicksAtOnce));
             BrawlMost = Math.Max(Brawl.LeastAtAll, Math.Min(Brawl.MostAtAll, BrawlMost));
+            BrawlDrawShare = Math.Max(0, Math.Min(100, BrawlDrawShare));
+            BrawlFistsFatal = Math.Max(0, Math.Min(100, BrawlFistsFatal));
             // stalker hours: the stalker day still runs 05:00 to 05:00; day hours stay in daylight, night hours cross midnight
             StalkerEveryMinutes = Math.Max(1, Math.Min(120, StalkerEveryMinutes));
             StalkerNearbyMetres = Math.Max(20, Math.Min(150, StalkerNearbyMetres));
@@ -805,7 +809,9 @@ namespace EnrageWestworld.Core
             b.AppendLine("BrawlMost = " + BrawlMost + "   ; the most fighting at once in one brawl, the two who began it among them (3 to 20)");
             b.AppendLine("BrawlLaw = " + B(BrawlLaw) + "   ; with MindLive on: a lawman who sees a fistfight or a brawl comes over and shouts to break it up; those who stop are let off with a word, whoever keeps swinging gets his fists and is hogtied; a gun drawn in it gets his gun");
             b.AppendLine("BrawlPullsYouIn = " + B(BrawlPullsYouIn) + "   ; with MindBrawls on: in a brawl of four or more within a few steps of you, someone you've hit, someone against you or a drunk hothead may come at you; whoever does is fair game");
-            b.AppendLine("BrawlDraws = " + B(BrawlDraws) + "   ; with MindBrawls and LadderShots on: rarely, an armed man losing a brawl who is drunk, hot-tempered, or proud with bad blood draws, by the quarrel ladder's own odds for the gun; he may fire, and the law treats it as a shooting");
+            b.AppendLine("BrawlDraws = " + B(BrawlDraws) + "   ; with MindBrawls and LadderShots on: rarely, an armed man losing a brawl who is drunk, hot-tempered, or proud with bad blood, or set upon by two or more, draws, by the quarrel ladder's own odds for the gun; he may fire, and the law treats it as a shooting");
+            b.AppendLine("BrawlDrawShare = " + BrawlDrawShare + "   ; with BrawlDraws on: how much of the quarrel ladder's own odds for the gun a man losing a brawl has, in percent (0-100; 40 as built, a quarter before)");
+            b.AppendLine("BrawlFistsFatal = " + BrawlFistsFatal + "   ; with MindBrawls on: a man beaten down in a brawl is killed this percent of the time in a plain beating, else knocked out for 20-40 s and up again; more often with several on him, a drunk or a hothead at him, bad blood or an old man down, less with the law close, a friend of his in it or a fair fight; one of enRAGE's people is only ever knocked out (0-100; 0: nobody dies of fists)");
             b.AppendLine("MindOnlookers = " + B(MindOnlookers) + "   ; with MindLive on: someone who only watched a quarrel, a fight or something you did acts on what they feel about it, by their nature and what 1899 lets them show (the frightened walk off, a man who keeps his fear off his face slips away, a gun or something uncanny roots them to the spot, contempt shakes its head, the pious walk off disapproving, a keen eye turns to watch), at most two each time; false: they only turn their heads");
             b.AppendLine("MindWakes = " + B(MindWakes) + "   ; with MindLive and West World on: the Awakening follows what people have lived through: the uncanny, a killing or a buried man seen walking shake their sense that things are as they seem, so they wake sooner, a good turn steadies them, and the moment that sense gives way they begin to stir; someone who saw a man die and sees him walk again is frightened by it and begins to wake (with MindOnlookers on, backs away from him, or, struck hard, stands rooted); false: the Awakening by its own roll alone");
             b.AppendLine("MindPassing = " + B(MindPassing) + "   ; with MindLive on: when two who know each other pass, the greeting follows how the first feels about the other lately and the day they are having: sore at a friend, a nod and no word; afraid, eyes away; ashamed before them, eyes down; grateful, a warm word; a sore day, a nod; a glad one, a word for anyone they know; and someone who feels something about you from a while back shows it as you pass (grateful, a hat tip and a word; sore, a hard look; afraid or shamed, eyes away); false: the greeting the tie gives");

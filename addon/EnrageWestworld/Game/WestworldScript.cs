@@ -541,6 +541,7 @@ namespace EnrageWestworld.InGame
 		private void OnAborted(object sender, EventArgs e)
 		{
 			LawPulseEnd(0, true);
+			try { BrawlDownsRelease(); } catch { }   // nobody knocked out in a brawl stays unhurtable after a reload
 			Shutdown04();
 			Save();
 			WatchStop();   // our own threads ended before Script Hook unloads us (a reload froze waiting on one, 2026-10-31)

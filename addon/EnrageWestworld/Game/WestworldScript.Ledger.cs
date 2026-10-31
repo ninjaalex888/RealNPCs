@@ -174,6 +174,8 @@ namespace EnrageWestworld.InGame
         /// Why a ped the game calls dead is only knocked out (enRAGE's rule, DeathLedger.KnockedOut), or null if dead.
         private string KnockedOutWhy(int h)
         {
+            if (_brawlFatal.Count > 0 && _brawlFatal.Contains(h))
+                return null;   // beaten to death in a brawl (WestworldScript.BrawlDown.cs): a death, not the fists rule's "out cold"
             bool incapacitated = PED.IS_PED_INCAPACITATED(h);
             bool gunButt = _bridge != null && _bridge.KnockedOutByGunButt(new Ped(h));
             uint cause = PED.GET_PED_CAUSE_OF_DEATH(h);

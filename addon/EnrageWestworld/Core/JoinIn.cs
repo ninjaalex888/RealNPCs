@@ -26,6 +26,7 @@ namespace EnrageWestworld.Core
     {
         public string Id;          // null: nobody the mind knows
         public bool Woman;
+        public int On;             // how many are going for him now (with brawls on: the sides balance, the blows spread)
     }
 
     public static class JoinIn
@@ -82,8 +83,10 @@ namespace EnrageWestworld.Core
                         target = i;
                     }
                 }
+                if (brawls)
+                    target = Spread(theirs, target, foe, woman, foe <= -2 || (Z(Traits.Anger) > 0.8f && Z(Traits.Compassion) < -0.5f));
                 // with nobody hated over there, a man goes for a man before a woman when he can
-                if (foe == 0 && !woman && theirs[target].Woman)
+                else if (foe == 0 && !woman && theirs[target].Woman)
                     for (int i = 0; i < theirs.Count; i++)
                         if (!theirs[i].Woman)
                         {
@@ -94,6 +97,10 @@ namespace EnrageWestworld.Core
                 if (foe < 0)
                     tie = Math.Max(tie, 0.18f + 0.08f * -foe);
                 float score = tie + heat + momentum;
+                // with brawls on, someone with no stake in it sides with the side that's short (Lex, 2026-10-31: in the
+                // biggest brawl every joiner went for one man): a tenth for each man the other side has more
+                if (brawls && tie <= 0f)
+                    score += Math.Max(-0.2f, Math.Min(0.2f, 0.10f * (theirs.Count - mine.Count)));
                 // a stranger to both sides must clear the crowd's bar and more; a friend or a foe is moved by their own
                 float bar = tie > 0f ? 0.25f : Appraisal.CrowdBar(witnesses) + 0.25f;
                 if (score <= bar && !sure)   // sure: the Testing row's waves, no bar and no roll (the sex rules still hold)
@@ -117,6 +124,42 @@ namespace EnrageWestworld.Core
                     best = take;
             }
             return best;
+        }
+
+        /// Whom a joiner goes for in a brawl: the man he hates, unless two are on him already (three for a man who gangs up:
+        /// a grudge of -2 or worse, or a hothead with no pity); else whoever has the fewest on him, a man before a woman for a
+        /// man joining. The first such over there on a tie, so the same fight answers the same way.
+        public static int Spread(IList<Fighter> theirs, int hated, int foe, bool woman, bool gangsUp)
+        {
+            int most = gangsUp ? 3 : 2;
+            if (foe < 0 && hated >= 0 && hated < theirs.Count && theirs[hated].On < most)
+                return hated;
+            int best = -1;
+            for (int i = 0; i < theirs.Count; i++)
+            {
+                if (best < 0)
+                {
+                    best = i;
+                    continue;
+                }
+                Fighter f = theirs[i], b = theirs[best];
+                bool fWrong = !woman && f.Woman, bWrong = !woman && b.Woman;   // a man's hand against a woman last
+                if (fWrong != bWrong ? !fWrong : f.On < b.On)
+                    best = i;
+            }
+            return Math.Max(0, best);
+        }
+
+        /// The joiner is in: on his side, and one more on the man he went for (the next to weigh sees the new counts).
+        public static void Join(IList<Fighter>[] sides, JoinTake take, Fighter joiner)
+        {
+            if (sides == null || take == null || take.Side < 0 || take.Side > 1)
+                return;
+            IList<Fighter> theirs = sides[1 - take.Side];
+            if (take.Target >= 0 && take.Target < theirs.Count)
+                theirs[take.Target].On++;
+            joiner.On = 0;
+            sides[take.Side].Add(joiner);
         }
 
         private static string Words(int friend, int foe, float heat, bool drunk)

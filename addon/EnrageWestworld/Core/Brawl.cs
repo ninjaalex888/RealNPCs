@@ -23,14 +23,20 @@ namespace EnrageWestworld.Core
         }
 
         /// How many may come in at one look (every 2.5 s): one while it's a fight between a few, more once it's a brawl;
-        /// a saloon's drink brings one more. Never past the room left.
-        public static int Wave(int fighting, bool saloon, int roomLeft)
+        /// a saloon's drink brings one more, and so does a busy street (ten or more watching; Lex, 2026-10-31, in Saint
+        /// Denis: "I am near a lot of NPCs ... expected those NPCs to join the brawl"). Never past the room left.
+        public static int Wave(int fighting, bool saloon, int roomLeft, int witnesses = 0)
         {
             int w = fighting < 4 ? 1 : fighting < 7 ? 2 : 3;
             if (saloon && fighting >= 3)
                 w++;
-            return Math.Max(0, Math.Min(Math.Min(w, 4), roomLeft));
+            if (witnesses >= BusyStreet && fighting >= 3)
+                w++;
+            return Math.Max(0, Math.Min(Math.Min(w, 5), roomLeft));
         }
+
+        /// So many watching makes a busy street: a wave more.
+        public const int BusyStreet = 10;
 
         /// The pull of the brawl itself, added to a would-be joiner's score: nothing while it's two or three, then a little
         /// more for each in it, more in a saloon, up to a cap (a dozen swinging is hard to stand and watch).
@@ -38,15 +44,15 @@ namespace EnrageWestworld.Core
         {
             if (fighting < 4)
                 return 0f;
-            float m = (saloon ? 0.035f : 0.012f) * (fighting - 3);   // a saloon's riot pulls; on the street most still watch
-            return Math.Min(saloon ? 0.20f : 0.07f, m);
+            float m = (saloon ? 0.035f : 0.02f) * (fighting - 3);   // a saloon's riot pulls; a street crowd too, less (0.012 to a cap of 0.07 until 2026-10-31)
+            return Math.Min(saloon ? 0.20f : 0.15f, m);
         }
 
         /// How much the law at hand holds a would-be joiner back: on the street most stay out with a badge in sight, in a
         /// saloon's riot fewer do. A factor on the chance (the old rule, nobody at all, was 0).
         public static float LawHolds(bool saloon, int fighting)
         {
-            float f = saloon ? 0.35f : 0.15f;
+            float f = saloon ? 0.35f : 0.30f;   // the street 0.15 until 2026-10-31 (Lex: a crowded street should grow one)
             if (fighting >= 7)
                 f += 0.10f;   // past a point a riot doesn't see the badge
             return f;
@@ -90,21 +96,104 @@ namespace EnrageWestworld.Core
 
         /// Rarely, a man losing a brawl reaches for his gun: only an armed man, only one drunk, hot-tempered, or proud with
         /// bad blood against the one beating him; the chance is the quarrel ladder's own for the blows to the draw (Escalation,
-        /// with the law and the town's gun rule in it), a quarter of it, and then its own for the draw to the shot. "none", "draw" or
-        /// "shoot".
-        public static string Draws(Traits t, QuarrelContext c, bool losing, int warmth, string seed, out int drawPct)
+        /// with the law and the town's gun rule in it), share percent of it ([Mind] BrawlDrawShare, 40; a quarter until
+        /// 2026-10-31, Lex: "tune it to escalate to guns slightly"), and then its own for the draw to the shot. Two or more on
+        /// him is a reason too. "none", "draw" or "shoot".
+        public static string Draws(Traits t, QuarrelContext c, bool losing, int warmth, string seed, out int drawPct, int share = DrawShare, int onHim = 1)
         {
             drawPct = 0;
             if (t == null || c == null || !losing || !c.ArmedA || c.WomanA)
                 return "none";
-            bool hot = t.Z[Traits.Anger] > 0.8f, proudFoe = t.Z[Traits.Assertiveness] > 0.5f && warmth < 0;
-            if (!c.DrunkA && !hot && !proudFoe)
+            bool hot = t.Z[Traits.Anger] > 0.8f, proudFoe = t.Z[Traits.Assertiveness] > 0.5f && warmth < 0, setUpon = onHim >= 2;
+            if (!c.DrunkA && !hot && !proudFoe && !setUpon)
                 return "none";
-            drawPct = (int)Math.Round(Escalation.Heat(t, true, c, 2) * 25f);   // a quarter of the ladder's own odds: a brawl is fists, the gun the rare end of it
+            drawPct = (int)Math.Round(Escalation.Heat(t, true, c, 2) * Math.Max(0, Math.Min(100, share)));   // a share of the ladder's own odds: a brawl is fists, the gun the rare end of it
             if (drawPct <= 0 || !Voice.Chance(seed + "|draw", drawPct))
                 return "none";
             int shootPct = (int)Math.Round(Escalation.Heat(t, true, c, 3) * 100f);
             return shootPct > 0 && Voice.Chance(seed + "|shoot", shootPct) ? "shoot" : "draw";
+        }
+
+        /// The share of the quarrel ladder's draw odds a man losing a brawl has, as built ([Mind] BrawlDrawShare).
+        public const int DrawShare = 40;
+
+        // ---- fists: killed or knocked out (Lex, 2026-10-31: "Ideally the fistfights should eventually be fatal or knockout
+        // depending on the NPC innermind. For now we can have fist fights go maybe 50% fatal, 50% knockout or sort of random
+        // generation that makes sense for exciting gameplay from a game designer perspective") ----
+
+        /// The fatal share of a beating in a brawl as built ([Mind] BrawlFistsFatal).
+        public const int FistsFatal = 50;
+
+        /// Whether a man beaten down in a brawl is killed or only knocked out. fatalPct ([Mind] BrawlFistsFatal) is the
+        /// plain case: one man on him, nothing else. Worse: more on him (+12 each past the first, at most +25), a drunk or a
+        /// hothead beating him (+10 each), bad blood between them (+8; +15 for a grudge of -2 or worse), an old man down
+        /// (+15). Better: a lawman close (-20), a friend of his in it (-15), a fair fight, one on one with the sides even
+        /// (-10). Kept within 5-95 (0 and 100 mean what they say). Seeded by who is in it: "fatal" or "knockout".
+        public static string Fate(Traits attacker, bool attackerDrunk, int attackersOn, int warmth, bool victimOld, bool lawNear, bool friendNear, bool fair,
+                                  int fatalPct, string seed, out int pct, out string why)
+        {
+            string w = null;
+            int p = Math.Max(0, Math.Min(100, fatalPct));
+            if (p > 0 && p < 100)
+            {
+                if (attackersOn > 1)
+                {
+                    p += Math.Min(25, 12 * (attackersOn - 1));
+                    w = Also(w, attackersOn + " on him");
+                }
+                if (attackerDrunk)
+                {
+                    p += 10;
+                    w = Also(w, "a drunk at him");
+                }
+                if (attacker != null && attacker.Z[Traits.Anger] > 0.8f)
+                {
+                    p += 10;
+                    w = Also(w, "a hothead at him");
+                }
+                if (warmth <= -2)
+                {
+                    p += 15;
+                    w = Also(w, "a grudge");
+                }
+                else if (warmth < 0)
+                {
+                    p += 8;
+                    w = Also(w, "bad blood");
+                }
+                if (victimOld)
+                {
+                    p += 15;
+                    w = Also(w, "an old man");
+                }
+                if (lawNear)
+                {
+                    p -= 20;
+                    w = Also(w, "the law close");
+                }
+                if (friendNear)
+                {
+                    p -= 15;
+                    w = Also(w, "a friend of his in it");
+                }
+                if (fair)
+                {
+                    p -= 10;
+                    w = Also(w, "a fair fight");
+                }
+                p = Math.Max(5, Math.Min(95, p));
+            }
+            pct = p;
+            why = (w ?? "a plain beating") + " (" + pct + "% fatal)";
+            return Voice.Chance(seed + "|fate", pct) ? "fatal" : "knockout";
+        }
+
+        private static string Also(string w, string more) { return w == null ? more : w + ", " + more; }
+
+        /// How long a man knocked out in a brawl lies there before he comes to: 20-40 s, seeded.
+        public static int KnockoutMs(string seed)
+        {
+            return 20000 + (Voice.Hash(seed + "|out") & 0x7fffffff) % 20001;
         }
 
         // ---- the words (all our own) ---------------------------------------------------------------------------------

@@ -32,7 +32,11 @@ namespace EnrageWestworld.InGame
             public bool FightOn;                 // they're at it
             public int FightA, FightB, FightAskedAt, FightOrderedAt, FightMs;
             public Dictionary<int, bool[]> FightAttrs;   // each fighter's own combat attributes, put back at the end
-            public int[] StartHealth;
+            public readonly Dictionary<int, int> StartHp = new Dictionary<int, int>();   // each fighter's health when he came into it, by handle (a joiner may lead a side later)
+            public int FightId;                  // this fight's own number, the same however its leaders change (seeds, "this fight has had its lawman")
+            public bool WasBig;                  // two or more joined it once: a brawl, which a man going down doesn't end
+            public bool SideGone;                // everyone on one side is down or out: the fight ends
+            public readonly HashSet<int> Out = new HashSet<int>();   // down (knocked out or killed) or gone from the fight (a gun drawn): no longer in it, and never a reason to stop the scene
             public string Seed;
             public Action Done;
             public SceneCast Info;
@@ -400,6 +404,8 @@ namespace EnrageWestworld.InGame
                 if (p != null && p.Exists())
                 {
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, false);
+                    if (l.Out.Contains(p.Handle))
+                        continue;   // knocked out or killed in the brawl, or gone for his gun: what he's doing is the game layer's (a clear would stand a knocked-out man up)
                     if (((l.Fighting || l.WasFighting) && i < 2) || (i < l.Aimed.Length && l.Aimed[i]))
                         TASK.CLEAR_PED_TASKS(p.Handle, true, false);   // the two who fought (never the barkeep or a bystander)
                     if (i < l.Aimed.Length && l.Aimed[i])
@@ -408,10 +414,16 @@ namespace EnrageWestworld.InGame
             }
             if (l.Blows && !l.Side && l.Cast.Length >= 2 && l.Cast[0] != null && l.Cast[1] != null && l.Cast[0].Exists() && l.Cast[1].Exists() && FightOver != null)
             {
-                bool first = Health(l, 0) >= Health(l, 1);
+                // the two leading the sides at the end (a joiner may lead one once its first man went down): the one standing
+                // wins; with both standing, the better off; with neither, no aftermath
+                int fa = l.FightA != 0 ? l.FightA : l.Cast[0].Handle, fb = l.FightB != 0 ? l.FightB : l.Cast[1].Handle;
+                bool aUp = ENTITY.DOES_ENTITY_EXIST(fa) && !ENTITY.IS_ENTITY_DEAD(fa) && !l.Out.Contains(fa);
+                bool bUp = ENTITY.DOES_ENTITY_EXIST(fb) && !ENTITY.IS_ENTITY_DEAD(fb) && !l.Out.Contains(fb);
+                bool first = aUp && bUp ? HealthOf(l, fa) >= HealthOf(l, fb) : aUp;
                 try
                 {
-                    FightOver(first ? l.Cast[0].Handle : l.Cast[1].Handle, first ? l.Cast[1].Handle : l.Cast[0].Handle);
+                    if (aUp || bUp)
+                        FightOver(first ? fa : fb, first ? fb : fa);
                 }
                 catch
                 {
@@ -502,7 +514,15 @@ namespace EnrageWestworld.InGame
             int now = Game.GameTime;
             foreach (Ped p in l.Cast)
             {
-                if (p == null || !p.Exists() || p.IsDead || (PED.IS_PED_IN_COMBAT(p.Handle, player.Handle)) ||
+                if (p != null && l.Out.Count > 0 && l.Out.Contains(p.Handle))
+                    continue;   // down or out of the fight already: a brawl goes on without him (Lex, 2026-10-31)
+                bool gone = p == null || !p.Exists() || p.IsDead;
+                if (gone && p != null && p.Exists() && DownsOn && l.Fighting && l.FightOn && l.WasBig && (p.Handle == l.FightA || p.Handle == l.FightB))
+                {
+                    FightDown(l, p.Handle, true);   // killed in a brawl before the down check saw him: dropped from the sides, and it goes on
+                    continue;
+                }
+                if (gone || (PED.IS_PED_IN_COMBAT(p.Handle, player.Handle)) ||
                     PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, p.Handle))
                 {
                     Stop(l, l.ShootUntil > 0 ? "shot down" : "someone in the scene is gone or threatened");
@@ -516,8 +536,8 @@ namespace EnrageWestworld.InGame
             }
             if (l.Fighting)
             {
-                for (int i = 0; i < 2; i++)
-                    KeepFists(l.Cast[i]);
+                KeepFists(l.FightA);
+                KeepFists(l.FightB);
                 if (!l.FightOn)
                 {
                     // at it: in melee, or a blow landed (the combat flag alone came the moment they were told, with no blows)
@@ -544,12 +564,23 @@ namespace EnrageWestworld.InGame
                 }
                 foreach (int[] j in l.Joiners)
                     if (ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
-                        KeepFists(new Ped(j[0]));
-                bool hurt = (Health(l, 0) < 0.6f || Health(l, 1) < 0.6f) && !(FightMostMs > 20000 && l.Joiners.Count >= 2);   // a brawl goes on past the first two's bruises ([Mind] MindBrawls), to its time
-                if (now < l.FightUntil && !hurt)
+                        KeepFists(j[0]);
+                if (DownsOn && !l.SideGone)
+                    FightDownStep(l);   // a man beaten down: killed or knocked out (the game layer rolls it), and the brawl goes on
+                bool hurt = (HealthOf(l, l.FightA) < 0.6f || HealthOf(l, l.FightB) < 0.6f) && !(FightMostMs > 20000 && (l.Joiners.Count >= 2 || l.WasBig));   // a brawl goes on past the first two's bruises ([Mind] MindBrawls), to its time
+                if (now < l.FightUntil && !hurt && !l.SideGone)
                     return;
                 l.Fighting = false;
                 LetJoinersGo(l);
+                if (l.Out.Count > 0)
+                {
+                    foreach (Ped p in l.Cast)
+                        if (p != null && l.Out.Contains(p.Handle))
+                        {
+                            Stop(l, "the fight is over, with " + l.Out.Count + " down or out of it");   // the rest of the scene's words would be a downed man's
+                            return;
+                        }
+                }
             }
             if (l.CarryUntil > 0)
             {
@@ -857,7 +888,15 @@ namespace EnrageWestworld.InGame
                         WEAPON.SET_CURRENT_PED_WEAPON(p.Handle, fists, true, 0, false, false);
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(t, false);
-                    l.StartHealth = new[] { Math.Max(1, ENTITY.GET_ENTITY_HEALTH(l.Cast[0].Handle)), Math.Max(1, ENTITY.GET_ENTITY_HEALTH(l.Cast[1].Handle)) };
+                    l.StartHp.Clear();
+                    l.StartHp[l.Cast[0].Handle] = Math.Max(1, ENTITY.GET_ENTITY_HEALTH(l.Cast[0].Handle));
+                    l.StartHp[l.Cast[1].Handle] = Math.Max(1, ENTITY.GET_ENTITY_HEALTH(l.Cast[1].Handle));
+                    l.StartHp[h] = Math.Max(1, ENTITY.GET_ENTITY_HEALTH(h));
+                    l.StartHp[t] = Math.Max(1, ENTITY.GET_ENTITY_HEALTH(t));
+                    l.FightId = ++_fightSeq;
+                    l.WasBig = false;
+                    l.SideGone = false;
+                    l.Out.Clear();
                     l.Fighting = true;
                     // the fight's own seconds start when they're at it (Tick): two men leaning or sat, ordered to fight
                     // the moment they were told to stop, got up and never swung, and the beat's 9 s ran out on the
@@ -890,11 +929,7 @@ namespace EnrageWestworld.InGame
                     {
                         // the script says A wins; the fists said otherwise
                         l.Cast[0] = b;
-                        l.Cast[1] = a;
-                        if (l.StartHealth != null)
-                        {
-                            int sh = l.StartHealth[0]; l.StartHealth[0] = l.StartHealth[1]; l.StartHealth[1] = sh;
-                        }
+                        l.Cast[1] = a;   // the start health is kept by handle, so it follows them
                         string n = l.Names[0]; l.Names[0] = l.Names[1]; l.Names[1] = n;
                         SwapNamesInLines(l, l.Names[0], l.Names[1]);
                         string k = l.Kinds[0]; l.Kinds[0] = l.Kinds[1]; l.Kinds[1] = k;
@@ -1114,8 +1149,16 @@ namespace EnrageWestworld.InGame
         /// Health now, as a share of what it was when the fight started.
         private static float Health(Live l, int i)
         {
-            int start = l.StartHealth != null ? l.StartHealth[i] : Math.Max(1, ENTITY.GET_ENTITY_MAX_HEALTH(l.Cast[i].Handle, false));
-            return ENTITY.GET_ENTITY_HEALTH(l.Cast[i].Handle) / (float)start;
+            return HealthOf(l, l.Cast[i].Handle);
+        }
+
+        /// A fighter's health now, as a share of what it was when he came into the fight (by handle; no allocation).
+        private static float HealthOf(Live l, int h)
+        {
+            int start;
+            if (!l.StartHp.TryGetValue(h, out start))
+                start = Math.Max(1, ENTITY.GET_ENTITY_MAX_HEALTH(h, false));
+            return ENTITY.GET_ENTITY_HEALTH(h) / (float)Math.Max(1, start);
         }
 
         /// The third's walk over: there within 2.4 m (as "meet"), and given at most 12 s (4 s and 0.8 s a metre).
@@ -1134,7 +1177,7 @@ namespace EnrageWestworld.InGame
         {
             a = b = null;
             Live l = _live;
-            if (l == null || !l.Fighting || !l.FightOn || l.FightA == 0 || l.FightB == 0)
+            if (l == null || !l.Fighting || !l.FightOn || l.FightA == 0 || l.FightB == 0 || l.SideGone)
                 return false;
             a = new List<int> { l.FightA };
             b = new List<int> { l.FightB };
@@ -1172,9 +1215,18 @@ namespace EnrageWestworld.InGame
         public bool AddFighter(int h, int side, int target)
         {
             Live l = _live;
-            if (l == null || !l.Fighting || !l.FightOn || h == 0 || target == 0 || Involves(h) || !ENTITY.DOES_ENTITY_EXIST(h) || !ENTITY.DOES_ENTITY_EXIST(target))
+            if (l == null || !l.Fighting || !l.FightOn || l.SideGone || h == 0 || target == 0 || Involves(h) || l.Out.Contains(h) || !ENTITY.DOES_ENTITY_EXIST(h) || !ENTITY.DOES_ENTITY_EXIST(target))
                 return false;
+            if (l.Out.Contains(target) || ENTITY.IS_ENTITY_DEAD(target))
+            {
+                target = LeastAttacked(l, 1 - side);   // the man he got up for is down already: the least beset over there
+                if (target == 0)
+                    return false;
+            }
             l.Joiners.Add(new[] { h, side, target });
+            l.StartHp[h] = Math.Max(1, ENTITY.GET_ENTITY_HEALTH(h));
+            if (l.Joiners.Count >= 2)
+                l.WasBig = true;
             if (l.FightAttrs == null)
                 l.FightAttrs = new Dictionary<int, bool[]>();
             if (!l.FightAttrs.ContainsKey(h))
@@ -1276,14 +1328,219 @@ namespace EnrageWestworld.InGame
             l.FightOrderedAt = now;
         }
 
-        private static unsafe void KeepFists(Ped p)
+        private static void KeepFists(Ped p)
         {
-            if (p == null || !p.Exists())
+            if (p != null)
+                KeepFists(p.Handle);
+        }
+
+        private static readonly uint Fists = Natives.Hash("WEAPON_UNARMED");
+
+        private static unsafe void KeepFists(int h)
+        {
+            if (h == 0 || !ENTITY.DOES_ENTITY_EXIST(h))
                 return;
-            uint fists = Natives.Hash("WEAPON_UNARMED");
             ulong current = 0;
-            if (WEAPON.GET_CURRENT_PED_WEAPON(p.Handle, (uint*)&current, true, 0, false) && (uint)current != fists)
-                WEAPON.SET_CURRENT_PED_WEAPON(p.Handle, fists, true, 0, false, false);
+            if (WEAPON.GET_CURRENT_PED_WEAPON(h, (uint*)&current, true, 0, false) && (uint)current != Fists)
+                WEAPON.SET_CURRENT_PED_WEAPON(h, Fists, true, 0, false, false);
+        }
+
+        // ---- a man down in a brawl (Lex, 2026-10-31: "a death does not end a big brawl"; fists fatal or a knockout) ----
+
+        private static int _fightSeq;
+
+        /// With [Mind] MindBrawls (set by the game layer every look): a fighter beaten down is dropped from the sides and the
+        /// fight goes on; FighterDown is told so it can roll his fate.
+        public bool DownsOn;
+
+        /// A fighter is down: (who, the one on him (0 none), how many were on him, already dead or incapacitated when seen).
+        /// Called once per man per fight, from the frame tick.
+        public Action<int, int, int, bool> FighterDown;
+
+        /// Under this share of his start health a fighter is down: the fate is rolled before the game's own blow kills him.
+        private const float DownShare = 0.30f;
+
+        /// The fight going on now's own number (0: none).
+        public int FightId { get { Live l = _live; return l != null && l.Fighting ? l.FightId : 0; } }
+
+        /// Down or gone from the fight going on now.
+        public bool IsOut(int h)
+        {
+            Live l = _live;
+            return l != null && l.Out.Count > 0 && l.Out.Contains(h);
+        }
+
+        /// How many in the fight are going for this man now (the two leaders count for each other).
+        public int AttackersOn(int h)
+        {
+            Live l = _live;
+            return l != null && l.Fighting ? AttackersOn(l, h) : 0;
+        }
+
+        private static int AttackersOn(Live l, int h)
+        {
+            int n = 0;
+            if (h == 0)
+                return 0;
+            if (h == l.FightB && l.FightA != 0 && !l.Out.Contains(l.FightA))
+                n++;
+            if (h == l.FightA && l.FightB != 0 && !l.Out.Contains(l.FightB))
+                n++;
+            for (int i = 0; i < l.Joiners.Count; i++)
+                if (l.Joiners[i].Length > 2 && l.Joiners[i][2] == h)
+                    n++;
+            return n;
+        }
+
+        /// One of those going for this man (the leader of the other side first), or 0.
+        private static int AttackerOf(Live l, int h)
+        {
+            if (h == l.FightB && l.FightA != 0 && !l.Out.Contains(l.FightA))
+                return l.FightA;
+            if (h == l.FightA && l.FightB != 0 && !l.Out.Contains(l.FightB))
+                return l.FightB;
+            for (int i = 0; i < l.Joiners.Count; i++)
+                if (l.Joiners[i].Length > 2 && l.Joiners[i][2] == h)
+                    return l.Joiners[i][0];
+            return 0;
+        }
+
+        /// Which side a fighter is on (0 with the first, 1 with the second), or -1.
+        private static int SideOf(Live l, int h)
+        {
+            if (h == l.FightA)
+                return 0;
+            if (h == l.FightB)
+                return 1;
+            for (int i = 0; i < l.Joiners.Count; i++)
+                if (l.Joiners[i][0] == h)
+                    return l.Joiners[i][1];
+            return -1;
+        }
+
+        /// The man on that side with the fewest on him, still up (0: none).
+        private static int LeastAttacked(Live l, int side)
+        {
+            int best = 0, bestOn = int.MaxValue;
+            int lead = side == 0 ? l.FightA : l.FightB;
+            if (lead != 0 && !l.Out.Contains(lead) && ENTITY.DOES_ENTITY_EXIST(lead) && !ENTITY.IS_ENTITY_DEAD(lead))
+            {
+                best = lead;
+                bestOn = AttackersOn(l, lead);
+            }
+            for (int i = 0; i < l.Joiners.Count; i++)
+            {
+                int[] j = l.Joiners[i];
+                if (j[1] != side || l.Out.Contains(j[0]) || !ENTITY.DOES_ENTITY_EXIST(j[0]) || ENTITY.IS_ENTITY_DEAD(j[0]))
+                    continue;
+                int on = AttackersOn(l, j[0]);
+                if (on < bestOn)
+                {
+                    best = j[0];
+                    bestOn = on;
+                }
+            }
+            return best;
+        }
+
+        /// Every frame of a fight: the first man found beaten down (or killed) is dropped. Loops over handles only.
+        private void FightDownStep(Live l)
+        {
+            for (int k = -2; k < l.Joiners.Count; k++)
+            {
+                int h = k == -2 ? l.FightA : k == -1 ? l.FightB : l.Joiners[k][0];
+                if (h == 0 || (l.Out.Count > 0 && l.Out.Contains(h)) || !ENTITY.DOES_ENTITY_EXIST(h))
+                    continue;
+                if (k < 0 && !l.WasBig)
+                    continue;   // the first two in a fight of a few: the 60% rule ends it before this
+                bool dead = ENTITY.IS_ENTITY_DEAD(h) || PED.IS_PED_INCAPACITATED(h);
+                if (dead || HealthOf(l, h) < DownShare)
+                {
+                    FightDown(l, h, dead);
+                    return;   // one a frame: the lists have changed
+                }
+            }
+        }
+
+        /// He's down: out of the sides, a joiner of his side leads it if he led it, whoever was on him turns to the least
+        /// beset man left over there, and the game layer rolls his fate. A side with nobody left ends the fight.
+        private void FightDown(Live l, int h, bool dead)
+        {
+            int by = AttackerOf(l, h), on = AttackersOn(l, h);
+            DropFromFight(l, h);
+            try
+            {
+                FighterDown?.Invoke(h, by, on, dead);
+            }
+            catch (Exception ex)
+            {
+                Log.Write("SCENE fight: a man down, the fate failed: " + ex.Message);
+            }
+        }
+
+        /// Out of the fight without a fate (he drew a gun: the game layer has him now). True while the fight goes on.
+        public bool LeaveFight(int h)
+        {
+            Live l = _live;
+            if (l == null || !l.Fighting || !l.FightOn || l.Out.Contains(h) || SideOf(l, h) < 0)
+                return false;
+            DropFromFight(l, h);
+            return !l.SideGone;
+        }
+
+        private static void DropFromFight(Live l, int h)
+        {
+            int side = SideOf(l, h);
+            l.Out.Add(h);
+            bool lead = h == l.FightA || h == l.FightB;
+            if (lead)
+            {
+                int idx = -1;
+                for (int i = 0; i < l.Joiners.Count; i++)
+                {
+                    int[] j = l.Joiners[i];
+                    if (j[1] == side && !l.Out.Contains(j[0]) && ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
+                    {
+                        idx = i;
+                        break;
+                    }
+                }
+                if (idx < 0)
+                {
+                    l.SideGone = true;   // nobody left on his side: the fight is over (TickOne ends it next frame)
+                    l.FightUntil = 0;
+                    return;
+                }
+                int next = l.Joiners[idx][0];
+                l.Joiners.RemoveAt(idx);
+                if (h == l.FightA)
+                    l.FightA = next;
+                else
+                    l.FightB = next;
+                Log.Write("SCENE fight: a man down; another of his side leads it now (" + (2 + l.Joiners.Count) + " still fighting)");
+            }
+            else
+                for (int i = l.Joiners.Count - 1; i >= 0; i--)
+                    if (l.Joiners[i][0] == h)
+                        l.Joiners.RemoveAt(i);
+            // whoever was on him turns to the least beset man left on his side
+            if (lead && ENTITY.DOES_ENTITY_EXIST(l.FightA) && ENTITY.DOES_ENTITY_EXIST(l.FightB))
+            {
+                TASK.TASK_COMBAT_PED(l.FightA, l.FightB, 0, 16);
+                TASK.TASK_COMBAT_PED(l.FightB, l.FightA, 0, 16);
+            }
+            for (int i = 0; i < l.Joiners.Count; i++)
+            {
+                int[] j = l.Joiners[i];
+                if (j.Length < 3 || j[2] != h)
+                    continue;
+                int t = LeastAttacked(l, 1 - j[1]);
+                if (t == 0)
+                    continue;
+                j[2] = t;
+                if (ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
+                    TASK.TASK_COMBAT_PED(j[0], t, 0, 16);
+            }
         }
     }
 }

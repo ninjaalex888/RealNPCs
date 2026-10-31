@@ -34,14 +34,18 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<int> _brawlDrawRolled = new HashSet<int>();
         private int _brawlNextAt, _brawlTestUntil, _brawlLawFor, _brawlFightFor, _brawlFightSince, _brawlAtYouN, _brawlLawAfterUntil;
         private int _brawlBreakups, _brawlLetOff, _brawlTied, _brawlAtYou, _brawlDrew, _brawlShots, _brawlNoLaw;
-        private bool _brawlFailed;
+        private bool _brawlFailed, _brawlTestWide;
         private string _brawlLast;
 
         private void BrawlStep(Ped me, int now)
         {
-            if (!_cfg.MindLive || _brawlFailed || now < _brawlNextAt)
+            if (now < _brawlNextAt)
                 return;
             _brawlNextAt = now + BrawlEveryMs;
+            if (_brawlOut.Count > 0 || _brawlFatalDue.Count > 0)
+                Safe("brawl downs", () => BrawlDownsStep(now));   // before the switches: a man knocked out gets up even with the mind turned off
+            if (!_cfg.MindLive || _brawlFailed)
+                return;
             try
             {
                 BrawlLawStep(now);
@@ -49,9 +53,9 @@ namespace EnrageWestworld.InGame
                 List<int> a, b;
                 if (MISC.GET_MISSION_FLAG() || !_director.FightSides(out a, out b) || !ENTITY.DOES_ENTITY_EXIST(a[0]))
                     return;
-                if (_brawlFightFor != a[0])
+                if (_brawlFightFor != _director.FightId)
                 {
-                    _brawlFightFor = a[0];
+                    _brawlFightFor = _director.FightId;
                     _brawlFightSince = now;
                     _brawlAtYouN = 0;
                     _brawlDrawRolled.Clear();
@@ -103,7 +107,7 @@ namespace EnrageWestworld.InGame
 
         private void BrawlLawComes(List<int> a, List<int> b, Vector3 mid, int now)
         {
-            if (_brawlLawFor == a[0] || _brawlLaw.Any(x => x.Phase == 0))
+            if (_brawlLawFor == _director.FightId || _brawlLaw.Any(x => x.Phase == 0))
                 return;   // this fight has had its lawman (or one is on his way)
             bool test = BrawlTesting(now);
             if (test && a.Count + b.Count < 5 && now - _brawlFightSince < 15000)
@@ -111,16 +115,16 @@ namespace EnrageWestworld.InGame
             Ped law = BrawlFindLaw(mid, test ? 70f : 35f, !test, a[0]);
             if (law == null)
             {
-                if (test && now - _brawlFightSince > 20000 && _brawlLawFor != -a[0])
+                if (test && now - _brawlFightSince > 20000 && _brawlLawFor != -_director.FightId)
                 {
-                    _brawlLawFor = -a[0];   // said once
+                    _brawlLawFor = -_director.FightId;   // said once
                     _brawlNoLaw++;
                     Log.Write("LAW breaks up: no lawman free within 70 m; the brawl runs its course (a test)");
                 }
                 return;
             }
-            _brawlLawFor = a[0];
-            var lh = new LawHand { Law = law.Handle, Since = now, Phase = 0, Seed = a[0] + "|" + now / 1000 };
+            _brawlLawFor = _director.FightId;
+            var lh = new LawHand { Law = law.Handle, Since = now, Phase = 0, Seed = _director.FightId + "|" + now / 1000 };
             _brawlLaw.Add(lh);
             _brawlLawAt = mid;
             bool owned = LawTake(lh.Law);   // ours while he works (WestworldScript.LawTake.cs): the game took lawmen back before they got there
@@ -427,11 +431,18 @@ namespace EnrageWestworld.InGame
                     WomenFight = _cfg.WomenInFights, LawNear = lawNear, Witnesses = witnesses, Warmth = warmth
                 };
                 int pct;
-                string draws = Brawl.Draws(t, c, true, warmth, _brawlFightFor + "|" + w.Id, out pct);
-                Log.Detail("BRAWL " + w.Name + " losing: " + (draws == "none" ? "keeps to his fists" : draws) + (pct > 0 ? " (" + pct + "% to draw)" : ""));
+                int onHim = _director.AttackersOn(h);
+                string draws = Brawl.Draws(t, c, true, warmth, _brawlFightFor + "|" + w.Id, out pct, _cfg.BrawlDrawShare, onHim);
+                Log.Detail("BRAWL " + w.Name + " losing: " + (draws == "none" ? "keeps to his fists" : draws) + (pct > 0 ? " (" + pct + "% to draw)" : "") + (onHim >= 2 ? ", " + onHim + " on him" : ""));
                 if (draws == "none")
                     continue;
-                _director.Abort("a gun drawn in the brawl");
+                if (a.Count + b.Count >= 4 && _director.LeaveFight(h))
+                {
+                    _director.LeaveFight(target);   // a big brawl goes on around the two of them (2026-10-31); a fight of a few ends
+                    Log.Write("BRAWL draws: the brawl goes on around the two of them");
+                }
+                else
+                    _director.Abort("a gun drawn in the brawl");
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
                 WEAPON.SET_CURRENT_PED_WEAPON(h, gun, true, 0, false, false);
                 PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, false);
@@ -466,7 +477,7 @@ namespace EnrageWestworld.InGame
                     {
                         var lh = new LawHand { Law = law.Handle, Since = now, Phase = 3, At = now, Gun = true, Seed = h + "|gun" };
                         lh.Queue.Add(h);
-                        _brawlLawFor = a[0];
+                        _brawlLawFor = _director.FightId;
                         _brawlLaw.Add(lh);
                         LawSay(law, "The lawman", Brawl.LawBreaksUp(lh.Seed), "SHOUT_STOP");
                     }
@@ -485,7 +496,16 @@ namespace EnrageWestworld.InGame
                 return "[Mind] MindLive is off";
             if (!_cfg.MindJoinFights || !_cfg.MindBrawls)
                 return "[Mind] MindJoinFights or MindBrawls is off";
-            string why = FireScene("brawl", now, seed, out said);
+            _brawlTestWide = true;   // the nearest 14 free, not 8: a busy street has its pairs further apart
+            string why;
+            try
+            {
+                why = FireScene("brawl", now, seed, out said);
+            }
+            finally
+            {
+                _brawlTestWide = false;
+            }
             if (why == null)
             {
                 _brawlTestUntil = now + 90000;   // for a minute and a half, joining skips the bar and the roll; the law comes once five fight
@@ -503,7 +523,7 @@ namespace EnrageWestworld.InGame
             return (BrawlsOn ? "growing on (cap " + _cfg.BrawlMost + ", the biggest " + _brawlBiggest + ")" : "growing off ([Mind] MindBrawls)") +
                    "; the law " + (_cfg.BrawlLaw ? "on: " + _brawlBreakups + " broken up, " + _brawlLetOff + " let off, " + _brawlTied + " hogtied" + (_brawlNoLaw > 0 ? ", " + _brawlNoLaw + " with no lawman" : "") : "off") +
                    "; at you " + (_cfg.BrawlPullsYouIn ? _brawlAtYou.ToString() : "off") + "; drawn " + (_cfg.BrawlDraws && _cfg.LadderShots ? _brawlDrew + " (" + _brawlShots + " fired)" : "off") +
-                   (_brawlLaw.Count > 0 ? "; " + _brawlLaw.Count + " lawmen at work now" : "") + (_brawlLast != null ? "; last: " + _brawlLast : "");
+                   (_brawlLaw.Count > 0 ? "; " + _brawlLaw.Count + " lawmen at work now" : "") + "; " + BrawlDownStatus() + (_brawlLast != null ? "; last: " + _brawlLast : "");
         }
     }
 }

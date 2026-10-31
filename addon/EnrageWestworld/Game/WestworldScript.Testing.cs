@@ -485,9 +485,11 @@ namespace EnrageWestworld.InGame
                 return "a wedding, a plea or a thief chase is going on";
             Ped me = Game.Player.Character;
             bool saloon = _placeKind == "saloon";
-            List<Candidate> people = ReasonCandidates(me, now, true).OrderBy(c => c.Ped.Position.DistanceTo(me.Position)).Take(8).ToList();
+            List<Candidate> people = ReasonCandidates(me, now, true).OrderBy(c => c.Ped.Position.DistanceTo(me.Position)).Take(_brawlTestWide ? 14 : 8).ToList();
             if (people.Count < 2)
-                return "fewer than two named people free within " + (int)ReasonRange + " m";
+                // anyone free is given a name on the spot; what stood in the way, counted (Lex, 2026-10-31: refused 14 times
+                // in busy Saint Denis with only "fewer than two named people")
+                return "fewer than two free people within " + (int)ReasonRange + " m (" + people.Count + " free; everyone within " + (int)ReasonRange + " m: " + CrowdCounted(me, ReasonRange) + ")";
             string courtAnswer = kind == "court" ? new[] { "yes", "maybe", "no" }[_courtTurn++ % 3] : null;
             bool standUp = kind == "standup";
             bool ladder = kind == "ladder";
