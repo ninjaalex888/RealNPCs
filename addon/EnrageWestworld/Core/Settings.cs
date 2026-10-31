@@ -317,7 +317,7 @@ namespace EnrageWestworld.Core
         public string TestKey = "F7";
         public string WarNewsTo = "feed";
         public bool TerritoryNews = true;
-        public string FlirtKey = "None";   // F2 until 2026-10-29 (Lex: H flirts in the lock-on menu, G hooks up; no keyboard key)
+        public string FlirtKey = "None";   // F2 until 2026-10-29 (Lex: H flirts in the lock-on menu, and after her yes the same H hooks up; no keyboard key)
         public string WakeKey = "Y";
         public string ReaderKey = "N";
         public bool ReloadIni = true;
@@ -700,7 +700,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 106 && KeyIs(s.FlirtKey, "F2"))
                 {
                     s.FlirtKey = "None";   // 2026-10-29 (Lex): flirting is H in the lock-on menu, the hook up G; F2 goes
-                    log?.Invoke("Settings: FlirtKey F2 -> None (flirt with H in the lock-on menu, then Hook up with G once she says yes).");
+                    log?.Invoke("Settings: FlirtKey F2 -> None (flirt with H in the lock-on menu, then Hook up with the same H once she says yes).");
                 }
                 if (s.SettingsVersion < 163 && s.Language)
                     s.LanguageChosen = true;   // on before RealNPCs could find the model by itself: the player's own choice, kept (2026-10-31)
@@ -878,11 +878,11 @@ namespace EnrageWestworld.Core
             b.AppendLine("[Romance]");
             b.AppendLine("Romance = " + B(Romance) + "   ; people flirt with you, and you can flirt back (FlirtKey)");
             b.AppendLine("NpcFlirting = " + B(NpcFlirting) + "   ; people near you make eyes at each other in street scenes and court, each answering by what they make of the other, as with you");
-            b.AppendLine("Trysts = " + B(Trysts) + "   ; when a woman says yes to your flirting, flirt with her again within two minutes to go somewhere quieter: the screen goes dark, an hour passes, nothing is shown");
+            b.AppendLine("Trysts = " + B(Trysts) + "   ; when a woman says yes to your flirting and is willing for more, once her answer is said the same H (Flirt) becomes Hook up for two minutes (never before a yes, never on a no); press it to go somewhere quieter, and the screen goes dark, an hour passes, nothing is shown");
             b.AppendLine("CasualHookupsDecides = " + B(CasualHookupsDecides) + "   ; with the CasualHookups mod installed: its Flirt works only on a woman who has said yes to your flirting here, and RealNPCs leaves the night to it instead of fading to black (false: the two mods stay apart)");
             b.AppendLine("WillingSingle = " + WillingSingle + "   ; percent chance a single woman takes to your flirting, before what she thinks of you tips it (the saloon's women always do)");
             b.AppendLine("WillingTaken = " + WillingTaken + "   ; the same for a woman who's married or spoken for");
-            b.AppendLine("FlirtPrompt = " + B(FlirtPrompt) + "   ; Flirt in the game's lock-on menu, with Greet and Antagonize, on its H key (D-pad down on a pad), as well as FlirtKey");
+            b.AppendLine("FlirtPrompt = " + B(FlirtPrompt) + "   ; Flirt in the game's lock-on menu, with Greet and Antagonize, on its H key (D-pad down on a pad), as well as FlirtKey; once she has said yes to the night and her answer is said, the same H is Hook up (nothing of RealNPCs' is on G, which enRAGE uses)");
             b.AppendLine("NpcRomance = " + B(NpcRomance) + "   ; enRAGE's people court, marry, quarrel and fight over each other");
             b.AppendLine("AmbientFlirting = " + B(AmbientFlirting) + "   ; strangers in town flirt with each other now and then");
             b.AppendLine("SameSexRomance = " + B(SameSexRomance) + "   ; true: some people are drawn to their own sex, NPCs and the player alike");

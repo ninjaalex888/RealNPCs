@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Hook up is H, after her yes
+- Hook up is on H now, the same key as Flirt (Lex: G clashed with enRAGE's Give Money). The lock-on menu's H prompt reads Flirt. Only once a woman has said yes to your flirting, is willing for the night, and her answer has been said, the same prompt is made again as "Hook up". It never shows before a yes, and never on a no.
+- Once you've asked (with CasualHookups, its night), the prompt goes back to Flirt, and CasualHookups' own Flirt (moved to B) takes over. If CasualHookups starts nothing and RealNPCs' own night can't be had just then, Hook up shows on H again so you can ask her once more.
+- Nothing of RealNPCs' is on G (`INTERACT_OPTION1`) any more: the second prompt is gone. CasualHookups' key move from G to B and RealNPCs never holding G are unchanged.
+- The notices say "Hook up (H)". The one for a woman who liked your flirting but won't go further no longer tells you to press Hook up, since it doesn't show for her. Log `FLIRT Hook up pressed: <name>` as before. F7's flirt line says when the prompt is Hook up.
+- Reminder: with `[Romance] Romance = false`, neither Flirt nor Hook up shows.
+
 ### Talk is T (settings version 164)
 - Talk in the lock-on menu of someone RealNPCs knows is on T now (Lex: Q to T). `[World] TalkKey` (new, `T`) sets it. It sits on the settings panel's Hotkeys page and shares T with `TickerNextKey` on purpose, so setting one never takes the key from the other.
 - No game control has T as its keyboard key (the Controls list in femga's rdr3_discoveries goes from Space to Tab to U), so RealNPCs reads T itself while the Talk prompt is up. The prompt stays on `INPUT_INTERACT_LOCKON_TARGET_INFO`, so a pad's RB and its glyph work as before. On the keyboard it reads "Talk (T)" beside the game's own Q glyph (a script can't change the glyph), and Q does nothing for Talk. The prompt is made again when you change between keyboard and pad.

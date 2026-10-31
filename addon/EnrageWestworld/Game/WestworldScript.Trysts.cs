@@ -20,6 +20,7 @@ namespace EnrageWestworld.InGame
             public bool Hookups;   // the night is CasualHookups' (WestworldScript.Hookups.cs): no fade of ours
             public bool Night;     // her yes to the flirting is a yes to the night too; else asking gets her no (Trysts.NightChance)
             public int Greeted;    // he greeted her first (1) or flirted cold (-1)
+            public bool Asked;     // Hook up has been asked (CasualHookups' night): H is Flirt again, and its own Flirt takes it on
         }
 
         private sealed class TrystRun
@@ -46,12 +47,12 @@ namespace EnrageWestworld.InGame
                                            Until = Game.GameTime + (hookups ? HookupWillingMs : Trysts.OfferMs) };
             Log.Write("TRYST offered: " + name + " (" + r.TrystKind + ", chance " + r.Chance + "%, the night " + r.NightChance + "% -> " + (r.Night ? "yes" : "no") +
                       (r.Greeted > 0 ? ", greeted first" : r.Greeted < 0 ? ", flirted cold" : "") + "): " +
-                      (!r.Night ? "asking her (Hook up, G) gets a no today" : hookups ? "willing for CasualHookups' Flirt (" + HookupsKeyText + ") for " + HookupWillingMs / 1000 + " s" : "Hook up (G) within " + Trysts.OfferMs / 1000 + " s"));
+                      (!r.Night ? "no Hook up today (the H prompt stays Flirt)" : hookups ? "willing for CasualHookups' Flirt (" + HookupsKeyText + ") for " + HookupWillingMs / 1000 + " s" : "Hook up (H, once her answer is said) within " + Trysts.OfferMs / 1000 + " s"));
             if (r.Night && _trystHints < 3)
             {
                 _trystHints++;
-                Feed.Notice("RealNPCs", hookups ? name + " is willing: Hook up (G), then CasualHookups' Flirt (" + HookupsKeyText + "), in the next five minutes."
-                                                : name + " is willing: Hook up (G) within two minutes to go somewhere quieter.");
+                Feed.Notice("RealNPCs", hookups ? name + " is willing: Hook up (H), then CasualHookups' Flirt (" + HookupsKeyText + "), in the next five minutes."
+                                                : name + " is willing: Hook up (H) within two minutes to go somewhere quieter.");
             }
         }
 
@@ -89,6 +90,7 @@ namespace EnrageWestworld.InGame
             {
                 // the night is CasualHookups': the words only, and she stays willing a while longer
                 o.Until = Math.Max(o.Until, Game.GameTime + HookupWillingMs);
+                o.Asked = true;   // asked: the prompt goes back to Flirt, and CasualHookups' own Flirt takes it on
                 Log.Write("TRYST asked: " + o.Name + " (" + o.Kind + "): " + ask + " -> " + yes + "; CasualHookups' Flirt (" + HookupsKeyText + ") next");
                 return true;
             }
@@ -109,11 +111,12 @@ namespace EnrageWestworld.InGame
             string cant = !there ? "she's gone or too far off" : MISC.GET_MISSION_FLAG() ? "a story mission" : PED.IS_PED_IN_COMBAT(me.Handle, 0) ? "there's fighting going on" :
                           PED.IS_PED_ON_MOUNT(me.Handle) ? "you're on horseback" : PED.IS_PED_IN_COMBAT(o.Handle, 0) || PED.IS_PED_FLEEING(o.Handle) ? "she's frightened off" : null;
             o.Hookups = false;
+            o.Asked = false;   // RealNPCs' own night may be asked now: H is Hook up again
             if (cant != null)
             {
                 o.Until = Game.GameTime + Trysts.OfferMs;
                 _trystOffer = there ? o : null;
-                Log.Write("TRYST " + o.Name + ": " + why + ", and RealNPCs' own night can't be now (" + cant + ")" + (there ? "; flirt with her again to ask" : ""));
+                Log.Write("TRYST " + o.Name + ": " + why + ", and RealNPCs' own night can't be now (" + cant + ")" + (there ? "; Hook up (H) to ask her again" : ""));
                 return;
             }
             string seed = o.Who.Id + "|" + Bridge.Now() / 60;

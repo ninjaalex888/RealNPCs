@@ -397,7 +397,8 @@ NEW IN 0.6.2
   to it, the other as they answer. A yes or a maybe becomes a romance that goes on each time they
   meet. [Romance] NpcFlirting.
 - Flirting: lock on to her and press H (Flirt in the game's lock-on menu, FlirtPrompt). When she
-  says yes and has said it, Hook up shows beside it on G. There is no keyboard flirt key now
+  says yes and has said it, the same H becomes Hook up (never before a yes, never on a no;
+  nothing of RealNPCs' is on G, which enRAGE uses). There is no keyboard flirt key now
   (FlirtKey, None; it was F2). Whether they take to it comes from what they think of you and who they
   are: their nature, faith, troubles and mood, against your money and your name in town.
 - enRAGE's own people (its nemeses, gang men and named folk) join in street scenes, reactions,
@@ -1053,7 +1054,7 @@ in the file. The new ones:
             WillingSingle (70), WillingTaken (20): percent chance a single, or a married or
             spoken-for, woman takes to your flirting before what she thinks of you tips it (the
             saloon's women always do); greeting her first (R) helps by 15, flirting cold costs 15
-            Trysts (true): when she says yes, Hook up shows on G (once she's said it) for two minutes; her answer
+            Trysts (true): when she says yes, the same H is Hook up (once she's said it) for two minutes; her answer
             to that is its own (better after a greeting), then the screen goes dark, an hour passes
             CasualHookupsDecides (true): with CasualHookups installed, its Flirt works only on a
             woman who has said yes to you, and RealNPCs doesn't fade to black itself
@@ -1134,7 +1135,7 @@ RB+D-pad  on a controller: hold RB and press D-pad up for the settings panel, le
           how often people come to blows or quarrel (1 as built, 2 twice as often, 0 never by chance).
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town
           regulars and the fully awake around you show on the map for a minute
-H         locked on to someone, Flirt (FlirtPrompt); after her yes, G is Hook up. FlirtKey can set
+H         locked on to someone, Flirt (FlirtPrompt); after her yes, the same H is Hook up. FlirtKey can set
           a keyboard key as well (None; it was F2).
 N         read your letters, diaries and clippings (or take a diary you've just found; ReaderKey)
 ]         make a stalker now: someone near you, or a stranger (StalkerKey)

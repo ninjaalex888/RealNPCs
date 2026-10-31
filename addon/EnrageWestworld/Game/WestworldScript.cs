@@ -1375,7 +1375,7 @@ namespace EnrageWestworld.InGame
 			}
 			if (_hookAsk)
 			{
-				// the Hook up prompt (G): the ask, never another flirt (Lex, 2026-10-29); H only ever flirts
+				// the H prompt made as Hook up (after her yes): the ask, never another flirt (Lex, 2026-10-29; on H since 2026-10-31, G is enRAGE's)
 				_hookAsk = false;
 				if (!TrystAsked(ped))
 					Log.Write("TRYST Hook up pressed, but she isn't willing now (or it timed out)");
