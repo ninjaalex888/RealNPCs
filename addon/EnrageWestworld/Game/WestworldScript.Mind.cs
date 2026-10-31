@@ -198,7 +198,7 @@ namespace EnrageWestworld.InGame
             if (me == null || !me.Exists())
                 return;
             Vector3 at = me.Position;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
                 if (h == me.Handle)
@@ -747,7 +747,7 @@ namespace EnrageWestworld.InGame
             if (me == null || !me.Exists())
                 return;
             Vector3 at = me.Position;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
                 if (h == me.Handle)

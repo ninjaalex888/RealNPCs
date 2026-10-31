@@ -257,7 +257,7 @@ namespace EnrageWestworld.InGame
             }
             RecordRef best = null;
             float bestD = float.MaxValue;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (!Near(me, p))
                     continue;
@@ -279,7 +279,7 @@ namespace EnrageWestworld.InGame
             folk = null;
             Ped best = null;
             float bestD = float.MaxValue;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (!Near(me, p) || Natives.StoryModel(p))
                     continue;
@@ -300,7 +300,7 @@ namespace EnrageWestworld.InGame
         {
             Ped best = null;
             float bestD = float.MaxValue;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (!Near(me, p) || !ResidentEligible(p))
                     continue;
@@ -386,7 +386,7 @@ namespace EnrageWestworld.InGame
             {
                 WakeNote("nobody is close enough. Stand within a few steps of someone, facing them, then press " + _wakeKey + ". (The log says what it saw.)");
                 int n = 0;
-                foreach (Ped near in World.GetAllPeds())
+                foreach (Ped near in Peds.All())
                 {
                     float d = near.Position.DistanceTo(me.Position);
                     if (near.Handle == me.Handle || d > 15f || n >= 8)

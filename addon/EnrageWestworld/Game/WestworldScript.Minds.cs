@@ -105,7 +105,7 @@ namespace EnrageWestworld.InGame
             Vector3 at = first.Position;
             Ped me = Game.Player.Character;
             int saved = 0;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && x.Position.DistanceTo(at) <= metres).OrderBy(x => x.Position.DistanceTo(at)))
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && x.Position.DistanceTo(at) <= metres).OrderBy(x => x.Position.DistanceTo(at)))
             {
                 int h = p.Handle;
                 if (people.Any(x => x != null && x.Handle == h) || !CanWitness(p, me) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(h, first.Handle, 17))
@@ -174,7 +174,7 @@ namespace EnrageWestworld.InGame
             bool strong = Minds.DeedGroup(d.Kind) == "deed:violence";
             var list = new List<Minds.Party>();
             int saved = 0;
-            IEnumerable<Ped> around = only != null ? (IEnumerable<Ped>)new[] { only } : World.GetAllPeds().Where(x => x != null && x.Exists() && x.Position.DistanceTo(pos) <= 35f).OrderBy(x => x.Position.DistanceTo(pos));
+            IEnumerable<Ped> around = only != null ? (IEnumerable<Ped>)new[] { only } : Peds.All().Where(x => x != null && x.Exists() && x.Position.DistanceTo(pos) <= 35f).OrderBy(x => x.Position.DistanceTo(pos));
             foreach (Ped p in around)
             {
                 int h = p.Handle;
@@ -222,7 +222,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             int hour = CLOCK.GET_CLOCK_HOURS();
             var parts = new List<string>();
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Position.DistanceTo(me.Position) < 25f)
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Position.DistanceTo(me.Position) < 25f)
                                                  .OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 Person person = null;

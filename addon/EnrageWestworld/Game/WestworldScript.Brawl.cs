@@ -85,7 +85,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             Ped best = null;
             float bestD = metres;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null)
                     continue;
@@ -416,7 +416,7 @@ namespace EnrageWestworld.InGame
                 {
                     witnesses = 0;   // looked at only once someone is losing (the cost)
                     lawNear = BrawlFindLaw(mid, 30f, false, 0) != null;
-                    foreach (Ped p in World.GetAllPeds())
+                    foreach (Ped p in Peds.All())
                         if (p != null && p.Position.DistanceTo(mid) < 15f)
                             witnesses++;
                 }

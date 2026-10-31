@@ -92,7 +92,7 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             // a doctor about, within 90 m
-            Ped doctor = World.GetAllPeds().Where(p => p != null && p.Exists() && !ENTITY.IS_ENTITY_DEAD(p.Handle) && p.Position.DistanceTo(me.Position) <= 90f && IsDoctor(p))
+            Ped doctor = Peds.All().Where(p => p != null && p.Exists() && !ENTITY.IS_ENTITY_DEAD(p.Handle) && p.Position.DistanceTo(me.Position) <= 90f && IsDoctor(p))
                                             .OrderBy(p => p.Position.DistanceTo(me.Position)).FirstOrDefault();
             if (doctor == null)
             {

@@ -398,7 +398,7 @@ namespace EnrageWestworld.InGame
             Speech.SayAny(r.Att.Handle, Speech.Angry, r.Vic.Handle);
             // those watching gasp as he grabs him (two at most, the nearest)
             Ped me = Game.Player.Character;
-            foreach (Ped w in World.GetAllPeds().Where(p => p != null && p.Exists() && p.Handle != r.Att.Handle && p.Handle != r.Vic.Handle && Natives.Bystander(p, me.Handle) &&
+            foreach (Ped w in Peds.All().Where(p => p != null && p.Exists() && p.Handle != r.Att.Handle && p.Handle != r.Vic.Handle && Natives.Bystander(p, me.Handle) &&
                                                             p.Position.DistanceTo(r.Vic.Position) < 10f && !Speech.Busy(p.Handle))
                                                  .OrderBy(p => p.Position.DistanceTo(r.Vic.Position)).Take(2))
                 Speech.SayAny(w.Handle, Speech.Shame, r.Att.Handle);
@@ -444,7 +444,7 @@ namespace EnrageWestworld.InGame
             {
                 return TestStartRefused("ROUGH test: ", "ROUGH test: this game is missing the moves' animation sets (" + SmashDict + ", " + WallDict + ").");
             }
-            List<Ped> men = World.GetAllPeds().Where(p => p != null && p.Exists() && PED.IS_PED_MALE(p.Handle) && p.Position.DistanceTo(me.Position) < RoughNear &&
+            List<Ped> men = Peds.All().Where(p => p != null && p.Exists() && PED.IS_PED_MALE(p.Handle) && p.Position.DistanceTo(me.Position) < RoughNear &&
                                                           TalkLeftOut(p, me) == null && MayDirect(p))
                                               .OrderBy(p => p.Position.DistanceTo(me.Position)).ToList();
             Ped vic = men.FirstOrDefault(p => AtBar(p) != null) ?? men.FirstOrDefault(p => !PED.IS_PED_USING_ANY_SCENARIO(p.Handle)) ?? men.FirstOrDefault();
@@ -520,7 +520,7 @@ namespace EnrageWestworld.InGame
                 STREAMING.REQUEST_ANIM_DICT(WallDict);
             }
             Ped me = Game.Player.Character;
-            var near = World.GetAllPeds().Where(p => p != null && p.Exists() && p.Handle != me.Handle && PED.IS_PED_HUMAN(p.Handle) && p.Position.DistanceTo(me.Position) < 20f)
+            var near = Peds.All().Where(p => p != null && p.Exists() && p.Handle != me.Handle && PED.IS_PED_HUMAN(p.Handle) && p.Position.DistanceTo(me.Position) < 20f)
                                          .OrderBy(p => p.Position.DistanceTo(me.Position)).ToList();
             var bar = near.Where(p => PED.IS_PED_USING_ANY_SCENARIO(p.Handle)).Take(10)
                           .Select(p => TalkName(p) + " (" + (AtBar(p) != null ? "AT THE BAR " + AtBar(p) : ScenarioName(p)) + ", " +

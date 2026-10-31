@@ -26,7 +26,7 @@ namespace EnrageWestworld.InGame
             Vector3 at = doer.Position;
             Ped best = null;
             float bestD = Observed.LawMetres;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Handle == doer.Handle || (other != null && p.Handle == other.Handle) || (me != null && p.Handle == me.Handle))
                     continue;

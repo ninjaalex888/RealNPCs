@@ -287,7 +287,7 @@ namespace EnrageWestworld.InGame
         private static bool RidersPassing(Ped me)
         {
             var riders = new List<Vector3>();
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || !p.Exists() || p.Handle == me.Handle || ENTITY.IS_ENTITY_DEAD(p.Handle) || !PED.IS_PED_HUMAN(p.Handle) || !PED.IS_PED_ON_MOUNT(p.Handle))
                     continue;
@@ -307,7 +307,7 @@ namespace EnrageWestworld.InGame
         /// of waking or one of enRAGE's fights, and not speaking already.
         private List<Ped> TalkCandidates(Ped me)
         {
-            return World.GetAllPeds().Where(p => p != null && p.Exists() && p.Position.DistanceTo(me.Position) < TalkNear && TalkLeftOut(p, me) == null).ToList();
+            return Peds.All().Where(p => p != null && p.Exists() && p.Position.DistanceTo(me.Position) < TalkNear && TalkLeftOut(p, me) == null).ToList();
         }
 
         /// Why this person can't be in a conversation now, or null if they can.
@@ -338,7 +338,7 @@ namespace EnrageWestworld.InGame
         /// For the test key: everyone within reach, nearest first, and why anyone is left out.
         private void TalkTestRoll(Ped me)
         {
-            var all = World.GetAllPeds().Where(p => p != null && p.Exists() && p.Handle != me.Handle && PED.IS_PED_HUMAN(p.Handle) && !ENTITY.IS_ENTITY_DEAD(p.Handle) && p.Position.DistanceTo(me.Position) < TalkNear)
+            var all = Peds.All().Where(p => p != null && p.Exists() && p.Handle != me.Handle && PED.IS_PED_HUMAN(p.Handle) && !ENTITY.IS_ENTITY_DEAD(p.Handle) && p.Position.DistanceTo(me.Position) < TalkNear)
                                         .OrderBy(p => p.Position.DistanceTo(me.Position)).Take(10).ToList();
             Log.Write("TALK test: around you: " + (all.Count == 0 ? "nobody" : string.Join("; ", all.Select(p =>
             {

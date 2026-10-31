@@ -96,7 +96,7 @@ namespace EnrageWestworld.InGame
             var looking = new List<Ped>();
             int witnesses = 0;
             bool law = false;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Position.DistanceTo(mid) > JoinMetres + 12f)
                     continue;   // the distance first

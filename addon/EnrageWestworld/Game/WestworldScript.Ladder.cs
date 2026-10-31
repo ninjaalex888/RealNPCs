@@ -91,7 +91,7 @@ namespace EnrageWestworld.InGame
                 if (!_cfg.Standoffs)
                     q.ArmedA = q.ArmedB = false;   // [Scenes] Standoffs off: nobody draws, so the ladder stops at the fists
                 // who is watching: everyone within 12 m of them but the two, the player among them when he's that close
-                q.Witnesses = World.GetAllPeds().Count(p => p != null && p.Exists() && !p.IsDead && PED.IS_PED_HUMAN(p.Handle) && p.Handle != first.Handle && p.Handle != second.Handle &&
+                q.Witnesses = Peds.All().Count(p => p != null && p.Exists() && !p.IsDead && PED.IS_PED_HUMAN(p.Handle) && p.Handle != first.Handle && p.Handle != second.Handle &&
                                                              p.Handle != me.Handle && p.Position.DistanceTo(mid) < 12f) + (me.Position.DistanceTo(mid) < 12f ? 1 : 0);
                 // what it's over: the reason's matter, else a debt or a feud between them, else the place's usual
                 if (matter == null)

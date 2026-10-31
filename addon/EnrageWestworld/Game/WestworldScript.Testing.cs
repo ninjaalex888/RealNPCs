@@ -658,7 +658,7 @@ namespace EnrageWestworld.InGame
         private string TestDisbelief(int now)
         {
             Ped me = Game.Player.Character;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Position.DistanceTo(me.Position) < 15f)
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Position.DistanceTo(me.Position) < 15f)
                                                  .OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 if (MayDirectWhyNot(p) != null)

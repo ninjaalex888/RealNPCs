@@ -107,7 +107,7 @@ namespace EnrageWestworld.InGame
             _mindCards.Clear();
             Ped me = Game.Player.Character;
             int clockHour = CLOCK.GET_CLOCK_HOURS();
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) &&
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) &&
                                                              x.Position.DistanceTo(me.Position) < MindCardMetres).OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 Person who = KnownPerson(p);

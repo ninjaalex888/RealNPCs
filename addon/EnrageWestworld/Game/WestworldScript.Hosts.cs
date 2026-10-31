@@ -73,7 +73,7 @@ namespace EnrageWestworld.InGame
         private Ped Bystander(float min, float max, bool mustSee)
         {
             Ped me = Game.Player.Character;
-            List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && !_wakeActs.Any(w => w.Handle == p.Handle) &&
+            List<Ped> pool = Peds.All().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && !_wakeActs.Any(w => w.Handle == p.Handle) &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false)).ToList();
             pool = pool.Where(p =>
             {
@@ -87,7 +87,7 @@ namespace EnrageWestworld.InGame
         {
             // only someone who has begun to wake mutters about the world (Lex, 2026-10-29: West World thoughts not for the unawake)
             Ped me = Game.Player.Character;
-            Ped p = World.GetAllPeds().Where(x => Natives.Bystander(x, me.Handle) && !Spawner.IsOurs(x.Handle) && x.Position.DistanceTo(me.Position) >= 3f && x.Position.DistanceTo(me.Position) <= 14f &&
+            Ped p = Peds.All().Where(x => Natives.Bystander(x, me.Handle) && !Spawner.IsOurs(x.Handle) && x.Position.DistanceTo(me.Position) >= 3f && x.Position.DistanceTo(me.Position) <= 14f &&
                                                   _resBind.ContainsKey(x.Handle) && !_resBind[x.Handle].R.Dead && _engine.StageOf(_resBind[x.Handle].R.Id) > 0 &&
                                                   ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, x.Handle, 17)).OrderBy(x => _rng.Next()).FirstOrDefault();
             if (p == null)
@@ -393,7 +393,7 @@ namespace EnrageWestworld.InGame
             float bestD = 0f;
             string bestWhy = null;
             int there = 0, close = 0, enrage = 0, busy = 0, folkHeld = 0, folkBusy = 0;
-            foreach (Ped ped in World.GetAllPeds())
+            foreach (Ped ped in Peds.All())
             {
                 int h = ped.Handle;
                 if (h == me.Handle || Spawner.IsOurs(h) || !PED.IS_PED_HUMAN(h) || ENTITY.IS_ENTITY_DEAD(h) || PED.IS_PED_A_PLAYER(h))

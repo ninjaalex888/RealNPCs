@@ -40,7 +40,7 @@ namespace EnrageWestworld.InGame
             if (_store == null)
                 return;
             Vector3 at = me.Position;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Position.DistanceTo(at) > 120f)
                     continue;   // the distance first
@@ -130,7 +130,7 @@ namespace EnrageWestworld.InGame
             if (!PostsOn || now < _nextPostDeaths)
                 return;
             _nextPostDeaths = now + 3000;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
                 if (!ENTITY.IS_ENTITY_DEAD(h) || _postDeathsSeen.Contains(h))
@@ -144,7 +144,7 @@ namespace EnrageWestworld.InGame
                 Resident holder = post.HolderId != null ? _store.FindResident(post.HolderId) : null;
                 string was;
                 _bodyWas.TryGetValue(h, out was);
-                bool living = World.GetAllPeds().Any(x => x.Handle != h && !ENTITY.IS_ENTITY_DEAD(x.Handle) && ENTITY.GET_ENTITY_MODEL(x.Handle) == model);
+                bool living = Peds.All().Any(x => x.Handle != h && !ENTITY.IS_ENTITY_DEAD(x.Handle) && ENTITY.GET_ENTITY_MODEL(x.Handle) == model);
                 bool counts = _cfg.TownPostsAfterDeath == "successor" ? Posts.BodyVacates(holder, post, was, living, Bridge.Now()) : Posts.BodyFells(holder, post, was, living, Bridge.Now());
                 if (!counts)
                 {

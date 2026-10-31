@@ -71,7 +71,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             Vector3 at = me.Position;
             BraveSweepBegin(now);   // every 2 s this pass is also the bravery sweep (WestworldScript.Bravery.cs): no array of its own
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || !p.Exists() || p.Handle == me.Handle || !PED.IS_PED_HUMAN(p.Handle) || p.Position.DistanceTo(at) > LedgerRange)
                     continue;

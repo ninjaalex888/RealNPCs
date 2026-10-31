@@ -745,7 +745,7 @@ namespace EnrageWestworld.InGame
             Vector3 pos = me.Position;
             float reach = Math.Max(_cfg.NameCardsMetres, 12f);
             var fresh = new List<KeyValuePair<Ped, float>>();
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Handle == me.Handle || _resBind.ContainsKey(p.Handle))
                     continue;
@@ -845,7 +845,7 @@ namespace EnrageWestworld.InGame
             long now = Bridge.Now();
             ReadClock();
             List<KeyValuePair<Ped, float>> strangers = new List<KeyValuePair<Ped, float>>();
-            foreach (Ped ped in World.GetAllPeds())
+            foreach (Ped ped in Peds.All())
             {
                 int h = ped.Handle;
                 if (IsHermit(h))

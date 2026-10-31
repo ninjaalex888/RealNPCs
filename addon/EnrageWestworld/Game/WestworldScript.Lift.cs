@@ -81,7 +81,7 @@ namespace EnrageWestworld.InGame
                 return why = pace;
             // never the Testing page's cast (Lex, 2026-10-30: the old man of the cast was sent, and shot); a known pickpocket near
             // is the one who goes, before any other man (he keeps to his trade)
-            Ped pick = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && !Spawner.IsCast(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) &&
+            Ped pick = Peds.All().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && !Spawner.IsCast(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) &&
                                                      !PED.IS_PED_ON_MOUNT(p.Handle) && PED.IS_PED_MALE(p.Handle) && IsGrownUp(p) && !Natives.StoryModel(p) && !NotFree(p.Handle) &&
                                                      MayDirectWhyNot(p) == null && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                      p.Position.DistanceTo(me.Position) > 4f && p.Position.DistanceTo(me.Position) < 22f && !HorseAtHand(p))

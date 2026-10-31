@@ -142,7 +142,7 @@ namespace EnrageWestworld.InGame
             bool lasting = LastingId(n.Buyer, out bId, out bName);
             long g = Bridge.Now();
             int cheered = 0;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Handle != n.Buyer.Handle && (n.B == null || x.Handle != n.B.Handle) &&
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Handle != n.Buyer.Handle && (n.B == null || x.Handle != n.B.Handle) &&
                                                            x.Position.DistanceTo(n.Buyer.Position) < RoundBar).OrderBy(x => x.Position.DistanceTo(n.Buyer.Position)))
             {
                 if (cheered >= 4)

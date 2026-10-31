@@ -415,7 +415,7 @@ namespace EnrageWestworld.InGame
             if (!_cfg.WestWorld)
                 return "West World is off";
             Ped me = Game.Player.Character;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) &&
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) &&
                                                              x.Position.DistanceTo(me.Position) < 12f && x.Position.DistanceTo(me.Position) >= 3f)
                                                  .OrderBy(x => x.Position.DistanceTo(me.Position)))
             {

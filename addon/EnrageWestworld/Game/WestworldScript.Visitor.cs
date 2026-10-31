@@ -45,7 +45,7 @@ namespace EnrageWestworld.InGame
                 return "it's " + clock.ToString("00") + ":00 (it comes after midnight, before four)";
             if (!test && DoneToday("visitor"))
                 return "it came already tonight";
-            if (World.GetAllPeds().Any(p => p != null && p.Exists() && !p.IsDead && Natives.IsLaw(p) && p.Position.DistanceTo(Game.Player.Character.Position) < 60f))
+            if (Peds.All().Any(p => p != null && p.Exists() && !p.IsDead && Natives.IsLaw(p) && p.Position.DistanceTo(Game.Player.Character.Position) < 60f))
                 return "a lawman is near";
             return null;
         }
@@ -186,7 +186,7 @@ namespace EnrageWestworld.InGame
             if (!Spawner.Ready(v.FigureModel) || !Spawner.Ready(v.BodyModel))
                 return;
             Vector3 at;
-            if (!EncounterSpot(me, 30f, 50f, out at) || World.GetAllPeds().Any(p => p != null && p.Exists() && p.Handle != me.Handle && !p.IsDead && p.Position.DistanceTo(at) < 8f))
+            if (!EncounterSpot(me, 30f, 50f, out at) || Peds.All().Any(p => p != null && p.Exists() && p.Handle != me.Handle && !p.IsDead && p.Position.DistanceTo(at) < 8f))
             {
                 v.Tries++;
                 return;
@@ -264,7 +264,7 @@ namespace EnrageWestworld.InGame
         {
             if (v.Fled)
                 return;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || !p.Exists() || p.IsDead || p.Handle == me.Handle || Spawner.IsOurs(p.Handle) || p.Position.DistanceTo(v.Figure.Position) > 15f ||
                     !Natives.Bystander(p, me.Handle, IsRecord(p.Handle)) || MayDirectWhyNot(p) != null || NotFree(p.Handle) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, v.Figure.Handle, 17))

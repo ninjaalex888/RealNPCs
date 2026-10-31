@@ -286,7 +286,7 @@ namespace EnrageWestworld.InGame
             if (_wakeActs.Count >= MaxWakeActs || _director.Busy || now - _lastWakeActAt < 3000 || !PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle))
                 return;
             int examined = 0, bound = 0;
-            foreach (Ped ped in World.GetAllPeds().Where(x => x.Handle != me.Handle && x.Position.DistanceTo(me.Position) <= 30f).OrderBy(x => x.Position.DistanceTo(me.Position)))
+            foreach (Ped ped in Peds.All().Where(x => x.Handle != me.Handle && x.Position.DistanceTo(me.Position) <= 30f).OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 int h = ped.Handle;
                 if (!PED.IS_PED_HUMAN(h) || ENTITY.IS_ENTITY_DEAD(h))
@@ -539,7 +539,7 @@ namespace EnrageWestworld.InGame
         {
             Ped best = null;
             float bestD = within;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p.Handle == not1 || p.Handle == not2 || !PED.IS_PED_HUMAN(p.Handle) || ENTITY.IS_ENTITY_DEAD(p.Handle) || Spawner.IsOurs(p.Handle) || Natives.IsChild(p))
                     continue;
@@ -1295,7 +1295,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             var near = new List<string>();
             _awakeNear.Clear();
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists()).OrderBy(x => x.Position.DistanceTo(me.Position)))
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists()).OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 if (p == null || !p.Exists() || p.Handle == me.Handle || ENTITY.IS_ENTITY_DEAD(p.Handle) || !PED.IS_PED_HUMAN(p.Handle))
                     continue;
@@ -1449,7 +1449,7 @@ namespace EnrageWestworld.InGame
             if (_cfg == null || !_cfg.WestWorld || _store == null)
                 return;
             Ped me = Game.Player.Character;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && x.Handle != body && x.Handle != me.Handle && !ENTITY.IS_ENTITY_DEAD(x.Handle) &&
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && x.Handle != body && x.Handle != me.Handle && !ENTITY.IS_ENTITY_DEAD(x.Handle) &&
                                                            PED.IS_PED_HUMAN(x.Handle) && x.Position.DistanceTo(at) < 20f).OrderBy(x => x.Position.DistanceTo(at)))
             {
                 Person who;

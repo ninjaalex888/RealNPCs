@@ -432,7 +432,7 @@ namespace EnrageWestworld.InGame
         {
             Ped me = Game.Player.Character;
             int n = 0;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != act.Handle && x.Handle != me.Handle && x.Position.DistanceTo(pos) < 14f)
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != act.Handle && x.Handle != me.Handle && x.Position.DistanceTo(pos) < 14f)
                                                 .OrderBy(x => x.Position.DistanceTo(pos)))
             {
                 if (SightCant(p, me) != null || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, act.Handle, 17))
@@ -450,7 +450,7 @@ namespace EnrageWestworld.InGame
         private Ped OtherFor(WakeAct act, Ped me)
         {
             Vector3 at = new Ped(act.Handle).Position;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != act.Handle && x.Handle != me.Handle && x.Position.DistanceTo(at) < 14f)
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != act.Handle && x.Handle != me.Handle && x.Position.DistanceTo(at) < 14f)
                                                 .OrderBy(x => x.Position.DistanceTo(at)))
             {
                 int h = p.Handle;
@@ -721,7 +721,7 @@ namespace EnrageWestworld.InGame
             act.LawLookAt = now + 1500;
             int h = act.Handle;
             Vector3 at = new Ped(h).Position;
-            Ped law = World.GetAllPeds().Where(p => p != null && p.Position.DistanceTo(at) < 30f && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Handle != h && Natives.IsLaw(p) &&   // the distance first (the cost audit)
+            Ped law = Peds.All().Where(p => p != null && p.Position.DistanceTo(at) < 30f && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Handle != h && Natives.IsLaw(p) &&   // the distance first (the cost audit)
                                                     !PED.IS_PED_ON_MOUNT(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_IN_COMBAT(p.Handle, me.Handle) && !NotFree(p.Handle) &&
                                                     ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, h, 17))   // (not one carrying a body or after a thief: the cross-cutting review)
                                         .OrderBy(p => p.Position.DistanceTo(at)).FirstOrDefault();
@@ -822,7 +822,7 @@ namespace EnrageWestworld.InGame
             // up to three who can see it, as at a naked man (Sights), with a thought of their own about it
             int seen = 0;
             Vector3 pos = new Ped(h).Position;
-            foreach (Ped p in World.GetAllPeds().Where(x => _cfg.SightReactions && x != null && x.Exists() && !x.IsDead && x.Handle != h && x.Handle != me.Handle && x.Position.DistanceTo(pos) < 14f)
+            foreach (Ped p in Peds.All().Where(x => _cfg.SightReactions && x != null && x.Exists() && !x.IsDead && x.Handle != h && x.Handle != me.Handle && x.Position.DistanceTo(pos) < 14f)
                                                 .OrderBy(x => x.Position.DistanceTo(pos)))
             {
                 if (SightCant(p, me) != null || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, h, 17))
@@ -967,7 +967,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             string[] order = WakeOdd.StrangeKinds.Concat(new[] { "lashout at you", "lashout at another", "strip", "dazed" }).ToArray();
             string turn = order[_strangeTest % order.Length], kind = turn.StartsWith("lashout", StringComparison.Ordinal) ? "lashout" : turn;
-            foreach (Ped ped in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) && x.Position.DistanceTo(me.Position) < 15f)
+            foreach (Ped ped in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) && x.Position.DistanceTo(me.Position) < 15f)
                                                  .OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 Person p;

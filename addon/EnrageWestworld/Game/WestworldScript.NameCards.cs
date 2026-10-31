@@ -266,7 +266,7 @@ namespace EnrageWestworld.InGame
             var models = probe ? new List<string>() : null;
             float knownRange = _cfg.NameCardsKnownMetres, strangerRange = _cfg.NameCardsMetres, most = Math.Max(knownRange, strangerRange) + 20f;
             List<NameCard> found = new List<NameCard>();
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || !p.Exists() || p.Handle == me.Handle)
                     continue;
@@ -565,7 +565,7 @@ namespace EnrageWestworld.InGame
         {
             // who is near, by model and relationship group: which token or group marks a gang member (Lex's Lemoyne Raiders, 2026-10-29)
             Ped meP = Game.Player.Character;
-            string near = string.Join(", ", World.GetAllPeds().Where(x => x != null && x.Exists() && x.Handle != meP.Handle && PED.IS_PED_HUMAN(x.Handle) && x.Position.DistanceTo(meP.Position) < 12f)
+            string near = string.Join(", ", Peds.All().Where(x => x != null && x.Exists() && x.Handle != meP.Handle && PED.IS_PED_HUMAN(x.Handle) && x.Position.DistanceTo(meP.Position) < 12f)
                 .OrderBy(x => x.Position.DistanceTo(meP.Position)).Take(6)
                 .Select(x => (_nameCards.ContainsKey(x.Handle) && _nameCards[x.Handle].Name != null ? _nameCards[x.Handle].Name : "?") + " " + Natives.ModelName(x) + " rel 0x" + PED.GET_PED_RELATIONSHIP_GROUP_HASH(x.Handle).ToString("X8") + (Factions.MemberOf(ENTITY.GET_ENTITY_MODEL(x.Handle)) is string g ? " (" + g + ")" : "")));
             Log.Write("TEST near models: " + near);

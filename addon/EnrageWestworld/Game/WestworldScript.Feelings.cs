@@ -68,7 +68,7 @@ namespace EnrageWestworld.InGame
             List<Felt> felt = new List<Felt>();
             if (_cfg.FeelingBars)
             {
-                foreach (Ped p in World.GetAllPeds())
+                foreach (Ped p in Peds.All())
                 {
                     if (p == null || p.Handle == me.Handle || !p.Exists() || p.IsDead || !PED.IS_PED_HUMAN(p.Handle))
                         continue;

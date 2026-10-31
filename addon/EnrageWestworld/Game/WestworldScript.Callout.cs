@@ -93,7 +93,7 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             Vector3 mid = (caller.Ped.Position + called.Ped.Position) * 0.5f;
-            Ped crowd = World.GetAllPeds().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Handle != caller.Ped.Handle && p.Handle != called.Ped.Handle &&
+            Ped crowd = Peds.All().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Handle != caller.Ped.Handle && p.Handle != called.Ped.Handle &&
                                                      p.Position.DistanceTo(mid) < 14f && Natives.Bystander(p, me.Handle, IsRecord(p.Handle)) && !Spawner.IsOurs(p.Handle) &&
                                                      MayDirectWhyNot(p) == null && !NotFree(p.Handle))
                                           .OrderBy(p => p.Position.DistanceTo(mid)).FirstOrDefault();

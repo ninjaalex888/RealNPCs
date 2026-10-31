@@ -252,7 +252,7 @@ namespace EnrageWestworld.InGame
         {
             var why = new Dictionary<string, int>();
             Action<string> add = k => why[k] = why.TryGetValue(k, out int n) ? n + 1 : 1;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || !p.Exists() || p.Handle == me.Handle || p.IsDead || !PED.IS_PED_HUMAN(p.Handle) || p.Position.DistanceTo(me.Position) > radius)
                     continue;

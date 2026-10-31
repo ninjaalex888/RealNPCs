@@ -242,7 +242,7 @@ namespace EnrageWestworld.InGame
                 return "you're wanted or fighting";
             Ped body = null;
             Vector3 mePos = me.Position;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Position.DistanceTo(mePos) > 40f || !p.Exists() || !p.IsDead || !PED.IS_PED_HUMAN(p.Handle))
                     continue;   // (the distance first: the cost audit)
@@ -268,12 +268,12 @@ namespace EnrageWestworld.InGame
                 return "no body lying in the street within 40 m" + (test ? "" : " for 20 s or more");
             Vector3 bodyAt = body.Position;
             float lawMetres = test ? 80f : 50f;
-            if (World.GetAllPeds().Any(x => x != null && x.Position.DistanceTo(bodyAt) < 35f && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_IN_COMBAT(x.Handle, 0)))
+            if (Peds.All().Any(x => x != null && x.Position.DistanceTo(bodyAt) < 35f && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_IN_COMBAT(x.Handle, 0)))
             {
                 _bodyRetryAt = now + 20000;   // a fight near it: look again in a while, not every 3 s (the cost audit)
                 return "a fight near the body";
             }
-            Ped law = World.GetAllPeds().Where(x => x != null && x.Position.DistanceTo(bodyAt) < lawMetres && x.Exists() && !x.IsDead && Natives.IsLaw(x) && !PED.IS_PED_ON_MOUNT(x.Handle) &&
+            Ped law = Peds.All().Where(x => x != null && x.Position.DistanceTo(bodyAt) < lawMetres && x.Exists() && !x.IsDead && Natives.IsLaw(x) && !PED.IS_PED_ON_MOUNT(x.Handle) &&
                                                     !PED.IS_PED_IN_ANY_VEHICLE(x.Handle, false) && !PED.IS_PED_IN_COMBAT(x.Handle, 0) && !_director.Involves(x.Handle) && !NotFree(x.Handle) &&
                                                     !Spawner.IsBorrowed(x.Handle) && !_brawlLaw.Exists(b => b.Law == x.Handle))   // not one already on another job of ours
                                         .OrderBy(x => x.Position.DistanceTo(bodyAt)).FirstOrDefault();
@@ -756,7 +756,7 @@ namespace EnrageWestworld.InGame
         {
             Ped me = Game.Player.Character;
             int n = 0;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != law && x.Handle != body && x.Handle != me.Handle && x.Position.DistanceTo(at) < 18f)
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != law && x.Handle != body && x.Handle != me.Handle && x.Position.DistanceTo(at) < 18f)
                                                 .OrderBy(x => x.Position.DistanceTo(at)))
             {
                 if (!PED.IS_PED_HUMAN(p.Handle) || NotFree(p.Handle) || MayDirectWhyNot(p) != null)

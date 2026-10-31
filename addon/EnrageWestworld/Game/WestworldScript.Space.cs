@@ -79,7 +79,7 @@ namespace EnrageWestworld.InGame
             Vector3 mePos = me.Position;
             Ped near = null;
             int w = WatchEnter("the street scan");   // the hang watch
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Handle == me.Handle)
                     continue;

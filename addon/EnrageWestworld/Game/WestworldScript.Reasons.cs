@@ -44,7 +44,7 @@ namespace EnrageWestworld.InGame
         {
             var list = new List<Candidate>();
             Vector3 at = me.Position;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
                 if (p.Position.DistanceTo(at) > ReasonRange)
@@ -71,7 +71,7 @@ namespace EnrageWestworld.InGame
             var why = new Dictionary<string, int>();
             Action<string> add = k => why[k] = why.TryGetValue(k, out int n) ? n + 1 : 1;
             Vector3 at = me.Position;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
                 if (h == me.Handle || !p.Exists() || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(at) > ReasonRange)
@@ -555,7 +555,7 @@ namespace EnrageWestworld.InGame
             if (line == null)
                 return;
             Ped me = Game.Player.Character;
-            Ped keep = World.GetAllPeds().FirstOrDefault(p => p != null && p.Exists() && !ENTITY.IS_ENTITY_DEAD(p.Handle) && PostKindOf(p) != null && PostKindOf(p).Role == "the barkeep" &&
+            Ped keep = Peds.All().FirstOrDefault(p => p != null && p.Exists() && !ENTITY.IS_ENTITY_DEAD(p.Handle) && PostKindOf(p) != null && PostKindOf(p).Role == "the barkeep" &&
                                                            p.Position.DistanceTo(people[0].Position) < 18f && !_director.Involves(p.Handle));
             if (keep == null)
                 return;
@@ -658,7 +658,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             Ped first = people[0];
             int n = 0;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (n >= 6)
                     break;
@@ -725,7 +725,7 @@ namespace EnrageWestworld.InGame
                 return "none current" + (_placeTown != null ? " in " + _placeTown : "") + " (" + _store.Links.Count + " kept)";
             Ped me = Game.Player.Character;
             HashSet<string> around = new HashSet<string>(_resBind.Where(kv => ENTITY.DOES_ENTITY_EXIST(kv.Key) && new Ped(kv.Key).Position.DistanceTo(me.Position) < 60f).Select(kv => kv.Value.R.Id));
-            foreach (Ped p in World.GetAllPeds().Where(p => p.Position.DistanceTo(me.Position) < 60f))
+            foreach (Ped p in Peds.All().Where(p => p.Position.DistanceTo(me.Position) < 60f))
             {
                 FolkRef ac = _bridge.AcquaintanceAt(p.Handle);
                 if (ac != null && !string.IsNullOrEmpty(ac.Name))

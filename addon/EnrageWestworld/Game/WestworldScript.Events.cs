@@ -29,7 +29,7 @@ namespace EnrageWestworld.InGame
             string loud = WorldEvents.Loudness(kind);
             float reach = loud == "shot" ? WorldEvents.ShotMetres : WorldEvents.SightMetres;
             Ped me = Game.Player.Character;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (e.Witnesses.Count >= 20)
                     break;

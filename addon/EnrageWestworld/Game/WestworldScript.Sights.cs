@@ -286,7 +286,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             var found = new List<Ped>();
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Handle == me.Handle || !p.Exists() || p.IsDead || p.Position.DistanceTo(me.Position) > SightNear)
                     continue;
@@ -372,7 +372,7 @@ namespace EnrageWestworld.InGame
                 _bloodiedSeen[h] = at;   // one look for it, found or not (no scan every second for a quarter hour)
                 Ped by = null;
                 float bestD = SightNear;
-                foreach (Ped p in World.GetAllPeds())
+                foreach (Ped p in Peds.All())
                 {
                     if (p == null || !p.Exists() || p.IsDead || p.Handle == me.Handle || p.Handle == h)
                         continue;

@@ -133,7 +133,7 @@ namespace EnrageWestworld.InGame
             if (a.Winner == null || !a.Winner.Exists() || a.Winner.IsDead || _director.Involves(a.Winner.Handle))
                 return;
             Vector3 at = a.Winner.Position;
-            Ped law = World.GetAllPeds().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Position.DistanceTo(at) < 50f && Natives.IsLaw(p) &&
+            Ped law = Peds.All().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Position.DistanceTo(at) < 50f && Natives.IsLaw(p) &&
                                                     !PED.IS_PED_ON_MOUNT(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_IN_COMBAT(p.Handle, 0) &&
                                                     !_director.Involves(p.Handle) && (_theft == null || _theft.Lawman == null || _theft.Lawman.Handle != p.Handle))
                                         .OrderBy(p => p.Position.DistanceTo(at)).FirstOrDefault();

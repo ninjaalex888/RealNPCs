@@ -136,7 +136,7 @@ namespace EnrageWestworld.InGame
                 return;   // a friend takes up a wrong (WestworldScript.Grudges.cs)
             if (_interiorType == 0 && CalloutScene(me, now, false, out fallWhy))
                 return;   // a man calls another out at noon (WestworldScript.Callout.cs)
-            List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
+            List<Ped> pool = Peds.All().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
                                                          ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres &&
                                                          !Resting(p.Handle, now) && !NotFree(p.Handle)).ToList();   // (a quiet talk's two are taken; the waking are in an act of their own; the Talk partner, a walk-up, the law at work: the cross-cutting review)
@@ -255,7 +255,7 @@ namespace EnrageWestworld.InGame
             Func<Ped, bool> clear = p => !_director.Involves(p.Handle) && (sceneAt == null || p.Position.DistanceTo(sceneAt.Value) >= SideApart);
             if (ReasonScene(me, saloon, now, true, clear))
                 return;
-            List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
+            List<Ped> pool = Peds.All().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
                                                          ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres &&
                                                          !Resting(p.Handle, now) && clear(p) && !NotFree(p.Handle)).ToList();   // not the waking (2026-10-31: a side quarrel took one mid-act), nor anyone another feature has
@@ -677,7 +677,7 @@ namespace EnrageWestworld.InGame
             if (!saloon || _cfg.SaloonGossip)
                 cast.Rumours.AddRange(_engine.RumourPool(_placeTown, 4));
             // guns come out in a standoff only when both carry them and no lawman is close enough to start shooting
-            bool lawNear = World.GetAllPeds().Any(p => p.Exists() && !ENTITY.IS_ENTITY_DEAD(p.Handle) && PED.IS_PED_HUMAN(p.Handle) && p.Position.DistanceTo(a.Position) < 45f && Natives.IsLaw(p));
+            bool lawNear = Peds.All().Any(p => p.Exists() && !ENTITY.IS_ENTITY_DEAD(p.Handle) && PED.IS_PED_HUMAN(p.Handle) && p.Position.DistanceTo(a.Position) < 45f && Natives.IsLaw(p));
             bool armedA = WEAPON.IS_PED_ARMED(a.Handle, 4), armedB = WEAPON.IS_PED_ARMED(b.Handle, 4);
             cast.Armed0 = cast.Armed1 = armedA && armedB && !lawNear && !saloon;
             cast.Legend = _engine.Legend(g, seed);
@@ -1130,7 +1130,7 @@ namespace EnrageWestworld.InGame
                 Reverie drv;
                 bool byYou = deadRec != null && deadRec.KilledByPlayer &&
                              !(_store.Reveries.TryGetValue(f.Dead, out drv) && drv.Unwitnessed && !drv.Woke);   // nobody saw it: the mourners don't know it was you
-                List<Ped> mourners = World.GetAllPeds().Where(p => !ENTITY.IS_ENTITY_DEAD(p.Handle) && PED.IS_PED_HUMAN(p.Handle) && p.Handle != Game.Player.Character.Handle &&
+                List<Ped> mourners = Peds.All().Where(p => !ENTITY.IS_ENTITY_DEAD(p.Handle) && PED.IS_PED_HUMAN(p.Handle) && p.Handle != Game.Player.Character.Handle &&
                                                               p.Position.DistanceTo2D(f.Pos) < 16f).Take(3).ToList();
                 List<string> lines = Scenes.Eulogy(name, dead, byYou, true, key);
                 for (int i = 0; i < lines.Count; i++)
@@ -1260,7 +1260,7 @@ namespace EnrageWestworld.InGame
             Ped[] bodies = new Ped[2];                           // 0 a man, 1 a woman
             float[] bestD = { float.MaxValue, float.MaxValue };
             bool[] bodyInScenario = new bool[2];
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || !p.Exists() || p.Handle == me.Handle || ENTITY.IS_ENTITY_DEAD(p.Handle) || !PED.IS_PED_HUMAN(p.Handle))
                     continue;

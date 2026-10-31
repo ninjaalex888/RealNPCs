@@ -84,7 +84,7 @@ namespace EnrageWestworld.InGame
         {
             _wakeTags.Clear();
             Ped me = Game.Player.Character;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && x.Handle != me.Handle && !x.IsDead && PED.IS_PED_HUMAN(x.Handle) &&
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && x.Handle != me.Handle && !x.IsDead && PED.IS_PED_HUMAN(x.Handle) &&
                                                              x.Position.DistanceTo(me.Position) < WakeTagRange && ENTITY.IS_ENTITY_ON_SCREEN(x.Handle))
                                                  .OrderBy(x => x.Position.DistanceTo(me.Position)))
             {

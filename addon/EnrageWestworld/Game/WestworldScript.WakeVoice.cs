@@ -119,7 +119,7 @@ namespace EnrageWestworld.InGame
             Vector3 mp = me.Position;
             bool moving = ENTITY.GET_ENTITY_SPEED(me.Handle) > 0.8f;
             int examined = 0;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Handle != me.Handle && x.Position.DistanceTo(mp) <= WakeVoiceMetres).OrderBy(x => x.Position.DistanceTo(mp)))
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Handle != me.Handle && x.Position.DistanceTo(mp) <= WakeVoiceMetres).OrderBy(x => x.Position.DistanceTo(mp)))
             {
                 int h = p.Handle;
                 if (!PED.IS_PED_HUMAN(h) || ENTITY.IS_ENTITY_DEAD(h))
@@ -214,7 +214,7 @@ namespace EnrageWestworld.InGame
         {
             int me = Game.Player.Character.Handle;
             Vector3 at = p.Position;
-            Ped best = World.GetAllPeds().Where(x => x != null && x.Handle != p.Handle && x.Handle != me && PED.IS_PED_HUMAN(x.Handle) && !ENTITY.IS_ENTITY_DEAD(x.Handle) &&
+            Ped best = Peds.All().Where(x => x != null && x.Handle != p.Handle && x.Handle != me && PED.IS_PED_HUMAN(x.Handle) && !ENTITY.IS_ENTITY_DEAD(x.Handle) &&
                                                       x.Position.DistanceTo(at) <= within).OrderBy(x => x.Position.DistanceTo(at)).FirstOrDefault();
             return best != null ? best.Handle : 0;
         }
@@ -401,7 +401,7 @@ namespace EnrageWestworld.InGame
         private string WakeVoiceProbeStart(int now)
         {
             Ped me = Game.Player.Character;
-            Ped p = World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) && !Natives.StoryModel(x) &&
+            Ped p = Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) && !Natives.StoryModel(x) &&
                                                   x.Position.DistanceTo(me.Position) < 12f).OrderBy(x => x.Position.DistanceTo(me.Position)).FirstOrDefault();
             if (p == null)
                 return "nobody within 12 m (a story character won't do)";

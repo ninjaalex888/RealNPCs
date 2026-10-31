@@ -253,7 +253,7 @@ namespace EnrageWestworld.InGame
                 if (now - t.Started < 2500 || now < t.LawLookAt)
                     return false;
                 t.LawLookAt = now + 2000;
-                Ped law = World.GetAllPeds().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && Natives.IsLaw(p) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
+                Ped law = Peds.All().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && Natives.IsLaw(p) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
                                                         !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_IN_COMBAT(p.Handle, me.Handle) && p.Position.DistanceTo(t.Thief.Position) < 70f && !NotFree(p.Handle))
                                             .OrderBy(p => p.Position.DistanceTo(t.Thief.Position)).FirstOrDefault();
                 if (law == null)

@@ -70,7 +70,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             var taken = new List<Ped>();
             float from = RingFrom;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (_ring.Count + taken.Count >= most || taken.Count >= RingPerLook)
                     break;

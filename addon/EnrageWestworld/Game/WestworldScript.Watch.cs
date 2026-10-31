@@ -227,7 +227,7 @@ namespace EnrageWestworld.InGame
             if (_eventProbeOn)
                 MeleeProbe(now, me, player);
             Vector3 pos = me.Position;
-            foreach (Ped ped in World.GetAllPeds())
+            foreach (Ped ped in Peds.All())
             {
                 int h = ped.Handle;
                 if (h == player || _hits.ContainsKey(h) || _youStarted.ContainsKey(h) || _cameAtYouSeen.ContainsKey(h) || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h))
@@ -343,7 +343,7 @@ namespace EnrageWestworld.InGame
             Ped my = Game.Player.Character;
             Vector3 at = my.Position;
             var found = new List<KeyValuePair<float, string>>();
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Handle == my.Handle)
                     continue;
@@ -593,7 +593,7 @@ namespace EnrageWestworld.InGame
                 LAW.SET_BOUNTY(me, owed);
             Ped my = Game.Player.Character;
             int calmed = 0;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Handle == my.Handle || p.Position.DistanceTo(my.Position) > 100f || !p.Exists() || p.IsDead || !Natives.IsLaw(p) || !PED.IS_PED_IN_COMBAT(p.Handle, my.Handle))
                     continue;
@@ -674,7 +674,7 @@ namespace EnrageWestworld.InGame
                 bool action = PED.IS_PED_PERFORMING_MELEE_ACTION(player, 0, 0u);
                 System.Text.StringBuilder b = new System.Text.StringBuilder();
                 Vector3 here = me.Position;
-                foreach (Ped near in World.GetAllPeds())
+                foreach (Ped near in Peds.All())
                 {
                     int h = near.Handle;
                     if (h == player || !PED.IS_PED_HUMAN(h) || near.Position.DistanceTo(here) > 3f)
@@ -717,7 +717,7 @@ namespace EnrageWestworld.InGame
             int t = 0;
             Vector3 here = me.Position;
             HashSet<int> now_ = new HashSet<int>();
-            foreach (Ped near in World.GetAllPeds())
+            foreach (Ped near in Peds.All())
             {
                 int h = near.Handle;
                 if (h == player || !PED.IS_PED_HUMAN(h) || ENTITY.IS_ENTITY_DEAD(h))
@@ -1251,7 +1251,7 @@ namespace EnrageWestworld.InGame
         private List<string> WitnessesNear(Vector3 pos, int except, float radius)
         {
             List<string> ids = new List<string>();
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
                 if (h == except || h == Game.Player.Character.Handle || ENTITY.IS_ENTITY_DEAD(h) || p.Position.DistanceTo(pos) > radius)
@@ -1293,7 +1293,7 @@ namespace EnrageWestworld.InGame
             }
             DeedEyes e = new DeedEyes();
             int me = Game.Player.Character.Handle;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
                 if (h != except && h != me && !ENTITY.IS_ENTITY_DEAD(h) && PED.IS_PED_HUMAN(h) && p.Position.DistanceTo(pos) <= 35f)
@@ -1355,7 +1355,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             if (me.Position.DistanceTo(e.Body) > 30f)
                 return false;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
                 if (h == me.Handle || h == e.Victim || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(e.Body) > 20f ||
@@ -1377,7 +1377,7 @@ namespace EnrageWestworld.InGame
         {
             int n = 0;
             int me = Game.Player.Character.Handle;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
                 if (h != except && h != me && !ENTITY.IS_ENTITY_DEAD(h) && PED.IS_PED_HUMAN(h) && p.Position.DistanceTo(pos) <= radius)

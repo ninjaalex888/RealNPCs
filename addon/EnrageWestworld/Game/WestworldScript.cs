@@ -893,7 +893,7 @@ namespace EnrageWestworld.InGame
 			long now2 = Bridge.Now();
 			bool flag = !Feed.Busy && now - _lastRemarkAt >= _cfg.RemarkGapSeconds * 1000;
 			float num = Math.Max(_cfg.RemarkDistance, 3f);
-			Ped[] allPeds = World.GetAllPeds();
+			Ped[] allPeds = Peds.All();
 			foreach (Ped ped in allPeds)
 			{
 				int handle = ped.Handle;
@@ -1119,7 +1119,7 @@ namespace EnrageWestworld.InGame
 			RecordRef nemesisRecord = null;
 			int recordHandle = 0;   // so the thought goes over his head, not in a notice (Lex, 2026-10-27)
 			float num = 40f;
-			Ped[] allPeds = World.GetAllPeds();
+			Ped[] allPeds = Peds.All();
 			foreach (Ped ped in allPeds)
 			{
 				if (ped.Handle == character.Handle)
@@ -1145,6 +1145,7 @@ namespace EnrageWestworld.InGame
 				", stalker " + (_stalker != null ? _stalker.Label : "none") + ", scene " + (_director.Busy ? "playing" : "none") + ", town " + (_placeTown ?? "-") + ", place " + (_placeKind ?? "-") +
 				", deeds " + _store.Deeds.Count + ", rumours " + _store.TownRumours.Count + ", papers " + _store.Papers.Count(x => x.Delivered) + "/" + _store.Papers.Count +
 				", fallen " + _store.Fallen.Count + ", reveries " + _store.Reveries.Values.Count(x => x.Woke) + "/" + _store.Reveries.Count + ", avengers " + _store.Avengers.Count + ", weddings " + _store.Weddings.Count);
+			Log.Write("TEST peds: " + Peds.Status());
 			Log.Write("TEST stalker: " + StalkerStatus());
 			Log.Write("TEST stalker acts: " + Stalker.ActsStatus);
 			Log.Write("TEST worries: " + WorriesStatus());
@@ -1486,7 +1487,7 @@ namespace EnrageWestworld.InGame
 		{
 			Ped result = null;
 			float num = range;
-			Ped[] allPeds = World.GetAllPeds();
+			Ped[] allPeds = Peds.All();
 			foreach (Ped ped in allPeds)
 			{
 				int handle = ped.Handle;
@@ -1516,7 +1517,7 @@ namespace EnrageWestworld.InGame
 		private List<Person> Watchers(Ped me, int except)
 		{
 			List<Person> list = new List<Person>();
-			Ped[] allPeds = World.GetAllPeds();
+			Ped[] allPeds = Peds.All();
 			foreach (Ped ped in allPeds)
 			{
 				int handle = ped.Handle;
@@ -1684,7 +1685,7 @@ namespace EnrageWestworld.InGame
 			Ped character = Game.Player.Character;
 			Vector3 position = character.Position;
 			List<Ped> list = new List<Ped>();
-			Ped[] allPeds = World.GetAllPeds();
+			Ped[] allPeds = Peds.All();
 			foreach (Ped ped in allPeds)
 			{
 				int handle = ped.Handle;

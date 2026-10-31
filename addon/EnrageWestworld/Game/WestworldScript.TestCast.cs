@@ -84,7 +84,7 @@ namespace EnrageWestworld.InGame
                                ENTITY.GET_ENTITY_SPEED(h) > 2.5f ? "running" : "calm";
                 who.Add(Person.FirstOf(b.R.Name) + " " + doing);
             }
-            int bodies = World.GetAllPeds().Count(p => p != null && p.Position.DistanceTo(at) < 30f && p.Exists() && p.IsDead && PED.IS_PED_HUMAN(p.Handle));
+            int bodies = Peds.All().Count(p => p != null && p.Position.DistanceTo(at) < 30f && p.Exists() && p.IsDead && PED.IS_PED_HUMAN(p.Handle));
             Log.Write("TESTCAST after arrival: " + (who.Count > 0 ? string.Join(", ", who) : "nobody here") + "; you: " +
                       (WEAPON.IS_PED_ARMED(me.Handle, 4) ? "a gun in hand" : "no gun out") + "; " + bodies + " dead within 30 m; the law: " + (_lawStage.Length > 0 ? _lawStage : "clear"));
         }

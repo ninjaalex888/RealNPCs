@@ -127,7 +127,7 @@ namespace EnrageWestworld.InGame
             _clerkNearAt = _now;
             _clerkNear = false;
             Vector3 at = me.Position;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
                 if (p != null && p.Handle != me.Handle && p.Exists() && !p.IsDead && p.Position.DistanceTo(at) < 3.5f && StationClerk(p))
                 {
                     _clerkNear = true;
@@ -780,7 +780,7 @@ namespace EnrageWestworld.InGame
             if (_menu != null)
                 TalkClose("the Testing row again");
             Ped me = Game.Player.Character;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Position.DistanceTo(me.Position) < 6f).OrderBy(x => x.Position.DistanceTo(me.Position)))
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Position.DistanceTo(me.Position) < 6f).OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 if (TalkWhyNot(p.Handle, me, 6f) != null)
                     continue;

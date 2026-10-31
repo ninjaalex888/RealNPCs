@@ -85,7 +85,7 @@ namespace EnrageWestworld.InGame
             if (pre != null)
                 return _thanksWhyNot = "rests: " + pre;
             bool late = Natives.Night() || _engine.NowIndoors;
-            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Position.DistanceTo(me.Position) < 20f)
+            foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Position.DistanceTo(me.Position) < 20f)
                                                 .OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 string id, name, temper;

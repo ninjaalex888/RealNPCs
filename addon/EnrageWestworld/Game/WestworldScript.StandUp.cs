@@ -246,7 +246,7 @@ namespace EnrageWestworld.InGame
         private static int CrowdAt(Vector3 at, float metres, List<Ped> not)
         {
             int n = 0, me = Game.Player.Character.Handle;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
                 if (h == me || p.Position.DistanceTo(at) > metres || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h))

@@ -134,7 +134,7 @@ namespace EnrageWestworld.InGame
             var pos = new List<Vector3>();
             _nodIds.Clear();
             Vector3 mine = me.Position;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Handle == me.Handle || !p.Exists() || p.IsDead)
                     continue;

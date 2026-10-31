@@ -66,7 +66,7 @@ namespace EnrageWestworld.InGame
             if (MISC.GET_MISSION_FLAG())
                 return "a mission";
             Ped me = Game.Player.Character;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (!p.Exists() || p.Handle == me.Handle || p.Position.DistanceTo(me.Position) > 14f)
                     continue;

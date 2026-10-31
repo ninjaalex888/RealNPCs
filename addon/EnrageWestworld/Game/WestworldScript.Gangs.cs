@@ -77,7 +77,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             Vector3 at = me.Position;
             var byGang = new Dictionary<string, List<Ped>>();
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Position.DistanceTo(at) > GangScanMetres)
                     continue;   // the distance first

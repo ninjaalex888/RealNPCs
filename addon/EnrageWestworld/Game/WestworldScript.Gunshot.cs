@@ -53,7 +53,7 @@ namespace EnrageWestworld.InGame
             if (_animTest != null)
                 return "an animation run is going on";
             Ped me = Game.Player.Character;
-            Ped p = World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) && !Natives.StoryModel(x) &&
+            Ped p = Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) && !Natives.StoryModel(x) &&
                                                   x.Position.DistanceTo(me.Position) < 12f && x.Position.DistanceTo(me.Position) >= 2f && IsGrownUp(x) &&
                                                   _bridge.RecordAt(x.Handle) == null && MayDirectWhyNot(x) == null && !NotFree(x.Handle))
                                      .OrderBy(x => x.Position.DistanceTo(me.Position)).FirstOrDefault();

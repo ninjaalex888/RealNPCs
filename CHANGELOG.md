@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Nobody about after a saloon: the list of people no longer comes back empty
+- From Lex's test in Saint Denis: after going in and out of the saloon every name plate went for minutes, and F7 showed nobody near with people standing about. The list of everyone in the world, which every part of RealNPCs reads, came back empty: the API's own call gives an empty list, without a word, whenever anything goes wrong underneath.
+- RealNPCs now asks Script Hook for the list itself, once a frame, and every part reads that one list. If it fails, or comes back with nobody (never true: Arthur is on it himself), the last good list from the past 5 s is used instead, cut to the people still there. The log says so once a minute (`PEDS list: empty (indoors <id>; N kept from the last good list, N s old)`, or `failed: <why>`), and F7 has a `TEST peds:` line: how many now, how many failures and empty lists, how often the last good list stood in. If Script Hook's own call can't be reached, RealNPCs goes back to the API's and says so once.
+
 ### Hook up with CasualHookups: never stuck without its prompt
 - From Lex's test: Opal Ackerman, a saloon woman, said yes to the flirting and to Hook up, and the hint said to press CasualHookups' Flirt (B) next, but CasualHookups showed no B prompt at all. It shows none for a kind of woman it won't take, so nothing happened.
 - Now Hook up (H) on a willing woman goes by what is known of her kind (her model):

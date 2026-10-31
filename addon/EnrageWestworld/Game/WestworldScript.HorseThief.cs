@@ -43,7 +43,7 @@ namespace EnrageWestworld.InGame
             // horses standing with nobody on them, near the player
             var horses = new List<Ped>();
             var riders = new HashSet<int>();
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Position.DistanceTo(me.Position) > 40f || p.IsDead)
                     continue;
@@ -90,7 +90,7 @@ namespace EnrageWestworld.InGame
                 Log.Detail("HORSE " + thief.Who.Name + " eyes a horse, and leaves it be");
                 return false;
             }
-            Ped owner = World.GetAllPeds().FirstOrDefault(p => p != null && p.Handle != thief.Ped.Handle && p.Handle != me.Handle && PED.IS_PED_HUMAN(p.Handle) && !p.IsDead &&
+            Ped owner = Peds.All().FirstOrDefault(p => p != null && p.Handle != thief.Ped.Handle && p.Handle != me.Handle && PED.IS_PED_HUMAN(p.Handle) && !p.IsDead &&
                                                                p.Position.DistanceTo(horse.Position) < 60f && PED._GET_LAST_MOUNT(p.Handle) == horse.Handle);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(thief.Ped.Handle, true);
             TASK.TASK_MOUNT_ANIMAL(thief.Ped.Handle, horse.Handle, 20000, -1, 1.6f, 1, 0, 0);

@@ -198,7 +198,7 @@ namespace EnrageWestworld.InGame
             if (_bridge == null)
                 return;
             Ped me = Game.Player.Character;
-            var near = World.GetAllPeds().Where(p => p != null && p.Exists() && p.Handle != me.Handle && !ENTITY.IS_ENTITY_DEAD(p.Handle) && IsRecord(p.Handle) &&
+            var near = Peds.All().Where(p => p != null && p.Exists() && p.Handle != me.Handle && !ENTITY.IS_ENTITY_DEAD(p.Handle) && IsRecord(p.Handle) &&
                                                      p.Position.DistanceTo(me.Position) < 100f)
                                          .OrderBy(p => p.Position.DistanceTo(me.Position)).Take(10).ToList();
             if (near.Count == 0)
@@ -232,7 +232,7 @@ namespace EnrageWestworld.InGame
             if (_bridge == null || !_bridge.Present)
                 return "enRAGE not " + (_bridge == null ? "found" : "installed (standing alone)");
             Ped me = Game.Player.Character;
-            var near = World.GetAllPeds().Where(p => p != null && p.Exists() && p.Handle != me.Handle && IsRecord(p.Handle) && p.Position.DistanceTo(me.Position) < 30f)
+            var near = Peds.All().Where(p => p != null && p.Exists() && p.Handle != me.Handle && IsRecord(p.Handle) && p.Position.DistanceTo(me.Position) < 30f)
                                          .OrderBy(p => p.Position.DistanceTo(me.Position)).Take(8).ToList();
             if (near.Count == 0)
                 return (_cfg.EnragePeopleJoinIn ? "they join in" : "they're left alone ([Scenes] EnragePeopleJoinIn off)") + "; " + _recordFatesBooked + " deaths booked this session; none within 30 m";

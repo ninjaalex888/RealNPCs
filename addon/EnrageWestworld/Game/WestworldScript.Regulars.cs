@@ -53,7 +53,7 @@ namespace EnrageWestworld.InGame
             {
                 // anyone around now may have been seen a moment ago (before a reload, say): never them
                 _regPrimed = true;
-                foreach (Ped p in World.GetAllPeds())
+                foreach (Ped p in Peds.All())
                     _regChecked.Add(p.Handle);
                 return;
             }
@@ -68,7 +68,7 @@ namespace EnrageWestworld.InGame
             }
             int cast = 0;
             long gameNow = Bridge.Now();
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (cast >= 3)
                     break;
@@ -121,7 +121,7 @@ namespace EnrageWestworld.InGame
         /// Notes who has been on screen; a handle the game has given to someone new (another model) starts over.
         private void SampleSeen(Ped me, int now)
         {
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
                 uint model = ENTITY.GET_ENTITY_MODEL(h);

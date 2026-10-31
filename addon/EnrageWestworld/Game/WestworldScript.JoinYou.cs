@@ -64,7 +64,7 @@ namespace EnrageWestworld.InGame
             if (!PED.IS_PED_IN_MELEE_COMBAT(me.Handle))
                 return 0;
             Vector3 at = me.Position;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Handle == me.Handle || p.Position.DistanceTo(at) > 4f || p.IsDead || !PED.IS_PED_HUMAN(p.Handle))
                     continue;
@@ -86,7 +86,7 @@ namespace EnrageWestworld.InGame
             var looking = new List<Ped>();
             int witnesses = 0;
             bool law = false;
-            foreach (Ped p in World.GetAllPeds())
+            foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Position.DistanceTo(mid) > JoinYouMetres + 18f)
                     continue;
