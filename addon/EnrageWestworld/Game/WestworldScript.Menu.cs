@@ -478,8 +478,10 @@ namespace EnrageWestworld.InGame
             r.Memories.Clear();
             r.Beliefs.Clear();
             r.Worry = null;       // the meaning carries the worry where it belongs (it crept into every answer)
-            if (t.KnowsName && YourSurname() != null)
-                r.YouAs = "Mr. " + YourSurname();   // they know his name: they may say it
+            if ((t.KnowsName || o.Id == "name") && YourSurname() != null)
+                r.YouAs = "Mr. " + YourSurname();   // they know his name (or he's telling it them now): they may say it
+            if (o.Id == "name" && YourFullName() != null)
+                r.Said = "He tells you his name: " + YourFullName() + ".";
             string key = "talk|" + t.Id + "|" + now;
             var ask = new LanguageAsk { Key = key, Name = t.Name, PersonId = t.Id, Request = r, Written = a.Line, AskedAtMs = Environment.TickCount };
             if (!_engine.LanguageAnswers.AskPick(ask))
