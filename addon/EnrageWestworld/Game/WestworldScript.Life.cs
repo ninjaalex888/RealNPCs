@@ -1231,7 +1231,8 @@ namespace EnrageWestworld.InGame
             long g = _store.LastGameMin;
             var kin = _store.People.Values.Where(st => st.Family != null).SelectMany(st => st.Family.Select(r => new { st, r }))
                 .Where(x => x.r.Town == _placeTown && !_store.Avengers.Any(a => a.Name == x.r.Name && a.Stage < 3) &&
-                            (x.st.Talks > 0 || x.r.Heard.Count > 0 || (_store.Reveries.ContainsKey(x.st.Id) && _store.Reveries[x.st.Id].ByPlayer)))
+                            (x.st.Talks > 0 || x.r.Heard.Count > 0 || (_store.Reveries.ContainsKey(x.st.Id) && _store.Reveries[x.st.Id].ByPlayer)) &&
+                            !(_store.Reveries.ContainsKey(x.st.Id) && _store.Reveries[x.st.Id].Unwitnessed && !_store.Reveries[x.st.Id].Woke))   // killed with nobody to see it: his kin don't know you
                 .OrderBy(x => _rng.Next()).ToList();
             if (kin.Count == 0)
             {

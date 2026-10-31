@@ -101,6 +101,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public bool Woke;
         [DataMember(EmitDefaultValue = false)] public long WokeAt;
         [DataMember(EmitDefaultValue = false)] public bool Buried;
+        [DataMember(EmitDefaultValue = false)] public bool Unwitnessed;   // killed by the player with nobody to see it (or in self-defence): his kin never learn it was him (Engine.World.cs, kin word)
     }
 
     [DataContract]

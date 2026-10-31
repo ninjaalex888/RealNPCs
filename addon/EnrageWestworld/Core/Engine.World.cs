@@ -70,6 +70,21 @@ namespace EnrageWestworld.Core
                 r.How = how ?? r.How;
                 r.Headshot |= headshot;
             }
+            // enRAGE's roster can show him dead (and word set off) before the game layer's note of the kill came in:
+            // word that set off with nothing known about who saw it goes by the note now
+            long now = Store.LastGameMin;
+            if (r != null && r.ByPlayer && !r.Woke && now - r.DiedAt <= 60)
+                r.Unwitnessed = !KillWitnessed(id);
+            foreach (Rumor w in Store.Rumors.Where(x => x.How == "death" && x.FromId == id && x.DeedId == null && !x.NotByYou && x.Found == null && x.DueAt > now && now - x.SentAt <= 60).ToList())
+            {
+                w.DeedId = deedId;
+                if (KillWitnessed(id))
+                    continue;
+                w.Unwitnessed = true;
+                w.NotByYou = true;
+                w.DueAt = Math.Max(w.DueAt, w.SentAt + KinWordLater(false, w.FromId + w.ToRelative));
+                Log("WORD of " + w.FromName + "'s death: the kill was noted after the word set off; nobody saw it (" + (defended ? "self-defence" : "nobody near") + "), so " + w.ToRelative + " hears in " + (w.DueAt - now) / 60 + " h, not of you");
+            }
         }
 
         /// enRAGE counts the times the player let someone go. Each new one is a deed: word gets around.
@@ -190,6 +205,8 @@ namespace EnrageWestworld.Core
             _deathNotes.TryGetValue(p.Id, out note);
             string found;
             _bodiesFound.TryGetValue(p.Id, out found);
+            if (byYou)
+                KinWordReverie(p.Id, unseen);   // his kin in their own town don't know it was him either (Life.cs, the walk-up)
             int min, max;
             KinWordDays(Cfg, !unseen, out min, out max);
             var told = new List<string>();
@@ -237,6 +254,13 @@ namespace EnrageWestworld.Core
             Log("WORD of " + r.FromName + "'s death: the body was found (" + how + "); " + r.ToRelative + " hears in " + (r.DueAt - now) / 60 + " h, not of you");
         }
 
+        private void KinWordReverie(string id, bool unwitnessed)
+        {
+            Reverie rv;
+            if (id != null && Store.Reveries.TryGetValue(id, out rv))
+                rv.Unwitnessed = unwitnessed;
+        }
+
         /// Before delivery: a pending death's word changes rule as what's known of the killing changes.
         private void KinWordTick(long now)
         {
@@ -253,6 +277,7 @@ namespace EnrageWestworld.Core
                         r.Unwitnessed = false;
                         r.NotByYou = false;
                         r.Found = null;
+                        KinWordReverie(r.FromId, false);
                         r.DueAt = Math.Min(r.DueAt, Math.Max(now + 60, r.SentAt + KinWordLater(true, r.FromId + r.ToRelative)));
                         Log("WORD of " + r.FromName + "'s death: someone saw you by the body and lived to tell; " + r.ToRelative + " hears in " + (r.DueAt - now) / 60 + " h (witnessed)");
                         continue;
@@ -266,6 +291,7 @@ namespace EnrageWestworld.Core
                     // everyone who saw it died before they told: the word doesn't know it was him, and comes later
                     r.Unwitnessed = true;
                     r.NotByYou = true;
+                    KinWordReverie(r.FromId, true);
                     r.DueAt = Math.Max(r.DueAt, r.SentAt + KinWordLater(false, r.FromId + r.ToRelative));
                     Log("WORD of " + r.FromName + "'s death: nobody who saw it lived to tell; " + r.ToRelative + " hears in " + (r.DueAt - now) / 60 + " h, not of you");
                 }
