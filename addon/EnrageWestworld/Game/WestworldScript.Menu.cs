@@ -207,6 +207,7 @@ namespace EnrageWestworld.InGame
                 Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440), WorryStage = worryStage
             };
             TalkRefreshOptions();
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);   // the game's own "you're standing too close" and the like wait till goodbye (Lex, 2026-10-31); undone in TalkClose
             TalkFace(_menu, me, true);
             TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 26000, 0, 51, 0);
             _talkOpened++;
@@ -617,6 +618,7 @@ namespace EnrageWestworld.InGame
             _spaceAgain[t.Handle] = Game.GameTime + 60000;   // stood close to talk: no "a little room" from them straight after
             if (ENTITY.DOES_ENTITY_EXIST(t.Handle) && !ENTITY.IS_ENTITY_DEAD(t.Handle) && !_director.Involves(t.Handle))
             {
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(t.Handle, false);   // they react to the world again (TalkOpen blocked it)
                 TASK.TASK_CLEAR_LOOK_AT(t.Handle);
                 if (!t.Seated)
                 {

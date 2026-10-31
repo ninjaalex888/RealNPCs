@@ -279,6 +279,8 @@ namespace EnrageWestworld.InGame
 
         private bool InTalk(int h)
         {
+            if (_menu != null && _menu.Handle == h)
+                return true;   // in the Talk menu with him: no waking act, glance or remark takes them off facing him (Lex, 2026-10-31)
             if (_talk == null || _talk.People == null)
                 return false;
             for (int i = 0; i < _talk.People.Length; i++)
