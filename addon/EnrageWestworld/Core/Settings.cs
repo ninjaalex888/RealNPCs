@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 164;
+        public const int CurrentVersion = 165;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -281,7 +281,7 @@ namespace EnrageWestworld.Core
         public float OnlookersRunMetres = 20f;     // [Mind] how far the badly frightened run
         public int OnlookersRunning = 4;           // [Mind] how many may run from one happening (fewer with Bravery)
         public float TalkModelWaitSeconds = 2.8f;  // [Mind] Talk: how long the model may take before the written line
-        public float HushFear = 0.5f, HushFearSaintDenis = 0.8f;   // [Mind] the town's fear (0-1) from which the street hushes (about six hours after a killing; Saint Denis about two)
+        public float HushHours = 2f, HushHoursSaintDenis = 1f;   // [Mind] game hours the street hushes after the latest killing in its town (0-12; 0 never); a beating in a brawl, a Testing row, brawls, roughs and standoffs never hush (settings version 165; HushFear and HushFearSaintDenis before, Lex in Saint Denis 2026-10-31)
         public int StrainChance = 40;              // [Mind] stress that builds: percent they snap at someone who won't hit back (a coward always)
         public int BoldThieves = 25;   // with BeingWatched: percent of would-be thieves who try it with the law looking on, once a day each; the hothead, the greedy and the drunk half as likely again (Lex, 2026-10-31: "less realistic, more exciting"; settings version 163)
         public bool LateThanks = true;   // [Scenes] someone Arthur stood a drink, gave money or whose debt he settled comes over hours or days later and thanks him for it; the proud repay a debt (settings version 153; NIGHT3)
@@ -707,6 +707,8 @@ namespace EnrageWestworld.Core
                 }
                 if (s.SettingsVersion < 163 && s.Language)
                     s.LanguageChosen = true;   // on before RealNPCs could find the model by itself: the player's own choice, kept (2026-10-31)
+                if (s.SettingsVersion < 165)
+                    log?.Invoke("Settings: the street's hush now follows only the latest killing in a town, for HushHours (" + F(s.HushHours) + ") game hours, Saint Denis HushHoursSaintDenis (" + F(s.HushHoursSaintDenis) + "); HushFear and HushFearSaintDenis are gone (Lex in Saint Denis, 2026-10-31: brawls kept the street hushed).");   // the old keys are skipped on reading and not written again
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -799,8 +801,8 @@ namespace EnrageWestworld.Core
             OnlookersRunMetres = Math.Max(5f, Math.Min(60f, OnlookersRunMetres));
             OnlookersRunning = Math.Max(1, Math.Min(8, OnlookersRunning));   // the onlookers' queue holds 8 (WestworldScript.Onlookers.cs, OnlookQueueMost)
             TalkModelWaitSeconds = Math.Max(1f, Math.Min(7f, TalkModelWaitSeconds));   // a model request gives up at 8 s (WestworldScript.Language.cs, LanguageTimeoutMs)
-            HushFear = Math.Max(0.1f, Math.Min(1f, HushFear));
-            HushFearSaintDenis = Math.Max(0.1f, Math.Min(1f, HushFearSaintDenis));
+            HushHours = Math.Max(0f, Math.Min(12f, HushHours));
+            HushHoursSaintDenis = Math.Max(0f, Math.Min(12f, HushHoursSaintDenis));
             StrainChance = Math.Max(0, Math.Min(100, StrainChance));
             TownPostsAfterDeath = (TownPostsAfterDeath ?? "").Trim().ToLowerInvariant() == "successor" ? "successor" : "survive";
             RegularsPerTown = Math.Max(5, Math.Min(80, RegularsPerTown));            StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
@@ -946,8 +948,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("PickMetres = " + PickMetres + "   ; how far from you (metres, 5 to 60) the model picks what people do; past 15 m each person is asked half as often; the mind itself looks 25 m out, so more than 25 changes nothing yet");
             b.AppendLine("PicksAtOnce = " + PicksAtOnce + "   ; how many people's picks may wait on the model at once (1 to 16); F7's TEST model: line shows how long answers take, so you can raise it while they stay quick");
             b.AppendLine("MindTownMood = " + B(MindTownMood) + "   ; (in testing) with MindLive on: a killing, a robbery or a mugging leaves the whole town on edge for about a day, worst in the first hours and at night (people out go home, keep clear, keep watch; their thoughts say why), and the same kind of trouble seen again in a town that week moves onlookers less each time");
-            b.AppendLine("HushFear = " + F(HushFear) + "   ; with MindTownMood on: the town's fear (0.1-1; 1 just after a killing, halving every six game hours) from which the street hushes: no street fights, thefts or noon callouts from its own timing. 0.5 is about six game hours after a killing");
-            b.AppendLine("HushFearSaintDenis = " + F(HushFearSaintDenis) + "   ; the same for Saint Denis, a city used to trouble (0.1-1; 0.8 is about two game hours)");
+            b.AppendLine("HushHours = " + F(HushHours) + "   ; with MindTownMood on: for this many game hours after a killing in a town (the latest one only), the street hushes: no street fights, thefts or noon callouts from its own timing (0-12; 0 never). A man beaten to death in a brawl, anything from a Testing row, and brawls, roughs and standoffs never hush a street");
+            b.AppendLine("HushHoursSaintDenis = " + F(HushHoursSaintDenis) + "   ; the same for Saint Denis, a city used to trouble (0-12 game hours; 0 never)");
             b.AppendLine("MindTempers = " + B(MindTempers) + "   ; (in testing) with MindLive on: someone slighted, quarrelled with or beaten in the last few hours may take it out on someone who won't hit back; and in Lemoyne's towns, where honour rules, quarrels climb a little faster and backing down costs more");
             b.AppendLine("StrainChance = " + StrainChance + "   ; with MindTempers on: someone with two or more troubles at once snaps at someone who won't hit back this percent of the time when they meet (0-100; a coward is always picked on; the timid and the loyal never snap)");
             b.AppendLine("ThoughtsAloud = " + B(ThoughtsAloud) + "   ; (in testing) with Language on: as a thought shows over someone within 12 m, the model looks through the remarks their own voice has recorded and, if one fits, they say it aloud (most thoughts stay unspoken); the words show in the lower subtitle box when your local word list has them");

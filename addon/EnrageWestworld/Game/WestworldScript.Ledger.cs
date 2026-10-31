@@ -84,7 +84,7 @@ namespace EnrageWestworld.InGame
                 if (k == null || _deadNoted.Contains(h) || !ENTITY.IS_ENTITY_DEAD(h) || KnockedOutWhy(h) != null)
                     continue;   // out cold is looked at again next time: they may be killed where they lie
                 _deadNoted.Add(h);
-                LedgerNote(h, k.Id, k.Name, k.Kind, null, null);
+                LedgerNote(h, k.Id, k.Name, k.Kind, _brawlFatal.Contains(h) ? TownMood.Beating : null, null);   // beaten to death in a brawl, booked here before BrawlDown: still "a beating" (never hushes a street)
             }
             BraveSweepEnd(now);
             foreach (int h in _known.Keys.Where(x => !ENTITY.DOES_ENTITY_EXIST(x)).ToList())

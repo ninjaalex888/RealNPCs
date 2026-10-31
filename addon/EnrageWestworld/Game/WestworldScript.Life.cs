@@ -109,7 +109,7 @@ namespace EnrageWestworld.InGame
                 return;   // (and never gossip beside a figure crouched over a corpse)
             }
             _nextDrama = now + 8000;
-            _hush = TownMoodOn && _placeTown != null && TownMood.Hushes(TownFearNow(now), _placeTown);   // quiet after something big
+            _hush = TownMoodOn && _placeTown != null && TownMood.Hushes(TownFearNow(now));   // quiet for a while after a killing (HushHours)
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
                 return;

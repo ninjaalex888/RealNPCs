@@ -24,7 +24,7 @@ namespace EnrageWestworld.InGame
             {
                 Kind = kind, DoerId = doerId, DoerName = doerName, TargetId = targetId, TargetName = targetName,
                 Town = _bridge != null ? _bridge.TownOnly(at) ?? _bridge.TownAt(at) : null, Place = _engine.NowIndoors ? _engine.NowPlace : null,
-                X = at.X, Y = at.Y, Z = at.Z, Outcome = outcome
+                X = at.X, Y = at.Y, Z = at.Z, Outcome = outcome, Test = FromTestRow()   // a Testing row fired lately: it never hushes a street (TownMood.Hushing)
             };
             string loud = WorldEvents.Loudness(kind);
             float reach = loud == "shot" ? WorldEvents.ShotMetres : WorldEvents.SightMetres;

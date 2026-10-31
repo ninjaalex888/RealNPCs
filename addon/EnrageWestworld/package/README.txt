@@ -140,7 +140,8 @@ NEW IN 0.7.11
   you, a lawman's job, Bravery), so the game's own reaction takes over: hands up, begging.
 - Also new, mostly not yet seen in game: the street's trouble waits while a lawman within 25 m
   is looking, and on a Sunday morning by the church ([Scenes] BeingWatched); the street hushes
-  after a killing, and the town is on edge for about a day ([Mind] MindTownMood); onlookers run
+  for two game hours after a killing (one in Saint Denis; [Mind] HushHours, HushHoursSaintDenis),
+  never after a brawl, and the town is on edge for some hours ([Mind] MindTownMood); onlookers run
   from real danger, and fright spreads; stress that builds, and honour rules in Lemoyne ([Mind]
   MindTempers); personal space ([World] PersonalSpace); why a scene starts, as a thought
   ([Scenes] ReasonThoughts); the bully turns on whoever stepped in; Arthur's own recorded
@@ -1227,6 +1228,10 @@ in the file. The new ones:
             testing, with Language, MindWakes and LanguageVariety); MindStartsScenes (true, in
             testing, with LanguagePicks); PickMetres (25), PicksAtOnce (8); MindTownMood,
             MindTempers (true, in testing).
+            HushHours (2), HushHoursSaintDenis (1): with MindTownMood, for this many game hours after
+            the latest killing in a town its street holds back its own fights, thefts and callouts
+            (0-12; 0 never). A man beaten to death in a brawl, the Testing rows, and brawls, roughs
+            and standoffs never hush it.
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left

@@ -34,8 +34,8 @@ namespace EnrageWestworld.InGame
             Scenes.TurnsDrunk = _cfg.BullyTurnsDrunk;
             Scenes.TurnsMeant = _cfg.BullyTurnsMeant;
             Onlooking.Running = _cfg.OnlookersRunning;
-            TownMood.HushLevel = _cfg.HushFear;
-            TownMood.CityHushLevel = _cfg.HushFearSaintDenis;
+            TownMood.HushHours = _cfg.HushHours;
+            TownMood.CityHushHours = _cfg.HushHoursSaintDenis;
             Reasons.StrainChance = _cfg.StrainChance;
         }
     }

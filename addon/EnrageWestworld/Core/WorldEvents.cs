@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
         [DataMember(Name = "z", EmitDefaultValue = false)] public float Z;
         [DataMember(Name = "a", EmitDefaultValue = false)] public long At;              // game minute (Store.LastGameMin)
         [DataMember(Name = "o", EmitDefaultValue = false)] public string Outcome;       // how it came out, in a word or two (null while unknown)
+        [DataMember(Name = "ts", EmitDefaultValue = false)] public bool Test;            // from a Testing row (within TestHushMs of a fire): never hushes a street (TownMood.Hushing)
         [DataMember(Name = "s", EmitDefaultValue = false)] public List<EventWitness> Witnesses = new List<EventWitness>();
     }
 
