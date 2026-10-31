@@ -1278,6 +1278,29 @@ namespace EnrageWestworld.Core
             return l != null ? Links.WhoName(l) : null;
         }
 
+        /// The game minute the player settled this person's worry, or -1 (InnerLife.SettledAt).
+        private long SettledAt(string id)
+        {
+            long at;
+            return id != null && Store.WorrySettled != null && Store.WorrySettled.TryGetValue(id, out at) ? at : -1;
+        }
+
+        /// The player settled this person's worry (the interaction menu's debt): kept in the save, so the rest of its
+        /// run reads as ended well for them, the one they owed, their needs and the scenes over it. Entries three runs
+        /// old go.
+        public void SettleWorry(string id)
+        {
+            if (id == null)
+                return;
+            long now = Store.LastGameMin;
+            if (Store.WorrySettled == null)
+                Store.WorrySettled = new Dictionary<string, long>();
+            foreach (string old in Store.WorrySettled.Where(kv => now - kv.Value > 3L * InnerLife.WorryDays * 1440).Select(kv => kv.Key).ToList())
+                Store.WorrySettled.Remove(old);
+            Store.WorrySettled[id] = now;
+            Log("WORRY settled by you: " + id + " (the rest of its run reads as ended well)");
+        }
+
         /// Whether the one linked to this worry has died (InnerLife then sets the worry aside).
         private bool LinkedDead(Person p, string kind, long arc)
         {

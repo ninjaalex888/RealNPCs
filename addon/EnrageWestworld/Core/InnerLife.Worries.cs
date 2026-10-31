@@ -3,7 +3,9 @@
 // ticket, a bad tooth, a secret, the law. Each runs WorryDays game days (it begins, gets worse, comes to a head,
 // ends well or badly), then another begins, and a new one now and then remembers how the last one ended.
 // Nothing is saved: it all follows from who they are and the game day, so a counter keeper met again days later
-// is further along, and anyone met for the first time is somewhere in the middle of something. The people in it
+// is further along, and anyone met for the first time is somewhere in the middle of something. The one exception:
+// the day the player settled one for them (the interaction menu's debt, roadmap 9), which the engine keeps; from that
+// day the run reads as ended well (SettledAt). The people in it
 // are named once per person (the same child, the same son) or once per worry (this creditor, this sweetheart).
 // All lines are original to this add-on.
 using System;
@@ -22,6 +24,7 @@ namespace EnrageWestworld.Core
             public Func<Person, string, int, bool> Fits;   // the person, their trade group, their age
             public int GoodChance = 55;                   // percent that it ends well
             public string[] Begin, Worse, Crisis, Good, Bad, AfterGood, AfterBad;
+            public string[] Settled;                      // the player settled it for them (roadmap 9): said in place of Good
         }
 
         private static readonly string[] NoFamily = { "trapper", "rough", "girl", "soldier", "card" };
@@ -58,6 +61,10 @@ namespace EnrageWestworld.Core
                     "Couldn't pay. {who} took the mule instead. Stood in the yard and watched it go.",
                     "{who} has my watch now. Keep reaching for it. Pocket's empty.",
                     "{who} was civil about it. Took the saddle and said he was sorry. Civil is worse." },
+                Settled = new[] {
+                    "A stranger put eleven dollars in my hand. Paid {who} before I could think better of it.",
+                    "Square with {who}, and not a cent of it mine. Grateful and ashamed by turns.",
+                    "Paid {who} with a stranger's money. He tipped his hat like I'd earned it." },
                 AfterGood = new[] { "Don't owe a soul in this town. Say it out loud sometimes, to hear it.", "Pass {who}'s porch now and tip my hat. Just a hat. Nothing attached to it.", "Jar's filling again. Slowly. Mine this time, every penny." },
                 AfterBad = new[] { "Still see my mule in {who}'s field. He works it harder than I did.", "Walk to the field now. The mule would've carried me. {who} knows it.", "Owed and paid in kind. Folk still say it kindly. Kindly is the part that lasts." }
             },
@@ -432,13 +439,45 @@ namespace EnrageWestworld.Core
 
         private static bool EndsWell(Person p, WorryKind k, long arc)
         {
-            return Voice.Hash(p.Id + "|wg" + arc) % 100 < k.GoodChance;
+            return SettledIn(p.Id, arc, long.MaxValue) || Voice.Hash(p.Id + "|wg" + arc) % 100 < k.GoodChance;
+        }
+
+        /// The game minute the player settled this person's worry (the engine's Store.WorrySettled), or -1. Only reads.
+        public static Func<string, long> SettledAt;
+
+        /// Whether the player settled this person's worry in this run, on or before this game day.
+        private static bool SettledIn(string id, long arc, long gameDay)
+        {
+            long at = SettledAt != null && id != null ? SettledAt(id) : -1;
+            if (at < 0 || gameDay < at / 1440)
+                return false;
+            int dayIn;
+            return ArcOf(id, at / 1440, out dayIn) == arc;
+        }
+
+        /// Whether the worry this person is living through today is one the player settled for them.
+        public static bool IsSettled(string id, long gameDay)
+        {
+            int dayIn;
+            return id != null && gameDay >= 0 && SettledIn(id, ArcOf(id, gameDay, out dayIn), gameDay);
+        }
+
+        /// The stage today: by the day in its run, or how it ended (3) once the player settled it.
+        private static int StageOn(string id, long arc, int dayIn, long gameDay)
+        {
+            int stage = StageOf(dayIn);
+            return stage < 3 && SettledIn(id, arc, gameDay) ? 3 : stage;
         }
 
         /// Which run of WorryDays this game day falls in for this person, and the day within it (0..WorryDays-1).
         private static long ArcOf(Person p, long gameDay, out int dayIn)
         {
-            long day = gameDay + Voice.Hash(p.Id + "|wo") % WorryDays;
+            return ArcOf(p.Id, gameDay, out dayIn);
+        }
+
+        private static long ArcOf(string id, long gameDay, out int dayIn)
+        {
+            long day = gameDay + Voice.Hash(id + "|wo") % WorryDays;
             dayIn = (int)(day % WorryDays);
             return day / WorryDays;
         }
@@ -500,7 +539,7 @@ namespace EnrageWestworld.Core
                 return null;
             int dayIn;
             long arc = ArcOf(p, gameDay, out dayIn);
-            int stage = StageOf(dayIn);
+            int stage = StageOn(p.Id, arc, dayIn, gameDay);
             if (stage == 0 && Voice.Chance(seed + "wa", 25))
             {
                 // a new worry, and the last one still on their mind
@@ -512,7 +551,7 @@ namespace EnrageWestworld.Core
             WorryKind k = KindAt(p, fits, arc);
             if (LinkedDead(p, k, arc))
                 return null;
-            string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis : EndsWell(p, k, arc) ? k.Good : k.Bad;
+            string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? k.Settled : EndsWell(p, k, arc) ? k.Good : k.Bad;
             return Fill(Pick(pool, p, seed, told), p, k, arc);
         }
 
@@ -534,7 +573,7 @@ namespace EnrageWestworld.Core
             if (LinkedDead(p, k, arc))
                 return false;   // set aside: no scenes over it either
             kind = k.Key;
-            stage = StageOf(dayIn);
+            stage = StageOn(p.Id, arc, dayIn, gameDay);
             good = EndsWell(p, k, arc);
             return true;
         }
@@ -563,8 +602,8 @@ namespace EnrageWestworld.Core
         public static int StageFor(string id, long gameDay)
         {
             int dayIn;
-            ArcOf(new Person { Id = id }, gameDay, out dayIn);
-            return StageOf(dayIn);
+            long arc = ArcOf(id, gameDay, out dayIn);
+            return StageOn(id, arc, dayIn, gameDay);
         }
 
         /// Whether a worry of this kind, in this run, ends well for this person (by their id alone).
@@ -599,9 +638,9 @@ namespace EnrageWestworld.Core
             int dayIn;
             long arc = ArcOf(p, gameDay, out dayIn);
             WorryKind k = KindAt(p, fits, arc);
-            int stage = StageOf(dayIn);
+            int stage = StageOn(p.Id, arc, dayIn, gameDay);
             string who = Fill("{who}|{place}", p, k, arc).Replace("{who}", "").Replace("{place}", "").Trim('|');
-            string[] names = { "it begins", "worse", "the crisis", EndsWell(p, k, arc) ? "it ended well" : "it ended badly" };
+            string[] names = { "it begins", "worse", "the crisis", SettledIn(p.Id, arc, gameDay) ? "it ended well (you settled it)" : EndsWell(p, k, arc) ? "it ended well" : "it ended badly" };
             return k.Key + (who.Length > 0 ? " (" + who.Replace("|", ", ") + ")" : "") + ", " + names[stage] + ", day " + (dayIn + 1) + " of " + WorryDays;
         }
 
@@ -609,7 +648,7 @@ namespace EnrageWestworld.Core
         public static IEnumerable<KeyValuePair<string, string>> AllWorryLines()
         {
             foreach (WorryKind k in Worries)
-                foreach (string[] pool in new[] { k.Begin, k.Worse, k.Crisis, k.Good, k.Bad, k.AfterGood, k.AfterBad })
+                foreach (string[] pool in new[] { k.Begin, k.Worse, k.Crisis, k.Good, k.Bad, k.AfterGood, k.AfterBad, k.Settled ?? new string[0] })
                     foreach (string line in pool)
                         yield return new KeyValuePair<string, string>(k.Key, line);
         }

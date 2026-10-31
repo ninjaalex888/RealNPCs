@@ -2,7 +2,7 @@
 // adult RealNPCs knows (a resident, one of enRAGE's townsfolk or records), the game's lock-on menu also offers "Talk" on Q
 // (a pad's RB: INPUT_INTERACT_LOCKON_TARGET_INFO, free in the people's lock-on menu; the clerk's Reset prompt uses it
 // only in a station clerk's list, and Talk stands aside there). Pressing it opens a short list above the ticker: up and
-// down (or the D-pad, or 1 to 5) to choose, Enter (A) to say it, Backspace (B) to leave; the keyboard's keys while the
+// down (or the D-pad, or 1 to 6) to choose, Enter (A) to say it, Backspace (B) to leave; the keyboard's keys while the
 // keyboard is in use, the pad's buttons while a pad is. Arthur's words show as a subtitle, then their answer in their
 // own voice with its subtitle (afraid or hostile when they are), and what it is (a round, charity, a warning) is written
 // down as a happening for the mind, so gratitude, fear, the greetings and the memories follow; the money goes when the
@@ -47,9 +47,9 @@ namespace EnrageWestworld.InGame
         private const float MenuReach = 4f;
         private static IntPtr _talkWord;
         private TalkMenu _menu;
-        private int _talkPrompt, _talkPromptFor, _talkPromptGroup, _talkOpened, _talkSaid;
+        private int _talkPrompt, _talkPromptFor, _talkPromptGroup, _talkOpened, _talkSaid, _talkSettled;
         private readonly HashSet<string> _talkConfided = new HashSet<string>();   // who has told him their worry this session (a money worry he knows of: the gift is five dollars)
-        private readonly bool[] _talkKeys = new bool[9];
+        private readonly bool[] _talkKeys = new bool[10];
         private string _talkLast;
         private Action _aTalkPrompt;
 
@@ -211,7 +211,8 @@ namespace EnrageWestworld.InGame
             {
                 cash = 0;   // no reading: the money options stay greyed
             }
-            _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && _talkConfided.Contains(_menu.Id));
+            bool told = _talkConfided.Contains(_menu.Id);
+            _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, _menu.Worry == "debt" && told);
             if (_menu.Sel >= _menu.Options.Count)
                 _menu.Sel = 0;
             _menu.Rows = null;
@@ -285,7 +286,7 @@ namespace EnrageWestworld.InGame
                 down = TalkKey(1, 0x28);
                 accept = TalkKey(2, 0x0D);
                 cancel = TalkKey(3, 0x08);
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 6; i++)
                     if (TalkKey(4 + i, 0x31 + i) && i < t.Options.Count)
                         pick = i;
             }
@@ -390,6 +391,13 @@ namespace EnrageWestworld.InGame
                 _bridge.LikeMore(t.FolkId, a.LikeDelta);   // enRAGE's own method for its own townsfolk
             if (a.Confided)
                 _talkConfided.Add(t.Id);
+            if (a.Settles)
+            {
+                _engine.SettleWorry(t.Id);   // the rest of the debt's run reads as ended well, for them and the one they owed
+                t.Worry = null;
+                t.MoneyWorry = false;
+                _talkSettled++;
+            }
             if (!t.Seated)
             {
                 Vector3 at = ENTITY.GET_ENTITY_COORDS(h, true, true);
@@ -422,7 +430,7 @@ namespace EnrageWestworld.InGame
             t.ThoughtAt = now + 2600;
             TalkRefreshOptions();
             Log.Write("TALK " + t.Name + ": " + t.PendingId + " -> \"" + a.Line + "\"" + (a.Event != null ? " (" + a.Event + " for the mind)" : again ? " (the same within the hour: not counted again)" : "") +
-                      (a.Cents > 0 ? ", $" + (a.Cents / 100.0).ToString("0.00") : "") + (a.Then != "stay" ? ", " + a.Then : "") + (a.Confided ? ", told you their worry" : ""));
+                      (a.Cents > 0 ? ", $" + (a.Cents / 100.0).ToString("0.00") : "") + (a.Then != "stay" ? ", " + a.Then : "") + (a.Confided ? ", told you their worry" : "") + (a.Settles ? ", their debt settled" : ""));
         }
 
         private void TalkThink(TalkMenu t)
@@ -532,7 +540,7 @@ namespace EnrageWestworld.InGame
         private string TalkStatus()
         {
             return (_cfg.InteractionMenu ? "on (Talk on Q, a pad's RB, in the lock-on menu)" : "off ([World] InteractionMenu)") + "; opened " + _talkOpened + " times, " + _talkSaid + " things said" +
-                   (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_menu != null ? "; open on " + _menu.Name : "");
+                   (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_talkSettled > 0 ? ", " + _talkSettled + " debts settled" : "") + (_menu != null ? "; open on " + _menu.Name : "");
         }
     }
 }

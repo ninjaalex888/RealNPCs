@@ -4,7 +4,8 @@
 // trust him with it, else the rumours of his own deeds, in their words), a drink stood (a saloon), money given, a
 // warning. Each one is written down as a happening the mind already understands (a round and charity read as kindness,
 // a warning as a challenge to the one warned), so gratitude, fear, the greetings as he passes, the rumours and the
-// memories all follow from what exists; nothing new is saved. The same thing done to the same person again within the
+// memories all follow from what exists. A debt they've told him of he can settle (roadmap 9: the one thing saved, the
+// day he did, so the rest of its run reads as ended well). The same thing done to the same person again within the
 // game hour is said but not counted (Again). Plain C#, no game; all words original to this add-on.
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class InteractOption
     {
-        public string Id;        // news, drink, give, threaten, bye
+        public string Id;        // news, drink, give, settle, threaten, bye
         public string Label;     // what Arthur says, shown in the list
         public string Why;       // why it can't be chosen now (shown greyed), or null
     }
@@ -21,7 +22,7 @@ namespace EnrageWestworld.Core
     public sealed class InteractAnswer
     {
         public string Line;      // what they say back, in their voice
-        public string Event;     // the happening it is (round, charity, threat, faced), or null for none
+        public string Event;     // the happening it is (round, charity, help, threat, faced), or null for none
         public int Cents;        // what it cost Arthur
         public int LikeDelta;    // for enRAGE's own townsfolk: its LikeMore, through its own method
         public string Then;      // what they do after: stay, step back, square up, walk off
@@ -29,6 +30,7 @@ namespace EnrageWestworld.Core
         public bool Confided;    // they told him their worry: he knows of it now
         public int VoiceHate, VoiceFear;   // how it's said, for the game's own lines (Speech.For)
         public bool Friendly;
+        public bool Settles;     // he paid their debt: the worry is over (Engine.SettleWorry)
     }
 
     public static class Interact
@@ -36,13 +38,14 @@ namespace EnrageWestworld.Core
         public const int DrinkCents = 10;   // two beers at a nickel, 1899
         public const int AgainMinutes = 60; // the same thing to the same person within the game hour: said, not counted again
         public const int KindMinutes = 1440; // a kindness from him within the game day: enough to trust him with a worry
+        public const int SettleCents = 1100; // the debt's eleven dollars (the worry's own lines name the sum)
 
         /// The list for this person now: saloon (a drink can be stood), cash (cents in Arthur's pocket), money worry (one
-        /// he knows of: a gift is five dollars, not one).
-        public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry)
+        /// he knows of: a gift is five dollars, not one), a debt he knows of and hasn't settled (he can pay it off).
+        public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool debtKnown = false)
         {
             int gift = moneyWorry ? 500 : 100;
-            return new List<InteractOption>
+            var list = new List<InteractOption>
             {
                 new InteractOption { Id = "news", Label = "What's the news?" },
                 new InteractOption { Id = "drink", Label = "Let me stand you a drink.", Why = !saloon ? "only in a saloon" : cash < DrinkCents ? "not enough money" : null },
@@ -50,6 +53,9 @@ namespace EnrageWestworld.Core
                 new InteractOption { Id = "threaten", Label = "Watch yourself." },
                 new InteractOption { Id = "bye", Label = "Goodbye." },
             };
+            if (debtKnown)
+                list.Insert(3, new InteractOption { Id = "settle", Label = "Let me settle that debt ($" + SettleCents / 100 + ")", Why = cash < SettleCents ? "not enough money" : null });
+            return list;
         }
 
         /// Whether they'd tell him their own worry: only someone fond of him, or someone he's lately been kind to (a drink,
@@ -149,6 +155,42 @@ namespace EnrageWestworld.Core
                            : temper == "Greedy" ? "A dollar? Is that the whole of it?"
                            : Pick(seed + "|give", "Well, I'm obliged to you.", "Well, I'll not refuse it. Obliged.", "What's this for? ...Thank you.");
                     a.Thought = afraid ? "What does he want for it? What will he want?" : moneyWorry ? "Somebody's looking out for me after all." : temper == "Greedy" ? "A soft touch. I'll remember his face." : "Money for nothing. Folks don't do that.";
+                    return a;
+                case "settle":
+                    if (hostile)
+                    {
+                        a.Line = "I'd sooner owe the devil than owe you.";
+                        a.VoiceHate = 40;
+                        return a;
+                    }
+                    a.Event = "help";
+                    a.Cents = SettleCents;
+                    a.LikeDelta = 30;
+                    a.Settles = true;
+                    a.Friendly = !afraid;
+                    switch (afraid ? "afraid" : temper)
+                    {
+                        case "afraid":
+                            a.Line = "You... you'd do that? I won't forget it, mister.";
+                            a.Thought = "Paid it, just like that. What will he want for it?";
+                            break;
+                        case "Proud":
+                            a.Line = woman ? "Then it's a loan, and I'll see every cent of it back to you." : "Then it's a loan. Every cent back, you have my word on it.";
+                            a.Thought = "Beholden to a stranger. I'll make it right if it takes a year.";
+                            break;
+                        case "Greedy":
+                            a.Line = "Eleven dollars, just like that? Well, I won't argue with you.";
+                            a.Thought = "Wonder what else he'd pay for, a man like that.";
+                            break;
+                        case "Cold":
+                            a.Line = "Why would you do a thing like that?";
+                            a.Thought = "Nobody pays another man's debts for nothing. Still. It's paid.";
+                            break;
+                        default:
+                            a.Line = Pick(seed + "|set", "You'd do that? For me? Lord love you, mister.", "Eleven dollars... I can pay him. I can pay him Saturday!", "I hardly know what to say. I'm in your debt now, not his.");
+                            a.Thought = Pick(seed + "|sett", "Square by Saturday. I can breathe again.", "A stranger did that. Wait till I tell them at home.", "Can't think why he'd do it. Won't ask, either.");
+                            break;
+                    }
                     return a;
                 case "threaten":
                     a.Event = "threat";   // a warning, not a gunfight: a challenge to the one warned, quiet to the street (the review)
@@ -264,7 +306,7 @@ namespace EnrageWestworld.Core
         {
             foreach (string temper in new[] { null, "Hothead", "Coward", "Proud", "Cold", "Greedy" })
                 foreach (string regard in new[] { null, "afraid", "hostile", "fond" })
-                    foreach (string opt in new[] { "news", "drink", "give", "threaten", "bye" })
+                    foreach (string opt in new[] { "news", "drink", "give", "settle", "threaten", "bye" })
                         for (int i = 0; i < 6; i++)
                             foreach (bool w in new[] { false, true })
                             {

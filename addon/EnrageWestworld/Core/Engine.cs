@@ -51,6 +51,7 @@ namespace EnrageWestworld.Core
 			_rng = new Random(seed);
 			InnerLife.Counterpart = LinkedName;   // worries name the real person linked to them (Links.cs)
 			InnerLife.CounterpartDead = LinkedDead;
+			InnerLife.SettledAt = SettledAt;      // a worry the player settled for them reads as ended well (roadmap 9)
 			HookMindFirst();   // the mind's own thoughts first, with [Mind] MindLive on (Engine.MindLive.cs)
 		}
 
