@@ -142,6 +142,20 @@ namespace EnrageWestworld.InGame
 
         private int _bodyStepAt, _bodyRetryAt;
 
+        private Action _aBodyFrame;
+
+        /// Every frame from Tick04, before the player-control gate (the pre-release review): the clearing's reset flags last
+        /// a single frame, so they are set while the controls are off too (a shop's catalogue, the barber, a supper's or a
+        /// tryst's dark), when the steps below don't run.
+        private void BodyClearFrameStep()
+        {
+            if (_bodyClear == null)
+                return;
+            if (_aBodyFrame == null)
+                _aBodyFrame = BodyClearFrame;
+            Safe("law clears bodies", _aBodyFrame);
+        }
+
         private void BodiesStep(int now)
         {
             if (_aBodies == null)
@@ -155,7 +169,14 @@ namespace EnrageWestworld.InGame
         {
             if (_bodyClear != null)
             {
-                BodyClearFrame();
+                int gap = now - _bodyStepAt;
+                if (!test && gap > 1000)
+                {
+                    // no step for over a second: the player's controls were off, and the stages' clocks stood still with them
+                    _bodyClear.Since += gap - 250;
+                    _bodyClear.StageAt += gap - 250;
+                    _bodyClear.CheckAt += gap - 250;
+                }
                 if (now - _bodyStepAt >= 250 || now < _bodyStepAt)
                 {
                     _bodyStepAt = now;   // a quarter second is plenty for a walk and a carry: its stages only read state (the cost audit)
@@ -220,6 +241,7 @@ namespace EnrageWestworld.InGame
                 return "nowhere off the street to take it";
             float far = law.Position.DistanceTo(body.Position);
             _bodyClear = new BodyClear { Law = law.Handle, Body = body.Handle, Stage = 0, Since = now, StageAt = now, Goal = goal, Who = NameToShow(body.Handle) ?? "a body", LastDist = far, CheckAt = now + 3000 };
+            _bodyStepAt = now;   // the steps' clock starts here (a gap over a second is the controls off: BodiesTick)
             _bodiesTaken.Add(body.Handle);
             _bodyClear.Owned = LawTake(law.Handle);   // ours while he works: the game took him back before (Lex, 2026-10-31)
             TASK.CLEAR_PED_TASKS(law.Handle, true, false);
@@ -327,13 +349,14 @@ namespace EnrageWestworld.InGame
                     }
                     break;
                 case BcPlaceWalk:   // func_43 case 4: until the place order ends, or 15 s; then the nav-mesh sequence
-                    if ((now - c.StageAt > 500 && TASK.GET_SCRIPT_TASK_STATUS(c.Law, PlaceTask, true) == 8) || now - c.StageAt > 15000)
+                    if (c.Gone >= 2)
+                        BodyPlacedOrDropped(c, bodyAt);   // out of his hands: set down at the spot, else dropped on the way
+                    else if ((now - c.StageAt > 500 && TASK.GET_SCRIPT_TASK_STATUS(c.Law, PlaceTask, true) == 8) || now - c.StageAt > 15000)
                     {
                         float d = lawAt.DistanceTo(c.Goal);
                         if (!his)
                         {
-                            float off = bodyAt.DistanceTo(c.Goal);   // the place order set it down itself
-                            BodyClearEnd(c, (off < 4f ? "set down off the street" : "set down short of the spot (" + (int)off + " m)") + " by the place order (" + CarryWords(c.Law, c.Body) + ")", true);
+                            BodyPlacedOrDropped(c, bodyAt);
                             break;
                         }
                         Log.Detail("LAW clears: the place order ended after " + (now - c.StageAt) / 1000 + " s, " + (int)d + " m from the spot, still carrying (" +
@@ -372,6 +395,17 @@ namespace EnrageWestworld.InGame
                     }
                     break;
             }
+        }
+
+        /// The body out of his hands during the place order: within 4 m of the spot the order set it down (done); farther, he
+        /// dropped it on the way (the pre-release review: a drop 17 m short was logged and counted as a clearing).
+        private void BodyPlacedOrDropped(BodyClear c, Vector3 bodyAt)
+        {
+            float off = bodyAt.DistanceTo(c.Goal);
+            if (off < 4f)
+                BodyClearEnd(c, "set down off the street by the place order (" + CarryWords(c.Law, c.Body) + ")", true);
+            else
+                BodyDropped(c, bodyAt);
         }
 
         private void BodyDropped(BodyClear c, Vector3 bodyAt)

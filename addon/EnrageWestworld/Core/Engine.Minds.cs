@@ -525,9 +525,9 @@ namespace EnrageWestworld.Core
                     names[other] = other == t.A ? t.AName : t.BName;
                 }
             }
-            foreach (WorryLink l in Store.Links.Where(l => l.Id == e.Id || l.OtherId == e.Id))
+            foreach (WorryLink l in Store.Links.Where(l => Links.IsOf(l, e.Id) || Links.IsOtherOf(l, e.Id)))
             {
-                string other = l.Id == e.Id ? l.OtherId : l.Id;
+                string other = LiveIdOf(Links.IsOf(l, e.Id) ? l.OtherId : l.Id);   // the one living on with the resident's worry, if enRAGE took them up
                 if (other != null && !told.ContainsKey(other))
                     told[other] = l.Kind == "feud" ? "foe" : l.Kind == "courting" ? "friend" : "known";
             }

@@ -99,8 +99,8 @@ namespace EnrageWestworld.InGame
                     // a debt between them is money only when A is the one owed (the words have A as the creditor); a feud is
                     // honour; courting between them never makes a woman the matter (they'd be quarrelling over her with each
                     // other); strangers owe each other nothing and share no fence (the review)
-                    WorryLink link = _store.Links.FirstOrDefault(l => (l.Id == aId && l.OtherId == bId) || (l.Id == bId && l.OtherId == aId));
-                    if (link != null && link.Kind == "debt" && link.Id == bId)
+                    WorryLink link = _store.Links.FirstOrDefault(l => (Links.IsOf(l, aId) && Links.IsOtherOf(l, bId)) || (Links.IsOf(l, bId) && Links.IsOtherOf(l, aId)));
+                    if (link != null && link.Kind == "debt" && Links.IsOf(link, bId))
                         matter = "money";
                     else if (link != null && link.Kind == "feud")
                         matter = "honour";

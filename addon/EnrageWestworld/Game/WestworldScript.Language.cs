@@ -5,8 +5,9 @@
 // the PC), and the answer goes through Language.Check; a line that passes is kept by its situation (the cache key), so
 // when the thought comes (Engine.MindLive's Worded, through LanguageSwap) the model's line shows if one is kept, else the
 // written line, which is asked for then. The worker touches no game native; it logs through Log (locked) and settles
-// into the Core store (locked). The server is checked once on the first start (its model list) and every minute while
-// it fails; five failures in a row back off a minute. F7 TEST language:; the Testing row "mind:ask" (People) asks for
+// into the Core store (locked). The server is checked once on the first start (its model list), every minute while
+// it fails, every 20 s while it's ready but nothing has been answered, and as the settings panel opens; five failures in
+// a row back off a minute. F7 TEST language:; the Testing row "mind:ask" (People) asks for
 // the nearest known person now whatever the setting, the answer to the log. Off, nothing here runs but the row.
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,9 @@ namespace EnrageWestworld.InGame
         private volatile string _langServer = "not checked";   // "ready (model)", "not reachable: ...", "the model isn't pulled: ..."
         private volatile bool _langReady;
         private int _langNextStep, _langFailStreak, _langBackoffUntil, _langChecks, _langAsks;
-        private const int LanguageTimeoutMs = 8000, LanguageBackoffMs = 60000;
+        private const int LanguageTimeoutMs = 8000, LanguageBackoffMs = 60000, LanguageIdleCheckMs = 20000;
+        private int _langIdleCheckAt;            // the worker's own: when to ask the server again while ready and not answering anything
+        private volatile bool _langCheckNow;     // set as the settings panel opens: the AI MODEL row's status checked at once
         private readonly Dictionary<string, string> _langShownLast = new Dictionary<string, string>();
         private int _langLoud, _langLoudShown;   // the first 25 answers and swaps a session to the main log (the prototype's look, 2026-10-30)
 
@@ -196,14 +199,19 @@ namespace EnrageWestworld.InGame
         private void LanguageWork()
         {
             LanguageCheckServer();
+            _langIdleCheckAt = Environment.TickCount + LanguageIdleCheckMs;
             while (!_langStop)
             {
                 try
                 {
                     int now = Environment.TickCount;
-                    if (!_langReady && now - _langBackoffUntil >= 0)
+                    // checked again while it fails (each minute), while it's ready but hasn't answered for 20 s (Ollama closed
+                    // with nobody asking would read "on, answering" for good: the pre-release review), and as the panel opens
+                    if (_langCheckNow || (_langReady ? now - _langIdleCheckAt >= 0 : now - _langBackoffUntil >= 0))
                     {
+                        _langCheckNow = false;
                         LanguageCheckServer();
+                        _langIdleCheckAt = now + LanguageIdleCheckMs;
                         if (!_langReady)
                             _langBackoffUntil = now + LanguageBackoffMs;
                     }
@@ -230,10 +238,12 @@ namespace EnrageWestworld.InGame
                     {
                         _engine.LanguageAnswers.SettlePick(ask, answer, sw.ElapsedMilliseconds);   // read on the game thread (WestworldScript.Picks.cs)
                         _langFailStreak = 0;
+                        _langIdleCheckAt = Environment.TickCount + LanguageIdleCheckMs;   // it answered: no need to ask after it
                         continue;
                     }
                     LanguageAnswer a = _engine.LanguageAnswers.Settle(ask, answer, sw.ElapsedMilliseconds);
                     _langFailStreak = 0;
+                    _langIdleCheckAt = Environment.TickCount + LanguageIdleCheckMs;
                     if (a != null)
                         (_langLoud++ < 25 ? (Action<string>)Log.Write : Log.Detail)("LANGUAGE answer for " + ask.Name + " in " + sw.ElapsedMilliseconds + " ms: \"" + (Language.Tidy(answer) ?? "(none)") + "\"" +
                                    (a.From == "written" ? " -> held (" + a.Why + "), the written line stands" : " -> kept"));
@@ -259,6 +269,7 @@ namespace EnrageWestworld.InGame
         private void LanguageCheckServer()
         {
             _langChecks++;
+            bool was = _langReady;   // logged when it changes (it's checked every 20 s while ready)
             try
             {
                 var req = (HttpWebRequest)WebRequest.Create(_cfg.LanguageUrl + "/api/tags");
@@ -276,7 +287,8 @@ namespace EnrageWestworld.InGame
                     {
                         _langReady = true;
                         _langServer = "ready (" + model + ")";
-                        Log.Write("LANGUAGE server ready at " + _cfg.LanguageUrl + " with " + model);
+                        if (!was)
+                            Log.Write("LANGUAGE server ready at " + _cfg.LanguageUrl + " with " + model);
                     }
                     else
                     {
@@ -290,7 +302,7 @@ namespace EnrageWestworld.InGame
             {
                 _langReady = false;
                 _langServer = "not reachable: " + ex.Message;
-                if (_langChecks <= 2)
+                if (_langChecks <= 2 || was)
                     Log.Write("LANGUAGE server not reachable at " + _cfg.LanguageUrl + " (" + ex.Message + "); the written lines until it is");
             }
         }

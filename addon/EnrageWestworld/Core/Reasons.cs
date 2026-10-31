@@ -108,7 +108,7 @@ namespace EnrageWestworld.Core
                 string[] what = { "it begins", "it's worse", "it's at the worst", "it's ended" };
                 int stage = InnerLife.StageFor(link.Id, gameDay);
                 if (!(stage == 3 && link.Ended))   // its ending has been had out between them already
-                    return new Reason { Kind = "x:" + link.Kind, Strength = 85, BFirst = link.Id == b.Id,
+                    return new Reason { Kind = "x:" + link.Kind, Strength = 85, BFirst = Links.IsOf(link, b.Id),
                                         Why = link.Name + "'s " + link.Kind + " with " + link.OtherName + " (" + what[stage] + ")" };
             }
             if (tie != null)

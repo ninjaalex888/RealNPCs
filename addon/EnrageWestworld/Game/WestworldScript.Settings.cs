@@ -194,6 +194,7 @@ namespace EnrageWestworld.InGame
             Panel.GameDir = game;        // the Mod list page
             Panel.ScriptsDir = scripts;
             Panel.Show(_bridge != null ? _bridge.EnrageIniPath(scripts) : Path.Combine(scripts ?? string.Empty, "NemesisMod.ini"));
+            _langCheckNow = true;   // the AI MODEL row's status: the model's worker asks the server at once (WestworldScript.Language.cs)
             Log.Write("SETTINGS panel opened");
         }
 

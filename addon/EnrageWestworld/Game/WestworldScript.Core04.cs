@@ -1093,6 +1093,7 @@ namespace EnrageWestworld.InGame
             }
             Safe("lines", _aLater);
             LedgerStep(now);   // deaths are noted whether or not the player has control (not in story missions)
+            BodyClearFrameStep();   // a lawman's carry: its reset flags every frame, the controls off too (WestworldScript.Bodies.cs)
             if (_brave.Count > 0)
                 Safe("bravery aim", _aBraveAim ?? (_aBraveAim = () => BraveAimStep(_now)));   // whoever you aim at gets the game's own answer back that frame (WestworldScript.Bravery.cs)
             DeedEyesStep(now);   // who saw a killing is still alive to tell it (WestworldScript.Watch.cs)

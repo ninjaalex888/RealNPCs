@@ -213,7 +213,7 @@ namespace EnrageWestworld.InGame
         /// The link's worry is still the worrier's worry (an update that adds a worry kind can change which one someone has).
         private static bool LinkStill(WorryLink l, Someone a, Someone b, long day)
         {
-            Someone w = l.Id == a.Id ? a : l.Id == b.Id ? b : null;
+            Someone w = Links.IsOf(l, a.Id) ? a : Links.IsOf(l, b.Id) ? b : null;
             string k;
             int st;
             bool g;
@@ -238,7 +238,9 @@ namespace EnrageWestworld.InGame
                     float apart = people[i].Ped.Position.DistanceTo(people[j].Ped.Position);
                     Someone a = people[i].Who, b = people[j].Who;
                     // one is the real person at the other end of the other's worry: they'll cross a street for it
-                    WorryLink link = _store.Links.FirstOrDefault(l => ((l.Id == a.Id && l.OtherId == b.Id) || (l.Id == b.Id && l.OtherId == a.Id)) && InnerLife.ArcFor(l.Id, day) == l.Arc && LinkStill(l, a, b, day));
+                    string aw = _engine.WorryIdOf(a.Id), bw = _engine.WorryIdOf(b.Id);   // a link is kept under the resident enRAGE took up (Links.IsOf)
+                    WorryLink link = _store.Links.FirstOrDefault(l => (((l.Id == a.Id || l.Id == aw) && (l.OtherId == b.Id || l.OtherId == bw)) || ((l.Id == b.Id || l.Id == bw) && (l.OtherId == a.Id || l.OtherId == aw))) &&
+                                                                      InnerLife.ArcFor(l.Id, day) == l.Arc && LinkStill(l, a, b, day));
                     if (apart > (link != null ? LinkedApart : ReasonApart))
                         continue;
                     SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(a.Id) && t.Has(b.Id));
@@ -515,7 +517,7 @@ namespace EnrageWestworld.InGame
                 {
                     // its ending, played: not again (Reasons.Between passes over an Ended link)
                     long arc = InnerLife.ArcFor(doer.Id, day);
-                    WorryLink ended = _store.Links.FirstOrDefault(l => l.Id == doer.Id && l.OtherId == done.Id && l.Kind == kind.Substring(2) && l.Arc == arc);
+                    WorryLink ended = _store.Links.FirstOrDefault(l => Links.IsOf(l, doer.Id) && Links.IsOtherOf(l, done.Id) && l.Kind == kind.Substring(2) && l.Arc == arc);
                     if (ended != null)
                         ended.Ended = true;
                 }

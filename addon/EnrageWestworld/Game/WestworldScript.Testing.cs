@@ -595,7 +595,7 @@ namespace EnrageWestworld.InGame
                 case "x:feud":
                 case "x:courting":
                     string k = kind.Substring(2);
-                    return (worry && wk == k) || _store.Links.Any(l => l.Id == a.Id && l.Kind == k) ? null : a.Name + " has no " + k + " on their mind";
+                    return (worry && wk == k) || _store.Links.Any(l => Links.IsOf(l, a.Id) && l.Kind == k) ? null : a.Name + " has no " + k + " on their mind";
                 case "tend":
                     return b.Hurt != null ? null : b.Name + " hasn't been hurt lately";
                 default:

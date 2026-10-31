@@ -161,6 +161,8 @@ namespace EnrageWestworld.Core
             bool fresh = !Store.WorrySeedOf.TryGetValue(toId, out was);   // the first take-up decides: their worry never changes again
             if (!fresh)
                 return false;
+            if (Store.WorrySettled != null && Store.WorrySettled.ContainsKey(toId))
+                return false;   // Arthur mended this person's own worry already (a pair carried by an earlier build): theirs stays, so the mend and its thanks still name it (the pre-release review)
             Store.WorrySeedOf[toId] = root;
             _worrySelf.Remove(toId);
             if (fromRes != null && fromRes.Id == fromId && Store.FindResident(fromId) == null)

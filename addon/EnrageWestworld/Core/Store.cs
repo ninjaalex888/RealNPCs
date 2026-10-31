@@ -162,9 +162,11 @@ namespace EnrageWestworld.Core
             while (Residents.Count > MaxResidents)
             {
                 // someone keeping a post, a hermit living at a camp, or one of the test cast is never dropped; a town
-                // regular goes only after everyone else, and one the player has met only after every regular he hasn't
+                // regular goes only after everyone else, and one the player has met only after every regular he hasn't; a
+                // resident enRAGE took up goes last of all, since enRAGE's person lives on with the worry worked out from
+                // their facts (WorrySeedOf; the pre-release review: dropped, the worry changed mid-run)
                 Resident drop = Residents.Where(x => x != r && !((x.PostId != null || x.HasCamp || x.Cast != null) && !x.Dead))
-                    .OrderBy(x => x.Regular && !x.Dead ? 1 : 0)
+                    .OrderBy(x => WorrySeedOf != null && WorrySeedOf.ContainsValue(x.Id) ? 2 : x.Regular && !x.Dead ? 1 : 0)
                     .ThenBy(x => { PersonState s = Find(x.Id); return x.Regular && s != null && s.Sightings > 0 ? 1 : 0; })
                     .ThenBy(x => { PersonState s = Find(x.Id); return s != null ? s.WakeStage : 0; }).ThenBy(x => x.TouchedAt).First();
                 Residents.Remove(drop);

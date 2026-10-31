@@ -1670,7 +1670,7 @@ namespace EnrageWestworld.Core
 		/// in an affair of the heart.
 		public bool SpokenFor(string id)
 		{
-			return Store.Ties.Any(t => t.Has(id) && Ties.Sweethearts(t) && t.Warmth > 0) || Store.Links.Any(l => l.Kind == "courting" && (l.Id == id || l.OtherId == id)) ||
+			return Store.Ties.Any(t => t.Has(id) && Ties.Sweethearts(t) && t.Warmth > 0) || Store.Links.Any(l => l.Kind == "courting" && (Links.IsOf(l, id) || Links.IsOtherOf(l, id))) ||
 			       Store.Affairs.Any(x => x.Active && x.Involves(id));
 		}
 

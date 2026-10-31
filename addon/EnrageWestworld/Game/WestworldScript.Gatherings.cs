@@ -72,7 +72,17 @@ namespace EnrageWestworld.InGame
         private int GatherHoursSince()
         {
             int at;
-            return _store.Counts.TryGetValue("enc:gatherAt", out at) ? Math.Max(0, (int)(Bridge.Now() / 60) - at) : -1;
+            if (!_store.Counts.TryGetValue("enc:gatherAt", out at))
+                return -1;
+            int hour = (int)(Bridge.Now() / 60);
+            if (hour <= 0)
+                return -1;   // no game clock yet: the stamp kept for when there is
+            if (at > hour)
+            {
+                _store.Counts.Remove("enc:gatherAt");   // later than now: an earlier save was loaded, so that gathering hasn't happened yet
+                return -1;
+            }
+            return hour - at;
         }
 
         private bool StartGathering(int now, bool test = false)

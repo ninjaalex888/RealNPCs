@@ -64,7 +64,7 @@ namespace EnrageWestworld.InGame
             if (!_cfg.BeingWatched || !Observed.Holds(kind) || doerPed == null || !doerPed.Exists())
                 return false;
             Ped law = LawWatching(doerPed, other);
-            bool church = law == null && ByChurchOnSunday(doerPed);
+            bool church = ByChurchOnSunday(doerPed);   // the law in sight too: a thief by the church still waits (the pre-release review)
             if (law == null && !church)
                 return false;
             // one roll a day for each doer and kind (the review: seeded by the minute, a hothead swung within three ticks)

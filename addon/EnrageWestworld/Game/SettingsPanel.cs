@@ -370,8 +370,12 @@ namespace EnrageWestworld.InGame
             if (!ShowAll)
                 EssentialsOnly();
             else if (_pages.Count > 0)
+            {
                 _pages[0].Rows.Insert(0, new Row { Action = "panel:essentials", ActionLabel = "Back to just the essentials  (F)",
                                                    Help = "Enter or F: the panel shows only the Essentials page, the Hotkeys and the Mod list again." });
+                if (_ours != null && _ours.Error == null)
+                    _pages[0].Rows.InsertRange(0, AiRows());   // the AI model's switch and its status on every setting's pages too (the pre-release review)
+            }
             if (keepTitle != null)
             {
                 int i = _pages.FindIndex(p => p.Title == keepTitle);
@@ -1530,19 +1534,26 @@ namespace EnrageWestworld.InGame
             new[] { "Memory", "ResetAtClerk" },
         };
 
+        /// The AI MODEL (OLLAMA) switch, first on the first page whichever pages show: larger and gold, with whether it
+        /// answers (Lex, 2026-10-31: "extremely prominent"), two rows high and a gap below. None when the ini has no Language.
+        private List<Row> AiRows()
+        {
+            var rows = new List<Row>(3);
+            IniEntry ai = _ours.FindKey("Language");
+            if (ai == null)
+                return rows;
+            rows.Add(new Row { E = ai, Big = true, Label = "AI MODEL (OLLAMA)",
+                               Help = "Highly recommended. People near you think, choose and answer in their own words, from a free model on your own PC (Ollama with " + ModelName() + "; nothing leaves the machine). Left or Right turns it on or off; once you have chosen, RealNPCs leaves it as you set it." });
+            rows.Add(new Row { Filler = true });
+            rows.Add(new Row { Filler = true });   // a gap: the switch stands apart
+            return rows;
+        }
+
         /// The essentials page, the hotkeys and the mod list; the rest waits behind F.
         private void EssentialsOnly()
         {
             var ess = new Page { Title = "Essentials" };
-            // the AI model first, larger and gold, with whether it answers (Lex, 2026-10-31: "extremely prominent")
-            IniEntry ai = _ours.FindKey("Language");
-            if (ai != null)
-            {
-                ess.Rows.Add(new Row { E = ai, Big = true, Label = "AI MODEL (OLLAMA)",
-                                       Help = "Highly recommended. People near you think, choose and answer in their own words, from a free model on your own PC (Ollama with " + ModelName() + "; nothing leaves the machine). Left or Right turns it on or off; once you have chosen, RealNPCs leaves it as you set it." });
-                ess.Rows.Add(new Row { Filler = true });
-                ess.Rows.Add(new Row { Filler = true });   // a gap: the switch stands apart
-            }
+            ess.Rows.AddRange(AiRows());
             // the way to everything else, where it can't be missed (Lex, 2026-10-30)
             ess.Rows.Add(new Row { Action = "panel:all", ActionLabel = "Show every setting and the Testing page  (F)",
                                    Help = "Enter or F: every page of settings, enRAGE's settings and the Testing page with its tests. F again, or the row at the top, brings back the essentials." });

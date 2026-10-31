@@ -49,7 +49,7 @@ namespace EnrageWestworld.Core
             if (!Holds(kind) || (!law && !church))
                 return false;
             if (Thieving(kind))
-                return !(law && BoldGoes(temper, drunk, seed));   // by the church a thief always waits
+                return church || !(law && BoldGoes(temper, drunk, seed));   // by the church a thief always waits, the law looking on or not
             bool reckless = temper == "Hothead" || drunk;
             if (law)
                 return !(reckless && Voice.Chance(seed + "|law", RecklessChance));

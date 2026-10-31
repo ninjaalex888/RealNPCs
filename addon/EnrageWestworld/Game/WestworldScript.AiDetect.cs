@@ -2,8 +2,8 @@
 // Once at a start, off the game thread with a short timeout, Ollama is asked at LanguageUrl /api/tags whether it runs and
 // holds LanguageModel. Found, with [Mind] Language off and the player never having chosen (LanguageChosen false), and not
 // turned on this way before (the save's "told:ai model"), Language is turned on in the ini and a one-time notice says so.
-// Whenever the player changes Language (the panel, or the ini by hand), LanguageChosen is set, so a model turned off stays
-// off. The settings panel's AI MODEL (OLLAMA) row reads AiStatusText. Log lines `LANGUAGE detect:`.
+// Whenever the player changes Language (the panel, or the ini by hand), or Language is found on at a start, LanguageChosen
+// is set, so a model turned off stays off. Never while the settings panel is open (its next save would undo it). The settings panel's AI MODEL (OLLAMA) row reads AiStatusText. Log lines `LANGUAGE detect:`.
 using System;
 using System.IO;
 using System.Net;
@@ -33,6 +33,9 @@ namespace EnrageWestworld.InGame
                 {
                     _aiDetectDone = true;   // on already: the worker's own check of the server says whether it answers
                     Log.Write("LANGUAGE detect: [Mind] Language is on already" + (_cfg.LanguageChosen ? " (your choice)" : "") + "; the worker checks the server");
+                    // on at a start (by hand, or found before): an off found in the file later is the player's, never undone
+                    // (the pre-release review: on, then off by hand with the game closed, was turned back on)
+                    AiChosen(_cfg, "found on at a start, so an off from now on stays off");
                     return;
                 }
                 if (_cfg.LanguageChosen)
@@ -56,6 +59,8 @@ namespace EnrageWestworld.InGame
             }
             if (_store == null)
                 return;   // found: wait for the saved data, which knows whether it was turned on this way before
+            if (PanelOpen)
+                return;   // not under the open settings panel, whose next save would write its own Language back: asked again each second
             _aiDetectDone = true;
             if (_cfg.Language || _cfg.LanguageChosen)
             {
@@ -83,7 +88,7 @@ namespace EnrageWestworld.InGame
             {
                 _aiAutoWriting = false;
             }
-            KeyNoticeOut("AI model found: people near you now think in their own words. Turn it off on the Essentials page (" + _settingsKey + ").");
+            KeyNoticeOut("AI model found: people near you now think in their own words. Turn it off at the top of the settings panel (" + _settingsKey + ").");
             Log.Write("LANGUAGE detect: " + _aiFoundWhy + "; [Mind] Language turned on (you hadn't chosen), and you were told");
         }
 

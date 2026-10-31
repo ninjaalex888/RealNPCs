@@ -279,7 +279,7 @@ namespace EnrageWestworld.InGame
             if (tie != null && tie.Warmth > 0 && Ties.Sweethearts(tie))
                 return true;
             long day = Bridge.Now() / 1440;
-            return _store.Links.Any(l => l.Kind == "courting" && ((l.Id == x.Id && l.OtherId == y.Id) || (l.Id == y.Id && l.OtherId == x.Id)) && InnerLife.ArcFor(l.Id, day) == l.Arc);
+            return _store.Links.Any(l => l.Kind == "courting" && ((Links.IsOf(l, x.Id) && Links.IsOtherOf(l, y.Id)) || (Links.IsOf(l, y.Id) && Links.IsOtherOf(l, x.Id))) && InnerLife.ArcFor(l.Id, day) == l.Arc);
         }
 
         /// A band of riders going by: three or more people on horseback, moving, riding together (within RidersTogether

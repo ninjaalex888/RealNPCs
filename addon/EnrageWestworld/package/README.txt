@@ -1082,6 +1082,11 @@ in the file. The new ones:
             and a kind of thought that has had the last few turns gives way to the others.
             Language (false, in testing): the mind's own thoughts worded by a local model (Ollama at
             LanguageUrl, running LanguageModel); every answer checked, the written line the fallback.
+            The AI MODEL (OLLAMA) switch at the top of the settings panel. Off as it comes, but at a
+            start, if Ollama answers holding LanguageModel, RealNPCs turns it on by itself, once, and
+            says so, unless you have chosen. LanguageChosen (false): set true by itself whenever you
+            change Language (in the panel or in this file), or when Language is on at a start, so a
+            model you turned off stays off.
             LanguagePicks (true, with Language): the model picks what people near you do, from the few
             things their minds allow; ThoughtsAloud (true, with Language): a thought is said aloud in
             their own recorded voice when one of their remarks fits it.

@@ -1402,7 +1402,7 @@ namespace EnrageWestworld.Core
             {
                 c.Ties = Ties.Of(Store.Ties, id, now, 4);
                 if (c.GameDay >= 0)
-                    c.Linked = Links.Against(Store.Links, id, c.GameDay).Where(l => !HasDied(l.Id)).ToList();   // a worrier who has died worries nobody now
+                    c.Linked = Links.Against(Store.Links, id, c.GameDay).Where(l => !HasDied(LiveIdOf(l.Id))).ToList();   // a worrier who has died worries nobody now (under the resident's id, the one living on with it)
             }
             return c;
         }
@@ -1554,6 +1554,19 @@ namespace EnrageWestworld.Core
             for (int guard = 0; guard < 4 && Store.WorrySeedOf.TryGetValue(at, out next) && next != null && next != at; guard++)
                 at = next;
             return at;
+        }
+
+        /// The other way: the one living on with this resident's worry (enRAGE's person who took them up), else the id
+        /// itself. A link is kept under the resident's id, so whether its worrier lives, and who is told of a death, go by
+        /// this (the pre-release review). WorrySeedOf holds one entry per take-up, so the walk is short.
+        public string LiveIdOf(string worryId)
+        {
+            if (worryId == null || Store.WorrySeedOf == null || Store.WorrySeedOf.Count == 0)
+                return worryId;
+            foreach (KeyValuePair<string, string> kv in Store.WorrySeedOf)
+                if (kv.Value == worryId && kv.Key != worryId)
+                    return kv.Key;
+            return worryId;
         }
 
         private readonly Dictionary<string, Person> _worrySelf = new Dictionary<string, Person>();

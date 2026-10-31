@@ -33,6 +33,20 @@ namespace EnrageWestworld.Core
             return kind == "debt" || kind == "feud" || kind == "courting";
         }
 
+        /// Whether `id` is this link's worrier: the id itself, or the resident whose worry they live on with since enRAGE took
+        /// them up (InnerLife.WorryIdOf; links are kept under the resident's id: the pre-release review found the game's
+        /// readers matching the live id only, so the linked scenes, courting and a death's notice missed them).
+        public static bool IsOf(WorryLink l, string id)
+        {
+            return l != null && id != null && (l.Id == id || (InnerLife.WorryIdOf != null && l.Id == InnerLife.WorryIdOf(id)));
+        }
+
+        /// The same for the one at the other end.
+        public static bool IsOtherOf(WorryLink l, string id)
+        {
+            return l != null && id != null && (l.OtherId == id || (InnerLife.WorryIdOf != null && l.OtherId == InnerLife.WorryIdOf(id)));
+        }
+
         public static WorryLink Of(IEnumerable<WorryLink> all, string id, string kind, long arc)
         {
             return all.FirstOrDefault(l => l.Id == id && l.Kind == kind && l.Arc == arc);
@@ -79,7 +93,7 @@ namespace EnrageWestworld.Core
         /// The links where this person is the one at the other end, while the worrier's run is still on.
         public static List<WorryLink> Against(IEnumerable<WorryLink> all, string id, long gameDay)
         {
-            return all.Where(l => l.OtherId == id && InnerLife.ArcFor(l.Id, gameDay) == l.Arc).ToList();
+            return all.Where(l => IsOtherOf(l, id) && InnerLife.ArcFor(l.Id, gameDay) == l.Arc).ToList();
         }
 
         /// Keeps the links for the current run and the one before (its ending is still thought about), under Max.
