@@ -260,6 +260,8 @@ namespace EnrageWestworld.InGame
             _iniStamp = stamp;
             EnrageWestworld.Core.Settings fresh = EnrageWestworld.Core.Settings.Load(_iniPath, Log.Write);
             _iniStamp = EnrageWestworld.Core.Settings.Stamp(_iniPath);
+            if (fresh.Language != _cfg.Language)
+                AiChosen(fresh, "in RealNPCs.ini");   // changed by hand: the player's choice from now on
             _cfg.CopyFrom(fresh.Gated());
             ApplySettings();
             Log.Write("Settings reloaded from the ini.");

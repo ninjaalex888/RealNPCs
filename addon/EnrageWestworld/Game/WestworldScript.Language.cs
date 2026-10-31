@@ -43,6 +43,7 @@ namespace EnrageWestworld.InGame
             {
                 if (_engine != null && _engine.LanguageSwap == null)
                     _engine.LanguageSwap = LanguageSwap;
+                AiDetectStep();   // the start's question to Ollama, and turning the model on if it answers (WestworldScript.AiDetect.cs)
                 if (_cfg.Language && _langThread == null)
                     LanguageStart();
             }
@@ -319,7 +320,7 @@ namespace EnrageWestworld.InGame
                 return "no engine yet";
             string store = _engine.LanguageAnswers.Status();
             if (!_cfg.Language)
-                return "off ([Mind] Language; the written lines): server " + _langServer + "; " + store;
+                return "off ([Mind] Language; the written lines" + (_cfg.LanguageChosen ? ", your choice" : "") + "): server " + _langServer + ", detect " + AiDetectStatus() + "; " + store;
             return "on (" + (_cfg.MindLive ? "with MindLive" : "but MindLive is off, so no mind thought to word") + "); server " + _langServer + " (" + _cfg.LanguageUrl + ", " + _cfg.LanguageModel + "), checked " + _langChecks +
                    (_langThread != null ? ", the worker running" : ", no worker") + "; " + store;
         }

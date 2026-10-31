@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### AI MODEL (OLLAMA) at the top of the Essentials page, and found by itself (settings version 163)
+- The settings panel's Essentials page opens on one large gold switch, **AI MODEL (OLLAMA)** (`[Mind] Language`), set apart from the rest, ON or OFF on the right, a line on what it does, and its status beside the name: "on, answering", "on, checking...", "on, NOT ANSWERING (is Ollama running? is llama3.1:8b pulled?)" in red, or "off".
+- Found by itself (Lex chose this): at each start, off the game thread with a 2.5 s timeout, RealNPCs asks Ollama at `LanguageUrl` `/api/tags` whether it runs and holds `LanguageModel`. If it does, Language is off and you have never chosen, Language is turned on in the ini and a one-time notice says "AI model found: people near you now think in their own words. Turn it off on the Essentials page (Alt+R)."
+- `[Mind] LanguageChosen` (new, false): set true by itself whenever you change Language, in the panel or in the ini by hand, so a model you turned off stays off. An ini of an earlier version with Language on keeps it on as your choice. A model turned on this way once and off since (in the ini with the game closed) isn't turned on again (the save's `told:ai model`).
+- Log `LANGUAGE detect: Ollama at ... holds llama3.1:8b; [Mind] Language turned on (you hadn't chosen), and you were told`, `LANGUAGE detect: no Ollama answering at ... ; [Mind] Language stays off (asked again at the next start)`, `LANGUAGE detect: [Mind] Language is on already ...`, `LANGUAGE chosen: you set [Mind] Language off (in the settings panel) ...`. F7 `TEST language:` says what the detection found.
+- The package readme has the "Highly recommended: the free local AI model" section of the README.
+
 ### The lawman's carry, done the game's undertaker's way
 - Lex's log, 2026-10-31: "the lawman lifts Jedediah Archer and carries it 17 m off the street", then a second later "he dropped it on the way". The walk was ordered while the lift was still going (the game says a man is carrying something from the moment he bends), and the order cancelled the lift.
 - Now step for step as Rockstar's own undertaker does it: he walks over by the nav mesh until 15 m off, then one sequence walks him up to the body and lifts it; the carry counts only once the body's carrier is him and its carry state is settled (5 or 7); then his tasks are cleared, he puts his gun away, the game's place order takes the body towards the spot, a nav-mesh walk covers the rest, the place order sets it down there, and the clearing is done when the carry ends. The body's carriable flag and his reset flags are kept every frame, each for the stages the undertaker keeps them.

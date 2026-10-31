@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 162;
+        public const int CurrentVersion = 163;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -104,6 +104,7 @@ namespace EnrageWestworld.Core
         public bool MindTownMood = true;   // with MindLive: a town on edge for a day after a killing (the safety need for all, the model told), and the same trouble seen again moving onlookers less (settings version 149; NIGHT3 item 5)
         public bool MindTempers = true;   // with MindLive: displaced aggression (shamed earlier, they take it out on someone who won't hit back) and the culture of honour in Lemoyne (quarrels climb faster, backing down costs more) (settings version 152; NIGHT3)
         public bool Language = false;        // the language layer (2026-10-29; roadmap 15): with MindLive, the mind's own thoughts worded by a local model (Ollama at LanguageUrl, LanguageModel) through Language.Check, the written line always the fallback; off until the generated thoughts pass the checks at scale (settings version 94)
+        public bool LanguageChosen;          // Language was set by the player (the panel or this file); while false and Language off, each start asks Ollama off the game thread and turns Language on, once, if it answers with the model (settings version 163)
         public string LanguageUrl = "http://127.0.0.1:11434";   // the local server; nothing leaves the machine
         public string LanguageModel = "llama3.1:8b";           // the model Ollama holds (ollama pull <name>)
 
@@ -675,6 +676,8 @@ namespace EnrageWestworld.Core
                     s.FlirtKey = "None";   // 2026-10-29 (Lex): flirting is H in the lock-on menu, the hook up G; F2 goes
                     log?.Invoke("Settings: FlirtKey F2 -> None (flirt with H in the lock-on menu, then Hook up with G once she says yes).");
                 }
+                if (s.SettingsVersion < 163 && s.Language)
+                    s.LanguageChosen = true;   // on before RealNPCs could find the model by itself: the player's own choice, kept (2026-10-31)
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -852,7 +855,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("MindRescue = " + B(MindRescue) + "   ; with MindLive on (West World): when someone fully awake begins to say their last words, someone near who is moved by it (a friend, or a kind stranger) may walk over and try to talk them down; a friend is heeded more often; false: nobody steps in");
             b.AppendLine("RescueChance = " + RescueChance + "   ; with MindRescue on: of the despairs where someone near is moved to step in, how often in percent they really do before it is too late (0-100); lower it to see more despair, raise it to see more people saved");
             b.AppendLine("MindMeetings = " + B(MindMeetings) + "   ; with MindLive on: what passes between two people who meet near you leans by the day they are having: two sore people come to words sooner than small talk, two glad ones the other way, and someone lonely stops for a word; false: by their reasons alone");
-            b.AppendLine("Language = " + B(Language) + "   ; (in testing) with MindLive on, the mind's own thoughts are worded by a local language model running on your own PC (Ollama; nothing leaves the machine); every answer is checked for the period, the names and the length, and the written line shows whenever the model's won't do");
+            b.AppendLine("Language = " + B(Language) + "   ; the AI MODEL (OLLAMA) switch at the top of the settings panel's Essentials page. With MindLive on, the mind's own thoughts, choices and answers are worded by a local language model running on your own PC (Ollama; nothing leaves the machine); every answer is checked for the period, the names and the length, and the written line shows whenever the model's won't do. RealNPCs turns it on by itself when it finds Ollama with the model at a start, unless you have chosen (LanguageChosen)");
+            b.AppendLine("LanguageChosen = " + B(LanguageChosen) + "   ; set true by itself whenever you change Language (in the settings panel or in this file), so a Language you turned off stays off. While false and Language is off, each start asks Ollama at LanguageUrl in the background (a few seconds at most) whether it runs and holds LanguageModel, and if it does, turns Language on, once, with a notice");
             b.AppendLine("LanguageVariety = " + B(LanguageVariety) + "   ; (in testing) with Language on: the model's thoughts vary: each one goes to one thing (their work, someone in sight, a memory, the body, the worry, money, kin, faith, the town's talk, a small thing seen; the weather only now and then) in a shape of its own (fragments, a plain sentence, a question, a reckoning, an opinion, a saying half-remembered), never opening the way their last few did; and nobody doubts the world is real without cause (from the second stage of waking, or after something strange: a buried man seen walking, the night visitor, a death they woke from)");
             b.AppendLine("ModelWakes = " + B(ModelWakes) + "   ; (in testing) with Language, MindWakes and LanguageVariety on: someone with cause who wonders at the world in a thought of their own is shaken a little more by it, so the model's own wondering can start them stirring; off, only what they live through moves them");
             b.AppendLine("LanguageTalk = " + B(LanguageTalk) + "   ; (in testing) with Language on: when you Talk to someone, the model words their answer by their nature, mood and what's on their mind (what it means stays the same: the drink taken, the money refused); if it's slow or says something it shouldn't, the written line");

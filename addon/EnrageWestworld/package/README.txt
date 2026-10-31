@@ -18,6 +18,43 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 Story Mode only. Don't run script mods in Red Dead Online.
 
 
+HIGHLY RECOMMENDED: THE FREE LOCAL AI MODEL
+-------------------------------------------
+RealNPCs works fully on its own: every thought, answer and choice has a written line behind it,
+and you don't need anything else installed. But to get the most out of it, install the free
+local AI model. With it on, the people near you:
+- think in their own words, from who they are, how they feel and what's on their mind, so no
+  two think alike;
+- choose what they do next from what their own mind allows: head home, pick a quarrel, call in
+  a debt, court someone;
+- answer you in their own words when you Talk to them (Q);
+- say some of their thoughts aloud in their own recorded voice;
+- and with West World on, those waking up choose their own strange acts.
+
+It runs on your own graphics card through Ollama (https://ollama.com): nothing is sent
+anywhere, and there's no account and no cost. Everything the model writes is checked first
+(length, names it wasn't given, modern words). When it's slow or a line fails the checks, the
+written line is used instead, so the game never waits on it. It's still in testing, so expect
+the odd strange line.
+
+What you need: a graphics card with about 5 GB of memory free beside RDR2 (a 12 GB card or
+more; RealNPCs is developed on a 16 GB card), and about 5 GB of disk space.
+
+Set it up once:
+1. Install Ollama from https://ollama.com/download and leave it running (it sits in the
+   system tray).
+2. Open a Command Prompt and run: ollama pull llama3.1:8b   (a 4.9 GB download)
+3. Start the game. RealNPCs finds Ollama and the model by itself and turns the AI model on,
+   with a one-time notice saying so. Within a few seconds, people near you start thinking in
+   the model's words.
+4. To check it's working, open the settings panel (Alt+R): AI MODEL (OLLAMA) at the top of the
+   Essentials page shows whether it's on and answering. Turn it off there whenever you like;
+   once you've turned it off, RealNPCs leaves it off.
+
+Optional: to have the model answer two people at once, set the Windows environment variable
+OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
+
+
 NEW IN 0.7.10
 -------------
 - A fix for the game freezing in busy towns (Saint Denis above all). RealNPCs read what Arthur was

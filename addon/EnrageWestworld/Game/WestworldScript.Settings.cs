@@ -29,7 +29,7 @@ namespace EnrageWestworld.InGame
             get
             {
                 if (_panel == null)
-                    _panel = new SettingsPanel(() => _bridge, _iniPath, Path.Combine(_dir, "backup"), ApplyOurSettings, UseEnragePanel, PanelAction);
+                    _panel = new SettingsPanel(() => _bridge, _iniPath, Path.Combine(_dir, "backup"), ApplyOurSettings, UseEnragePanel, PanelAction) { AiStatus = AiStatusText };
                 return _panel;
             }
         }
@@ -202,6 +202,8 @@ namespace EnrageWestworld.InGame
         {
             EnrageWestworld.Core.Settings fresh = EnrageWestworld.Core.Settings.Load(_iniPath, Log.Write);
             _iniStamp = EnrageWestworld.Core.Settings.Stamp(_iniPath);
+            if (string.Equals(key, "Language", StringComparison.OrdinalIgnoreCase))
+                AiChosen(fresh, "in the settings panel");   // the AI model as the player set it, from now on
             _cfg.CopyFrom(fresh.Gated());
             ApplySettings();
             return fresh.ValueText(key);
