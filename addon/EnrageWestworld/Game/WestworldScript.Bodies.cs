@@ -8,6 +8,12 @@
 // (LawTake: ours, or lightly if another script has him), sent by the nav mesh with a watchdog, and the carry is done the
 // game's own undertaker's way (the carriable flag on the body and reset flag 49 on him every frame, a walk with it, the
 // set-down's flags 1).
+// 2026-10-31 later (Lex's log: "lifts Jedediah Archer and carries it 17 m off", then 1 s on "he dropped it on the way"):
+// the walk order went in mid-lift and cancelled it. Now step for step the undertaker's (script_rel/undertaker.c, func_13
+// states 2-5, func_14, func_43): within 15 m one sequence walks up and lifts; the carry counts only once the body's
+// carrier is him and its carry state is 5 or 7; then his tasks are cleared, he goes unarmed, the game's place order takes
+// it towards the spot (flags 0), a nav-mesh sequence walks the rest, the place order with flags 1 sets it down, and it is
+// done when the carry ends. Every step logs the carry state number.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +28,8 @@ namespace EnrageWestworld.InGame
     {
         private sealed class BodyClear
         {
-            public int Law, Body, Stage, Since, StageAt, CheckAt, Resent;
+            public int Law, Body, Stage, Since, StageAt, CheckAt, Resent, Gone;   // Gone: steps in a row the body wasn't his
+            public bool Reached;      // the lift sequence brought him to it (logged once)
             public float LastDist;    // how far he was at the last progress check (the watchdog)
             public bool Owned;        // another script had him: taken lightly (LawTake)
             public Vector3 Goal;
@@ -32,27 +39,98 @@ namespace EnrageWestworld.InGame
         // the game's own way, from its undertaker script (Lex, 2026-10-31): every frame of the carry the body is marked
         // carriable by a ped (carrying flag 7) and the carrier keeps reset flag 49; the set-down's flags are 1, not 0
         private const ulong SetCarryingFlag = 0xC3ABCFBC7D74AFA5;   // _SET_ENTITY_CARRYING_FLAG (by hash: wrapper builds name it differently)
+        private const ulong CarryStateHash = 0x61914209C36EFDDB;    // the carriable's carry state (5 or 7: carried, settled); by hash, as the undertaker calls it
         private static readonly uint NavTask = Natives.Hash("SCRIPT_TASK_FOLLOW_NAV_MESH_TO_COORD");
+        private static readonly uint SeqTask = Natives.Hash("SCRIPT_TASK_PERFORM_SEQUENCE");
+        private static readonly uint PlaceTask = Natives.Hash("SCRIPT_TASK_PLACE_CARRIED_ENTITY_AT_COORD");
+        private static readonly uint Unarmed = Natives.Hash("WEAPON_UNARMED");
+
+        // the stages (the undertaker's func_13 state in brackets)
+        private const int BcWalk = 0, BcLift = 1, BcUnarm = 2, BcPlaceWalk = 3, BcNavWalk = 4, BcSetDown = 5;
 
         private static void LawNavTo(int law, Vector3 to, float speed)
         {
             TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(law, to.X, to.Y, to.Z, speed, -1, 1f, 0, 0f);
         }
 
-        /// Every frame while a clearing runs (the flags are a frame's): the game's undertaker does the same.
+        /// The undertaker's state 2: one sequence walks up to the body and lifts it (no order between them to cancel the lift).
+        private static unsafe void LawLiftSequence(int law, int body)
+        {
+            int seq = 0;
+            TASK.OPEN_SEQUENCE_TASK(&seq);
+            TASK.TASK_GO_TO_ENTITY(0, body, 20000, 0.5f, 1f, 2f, 0);
+            TASK.TASK_PICKUP_CARRIABLE_ENTITY(0, body);
+            TASK.CLOSE_SEQUENCE_TASK(seq);
+            TASK.TASK_PERFORM_SEQUENCE(law, seq);
+            TASK.CLEAR_SEQUENCE_TASK(&seq);
+        }
+
+        /// func_43 case 4 as func_46 sets it up (flag 128: no timeout; stopping range 0.25; nav flags 1; heading 40000, none).
+        private static unsafe void LawCarryWalk(int law, Vector3 goal)
+        {
+            int seq = 0;
+            TASK.OPEN_SEQUENCE_TASK(&seq);
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(0, goal.X, goal.Y, goal.Z, 1f, -1, 0.25f, 1, 40000f);
+            TASK.CLOSE_SEQUENCE_TASK(seq);
+            TASK.TASK_PERFORM_SEQUENCE(law, seq);
+            TASK.CLEAR_SEQUENCE_TASK(&seq);
+        }
+
+        private static unsafe bool LawUnarmed(int law)
+        {
+            uint a = 0, b = 0;
+            WEAPON.GET_CURRENT_PED_WEAPON(law, &a, true, 0, false);
+            WEAPON.GET_CURRENT_PED_WEAPON(law, &b, true, 1, false);
+            return a == Unarmed && b == Unarmed;
+        }
+
+        private static int CarryState(int body)
+        {
+            return Function.Call<int>(CarryStateHash, body);
+        }
+
+        /// The undertaker's func_14: the body's carrier is him and the carry has settled (state 5 or 7). Not
+        /// IS_PED_CARRYING_SOMETHING, which is true mid-lift (an order then cancelled the lift: Lex's log, 2026-10-31).
+        private static bool CarrySettled(int law, int body)
+        {
+            if (!ENTITY.DOES_ENTITY_EXIST(body) || PED._GET_CARRIER_AS_PED(body) != law)
+                return false;
+            int s = CarryState(body);
+            return s == 5 || s == 7;
+        }
+
+        /// Every frame while a clearing runs (reset flags are a frame's): the undertaker's own, stage by stage. The body
+        /// carriable by a ped (carrying flag 7) while he goes to it and lifts it (its states 2-3); reset flag 49 on him
+        /// throughout (states 1-5); reset flag 179 while its walk helper runs (func_43).
         private void BodyClearFrame()
         {
             BodyClear c = _bodyClear;
             if (c == null || !ENTITY.DOES_ENTITY_EXIST(c.Body) || !ENTITY.DOES_ENTITY_EXIST(c.Law))
                 return;
-            Function.Call(SetCarryingFlag, c.Body, 7, true);
+            if (c.Stage <= BcLift)
+                Function.Call(SetCarryingFlag, c.Body, 7, true);
             PED.SET_PED_RESET_FLAG(c.Law, 49, true);
+            if (c.Stage >= BcUnarm && c.Stage <= BcNavWalk)
+                PED.SET_PED_RESET_FLAG(c.Law, 179, true);
         }
 
-        private string LawState(int law)
+        /// "carry state 7, carried by him" (or nobody, or someone else).
+        private static string CarryWords(int law, int body)
         {
+            if (!ENTITY.DOES_ENTITY_EXIST(body))
+                return "the body is gone";
+            int by = PED._GET_CARRIER_AS_PED(body);
+            return "carry state " + CarryState(body) + ", carried by " + (by == law ? "him" : by == 0 ? "nobody" : "someone else");
+        }
+
+        private string LawState(BodyClear c)
+        {
+            int law = c.Law;
+            uint task = c.Stage == BcWalk ? NavTask : c.Stage == BcPlaceWalk || c.Stage == BcSetDown ? PlaceTask : SeqTask;
+            string order = c.Stage == BcWalk ? "the walk's" : c.Stage == BcPlaceWalk || c.Stage == BcSetDown ? "the place order's" : "the sequence's";
             return "a mission entity " + (ENTITY.IS_ENTITY_A_MISSION_ENTITY(law) ? "yes" : "no") + ", ours " + (Spawner.IsBorrowed(law) ? "yes" : "no") +
-                   ", in a scenario " + (PED.IS_PED_USING_ANY_SCENARIO(law) ? "yes" : "no") + ", the walk's status " + TASK.GET_SCRIPT_TASK_STATUS(law, NavTask, true);
+                   ", in a scenario " + (PED.IS_PED_USING_ANY_SCENARIO(law) ? "yes" : "no") + ", " + order + " status " + TASK.GET_SCRIPT_TASK_STATUS(law, task, true) +
+                   (task == SeqTask ? " (step " + TASK.GET_SEQUENCE_PROGRESS(law) + ")" : "") + ", " + CarryWords(law, c.Body);
         }
 
         private BodyClear _bodyClear;
@@ -181,63 +259,126 @@ namespace EnrageWestworld.InGame
                 BodyClearEnd(c, fail, false);
                 return;
             }
-            Ped law = new Ped(c.Law), body = new Ped(c.Body);
-            bool carrying = PED.IS_PED_CARRYING_SOMETHING(c.Law) && PED._GET_FIRST_ENTITY_PED_IS_CARRYING(c.Law) == c.Body;
+            Vector3 lawAt = ENTITY.GET_ENTITY_COORDS(c.Law, true, true), bodyAt = ENTITY.GET_ENTITY_COORDS(c.Body, true, true);
+            bool his = PED._GET_CARRIER_AS_PED(c.Body) == c.Law;
+            c.Gone = his || c.Stage <= BcLift ? 0 : c.Gone + 1;   // two steps in a row (half a second) before it counts as dropped
             switch (c.Stage)
             {
-                case 0:   // walking over
+                case BcWalk:   // walking over by the nav mesh (the undertaker's state 1: its walk stops 15 m short)
                     {
-                        float d = law.Position.DistanceTo(body.Position);
-                        if (d < 1.8f)
+                        float d = lawAt.DistanceTo(bodyAt);
+                        if (d < 15f)
                         {
+                            if (ENTITY.IS_ENTITY_ATTACHED_TO_ANY_PED(c.Body))
+                            {
+                                BodyClearEnd(c, "someone else has hold of it (" + CarryWords(c.Law, c.Body) + ")", false);
+                                break;
+                            }
                             TASK.CLEAR_PED_TASKS(c.Law, true, false);
-                            TASK.TASK_PICKUP_CARRIABLE_ENTITY(c.Law, c.Body);
-                            Log.Detail("LAW clears: he reaches " + c.Who + " after " + (now - c.StageAt) / 1000 + " s and bends to lift it");
-                            c.Stage = 1;
+                            LawLiftSequence(c.Law, c.Body);
+                            Log.Detail("LAW clears: he is " + (int)d + " m from " + c.Who + " after " + (now - c.StageAt) / 1000 + " s: one order to walk up and lift it (the undertaker's sequence; " + CarryWords(c.Law, c.Body) + ")");
+                            c.Stage = BcLift;
                             c.StageAt = now;
-                            BodyWatchers(body.Position, c.Law, c.Body);
+                            c.Reached = false;
                         }
                         else if (now - c.StageAt > 45000)
-                            BodyClearEnd(c, "he never reached it, " + (int)d + " m off (" + LawState(c.Law) + ")", false);
+                            BodyClearEnd(c, "he never reached it, " + (int)d + " m off (" + LawState(c) + ")", false);
                         else if (now >= c.CheckAt)
-                            BodyWatch(c, d, body.Position, d > 12f ? 2f : 1f, "on his way to it", now);
+                            BodyWatch(c, d, bodyAt, d > 12f ? 2f : 1f, "on his way to it", now);
                         break;
                     }
-                case 1:   // lifting
-                    if (carrying)
+                case BcLift:   // the sequence walks up and lifts (its state 3: until func_14)
                     {
-                        Log.Write("LAW clears: the lawman lifts " + c.Who + " and carries it " + (int)law.Position.DistanceTo(c.Goal) + " m off the street");
-                        LawNavTo(c.Law, c.Goal, 1f);   // walking with it, the game's undertaker's way (no clear first: the carry stays)
-                        c.Stage = 2;
+                        float d = lawAt.DistanceTo(bodyAt);
+                        if (!c.Reached && (d < 2f || his))
+                        {
+                            c.Reached = true;
+                            Log.Detail("LAW clears: he reaches " + c.Who + " after " + (now - c.StageAt) / 1000 + " s and bends to lift it (" + CarryWords(c.Law, c.Body) + ")");
+                            BodyWatchers(bodyAt, c.Law, c.Body);
+                        }
+                        if (CarrySettled(c.Law, c.Body))
+                        {
+                            Log.Write("LAW clears: the lawman lifts " + c.Who + " (" + CarryWords(c.Law, c.Body) + ", settled after " + (now - c.StageAt) / 1000 +
+                                      " s) and carries it " + (int)lawAt.DistanceTo(c.Goal) + " m off the street");
+                            TASK.CLEAR_PED_TASKS(c.Law, true, false);   // the undertaker's state 3 to 4, then its walk helper (func_43 cases 0-2)
+                            TASK.CLEAR_PED_SECONDARY_TASK(c.Law);
+                            WEAPON.SET_CURRENT_PED_WEAPON(c.Law, Unarmed, false, 0, false, false);
+                            WEAPON.SET_CURRENT_PED_WEAPON(c.Law, Unarmed, false, 1, false, false);
+                            TASK.TASK_SWAP_WEAPON(c.Law, 1, 0, 0, 0);
+                            c.Stage = BcUnarm;
+                            c.StageAt = now;
+                        }
+                        else if (now - c.StageAt > 1500 && TASK.GET_SCRIPT_TASK_STATUS(c.Law, SeqTask, true) == 8 && !his)
+                            BodyClearEnd(c, "the game wouldn't let him lift it: the walk-up-and-lift sequence ended with no carry (" + LawState(c) + ")", false);
+                        else if (now - c.StageAt > 30000)
+                            BodyClearEnd(c, "the game wouldn't let him lift it (no settled carry after 30 s; " + LawState(c) + ")", false);
+                        break;
+                    }
+                case BcUnarm:   // func_43 case 3: unarmed, or 4 s, then the game's place order towards the spot (flags 0)
+                    if (c.Gone >= 2)
+                        BodyDropped(c, bodyAt);
+                    else if (LawUnarmed(c.Law) || now - c.StageAt > 4000)
+                    {
+                        TASK.TASK_PLACE_CARRIED_ENTITY_AT_COORD(c.Law, c.Body, c.Goal.X, c.Goal.Y, c.Goal.Z, 1f, 0);
+                        Log.Detail("LAW clears: hands free after " + (now - c.StageAt) / 1000 + " s; the place order takes it towards the spot, " + (int)lawAt.DistanceTo(c.Goal) +
+                                   " m off (flags 0; " + CarryWords(c.Law, c.Body) + ")");
+                        c.Stage = BcPlaceWalk;
+                        c.StageAt = now;
+                    }
+                    break;
+                case BcPlaceWalk:   // func_43 case 4: until the place order ends, or 15 s; then the nav-mesh sequence
+                    if ((now - c.StageAt > 500 && TASK.GET_SCRIPT_TASK_STATUS(c.Law, PlaceTask, true) == 8) || now - c.StageAt > 15000)
+                    {
+                        float d = lawAt.DistanceTo(c.Goal);
+                        if (!his)
+                        {
+                            float off = bodyAt.DistanceTo(c.Goal);   // the place order set it down itself
+                            BodyClearEnd(c, (off < 4f ? "set down off the street" : "set down short of the spot (" + (int)off + " m)") + " by the place order (" + CarryWords(c.Law, c.Body) + ")", true);
+                            break;
+                        }
+                        Log.Detail("LAW clears: the place order ended after " + (now - c.StageAt) / 1000 + " s, " + (int)d + " m from the spot, still carrying (" +
+                                   CarryWords(c.Law, c.Body) + "); he walks the rest by the nav mesh");
+                        TASK.CLEAR_PED_TASKS(c.Law, true, false);   // (the undertaker's sequence replaces the order; a clear first, as at the lift)
+                        LawCarryWalk(c.Law, c.Goal);
+                        c.Stage = BcNavWalk;
                         c.StageAt = now;
                         c.Resent = 0;
-                        c.LastDist = law.Position.DistanceTo(c.Goal);
+                        c.LastDist = d;
                         c.CheckAt = now + 3000;
                     }
-                    else if (now - c.StageAt > 8000)
-                        BodyClearEnd(c, "the game wouldn't let him lift it (no carry after 8 s; " + LawState(c.Law) + ")", false);
                     break;
-                case 2:   // carrying it off
+                case BcNavWalk:   // func_43 case 5: there (within 5 m) or the sequence over, then the undertaker's state 4
                     {
-                        float d = law.Position.DistanceTo(c.Goal);
-                        if (!carrying)
-                            BodyClearEnd(c, "he dropped it on the way, " + (int)body.Position.DistanceTo(c.Goal) + " m short of the spot (" + LawState(c.Law) + ")", body.Position.DistanceTo(c.Goal) < 4f);
-                        else if (d < 2.5f || now - c.StageAt > 40000 || (now >= c.CheckAt && c.Resent >= 2 && c.LastDist - d < 1f))
-                            BodySetDown(c, d, now);   // there, or as near as he'll get
+                        float d = lawAt.DistanceTo(c.Goal);
+                        if (c.Gone >= 2)
+                            BodyDropped(c, bodyAt);
+                        else if ((d < 5f && Math.Abs(lawAt.Z - c.Goal.Z) < 2f) || (now - c.StageAt > 500 && TASK.GET_SCRIPT_TASK_STATUS(c.Law, SeqTask, true) == 8) ||
+                                 now - c.StageAt > 40000 || (now >= c.CheckAt && c.Resent >= 2 && c.LastDist - d < 1f))
+                            BodySetDown(c, d, lawAt, now);   // there, or as near as he'll get
                         else if (now >= c.CheckAt)
                             BodyWatch(c, d, c.Goal, 1f, "carrying it", now);
                         break;
                     }
-                case 3:   // setting it down
-                    if (!carrying)
-                        BodyClearEnd(c, body.Position.DistanceTo(c.Goal) < 4f ? "set down off the street" : "set down short of the spot (" + (int)body.Position.DistanceTo(c.Goal) + " m)", true);
+                case BcSetDown:   // the undertaker's state 5: done when the carry ends (func_14 false)
+                    if (!CarrySettled(c.Law, c.Body))
+                    {
+                        float off = bodyAt.DistanceTo(c.Goal);
+                        BodyClearEnd(c, (off < 4f ? "set down off the street" : "set down short of the spot (" + (int)off + " m)") + " (" + CarryWords(c.Law, c.Body) + ")", true);
+                    }
                     else if (now - c.StageAt > 6000)
                     {
                         TASK.CLEAR_PED_TASKS(c.Law, true, false);   // never left holding it
-                        BodyClearEnd(c, "dropped where he stood: the set-down didn't finish in 6 s (" + (int)body.Position.DistanceTo(c.Goal) + " m from the spot)", body.Position.DistanceTo(c.Goal) < 4f);
+                        BodyClearEnd(c, "dropped where he stood: the set-down didn't finish in 6 s (" + (int)bodyAt.DistanceTo(c.Goal) + " m from the spot; " + CarryWords(c.Law, c.Body) + ")",
+                                     bodyAt.DistanceTo(c.Goal) < 4f);
                     }
                     break;
             }
+        }
+
+        private void BodyDropped(BodyClear c, Vector3 bodyAt)
+        {
+            float off = bodyAt.DistanceTo(c.Goal);
+            BodyClearEnd(c, "he dropped it on the way, " + (int)off + " m short of the spot (" + LawState(c) + ")", off < 4f);
         }
 
         /// The watchdog: no metre gained in 3 s and he's sent again (twice at most); after that, on the way to the body, the
@@ -253,22 +394,24 @@ namespace EnrageWestworld.InGame
             c.LastDist = d;
             if (c.Resent >= 2)
             {
-                if (c.Stage == 0)
-                    BodyClearEnd(c, "the game kept him: stopped " + (int)d + " m off after being sent three times (" + LawState(c.Law) + ")", false);
+                if (c.Stage == BcWalk)
+                    BodyClearEnd(c, "the game kept him: stopped " + (int)d + " m off after being sent three times (" + LawState(c) + ")", false);
                 return;
             }
             c.Resent++;
-            Log.Write("LAW clears: he stopped " + doing + ", " + (int)d + " m off (" + LawState(c.Law) + "); sent again");
-            LawNavTo(c.Law, to, speed);
+            Log.Write("LAW clears: he stopped " + doing + ", " + (int)d + " m off (" + LawState(c) + "); sent again");
+            if (c.Stage == BcNavWalk)
+                LawCarryWalk(c.Law, to);   // the same sequence again (no clear: the carry stays)
+            else
+                LawNavTo(c.Law, to, speed);
         }
 
-        private void BodySetDown(BodyClear c, float d, int now)
+        private void BodySetDown(BodyClear c, float d, Vector3 lawAt, int now)
         {
-            Vector3 at = ENTITY.GET_ENTITY_COORDS(c.Law, true, true);
-            Vector3 put = d < 2.5f ? c.Goal : at;
+            Vector3 put = d < 5f ? c.Goal : lawAt;
             TASK.TASK_PLACE_CARRIED_ENTITY_AT_COORD(c.Law, c.Body, put.X, put.Y, put.Z, 1f, 1);   // the game's own undertaker: 1f, flags 1
-            Log.Detail("LAW clears: he sets " + c.Who + " down " + (d < 2.5f ? "at the spot" : (int)d + " m short of it"));
-            c.Stage = 3;
+            Log.Detail("LAW clears: he sets " + c.Who + " down " + (d < 5f ? "at the spot" : (int)d + " m short of it") + " (place order, flags 1; " + CarryWords(c.Law, c.Body) + ")");
+            c.Stage = BcSetDown;
             c.StageAt = now;
         }
 
