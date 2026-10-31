@@ -191,6 +191,7 @@ namespace EnrageWestworld.Core
                 case "brawl": case "standoff": case "drunk": kind = id == target ? "challenge" : "brawl"; break;
                 case "pickpocket": case "deed:theft": case "deed:robbery": case "deed:looting": case "deed:horsetheft": kind = "theft"; break;
                 case "argue": case "x:quarrel": case "snap": case "x:snap": case "brushoff": case "faced": kind = "slight"; break;
+                case "threat": kind = id == target ? "challenge" : "slight"; break;   // warned off by him in the interaction menu: words, no gun drawn (Interact.cs)
                 case "passby": kind = id == target ? "pratfall" : "slight"; break;   // the one who fell feels the fall before the street (after item 14); whoever saw him stepped round, the slight
                 case "scorn": kind = id == target ? "refused" : "slight"; break;
                 case "charity": case "help": case "comfort": case "round": case "settled": case "apology": case "defend": kind = "kindness"; break;

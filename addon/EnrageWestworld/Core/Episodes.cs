@@ -283,6 +283,7 @@ namespace EnrageWestworld.Core
                 case "deed:theft": return past ? "{d} stole from {t}" : "{d} steal from {t}";
                 case "help": case "charity": return past ? "{d} helped {t}" : "{d} help {t}";
                 case "standoff": return past ? "{d} and {t} drew on each other" : "{d} and {t} draw on each other";
+                case "threat": return past ? "{d} warned {t} off" : "{d} warn {t} off";
                 case "passby": return past ? "{d} walked past {t} when {t} was down" : "{d} walk past {t} when {t} was down";
                 case "scorn": case "brushoff": return past ? "{d} gave {t} the cold shoulder" : "{d} give {t} the cold shoulder";
                 case "flirt": case "court": return past ? "{d} sweet-talked {t}" : "{d} sweet-talk {t}";

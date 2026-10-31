@@ -34,6 +34,11 @@ namespace EnrageWestworld.InGame
 
         private unsafe void FlirtPromptTick()
         {
+            if (_menu != null)
+            {
+                FlirtPromptEnd();   // the interaction menu is open (WestworldScript.Menu.cs): no Flirt or Hook up under it
+                return;
+            }
             Ped me = Game.Player.Character;
             int target = 0;
             if (_cfg.FlirtPrompt && _cfg.Romance && !PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle))

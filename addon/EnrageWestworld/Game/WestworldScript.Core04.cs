@@ -273,6 +273,7 @@ namespace EnrageWestworld.InGame
             {
                 FlirtPromptEnd();
                 ForgetPromptEnd();
+                TalkShutdown();      // the Talk prompt out of the lock-on menu, the interaction menu closed (WestworldScript.Menu.cs)
                 _director.AbortAll("stopping");
                 EndEncounters("the add-on stopped");
                 BelowAbort("the add-on stopped");
