@@ -147,6 +147,9 @@ namespace EnrageWestworld.InGame
             TASK.CLEAR_PED_TASKS(law.Handle, true, false);
             LawNavTo(law.Handle, body.Position, far > 12f ? 2f : 1f);   // by the nav mesh to where it lies, not a go-to on a dead body
             Log.Write("LAW clears: a lawman " + (int)far + " m off goes to " + _bodyClear.Who + " to take it off the street (" + LawTakeWords(_bodyClear.Owned) + ")" + (test ? " (the Testing row)" : ""));
+            RecordRef found = _bridge.RecordAt(body.Handle);
+            if (found != null)
+                _engine.BodyFound(found.Id, "a lawman carried the body off", Bridge.Now());   // a killing nobody saw: his kin's word sets off now
             return null;
         }
 

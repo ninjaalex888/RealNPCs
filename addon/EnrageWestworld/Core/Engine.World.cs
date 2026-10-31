@@ -15,6 +15,9 @@ namespace EnrageWestworld.Core
         {
             public string Place, How;
             public bool Headshot;
+            public int Seen = -1;      // people alive within 35 m when he fell (the deed's own count); -1 not known
+            public bool Defended;      // he came at the player: self-defence, no crime, no deed
+            public string DeedId;
         }
 
         private readonly Dictionary<string, DeathNote> _deathNotes = new Dictionary<string, DeathNote>();
@@ -53,12 +56,13 @@ namespace EnrageWestworld.Core
 
         // ---- deaths and reveries ---------------------------------------------------------------
 
-        /// The game layer saw this person die: where, with what, whether through the head.
-        public void NoteDeath(string id, string place, string how, bool headshot)
+        /// The game layer saw this person die: where, with what, whether through the head; how many were near to see
+        /// it (-1 not known), whether it was self-defence, and the killing's deed if one was made (kin word, below).
+        public void NoteDeath(string id, string place, string how, bool headshot, int seen = -1, bool defended = false, string deedId = null)
         {
             if (id == null)
                 return;
-            _deathNotes[id] = new DeathNote { Place = place, How = how, Headshot = headshot };
+            _deathNotes[id] = new DeathNote { Place = place, How = how, Headshot = headshot, Seen = seen, Defended = defended, DeedId = deedId };
             Reverie r;
             if (Store.Reveries.TryGetValue(id, out r) && !r.Woke)
             {
@@ -128,21 +132,181 @@ namespace EnrageWestworld.Core
             }
         }
 
+        // ---- word of a death to kin (2026-10-31, Lex: "no one around to see the death so the word shouldn't have spread")
+        // Kin hear KinWordDaysMin-Max game days on (2-5; it was 12-60 game hours). A killing nobody saw, or self-defence,
+        // is word that doesn't know it was him (NotByYou: grief, no letter to him, no avenger) and waits for the body to
+        // be found (enRAGE buries it, a lawman carries it off: then KinWordDays from the find) or UnseenKinWordDaysMin-Max
+        // days (5-10). Someone who comes upon the body and sees him by it, and lives to tell, makes it witnessed; everyone
+        // who saw it dying before they told makes it unwitnessed.
+
+        private readonly Dictionary<string, string> _bodiesFound = new Dictionary<string, string>();
+
+        /// Whether anyone saw the player kill this person: the killing's deed when one was made (its Witnesses, everyone
+        /// alive within 35 m), else the count noted at the kill; self-defence is unseen (no crime, nobody to say it was
+        /// him). Not known (the game layer never saw the kill, or an execution's) stays witnessed, as before.
+        public bool KillWitnessed(string personId)
+        {
+            DeathNote note;
+            if (personId == null || !_deathNotes.TryGetValue(personId, out note))
+                return true;
+            if (note.Defended)
+                return false;
+            Deed d = note.DeedId != null ? Store.Deeds.LastOrDefault(x => x.Id == note.DeedId) : null;
+            if (d != null)
+                return !d.Unseen && d.Witnesses > 0;
+            return note.Seen != 0;
+        }
+
+        /// Game days from a death (or a find) to kin hearing of it: witnessed or not.
+        public static void KinWordDays(Settings cfg, bool witnessed, out int min, out int max)
+        {
+            min = witnessed ? cfg.KinWordDaysMin : cfg.UnseenKinWordDaysMin;
+            max = Math.Max(min, witnessed ? cfg.KinWordDaysMax : cfg.UnseenKinWordDaysMax);
+        }
+
+        /// A delay in that window without the shared roll (a find or a change of rule mid-way): by the rumour's own seed.
+        private long KinWordLater(bool witnessed, string seed)
+        {
+            int min, max;
+            KinWordDays(Cfg, witnessed, out min, out max);
+            return min * 1440L + Voice.Hash(seed ?? "") % Math.Max(1, (max - min) * 1440);
+        }
+
+        /// Which rule a death's word to kin goes by, for the log.
+        public static string KinWordRule(Rumor r)
+        {
+            if (r == null || !r.Unwitnessed)
+                return "witnessed";
+            return r.Found != null ? "unwitnessed: body found, " + r.Found : "unwitnessed: long delay";
+        }
+
         private void QueueDeathNews(Person p, long now, bool byYou = true)
         {
             PersonState st = Store.Get(p);
             if (st.Family == null)
                 st.Family = Family.For(p);
+            bool unseen = byYou && !KillWitnessed(p.Id);
+            DeathNote note;
+            _deathNotes.TryGetValue(p.Id, out note);
+            string found;
+            _bodiesFound.TryGetValue(p.Id, out found);
+            int min, max;
+            KinWordDays(Cfg, !unseen, out min, out max);
+            var told = new List<string>();
+            long first = 0;
             foreach (Relative rel in st.Family.OrderBy(x => x.Relation == "wife" || x.Relation == "husband" ? 0 : x.Relation == "mother" ? 1 : x.Relation == "brother" ? 2 : 3).Take(2))
             {
                 if (rel.Town != null && rel.Town.Contains("Ireland"))
                     continue;
-                Store.Rumors.Add(new Rumor
+                Rumor r = new Rumor
                 {
-                    FromId = p.Id, FromName = p.Name, FromWoman = p.Woman, Text = "died", Hops = 1, ToRelative = rel.Name, How = "death", NotByYou = !byYou,
-                    SentAt = now, DueAt = now + 720 + _rng.Next(2880)
-                });
+                    FromId = p.Id, FromName = p.Name, FromWoman = p.Woman, Text = "died", Hops = 1, ToRelative = rel.Name, How = "death", NotByYou = !byYou || unseen,
+                    Unwitnessed = unseen, DeedId = note != null ? note.DeedId : null,
+                    SentAt = now, DueAt = now + min * 1440L + _rng.Next(Math.Max(1, (max - min) * 1440))
+                };
+                if (unseen && found != null)
+                {
+                    r.Found = found;   // found before word of the death had set off (a lawman was quick)
+                    r.DueAt = Math.Min(r.DueAt, now + KinWordLater(true, r.FromId + r.ToRelative));
+                }
+                Store.Rumors.Add(r);
+                told.Add(rel.Name);
+                first = first == 0 ? r.DueAt : Math.Min(first, r.DueAt);
             }
+            if (told.Count > 0)
+                Log("WORD of " + p.Name + "'s death will reach " + string.Join(" and ", told) + " in " + (first - now) / 60 + " h (" +
+                    (!unseen ? "witnessed" + (byYou ? "" : ", not by you") : found != null ? "unwitnessed: body found, " + found : "unwitnessed: long delay" + (note != null && note.Defended ? ", self-defence" : ", nobody near")) + ")");
+        }
+
+        /// The game layer saw a record's body found (a lawman carrying it off): an unwitnessed death's word sets off.
+        public void BodyFound(string personId, string how, long now)
+        {
+            if (personId == null || how == null)
+                return;
+            _bodiesFound[personId] = how;
+            foreach (Rumor r in Store.Rumors.Where(x => x.How == "death" && x.FromId == personId && x.Unwitnessed && x.Found == null && x.DueAt > now).ToList())
+                KinWordFound(r, how, now);
+        }
+
+        private void KinWordFound(Rumor r, string how, long now)
+        {
+            r.Found = how;
+            long due = now + KinWordLater(true, r.FromId + r.ToRelative);
+            if (due < r.DueAt)
+                r.DueAt = due;
+            Log("WORD of " + r.FromName + "'s death: the body was found (" + how + "); " + r.ToRelative + " hears in " + (r.DueAt - now) / 60 + " h, not of you");
+        }
+
+        /// Before delivery: a pending death's word changes rule as what's known of the killing changes.
+        private void KinWordTick(long now)
+        {
+            foreach (Rumor r in Store.Rumors)
+            {
+                if (r.How != "death" || r.FromId == null || r.DueAt <= now)
+                    continue;
+                Deed d = r.DeedId != null ? Store.Deeds.LastOrDefault(x => x.Id == r.DeedId) : null;
+                if (r.Unwitnessed)
+                {
+                    if (d != null && d.Known)
+                    {
+                        // someone came upon the body, saw him by it and lived to tell: word knows it was him
+                        r.Unwitnessed = false;
+                        r.NotByYou = false;
+                        r.Found = null;
+                        r.DueAt = Math.Min(r.DueAt, Math.Max(now + 60, r.SentAt + KinWordLater(true, r.FromId + r.ToRelative)));
+                        Log("WORD of " + r.FromName + "'s death: someone saw you by the body and lived to tell; " + r.ToRelative + " hears in " + (r.DueAt - now) / 60 + " h (witnessed)");
+                        continue;
+                    }
+                    Reverie rv;
+                    if (r.Found == null && Store.Reveries.TryGetValue(r.FromId, out rv) && rv.Buried)
+                        KinWordFound(r, "buried", now);
+                }
+                else if (!r.NotByYou && d != null && d.Unseen)
+                {
+                    // everyone who saw it died before they told: the word doesn't know it was him, and comes later
+                    r.Unwitnessed = true;
+                    r.NotByYou = true;
+                    r.DueAt = Math.Max(r.DueAt, r.SentAt + KinWordLater(false, r.FromId + r.ToRelative));
+                    Log("WORD of " + r.FromName + "'s death: nobody who saw it lived to tell; " + r.ToRelative + " hears in " + (r.DueAt - now) / 60 + " h, not of you");
+                }
+            }
+        }
+
+        /// The telegram's second sentence: how, where and how long ago, naming nobody ("Shot near Bluewater Marsh,
+        /// two days ago.").
+        public static string DeathDetail(string how, string place, long minutesAgo)
+        {
+            return HowDied(how) + (string.IsNullOrEmpty(place) ? "" : " near " + place) + ", " + Ago(minutesAgo) + ".";
+        }
+
+        private static string HowDied(string how)
+        {
+            string h = (how ?? "").ToLowerInvariant();
+            if (h.Length == 0) return "Found dead";
+            if (h.Contains("revolver") || h.Contains("pistol") || h.Contains("repeater") || h.Contains("rifle") || h.Contains("shotgun")) return "Shot";
+            if (h.Contains("arrow")) return "Killed with an arrow";
+            if (h.Contains("knife")) return "Knifed";
+            if (h.Contains("machete") || h.Contains("cleaver") || h.Contains("hatchet")) return "Cut down";
+            if (h.StartsWith("bare")) return "Beaten to death";
+            if (h == "fire") return "Burned";
+            if (h.Contains("dynamite")) return "Killed by dynamite";
+            if (h.Contains("poison")) return "Poisoned";
+            if (h.Contains("river")) return "Drowned";
+            if (h.Contains("fall")) return "Killed in a fall";
+            if (h.Contains("hooves")) return "Trampled";
+            return "Killed";
+        }
+
+        private static string Ago(long minutes)
+        {
+            if (minutes < 1440)
+                return "within the day";
+            int days = (int)((minutes + 720) / 1440);
+            if (days <= 1)
+                return "a day ago";
+            if (days < 14)
+                return Voice.Number(days) + " days ago";
+            return days < 60 ? Voice.Number(days / 7) + " weeks ago" : "months ago";
         }
 
         private static readonly string[] Avenging = { "brother", "father", "son", "uncle", "cousin", "husband", "nephew" };
@@ -164,7 +328,11 @@ namespace EnrageWestworld.Core
             if (r.NotByYou)
             {
                 // someone else's doing: grief, and no one rides west after him for it
-                reaction = Voice.Pick(rel.Name + dead.Id, (rel.Woman ? "She" : "He") + " sat a long time without saying anything.", (rel.Woman ? "She" : "He") + " wants the body sent home.");
+                // (and a killing nobody saw: the word doesn't know who did it, so nobody rides after him either)
+                reaction = r.Unwitnessed
+                    ? Voice.Pick(rel.Name + dead.Id, (rel.Woman ? "She" : "He") + " sat a long time without saying anything.", (rel.Woman ? "She" : "He") + " wants the body sent home.",
+                                 "Nobody can tell " + (rel.Woman ? "her" : "him") + " who did it.")
+                    : Voice.Pick(rel.Name + dead.Id, (rel.Woman ? "She" : "He") + " sat a long time without saying anything.", (rel.Woman ? "She" : "He") + " wants the body sent home.");
             }
             else if (Cfg.Avengers && can && _rng.Next(100) < Cfg.AvengerChance && AvengerRoom(rel, dead))
             {
@@ -191,14 +359,23 @@ namespace EnrageWestworld.Core
                 if (_rng.Next(100) < 45)
                     QueueLetter(Letters.Grief(rel, dead.Name, dead.Woman, relTo, Player, knows, false, now));
             }
+            // which death: how, where and how long ago (Lex, 2026-10-31: a telegram for a man killed two days before
+            // came seconds after an ambush, and read as if it were for the men just killed)
+            Reverie rv;
+            Store.Reveries.TryGetValue(dead.Id, out rv);
+            DeathNote note;
+            _deathNotes.TryGetValue(dead.Id, out note);
+            string detail = DeathDetail(rv != null && rv.How != null ? rv.How : note != null ? note.How : null,
+                                        rv != null && rv.Place != null ? rv.Place : note != null ? note.Place : null,
+                                        now - (rv != null && rv.DiedAt > 0 ? rv.DiedAt : r.SentAt));
             // one notice per death: the second of kin to hear it is in the log only (two were too many)
             if (!st.Family.Any(x => x != rel && x.Heard.Any(h => h.FromId == dead.Id && h.Text == "died")))
                 Push(new Toast
                 {
                     Kind = "letter", Title = "Word reaches " + ShortTown(rel.Town), PersonId = dead.Id, Weight = 45,
-                    Text = rel.Name + " got a telegram: " + (rel.Woman ? "her" : "his") + " " + relTo + " " + dead.FirstName + " is dead. " + reaction
+                    Text = rel.Name + " got a telegram: " + (rel.Woman ? "her" : "his") + " " + relTo + " " + dead.FirstName + " is dead. " + detail + " " + reaction
                 });
-            Log("WORD of " + dead.Name + "'s death reaches " + rel.Name + " (" + rel.Relation + ", " + rel.Town + ")");
+            Log("WORD of " + dead.Name + "'s death reaches " + rel.Name + " (" + rel.Relation + ", " + rel.Town + ") (" + KinWordRule(r) + "): " + detail);
         }
 
         /// Whether another avenger may set out: fewer than AvengersAtOnce are riding (stage 1), here (2) or on enRAGE's

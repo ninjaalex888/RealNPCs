@@ -365,6 +365,7 @@ namespace EnrageWestworld.Core
 
 		public void Deliver(long now)
 		{
+			KinWordTick(now);   // a death's word to kin: a body found, or a witness after all (Engine.World.cs)
 			foreach (Rumor item in Store.Rumors.Where((Rumor r) => r.DueAt <= now).ToList())
 			{
 				if (!RosterKnown && item.ToId != null && item.How != "death" && Find(item.ToId) == null)

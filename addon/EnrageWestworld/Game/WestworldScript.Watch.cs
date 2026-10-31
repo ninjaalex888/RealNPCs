@@ -1021,12 +1021,17 @@ namespace EnrageWestworld.InGame
                 rec = _bridge.RecordAt(h);
             if (rec != null)
             {
-                _engine.NoteDeath(rec.Id, place, how, headshot);
                 bool defended = hit.CameAtYou && !Natives.IsLaw(victim);
+                Deed killing = null;
                 if (_cfg.Deeds && !defended)
-                    NoteDeedEyes(_engine.OnDeed(Deeds.Make("namedkill", rec.Name, town, zone, gameMin, pos.X, pos.Y, pos.Z, seen), witnesses, gameMin), pos, h);
+                {
+                    killing = _engine.OnDeed(Deeds.Make("namedkill", rec.Name, town, zone, gameMin, pos.X, pos.Y, pos.Z, seen), witnesses, gameMin);
+                    NoteDeedEyes(killing, pos, h);
+                }
+                // who was near to see it, and the deed, decide when and how his kin hear of it (Engine.World.cs, KillWitnessed)
+                _engine.NoteDeath(rec.Id, place, how, headshot, seen, defended, killing != null ? killing.Id : null);
                 Log.Write("KILLED " + rec.Name + (how != null ? " with " + how : "") + (headshot ? " (head)" : "") + " near " + place +
-                          (defended ? "; self-defence (" + hit.Why + "): no crime noted" : ""));
+                          (defended ? "; self-defence (" + hit.Why + "): no crime noted" : "") + (seen == 0 ? "; nobody near to see it" : "; " + seen + " near"));
                 return;
             }
             bool woman = !PED.IS_PED_MALE(h);

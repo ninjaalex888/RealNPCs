@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 161;
+        public const int CurrentVersion = 162;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -23,6 +23,12 @@ namespace EnrageWestworld.Core
         public bool Thoughts = true;
         public bool Diaries = true;
         public bool WordOfMouth = true;
+        // word of a killing to the dead man's kin (Lex, 2026-10-31; settings version 162): game days to the telegram when
+        // someone saw it (was 12-60 game hours), and when nobody did or it was self-defence (sooner once the body is found)
+        public int KinWordDaysMin = 2;
+        public int KinWordDaysMax = 5;
+        public int UnseenKinWordDaysMin = 5;
+        public int UnseenKinWordDaysMax = 10;
         public bool LifeUpdates = true;
         public bool RevealToEnrage = true;
 
@@ -731,6 +737,10 @@ namespace EnrageWestworld.Core
             AvengerChance = Math.Max(0, Math.Min(100, AvengerChance));
             AvengersAtOnce = Math.Max(1, Math.Min(10, AvengersAtOnce));
             AvengerGapHours = Math.Max(0, Math.Min(720, AvengerGapHours));
+            KinWordDaysMin = Math.Max(0, Math.Min(30, KinWordDaysMin));
+            KinWordDaysMax = Math.Max(KinWordDaysMin, Math.Min(30, KinWordDaysMax));
+            UnseenKinWordDaysMin = Math.Max(0, Math.Min(60, UnseenKinWordDaysMin));
+            UnseenKinWordDaysMax = Math.Max(UnseenKinWordDaysMin, Math.Min(60, UnseenKinWordDaysMax));
             DramaGapSeconds = Math.Max(20, DramaGapSeconds);
             ScenesAtOnce = Math.Max(1, Math.Min(6, ScenesAtOnce));
             ChanceMeetMetres = Math.Max(2f, Math.Min(12f, ChanceMeetMetres));
@@ -793,6 +803,10 @@ namespace EnrageWestworld.Core
             b.AppendLine("Thoughts = " + B(Thoughts) + "   ; now and then, what someone privately thinks of you");
             b.AppendLine("Diaries = " + B(Diaries) + "   ; people write down their days (also saved as text files)");
             b.AppendLine("WordOfMouth = " + B(WordOfMouth) + "   ; what you did reaches their kin, friends and family far away");
+            b.AppendLine("KinWordDaysMin = " + KinWordDaysMin + "   ; a killing someone saw: the dead man's kin get the telegram at least this many game days on (0-30; a game day is about 48 real minutes)");
+            b.AppendLine("KinWordDaysMax = " + KinWordDaysMax + "   ; the latest it may come, in game days");
+            b.AppendLine("UnseenKinWordDaysMin = " + UnseenKinWordDaysMin + "   ; a killing nobody saw, or self-defence: the kin hear at least this many game days on, unless the body is found sooner (buried, or a lawman carries it off; then KinWordDays from the find), and the word doesn't know it was you: no letter to you, nobody rides after you (0-60)");
+            b.AppendLine("UnseenKinWordDaysMax = " + UnseenKinWordDaysMax + "   ; the latest it may come, in game days");
             b.AppendLine("LifeUpdates = " + B(LifeUpdates) + "   ; news from the lives of people you know");
             b.AppendLine("RevealToEnrage = " + B(RevealToEnrage) + "   ; what they tell you is marked as known in enRAGE's records");
             b.AppendLine();
