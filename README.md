@@ -28,8 +28,8 @@ It runs on your own graphics card through [Ollama](https://ollama.com): nothing 
 
 1. Install Ollama from [ollama.com/download](https://ollama.com/download) and leave it running (it sits in the system tray).
 2. Open a Command Prompt and run `ollama pull llama3.1:8b` (a 4.9 GB download).
-3. In game, open the settings panel (Alt+R) and turn on **AI MODEL (OLLAMA)** at the top of the Essentials page. Or set `Language = true` under `[Mind]` in `RealNPCs.ini`.
-4. That's it. Within a few seconds, people near you start thinking in the model's words. To check it's working, press F7: the log's `TEST model:` line counts the model's answers.
+3. Start the game. RealNPCs finds Ollama and the model by itself and turns the AI model on, with a one-time notice saying so. Within a few seconds, people near you start thinking in the model's words.
+4. To check it's working, open the settings panel (Alt+R): **AI MODEL (OLLAMA)** at the top of the Essentials page shows whether it's on and answering. Turn it off there whenever you like; once you've turned it off, RealNPCs leaves it off.
 
 Optional: to have the model answer two people at once, set the Windows environment variable `OLLAMA_NUM_PARALLEL` to `2`, then quit and reopen Ollama.
 
