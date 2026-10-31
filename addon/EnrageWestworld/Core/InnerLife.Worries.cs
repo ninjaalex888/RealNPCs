@@ -555,6 +555,25 @@ namespace EnrageWestworld.Core
             return Fill(Pick(pool, p, seed, told), p, k, arc);
         }
 
+        /// The worry's own words today, for saying aloud when asked after it (the interaction menu): the line for the run
+        /// they're in now, never the last run's after-thought; null if nothing fits them.
+        public static string WorrySaid(Person p, long gameDay, string seed)
+        {
+            if (p == null || p.Id == null || gameDay < 0)
+                return null;
+            List<WorryKind> fits = FitsFor(p);
+            if (fits.Count == 0)
+                return null;
+            int dayIn;
+            long arc = ArcOf(p, gameDay, out dayIn);
+            int stage = StageOn(p.Id, arc, dayIn, gameDay);
+            WorryKind k = KindAt(p, fits, arc);
+            if (LinkedDead(p, k, arc))
+                return null;
+            string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? k.Settled : EndsWell(p, k, arc) ? k.Good : k.Bad;
+            return Fill(Pick(pool, p, seed, null), p, k, arc);
+        }
+
         /// The worry this person is living through today: its kind ("debt"), the stage (0 it begins, 1 worse, 2 the
         /// crisis, 3 how it ended) and whether it ends well. False if nothing fits them.
         public static bool WorryNow(Person p, long gameDay, out string kind, out int stage, out bool good)

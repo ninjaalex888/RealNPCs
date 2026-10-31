@@ -14,7 +14,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class InteractOption
     {
-        public string Id;        // news, name, drink, give, settle, threaten, bye
+        public string Id;        // news, name, ask, drink, give, settle, sorry, threaten, bye
         public string Label;     // what Arthur says, shown in the list
         public string Why;       // why it can't be chosen now (shown greyed), or null
     }
@@ -22,7 +22,7 @@ namespace EnrageWestworld.Core
     public sealed class InteractAnswer
     {
         public string Line;      // what they say back, in their voice
-        public string Event;     // the happening it is (round, charity, help, threat, faced), or null for none
+        public string Event;     // the happening it is (round, charity, help, comfort, apology, threat, faced), or null for none
         public int Cents;        // what it cost Arthur
         public int LikeDelta;    // for enRAGE's own townsfolk: its LikeMore, through its own method
         public string Then;      // what they do after: stay, step back, square up, walk off
@@ -41,26 +41,138 @@ namespace EnrageWestworld.Core
         public const int AgainMinutes = 60; // the same thing to the same person within the game hour: said, not counted again
         public const int KindMinutes = 1440; // a kindness from him within the game day: enough to trust him with a worry
         public const int SettleCents = 1100; // the debt's eleven dollars (the worry's own lines name the sum)
+        public const long SorryMinutes = 3 * 1440; // a wrong of his within three game days can be apologised for
 
         /// The list for this person now: saloon (a drink can be stood), cash (cents in Arthur's pocket), money worry (one
         /// he knows of: a gift is five dollars, not one), a debt he knows of and hasn't settled (he can pay it off), and
-        /// his whole name when they don't know it yet (he can tell them).
-        public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool debtKnown = false, string tellName = null)
+        /// his whole name when they don't know it yet (he can tell them), the worry they've told him of (he can ask after
+        /// it: AskLabel), and a wrong of his lately they're owed an apology for.
+        public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool debtKnown = false, string tellName = null, string askAbout = null, bool sorry = false)
         {
             int gift = moneyWorry ? 500 : 100;
-            var list = new List<InteractOption>
-            {
-                new InteractOption { Id = "news", Label = "What's the news?" },
-                new InteractOption { Id = "drink", Label = "Let me stand you a drink.", Why = !saloon ? "only in a saloon" : cash < DrinkCents ? "not enough money" : null },
-                new InteractOption { Id = "give", Label = "Here, take this ($" + gift / 100 + ")", Why = cash < gift ? "not enough money" : null },
-                new InteractOption { Id = "threaten", Label = "Watch yourself." },
-                new InteractOption { Id = "bye", Label = "Goodbye." },
-            };
-            if (debtKnown)
-                list.Insert(3, new InteractOption { Id = "settle", Label = "Let me settle that debt ($" + SettleCents / 100 + ")", Why = cash < SettleCents ? "not enough money" : null });
+            var list = new List<InteractOption> { new InteractOption { Id = "news", Label = "What's the news?" } };
             if (!string.IsNullOrEmpty(tellName))
-                list.Insert(1, new InteractOption { Id = "name", Label = "The name's " + tellName + "." });
+                list.Add(new InteractOption { Id = "name", Label = "The name's " + tellName + "." });
+            string ask = AskLabel(askAbout);
+            if (ask != null)
+                list.Add(new InteractOption { Id = "ask", Label = ask });
+            list.Add(new InteractOption { Id = "drink", Label = "Let me stand you a drink.", Why = !saloon ? "only in a saloon" : cash < DrinkCents ? "not enough money" : null });
+            list.Add(new InteractOption { Id = "give", Label = "Here, take this ($" + gift / 100 + ")", Why = cash < gift ? "not enough money" : null });
+            if (debtKnown)
+                list.Add(new InteractOption { Id = "settle", Label = "Let me settle that debt ($" + SettleCents / 100 + ")", Why = cash < SettleCents ? "not enough money" : null });
+            if (sorry)
+                list.Add(new InteractOption { Id = "sorry", Label = "I'm sorry about before." });
+            list.Add(new InteractOption { Id = "threaten", Label = "Watch yourself." });
+            list.Add(new InteractOption { Id = "bye", Label = "Goodbye." });
             return list;
+        }
+
+        /// How he asks after a worry they told him of, or null where it can't be asked after aloud (a secret, a poster).
+        public static string AskLabel(string worry)
+        {
+            switch (worry)
+            {
+                case "debt": return "How's that debt of yours?";
+                case "fever": return "How's the little one?";
+                case "letter": return "Any word in the post?";
+                case "drought": return "Any rain out your way?";
+                case "son": return "Heard from your boy?";
+                case "courting": return "Spoken up yet, to your sweetheart?";
+                case "feud": return "That neighbour of yours behaving?";
+                case "bank": return "How are things with the bank?";
+                case "drink": return "Keeping off the bottle?";
+                case "cards": return "Still at the cards?";
+                case "savings": return "Much put by for that ticket?";
+                case "tooth": return "How's the tooth?";
+                default: return null;
+            }
+        }
+
+        /// Their answer when he asks after their worry: how it stands today in their own words (InnerLife.WorrySaid), and
+        /// being asked is a kindness (a comfort, for the mind), the more to someone who thinks nobody listens.
+        public static InteractAnswer AskedAfter(string worryNow, string temper, string seed)
+        {
+            var a = new InteractAnswer { Then = "stay", Event = "comfort", LikeDelta = 4, Friendly = temper != "Cold" };
+            a.Line = !string.IsNullOrEmpty(worryNow) ? worryNow : Pick(seed + "|ak", "Same as ever. But thank you for asking.", "No better, no worse. Kind of you to ask.");
+            a.Thought = temper == "Cold" ? "Why should he care? ...Still. He asked." : Pick(seed + "|akt", "Nobody asks. He asked.", "Remembered, did he. Fancy that.", "Didn't think he'd been listening.");
+            return a;
+        }
+
+        /// Their answer to his apology for a wrong of his lately (a warning, a slight, a blow): by how they stand with him
+        /// and their temper; written down as an apology (a kindness to the mind), less from someone who hates him.
+        public static InteractAnswer Sorry(string temper, string regard, string seed)
+        {
+            var a = new InteractAnswer { Then = "stay", Event = "apology", LikeDelta = 6, Friendly = true };
+            if (regard == "afraid")
+            {
+                a.Line = "It's forgotten, mister. All forgotten.";
+                a.Friendly = false;
+                a.VoiceFear = 30;
+                a.Thought = "Says he's sorry. I'll still not turn my back on him.";
+                return a;
+            }
+            if (regard == "hostile")
+            {
+                a.Line = "Sorry doesn't mend it.";
+                a.Friendly = false;
+                a.LikeDelta = 2;
+                a.VoiceHate = 40;
+                a.Thought = "Let him be sorry. I'll still remember.";
+                return a;
+            }
+            switch (temper)
+            {
+                case "Proud":
+                    a.Line = "An apology. Well. I'll take it, this once.";
+                    a.Thought = "At least he knows he was wrong.";
+                    break;
+                case "Hothead":
+                    a.Line = "Sorry, is it? ...Fine. We're square.";
+                    a.Thought = "Wanted to hit him. Glad I didn't.";
+                    break;
+                case "Cold":
+                    a.Line = "Saying it costs you nothing, mister.";
+                    a.Friendly = false;
+                    a.LikeDelta = 2;
+                    a.Thought = "Means nothing. Still, he said it.";
+                    break;
+                case "Coward":
+                    a.Line = "Oh! It's... it's all right. Really it is.";
+                    a.Thought = "He's sorry? He's sorry. Thank the Lord.";
+                    break;
+                default:
+                    a.Line = Pick(seed + "|so", "Well. That's handsome of you. We'll say no more of it.", "I've had worse said to me. But I'm obliged.", "Kind of you to say so. It's forgotten.");
+                    a.Thought = Pick(seed + "|sot", "Didn't think he had it in him.", "A man who says sorry. Rare as rain.", "Well. Maybe he's not so bad.");
+                    break;
+            }
+            return a;
+        }
+
+        /// The latest wrong he did them within SorryMinutes (a warning, a slight, a blow, a theft: Thanks.Wrong) that he
+        /// hasn't apologised for since, or null.
+        public static Happening LastWrong(List<Happening> log, string id, long now)
+        {
+            if (log == null || id == null)
+                return null;
+            long sorryAt = -1;
+            for (int i = log.Count - 1; i >= 0; i--)
+            {
+                Happening e = log[i];
+                if (e == null || e.TargetId != id || e.DoerId != "player" || e.At > now || now - e.At >= SorryMinutes)
+                    continue;
+                if (e.Kind == "apology")
+                    sorryAt = Math.Max(sorryAt, e.At);
+                else if (Thanks.Wrong(e) && e.At > sorryAt)
+                {
+                    bool since = false;   // an apology after this wrong, further on in the log
+                    for (int j = i + 1; j < log.Count; j++)
+                        if (log[j] != null && log[j].Kind == "apology" && log[j].DoerId == "player" && log[j].TargetId == id && log[j].At >= e.At)
+                            since = true;
+                    if (!since)
+                        return e;
+                }
+            }
+            return null;
         }
 
         /// Whether they'd tell him their own worry: only someone fond of him, or someone he's lately been kind to (a drink,
@@ -346,6 +458,8 @@ namespace EnrageWestworld.Core
             {
                 case "tooth": return "This tooth's been killing me all week.";
                 case "debt": return Pick(seed + "|debt", "I owe eleven dollars I don't have, and the man wants it Saturday.", "There's a debt hanging over me. Can't sleep for it.");
+                case "drought": return "Five weeks and not a drop of rain. The corn's standing there dying.";
+                case "cards": return "Lost more at cards than I can cover, and the rent's due.";
                 case "fever": return "My little one's had a fever three days now.";
                 case "feud": return "My neighbour's moved the fence line again. It'll come to blows.";
                 case "letter": return "Waiting on a letter that never comes.";
@@ -377,8 +491,26 @@ namespace EnrageWestworld.Core
                                 if (a.Line != null) yield return a.Line;
                                 if (a.Thought != null) yield return a.Thought;
                             }
-            foreach (string k in new[] { "tooth", "debt", "fever", "feud", "letter", "drink", "secret", "courting", "savings", "son", "bank", "law", "other" })
+            foreach (string k in new[] { "tooth", "debt", "fever", "feud", "letter", "drink", "secret", "courting", "savings", "son", "bank", "law", "drought", "cards", "other" })
+            {
                 yield return WorryLine(k, k);
+                if (AskLabel(k) != null)
+                    yield return AskLabel(k);
+            }
+            foreach (string t in new[] { null, "Hothead", "Coward", "Proud", "Cold", "Greedy" })
+                for (int i = 0; i < 6; i++)
+                {
+                    InteractAnswer ak = AskedAfter(i % 2 == 0 ? null : "Counted the jar.", t, "ak" + i);
+                    yield return ak.Line;
+                    yield return ak.Thought;
+                    foreach (string r in new[] { null, "afraid", "hostile", "fond" })
+                    {
+                        InteractAnswer so = Sorry(t, r, "so" + i);
+                        yield return so.Line;
+                        yield return so.Thought;
+                    }
+                }
+            yield return "I'm sorry about before.";
         }
     }
 }
