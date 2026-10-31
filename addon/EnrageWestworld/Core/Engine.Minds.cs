@@ -182,6 +182,21 @@ namespace EnrageWestworld.Core
             return st != null && st.Has("grudge:" + what);
         }
 
+        /// Whether they've thanked him for this kindness already (Thanks.Due's key).
+        public bool Thanked(string id, string key)
+        {
+            PersonState st = id != null ? Store.Find(id) : null;
+            return st != null && key != null && st.Has(key);
+        }
+
+        /// They've thanked him for it (or nodded it): never again for that kindness.
+        public void MarkThanked(string id, string key, string name = null)
+        {
+            PersonState st = MindOf(id, name);   // kept even for someone with nothing saved yet, so it's once
+            if (st != null && key != null)
+                st.Mark(key);
+        }
+
         /// They've said it to his face (or stared it): never again for that death.
         public void MarkGrudged(string id, string deadId)
         {

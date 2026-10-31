@@ -386,7 +386,7 @@ namespace EnrageWestworld.InGame
             }
             TalkSay(t, a);
             if (a.Event != null)
-                RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h, "the interaction menu");
+                RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h, a.Settles ? Thanks.DebtOutcome : "the interaction menu");
             if (a.LikeDelta != 0 && t.FolkId != null)
                 _bridge.LikeMore(t.FolkId, a.LikeDelta);   // enRAGE's own method for its own townsfolk
             if (a.Confided)

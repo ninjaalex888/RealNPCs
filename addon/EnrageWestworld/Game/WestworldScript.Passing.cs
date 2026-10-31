@@ -313,6 +313,8 @@ namespace EnrageWestworld.InGame
                 return true;   // and its gunshot row (WestworldScript.Gunshot.cs)
             if (_grudgeWalk != null && _grudgeWalk.Ped != null && _grudgeWalk.Ped.Handle == h)
                 return true;
+            if (_thanksWalk != null && _thanksWalk.Ped != null && _thanksWalk.Ped.Handle == h)
+                return true;   // walking over to thank you (WestworldScript.Thanks.cs)
             if ((_lifter != null && _lifter.Handle == h) || (_liftRun != null && _liftRun.Handle == h) || (_theft != null && _theft.Thief != null && _theft.Thief.Handle == h))
                 return true;   // the pickpocket on his way to you and on the run (WestworldScript.Lift.cs; 2026-10-30: the test cast's stroll had him back)
             if (_kinWalk != null && _kinWalk.Ped != null && _kinWalk.Ped.Handle == h)

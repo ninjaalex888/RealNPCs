@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Thanks, later (what players love: kindness remembered and repaid)
+
+- Someone you stood a drink, gave money or whose debt you settled through Talk may come over when they next see you in town, six game hours to a week later, and thank you for that very thing in their own words and their own voice ("That whiskey the other day. Kind of you. I didn't say so then."), then go on their way. The proud pay back the eleven dollars of a debt you settled (they took it as a loan, and said so). The cold give you a nod and keep it to themselves; the greedy don't come; nobody who fears or hates you now. Once for each kindness, never while you're wanted or fighting. `[Scenes] LateThanks` (on; settings version 153). Testing row "Someone you helped thanks you" (skips the six hours); F7 `TEST thanks:`; log `THANKS`.
+
 ### Tempers carry, and honour rules in Lemoyne (the psychologist's lens)
 
 - **Displaced aggression:** someone slighted, spoken to hard or beaten in the last four game hours (their own memories) may take it out on someone near who won't hit back, a timid man above all: one trouble leads to the next ("Hiram was beaten earlier, and takes it out on Amos"). The one who shamed him isn't the one who pays.

@@ -1,0 +1,184 @@
+// Late, specific thanks, the game side (Core/Thanks.cs has the choosing and the words; NIGHT3). Every 30 s in a town,
+// only when the world log has someone Arthur did a kindness to through the interaction menu (a drink, money, a debt
+// settled) six game hours to a week ago: anyone of them within 20 m who can see him, free and not in a scene, walks
+// over and thanks him for it to his face (a subtitle, the game's own thanks line in their voice), then goes on their
+// way; the proud repay the eleven dollars of a debt he settled. The cold give a nod and think it. Once for each
+// kindness (a mark on them); Pacing "thanks" keeps it rare. Never while he's wanted or fighting. [Scenes] LateThanks.
+// Testing row "Someone you helped thanks you".
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using EnrageWestworld.Core;
+using RDR2;
+using RDR2.Math;
+using RDR2.Native;
+
+namespace EnrageWestworld.InGame
+{
+    public partial class WestworldScript
+    {
+        private const int ThanksLookMs = 30000, ThanksWalkMs = 15000;
+
+        private sealed class ThanksWalk
+        {
+            public Ped Ped;
+            public string Id, Name, Line, Key;
+            public int Cents, Until, SaidAt;
+            public bool Test;
+        }
+
+        private ThanksWalk _thanksWalk;
+        private int _nextThanks, _thanksSaid, _thanksNods, _thanksRepaid;
+        private string _thanksLast, _thanksWhyNot;
+        private Action _aThanks;
+
+        /// Tick04: the one walking over to thank him, and now and then a look for someone who owes him thanks.
+        private void ThanksStep(int now)
+        {
+            if (!_cfg.LateThanks || _store == null || (_thanksWalk == null && now < _nextThanks))
+                return;
+            if (_aThanks == null)
+                _aThanks = () =>
+                {
+                    Ped me = Game.Player.Character;
+                    if (me == null || !me.Exists() || me.IsDead)
+                        return;
+                    ThanksWalkStep(me, _now);
+                    if (_thanksWalk == null && _now >= _nextThanks)
+                        ThanksLook(me, _now, false);
+                };
+            Safe("late thanks", _aThanks);
+        }
+
+        /// Someone near who owes him thanks comes over (or, cold, nods). Null if it started, else why not.
+        private string ThanksLook(Ped me, int now, bool test)
+        {
+            _nextThanks = now + ThanksLookMs;
+            if (_thanksWalk != null || _grudgeWalk != null)
+                return _thanksWhyNot = "someone is already walking up to you";
+            if (!test && (_placeTown == null || _director.Busy))
+                return _thanksWhyNot = _placeTown == null ? "out of the towns" : "a scene is going on";
+            if (MISC.GET_MISSION_FLAG() || PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0 || PED.IS_PED_IN_COMBAT(me.Handle, 0))
+                return _thanksWhyNot = "a mission, or you're wanted or fighting";
+            long g = _store.LastGameMin;
+            if (!Thanks.AnyDue(_store.WorldLog, g, test))
+                return _thanksWhyNot = "nobody you've done a kindness to (a drink, money, a debt) " + (test ? "this week" : "six game hours to a week ago");
+            string skipped;
+            string pre = Pacing.WhyNot(_store.Pace, "thanks", _placeTown, null, g, _rng.Next(100), test, out skipped);
+            if (pre != null)
+                return _thanksWhyNot = "rests: " + pre;
+            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Position.DistanceTo(me.Position) < 20f)
+                                                .OrderBy(x => x.Position.DistanceTo(me.Position)))
+            {
+                string id, name, temper;
+                if (!LastingId(p, out id, out name, out temper) || id == null || !_engine.CanRemember(id))
+                    continue;
+                ThanksOwed owed = Thanks.Due(_store.WorldLog, id, g, k => !test && _engine.Thanked(id, k), test);
+                if (owed == null)
+                    continue;
+                int h = p.Handle;
+                if (!PED.IS_PED_HUMAN(h) || MayDirectWhyNot(p) != null || NotFree(h) || _director.Involves(h) || !NodInView(me, p))
+                    continue;
+                string way = Thanks.Way(temper, SightRegard(p, id));
+                if (way == null)
+                    continue;
+                string pace = Pacing.WhyNot(_store.Pace, "thanks", _placeTown, id, g, 0, test, out skipped);
+                if (pace != null)
+                    continue;
+                Pacing.Note(_store.Pace, "thanks", _placeTown, id, g);
+                string who = name ?? TalkName(p), seed = id + "|" + owed.Key;
+                if (way == "nod")
+                {
+                    TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 3500, 0, 51, 0);
+                    string thought = Thanks.Nod(owed.Kind, seed);
+                    _ticker.Push(who + ", thinking", thought, "near", h);
+                    if (!test)
+                        _engine.MarkThanked(id, owed.Key, who);
+                    _thanksNods++;
+                    _thanksLast = who + " nodded to you over the " + owed.Kind + (test ? " (a test)" : "");
+                    Log.Write("THANKS " + who + " (Cold) nods to you over the " + owed.Kind + " " + (g - owed.At) / 60 + " game h ago; thinks: " + thought + (test ? ", a test" : ""));
+                    return null;
+                }
+                TASK.CLEAR_PED_TASKS(h, true, false);
+                TASK.TASK_GO_TO_ENTITY(h, me.Handle, ThanksWalkMs, 2.0f, 1.0f, 0f, 0);
+                TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, ThanksWalkMs, 0, 51, 0);
+                _thanksWalk = new ThanksWalk { Ped = p, Id = id, Name = who, Line = Thanks.Line(owed.Kind, temper, !PED.IS_PED_MALE(h), seed), Key = owed.Key, Cents = Thanks.Repays(owed.Kind, temper), Until = now + ThanksWalkMs, Test = test };
+                Log.Write("THANKS " + who + (temper != null ? " (" + temper + ")" : "") + " comes over with thanks for the " + owed.Kind + " " + (g - owed.At) / 60 + " game h ago (" + (int)p.Position.DistanceTo(me.Position) + " m)" +
+                          (test ? ", a test" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
+                return null;
+            }
+            return _thanksWhyNot = "nobody who owes you thanks is near, free and can see you";
+        }
+
+        /// The one walking over: says it to his face once there (and pays back what's owed), then goes on their way.
+        private void ThanksWalkStep(Ped me, int now)
+        {
+            ThanksWalk w = _thanksWalk;
+            if (w == null)
+                return;
+            if (w.Ped == null || !w.Ped.Exists() || w.Ped.IsDead || _director.Involves(w.Ped.Handle) || MISC.GET_MISSION_FLAG() || PED.IS_PED_IN_COMBAT(w.Ped.Handle, 0))
+            {
+                _thanksWalk = null;
+                return;
+            }
+            int h = w.Ped.Handle;
+            if (w.SaidAt == 0)
+            {
+                if (w.Ped.Position.DistanceTo(me.Position) < 2.6f)
+                {
+                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 4500, 0f, 0f, 0f);
+                    Feed.Say(w.Name, w.Line, Speech.For(h, w.Line, me.Handle, 0, 0, true, "thanks"), h, toYou: true);
+                    if (w.Cents > 0)
+                    {
+                        MONEY._MONEY_INCREMENT_CASH_BALANCE(w.Cents, 0);
+                        _thanksRepaid += w.Cents;
+                        Hint(w.Name + " paid you back $" + (w.Cents / 100.0).ToString("0.00") + ".", 3000);
+                    }
+                    if (!w.Test)
+                        _engine.MarkThanked(w.Id, w.Key, w.Name);   // thanked for this once
+                    w.SaidAt = now;
+                    _thanksSaid++;
+                    _thanksLast = w.Name + ": " + w.Line + (w.Test ? " (a test)" : "");
+                    Log.Write("THANKS " + w.Name + " to your face: " + w.Line + (w.Cents > 0 ? " (paid you back $" + (w.Cents / 100.0).ToString("0.00") + ")" : ""));
+                }
+                else if (now > w.Until)
+                {
+                    TASK.TASK_WANDER_STANDARD(h, 10f, 10);
+                    _thanksWalk = null;
+                    Log.Write("THANKS " + w.Name + " never reached you: went on their way");
+                }
+                return;
+            }
+            if (now - w.SaidAt > 5000)
+            {
+                TASK.TASK_CLEAR_LOOK_AT(h);
+                TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // said it; goes on their way
+                _thanksWalk = null;
+            }
+        }
+
+        /// The Testing row: anyone within 20 m he's done a kindness to this week, at once (the six hours, the pace and the mark skipped).
+        private string ThanksTest(int now)
+        {
+            if (_thanksWalk != null)
+                return "someone is already walking over to thank you";
+            return ThanksLook(Game.Player.Character, now, true);
+        }
+
+        private void ThanksAbort()
+        {
+            if (_thanksWalk != null && _thanksWalk.Ped != null && _thanksWalk.Ped.Exists())
+                TASK.CLEAR_PED_TASKS(_thanksWalk.Ped.Handle, true, false);
+            _thanksWalk = null;
+        }
+
+        /// F7: on or off, this session's thanks, nods and money paid back, the last, and why not lately.
+        private string ThanksStatus()
+        {
+            if (!_cfg.LateThanks)
+                return "off ([Scenes] LateThanks)";
+            return _thanksSaid + " thanked you, " + _thanksNods + " nodded, $" + (_thanksRepaid / 100.0).ToString("0.00") + " paid back this session" + (_thanksWalk != null ? "; " + _thanksWalk.Name + " is coming over" : "") +
+                   (_thanksLast != null ? "; last: " + _thanksLast : "") + (_thanksWhyNot != null ? "; the last look: " + _thanksWhyNot : "");
+        }
+    }
+}

@@ -270,7 +270,7 @@ namespace EnrageWestworld.Core
                 Happening e = log[i];
                 if (e == null || e.DoerId != "player" || e.TargetId != id || e.At > now || now - e.At >= KindMinutes)
                     continue;
-                if (e.Kind == "round" || e.Kind == "charity" || (e.Kind != null && e.Kind.StartsWith("deed:", StringComparison.Ordinal) && Minds.DeedGroup(e.Kind.Substring(5)) == "deed:kindness"))
+                if (e.Kind == "round" || e.Kind == "charity" || e.Kind == "help" || (e.Kind != null && e.Kind.StartsWith("deed:", StringComparison.Ordinal) && Minds.DeedGroup(e.Kind.Substring(5)) == "deed:kindness"))
                     return true;
             }
             return false;

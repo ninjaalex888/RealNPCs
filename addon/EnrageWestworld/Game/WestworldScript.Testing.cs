@@ -385,6 +385,9 @@ namespace EnrageWestworld.InGame
                 case "talk":
                     skipped = "the lock-on (the row opens the menu on the nearest one you know)";
                     return TalkTest(now);   // WestworldScript.Menu.cs
+                case "thanks":
+                    skipped = "the six game hours after the kindness, being in a town, the pace and the once-only mark";
+                    return ThanksTest(now);   // WestworldScript.Thanks.cs
                 case "mindscene":
                     skipped = "the street's own timing and the person's choice changing first (the rests between the same two kept)";
                     return MindSceneTest(now);   // WestworldScript.MindScenes.cs
