@@ -4,7 +4,7 @@
 
 ### Aimed at, let go to the game
 - From Lex in Saint Denis: the first few townsfolk he aimed at didn't react ("stuck from previous scenes possibly"). Later a woman put her hands up and begged, the game's own answer.
-- Every frame, whoever Arthur free-aims at, or locks on to with a gun in his hand, is looked at once per person (again after a minute). Whatever of RealNPCs' still holds them ends at once, so the game's own reaction takes over. The unarmed lock-on that Talk and Flirt use never counts.
+- Every frame, whoever Arthur free-aims at, or locks on to with a gun in his hand, is looked at once per person (again after a minute, or 5 s after something of ours was let go). Whatever of RealNPCs' still holds them ends at once, so the game's own reaction takes over. The unarmed lock-on that Talk and Flirt use never counts.
 - What is ended:
   - A street scene they're cast in (stopped: "someone in it was aimed at"), or their place in its fight (dropped from the sides).
   - The fight's ring, or their walk over to join.

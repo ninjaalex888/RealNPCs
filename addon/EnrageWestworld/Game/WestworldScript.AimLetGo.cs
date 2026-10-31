@@ -1,7 +1,7 @@
 // Aimed at, let go to the game (Lex, 2026-10-31, Saint Denis: "the first few didn't react ... stuck from previous scenes
 // possibly"; later a woman put her hands up and begged, the game's own). Every frame, cheap: whoever Arthur free-aims at,
 // or locks on to with a gun in his hand (never the unarmed lock-on that Talk and Flirt use), is looked at once per person
-// (by handle and model, again after a minute): whatever of RealNPCs' still holds them is ended at once (a street scene or
+// (by handle and model, again after a minute, or after 5 s when something of ours held them): whatever of RealNPCs' still holds them is ended at once (a street scene or
 // its fight, the fight's ring, someone on the way to join, a waking act or hold, a mind's act, an onlooker's act, the Talk
 // menu, a conversation, bravery's PCF 44), and an ambient person's events are let go as a safety net, so the game's own
 // answer to a gun (hands up, begging, running) takes over. Never during enRAGE's questioning: a man it can question is
@@ -210,6 +210,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             _aimLetGo++;
+            _aimSeen[h] = new KeyValuePair<uint, int>(ENTITY.GET_ENTITY_MODEL(h), now - AimAgainMs + 5000);   // something held them: looked at again in 5 s, so one taken up again meanwhile is let go too
             _aimLastWhat = name + ": " + string.Join(", ", what);
             Log.Write("AIM: " + name + " was held by " + string.Join(", ", what) + "; let go to the game" + (unblock ? " (events unblocked)" : ""));
         }

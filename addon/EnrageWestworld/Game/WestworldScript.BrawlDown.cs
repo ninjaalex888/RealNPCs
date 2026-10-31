@@ -217,9 +217,9 @@ namespace EnrageWestworld.InGame
             for (int i = ended.Count - 1; i >= 0; i--)
             {
                 int h = ended[i][0];
-                if (!ENTITY.DOES_ENTITY_EXIST(h) || _brawlOut.ContainsKey(h) || _brawlFatal.Contains(h) || _director.Involves(h))
+                if (!ENTITY.DOES_ENTITY_EXIST(h) || _brawlOut.ContainsKey(h) || _brawlFatal.Contains(h) || _director.TargetOf(h) != 0)
                 {
-                    ended.RemoveAt(i);   // gone, already down and rolled, or in a fight again
+                    ended.RemoveAt(i);   // gone, already down and rolled, or in a fight again (TargetOf: only while fists fly; the two who began it stay in the scene after, so not Involves)
                     continue;
                 }
                 bool dead = ENTITY.IS_ENTITY_DEAD(h);
