@@ -2,7 +2,7 @@
 // adult RealNPCs knows (a resident, one of enRAGE's townsfolk or records), the game's lock-on menu also offers "Talk" on Q
 // (a pad's RB: INPUT_INTERACT_LOCKON_TARGET_INFO, free in the people's lock-on menu; the clerk's Reset prompt uses it
 // only in a station clerk's list, and Talk stands aside there). Pressing it opens a short list above the ticker: up and
-// down (or the D-pad, or 1 to 9) to choose, Enter (A) to say it, Backspace (B) to leave; the keyboard's keys while the
+// down (or the D-pad) to choose, Space or Enter (A) to say it, Backspace (B) to leave; the keyboard's keys while the
 // keyboard is in use, the pad's buttons while a pad is. Arthur's words show as a subtitle, then their answer in their
 // own voice with its subtitle (afraid or hostile when they are), and what it is (a round, charity, a warning) is written
 // down as a happening for the mind, so gratitude, fear, the greetings and the memories follow; the money goes when the
@@ -49,7 +49,8 @@ namespace EnrageWestworld.InGame
 
         private const uint TalkControl = 0x31219490;   // INPUT_INTERACT_LOCKON_TARGET_INFO: Q, or a pad's RB (as the clerk's Reset prompt)
         private const uint MenuUp = 1662638961u, MenuDown = 97156178u, MenuAccept = 3350541322u, MenuCancel = 359624985u;   // the settings panel's pad buttons
-        private static readonly uint[] MenuButtons = { MenuUp, MenuDown, MenuAccept, MenuCancel };
+        private const uint InputJump = 0xD9D0E1C0;   // INPUT_JUMP: Space says the chosen line, so Arthur doesn't jump with it
+        private static readonly uint[] MenuButtons = { MenuUp, MenuDown, MenuAccept, MenuCancel, InputJump };
         private const float MenuReach = 4f;
         private static IntPtr _talkWord;
         private TalkMenu _menu;
@@ -314,11 +315,9 @@ namespace EnrageWestworld.InGame
             {
                 up = TalkKey(0, 0x26);
                 down = TalkKey(1, 0x28);
-                accept = TalkKey(2, 0x0D);
+                bool space = TalkKey(4, 0x20);   // Space or Enter says the chosen line (Lex, 2026-10-31: no numbers)
+                accept = TalkKey(2, 0x0D) || space;
                 cancel = TalkKey(3, 0x08);
-                for (int i = 0; i < 9; i++)
-                    if (TalkKey(4 + i, 0x31 + i) && i < t.Options.Count)
-                        pick = i;
             }
             else
             {
@@ -645,7 +644,7 @@ namespace EnrageWestworld.InGame
                 for (int i = 0; i < n; i++)
                 {
                     InteractOption o = t.Options[i];
-                    string row = (i + 1) + ". " + o.Label + (o.Why != null ? " (" + o.Why + ")" : "");
+                    string row = o.Label + (o.Why != null ? " (" + o.Why + ")" : "");
                     t.Wide = Math.Max(t.Wide, Draw.Width(row, s));
                     t.Rows[i] = (i == t.Sel && !pending ? "> " : "  ") + row;
                 }
