@@ -86,7 +86,13 @@ namespace EnrageWestworld.InGame
                 long settled;
                 if (_store.WorrySettled == null || !_store.WorrySettled.TryGetValue(id, out settled))
                     settled = -1;
-                ThanksOwed owed = Thanks.Due(_store.WorldLog, id, g, k => !test && _engine.Thanked(id, k), test, settled, at => _engine.Thanked(id, Thanks.LoanKey(at)));
+                string settledKind = "debt", wk;
+                int ws;
+                bool wg;
+                MindWho sw;
+                if (settled >= 0 && _mindWho.TryGetValue(p.Handle, out sw) && sw.P != null && InnerLife.WorryNow(sw.P, settled / 1440, out wk, out ws, out wg))
+                    settledKind = Thanks.KindOfFix(wk);   // which worry he mended, for the words (a debt when it can't be read)
+                ThanksOwed owed = Thanks.Due(_store.WorldLog, id, g, k => !test && _engine.Thanked(id, k), test, settled, at => _engine.Thanked(id, Thanks.LoanKey(at)), settledKind);
                 if (owed == null)
                     continue;
                 int h = p.Handle;

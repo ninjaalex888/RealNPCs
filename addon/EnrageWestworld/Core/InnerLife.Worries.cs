@@ -91,6 +91,10 @@ namespace EnrageWestworld.Core
                     "Buried {who} on the rise behind the house. Ground was hard. Dug anyway.",
                     "Small coffin. Smaller than you'd think. Carpenter wouldn't take money.",
                     "Folded {who}'s things into the chest. Didn't fold them well. Couldn't see to." },
+                Settled = new[] {
+                    "A man I hardly know paid the doctor's two dollars. He came by noon. {who}'s fever broke by night.",
+                    "Doctor's paid, and not with my money. {who} sat up this morning and asked for broth.",
+                    "Owe a man I hardly know for {who}'s mending. Can't think how to thank him." },
                 AfterGood = new[] {
                     "Still feel {who}'s forehead every night. Habit now. Can't stop.",
                     "Heard {who} cough in the yard and my heart stopped. Just the dust. Just the dust.",
@@ -332,6 +336,10 @@ namespace EnrageWestworld.Core
                     "Can's empty. Lid's on the floor. Whoever it was, they knew.",
                     "Spent the ticket money on the doctor. {place} will still be there. Will I?",
                     "Can's under the bed, empty. Kept it there. A reminder, or a habit. Can't tell." },
+                Settled = new[] {
+                    "Five dollars from a man I hardly know. Can's full. Bought the ticket to {place} before my nerve went.",
+                    "Ticket to {place} in my coat. Somebody else made up the fare. I keep touching the pocket.",
+                    "Never asked him for a cent. He gave it anyhow. {place}, then. {place} at last." },
                 AfterGood = new[] { "Ticket's in my coat. Haven't gone yet. Can't say why.", "Train leaves Tuesdays. Been three Tuesdays. The ticket's patient. I'm not sure I am.", "Said {place} out loud at the store. Clerk didn't look up. It's just a word to him." },
                 AfterBad = new[] { "Started a new can. Same bed. Same dream. Smaller can.", "Found a dime in the road. Put it in the new can. Laughed at myself. Did it anyway.", "A man off the train said {place} is nothing special. Wanted to hit him. Thanked him instead." }
             },
@@ -358,6 +366,10 @@ namespace EnrageWestworld.Core
                     "Barber broke it. Took him three tries. I took the bottle.",
                     "Lost the tooth and half my nerve. Jaw still aches when the weather turns.",
                     "Barber says the root's still in there. Says it like he's proud of it." },
+                Settled = new[] {
+                    "Saint Denis dentist, on another man's three dollars. Gas and all. The ache went with the tooth.",
+                    "Ate on both sides of my mouth today. Thanks to a man I'd barely met.",
+                    "No barber's pliers for me. A proper dentist, and a man I hardly know paid him. Still can't credit it." },
                 AfterGood = new[] { "Tongue keeps finding the gap. Like a dog at a hole in the fence.", "Smile with my mouth shut now. Folk think I've turned serious.", "Barber waves at me in the street. Waves. Like we're friends. We're not." },
                 AfterBad = new[] { "Whistle through the gap when I talk. Children laugh. Let them.", "Chew on one side still. Jaw's learned a lean to it.", "Hear a man groan at the barber's and my hand goes to my own jaw." }
             },

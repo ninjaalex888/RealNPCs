@@ -29,8 +29,27 @@ namespace EnrageWestworld.Core
         public const long Within = 7 * 1440;    // a week at most (the world log, kept to its last 400, may forget a drink sooner)
         public const long RepayAfter = 3 * 1440; // a loan of eleven dollars, from a man with four and a button, takes days to raise
         public const string DebtOutcome = "settled their debt";   // the menu's outcome on the help it records for a debt
+        public const string DoctorOutcome = "paid the doctor for them", ToothOutcome = "paid their dentist", FareOutcome = "made up their fare";
 
-        /// What the kindness was, for the words: drink, money, debt; null for anything else.
+        /// The help's outcome, for the worry he paid to mend (the world log keeps it; KindOf reads it back).
+        public static string OutcomeOf(string worry)
+        {
+            return worry == "fever" ? DoctorOutcome : worry == "tooth" ? ToothOutcome : worry == "savings" ? FareOutcome : DebtOutcome;
+        }
+
+        /// The thanks for a worry he paid to mend: debt, doctor, tooth, ticket.
+        public static string KindOfFix(string worry)
+        {
+            return worry == "fever" ? "doctor" : worry == "tooth" ? "tooth" : worry == "savings" ? "ticket" : "debt";
+        }
+
+        /// A worry mended: thanked like a settled debt (nine in ten come; first of all he's owed).
+        private static bool Mended(string kind)
+        {
+            return kind == "debt" || kind == "doctor" || kind == "tooth" || kind == "ticket";
+        }
+
+        /// What the kindness was, for the words: drink, money, debt (or the doctor, a tooth, a ticket); null for anything else.
         public static string KindOf(Happening e)
         {
             if (e == null || e.DoerId != "player")
@@ -39,7 +58,7 @@ namespace EnrageWestworld.Core
             {
                 case "round": return "drink";
                 case "charity": return "money";
-                case "help": return e.Outcome == DebtOutcome ? "debt" : null;
+                case "help": return e.Outcome == DebtOutcome ? "debt" : e.Outcome == DoctorOutcome ? "doctor" : e.Outcome == ToothOutcome ? "tooth" : e.Outcome == FareOutcome ? "ticket" : null;
                 default: return null;
             }
         }
@@ -69,13 +88,13 @@ namespace EnrageWestworld.Core
         {
             if (test)
                 return true;
-            int chance = kind == "debt" ? 90 : kind == "money" ? (cents >= 500 ? 60 : 35) : 15;
+            int chance = Mended(kind) ? 90 : kind == "money" ? (cents >= 500 ? 60 : 35) : 15;
             return Voice.Hash(key + "|comes") % 100 < chance;
         }
 
         private static int Rank(string kind)
         {
-            return kind == "debt" ? 3 : kind == "money" ? 2 : 1;
+            return Mended(kind) ? 3 : kind == "money" ? 2 : 1;
         }
 
         /// The kindness this person would thank him for now, or null: the biggest he did them (a debt, then money, then a
@@ -84,7 +103,7 @@ namespace EnrageWestworld.Core
         /// settled their debt, or -1 (the log may have let it go). `loanAt`: whether the debt settled at that minute was
         /// taken as a loan (a mark the menu left): a loan always comes, with the money, and not before RepayAfter, and
         /// nothing else thanked meanwhile covers it. A test skips the waits and the roll, not the week.
-        public static ThanksOwed Due(List<Happening> log, string id, long now, Func<string, bool> thanked, bool test = false, long settledAt = -1, Func<long, bool> loanAt = null)
+        public static ThanksOwed Due(List<Happening> log, string id, long now, Func<string, bool> thanked, bool test = false, long settledAt = -1, Func<long, bool> loanAt = null, string settledKind = "debt")
         {
             if (id == null)
                 return null;
@@ -106,7 +125,7 @@ namespace EnrageWestworld.Core
                         owed.Add(new ThanksOwed { Kind = kind, At = e.At, Key = "thanks:" + e.Kind + "|" + e.At, Cents = CentsOf(e) });
                 }
             if (settledAt >= 0 && settledAt <= now && now - settledAt < Within && !owed.Exists(o => o.Key == "thanks:help|" + settledAt))
-                owed.Add(new ThanksOwed { Kind = "debt", At = settledAt, Key = "thanks:help|" + settledAt });
+                owed.Add(new ThanksOwed { Kind = settledKind ?? "debt", At = settledAt, Key = "thanks:help|" + settledAt });   // (the worry it mended, when the game could read it)
             ThanksOwed best = null;
             var keys = new List<string>();
             foreach (ThanksOwed o in owed)
@@ -191,6 +210,18 @@ namespace EnrageWestworld.Core
                     return shy ? "You paid what I owed. That's all I came to say. Thank you."
                                : sameDay ? Pick(seed + "|tde", "You paid my debt and never asked a thing back. I won't forget it.", "Square with the man I owed, thanks to you. I'll tell folks so.")
                                          : Pick(seed + "|tde", "Slept easy every night since you settled that for me. I wanted you to know.", "You paid my debt and never asked a thing back. I haven't forgotten it.");
+                case "doctor":
+                    return shy ? "The doctor you paid for. They're mending at home. Thank you."
+                               : sameDay ? Pick(seed + "|tdo", "The doctor's been out to us, thanks to you. I wanted you told.", "Two dollars, and the doctor came. I'll not forget who paid him.")
+                                         : Pick(seed + "|tdo", "Everyone's mending at home since the doctor came. You paid him. I haven't forgotten.", "That doctor you paid for. Best two dollars anybody ever spent on us.");
+                case "tooth":
+                    return shy ? "The dentist. I can eat again. Thank you."
+                               : sameDay ? Pick(seed + "|tto", "Tooth's out and I'm still standing. I've you to thank for that.", "No more clove oil, thanks to you, mister.")
+                                         : Pick(seed + "|tto", "Eating on both sides again, mister. That was your three dollars.", "Not a twinge since you paid the dentist. Wanted you told.");
+                case "ticket":
+                    return shy ? "The money for the fare. I'm going, thanks to you."
+                               : sameDay ? Pick(seed + "|tti", "Got the ticket in my pocket. Wanted you to see it.", "Fare's paid, mister. I'm on the next train out.")
+                                         : Pick(seed + "|tti", "Leaving on the morning train. Wouldn't be, but for you.", "Bags are packed. I'll think of you when the train pulls out.");
                 default:
                     return "Wanted to say thank you. That's all.";
             }
@@ -203,6 +234,9 @@ namespace EnrageWestworld.Core
             {
                 case "drink": return "Him. Stood me a drink once. I'll stand him one back, some day.";
                 case "debt": return Pick(seed + "|tnd", "Him that paid my debt. I owe him. I'll not say it out loud.", "Owe that man more than eleven dollars. Won't tell him so.");
+                case "doctor": return "Him that paid the doctor. I owe him more than I can say.";
+                case "tooth": return "Him. Paid the dentist for me. Can't look at him without grinning.";
+                case "ticket": return "Him that made up my fare. I'll write to him, if I ever learn his name.";
                 default: return "Him. Gave me money when he didn't have to. I keep a tally.";
             }
         }
@@ -214,13 +248,13 @@ namespace EnrageWestworld.Core
 
         public static IEnumerable<string> AllLines()
         {
-            foreach (string kind in new[] { "drink", "money", "debt", "other" })
+            foreach (string kind in new[] { "drink", "money", "debt", "doctor", "tooth", "ticket", "other" })
                 foreach (string temper in new[] { null, "Coward", "Proud", "Hothead" })
                     for (int i = 0; i < 6; i++)
                         foreach (bool w in new[] { false, true })
                             foreach (bool same in new[] { false, true })
                                 yield return Line(kind, temper, w, "all" + i, same, kind == "debt" && temper == "Proud" && i == 0 ? Interact.SettleCents : 0);
-            foreach (string kind in new[] { "drink", "money", "debt" })
+            foreach (string kind in new[] { "drink", "money", "debt", "doctor", "tooth", "ticket" })
                 for (int i = 0; i < 4; i++)
                     yield return Nod(kind, "all" + i);
         }

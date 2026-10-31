@@ -14,7 +14,7 @@ namespace EnrageWestworld.Core
     public static partial class Language
     {
         /// What he said, in plain terms for the model (the menu's own words can be read two ways: "settle that debt").
-        public static string TalkSaid(string option, int cents = 0)
+        public static string TalkSaid(string option, int cents = 0, string worry = null)
         {
             switch (option)
             {
@@ -23,7 +23,11 @@ namespace EnrageWestworld.Core
                 case "ask": return "He asks after the trouble you told him of.";
                 case "drink": return "He offers to buy you a drink.";
                 case "give": return "He holds out " + (cents >= 500 ? "five dollars" : "a dollar") + " for you to take, as a gift.";
-                case "settle": return "He offers to pay the eleven dollars you owe, so you can be clear of the debt.";
+                case "settle":
+                    return worry == "fever" ? "He gives you two dollars to pay the doctor to ride out to your sick family."
+                         : worry == "tooth" ? "He gives you three dollars to have your bad tooth seen to by a proper dentist."
+                         : worry == "savings" ? "He gives you five dollars toward the train ticket you are saving for."
+                         : "He offers to pay the eleven dollars you owe, so you can be clear of the debt.";
                 case "sorry": return "He says he's sorry for how he treated you before.";
                 case "threaten": return "He tells you to watch yourself, and means it as a threat.";
                 default: return "He says good day.";

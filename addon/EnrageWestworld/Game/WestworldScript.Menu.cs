@@ -223,8 +223,8 @@ namespace EnrageWestworld.InGame
             bool told = _talkConfided.Contains(TalkToldKey(_menu));
             string selId = _menu.Options != null && _menu.Sel < _menu.Options.Count ? _menu.Options[_menu.Sel].Id : null;
             Happening wrong = Interact.LastWrong(_store.WorldLog, _menu.Id, _store.LastGameMin);
-            _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, _menu.Worry == "debt" && told, _menu.KnowsName ? null : YourFullName(),
-                                             told && _menu.P != null ? _menu.AskWorry : null, wrong != null, wrong != null && _store.LastGameMin - wrong.At < 60);
+            _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, told && Interact.FixCents(_menu.Worry) > 0, _menu.KnowsName ? null : YourFullName(),
+                                             told && _menu.P != null ? _menu.AskWorry : null, wrong != null, wrong != null && _store.LastGameMin - wrong.At < 60, _menu.Worry);   // a worry money can mend: the debt, the doctor, a dentist, the fare
             int at = selId != null ? _menu.Options.FindIndex(x => x.Id == selId) : -1;
             _menu.Sel = at >= 0 ? at : 0;   // the same option stays chosen (by index, "Watch yourself." slid under the cursor after an apology)
             _menu.Rows = null;
@@ -408,7 +408,7 @@ namespace EnrageWestworld.InGame
             }
             TalkSay(t, a);
             if (a.Event != null)
-                RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h, a.Settles ? Thanks.DebtOutcome : a.Event == "charity" ? "gave $" + a.Cents / 100 : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf)
+                RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h, a.Settles ? Thanks.OutcomeOf(t.Worry) : a.Event == "charity" ? "gave $" + a.Cents / 100 : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf)
             if (a.LikeDelta != 0 && t.FolkId != null)
                 _bridge.LikeMore(t.FolkId, a.LikeDelta);   // enRAGE's own method for its own townsfolk
             if (a.Confided)
@@ -420,7 +420,7 @@ namespace EnrageWestworld.InGame
             }
             if (a.Settles)
             {
-                _engine.SettleWorry(t.Id);   // the rest of the debt's run reads as ended well, for them and the one they owed
+                _engine.SettleWorry(t.Id);   // the rest of the worry's run reads as ended well (for a debt, the one they owed too)
                 if (a.Loan)
                     _engine.MarkThanked(t.Id, Thanks.LoanKey(_store.LastGameMin), t.Name);   // they said it was a loan: they'll bring it back (late thanks)
                 t.Worry = null;
@@ -459,7 +459,7 @@ namespace EnrageWestworld.InGame
             t.ThoughtAt = now + 2600;
             TalkRefreshOptions();
             Log.Write("TALK " + t.Name + ": " + t.PendingId + " -> \"" + a.Line + "\"" + (a.Event != null ? " (" + a.Event + " for the mind)" : again ? " (the same within the hour: not counted again)" : "") +
-                      (a.Cents > 0 ? ", $" + (a.Cents / 100.0).ToString("0.00") : "") + (a.Then != "stay" ? ", " + a.Then : "") + (a.Confided ? ", told you their worry" : "") + (a.Settles ? ", their debt settled" : "") + (a.LearnsName ? ", they know your name now" : ""));
+                      (a.Cents > 0 ? ", $" + (a.Cents / 100.0).ToString("0.00") : "") + (a.Then != "stay" ? ", " + a.Then : "") + (a.Confided ? ", told you their worry" : "") + (a.Settles ? ", their worry mended" : "") + (a.LearnsName ? ", they know your name now" : ""));
         }
 
         private const int TalkModelWaitMs = 2800;   // from Arthur's words: past this, the written line
@@ -485,7 +485,7 @@ namespace EnrageWestworld.InGame
             if (r == null)
                 return;
             r.Kind = "talk";
-            r.Said = Language.TalkSaid(o.Id, o.Id == "give" && t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)) ? 500 : 100);
+            r.Said = Language.TalkSaid(o.Id, o.Id == "give" && t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)) ? 500 : 100, t.Worry);
             r.Mean = a.Line;
             r.Near.Clear();       // no names but his own (the model called him by whoever was in sight)
             r.Memories.Clear();

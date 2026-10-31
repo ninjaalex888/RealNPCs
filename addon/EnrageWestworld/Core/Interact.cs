@@ -30,7 +30,7 @@ namespace EnrageWestworld.Core
         public bool Confided;    // they told him their worry: he knows of it now
         public int VoiceHate, VoiceFear;   // how it's said, for the game's own lines (Speech.For)
         public bool Friendly;
-        public bool Settles;     // he paid their debt: the worry is over (Engine.SettleWorry)
+        public bool Settles;     // he paid what their worry needed (a debt, the doctor, a dentist, the fare): it's over (Engine.SettleWorry)
         public bool LearnsName;  // he told them his name: they know it from now on (Engine.LearnName)
         public bool Loan;        // the debt he settled they took as a loan, and said so: they'll bring it back (Thanks)
         public string WrittenLine;   // the menu's own line when the model's words took its place: the voice is chosen by it
@@ -42,13 +42,47 @@ namespace EnrageWestworld.Core
         public const int AgainMinutes = 60; // the same thing to the same person within the game hour: said, not counted again
         public const int KindMinutes = 1440; // a kindness from him within the game day: enough to trust him with a worry
         public const int SettleCents = 1100; // the debt's eleven dollars (the worry's own lines name the sum)
+
+        /// What a sum of his can mend, and what it costs (the worries' own lines name the sums): the debt's eleven dollars,
+        /// the doctor's two to ride out to the fever, a proper dentist for the tooth (the barber pulls them for a dollar),
+        /// five toward the fare they're saving for. 0: money can't mend it.
+        public static int FixCents(string worry)
+        {
+            switch (worry)
+            {
+                case "debt": return SettleCents;
+                case "fever": return 200;
+                case "tooth": return 300;
+                case "savings": return 500;
+                default: return 0;
+            }
+        }
+
+        /// The option's words for that fix.
+        public static string FixLabel(string worry)
+        {
+            switch (worry)
+            {
+                case "fever": return "Here, for the doctor ($2)";
+                case "tooth": return "Here, see a proper dentist ($3)";
+                case "savings": return "Here, toward that ticket ($5)";
+                default: return "Let me settle that debt ($" + SettleCents / 100 + ")";
+            }
+        }
+
+        private static string SumWords(string worry)
+        {
+            return worry == "fever" ? "Two dollars" : worry == "tooth" ? "Three dollars" : worry == "savings" ? "Five dollars" : "Eleven dollars";
+        }
         public const long SorryMinutes = 3 * 1440; // a wrong of his within three game days can be apologised for
 
         /// The list for this person now: saloon (a drink can be stood), cash (cents in Arthur's pocket), money worry (one
-        /// he knows of: a gift is five dollars, not one), a debt he knows of and hasn't settled (he can pay it off), and
+        /// he knows of: a gift is five dollars, not one), a worry he knows of that money can mend (`fixKnown`, `fixKind`:
+        /// the debt, the doctor, a dentist, the fare: FixCents), and
         /// his whole name when they don't know it yet (he can tell them), the worry they've told him of (he can ask after
         /// it: AskLabel), and a wrong of his lately they're owed an apology for.
-        public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool debtKnown = false, string tellName = null, string askAbout = null, bool sorry = false, bool sorryJustNow = false)
+        public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool fixKnown = false, string tellName = null, string askAbout = null, bool sorry = false, bool sorryJustNow = false,
+                                                   string fixKind = "debt")
         {
             int gift = moneyWorry ? 500 : 100;
             var list = new List<InteractOption> { new InteractOption { Id = "news", Label = "What's the news?" } };
@@ -59,8 +93,9 @@ namespace EnrageWestworld.Core
                 list.Add(new InteractOption { Id = "ask", Label = ask });
             list.Add(new InteractOption { Id = "drink", Label = "Let me stand you a drink.", Why = !saloon ? "only in a saloon" : cash < DrinkCents ? "not enough money" : null });
             list.Add(new InteractOption { Id = "give", Label = "Here, take this ($" + gift / 100 + ")", Why = cash < gift ? "not enough money" : null });
-            if (debtKnown)
-                list.Add(new InteractOption { Id = "settle", Label = "Let me settle that debt ($" + SettleCents / 100 + ")", Why = cash < SettleCents ? "not enough money" : null });
+            int fix = FixCents(fixKind);
+            if (fixKnown && fix > 0)
+                list.Add(new InteractOption { Id = "settle", Label = FixLabel(fixKind), Why = cash < fix ? "not enough money" : null });
             if (sorry)
                 list.Add(new InteractOption { Id = "sorry", Label = sorryJustNow ? "I didn't mean that." : "I'm sorry about before." });   // minutes after a warning, a quick word; later, an apology
             list.Add(new InteractOption { Id = "threaten", Label = "Watch yourself." });
@@ -288,6 +323,7 @@ namespace EnrageWestworld.Core
                 case "name":
                     return Introduced(temper, regard, woman, you ?? "Smith", woman ? null : self, seed);
                 case "settle":
+                    string fixing = FixCents(worry) > 0 ? worry : "debt";
                     if (hostile)
                     {
                         a.Line = "I'd sooner owe the devil than owe you.";
@@ -295,7 +331,7 @@ namespace EnrageWestworld.Core
                         return a;
                     }
                     a.Event = "help";
-                    a.Cents = SettleCents;
+                    a.Cents = FixCents(fixing);
                     a.LikeDelta = 30;
                     a.Settles = true;
                     a.Friendly = !afraid;
@@ -306,21 +342,41 @@ namespace EnrageWestworld.Core
                             a.Thought = "Paid it, just like that. What will he want for it?";
                             break;
                         case "Proud":
-                            a.Line = woman ? "Then it's a loan, and I'll see every cent of it back to you." : "Then it's a loan. Every cent back, you have my word on it.";
-                            a.Loan = true;
-                            a.Thought = "Beholden to a stranger. I'll make it right if it takes a year.";
+                            a.Line = fixing == "fever" ? "For their sake I'll take it. For my own, I never would."
+                                   : fixing == "tooth" ? "I'll take it, and thank you not to speak of it."
+                                   : fixing == "savings" ? "I'd not take charity. A hand toward the fare, though... this once."
+                                   : woman ? "Then it's a loan, and I'll see every cent of it back to you." : "Then it's a loan. Every cent back, you have my word on it.";
+                            a.Loan = fixing == "debt";   // eleven dollars is paid back; two for the doctor is thanks enough
+                            a.Thought = fixing == "debt" ? "Beholden to a stranger. I'll make it right if it takes a year." : "Beholden to a man I hardly know. I'll make it right somehow.";
                             break;
                         case "Greedy":
-                            a.Line = "Eleven dollars, just like that? Well, I won't argue with you.";
+                            a.Line = SumWords(fixing) + ", just like that? Well, I won't argue with you.";
                             a.Thought = "Wonder what else he'd pay for, a man like that.";
                             break;
                         case "Cold":
                             a.Line = "Why would you do a thing like that?";
-                            a.Thought = "Nobody pays another man's debts for nothing. Still. It's paid.";
+                            a.Thought = fixing == "debt" ? "Nobody pays another man's debts for nothing. Still. It's paid." : "Nobody gives for nothing. Still. I'll not hand it back.";
                             break;
                         default:
-                            a.Line = Pick(seed + "|set", "You'd do that? For me? Lord love you, mister.", "Eleven dollars... I can pay him. I can pay him today!", "I hardly know what to say. I'm in your debt now, not his.");
-                            a.Thought = Pick(seed + "|sett", "Square today. I can breathe again.", "A man I hardly know did that. Wait till I tell them at home.", "Can't think why he'd do it. Won't ask, either.");
+                            switch (fixing)
+                            {
+                                case "fever":
+                                    a.Line = Pick(seed + "|set", "You'd do that? For me? Lord love you, mister.", "Two dollars... I'll fetch him now. This minute!", "God bless you. He'll be out to us by noon.");
+                                    a.Thought = Pick(seed + "|sett", "The doctor's coming. Somebody paid. I could weep.", "He paid the doctor. I'll pray for him tonight, whoever he is.", "Two dollars. All that stood between us and the doctor.");
+                                    break;
+                                case "tooth":
+                                    a.Line = Pick(seed + "|set", "You'd do that? For me? Lord love you, mister.", "A real dentist? Not the barber's pliers? Mister, you've saved my jaw.", "No more clove oil. I could kiss you. I won't, mind.");
+                                    a.Thought = Pick(seed + "|sett", "A proper dentist, on another man's money. Wonders never cease.", "Still throbbing. Doesn't matter now. It's ending.", "Three dollars, from a man I hardly know. My jaw thanks him.");
+                                    break;
+                                case "savings":
+                                    a.Line = Pick(seed + "|set", "You'd do that? For me? Lord love you, mister.", "Five dollars... that's the fare. That's the whole of it!", "I'm going, then. I'm truly going.");
+                                    a.Thought = Pick(seed + "|sett", "The can's full. Just like that, it's full.", "Fare money, from a man I hardly know. I'll not waste a cent of it.", "Gone by the week's end. Because of him.");
+                                    break;
+                                default:
+                                    a.Line = Pick(seed + "|set", "You'd do that? For me? Lord love you, mister.", "Eleven dollars... I can pay him. I can pay him today!", "I hardly know what to say. I'm in your debt now, not his.");
+                                    a.Thought = Pick(seed + "|sett", "Square today. I can breathe again.", "A man I hardly know did that. Wait till I tell them at home.", "Can't think why he'd do it. Won't ask, either.");
+                                    break;
+                            }
                             break;
                     }
                     return a;
@@ -502,6 +558,18 @@ namespace EnrageWestworld.Core
                                 if (a.Line != null) yield return a.Line;
                                 if (a.Thought != null) yield return a.Thought;
                             }
+            foreach (string fx in new[] { "fever", "tooth", "savings" })
+            {
+                yield return FixLabel(fx);
+                foreach (string temper in new[] { null, "Proud", "Cold", "Greedy" })
+                    foreach (string regard in new[] { null, "afraid", "hostile" })
+                        for (int i = 0; i < 6; i++)
+                        {
+                            InteractAnswer a = Answer("settle", temper, i % 2 == 0, false, regard, null, fx, true, fx == "savings", "fx" + i);
+                            if (a.Line != null) yield return a.Line;
+                            if (a.Thought != null) yield return a.Thought;
+                        }
+            }
             foreach (string k in new[] { "tooth", "debt", "fever", "feud", "letter", "drink", "secret", "courting", "savings", "son", "bank", "law", "drought", "cards", "other" })
             {
                 yield return WorryLine(k, k);
