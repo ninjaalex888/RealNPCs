@@ -63,7 +63,7 @@ namespace EnrageWestworld.InGame
         private string ThanksLook(Ped me, int now, bool test)
         {
             _nextThanks = now + ThanksLookMs;
-            if (_thanksWalk != null || _grudgeWalk != null || _kinWalk != null || _lifter != null || _liftRun != null || _menu != null)
+            if (_thanksWalk != null || _grudgeWalk != null || _lonelyWalk != null || _kinWalk != null || _lifter != null || _liftRun != null || _menu != null)
                 return _thanksWhyNot = "someone is already coming up to you, or you're in the Talk menu";
             if (!test && (_placeTown == null || _director.Busy))
                 return _thanksWhyNot = _placeTown == null ? "out of the towns" : "a scene is going on";

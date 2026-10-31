@@ -133,7 +133,7 @@ namespace EnrageWestworld.InGame
                 why = "[Scenes] Grudges is off";
                 return false;
             }
-            if (_grudgeWalk != null || _thanksWalk != null)
+            if (_grudgeWalk != null || _thanksWalk != null || _lonelyWalk != null)
             {
                 why = "one is coming up to you already";
                 return false;

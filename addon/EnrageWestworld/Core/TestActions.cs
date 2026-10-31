@@ -61,6 +61,7 @@ namespace EnrageWestworld.Core
             new Entry("mindscene", "People", "A mind starts a scene (their own reason)", "TestMindSceneKey", needs: "named people near with a reason between them (a quarrel, a friend grieving, a debt); [Mind] Language and LanguagePicks for the model to pick, else their strongest reason plays"),
             new Entry("talk", "People", "Talk to the nearest person you know", "TestMenuKey", needs: "an adult RealNPCs knows within 6 m, not in a scene or a fight"),
             new Entry("space", "People", "Someone minds you standing so close", "TestSpaceKey", needs: "someone within 3 m, standing, not the law, not sitting or at the bar, not busy"),
+            new Entry("lonely", "People", "A lonely regular comes over", "TestLonelyKey", needs: "MindLive, someone the mind knows within 18 m and in view, standing, who neither fears you nor holds anything against you"),
             new Entry("thanks", "People", "Someone you helped thanks you", "TestThanksKey", needs: "someone within 20 m who can see you, whom you stood a drink, gave money or settled a debt for this week (the Talk menu; Greedy people don't come, Cold ones nod)"),
             new Entry("lawbody", "People", "A lawman clears a body", "TestLawBodyKey", needs: "a body within 40 m and a lawman on foot within 80 m of it, no fight near"),
             new Entry("arthur", "People", "Arthur's own line", "TestArthurKey", needs: "nothing: each press tries the next moment's lines (someone came at him, the pickpocket caught)"),

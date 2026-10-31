@@ -116,7 +116,7 @@ namespace EnrageWestworld.InGame
                 return "too far";
             bool record = IsRecord(target);
             if (MISC.GET_MISSION_FLAG() || PED.IS_PED_IN_COMBAT(target, 0) || PED.IS_PED_FLEEING(target) || PED.IS_PED_RAGDOLL(target) || PED.IS_PED_ON_MOUNT(target) ||
-                PED.IS_PED_IN_ANY_VEHICLE(target, false) || _director.Involves(target) || NotFree(target) || Spawner.IsOurs(target) ||
+                PED.IS_PED_IN_ANY_VEHICLE(target, false) || _director.Involves(target) || (NotFree(target) && !LonelyWaiting(target)) || Spawner.IsOurs(target) ||   // the lonely one waits for exactly this
                 (record ? _bridge.EnrageFighter(target) || _bridge.Interrogating : Natives.OtherScripts(target)))
                 return "busy";
             string id, name, temper;

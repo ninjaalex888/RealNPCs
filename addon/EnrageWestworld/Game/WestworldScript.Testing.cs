@@ -388,6 +388,9 @@ namespace EnrageWestworld.InGame
                 case "space":
                     skipped = "standing a metre off for two seconds, the 20 s between and the five minutes a person";
                     return SpaceTest(now);   // WestworldScript.Space.cs
+                case "lonely":
+                    skipped = "being lonely, knowing you, being in a town and the pace";
+                    return LonelyTest(now);   // WestworldScript.Lonely.cs
                 case "thanks":
                     skipped = "the six game hours after the kindness, being in a town, the pace and the once-only mark";
                     return ThanksTest(now);   // WestworldScript.Thanks.cs
