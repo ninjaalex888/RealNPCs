@@ -1994,7 +1994,11 @@ namespace EnrageWestworld.Core
 				{
 					Thought(survivor.Id, "Grieving", dead.FirstName, -4, 120);
 					History(survivor.Id, "LOST " + dead.Name);
-					if (dead.KilledByPlayer)
+					if (dead.KilledByPlayer && !YourKillKnown(dead.Id, dead.Name))
+					{
+						Log("ROMANCE " + survivor.Name + " grieves " + dead.Name + "; nobody saw who killed " + (dead.Woman ? "her" : "him") + ".");   // the kin word's rule (Engine.World.cs)
+					}
+					else if (dead.KilledByPlayer)
 					{
 						string text = ((a.Stage < 5) ? ((a.Stage < 4) ? "sweetheart" : (dead.Woman ? "fiancee" : "fiance")) : (dead.Woman ? "wife" : "husband"));
 						Remember(survivor.Id, "Grief", 80, "you killed " + survivor.His + " " + text + ", " + dead.Name, "you");

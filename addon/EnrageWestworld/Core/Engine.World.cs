@@ -135,7 +135,9 @@ namespace EnrageWestworld.Core
                 {
                     PersonId = p.Id, Name = p.Name, Woman = p.Woman, DiedAt = now, ByPlayer = p.KilledByPlayer, Buried = p.Buried,
                     Place = note != null ? note.Place : null, How = note != null ? note.How : null, Headshot = note != null && note.Headshot,
-                    Killer = p.KilledByPlayer ? Player.FullName : null, Rolled = true
+                    Killer = p.KilledByPlayer ? Player.FullName : null, Rolled = true,
+                    // whether anyone saw it, WordOfMouth or not: the kin walk-up and the funeral read it (Life.cs)
+                    Unwitnessed = p.KilledByPlayer && !KillWitnessed(p.Id, p.Name)
                 };
                 if (Cfg.Reveries && !p.Lore && _rng.Next(100) < Cfg.ReturnChance)
                     r.WakeAt = now + 1440 + _rng.Next(1440 * 4);
@@ -159,11 +161,19 @@ namespace EnrageWestworld.Core
         /// Whether anyone saw the player kill this person: the killing's deed when one was made (its Witnesses, everyone
         /// alive within 35 m), else the count noted at the kill; self-defence is unseen (no crime, nobody to say it was
         /// him). Not known (the game layer never saw the kill, or an execution's) stays witnessed, as before.
-        public bool KillWitnessed(string personId)
+        public bool KillWitnessed(string personId, string name = null)
         {
             DeathNote note;
-            if (personId == null || !_deathNotes.TryGetValue(personId, out note))
+            if (personId == null)
                 return true;
+            if (!_deathNotes.TryGetValue(personId, out note))
+            {
+                // no note (the notes aren't saved: a reload between the kill and enRAGE's roster showing him dead): the
+                // killing's deed, if one was made for him in the last two hours; nothing at all stays witnessed
+                long t = Store.LastGameMin;
+                Deed k = name == null ? null : Store.Deeds.LastOrDefault(x => x.Kind == "namedkill" && x.Detail == name && t - x.At >= 0 && t - x.At <= 120);
+                return k == null || (!k.Unseen && k.Witnesses > 0);
+            }
             if (note.Defended)
                 return false;
             Deed d = note.DeedId != null ? Store.Deeds.LastOrDefault(x => x.Id == note.DeedId) : null;
@@ -191,7 +201,7 @@ namespace EnrageWestworld.Core
         public static string KinWordRule(Rumor r)
         {
             if (r == null || !r.Unwitnessed)
-                return "witnessed";
+                return r != null && r.NotByYou ? "witnessed, not by you" : "witnessed";
             return r.Found != null ? "unwitnessed: body found, " + r.Found : "unwitnessed: long delay";
         }
 
@@ -200,7 +210,7 @@ namespace EnrageWestworld.Core
             PersonState st = Store.Get(p);
             if (st.Family == null)
                 st.Family = Family.For(p);
-            bool unseen = byYou && !KillWitnessed(p.Id);
+            bool unseen = byYou && !KillWitnessed(p.Id, p.Name);
             DeathNote note;
             _deathNotes.TryGetValue(p.Id, out note);
             string found;
@@ -259,6 +269,32 @@ namespace EnrageWestworld.Core
             Reverie rv;
             if (id != null && Store.Reveries.TryGetValue(id, out rv))
                 rv.Unwitnessed = unwitnessed;
+        }
+
+        /// Whether it's known the player killed this person: the reverie's mark when there is one, else the kill's note or
+        /// deed (a romance ended by the death, the funeral). False when he didn't kill him.
+        public bool YourKillKnown(string id, string name = null)
+        {
+            Reverie rv;
+            if (id != null && Store.Reveries.TryGetValue(id, out rv))
+                return rv.ByPlayer && !rv.Woke && !rv.Unwitnessed;
+            Person p = id != null ? Find(id) : null;
+            return p != null && p.KilledByPlayer && KillWitnessed(id, name ?? p.Name);
+        }
+
+        /// Whether this relative of `st` knows the player killed him, for the walk-up in their own town (Life.cs): the
+        /// killing was seen, and word of the death has reached them (2-5 game days on); with WordOfMouth off no word goes,
+        /// so they know once KinWordDaysMin days have passed. Null when he isn't a man the player killed.
+        public bool? KinKnowsYouKilled(PersonState st, Relative rel, long now)
+        {
+            Reverie rv;
+            if (st == null || rel == null || st.Id == null || !Store.Reveries.TryGetValue(st.Id, out rv) || !rv.ByPlayer || rv.Woke)
+                return null;
+            if (rv.Unwitnessed)
+                return false;
+            if (!Cfg.WordOfMouth)
+                return now - rv.DiedAt >= Cfg.KinWordDaysMin * 1440L;
+            return rel.Heard != null && rel.Heard.Any(h => h != null && h.FromId == st.Id && h.Text == "died");
         }
 
         /// Before delivery: a pending death's word changes rule as what's known of the killing changes.

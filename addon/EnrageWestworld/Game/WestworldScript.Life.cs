@@ -1119,7 +1119,9 @@ namespace EnrageWestworld.InGame
                     _recById.TryGetValue(f.Dead, out deadRec);
                 Person dead = deadRec != null ? PersonOf(deadRec) : null;
                 string name = deadRec != null ? deadRec.Name : "him";
-                bool byYou = deadRec != null && deadRec.KilledByPlayer;
+                Reverie drv;
+                bool byYou = deadRec != null && deadRec.KilledByPlayer &&
+                             !(_store.Reveries.TryGetValue(f.Dead, out drv) && drv.Unwitnessed && !drv.Woke);   // nobody saw it: the mourners don't know it was you
                 List<Ped> mourners = World.GetAllPeds().Where(p => !ENTITY.IS_ENTITY_DEAD(p.Handle) && PED.IS_PED_HUMAN(p.Handle) && p.Handle != Game.Player.Character.Handle &&
                                                               p.Position.DistanceTo2D(f.Pos) < 16f).Take(3).ToList();
                 List<string> lines = Scenes.Eulogy(name, dead, byYou, true, key);
@@ -1231,8 +1233,9 @@ namespace EnrageWestworld.InGame
             long g = _store.LastGameMin;
             var kin = _store.People.Values.Where(st => st.Family != null).SelectMany(st => st.Family.Select(r => new { st, r }))
                 .Where(x => x.r.Town == _placeTown && !_store.Avengers.Any(a => a.Name == x.r.Name && a.Stage < 3) &&
-                            (x.st.Talks > 0 || x.r.Heard.Count > 0 || (_store.Reveries.ContainsKey(x.st.Id) && _store.Reveries[x.st.Id].ByPlayer)) &&
-                            !(_store.Reveries.ContainsKey(x.st.Id) && _store.Reveries[x.st.Id].Unwitnessed && !_store.Reveries[x.st.Id].Woke))   // killed with nobody to see it: his kin don't know you
+                            // a man you killed: his kin only once word of it has reached them and it knows it was you (nobody
+                            // saw it: they never know); anyone else's kin as before
+                            (_engine.KinKnowsYouKilled(x.st, x.r, g) ?? (x.st.Talks > 0 || x.r.Heard.Count > 0)))
                 .OrderBy(x => _rng.Next()).ToList();
             if (kin.Count == 0)
             {
@@ -1675,8 +1678,7 @@ namespace EnrageWestworld.InGame
             Relative r = cast.Key;
             PersonState st = _store.Find(cast.Value);
             Person p = _engine.Find(cast.Value) ?? new Person { Id = cast.Value, Name = st != null ? st.Name : "him" };
-            Reverie rv;
-            bool killed = st != null && _store.Reveries.TryGetValue(st.Id, out rv) && rv.ByPlayer && !rv.Woke;
+            bool killed = _engine.KinKnowsYouKilled(st, r, _store.LastGameMin) == true;   // seen, and the word has reached them
             string first = Person.FirstOf(p.Name ?? "");
             string kin = Engine.KinWord(r.Relation, p.Woman);
             List<string> lines = new List<string>();
