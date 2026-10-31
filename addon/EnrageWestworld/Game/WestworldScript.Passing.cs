@@ -303,7 +303,7 @@ namespace EnrageWestworld.InGame
             return (_bodyClear != null && _bodyClear.Law == h) || (_theft != null && _theft.Lawman != null && _theft.Lawman.Handle == h);   // the law at work too: a body, a lash-out, a chase (the cross-cutting review)
         }
 
-        /// Someone is coming up to Arthur already, or he's taken up (the Talk menu, a pickpocket at work): one at a time, for
+        /// Someone is coming up to Arthur already, or he's taken up (the Talk menu, a pickpocket at work): never two walk-ups together, for
         /// every walk-up's starter (the cross-cutting review: only thanks and the lonely asked all of these).
         private bool WalkUpGoing()
         {
