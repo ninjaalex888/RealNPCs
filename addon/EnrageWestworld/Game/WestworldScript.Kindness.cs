@@ -46,7 +46,7 @@ namespace EnrageWestworld.InGame
             }
             if (!test && now < _nextFall)
                 return false;
-            _nextFall = now + FallLookMs;
+            _nextFall = now + (int)(FallLookMs * Story.WalkLook);   // (x the storyteller's)
             long g = _store.LastGameMin;
             string skipped;
             string pace = Pacing.WhyNot(_store.Pace, "fall", _placeTown, null, g, _rng.Next(100), test, out skipped);   // the rarity first: no scan for nothing

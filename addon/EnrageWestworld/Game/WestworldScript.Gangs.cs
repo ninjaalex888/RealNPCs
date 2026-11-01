@@ -140,6 +140,7 @@ namespace EnrageWestworld.InGame
             _gangLast = Many(bestA) + " against " + Many(bestB);
             Log.Write("GANG " + Many(bestA) + " (" + f.SideA.Count + ") and " + Many(bestB) + " (" + f.SideB.Count + ") meet " + (int)pa.Position.DistanceTo(at) + " m from you" +
                       (war ? ", at war by enRAGE's word" : "") + ": a shootout");
+            StoryNoticed("gang", 3, pa.Position.DistanceTo(at));   // the storyteller (WestworldScript.Story.cs)
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(pa.Handle, true);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(pb.Handle, true);
             TASK.TASK_GO_TO_ENTITY(pa.Handle, pb.Handle, 12000, 2f, 16f, 0f, 0);

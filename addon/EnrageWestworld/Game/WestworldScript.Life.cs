@@ -101,7 +101,7 @@ namespace EnrageWestworld.InGame
                 };
             }
             if (_nextDrama < 0)
-                _nextDrama = now + 45000;
+                _nextDrama = now + (int)(45000 * Story.Drama);   // the first after a load (x the storyteller's, WestworldScript.Story.cs)
             if (!_cfg.Drama || now < _nextDrama || Feed.Busy || _stalker != null || _wedding != null || _theft != null || _plea != null || _visitor != null)
             {
                 if (_cfg.Drama && now < _nextDrama)
@@ -151,7 +151,7 @@ namespace EnrageWestworld.InGame
                 List<Candidate> people = ReasonCandidates(me, now);
                 found = people.Count >= 2 ? PairReasons(people, saloon, MainPerMetre(people.Count)) : new List<PairReason>();
                 int strongest = found.Count > 0 ? found.Max(x => x.Why.Strength) : 0;
-                if (strongest < ChanceFirstBelow)
+                if (strongest < ChanceFirstBelow)   // 50 as built; the storyteller raises it on a quiet street
                 {
                     _chanceFirstTried++;
                     chanceTried = true;
@@ -169,14 +169,18 @@ namespace EnrageWestworld.InGame
                 ChanceScene(pool, me, saloon, now);   // (not twice in a tick: ChanceFirst's turn already tried it)
         }
 
-        private const int ChanceFirstBelow = 50;
+        private int ChanceFirstBelow { get { return Story.ChanceFirstBelow; } }   // 50 as built (StoryMults.Neutral); 45-65 by the storyteller
         private int _chanceFirstTried, _chanceFirstPlayed, _farHeldSkipped;
 
         /// Main scenes: points off a pair's strength for each metre from you (NIGHT4 fix 7, ChanceFirst: 3 with six or more free,
-        /// so the scene is one you see; 2 as before in a thin street, where a far pair is all there is).
+        /// so the scene is one you see; 2 as before in a thin street, where a far pair is all there is). With ChanceFirst, the
+        /// storyteller's multiplier on a quiet street brings the scene nearer (2-4).
         private float MainPerMetre(int free)
         {
-            return _cfg.ChanceFirst && free >= 6 ? 3f : 2f;
+            if (!_cfg.ChanceFirst)
+                return 2f;
+            float b = free >= 6 ? 3f : 2f, m = Story.PerMetre;
+            return m == 1f ? b : Math.Max(2f, Math.Min(4f, b * m));
         }
 
         /// A chance meeting between the two standing closest (nobody with a reason, or ChanceFirst's turn). True if one started.
@@ -269,7 +273,7 @@ namespace EnrageWestworld.InGame
             if (!StartScene(s, people, cast, seed, now))
                 return false;
             NoteMainScene(s.Kind, Math.Min(a.Position.DistanceTo(me.Position), b.Position.DistanceTo(me.Position)), true);
-            _nextChance = now + (int)(_cfg.DramaGapSeconds * 1000);   // x1.5 until 2026-10-30 (Lex: more at once)   // was x3 (Lex, 2026-10-29: the chance meetings carry the lively kinds: songs, tales, haggling, small talk); from the start, not the try (2026-10-30)
+            _nextChance = now + (int)(_cfg.DramaGapSeconds * 1000 * Story.Chance);   // (x the storyteller's)   // x1.5 until 2026-10-30 (Lex: more at once)   // was x3 (Lex, 2026-10-29: the chance meetings carry the lively kinds: songs, tales, haggling, small talk); from the start, not the try (2026-10-30)
             return true;
         }
 
@@ -471,9 +475,17 @@ namespace EnrageWestworld.InGame
                 // a quiet talk beside the scene: its words are noted at once (Director.Quiet: nothing in it waits for a cue)
                 if (!_director.Start(s, people, names, seed, () => { }, cast, true, _cfg.ScenesAtOnce - 1))
                     return false;
-                _nextSide = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.25 + _rng.NextDouble() * 0.2));   // 0.4-0.7 of the gap until 2026-10-30 (Lex: more at once)
+                _nextSide = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.25 + _rng.NextDouble() * 0.2) * Story.Side);   // (x the storyteller's)   // 0.4-0.7 of the gap until 2026-10-30 (Lex: more at once)
                 var q = new Pending { S = s, People = new List<Ped>(people), Names = names };
-                NoteHappened(q, s.Kind);
+                _storyNotingSide = true;   // a quiet talk is never notable to the storyteller
+                try
+                {
+                    NoteHappened(q, s.Kind);
+                }
+                finally
+                {
+                    _storyNotingSide = false;
+                }
                 NoteInScene(people, s.Kind, now);
                 Onlookers(people);
                 return true;
@@ -482,7 +494,8 @@ namespace EnrageWestworld.InGame
             {
                 if (test)
                     MarkTestPeople(people, now);   // what happens to its cast for a while is the test's: never a hush (WestworldScript.TownMood.cs)
-                _nextDrama = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.75 + _rng.NextDouble() * 0.5) * (_hush && !test ? TownMood.HushGap : 1f));
+                int gap = (int)(_cfg.DramaGapSeconds * 1000 * (0.75 + _rng.NextDouble() * 0.5) * (_hush && !test ? TownMood.HushGap : 1f));
+                _nextDrama = now + Math.Max(Math.Min(gap, 20000), (int)(gap * Story.Drama));   // the storyteller's (WestworldScript.Story.cs), never under 20 s by it
                 if (TroubleKinds.Contains(s.Kind))
                 {
                     int c;
@@ -1654,7 +1667,10 @@ namespace EnrageWestworld.InGame
             _kinLast = w.R.Name + " (" + w.R.Relation + " of " + w.StateName + ") reached you, " + how;
             Log.Write("CAST " + _kinLast);
             if (!w.Test)
+            {
                 Pacing.Note(_store.Pace, "kin", w.Town, w.R.Name, _store.LastGameMin);
+                StoryNoticed("you:kin", 2, 2f);   // (at his side: the storyteller, WestworldScript.Story.cs)
+            }
         }
 
         /// The walk is over without a meeting: the body goes about its day, and the next look waits a minute. After the

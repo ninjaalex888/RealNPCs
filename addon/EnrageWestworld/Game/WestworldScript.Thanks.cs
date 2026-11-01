@@ -70,7 +70,7 @@ namespace EnrageWestworld.InGame
         /// Someone near who owes him thanks comes over (or nods). Null if it started, else why not.
         private string ThanksLook(Ped me, int now, bool test)
         {
-            _nextThanks = now + ThanksLookMs;
+            _nextThanks = now + (int)(ThanksLookMs * Story.WalkLook);   // (x the storyteller's)
             if (WalkUpGoing())
                 return _thanksWhyNot = "someone is already coming up to you, or you're in the Talk menu";
             if (!test && (_placeTown == null || _director.Busy))
@@ -118,7 +118,10 @@ namespace EnrageWestworld.InGame
                 if (pace != null)
                     continue;
                 if (!test)
+                {
                     Pacing.Note(_store.Pace, "thanks", _placeTown, id, g);   // a test leaves the real one its turn
+                    StoryNoticed("you:thanks", 2, p.Position.DistanceTo(me.Position));   // the storyteller (WestworldScript.Story.cs)
+                }
                 string who = name ?? TalkName(p), seed = id + "|" + owed.Key;
                 float metres = p.Position.DistanceTo(me.Position);
                 if (way == "nod")

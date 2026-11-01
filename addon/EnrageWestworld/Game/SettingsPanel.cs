@@ -94,6 +94,7 @@ namespace EnrageWestworld.InGame
             { "NewsTo", new[] { "corner", "ticker", "gamefeed" } },
             { "Subtitles", new[] { "game", "ours", "both", "off" } },
             { "NameCards", new[] { "off", "known", "everyone" } },
+            { "Storyteller", new[] { "off", "calm", "lively", "wild" } },
             { "WarNewsTo", new[] { "feed", "corner", "ticker" } },
             { "TownPostsAfterDeath", new[] { "survive", "successor" } },
             { "GatheringHours", new[] { "any", "night" } }
@@ -148,7 +149,7 @@ namespace EnrageWestworld.InGame
             { "QuietWhenStill", "Hold enRAGE while you stand still" }, { "QuietStillSeconds", "Standing still for (seconds)" },
             { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" },
             { "Regulars", "Each town keeps its own people" }, { "RegularsPerTown", "Regulars in each town" }, { "RegularsDress", "Regulars wear their own clothes" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
-            { "SelfDefenceNoBounty", "No bounty for self-defence" },
+            { "SelfDefenceNoBounty", "No bounty for self-defence" }, { "Storyteller", "How lively the world is (calm, lively, wild; off as before)" },
             { "NameCards", "Names over heads (off, known, everyone)" }, { "WhosWho", "Who's who in the papers" }, { "NameCardsMetres", "Strangers' names within (metres)" }, { "NameCardsKnownMetres", "Known people's names within (metres)" }, { "NameCardsBesideEnrage", "Ours beside enRAGE's own cards too" }, { "NameCardsSecondLine", "Personality line under the names" }, { "ScenesAtOnce", "Street scenes at once (1-6)" }, { "ChanceMeetMetres", "Chance meetings within (metres)" }, { "Aftermath", "After a fight: a friend tends, the law asks (with MindLive)" }, { "NightScenes", "At night: muggings, drunks taken home (with MindLive)" }, { "FightCrowds", "A crowd rings a fight and cheers (with MindLive)" }, { "HorseThieves", "Horse thieves (with MindLive)" }, { "NameCardsStrangerNames", "Strangers' names (else just Stranger)" }, { "NameCardsAlways", "Names always on (not hidden by things in the way)" },
             { "FeelingBars", "Bars under people: fear, fondness, anger" }, { "ResetAtClerk", "Reset RealNPCs Memory at a station clerk" }, { "PanelShowsAll", "Show every setting (and the Testing page)" }, { "FeelingBarsMetres", "For people within (metres)" }, { "FeelingBarsShowEmpty", "Show the empty part of each bar" }, { "GrudgeMeter", "Grudge meter (top right)" },
             { "Encounters", "Encounters (master switch)" }, { "EncounterEveryMinutes", "Roll for an encounter every (real minutes)" },
@@ -1538,7 +1539,7 @@ namespace EnrageWestworld.InGame
         public bool ShowAll;
         private static readonly string[][] Essentials =
         {
-            new[] { "The world", "WestWorld", "Bravery", "Stalkers", "StalkerEveryMinutes", "StalkerChance", "StalkerBlack", "Encounters", "Romance", "ScenesAtOnce" },
+            new[] { "The world", "WestWorld", "Bravery", "Storyteller", "Stalkers", "StalkerEveryMinutes", "StalkerChance", "StalkerBlack", "Encounters", "Romance", "ScenesAtOnce" },
             new[] { "Things that happen to you", "Lifts" },   // the pickpocket (Lex, 2026-10-30: not one of the world's big switches)
             new[] { "On the screen", "NameCards", "NameCardsAlways", "NameCardsMetres", "NameCardsSecondLine", "NameCardsStrangerNames", "FeelingBars", "GrudgeMeter", "Ticker", "TickerShowsScene", "ThoughtsOverHeads", "Subtitles" },
             new[] { "The law", "SelfDefenceNoBounty" },

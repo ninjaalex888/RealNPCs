@@ -543,6 +543,8 @@ namespace EnrageWestworld.InGame
             _stalkerPendingUntil = now + 25000;
             Log.Write("STALKER begins: " + label + (f != null ? " (killed " + (f.Town ?? f.Zone ?? "somewhere") + ")" : " (a stranger)") + (test ? " (key)" : "") +
                       ", game time " + Clock(Bridge.Now()));
+            if (!test)
+                StoryNoticed("you:stalker", 2, 0f);   // someone after him: the storyteller (WestworldScript.Story.cs)
         }
 
         /// One line for the F7 test dump.

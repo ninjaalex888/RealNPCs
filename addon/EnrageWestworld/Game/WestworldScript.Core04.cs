@@ -1094,6 +1094,7 @@ namespace EnrageWestworld.InGame
             if (MISC.GET_MISSION_FLAG())
             {
                 Safe("mission pause", _aMission);
+                StoryHold(now);   // the storyteller holds every wait as built in a mission (WestworldScript.Story.cs)
                 return;
             }
             if (_missionPaused)
@@ -1115,6 +1116,7 @@ namespace EnrageWestworld.InGame
             HookupsStep(now);     // CasualHookups' scene may take the controls too (WestworldScript.Hookups.cs)
             if (!PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle))
                 return;
+            StoryStep(now);   // the storyteller: the street's, the walk-ups' and the encounters' waits by how long it's been quiet near you (WestworldScript.Story.cs)
             QuietStep(now);
             PostsStep(now);
             RegularsStep(now);

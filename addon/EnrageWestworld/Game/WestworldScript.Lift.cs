@@ -51,7 +51,7 @@ namespace EnrageWestworld.InGame
             }
             if (!_cfg.Lifts || _theft != null || now < _liftLookAt)
                 return;
-            _liftLookAt = now + 60000;
+            _liftLookAt = now + (int)(60000 * Story.WalkLook);   // (x the storyteller's)
             string why;
             LiftStart(now, false, out why);
         }
@@ -105,6 +105,8 @@ namespace EnrageWestworld.InGame
             _lifterNearest = 999f;
             _lifterModel = ENTITY.GET_ENTITY_MODEL(pick.Handle);
             Pacing.Note(_store.Pace, "lift", _placeTown, null, g);
+            if (!test)
+                StoryNoticed("you:lift", 3, pick.Position.DistanceTo(me.Position));   // the storyteller (WestworldScript.Story.cs)
             NoteInScene(new[] { pick }, "lift", now);
             if (PED.IS_PED_USING_ANY_SCENARIO(pick.Handle))
                 TASK.CLEAR_PED_TASKS(pick.Handle, true, false);

@@ -112,7 +112,7 @@ namespace EnrageWestworld.InGame
             }
             if (EncountersFull || !_cfg.Encounters)
                 return;   // up to [Encounters] EncountersAtOnce at once, the stalker among them (Lex, 2026-10-27: it was one)
-            int every = _cfg.EncounterEveryMinutes * 60000;
+            int every = (int)(_cfg.EncounterEveryMinutes * 60000 * Story.EncounterEvery);   // x the storyteller's, 0.5-1.25 (WestworldScript.Story.cs): the re-arm below takes a shorter one at once
             if (_nextEncounterRoll == 0 || _nextEncounterRoll - now > every)
             {
                 _nextEncounterRoll = now + every;   // the first, or the interval was made shorter
@@ -408,6 +408,9 @@ namespace EnrageWestworld.InGame
 
         private bool EncounterRoll(string what, int chance)
         {
+            float scale = Story.EncounterChance;   // the storyteller's, 0.75-1.6, never over 60% by it
+            if (scale != 1f)
+                chance = scale > 1f ? Math.Min(Math.Max(chance, 60), (int)Math.Round(chance * scale)) : (int)Math.Round(chance * scale);
             bool hit = _rng.Next(100) < chance;
             Log.Write("Encounter roll, " + what + " (" + chance + "%): " + (hit ? "yes" : "no"));
             return hit;

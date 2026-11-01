@@ -149,6 +149,7 @@ namespace EnrageWestworld.InGame
             string foeName = fw != null && fw.Name != null ? fw.Name : "the man you're fighting";
             Log.Write("BRAWL joins your fight: " + bestName + (best.Side == 0 ? " takes your side and goes for " + foeName : " takes " + foeName + "'s side and comes at you") +
                       " (" + best.Why + "; " + witnesses + " watching" + (_placeKind == "saloon" ? ", a saloon" : "") + ")");
+            StoryNoticed("you:brawl", 2, 0f);   // the storyteller (WestworldScript.Story.cs)
         }
     }
 }

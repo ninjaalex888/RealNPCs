@@ -42,7 +42,7 @@ namespace EnrageWestworld.InGame
             }
             if (!test && now < _nextGrudge)
                 return false;
-            _nextGrudge = now + GrudgeLookMs;
+            _nextGrudge = now + (int)(GrudgeLookMs * Story.WalkLook);   // (x the storyteller's)
             long g = _store.LastGameMin;
             string skipped0;
             string pre = Pacing.WhyNot(_store.Pace, "grudge", _placeTown, null, g, _rng.Next(100), test, out skipped0);
@@ -141,7 +141,7 @@ namespace EnrageWestworld.InGame
             }
             if (!test && (now < _nextGrudgeYou || _placeTown == null))
                 return false;
-            _nextGrudgeYou = now + GrudgeLookMs;
+            _nextGrudgeYou = now + (int)(GrudgeLookMs * Story.WalkLook);   // (x the storyteller's)
             if (!test && (PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0 || PED.IS_PED_IN_COMBAT(me.Handle, 0) || PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle)))
             {
                 why = "you're wanted, fighting or aiming";
@@ -163,6 +163,8 @@ namespace EnrageWestworld.InGame
                     return false;
                 }
                 Pacing.Note(_store.Pace, "grudge", _placeTown, c.Who.Id, g);
+                if (!test)
+                    StoryNoticed("you:grudge", 2, c.Ped.Position.DistanceTo(me.Position));   // the storyteller (WestworldScript.Story.cs)
                 string seed = c.Who.Id + "|" + deadId;
                 int h = c.Ped.Handle;
                 _grudgesYou++;

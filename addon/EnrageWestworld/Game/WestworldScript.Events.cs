@@ -63,6 +63,8 @@ namespace EnrageWestworld.InGame
                     e.Witnesses.Add(new EventWitness { Id = "player", Name = "you", Metres = (float)System.Math.Round(pm, 1), How = how });
             }
             _eventsNoted++;
+            if (!e.Test && !_storyNotingSide)
+                StoryNoticed(kind, StoryMeter.Weight(kind, doerId == "player"), me.Position.DistanceTo(at));   // the storyteller weighs it (WestworldScript.Story.cs; 0 for the everyday kinds)
             return _engine.NoteEvent(e);
         }
 

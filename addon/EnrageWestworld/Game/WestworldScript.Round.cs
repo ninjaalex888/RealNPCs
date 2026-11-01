@@ -54,7 +54,7 @@ namespace EnrageWestworld.InGame
             int clock = CLOCK.GET_CLOCK_HOURS();
             if (!test && (now < _nextRound || !(clock >= 17 || clock < 2)))
                 return false;
-            _nextRound = now + RoundLookMs;
+            _nextRound = now + (int)(RoundLookMs * Story.WalkLook);   // (x the storyteller's)
             long g = _store.LastGameMin;
             string skipped0;
             string pre = Pacing.WhyNot(_store.Pace, "round", _placeTown, null, g, _rng.Next(100), test, out skipped0);   // the rarity first: no scan for nothing

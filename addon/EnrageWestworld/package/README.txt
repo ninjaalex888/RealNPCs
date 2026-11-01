@@ -920,6 +920,11 @@ LIVES IN MOTION
   with drink in him in a saloon at night. In saloons they trade
   the rumours going round, and loose talk can give away a gang job, which then shows up in
   enRAGE like any other tip.
+- The storyteller ([World] Storyteller, on the Essentials page: calm, lively as it comes, wild,
+  or off as before). When nothing worth stopping for has happened near you for a while, the next
+  street scene, chance meeting, walk-up and encounter roll come sooner; after something big, a
+  little later for half a minute or so. It only changes the waits: it never starts or stops
+  anything itself, and holds everything as built in a mission, a fight, while wanted or indoors.
 - Weddings: when two of enRAGE's people get engaged, a wedding is set at the church in their town.
   The banns are posted (and printed in the paper); friends of yours get an invitation. Be there
   at the time and you'll see it, and they'll remember you came. Draw a gun or start shooting and
@@ -1130,7 +1135,9 @@ in the file. The new ones:
             0 is the game's own way. InteractionMenu (true): Talk in the lock-on menu, TalkKey (Q:
             the game's lock-on target-info control; another key, e.g. T, is read directly while the
             prompt is up; None: a pad's RB only). LawClearsBodies (true), PersonalSpace (true) with
-            SpaceMetres (0.95), SpaceSaloonMetres (0.75), SpaceSeconds (1.8), ArthurSpeaks (true)
+            SpaceMetres (0.95), SpaceSaloonMetres (0.75), SpaceSeconds (1.8), ArthurSpeaks (true),
+            Storyteller (lively | calm | wild | off): quiet streets and roads get the next scene,
+            walk-up and encounter roll sooner, something big a short breather; off is as before
 [Features]  KinWordDaysMin (2), KinWordDaysMax (5): game days for word of a killing someone saw to
             reach kin; UnseenKinWordDaysMin (5), UnseenKinWordDaysMax (10): for one nobody saw
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 166;
+        public const int CurrentVersion = 167;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -226,6 +226,7 @@ namespace EnrageWestworld.Core
         public bool CastRelatives = true;
         public bool CastRelativesSpawn = true;   // when nobody free is on the street (enRAGE has named most walkers in a well-played town), the relative is made out of sight behind you and let go to the game after (Lex, 2026-10-29; settings version 95)
         public int Bravery = EnrageWestworld.Core.Bravery.AsBuilt;   // [World] how brave the townsfolk are, 0-100: the brave hold their ground where the game would send them running (PCF 44, cower instead of flee), and stand back from the mod's own frights; 0 as the game has it (Lex, 2026-10-31; settings version 161)
+        public string Storyteller = "lively";   // [World] off | calm | lively | wild: the storyteller shortens the waits on a quiet street or road and lengthens them a little after something big; it never starts anything itself (NIGHT4 item 2; settings version 167)
         public bool OwnLooks = false;   // [World] standing alone: an ordinary person is known again by the look of the body they were met in (the model and every piece they wear), so the same townsman met again is the same man (roadmap 34, phase A; night 2026-10-29, item 5; settings version 110); off as it comes until seen in game; with enRAGE running, its own knowing by look is used and this never
         public bool Drama = true;
         public int DramaGapSeconds = 60;   // 150 until settings version 87, 90 until 101 (Lex, 2026-10-28 and 10-29: the world lively)
@@ -715,6 +716,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: the street's hush now follows only the latest killing in a town, for HushHours (" + F(s.HushHours) + ") game hours, Saint Denis HushHoursSaintDenis (" + F(s.HushHoursSaintDenis) + "); HushFear and HushFearSaintDenis are gone (Lex in Saint Denis, 2026-10-31: brawls kept the street hushed).");   // the old keys are skipped on reading and not written again
                 if (s.SettingsVersion < 166)
                     log?.Invoke("Settings: new in this version: [Mind] MindActsSeatedLooks, MindRetries, [Scenes] ReasonVariety, ChanceFirst (all on; the minds act on more of their choices, the street's reasons and chance meetings take turns).");
+                if (s.SettingsVersion < 167)
+                    log?.Invoke("Settings: new in this version: [World] Storyteller (lively; calm, wild or off as before): quiet streets and roads get the next scene, walk-up or encounter sooner, and something big a short breather.");
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -853,6 +856,8 @@ namespace EnrageWestworld.Core
             FeelingBarsMetres = Math.Max(3f, Math.Min(40f, FeelingBarsMetres));
             string nc = (NameCards ?? "known").Trim().ToLowerInvariant();
             NameCards = nc == "off" || nc == "everyone" ? nc : "known";
+            string sto = (Storyteller ?? "lively").Trim().ToLowerInvariant();
+            Storyteller = sto == "off" || sto == "calm" || sto == "wild" ? sto : "lively";
             NameCardsMetres = Math.Max(5f, Math.Min(150f, NameCardsMetres));
             NameCardsKnownMetres = Math.Max(5f, Math.Min(150f, NameCardsKnownMetres));
         }
@@ -1070,6 +1075,7 @@ namespace EnrageWestworld.Core
             b.AppendLine();
             b.AppendLine("[World]");
             b.AppendLine("Bravery = " + Bravery + "   ; how brave the townsfolk are, 0-100: in a fistfight nobody runs, they gather and watch; with guns most hold their ground and the odd coward still runs; the mod's own frights (an onlooker hurrying off, a fright that spreads, a man a gun is drawn on) mostly stand back and watch instead. Someone you aim at or lock on to is left as the game has them, so hold-ups and robbery work as before. Never lawmen, story characters, mission people or enRAGE's. 0: as the game has it");
+            b.AppendLine("Storyteller = " + Storyteller + "   ; how lively the world is around you: the storyteller notices how long it has been since something worth stopping for happened near you (a fight, a theft, a standoff, a song, someone coming up to you, an encounter on the road) and, when it has been quiet too long, shortens the waits before the next scene, chance meeting, walk-up and encounter roll; after something big it waits a little longer for half a minute or so. It never starts anything itself and never stops anything. calm (a quieter world than before), lively, wild; off: as before. In a mission, wanted, in a fight or indoors it holds everything as built");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");
             b.AppendLine("SelfDefenceNoBounty = " + B(SelfDefenceNoBounty) + "   ; killing or hurting someone who came at you (soldiers too) doesn't raise your bounty or make you wanted: RealNPCs puts it back, unless you also hurt someone who didn't, or did another crime");
             b.AppendLine("TownPosts = " + B(TownPosts) + "   ; the shopkeepers, barkeeps, gunsmiths, doctors and station agents are each one person for good, who knows you; when one dies, a relative or a newcomer takes the counter");

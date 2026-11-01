@@ -74,7 +74,7 @@ namespace EnrageWestworld.InGame
         /// Someone lonely near who knows him comes over. Null if it started, else why not.
         private string LonelyLook(Ped me, int now, bool test)
         {
-            _nextLonely = now + LonelyLookMs;
+            _nextLonely = now + (int)(LonelyLookMs * Story.WalkLook);   // (x the storyteller's)
             if (WalkUpGoing())
                 return _lonelyWhyNot = "someone is already coming up to you, or you're in the Talk menu";
             if (!test && (_placeTown == null || _director.Busy))
@@ -129,7 +129,10 @@ namespace EnrageWestworld.InGame
                 if (pace != null)
                     continue;
                 if (!test)
+                {
                     Pacing.Note(_store.Pace, "lonely", _placeTown, w.Id, g);
+                    StoryNoticed("you:lonely", 2, p.Position.DistanceTo(mePos));   // the storyteller (WestworldScript.Story.cs)
+                }
                 float metres = p.Position.DistanceTo(mePos);
                 int walkMs = Math.Min(25000, 4000 + (int)(900 * metres));
                 TASK.TASK_GO_TO_ENTITY(h, me.Handle, walkMs, 2.0f, 1.0f, 0f, 0);

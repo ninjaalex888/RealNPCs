@@ -831,7 +831,7 @@ namespace EnrageWestworld.InGame
             if (!_sceneAtHandle.TryGetValue(h, out at) || now < at)
                 return false;
             if (!_restMsOf.TryGetValue(h, out ms))
-                ms = PersonRestMs;
+                ms = Story.PersonRest == 1f ? PersonRestMs : (int)(PersonRestMs * Story.PersonRest);   // the storyteller's, x0.6-1.25 (never the fighters' rest in _restMsOf)
             // a trouble weight over 1 shortens the rests too: in a thin town everyone near has just been in a scene
             // (Lex, 2026-10-28: "there isn't many people in town"); at most by half since NIGHT4 (at 5 it was 24 s: one man in seven scenes in three minutes)
             ms = Reasons.RestFor(ms, _cfg.TroubleWeight);   // (at most halved, never under a minute: NIGHT4 fix 6)

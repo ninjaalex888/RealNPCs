@@ -48,7 +48,7 @@ namespace EnrageWestworld.InGame
             int clock = CLOCK.GET_CLOCK_HOURS();
             if (!test && (now < _nextDrink || !(clock >= 12 || clock < 4)))
                 return false;
-            _nextDrink = now + DrinkLookMs;
+            _nextDrink = now + (int)(DrinkLookMs * Story.WalkLook);   // (x the storyteller's)
             long g = _store.LastGameMin;
             string skipped0;
             string pre = Pacing.WhyNot(_store.Pace, "drink", _placeTown, null, g, _rng.Next(100), test, out skipped0);   // the rarity first: no scan for nothing
