@@ -98,7 +98,7 @@ NEW IN 0.7.11
   StalkerBlackModel. StalkerEveryMinutes 15 (was 34) and StalkerChance 35 (was 20): about once
   in 45 minutes of play, where it was about once in three hours. An ini on the old stock values
   moves to the new ones; values of your own are kept. He keeps low, crouched until he runs,
-  and shows as a red dot on the map. The Testing row "Stalker outfit: show the next
+  shows as a red dot on the map, and dealing with him is no crime. The Testing row "Stalker outfit: show the next
   candidate" (TestStalkerOutfitKey) shows other outfits and says the two lines to copy.
 - The free local AI model turns itself on. AI MODEL (OLLAMA) ([Mind] Language) is the large
   gold switch at the top of the settings panel, with its status beside it ("on, answering",
