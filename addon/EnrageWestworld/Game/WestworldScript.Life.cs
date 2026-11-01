@@ -1813,6 +1813,7 @@ namespace EnrageWestworld.InGame
             if (HogtiedGreeted(handle))
                 return true;   // the men by the road with a price named: a greeting pays it (WestworldScript.Hogtied.cs)
             LonelyGreeted(handle);   // a lonely one coming over: a greeting is what they hoped for (the rest goes on as usual)
+            FavourGreeted(handle);   // one who asked a favour: being heard out (WestworldScript.Favours.cs)
             if (TravellerGreeted(handle, true))
                 return true;   // the traveller asking the way: a greeting is an answer (WestworldScript.Travellers.cs)
             if (SupperGreeted(handle, true))

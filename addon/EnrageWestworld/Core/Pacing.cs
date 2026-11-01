@@ -66,6 +66,7 @@ namespace EnrageWestworld.Core
             { "drink", new Rule("drink", false, 55, 60, 300, 1440) },              // a saloon: one drinker in five hours or so
             { "grudge", new Rule("grudge", false, 45, 120, 0, 1440) },             // per pair a day
             { "lonely", new Rule("lonely", false, 50, 120, 0, 1440) },             // a lonely regular comes over: two game hours between, a person once a day (NIGHT3)
+            { "favour", new Rule("favour", false, 40, 120, 0, 1440) },             // someone in trouble asks a favour: two game hours between, a person once a day (once a worry: the game side's rest) (NIGHT4 item 5)
             { "thanks", new Rule("thanks", false, 60, 90, 0, 1440) },              // someone you helped thanks you: an hour and a half between, a person once a day (NIGHT3)
             { "kin", new Rule("kin", false, 100, 0, 1440, 10080) },                // one a town a game day; the same relative once a week
             { "callout", new Rule("callout", false, 40, 1440, 1440, 2880) },       // a noon callout: once a day at most
@@ -103,7 +104,7 @@ namespace EnrageWestworld.Core
                 return r.KindRest;
             switch (r.Kind)
             {
-                case "grudge": case "lonely": case "thanks": case "fall": case "standup": case "round": case "drink": case "lift": case "patient": case "campfire":
+                case "grudge": case "lonely": case "favour": case "thanks": case "fall": case "standup": case "round": case "drink": case "lift": case "patient": case "campfire":
                     return (long)(r.KindRest * Math.Max(0.5f, Math.Min(1.25f, StoryRest)));
                 case "traveller":
                     return (long)(r.KindRest * Math.Max(0.6f, Math.Min(1f, StoryRest)));   // a man asking the way: sooner at most, never rarer
@@ -116,7 +117,7 @@ namespace EnrageWestworld.Core
         {
             switch (kind)
             {
-                case "grudge": case "lonely": case "thanks": case "fall": case "standup": case "round": case "drink": case "lift": case "patient":
+                case "grudge": case "lonely": case "favour": case "thanks": case "fall": case "standup": case "round": case "drink": case "lift": case "patient":
                 case "callout": case "kin":
                     return true;
                 default:

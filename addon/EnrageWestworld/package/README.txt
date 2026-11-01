@@ -76,6 +76,8 @@ NEW IN 0.7.11
   typed text, with the model, where your hardware allows.
 - What they feel about you, as you pass ([Mind] MindPassingLasts). Someone you roughed up gives
   you a hard look when you pass them hours later; someone you helped tips their hat.
+- A favour asked ([Scenes] FavoursAsked). Someone at the worst of a debt, a bad tooth or a fare
+  they can't make may come up and ask you, or hint, or lose their nerve; then Talk lists the fix.
 - Brawls that grow. A fistfight draws people in a wave at a time, up to [Mind] BrawlMost (12)
   fighting: friends and grudges first, from up to BrawlJoinMetres (30) away, most of all in a
   saloon with drink in it. Those sitting or leaning get up to join. The sides balance, a man

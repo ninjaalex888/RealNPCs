@@ -412,6 +412,9 @@ namespace EnrageWestworld.InGame
                 case "lonely":
                     skipped = "being lonely, knowing you, being in a town and the pace";
                     return LonelyTest(now);   // WestworldScript.Lonely.cs
+                case "favour":
+                    skipped = "a worry at its worst (a debt stands in), who'd come, being in a town, the roll, the pace and the rest for the worry";
+                    return FavourTest(now);   // WestworldScript.Favours.cs
                 case "thanks":
                     skipped = "the six game hours after the kindness, being in a town, the pace and the once-only mark";
                     return ThanksTest(now);   // WestworldScript.Thanks.cs

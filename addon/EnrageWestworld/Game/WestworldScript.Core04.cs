@@ -1148,6 +1148,7 @@ namespace EnrageWestworld.InGame
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             LonelyStep(now);    // someone lonely who knows you comes over (WestworldScript.Lonely.cs)
+            FavourStep(now);    // someone in trouble comes to ask a favour (WestworldScript.Favours.cs)
             BelowStep(now);     // the voice below the saloon floor, late at night (WestworldScript.Below.cs)
             MindShadowStep(now);   // the mind in shadow mode: traits, needs, feelings and mood, reported only (WestworldScript.Mind.cs)
             LanguageStep(now);     // the language layer's worker and the engine's hand (WestworldScript.Language.cs; its own try/catch)

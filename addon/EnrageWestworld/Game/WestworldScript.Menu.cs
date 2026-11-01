@@ -229,7 +229,7 @@ namespace EnrageWestworld.InGame
                 return "too far";
             bool record = IsRecord(target);
             if (MISC.GET_MISSION_FLAG() || PED.IS_PED_IN_COMBAT(target, 0) || PED.IS_PED_FLEEING(target) || PED.IS_PED_RAGDOLL(target) || PED.IS_PED_ON_MOUNT(target) ||
-                PED.IS_PED_IN_ANY_VEHICLE(target, false) || _director.Involves(target) || (NotFree(target) && !LonelyWaiting(target)) || Spawner.IsOurs(target) ||   // the lonely one waits for exactly this
+                PED.IS_PED_IN_ANY_VEHICLE(target, false) || _director.Involves(target) || (NotFree(target) && !LonelyWaiting(target) && !FavourWaiting(target)) || Spawner.IsOurs(target) ||   // the lonely one waits for exactly this
                 (record ? _bridge.EnrageFighter(target) || _bridge.Interrogating : Natives.OtherScripts(target)))
                 return "busy";
             string id, name, temper;
@@ -543,6 +543,7 @@ namespace EnrageWestworld.InGame
             }
             if (a.Settles)
             {
+                FavourSettledFor(t.Id, t.Worry, Interact.FixCents(t.Worry));   // one who came to ask it of him (WestworldScript.Favours.cs)
                 _engine.SettleWorry(t.Id);   // the rest of the worry's run reads as ended well (for a debt, the one they owed too)
                 if (a.Loan)
                     _engine.MarkThanked(t.Id, Thanks.LoanKey(_store.LastGameMin), t.Name);   // they said it was a loan: they'll bring it back (late thanks)

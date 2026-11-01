@@ -275,6 +275,7 @@ namespace EnrageWestworld.Core
         public bool Vices = true;
         public bool Grudges = true;
         public bool ReasonThoughts = true;   // [Scenes] when a street scene starts for a reason between two people, the one whose reason it is thinks why as they go over (settings version 155; NIGHT3)
+        public bool FavoursAsked = true;     // [Scenes] someone at the worst of a money trouble (a debt, a tooth, a fare) may come and ask Arthur; Talk then lists the fix (with MindLive; settings version 170; NIGHT4 item 5)
         public bool LonelyRegulars = true;   // [Scenes] someone lonely who knows Arthur comes over hoping for a word; glad if he stops to talk, stung if he walks on (with MindLive; settings version 157; NIGHT3)
         public bool BeingWatched = true;   // [Scenes] the street's own trouble (thefts, shoves, fights, standoffs, the noon callout) waits while a lawman has the one who'd start it in sight, or on a Sunday morning by the church; they think why (settings version 158; NIGHT3)
         // NIGHT3's numbers as settings (For Lex item 8; Lex, 2026-10-31; settings version 163): each default is the number built
@@ -737,7 +738,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 169)
                     log?.Invoke("Settings: new in this version: [Encounters] PublicCallouts (on): in a town by day, one of the people about calls another out before the street, and each answers by their own mind; DomesticDisputes (on): a man starts in on his wife in the street, and she and a neighbour answer by their own minds; Hogtied (on): away from the towns, someone tied up by the road with two men by them; HogtiedMenDraw (off): those men may draw on you unprovoked.");
                 if (s.SettingsVersion < 170)
-                    log?.Invoke("Settings: new in this version: [Mind] MindPassingLasts (on): people near you show what they feel about what you did for hours after, not minutes.");
+                    log?.Invoke("Settings: new in this version: [Mind] MindPassingLasts (on): people near you show what they feel about what you did for hours after, not minutes; [Scenes] FavoursAsked (on): someone in money trouble may come and ask you, and Talk lists the fix.");
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -1152,6 +1153,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Reactions = " + B(Reactions) + "   ; street scenes: the one spoken to reacts to the words by their nature (bristles, flinches, shakes their head, nods), and a man whose face goes into the bar reels");
             b.AppendLine("Grudges = " + B(Grudges) + "   ; grudges that travel: a friend of someone wronged has it out with the one who did it; and someone whose friend you killed may come up and say so to your face (never violent)");
             b.AppendLine("ReasonThoughts = " + B(ReasonThoughts) + "   ; when a street scene starts for a reason between two people (a quarrel over money, a friend to comfort, good news to tell), the one whose reason it is thinks why over their head as they go over, so you can follow what led to it");
+            b.AppendLine("FavoursAsked = " + B(FavoursAsked) + "   ; (with MindLive) someone hard pressed for money (a debt, a tooth, a fare) may come and ask you; stop and Talk to help");
             b.AppendLine("LonelyRegulars = " + B(LonelyRegulars) + "   ; (with MindLive) someone lonely who knows you (your name, or a kindness of yours lately) may come over when they see you in town, on foot and stopped, hoping for a word; stop and Talk, or greet them, and they're glad of it; walk on and it stings them, and they leave you be a few days. Never someone afraid of you, sore at you, wronged by you lately or mourning one you killed");
             b.AppendLine("LonelyNeed = " + F(LonelyNeed) + "   ; with LonelyRegulars on: how lonely (their need for company, 0.3-1) someone who knows you must be to come over hoping for a word");
             b.AppendLine("LonelyLookSeconds = " + LonelyLookSeconds + "   ; how often, in seconds, someone lonely is looked for in town (10-600)");

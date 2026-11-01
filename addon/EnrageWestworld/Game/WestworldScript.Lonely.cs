@@ -177,7 +177,7 @@ namespace EnrageWestworld.InGame
                     Log.Write("LONELY " + w.Name + ": you went on before they reached you; they let it be");
                     return;
                 }
-                if (_menu != null || _grudgeWalk != null || _thanksWalk != null || _kinWalk != null || _lifter != null)
+                if (_menu != null || _grudgeWalk != null || _thanksWalk != null || _kinWalk != null || _lifter != null || _favourWalk != null)
                 {
                     LonelyLetGo(h);   // he's taken up with someone else: another time
                     Log.Write("LONELY " + w.Name + " saw you busy and went on their way");

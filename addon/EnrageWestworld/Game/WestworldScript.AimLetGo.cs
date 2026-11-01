@@ -292,6 +292,12 @@ namespace EnrageWestworld.InGame
                 _lonelyWalk = null;
                 what = "a lonely one's walk-up to you";
             }
+            if (FavourWaiting(h))
+            {
+                TASK.TASK_CLEAR_LOOK_AT(h);
+                _favourWalk = null;
+                what = "a walk-up to ask you a favour";
+            }
             if (_kinWalk != null && _kinWalk.Ped != null && _kinWalk.Ped.Handle == h && !_kinWalk.Spawned)
             {
                 _casts.Remove(h);
