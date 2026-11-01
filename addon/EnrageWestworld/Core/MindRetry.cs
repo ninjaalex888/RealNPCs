@@ -16,7 +16,8 @@ namespace EnrageWestworld.Core
         /// Whether a refusal passes by itself (they get up, get down, stop running, the gap ends).
         public static bool Temporary(string why)
         {
-            return why == Sat || why == Riding || why == Aimed || why == Busy || why == Gap || why == AtOnce || why == Acting || why == Nodding;
+            return why == Sat || why == Riding || why == Aimed || why == Busy || why == Gap || why == AtOnce || why == Acting || why == Nodding ||
+                   why == MindScenarios.RefuseGap || why == MindScenarios.RefuseAtOnce || why == MindScenarios.RefuseNear;   // stage 1's rate limit passes; the seat keeping them doesn't
         }
 
         /// Whether an unchanged choice is tried again: never once acted; tried when nothing was tried yet (a pick dropped, the
@@ -27,10 +28,12 @@ namespace EnrageWestworld.Core
         }
 
         /// The options a seated person may be offered: a look (watch, keep clear, a friend, someone to talk to), staying at what
-        /// they're doing (rest), or a scene reason of theirs. Getting up for anything else is 0.7.12's stage 1.
-        public static bool SeatedOption(string id)
+        /// they're doing (rest), or a scene reason of theirs; with getsUp (0.7.12's stage 1, [Mind] MindActsScenarios) also the
+        /// choices that get them up (MindScenarios.GetsUpFor).
+        public static bool SeatedOption(string id, bool getsUp = false)
         {
-            return id == "watch" || id == "keepclear" || id == "greet" || id == "talk" || id == "rest" || (id != null && id.StartsWith("scene:", System.StringComparison.Ordinal));
+            return id == "watch" || id == "keepclear" || id == "greet" || id == "talk" || id == "rest" || (id != null && id.StartsWith("scene:", System.StringComparison.Ordinal)) ||
+                   (getsUp && MindScenarios.GetsUpFor(id));
         }
     }
 }
