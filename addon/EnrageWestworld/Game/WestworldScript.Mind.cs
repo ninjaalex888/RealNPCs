@@ -894,7 +894,7 @@ namespace EnrageWestworld.InGame
                     {
                         Person res = _engine.PersonOfResident(b.R);
                         w.Id = res.Id;
-                        w.Name = res.Name;
+                        w.Name = ShownName(h, res.Name);   // the name over his head when enRAGE gives him one, as the scenes use (Lex, 2026-11-01: one man logged as both Patrick Fenwick and Eli Brannigan)
                         w.Kind = "resident";
                         w.Src = TraitSource.From(res, "resident");
                         w.P = res;

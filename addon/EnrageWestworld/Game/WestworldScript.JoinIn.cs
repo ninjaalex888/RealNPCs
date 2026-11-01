@@ -34,6 +34,9 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<int, int> _joinSideOf = new Dictionary<int, int>();   // this fight's picks: whose side each took, kept for the fight
         private int _brawlBiggest, _joinPendingAt, _joinSidesFor, _joinCameOver, _joinGaveUp;
 
+        private int _joinFightSince;
+        private const int BrawlOpeningMs = 10000;
+
         private void JoinStep(int now)
         {
             int least = _cfg.BrawlLeastSeconds * 1000;
@@ -68,7 +71,11 @@ namespace EnrageWestworld.InGame
             {
                 _joinSidesFor = _director.FightId;
                 _joinSideOf.Clear();   // a new fight: nobody's side is taken yet
+                _joinFightSince = now;
             }
+            // the first seconds of a fight draw people in more readily, so two at it can grow before one goes down (Lex,
+            // 2026-11-01: someone may go down early, but bystanders more likely to join) ([Mind] BrawlOpeningBoost)
+            JoinIn.OpeningBoost = now - _joinFightSince < BrawlOpeningMs && now >= _joinFightSince ? _cfg.BrawlOpeningBoost / 100f : 0f;
             if (a.Count + b.Count > _brawlBiggest)
                 _brawlBiggest = a.Count + b.Count;
             if (!_director.FightSides(out a, out b))

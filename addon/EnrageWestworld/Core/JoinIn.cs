@@ -38,6 +38,8 @@ namespace EnrageWestworld.Core
         /// the offline tests weigh it). Lex, 2026-11-01, Saint Denis: two men fighting never grew into a brawl, every onlooker
         /// short of the bar (a stranger needs the crowd's bar and a quarter more) and the brawl's own pull only from four.
         public static float BrawlBoost;
+        /// Added on top in a fight's first 10 s ([Mind] BrawlOpeningBoost / 100, set by the game side; 0 here).
+        public static float OpeningBoost;
 
         /// Whether this onlooker joins, and on whose side. sides[0] and sides[1]: who is fighting on each side; warmth(x, y):
         /// the tie between two ids (-3..3, 0 none); witnesses: how many watch; saloon: a saloon's fights draw the drunk and
@@ -103,7 +105,7 @@ namespace EnrageWestworld.Core
                     tie = Math.Max(tie, 0.18f + 0.08f * -foe);
                 float score = tie + heat + momentum;
                 if (brawls)
-                    score += BrawlBoost;
+                    score += BrawlBoost + OpeningBoost;
                 // with brawls on, someone with no stake in it sides with the side that's short (Lex, 2026-10-31: in the
                 // biggest brawl every joiner went for one man): a tenth for each man the other side has more
                 if (brawls && tie <= 0f)
