@@ -206,7 +206,7 @@ namespace EnrageWestworld.InGame
                     Log.Write("FAVOUR " + w.Name + ": you went on before they reached you; they let it be");
                     return;
                 }
-                if (_menu != null || _grudgeWalk != null || _thanksWalk != null || _kinWalk != null || _lifter != null || _lonelyWalk != null)
+                if (_menu != null || _grudgeWalk != null || _thanksWalk != null || _kinWalk != null || _lifter != null || _lonelyWalk != null || _warnWalk != null)
                 {
                     FavourLetGo(h);
                     Log.Write("FAVOUR " + w.Name + " saw you busy and went on their way");

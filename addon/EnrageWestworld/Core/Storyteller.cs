@@ -207,7 +207,7 @@ namespace EnrageWestworld.Core
                 switch (kind.Substring(4))
                 {
                     case "lift": return 3;
-                    case "grudge": case "thanks": case "lonely": case "favour": case "kin": case "stalker": case "brawl": return 2;
+                    case "grudge": case "thanks": case "lonely": case "favour": case "warn": case "kin": case "stalker": case "brawl": return 2;
                     default: return 0;
                 }
             }

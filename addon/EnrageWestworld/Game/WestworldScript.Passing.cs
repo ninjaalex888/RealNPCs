@@ -315,14 +315,14 @@ namespace EnrageWestworld.InGame
         /// every walk-up's starter (the cross-cutting review: only thanks and the lonely asked all of these).
         private bool WalkUpGoing()
         {
-            return _menu != null || _thanksWalk != null || _grudgeWalk != null || _lonelyWalk != null || _favourWalk != null || _kinWalk != null || _kinPending != null || _lifter != null || _liftRun != null || _theft != null;
+            return _menu != null || _thanksWalk != null || _grudgeWalk != null || _lonelyWalk != null || _favourWalk != null || _warnWalk != null || _kinWalk != null || _kinPending != null || _lifter != null || _liftRun != null || _theft != null;
         }
 
         /// One of the walk-ups to Arthur has them: thanks, a grudge, the lonely, kin, the pickpocket on his way or on the run.
         private bool WalkingUp(int h)
         {
             return (_grudgeWalk != null && _grudgeWalk.Ped != null && _grudgeWalk.Ped.Handle == h) || (_thanksWalk != null && _thanksWalk.Ped != null && _thanksWalk.Ped.Handle == h) ||
-                   LonelyWaiting(h) || FavourWaiting(h) || (_kinWalk != null && _kinWalk.Ped != null && _kinWalk.Ped.Handle == h) ||
+                   LonelyWaiting(h) || FavourWaiting(h) || WarnWaiting(h) || (_kinWalk != null && _kinWalk.Ped != null && _kinWalk.Ped.Handle == h) ||
                    (_lifter != null && _lifter.Handle == h) || (_liftRun != null && _liftRun.Handle == h) || (_theft != null && _theft.Thief != null && _theft.Thief.Handle == h);
         }
 

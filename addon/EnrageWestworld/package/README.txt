@@ -80,6 +80,9 @@ NEW IN 0.7.11
   they can't make may come up and ask you, or hint, or lose their nerve; then Talk lists the fix.
 - Courting townsfolk ([Scenes] CourtFolkAges). enRAGE's townsfolk, whose ages it doesn't keep,
   now court each other on the street too.
+- Witnessed, or warned ([Scenes] WarnedYou). Someone who saw what you did may tell you so to your
+  face; someone who thinks well of you may warn you of a man with a grudge near, or the law
+  asking. Words only.
 - Brawls that grow. A fistfight draws people in a wave at a time, up to [Mind] BrawlMost (12)
   fighting: friends and grudges first, from up to BrawlJoinMetres (30) away, most of all in a
   saloon with drink in it. Those sitting or leaning get up to join. The sides balance, a man

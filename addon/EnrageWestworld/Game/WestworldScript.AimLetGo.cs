@@ -298,6 +298,12 @@ namespace EnrageWestworld.InGame
                 _favourWalk = null;
                 what = "a walk-up to ask you a favour";
             }
+            if (WarnWaiting(h))
+            {
+                TASK.TASK_CLEAR_LOOK_AT(h);
+                _warnWalk = null;
+                what = "a walk-up to have words with you or warn you";
+            }
             if (_kinWalk != null && _kinWalk.Ped != null && _kinWalk.Ped.Handle == h && !_kinWalk.Spawned)
             {
                 _casts.Remove(h);
