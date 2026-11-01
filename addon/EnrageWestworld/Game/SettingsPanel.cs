@@ -1546,7 +1546,8 @@ namespace EnrageWestworld.InGame
         {
             new[] { "The world", "WestWorld", "Bravery", "Storyteller", "Stalkers", "StalkerEveryMinutes", "StalkerChance", "StalkerBlack", "Encounters", "Romance", "ScenesAtOnce", "MainScenesAtOnce" },
             new[] { "Things that happen to you", "Lifts" },   // the pickpocket (Lex, 2026-10-30: not one of the world's big switches)
-            new[] { "On the screen", "NameCards", "NameCardsAlways", "NameCardsMetres", "NameCardsSecondLine", "NameCardsStrangerNames", "FeelingBars", "GrudgeMeter", "Ticker", "TickerShowsScene", "ThoughtsOverHeads", "Subtitles" },
+            // "On the screen" (names, bars, the meter, the ticker, thoughts over heads, subtitles) was here: they are all on the
+            // UI page, which shows with the essentials now (Lex, 2026-11-01: "take that duplicate group out")
             new[] { "The law", "SelfDefenceNoBounty" },
             new[] { "Memory", "ResetAtClerk" },
         };

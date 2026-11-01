@@ -1091,7 +1091,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("QuietInCinematic = " + B(QuietInCinematic) + "   ; the same while the cinematic camera is on, moving or not");
             b.AppendLine();
             b.AppendLine("[Encounters]");
-            b.AppendLine("Encounters = " + B(Encounters) + "   ; master switch: rare, unsettling things out in the wilds at night (a woman crying in the dark, hermits, gatherings). false turns off everything in this section");
+            b.AppendLine("Encounters = " + B(Encounters) + "   ; master switch, on as it comes: the encounters on the roads, in the wilds and in town (the crying woman, the night visitor, travellers, campfires, the supper invitation, executions, callouts, a husband's temper, the hogtied, hermits, gatherings). false turns off everything in this section");
             b.AppendLine("EncounterEveryMinutes = " + EncounterEveryMinutes + "   ; real minutes of play between rolls for an encounter, when the time and place are right (2-120)");
             b.AppendLine("EncountersAtOnce = " + EncountersAtOnce + "   ; how many encounters (and a stalker) may be going on at once, one of each kind (1-8); each roll starts one at most, so they come one by one");
             b.AppendLine("CryingWoman = " + B(CryingWoman) + "   ; at night in the wilds, a woman sobbing in the dark. Go close and she may draw a knife, or not be alone");
