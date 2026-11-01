@@ -27,7 +27,7 @@ namespace EnrageWestworld.Core
         }
 
         /// The options a seated person may be offered: a look (watch, keep clear, a friend, someone to talk to), staying at what
-        /// they're doing (rest), or one of their own scene reasons. Getting up for anything else is 0.7.12's stage 1.
+        /// they're doing (rest), or a scene reason of theirs. Getting up for anything else is 0.7.12's stage 1.
         public static bool SeatedOption(string id)
         {
             return id == "watch" || id == "keepclear" || id == "greet" || id == "talk" || id == "rest" || (id != null && id.StartsWith("scene:", System.StringComparison.Ordinal));

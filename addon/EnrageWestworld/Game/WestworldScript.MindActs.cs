@@ -51,7 +51,7 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<string, int> _mindActLost = new Dictionary<string, int>();
         private int _mindActsTried, _mindActsTakenUp, _mindChoseQuietly;
         private const string LostOff = "off", LostGap = MindRetry.Gap, LostAtOnce = MindRetry.AtOnce, LostActing = MindRetry.Acting, LostStand = "stand or showoff: no act",
-                             LostUrge = "a feeling's urge: no act", LostNoSpot = "no free spot within 15 m", LostNoFoe = "nobody to step clear of", LostNoFriend = "no friend near",
+                             LostUrge = "a feeling's urge: no act", LostNoSpot = "no seat or spot free nearby (15 m)", LostNoFoe = "nobody to step clear of", LostNoFriend = "no friend near",
                              LostNoTalk = "nobody to talk to", LostWatch = "watch: never saw you violent", LostNoAct = "no act for this choice",
                              LostBusyNod = MindRetry.Nodding, LostSatNoLook = MindRetry.Sat;
         private int _mindAlreadyAt, _mindLookAtYouAt, _mindSeatedLooks;
@@ -134,7 +134,7 @@ namespace EnrageWestworld.InGame
                     if (!TASK.DOES_SCENARIO_EXIST_IN_AREA(at, 15f, true, 0, false))
                     {
                         _mindActsSkipped++;
-                        Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (no free spot within 15 m)");
+                        Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (no seat or spot free nearby (15 m))");
                         return LostNoSpot;
                     }
                     TASK._TASK_USE_NEAREST_SCENARIO_TO_COORD(h, at, 15f, 90000, false, true, false, false);
@@ -330,7 +330,7 @@ namespace EnrageWestworld.InGame
         }
 
         /// Someone sat or leaning acts on a look-only choice from where they are: a watch (you or the street), a wary look at you
-        /// (keep clear), a look at a friend (greet) or at someone near to talk to. TASK_LOOK_AT_ENTITY only, as the waking's glance,
+        /// (keep clear), a look at a friend (greet) or at someone near to talk to. A head turn only, as the waking's glance,
         /// which plays on seated people; the scenario is never touched. Null when the look began, else why not.
         private string MindSeatedLook(MindWho w, int h, string kind, int now, Ped me, bool test)
         {
@@ -608,7 +608,7 @@ namespace EnrageWestworld.InGame
 
         private static string MindShareWords(int acting, int scenes, int named)
         {
-            return named == 0 ? "nobody named near you" : acting + " of " + named + " named near you acting on their minds (" + (100 * acting / named) + "%), " + scenes + " more in a scene (" + (100 * (acting + scenes) / named) + "% in all)";
+            return named == 0 ? "no one the mind knows within its ring" : acting + " of " + named + " named near you acting on their minds (" + (100 * acting / named) + "%), " + scenes + " more in a scene (" + (100 * (acting + scenes) / named) + "% in all)";
         }
 
         private int _mindShareMinuteAt, _mindShareLastTried;

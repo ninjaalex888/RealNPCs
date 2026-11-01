@@ -174,10 +174,9 @@ namespace EnrageWestworld.Core
             "Valentine", "Rhodes", "Strawberry", "Blackwater", "Armadillo", "Tumbleweed", "Annesburg", "Emerald", "Van", "Horn", "Saint", "Denis", "Lagras", "Colter", "Thieves", "Landing",
             "Lemoyne", "Hanover", "Elizabeth", "Austin", "Ambarino", "Heartlands", "Bayou", "Nwa", "Texas", "Mexico", "Louisiana", "Mississippi", "California", "Chicago", "New", "York", "Orleans", "West", "East", "North", "South", "Lannahechee", "Dakota", "Kamassa", "Grizzlies",
             // NIGHT4 fix 8, the false holds of an evening: God's pronouns and the old second person, the street's own words, the states and Baton Rouge
-            "He", "His", "Him", "Himself", "Thy", "Thee", "Thou", "Thine", "Main", "Street", "Widow", "Livery", "Station", "Baton", "Rouge",
+            "He", "His", "Him", "Himself", "Thy", "Thee", "Thou", "Thine", "Main", "Street", "Widow", "Livery", "Station", "Baton", "Rouge", "Territory",
             "Alabama", "Arizona", "Arkansas", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Maine", "Maryland",
-            "Massachusetts", "Michigan", "Minnesota", "Missouri", "Montana", "Nebraska", "Nevada", "Hampshire", "Jersey", "Carolina", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode", "Island",
-            "Tennessee", "Utah", "Vermont", "Virginia", "Washington", "Wisconsin", "Wyoming", "Territory"
+            "Massachusetts", "Michigan", "Minnesota", "Missouri", "Montana", "Nebraska", "Nevada", "Hampshire", "Jersey", "Carolina", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode", "Island", "Tennessee", "Utah", "Vermont", "Virginia", "Washington", "Wisconsin", "Wyoming"
         };
 
         // words that break the frame whatever the line (a plural counts too)
