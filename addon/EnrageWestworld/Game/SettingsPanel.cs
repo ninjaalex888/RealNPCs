@@ -370,7 +370,7 @@ namespace EnrageWestworld.InGame
             else if (_pages.Count > 0)
             {
                 _pages[0].Rows.Insert(0, new Row { Action = "panel:essentials", ActionLabel = "Back to just the essentials  (F)",
-                                                   Help = "Enter or F: the panel shows only the Essentials page, the Hotkeys and the Mod list again." });
+                                                   Help = "Enter or F: the panel shows only the Essentials page, the UI page, the Hotkeys and the Mod list again." });
                 if (_ours != null && _ours.Error == null)
                     _pages[0].Rows.InsertRange(0, AiRows());   // the AI model's switch and its status on every setting's pages too (the pre-release review)
             }
@@ -1566,7 +1566,7 @@ namespace EnrageWestworld.InGame
             return rows;
         }
 
-        /// The essentials page, the hotkeys and the mod list; the rest waits behind F.
+        /// The essentials page, the UI page (Lex, 2026-11-01), the hotkeys and the mod list; the rest waits behind F.
         private void EssentialsOnly()
         {
             var ess = new Page { Title = "Essentials" };
@@ -1582,8 +1582,12 @@ namespace EnrageWestworld.InGame
                 ess.Rows.Add(new Row { Heading = group[0] });
                 ess.Rows.AddRange(rows);
             }
+            // the UI page too, whole (Lex, 2026-11-01: "add the UI settings page to be a page that shows when the Essentials
+            // settings are toggled on"), in the order the pages already stand: Essentials, UI, Hotkeys, Mod list. It is the same
+            // page in both views, so its Show every setting row switching the view keeps you on it (Write reloads, keepTitle).
+            string ui = OurTitles["Display"];
             List<Page> keep = new List<Page> { ess };
-            keep.AddRange(_pages.Where(p => p.Title == "Hotkeys" || p.Title == "Mod list"));
+            keep.AddRange(_pages.Where(p => p.Title == ui || p.Title == "Hotkeys" || p.Title == "Mod list"));
             _pages.Clear();
             _pages.AddRange(keep);
         }
