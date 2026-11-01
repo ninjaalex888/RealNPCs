@@ -1205,6 +1205,9 @@ in the file. The new ones:
             MindLevels (false, in testing): the mind's work spread by distance and a budget a frame.
             MindActs (true, under MindLive): people near you do what their minds choose (a stroll, the
             nearest bench, chair, bar or work spot, off home, clear of you or a foe, over to a friend).
+            MindActsScenarios (true, under MindActs): people sat or leaning get up for it, the game's own
+            way (never pulled out of a chair), and go to a spot of the kind they want: a bench or the steps,
+            a wall or a post, the bar rail, a broom; one every few seconds near you, three at most at once.
             MindJoinFights (true, under MindLive): onlookers may join a fistfight on a side. MindBrawls
             (true): a fight grows into a brawl, up to BrawlMost (12); BrawlLaw, BrawlPullsYouIn,
             BrawlDraws (all true), BrawlDrawShare (40), BrawlFistsFatal (50: percent of men beaten down

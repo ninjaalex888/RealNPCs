@@ -360,6 +360,9 @@ namespace EnrageWestworld.InGame
                     }
                 case "sight":
                     return SightFire(now, out skipped);
+                case "getup":
+                    skipped = "the stage-1 rate limit (one start every 4-6 s, three at once, 8 m apart), the 1.5 s gap and the acts at once; the get-up itself is the game's, 9 s at most";
+                    return GetUpTest(now);   // WestworldScript.MindScenarios.cs
                 case "seatedlook":
                     skipped = "their choice (a watch is used), the 1.5 s gap, the acts at once and the one look at you every 10 s";
                     return SeatedLookTest(now);   // WestworldScript.MindActs.cs

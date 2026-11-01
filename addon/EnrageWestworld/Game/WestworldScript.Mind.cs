@@ -49,6 +49,7 @@ namespace EnrageWestworld.InGame
             public bool AlreadyAt;
             public int SeatedAskAt;
             public bool SeatedAsked;
+            public int Stage1RestUntil;     // the seat kept them, or no fitting point was near: no stage-1 start for them until then (0.7.12 stage 1)
         }
 
         private const int ChooseMs = 60000, ChoiceLinesAMinute = 5;

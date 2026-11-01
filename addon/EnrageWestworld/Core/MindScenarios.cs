@@ -1,6 +1,6 @@
 // Stage 1 of 0.7.12 (NIGHT4 queue item 3; Lex, 2026-10-31: people near Arthur visibly act on their own minds): the mind's
 // everyday choices acted through the game's own scenarios, found by type. Until now a rest, a meal, a drink or the work took
-// whatever scenario point was nearest (_TASK_USE_NEAREST_SCENARIO_TO_COORD: work became a smoke, a rest a seat at a table,
+// whatever scenario point was closest, of any type (work became a smoke, a rest a seat at a table,
 // 5 of 11 found nothing), and someone sat or leaning was never moved. Here, pure (no natives): which kinds of point fit each
 // choice (benches, chairs, steps, walls, posts, railings, the bar, a table, a broom), what to play in place when none is
 // near, what a sat person's own scenario already is (so "at it already" counts only where the scenario truly is the choice),
@@ -60,7 +60,7 @@ namespace EnrageWestworld.Core
 
         private static Dictionary<uint, string> _names;
 
-        /// The game's hash of a name (Jenkins one-at-a-time over the lower case: GET_HASH_KEY; Natives.Hash's own).
+        /// The game's hash of a name: GET_HASH_KEY over the lower-cased name, the same sum Natives.Hash makes.
         public static uint Joaat(string s)
         {
             unchecked

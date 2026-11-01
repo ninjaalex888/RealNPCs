@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 167;
+        public const int CurrentVersion = 168;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -80,6 +80,7 @@ namespace EnrageWestworld.Core
         public bool MindActs = true;   // with MindLive: someone near and in view does what their mind just chose: a stroll, the nearest bench, chair, bar or work spot, a walk off home, clear of you or of a foe, over to a friend (the NPC-life run, Lex 2026-10-30; settings version 130)
         public bool MindActsSeatedLooks = true;   // with MindActs: watch acts for everyone (a look at you or the street), people sat or leaning act on look-only choices from their seat, showoff plays in place, and a choice someone is already at counts as acted (NIGHT4 fix 2; settings version 166)
         public bool MindRetries = true;   // with MindActs: a choice that never acted for a reason that passes (sat, riding, busy, the gap) is tried again at the minute's recheck, the model asked first; seated people may be asked by the model, offered only what they can do from a seat (NIGHT4 fix 3; settings version 166)
+        public bool MindActsScenarios = true;   // with MindActs: people sat or leaning get up (the waking's way, never pulled) for a choice that needs them on their feet, and rests, meals, drinks and work go to the game's own spots of that kind (a bench, a wall, the bar, a broom), a few at a time near you (0.7.12 stage 1; settings version 168)
         public bool LadderShots = true;   // with MindLive and QuarrelLadder: a quarrel the ladder takes to the shot is fired, deadly as in 1899 (Lex, 2026-10-30; settings version 132); off: the standoff breaks off, as before
         public bool MindJoinFights = true;   // with MindLive: an onlooker may join a fistfight on a side, by their nature, drink, and ties to those fighting (Core/JoinIn.cs; the NPC-life run, Lex 2026-10-30; settings version 128)
         public bool MindBrawls = true;       // with MindLive and MindJoinFights: a fight may grow into a brawl, a wave at a time, up to BrawlMost; the law at hand holds most back, not all (Core/Brawl.cs; Lex, 2026-10-31; settings version 160)
@@ -718,6 +719,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: new in this version: [Mind] MindActsSeatedLooks, MindRetries, [Scenes] ReasonVariety, ChanceFirst (all on; the minds act on more of their choices, the street's reasons and chance meetings take turns).");
                 if (s.SettingsVersion < 167)
                     log?.Invoke("Settings: new in this version: [World] Storyteller (lively; calm, wild or off as before): quiet streets and roads get the next scene, walk-up or encounter sooner, and something big a short breather.");
+                if (s.SettingsVersion < 168)
+                    log?.Invoke("Settings: new in this version: [Mind] MindActsScenarios (on): people sat or leaning get up for what their minds choose, and rests, meals, drinks and work go to a spot of the game's of that kind.");
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -926,9 +929,10 @@ namespace EnrageWestworld.Core
             b.AppendLine("BullyTurnsDrunk = " + BullyTurnsDrunk + "   ; added when the bully is drunk (0-100)");
             b.AppendLine("BullyTurnsMeant = " + BullyTurnsMeant + "   ; taken off when the one who stepped in looks like he means it (a proud or hot-tempered man) (0-100). Never on a woman who steps in");
             b.AppendLine("MindPlans = " + B(MindPlans) + "   ; with MindLive on: people carry plans over the next few days (to get even with someone who wronged them, to thank someone who helped, to pay a debt back, to court a sweetheart); near you, they go to find that person, and the scene it wants plays between them");
-            b.AppendLine("MindActs = " + B(MindActs) + "   ; with MindLive on: people near you do what their minds choose: take a stroll, sit down on the nearest bench or chair, go to the bar or the card table, get on with the work, head off home, keep clear of you or of someone they can't abide, go over to a friend for a word; never someone busy, a few at a time (people sat or leaning only look up from their seat: MindActsSeatedLooks)");
-            b.AppendLine("MindActsSeatedLooks = " + B(MindActsSeatedLooks) + "   ; with MindActs: people watch you or the street when their minds say so, people sat or leaning look up at you or a friend from their seat (never made to get up), someone who wants to be seen stands where the street can see them, and someone already at what they chose (a drink at the bar, a rest on a bench) counts as doing it");
+            b.AppendLine("MindActs = " + B(MindActs) + "   ; with MindLive on: people near you do what their minds choose: take a stroll, sit down on the nearest bench or chair, go to the bar or the card table, get on with the work, head off home, keep clear of you or of someone they can't abide, go over to a friend for a word; never someone busy, a few at a time (people sat or leaning look up from their seat: MindActsSeatedLooks; they get up for the rest: MindActsScenarios)");
+            b.AppendLine("MindActsSeatedLooks = " + B(MindActsSeatedLooks) + "   ; with MindActs: people watch you or the street when their minds say so, people sat or leaning look up at you or a friend from their seat (the seat never touched), someone who wants to be seen stands where the street can see them, and someone already at what they chose (a drink at the bar, a rest on a bench) counts as doing it");
             b.AppendLine("MindRetries = " + B(MindRetries) + "   ; with MindActs: someone whose mind chose something they could not do just then (sat, on a horse, busy) tries again a minute later, up to three times; the AI model may be asked for people sat or leaning too, offered only what they can do from where they sit");
+            b.AppendLine("MindActsScenarios = " + B(MindActsScenarios) + "   ; with MindActs: people sat or leaning get up when their minds want something else (a bench, the bar, a wall to lean on, their work, a walk home, someone to talk to), the game's own way and never pulled out of a chair; rests, meals, drinks and work go to a spot of that kind nearby (a bench or steps, a wall or a post, the bar rail, a broom), else something fitting where they stand; one starts every few seconds near you, three at most at once, never two side by side");
             b.AppendLine("LadderShots = " + B(LadderShots) + "   ; with MindLive on: a quarrel that climbs all the way to the shot is fired: the one who pushed it there fires, the other fires back if he carries a gun or runs, and whoever falls stays dead; never in a saloon, with the law near, or unless both carry guns. false: the standoff breaks off");
             b.AppendLine("MindJoinFights = " + B(MindJoinFights) + "   ; with MindLive on: while two people fight, an onlooker may join in on a side: a friend of one, someone with bad blood against the other, a drunk hothead in a saloon; most watch, fewer the bigger the crowd, nobody with the law at hand; a man against a woman seldom (1899); at most three join");
             b.AppendLine("MindBrawls = " + B(MindBrawls) + "   ; with MindLive and MindJoinFights on: a fight can grow into a brawl, a wave at a time: friends and grudges pull people in, and the bigger it gets the less it takes, likelier in a saloon or with drink; the law at hand holds most back on the street, fewer in a saloon riot; false: at most three join, never with the law near");

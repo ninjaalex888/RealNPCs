@@ -28,7 +28,8 @@ namespace EnrageWestworld.InGame
         }
 
         private const float PickNear = 15f;   // within this, a person's every new choice may be asked; past it ([Mind] PickMetres), half of them
-        private const int SeatedAskRestMs = 240000;   // one seated ask a person this often at most (the review of NIGHT4 item 1)
+        private const int SeatedAskRestMsLooks = 240000;   // one seated ask a person this often at most (the review of NIGHT4 item 1)
+        private int SeatedAskRestMs { get { return _cfg.MindActsScenarios ? 120000 : SeatedAskRestMsLooks; } }   // 2 min once they can get up for it (stage 1; the review's note)
         private int _picksSeatedRested;
         private const int PickWaitMs = 2500, PicksLoud = 40;   // how many wait at once and how far out: [Mind] PicksAtOnce, PickMetres (NIGHT3 item 2)
         private readonly List<PendingPick> _pending = new List<PendingPick>();
@@ -50,7 +51,8 @@ namespace EnrageWestworld.InGame
             Ped p = new Ped(h);
             float pd = p.Exists() ? p.Position.DistanceTo(Game.Player.Character.Position) : 999f;
             // sat or leaning: asked too (NIGHT4 fix 3), offered only what they can do from a seat (MindRetry.SeatedOption)
-            bool seated = _cfg.MindRetries && _cfg.MindActsSeatedLooks && p.Exists() && PED.IS_PED_USING_ANY_SCENARIO(h);
+            bool seated = _cfg.MindRetries && (_cfg.MindActsSeatedLooks || _cfg.MindActsScenarios) && p.Exists() && PED.IS_PED_USING_ANY_SCENARIO(h);
+            bool getsUp = seated && _cfg.MindActsScenarios;   // stage 1: "gets up and ..." options too
             if (!p.Exists() || pd > _cfg.PickMetres || MindActWhyNot(p, h, seated) != null)
                 return false;
             if (seated && w.SeatedAsked && now - w.SeatedAskAt >= 0 && now - w.SeatedAskAt < SeatedAskRestMs)
@@ -65,10 +67,10 @@ namespace EnrageWestworld.InGame
             var words = new List<string>();
             foreach (KeyValuePair<string, string> kv in ranked)
             {
-                if (seated && (!MindRetry.SeatedOption(kv.Key) || kv.Key == "rest" || ids.Count >= 3))
+                if (seated && (!MindRetry.SeatedOption(kv.Key, getsUp) || kv.Key == "rest" || ids.Count >= 3 || (!_cfg.MindActsSeatedLooks && !MindScenarios.GetsUpFor(kv.Key))))
                     continue;
                 ids.Add(kv.Key);
-                words.Add(Choosing.WordsOf(kv.Key) + (seated ? " (from where they sit)" : ""));
+                words.Add(seated && getsUp && MindScenarios.GetsUpFor(kv.Key) ? "gets up and " + Choosing.WordsOf(kv.Key) : Choosing.WordsOf(kv.Key) + (seated ? " (from where they sit)" : ""));
             }
             if (seated && MindAlreadyAt("rest", h) != null)
             {
@@ -338,7 +340,7 @@ namespace EnrageWestworld.InGame
             string store = _engine != null ? ", store: " + _engine.LanguageAnswers.PicksAsked + " queued, " + _engine.LanguageAnswers.PicksAnswered + " answered, " + _engine.LanguageAnswers.PicksFailed + " failed, " +
                            _engine.LanguageAnswers.PicksDropped + " dropped" : "";
             return (_langReady ? "on" : "on, the server not ready") + ": " + _picksAsked + " asked this session, " + _picksTaken + " picked (" + _picksSame + " the mind's own, " + _picksPlan + " a plan's step), " +
-                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting; reached the screen " + _picksReached + " of " + _picksResolvedActs + " (" + _picksAnsweredReached + " the model answered, " + _picksFellBackReached + " the mind's own after no answer); seated asked " + _picksSeatedAsked + " (" + _picksSeatedRested + " passed over, asked under 4 min before); thoughts with them " + _pickThoughtsShown + " shown, " + _pickThoughtsHeld + " held by the check" + store + (_pickLast != null ? "; last: " + _pickLast : "") + "; scenes from their own reasons: " + MindScenesStatus();
+                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting; reached the screen " + _picksReached + " of " + _picksResolvedActs + " (" + _picksAnsweredReached + " the model answered, " + _picksFellBackReached + " the mind's own after no answer); seated asked " + _picksSeatedAsked + " (" + _picksSeatedRested + " passed over, asked under " + SeatedAskRestMs / 60000 + " min before); thoughts with them " + _pickThoughtsShown + " shown, " + _pickThoughtsHeld + " held by the check" + store + (_pickLast != null ? "; last: " + _pickLast : "") + "; scenes from their own reasons: " + MindScenesStatus();
         }
     }
 }

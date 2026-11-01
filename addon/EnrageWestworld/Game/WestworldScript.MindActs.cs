@@ -31,6 +31,13 @@ namespace EnrageWestworld.InGame
             public uint Then;           // a scenario in place to start at ThenAt (showoff: after the turn to face the street)
             public int ThenAt;
             public bool Seated;         // a look from where they sit (NIGHT4 fix 2): their scenario is never touched
+            // stage 1 (WestworldScript.MindScenarios.cs): getting up, then to a point of the game's by type
+            public bool Stage1;         // getting up, or on the way to a point or something in place (S1Step polls it)
+            public bool GettingUp, ReAsked, TookUp, InPlace, Joining;
+            public int UpAskedAt, NextPoll, SendAt, Point, ReachBy;
+            public uint PointHash;
+            public Vector3 PointAt, StartAt;
+            public string PointType, FromType;
         }
 
         private readonly List<MindAct> _mindActs = new List<MindAct>();
@@ -89,11 +96,12 @@ namespace EnrageWestworld.InGame
                 return LostActing;
             string kind = w.Choice;
             bool looks = _cfg.MindActsSeatedLooks;   // NIGHT4 fix 2: watch, seated looks, showoff and "already at it"
-            if (kind == "stand" || Choosing.CarriesOn(kind) || (kind == "showoff" && !looks))
+            bool scen = _cfg.MindActsScenarios;      // 0.7.12 stage 1: the sat get up, and the game's own spots by type (WestworldScript.MindScenarios.cs)
+            if (kind == "stand" || Choosing.CarriesOn(kind) || (kind == "showoff" && !looks && !scen))
                 return LostStand;
             Ped p = new Ped(h);
             Ped me = Game.Player.Character;
-            bool sat = looks && PED.IS_PED_USING_ANY_SCENARIO(h);
+            bool sat = (looks || scen) && PED.IS_PED_USING_ANY_SCENARIO(h);
             string why = MindActWhyNot(p, h, sat);
             if (why != null)
             {
@@ -121,10 +129,54 @@ namespace EnrageWestworld.InGame
             if (_mindActs.Count >= MindActsAtOnce)
                 return LostAtOnce;
             if (sat)
+            {
+                if (scen && MindScenarios.GetsUpFor(kind))
+                {
+                    // up the waking's way, then to it (stage 1); refused (the rate limit, nobody to talk to), a look from the seat may still do
+                    string up = MindGetUp(w, h, kind, now, me, false);
+                    if (up == null || !(looks && MindScenarios.LookFromSeat(kind)))
+                        return up;
+                }
+                if (!looks)
+                    return LostSatNoLook;
                 return MindSeatedLook(w, h, kind, now, me, false);
+            }
             Vector3 at = p.Position;
+            bool byPoint = scen && MindScenarios.ByPoint(kind);
+            if (byPoint)
+            {
+                string gate = S1Refuse(w, at, now);   // one start every few seconds near you, never a street at once (guard 2)
+                if (gate != null)
+                    return gate;
+            }
             var a = new MindAct { Handle = h, Kind = kind, Name = w.Name, Started = now, Until = now + 60000 };
             string did;
+            string lost = MindActBegin(a, w, h, kind, now, me, at, out did);
+            if (lost != null)
+            {
+                if (lost == S1NoPoint)
+                {
+                    w.Stage1RestUntil = now + MindScenarios.FailRestMs;
+                    S1Lose(S1NoPoint);
+                }
+                return lost;
+            }
+            if (byPoint)
+                S1Started(w, now);
+            _mindActs.Add(a);
+            _mindActNextAt = now + MindActGapMs;
+            NoteMindAct(kind);
+            _mindActLast = w.Name + " " + did;
+            Log.Write("MIND acts: " + w.Name + " " + did + " (" + w.ChoiceWhy + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
+            return null;
+        }
+
+        /// The act itself for someone on their feet (standing, or just got up: WestworldScript.MindScenarios.cs), filled into
+        /// `a`: null when it began (with `did`, its words), else why not (nothing was ordered).
+        private string MindActBegin(MindAct a, MindWho w, int h, string kind, int now, Ped me, Vector3 at, out string did)
+        {
+            bool looks = _cfg.MindActsSeatedLooks, scen = _cfg.MindActsScenarios;
+            did = null;
             switch (kind)
             {
                 case "stroll":
@@ -133,6 +185,18 @@ namespace EnrageWestworld.InGame
                     did = "takes a stroll";
                     break;
                 case "rest": case "eat": case "drink": case "cards": case "work": case "pray":
+                    if (scen && MindScenarios.ByPoint(kind))
+                    {
+                        // a point of the game's of the right kind (a bench, a wall, the bar, a broom), the bar, or something in place (stage 1)
+                        string lost = S1Point(a, w, h, kind, at, now, out did);
+                        if (lost != null)
+                        {
+                            _mindActsSkipped++;
+                            Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (" + lost + ")");
+                            return lost;
+                        }
+                        break;
+                    }
                     // the nearest of the world's own spots: a bench or a porch outside, a chair or the bar within, a work point by
                     // the store; it may be none, and then nothing happens (Rockstar's own call: radius, then how long)
                     if (!TASK.DOES_SCENARIO_EXIST_IN_AREA(at, 15f, true, 0, false))
@@ -192,13 +256,18 @@ namespace EnrageWestworld.InGame
                     }
                 case "greet": case "talk":
                     {
-                        int to = kind == "greet" ? MindFriendNear(w, h) : MindSomeoneToTalkTo(h, at);
+                        // a talk joins two already talking first (stage 1), else the nearest someone to talk to
+                        int partner = 0;
+                        int to = kind == "greet" ? MindFriendNear(w, h) : MindPairToJoin(h, at, out partner);
+                        if (to == 0 && kind == "talk")
+                            to = MindSomeoneToTalkTo(h, at);
                         if (to == 0)
                             return kind == "greet" ? LostNoFriend : LostNoTalk;
                         a.Toward = to;
-                        TASK.TASK_GO_TO_ENTITY(h, to, 20000, 1f, 1.4f, 0f, 0);
+                        a.Joining = partner != 0;
+                        TASK.TASK_GO_TO_ENTITY(h, to, 20000, 1f, a.Joining ? 1.3f : 1.4f, 0f, 0);
                         a.Until = now + 20000;
-                        did = (kind == "greet" ? "goes over to " : "goes to talk to ") + (MindNameOf(to) ?? "someone");
+                        did = (kind == "greet" ? "goes over to " : a.Joining ? "joins " : "goes to talk to ") + (MindNameOf(to) ?? "someone") + (a.Joining ? " and " + (MindNameOf(partner) ?? "another") + ", talking" : "");
                         break;
                     }
                 case "watch":
@@ -222,9 +291,14 @@ namespace EnrageWestworld.InGame
                         if (target != 0)
                         {
                             int ms = 6000 + (int)(Voice.Hash(w.Id + "|watch") % 2000);
+                            if (atYou && scen)
+                            {
+                                TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 1500, 0f, 0f, 0f);   // stops and watches you (stage 1)
+                                _s1Watched++;
+                            }
                             TASK.TASK_LOOK_AT_ENTITY(h, target, ms, 0, 51, 0);
                             a.Until = now + ms;
-                            did = atYou ? (feared ? "keeps a wary eye on you" : "keeps an eye on you") : "keeps an eye on the street (" + (MindNameOf(target) ?? "a passer-by") + ")";
+                            did = atYou ? (feared ? "keeps a wary eye on you" : scen ? "stops and watches you" : "keeps an eye on you") : "keeps an eye on the street (" + (MindNameOf(target) ?? "a passer-by") + ")";
                         }
                         else
                         {
@@ -252,11 +326,6 @@ namespace EnrageWestworld.InGame
                 default:
                     return kind.StartsWith("urge:", StringComparison.Ordinal) ? LostUrge : LostNoAct;
             }
-            _mindActs.Add(a);
-            _mindActNextAt = now + MindActGapMs;
-            NoteMindAct(kind);
-            _mindActLast = w.Name + " " + did;
-            Log.Write("MIND acts: " + w.Name + " " + did + " (" + w.ChoiceWhy + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
             return null;
         }
 
@@ -295,6 +364,16 @@ namespace EnrageWestworld.InGame
             if (kind != "rest" && kind != "drink" && kind != "eat" && kind != "work")
                 return null;
             uint type = (uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h);
+            if (_cfg.MindActsScenarios)
+            {
+                // only where the scenario truly is the choice (guard 4, Core/MindScenarios.AtItAlready): a smoke or a stare is no meal,
+                // a broom no rest; a type the lists don't know is nothing (they may get up and go to one that is)
+                string name = MindScenarios.NameOf(type);
+                if (name != null)
+                    return MindScenarios.AtItAlready(kind, name) ? name : null;
+                if (kind == "rest")
+                    return null;
+            }
             string work = ScenarioOf(h, type, WorkScenarios, ref _workHashes);
             if (kind == "work")
                 return work;
@@ -339,7 +418,7 @@ namespace EnrageWestworld.InGame
         private string MindSeatedLook(MindWho w, int h, string kind, int now, Ped me, bool test)
         {
             if (kind != "watch" && kind != "keepclear" && kind != "greet" && kind != "talk")
-                return LostSatNoLook;   // getting up for it is stage 1 of 0.7.12, not built
+                return LostSatNoLook;   // getting up for it: [Mind] MindActsScenarios (WestworldScript.MindScenarios.cs)
             if (IsAcknowledging(h))
                 return LostBusyNod;
             Vector3 at = ENTITY.GET_ENTITY_COORDS(h, true, true);
@@ -402,6 +481,23 @@ namespace EnrageWestworld.InGame
                     _mindActs.RemoveAt(i);   // another feature has them now (Talk, a walk-up, a scene): the act ends, with no new orders (the cross-cutting review; a nod is not enough)
                     continue;
                 }
+                if (!gone && AimedLately(h, now))
+                {
+                    _mindActs.RemoveAt(i);   // aimed at: the game's own answer to a gun has them (WestworldScript.AimLetGo.cs), no orders of ours
+                    continue;
+                }
+                if (!gone && a.Stage1)
+                {
+                    // stage 1: getting up, the walk to a point, a while at it (WestworldScript.MindScenarios.cs; polled every 250 ms at most)
+                    int s1 = S1Step(a, h, now);
+                    if (s1 == 1)
+                        continue;
+                    if (s1 == 2)
+                    {
+                        _mindActs.RemoveAt(i);
+                        continue;
+                    }
+                }
                 if (!gone && a.Then != 0 && now >= a.ThenAt)
                 {
                     if (!PED.IS_PED_USING_ANY_SCENARIO(h) && !_director.Involves(h))
@@ -418,7 +514,15 @@ namespace EnrageWestworld.InGame
                 if (arrived)
                 {
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, a.Toward, 2000, 0f, 0f, 0f);   // face to face: a talk may start between them
-                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(a.Toward, h, 2000, 0f, 0f, 0f);
+                    if (PED.IS_PED_USING_ANY_SCENARIO(a.Toward) || _director.Involves(a.Toward))
+                        TASK.TASK_LOOK_AT_ENTITY(a.Toward, h, 4000, 0, 51, 0);   // sat or leaning (or in a scene): only a look, their seat never touched; the walker turns
+                    else
+                        TASK.TASK_TURN_PED_TO_FACE_ENTITY(a.Toward, h, 2000, 0f, 0f, 0f);
+                    if (a.Joining)
+                    {
+                        _s1Joined++;   // a third joins two talking (stage 1)
+                        Log.Write("MIND acts: " + a.Name + " joins " + (MindNameOf(a.Toward) ?? "two") + " talking");
+                    }
                 }
                 bool there = !gone && a.To != default(Vector3) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(a.To) < 3f;
                 if (there && a.Arrive != null && !a.Arrived && !_director.Involves(h))
@@ -576,7 +680,7 @@ namespace EnrageWestworld.InGame
                 return "off ([Mind] MindActs, with MindLive)";
             int acting, scenes, named, already;
             MindActingShare(Game.GameTime, out acting, out scenes, out named, out already);
-            return MindShareWords(acting, scenes, named, already) + "; " + (_cfg.MindActsSeatedLooks ? "watch, looks and showoff on: " + _mindSeatedLooks + " looks from a seat, " + _mindAlreadyAt + " already at what they chose; " : "watch, looks and showoff off ([Mind] MindActsSeatedLooks); ") +
+            return MindShareWords(acting, scenes, named, already) + "; " + S1Status() + "; " + (_cfg.MindActsSeatedLooks ? "watch, looks and showoff on: " + _mindSeatedLooks + " looks from a seat, " + _mindAlreadyAt + " already at what they chose; " : "watch, looks and showoff off ([Mind] MindActsSeatedLooks); ") +
                    _mindActsDone + " acted on their choices this session (" + (_mindActCount.Count == 0 ? "none yet" : string.Join(", ", _mindActCount.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
                    "), " + _mindActs.Count + " acting now, " + _mindActsSkipped + " passed over" + (_mindActLast != null ? "; last: " + _mindActLast : "") +
                    "; of " + _mindActsTried + " tried, not acted: " + (_mindActLost.Count == 0 ? "none" : string.Join(", ", _mindActLost.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
