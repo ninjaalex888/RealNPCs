@@ -689,8 +689,24 @@ namespace EnrageWestworld.InGame
         {
             // every scene playing within 40 m, nearest first, as many as the bar's width holds; the rest "(+2 more)" (Lex, 2026-10-30:
             // "show all scenes happening nearby, try to account for if the text will go off the screen")
+            // (no LINQ: the 40 m filter and the nearest-first order go into reused lists, an insertion sort so equal distances
+            // keep the Director's order as OrderBy's stable sort did; the frame-cost audit's follow-up, NIGHT4 item 6)
             Vector3 me = Game.Player.Character.Position;
-            var near = _director.TickerLines().Where(kv => kv.Value.DistanceTo(me) <= SceneBarMetres).OrderBy(kv => kv.Value.DistanceTo(me)).ToList();
+            List<KeyValuePair<string, Vector3>> all = _director.TickerLines();
+            List<KeyValuePair<string, Vector3>> near = _sceneNear;
+            near.Clear();
+            _sceneNearM.Clear();
+            for (int i = 0; i < all.Count; i++)
+            {
+                float m = all[i].Value.DistanceTo(me);
+                if (m > SceneBarMetres)
+                    continue;
+                int at = near.Count;
+                while (at > 0 && _sceneNearM[at - 1] > m)
+                    at--;
+                near.Insert(at, all[i]);
+                _sceneNearM.Insert(at, m);
+            }
             _sceneBarCount = near.Count;
             _sceneBarIdx = -1;
             if (near.Count == 0)
@@ -699,22 +715,28 @@ namespace EnrageWestworld.InGame
                 return null;
             }
             float room = _cfg.TickerWidth - Draw.Width("Nearby", _cfg.TickerScale) - 0.02f;
-            var parts = new List<string>();
+            List<string> parts = _sceneParts;
+            parts.Clear();
+            bool more = false;   // a "(+N more)" went in: the bar can't hold them all
             for (int i = 0; i < near.Count; i++)
             {
                 string one = near[i].Key + " - " + Whereabouts(me, near[i].Value);
-                int left = near.Count - i - 1;
-                string tryText = string.Join("  \u00b7  ", parts.Concat(new[] { one })) + (left > 0 ? "  (+" + left + " more)" : "");
-                if (parts.Count > 0 && Draw.Width(tryText, _cfg.TickerScale) > room)
+                if (parts.Count > 0)
                 {
-                    parts.Add("(+" + (near.Count - i) + " more)");
-                    break;
+                    int left = near.Count - i - 1;
+                    string tryText = string.Join("  \u00b7  ", parts) + "  \u00b7  " + one + (left > 0 ? "  (+" + left + " more)" : "");
+                    if (Draw.Width(tryText, _cfg.TickerScale) > room)
+                    {
+                        parts.Add("(+" + (near.Count - i) + " more)");
+                        more = true;
+                        break;
+                    }
                 }
                 parts.Add(one);
             }
             string text = near[0].Key;   // the line is made anew only when the nearest scene changes
             string shown0 = string.Join("  \u00b7  ", parts);
-            if (parts.Count < near.Count || parts.Any(x => x.StartsWith("(+")) || (Game.GameTime < _scenePickUntil && near.Count >= 2))
+            if (parts.Count < near.Count || more || (Game.GameTime < _scenePickUntil && near.Count >= 2))
             {
                 // more than the bar holds: each in turn, four seconds apiece, so none is hidden (Lex, 2026-10-30)
                 int idx = (int)((Game.GameTime / 4000) % near.Count);
@@ -737,6 +759,9 @@ namespace EnrageWestworld.InGame
         }
 
         private string _sceneBarOf;
+        private readonly List<KeyValuePair<string, Vector3>> _sceneNear = new List<KeyValuePair<string, Vector3>>();   // SceneOnBar's, refilled each call
+        private readonly List<float> _sceneNearM = new List<float>();
+        private readonly List<string> _sceneParts = new List<string>();
 
         private int _namedForCards;
 

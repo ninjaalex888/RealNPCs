@@ -94,6 +94,7 @@ namespace EnrageWestworld.InGame
         // at once"): words only, never blows, a walk-over or a callback, so the scene's one-owner parts (the rough move, the
         // fight, Happened, the pickpocket's cast) stay the scene's
         private readonly List<Live> _side = new List<Live>();
+        private readonly List<Live> _sideTick = new List<Live>();   // Tick's snapshot of _side, reused
         private int _player;
         private Action<string, string, bool, bool, int> _say;
 
@@ -639,8 +640,16 @@ namespace EnrageWestworld.InGame
             if (_second != null)
                 TickOne(_second, player, secondSay ?? say);   // its voices as any scene's; its words as a subtitle near you, never the first's queue
             if (_side.Count > 0)
-                foreach (Live x in _side.ToArray())
-                    TickOne(x, player, sideSay ?? ((a, b, c, d2, e) => { }));
+            {
+                // a snapshot, as ToArray was (a talk ended by another's tick still gets its own, in the same order), into one reused
+                // list instead of a new array every frame (the frame-cost audit's follow-up, NIGHT4 item 6); Tick is never re-entered
+                _sideTick.Clear();
+                for (int i = 0; i < _side.Count; i++)
+                    _sideTick.Add(_side[i]);
+                for (int i = 0; i < _sideTick.Count; i++)
+                    TickOne(_sideTick[i], player, sideSay ?? ((a, b, c, d2, e) => { }));
+                _sideTick.Clear();
+            }
         }
 
         private void TickOne(Live l, Ped player, Action<string, string, bool, bool, int> say)
