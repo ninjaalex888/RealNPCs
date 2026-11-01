@@ -22,7 +22,7 @@ namespace EnrageWestworld.InGame
         private const int MindScenesOffered = 2;  // at most this many of a person's own reasons join one pick's list
         private List<PairReason> _mindReasons = new List<PairReason>();
         private int _mindReasonsAt = -100000;
-        private int _mindScenesOffer, _mindScenesPicked, _mindScenesStarted, _mindScenesFailed;
+        private int _mindScenesOffer, _mindScenesPicked, _mindScenesStarted, _mindScenesFailed, _mindFarHeldSkipped;
         private string _mindSceneLast;
 
         /// Why a person's own pick can't start a scene now (the street's own rails, as the Director's tick has them), or null.
@@ -59,7 +59,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 if (_cfg.ChanceFirst && pr.Apart > 2.6f && BothHeld(pr.A.Ped.Handle, pr.B.Ped.Handle))
                 {
-                    _farHeldSkipped++;
+                    _mindFarHeldSkipped++;
                     continue;   // two in chairs a few steps apart: the walk-over never comes (fix 7's skip, on the model's path too: the review)
                 }
                 string words = Reasons.ActWords(pr.Why, Person.FirstOf(other.Who.Name));
@@ -169,7 +169,7 @@ namespace EnrageWestworld.InGame
         private string MindScenesStatus()
         {
             return (_cfg.MindStartsScenes ? "on" : "off ([Mind] MindStartsScenes)") + ": offered in " + _mindScenesOffer + " picks, picked " + _mindScenesPicked + ", started " + _mindScenesStarted +
-                   ", not now " + _mindScenesFailed + (_mindSceneLast != null ? "; last: " + _mindSceneLast : "");
+                   ", not now " + _mindScenesFailed + ", far pairs in chairs not offered " + _mindFarHeldSkipped + (_mindSceneLast != null ? "; last: " + _mindSceneLast : "");
         }
     }
 }
