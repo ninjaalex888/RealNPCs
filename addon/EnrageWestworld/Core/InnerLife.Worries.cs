@@ -609,6 +609,7 @@ namespace EnrageWestworld.Core
             WorryKind k = KindAt(p, fits, arc);
             if (LinkedDead(p, k, arc))
                 return null;
+            GrowWorries();   // the more lines a stage (InnerLife.WorriesMore.cs; the no-model run, item 6b)
             string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis
                           : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? (k.PaidToday != null && PaidOn(p.Id, gameDay) ? k.PaidToday : k.Settled)   // the day he paid: not mended yet
                           : EndsWell(p, k, arc) ? k.Good : k.Bad;
@@ -635,6 +636,7 @@ namespace EnrageWestworld.Core
                 return null;
             if (stage == 3 && k.ToHimToday != null && SettledIn(p.Id, arc, gameDay))
                 return Fill(Pick(PaidOn(p.Id, gameDay) ? k.ToHimToday : k.ToHimSince, p, seed, told), p, k, arc);   // to the man who paid: the Settled lines speak of him (the review)
+            GrowWorries();   // the more lines a stage (InnerLife.WorriesMore.cs; the no-model run, item 6b)
             string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? k.Settled : EndsWell(p, k, arc) ? k.Good : k.Bad;
             string[] said = pool.Where(l => !NotSaid.Any(n => l.Contains(n))).ToArray();
             return Fill(Pick(said.Length > 0 ? said : pool, p, seed, told), p, k, arc);   // `told`: not their ticker thought said again
@@ -738,6 +740,7 @@ namespace EnrageWestworld.Core
         /// Every worry line, with each kind's key, for the tests.
         public static IEnumerable<KeyValuePair<string, string>> AllWorryLines()
         {
+            GrowWorries();
             foreach (WorryKind k in Worries)
                 foreach (string[] pool in new[] { k.Begin, k.Worse, k.Crisis, k.Good, k.Bad, k.AfterGood, k.AfterBad, k.Settled ?? new string[0] })
                     foreach (string line in pool)

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Twice the lines for every worry: each stage of the fourteen worries people live through (a debt, a sick child, a letter that doesn't come, the drought, the bank's note, the drink, a bad tooth...) has six lines where it had three, 210 more in all, so the same worry seen in a dozen faces in an afternoon doesn't read as one line passed round. In the ride test a worry or a thought about you never came round twice in the first hour (before: 13.6 and 23.3 an hour), and the second and third hours' repeats fell to 16% and 32%.
 - More thoughts about you: what people think as they see you, ride by, wear a gun or meet you again goes from 44 lines to 145 (a regular who knows you, your gun, your horse, the rest of you). In the ride test the second hour's repeats fall from 27% to 19%. Written lines, no AI model needed.
 - **Thoughts vary over an hour of play.** No two people near you think the same thought-shape within about an hour of play, where before it was the last few minutes: in the ride test the share of thoughts you had already seen fell from 22% to 0% in the first hour, 43% to 27% in the second and 50% to 40% in the third, with the same lines, and on a quiet day the plain filler gives way to the day, the times and what is going on. The street's scenes and chance meetings pass over lines said lately too (`[Mind] SaidLately`, on; their exact repeats in an hour 15% to 12%). No AI model needed (settings version 183).
 
