@@ -62,16 +62,17 @@ namespace EnrageWestworld.InGame
             foreach (SceneTie t in _store.Ties)
             {
                 Candidate a;
-                if (!Grudges.Wrong(t.Kind) || t.Doer == null || g - t.At < 0 || g - t.At > 3 * 1440 || !byId.TryGetValue(t.Doer, out a))
+                string wrongId = Grudges.Wrongdoer(t);   // (a scorn's Doer asked: the wrong is the refusal)
+                if (!Grudges.Wrong(t.Kind) || wrongId == null || g - t.At < 0 || g - t.At > 3 * 1440 || !byId.TryGetValue(wrongId, out a))
                     continue;
-                string victim = t.OtherId(t.Doer);
+                string victim = t.OtherId(wrongId);
                 foreach (SceneTie w in _store.Ties)
                 {
-                    if (!Ties.Friends(w) || !w.Has(victim) || w.Has(t.Doer))
+                    if (!Ties.Friends(w) || !w.Has(victim) || w.Has(wrongId))
                         continue;
                     Candidate c;
                     string cid = w.OtherId(victim);
-                    if (!byId.TryGetValue(cid, out c) || c == a || TieWarmth(cid, a.Who) > 0 || (!test && _engine.Grudged(cid, "tie|" + t.Doer + "|" + t.At)))
+                    if (!byId.TryGetValue(cid, out c) || c == a || TieWarmth(cid, a.Who) > 0 || (!test && _engine.Grudged(cid, "tie|" + wrongId + "|" + t.At)))
                         continue;   // not a friend of the one who did it too, and not over this same wrong again
                     if (!test && !Grudges.KnowsOf(g - t.At, WorldEvents.Witnessed(_store.WorldLog, "scene:" + t.Kind, t.At, cid)))
                         continue;   // word hasn't reached them yet, and they didn't see it

@@ -307,7 +307,8 @@ namespace EnrageWestworld.Core
         // ---- a loan asked -----------------------------------------------------------------------------
 
         /// One with a money worry asks the other to tide them over; the other's nature and what lies between them answer. Kind
-        /// "charity" when given (the tie warms), "scorn" when refused (it cools); the giver or refuser is the one who did it.
+        /// "charity" when given (the tie warms), "scorn" when refused (it cools). The tie's doer is the asker, as with Beg and
+        /// Ties.Trouble: the appraisal turns it round to the answer, and Grudges.Wrongdoer to the one who refused.
         public static Scene AskFavour(SceneCast c, string seed, int lead, string worry)
         {
             int k = lead == 1 ? 1 : 0, g = 1 - k;
@@ -317,7 +318,7 @@ namespace EnrageWestworld.Core
             string temper = c.Tempers != null && g < c.Tempers.Length ? c.Tempers[g] : null;
             int yes = 45 + (warmth >= 1 ? 25 : 0) + (temper == "Loyal" ? 25 : 0) - (temper == "Cold" || temper == "Greedy" ? 25 : 0);
             bool given = Voice.Chance(seed + "fy", Math.Max(5, Math.Min(95, yes)));
-            Scene s = new Scene { Kind = given ? "charity" : "scorn", Doer = g, Summary = given ? "one tided the other over with a loan" : "one asked the other for a loan and was turned down" };
+            Scene s = new Scene { Kind = given ? "charity" : "scorn", Doer = k, Summary = given ? "one tided the other over with a loan" : "one asked the other for a loan and was turned down" };
             string ask;
             switch (worry)
             {

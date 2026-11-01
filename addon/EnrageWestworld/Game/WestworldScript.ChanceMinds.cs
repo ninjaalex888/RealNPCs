@@ -165,6 +165,9 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             string whyNot = me == null || !me.Exists() || me.IsDead ? "you're down"
                           : _director.Busy ? "another scene started meanwhile"
+                          : !_cfg.Drama || Feed.Busy || _stalker != null || _wedding != null || _theft != null || _plea != null || _visitor != null
+                            ? "the street is taken up"   // the drama gate's own (WestworldScript.Life.cs), asked again after the wait
+                          : _interiorType != 0 && !w.Saloon ? "you've gone indoors"
                           : ChanceGone(w.A) ?? ChanceGone(w.B)
                           ?? (w.A.Position.DistanceTo(me.Position) > StreetMetres + 8f ? "you've walked on" : null)
                           ?? (MISC.GET_MISSION_FLAG() ? "a mission" : null);

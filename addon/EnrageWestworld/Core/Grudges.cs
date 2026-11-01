@@ -32,6 +32,13 @@ namespace EnrageWestworld.Core
             return sawIt || ageMinutes >= WordTakes;
         }
 
+        /// Who did the wrong on a tie: its Doer, but for a scorn the one who was asked (a scorn's Doer is the one who asked,
+        /// as Ties.Trouble and the appraisal read it; the wrong a friend takes up is the refusal).
+        public static string Wrongdoer(SceneTie t)
+        {
+            return t == null || t.Doer == null ? null : t.Kind == "scorn" ? t.OtherId(t.Doer) : t.Doer;
+        }
+
         public static bool Wrong(string tieKind)
         {
             return tieKind != null && Wrongs.ContainsKey(tieKind);
