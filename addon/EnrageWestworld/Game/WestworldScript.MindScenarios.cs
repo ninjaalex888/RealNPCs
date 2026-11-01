@@ -51,11 +51,18 @@ namespace EnrageWestworld.InGame
         }
 
         // ScenarioExit.Step's "another feature has them now": the look at someone put back after a get-up is left alone (made once)
-        private Func<int, bool> _exitBusy;
+        private Func<int, bool> _exitBusy, _exitAimed;
 
         private bool ExitBusy(int h)
         {
-            return _director.Involves(h) || InTalk(h) || IsStaged(h) || IsMindActing(h) || !CanDirect(new Ped(h)) || S1GameHasThem(h);   // nobody else's, enRAGE's included (MayDirect's rule)
+            // nobody else's, enRAGE's included (MayDirect's rule). NotFree: the Director, Talk, a wake act (a hold's next link
+            // must not be pulled by the look: the review, 2026-11-01), an encounter, a get-up of the mind's
+            return NotFree(h) || IsMindActing(h) || !CanDirect(new Ped(h)) || S1GameHasThem(h);
+        }
+
+        private bool ExitAimed(int h)
+        {
+            return AimedLately(h, Game.GameTime);   // the game's answer to a gun has them: a let-go get-up is looked at once it's over
         }
 
         private void S1Lose(string why)
@@ -417,6 +424,7 @@ namespace EnrageWestworld.InGame
                             kw.ActWhyNot = S1Kept;
                         }
                         S1Lose(S1Kept);
+                        a.GettingUp = false;   // put back here: not handed on again as a let-go get-up (MindActDrop)
                         ScenarioExit.Restore(a.Exit, now);
                         return 2;
                     }

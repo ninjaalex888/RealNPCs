@@ -365,13 +365,40 @@ namespace EnrageWestworld.Core
 
         /// How someone the scenario kept is put back: their own point again when it's there and free (or still theirs), else
         /// their type in place where they stand (never a seat type), else on their way.
-        public static string RestorePick(bool pointOk, bool seatType, bool hasType)
+        /// `known`: the type is one of the named ones (an unnamed hash may be a chair or a stool: never started in place, the
+        /// review, 2026-11-01).
+        public static string RestorePick(bool pointOk, bool seatType, bool hasType, bool known)
         {
             if (pointOk)
                 return "point";
-            if (hasType && !seatType)
+            if (hasType && known && !seatType)
                 return "in place";
             return "wander";
+        }
+
+        /// The hard pull's immediate clear only off camera, as Rockstar's: past 100 m or the screen faded (cv_amb_whisper_sit.c
+        /// 4076-4086 returns early inside 100 m with the screen up); in view, the immediate flag and a soft clear (func_384).
+        public const float PullHardMetres = 100f;
+        public const int DroppedGiveUpMs = 90000, DroppedLookMs = 3000, PulledRetryMs = 5000, PulledGiveUpMs = 300000;
+
+        public static bool PullHard(float metres, bool faded)
+        {
+            return faded || metres > PullHardMetres;
+        }
+
+        /// The look at someone whose get-up was let go before it ended (aimed at, taken by the game or another feature, a wake
+        /// hold let go): "wait" (another has them, or still exiting: looked at again), "up" or "playing" (fine: left be),
+        /// "restore" (still in the scenario and not playing it, or stuck exiting: put back), "left be" (taken too long).
+        /// Never a pull: whoever has them now may have given them orders.
+        public static string DroppedLook(bool usingAny, bool exiting, bool playing, bool taken, int sinceDropMs)
+        {
+            if (taken)
+                return sinceDropMs >= DroppedGiveUpMs ? "left be" : "wait";
+            if (!usingAny && !exiting)
+                return "up";
+            if (exiting)
+                return sinceDropMs >= DroppedGiveUpMs ? "restore" : "wait";
+            return playing ? "playing" : "restore";
         }
     }
 }

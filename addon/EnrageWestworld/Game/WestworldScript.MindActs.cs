@@ -75,11 +75,23 @@ namespace EnrageWestworld.InGame
 
         /// An act ends: removed, and the get-up's event block let go (unless `takerBlocks`: the scene, Talk, the menu, the ring, a
         /// join or a wake act that took them sets and clears its own).
-        private void MindActDrop(int i, bool takerBlocks = false)
+        /// Still getting up when dropped (aimed at, taken up, the game took them, a mission): the ask is handed to ScenarioExit,
+        /// which puts them back if they're stuck in it (`atOnce`: now, there's no later look), never left frozen (the review,
+        /// 2026-11-01).
+        private void MindActDrop(int i, bool takerBlocks = false, string why = "dropped", bool atOnce = false)
         {
             MindAct a = _mindActs[i];
             _mindActs.RemoveAt(i);
             S1Unblock(a, takerBlocks);
+            MindExitLetGo(a, why, atOnce);
+        }
+
+        private static void MindExitLetGo(MindAct a, string why, bool atOnce)
+        {
+            if (!a.GettingUp || a.Exit == null)
+                return;
+            a.GettingUp = false;
+            ScenarioExit.Dropped(a.Exit, Game.GameTime, atOnce, why);
         }
 
         private static void S1Unblock(MindAct a, bool takerBlocks)
@@ -96,7 +108,7 @@ namespace EnrageWestworld.InGame
         {
             for (int i = _mindActs.Count - 1; i >= 0; i--)
                 if (_mindActs[i].Blocked)
-                    MindActDrop(i);
+                    MindActDrop(i, false, "a mission or stopping", true);
         }
 
         /// The game itself has them (a fight, a flee, a fall) or enRAGE is driving them: a stage-1 act lets go with no orders (the
@@ -563,12 +575,12 @@ namespace EnrageWestworld.InGame
                 {
                     _mindActsTakenUp++;
                     bool owns = _director.Involves(h) || InTalk(h) || (_menu != null && _menu.Handle == h) || _ring.Contains(h) || JoinIsPending(h) || WakeActHas(h) || IsStaged(h) || Spawner.IsBorrowed(h);   // a wake act's own person only: its other and its lawman are never blocked by it (NIGHT4 item 6); the borrowed: the stalker or a law job sets its own
-                    MindActDrop(i, owns);   // another feature has them now (Talk, a walk-up, a scene, the ring, a wake act): the act ends, with no new orders (the cross-cutting review; a nod is not enough)
+                    MindActDrop(i, owns, "taken up by something else");   // another feature has them now (Talk, a walk-up, a scene, the ring, a wake act): the act ends, with no new orders (the cross-cutting review; a nod is not enough)
                     continue;
                 }
                 if (!gone && AimedLately(h, now))
                 {
-                    MindActDrop(i);   // aimed at: the game's own answer to a gun has them (WestworldScript.AimLetGo.cs), no orders of ours
+                    MindActDrop(i, false, "aimed at");   // aimed at: the game's own answer to a gun has them (WestworldScript.AimLetGo.cs), no orders of ours
                     continue;
                 }
                 if (!gone && a.Stage1)

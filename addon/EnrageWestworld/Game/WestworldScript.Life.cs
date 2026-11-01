@@ -38,7 +38,7 @@ namespace EnrageWestworld.InGame
             HorseThiefStep(me, now);   // a horse thief on his way to it, or away on it (WestworldScript.HorseThief.cs)
             FallWanderStep(now);
             WanderLaterStep(now);
-            ScenarioExit.Step(now, _exitBusy ?? (_exitBusy = ExitBusy));   // anyone put back after a get-up, looked at 3 s on (Game/ScenarioExit.cs)
+            ScenarioExit.Step(now, _exitBusy ?? (_exitBusy = ExitBusy), _exitAimed ?? (_exitAimed = ExitAimed));   // anyone put back after a get-up, or let go mid-get-up, looked at (Game/ScenarioExit.cs)
             LawGiveBackStep(now);   // lawmen we took for a job, handed back (WestworldScript.LawTake.cs)
             PatientStep(now);   // the doctor's patient on the way there and back (WestworldScript.Patient.cs)
             ThrownOutStep(now);   // the card cheat on the boardwalk

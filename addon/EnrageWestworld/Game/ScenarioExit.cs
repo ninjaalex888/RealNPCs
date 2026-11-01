@@ -28,7 +28,9 @@ namespace EnrageWestworld.InGame
         public uint Type;
         public string TypeName, Name, Path, Trace = "", Restored, Who;
         public Vector3 At;
-        public bool AskedTwice, Hard;
+        public bool AskedTwice, Hard, HardImmediate, Dropped;   // Dropped: let go before the get-up ended (looked at, put back if stuck)
+        public int DroppedAt;
+        public string PullHow;
     }
 
     internal static class ScenarioExit
@@ -141,7 +143,10 @@ namespace EnrageWestworld.InGame
                 int user = TASK._GET_PED_USING_SCENARIO_POINT(pt);
                 pointOk = user == 0 || user == h;
             }
-            string pick = MindScenarios.RestorePick(pointOk, MindScenarios.SeatType(e.TypeName), e.Type != 0);
+            bool known = e.TypeName != null;
+            string pick = MindScenarios.RestorePick(pointOk, MindScenarios.SeatType(e.TypeName), e.Type != 0, known);
+            if (!known && e.Type != 0 && !pointOk && Unknown.Add(e.Type))
+                Log.Write(e.Who + " restore: scenario type 0x" + e.Type.ToString("X8") + " isn't in the names table (Core/MindScenarios.cs): never started in place, it may be a seat");
             if (pick == "point")
                 TASK.TASK_USE_SCENARIO_POINT(h, pt, "", 0, true, false, 0u, false, -1f, false);   // barcustomer_interaction.c 864's args ("" for its null, as every string native here)
             else if (pick == "in place")
@@ -153,19 +158,75 @@ namespace EnrageWestworld.InGame
             e.CheckAt = now + MindScenarios.RestoreCheckMs;
             Count("restored: " + pick);
             Checks.Add(e);
-            Log.Write(e.Who + " restore: " + e.Name + " (" + TypeWords(e) + ") not out in " + ((now - e.AskedAt) / 100 / 10.0).ToString("0.0") + " s -> " + pick + " (exit " + e.Path + ") [" + e.Trace + "]");
+            Log.Write(e.Who + " restore: " + e.Name + " (" + TypeWords(e) + ") " + (e.Dropped ? "let go mid-get-up and stuck " : "not out in ") + ((now - e.AskedAt) / 100 / 10.0).ToString("0.0") + " s" +
+                      (e.Dropped ? " after the ask" : "") + " -> " + pick + " (exit " + e.Path + ") [" + e.Trace + "]");
+            e.Dropped = false;
             return pick;
         }
 
-        /// The hard pull, Rockstar's forced way (cv_amb_whisper_sit.c 4082): the immediate exit flag, the immediate clear,
-        /// detached if attached (a chair, a bar). The caller gives the next task the same tick, so no idle pose between.
-        public static void Pull(int h)
+        private static readonly HashSet<uint> Unknown = new HashSet<uint>();
+
+        /// A get-up let go before it ended (aimed at, the game or another feature took them, a wake hold let go, a mission):
+        /// `now` (a mission, the add-on stopping: no later look) put back at once if stuck; else looked at once whoever has
+        /// them lets go (Step: put back if stuck, never pulled; up or animating is fine).
+        public static void Dropped(ExitAsk e, int now, bool atOnce, string why)
         {
-            PED.SET_PED_SHOULD_PLAY_IMMEDIATE_SCENARIO_EXIT(h);
-            TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, true, true);
-            if (ENTITY.IS_ENTITY_ATTACHED(h))
-                ENTITY.DETACH_ENTITY(h, true, true);
-            Count("pulled");
+            if (e == null || e.Dropped || Checks.Contains(e))
+                return;
+            int h = e.Handle;
+            if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                return;
+            e.Dropped = true;
+            e.DroppedAt = now;
+            Count("let go mid-get-up");
+            if (atOnce)
+            {
+                int f = Flags(e, now);
+                string look = MindScenarios.DroppedLook((f & 1) != 0, (f & 6) != 0, (f & (8 | 32 | 64)) != 0, false, MindScenarios.DroppedGiveUpMs);
+                Log.Write(e.Who + " let go mid-get-up: " + e.Name + " (" + why + ", " + look + ") [" + e.Trace + "]");
+                if (look == "restore")
+                    Restore(e, now);
+                else
+                    e.Dropped = false;
+                return;
+            }
+            e.CheckAt = System.Math.Max(now + MindScenarios.DroppedLookMs, e.AskedAt + MindScenarios.UpMostMs + MindScenarios.ExitGraceMs);
+            Checks.Add(e);
+            Log.Detail(e.Who + " let go mid-get-up: " + e.Name + " (" + why + "), looked at again once free [" + e.Trace + "]");
+        }
+
+        /// Whether the hard pull's immediate clear may be used on them now: past 100 m from Arthur or the screen faded (the only
+        /// time Rockstar's whisper_sit does it, cv_amb_whisper_sit.c 4076-4086).
+        public static bool OffCamera(int h)
+        {
+            float m = ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(RDR2.Game.Player.Character.Position);
+            return MindScenarios.PullHard(m, CAM.IS_SCREEN_FADED_OUT());
+        }
+
+        /// Pulled out of a scenario, then `next` the same tick (no idle pose between). Off camera (past 100 m, or the screen faded)
+        /// Rockstar's forced way: the immediate exit flag, CLEAR_PED_TASKS_IMMEDIATELY, detached if attached (cv_amb_whisper_sit.c
+        /// 4082). In view never that (the immediate clear off a bar is what T-posed a man, 2026-10-30): the immediate flag and a
+        /// soft clear (cv_amb_light_smoke func_384, whisper_sit 10468). Returns the branch, for the log.
+        public static string Pull(int h, System.Action<int> next)
+        {
+            string how;
+            if (OffCamera(h))
+            {
+                PED.SET_PED_SHOULD_PLAY_IMMEDIATE_SCENARIO_EXIT(h);
+                TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, true, true);
+                if (ENTITY.IS_ENTITY_ATTACHED(h))
+                    ENTITY.DETACH_ENTITY(h, true, true);
+                how = "immediate clear (off camera)";
+            }
+            else
+            {
+                PED.SET_PED_SHOULD_PLAY_IMMEDIATE_SCENARIO_EXIT(h);
+                TASK.CLEAR_PED_TASKS(h, true, false);
+                how = "immediate flag, soft clear (in view)";
+            }
+            next(h);
+            Count("pulled: " + how);
+            return how;
         }
 
         /// Up from a scenario softly with the next task already given (`next`, the same tick): the exit flag and the task, no
@@ -196,20 +257,42 @@ namespace EnrageWestworld.InGame
         }
 
         /// From DramaTick: each one put back is looked at 3 s on. In a scenario and playing it (its base loop, active, or a
-        /// transition), or moved on a wander: done. Else pulled the hard way onto a wander, and looked at once more.
-        /// `busy`: another feature has them now (left alone).
-        public static void Step(int now, System.Func<int, bool> busy)
+        /// transition), or moved on a wander: done. Else pulled onto a wander (Pull: the immediate clear only off camera), and
+        /// looked at again; a pull in view that didn't take is done the forced way once they're off camera (5 s looks, 5 min).
+        /// Someone let go mid-get-up (Dropped) is looked at once free: put back if stuck, never pulled.
+        /// `busy`: another feature has them now (left alone); `aimed`: the game's answer to a gun has them (as the fights and flees).
+        public static void Step(int now, System.Func<int, bool> busy, System.Func<int, bool> aimed)
         {
             for (int i = Checks.Count - 1; i >= 0; i--)
             {
                 ExitAsk e = Checks[i];
-                if (now < e.CheckAt && e.CheckAt - now <= 10000)
+                if (now < e.CheckAt && e.CheckAt - now <= 15000)
                     continue;
                 Checks.RemoveAt(i);
                 int h = e.Handle;
                 if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                     continue;
-                if (busy(h) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h))
+                bool taken = busy(h) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h) || aimed(h);
+                if (e.Dropped)
+                {
+                    int f = Flags(e, now);
+                    string look = MindScenarios.DroppedLook((f & 1) != 0, (f & 6) != 0, (f & (8 | 32 | 64)) != 0, taken, now - e.DroppedAt);
+                    if (look == "wait")
+                    {
+                        e.CheckAt = now + MindScenarios.DroppedLookMs;
+                        Checks.Add(e);
+                    }
+                    else if (look == "restore")
+                        Restore(e, now);
+                    else
+                    {
+                        e.Dropped = false;
+                        Count("let go: " + look);
+                        Log.Write(e.Who + " let go mid-get-up, looked at: " + e.Name + " " + (look == "up" ? "up" : look == "playing" ? "still in it and playing it" : "taken by something else too long (left be)") + " [" + e.Trace + "]");
+                    }
+                    continue;
+                }
+                if (taken)
                 {
                     Log.Detail(e.Who + " restore: " + e.Name + " taken by something else before the look (left be)");
                     continue;
@@ -229,17 +312,33 @@ namespace EnrageWestworld.InGame
                 }
                 if (e.Hard)
                 {
+                    if (!e.HardImmediate && OffCamera(h))
+                    {
+                        // the in-view pull didn't take: now they're off camera, Rockstar's forced way
+                        e.PullHow = Pull(h, x => TASK.TASK_WANDER_STANDARD(x, 10f, 10));
+                        e.HardImmediate = true;
+                        e.CheckAt = now + MindScenarios.RestoreCheckMs;
+                        Checks.Add(e);
+                        Log.Write(e.Who + " restore: " + e.Name + " still not moving after the pull in view: pulled again off camera (" + e.PullHow + "), on a wander [" + e.Trace + "]");
+                        continue;
+                    }
+                    if (!e.HardImmediate && now - e.AskedAt < MindScenarios.PulledGiveUpMs)
+                    {
+                        e.CheckAt = now + MindScenarios.PulledRetryMs;   // looked at again until they're off camera (never the immediate clear in view)
+                        Checks.Add(e);
+                        continue;
+                    }
                     Count("pulled, still not moving");
-                    Log.Write(e.Who + " restore hard failed: " + e.Name + " still not moving after the pull and the wander [" + e.Trace + "]");
+                    Log.Write(e.Who + " restore hard failed: " + e.Name + " still not moving after the pull (" + e.PullHow + ") and the wander [" + e.Trace + "]");
                     continue;
                 }
-                Pull(h);
-                TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // the same tick: no idle pose between
+                e.PullHow = Pull(h, x => TASK.TASK_WANDER_STANDARD(x, 10f, 10));   // the wander the same tick: no idle pose between
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
                 e.Hard = true;
+                e.HardImmediate = e.PullHow.StartsWith("immediate clear", System.StringComparison.Ordinal);
                 e.CheckAt = now + MindScenarios.RestoreCheckMs;
                 Checks.Add(e);
-                Log.Write(e.Who + " restore failed: " + e.Name + " (" + e.Restored + ") not playing it 3 s on: pulled the hard way, on a wander [" + e.Trace + "]");
+                Log.Write(e.Who + " restore failed: " + e.Name + " (" + e.Restored + ") not playing it 3 s on: pulled (" + e.PullHow + "), on a wander [" + e.Trace + "]");
             }
         }
 

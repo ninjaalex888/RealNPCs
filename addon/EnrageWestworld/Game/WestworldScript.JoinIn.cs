@@ -319,10 +319,9 @@ namespace EnrageWestworld.InGame
                     if (!j.Pulled && now - j.Since > 6000)
                     {
                         j.Pulled = true;
-                        ScenarioExit.Pull(j.Handle);   // Rockstar's forced way: the immediate exit flag, the clear, detached (no T pose)
-                        JoinRunOver(j);   // the next task the same tick: no idle pose between
+                        string how = ScenarioExit.Pull(j.Handle, x => JoinRunOver(j));   // the run the same tick: no idle pose between; the immediate clear only off camera (no T pose)
                         j.Until = Math.Max(j.Until, now + JoinWaitMs(ENTITY.GET_ENTITY_COORDS(j.Handle, true, true).DistanceTo(ENTITY.GET_ENTITY_COORDS(j.Target, true, true)), false));   // the run's own time, as the path after a get-up gives it
-                        Log.Write("BRAWL " + j.Name + " was still sat or leaning " + (now - j.Since) / 1000 + " s on: pulled out of it to join in");
+                        Log.Write("BRAWL " + j.Name + " was still sat or leaning " + (now - j.Since) / 1000 + " s on: pulled out of it to join in (" + how + ")");
                     }
                     continue;
                 }

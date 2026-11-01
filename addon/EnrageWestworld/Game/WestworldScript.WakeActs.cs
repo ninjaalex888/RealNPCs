@@ -1548,9 +1548,14 @@ namespace EnrageWestworld.InGame
                 WEAPON.REMOVE_WEAPON_FROM_PED(h, Natives.Hash(act.Weapon), true, TakeReason);   // never left holding what we gave them
             else if (act.Ending == "despair" && act.Method == "gun" && act.Phase >= 4 && !ENTITY.IS_ENTITY_DEAD(h))
                 WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);   // stopped with their own gun out: put away
+            // a getup ended before it did (a danger, aimed at, a mission): handed to ScenarioExit, which puts them back if stuck
+            // in it (at once on a mission or stopping: no later look), and no clear over the exit (the review, 2026-11-01)
+            bool midGetUp = act.Kind == "getup" && act.Phase == 0 && act.Exit != null;
+            if (midGetUp && !ENTITY.IS_ENTITY_DEAD(h))
+                ScenarioExit.Dropped(act.Exit, Game.GameTime, _wakeAborting, why ?? (_wakeAborting ? "a mission or stopping" : "ended"));
             // someone still in a scenario (sat, leaning, at the bar, or put back after a get-up) is left in it: a bare clear is
             // what stopped people's scenario clips and froze them in the pose (2026-11-01, Game/ScenarioExit.cs)
-            if (!act.Passive && !act.LeaveOrders && act.Kind != "glance" && act.Kind != "lookaround" && !ENTITY.IS_ENTITY_DEAD(h) && !PED.IS_PED_USING_ANY_SCENARIO(h))
+            if (!act.Passive && !act.LeaveOrders && !midGetUp && act.Kind != "glance" && act.Kind != "lookaround" && !ENTITY.IS_ENTITY_DEAD(h) && !PED.IS_PED_USING_ANY_SCENARIO(h))
             {
                 TASK.CLEAR_PED_TASKS(h, true, false);
                 if (act.SaverHeeded)
@@ -1558,12 +1563,22 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        private bool _wakeAborting;
+
         /// Gives everyone back, now (a mission started, or the add-on is stopping).
         private void WakeActsAbort()
         {
             MindActsLetGoBlocked();   // a get-up of the mind's holding events blocked lets go too (WestworldScript.MindActs.cs)
-            foreach (WakeAct act in _wakeActs)
-                EndWakeAct(act);
+            _wakeAborting = true;   // a getup mid-way is put back at once if stuck (EndWakeAct): the looks are cleared next
+            try
+            {
+                foreach (WakeAct act in _wakeActs)
+                    EndWakeAct(act);
+            }
+            finally
+            {
+                _wakeAborting = false;
+            }
             _wakeActs.Clear();
             if (_bladeSet == 1)
                 STREAMING.REMOVE_ANIM_DICT(BladeDict);   // the sets despair asked for go back too

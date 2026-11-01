@@ -1629,9 +1629,9 @@ namespace EnrageWestworld.InGame
                 // between (Lex, 2026-10-30: a man pulled off the bar went into a T pose; the flag and the detach were missing)
                 if (now - l.FightAskedAt > 8000)
                 {
-                    ScenarioExit.Pull(p);
-                    TASK.TASK_COMBAT_PED(p, p == l.FightA ? l.FightB : l.FightA, 0, 16);
-                    Log.Write("SCENE fight: " + (p == l.FightA ? l.Names[0] : l.Names[1]) + " was still sat or leaning " + (now - l.FightAskedAt) / 1000 + " s after the word: pulled out of it");
+                    int foe = p == l.FightA ? l.FightB : l.FightA;
+                    string how = ScenarioExit.Pull(p, x => TASK.TASK_COMBAT_PED(x, foe, 0, 16));   // the immediate clear only off camera (Game/ScenarioExit.cs)
+                    Log.Write("SCENE fight: " + (p == l.FightA ? l.Names[0] : l.Names[1]) + " was still sat or leaning " + (now - l.FightAskedAt) / 1000 + " s after the word: pulled out of it (" + how + ")");
                     continue;
                 }
                 up = false;

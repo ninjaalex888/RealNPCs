@@ -199,6 +199,7 @@ namespace EnrageWestworld.InGame
                 if (_mindActs[i].Handle != h)
                     continue;
                 what.Add("a mind act (" + _mindActs[i].Kind + ")");
+                MindExitLetGo(_mindActs[i], "aimed at", false);   // still getting up: looked at once the gun's answer is over, put back if stuck
                 _mindActs.RemoveAt(i);
                 tasked = true;
             }

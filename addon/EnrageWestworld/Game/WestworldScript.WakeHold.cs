@@ -60,6 +60,7 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.WakeHold) return "off";
             if (act.Kind == "lashout") return "lashed out";
+            if (act.Kind == "getup" && act.Phase == 2) return "put back in their scenario";   // the restore's task kept: no next link's clear over it (the review, 2026-11-01)
             if (act.Passive) return "only looks and speaks";
             if (act.Stage < Awakening.Questioning) return "only stirring";
             if (act.Kind == "awake" && (act.Ending == "despair" || act.Ending == "escape")) return "gone their own way";
@@ -312,8 +313,9 @@ namespace EnrageWestworld.InGame
                         }
                         else if (up == "restore")
                         {
-                            act.Phase = 2;   // not out in time: put back in their scenario, never left frozen; the link ends (a sat one next, or handed back)
+                            act.Phase = 2;   // not out in time: put back in their scenario, never left frozen; the hold ends there (HoldWhyNot)
                             ScenarioExit.Restore(act.Exit, now);
+                            act.LeaveOrders = true;   // EndWakeAct leaves the restore's task (their point, in place, or a wander) as it is
                             act.Until = now;
                         }
                     }
