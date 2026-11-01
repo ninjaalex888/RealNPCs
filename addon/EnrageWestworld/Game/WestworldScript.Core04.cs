@@ -233,6 +233,7 @@ namespace EnrageWestworld.InGame
             Feed.SubtitleMode = _cfg.Subtitles;
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
             _ticker.GapMs = _cfg.TickerGapSeconds * 1000;
+            JoinIn.BrawlBoost = _cfg.BrawlJoinBoost / 100f;   // onlookers readier to join (Lex, 2026-11-01)
             ActThoughts.PersonGapMs = _cfg.ActThoughtEachSeconds * 1000;   // the act thoughts' limits (Lex, 2026-11-01: livelier)
             ActThoughts.TheirsGapMs = _cfg.ActThoughtGapSeconds * 1000;
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);

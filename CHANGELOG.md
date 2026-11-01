@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fights grow into brawls more readily: onlookers are readier to join (`[Mind] BrawlJoinBoost`, 20 as it comes; 0 as before). In Saint Denis two men fighting never drew anyone in: every onlooker fell short of the bar to join (settings version 175).
+
 ## 0.7.13 (2026-11-01)
 
 Thoughts that go with what people do, without the AI model.

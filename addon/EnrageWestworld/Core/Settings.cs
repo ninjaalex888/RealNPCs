@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 174;
+        public const int CurrentVersion = 175;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -96,6 +96,7 @@ namespace EnrageWestworld.Core
         public float BrawlJoinMetres = 30f;   // with MindJoinFights: onlookers within this many metres of a fight may join it (10-60; 18 fixed until settings version 164, Lex 2026-10-31: "brawls reach further")
         public float BrawlCrowdMetres = 40f;  // with FightCrowds: people within this many metres of a fight walk over to watch and cheer (10-60; 20 fixed until settings version 164)
         public int BrawlLeastSeconds = 45;    // with MindBrawls: a brawl (four or more, or two joined) lasts at least this long from its first blows (15-120; settings version 164)
+        public int BrawlJoinBoost = 20;   // with MindBrawls: added to every onlooker's pull to join a fight (percent points; 0 as before 2026-11-01; Lex: two fighting should grow into big brawls); settings version 175
         public bool MindOnlookers = true;    // with MindLive: someone who only watched a quarrel, a fight or something you did acts on what they feel about it (walks off from it, stands rooted at a gun, shakes their head, bristles, turns to watch), two a happening at most (Core/Onlooking.cs; roadmap 39; night 2026-10-29, item 3; settings version 108); off, they only turn their heads
         public bool MindWakes = true;        // with MindLive and West World: what someone has lived through (the shadow's doubts about "things are as they seem") leans the Awakening, a buried man seen walking breaks that belief, and the moment it gives way they stir (Core/Engine.Doubt.cs; the mind doc's step 10; night 2026-10-29, item 4; settings version 109); off, the Awakening by its own roll alone
         public bool MindPassing = true;      // with MindLive: a greeting in passing follows what the first one feels about the other lately and their mood (Core/Passing.Mind.cs; roadmap 39; night 2026-10-29, item 6; settings version 111); and how someone shows you what they feel about you from a while back as you pass (Core/Passing.ToYou.cs, item 6f); off, the tie's greeting
@@ -759,6 +760,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: new in this version: [Mind] ActThoughts (on): as someone near you starts what their own mind chose, and at each turn of an encounter, a thought over their head says what moved them to it; written lines, no AI model needed.");
                 if (s.SettingsVersion < 174)
                     log?.Invoke("Settings: new in this version: [Mind] ActThoughtEachSeconds (90) and ActThoughtGapSeconds (15): thoughts with what people choose to do come more often, and to people right beside you too; and an encounter shows both the reason for a quarrel and the first answer to it.");
+                if (s.SettingsVersion < 175)
+                    log?.Invoke("Settings: new in this version: [Mind] BrawlJoinBoost (20): onlookers are readier to join a fight, so two men fighting grow into a big brawl more often (0 as before).");
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -790,6 +793,7 @@ namespace EnrageWestworld.Core
             BrawlJoinMetres = Math.Max(10f, Math.Min(60f, BrawlJoinMetres));
             BrawlCrowdMetres = Math.Max(10f, Math.Min(60f, BrawlCrowdMetres));
             BrawlLeastSeconds = Math.Max(15, Math.Min(120, BrawlLeastSeconds));
+            BrawlJoinBoost = Math.Max(0, Math.Min(60, BrawlJoinBoost));
             Bravery = Math.Max(0, Math.Min(100, Bravery));
             // stalker hours: the stalker day still runs 05:00 to 05:00; day hours stay in daylight, night hours cross midnight
             StalkerEveryMinutes = Math.Max(1, Math.Min(120, StalkerEveryMinutes));
@@ -992,6 +996,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("BrawlJoinMetres = " + F(BrawlJoinMetres) + "   ; with MindJoinFights on: onlookers within this many metres of a fistfight may join it, and those over 10 m off run over to it, counted for their side on the way so it doesn't end before they get there (10-60)");
             b.AppendLine("BrawlCrowdMetres = " + F(BrawlCrowdMetres) + "   ; with [Scenes] FightCrowds on: people within this many metres of a fight notice it and walk over to watch and cheer, up to 6 round two men and up to 16 round a brawl (a busy street fills it); the law comes from this far too, 35 m at least (10-60)");
             b.AppendLine("BrawlLeastSeconds = " + BrawlLeastSeconds + "   ; with MindBrawls on: a brawl (four or more fighting, or two who joined) goes on at least this many seconds from its first blows, unless one side is all down (15-120)");
+            b.AppendLine("BrawlJoinBoost = " + BrawlJoinBoost + "   ; with MindBrawls on: how much readier onlookers are to join a fight (0 to 60; 20 as it comes, 0 as before): higher, two men fighting grow into a big brawl more often");
             b.AppendLine("MindOnlookers = " + B(MindOnlookers) + "   ; with MindLive on: someone who only watched a quarrel, a fight or something you did acts on what they feel about it, by their nature and what 1899 lets them show (the frightened walk off, a man who keeps his fear off his face slips away, a gun or something uncanny roots them to the spot, contempt shakes its head, the pious walk off disapproving, a keen eye turns to watch), at most two each time; false: they only turn their heads");
             b.AppendLine("OnlookersRunMetres = " + F(OnlookersRunMetres) + "   ; with MindOnlookers on: how far, in metres, an onlooker badly frightened by real danger runs from it (5-60)");
             b.AppendLine("OnlookersRunning = " + OnlookersRunning + "   ; how many onlookers may run from one happening once one does, the fright spreading (1-8; fewer the braver the town, [World] Bravery)");
