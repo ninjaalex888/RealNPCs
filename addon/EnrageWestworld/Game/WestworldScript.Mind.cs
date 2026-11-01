@@ -40,13 +40,15 @@ namespace EnrageWestworld.InGame
             public int ChoseAt;
             public long AteAt = -1;         // the shadow's own meal (the choice was "eat"), so hunger falls for it
             // NIGHT4 fixes 3-4: whether the present choice became an act, when it was last tried, and why not (MindActOn)
-            public bool ChoiceActed;
-            public int ChoiceTriedAt, ActedAt;
+            public bool ChoiceActed, Retrying;
+            public int ChoiceTriedAt, ActedAt, Retries;
             public string ActWhyNot;
         }
 
         private const int ChooseMs = 60000, ChoiceLinesAMinute = 5;
         private int _mindChoosesAbout;   // choices worked out for the about ring (MindLevels on; after item 14)
+        private int _mindRetried, _mindRetryActed;   // NIGHT4 fix 3
+        private const int MindRetriesMost = 3;      // tries of one choice after the first, a minute apart
         private int _mindChooseCursor, _mindChoices, _mindChoiceChanges, _mindChoiceLines, _mindChoiceHeld, _mindChoiceMinuteAt, _mindChoiceMinuteCount;
         private string _mindLastChoice;
 
@@ -446,12 +448,25 @@ namespace EnrageWestworld.InGame
                 if (!quiet)
                     _mindLastChoice = w.Name + " -> " + Choosing.WordsOf(ch.Key);   // F7's last choice is someone near, not the about ring's
                 w.ChoiceActed = false;
+                w.Retrying = false;
+                w.Retries = 0;
                 w.ActWhyNot = null;
                 w.ChoiceTriedAt = now;
                 if (!quiet && MindChosenQuietly(h))
                     _mindChoseQuietly++;   // the law, a child, the story's own: chosen for the mind's sake, never an act tried (NIGHT4 fix 4)
                 else if (!quiet && !PickAsk(w, h, now, c))
                     MindActOn(w, h, now);   // and now they do it (WestworldScript.MindActs.cs; the NPC-life run); or the model picks first (WestworldScript.Picks.cs)
+            }
+            else if (!quiet && _cfg.MindRetries && _cfg.MindLive && _cfg.MindActs && MindRetry.Should(w.ChoiceActed, w.ActWhyNot) && w.Retries < MindRetriesMost && !Choosing.CarriesOn(w.Choice) &&
+                     now - w.ChoiceTriedAt >= ChooseMs - 1000 && !_pending.Exists(x => x.Handle == h) && !MindChosenQuietly(h))
+            {
+                // the same choice a minute on, never acted for a reason that passes: tried again, the model first (NIGHT4 fix 3)
+                w.ChoiceTriedAt = now;
+                w.Retrying = true;
+                w.Retries++;
+                _mindRetried++;
+                if (!PickAsk(w, h, now, c))
+                    MindActOn(w, h, now);
             }
             if (quiet)
             {

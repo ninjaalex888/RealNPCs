@@ -50,10 +50,10 @@ namespace EnrageWestworld.InGame
         // what became of every choice tried (NIGHT4 fix 4): acted, or the reason it wasn't, so F7 can say where they go
         private readonly Dictionary<string, int> _mindActLost = new Dictionary<string, int>();
         private int _mindActsTried, _mindActsTakenUp, _mindChoseQuietly;
-        private const string LostOff = "off", LostGap = "the 1.5 s gap", LostAtOnce = "10 acting at once", LostActing = "acting already", LostStand = "stand or showoff: no act",
+        private const string LostOff = "off", LostGap = MindRetry.Gap, LostAtOnce = MindRetry.AtOnce, LostActing = MindRetry.Acting, LostStand = "stand or showoff: no act",
                              LostUrge = "a feeling's urge: no act", LostNoSpot = "no free spot within 15 m", LostNoFoe = "nobody to step clear of", LostNoFriend = "no friend near",
                              LostNoTalk = "nobody to talk to", LostWatch = "watch: never saw you violent", LostNoAct = "no act for this choice",
-                             LostBusyNod = "nodding to someone or listening to you", LostSatNoLook = "sat, leaning or at something already";
+                             LostBusyNod = MindRetry.Nodding, LostSatNoLook = MindRetry.Sat;
         private int _mindAlreadyAt, _mindLookAtYouAt, _mindSeatedLooks;
 
         /// A choice for someone near and in view (MindChooseFor, a pick's answer): what they do about it, if anything. Null when
@@ -69,6 +69,9 @@ namespace EnrageWestworld.InGame
             {
                 w.ChoiceActed = true;
                 w.ActedAt = now;
+                if (w.Retrying)
+                    _mindRetryActed++;
+                w.Retrying = false;
                 return null;
             }
             int n;
@@ -369,15 +372,15 @@ namespace EnrageWestworld.InGame
             if (!p.Exists() || p.IsDead)
                 return "gone";
             if (AimedLately(h, Game.GameTime))
-                return "aimed at just now";   // left to the game's own answer to a gun (WestworldScript.AimLetGo.cs)
+                return MindRetry.Aimed;   // left to the game's own answer to a gun (WestworldScript.AimLetGo.cs)
             if (Natives.StoryModel(p) || !IsGrownUp(p) || Natives.IsLaw(p))
-                return "the story's, a child or the law";
+                return MindRetry.Story;
             if (!sitOk && PED.IS_PED_USING_ANY_SCENARIO(h))   // (sitOk: a look from where they sit, which never touches the scenario; NIGHT4 fix 2)
-                return "sat, leaning or at something already";
+                return MindRetry.Sat;
             if (PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h))
-                return "riding, fighting or running";
+                return MindRetry.Riding;
             if (NotFree(h) || Spawner.IsOurs(h))   // (NotFree: a scene, Talk, a walk-up, a nod, a wake act and its other, the law at work)
-                return "busy with something of RealNPCs'";
+                return MindRetry.Busy;
             return MayDirectWhyNot(p);
         }
 
@@ -573,6 +576,7 @@ namespace EnrageWestworld.InGame
                    _mindActsDone + " acted on their choices this session (" + (_mindActCount.Count == 0 ? "none yet" : string.Join(", ", _mindActCount.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
                    "), " + _mindActs.Count + " acting now, " + _mindActsSkipped + " passed over" + (_mindActLast != null ? "; last: " + _mindActLast : "") +
                    "; of " + _mindActsTried + " tried, not acted: " + (_mindActLost.Count == 0 ? "none" : string.Join(", ", _mindActLost.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
+                   "; retried " + _mindRetried + ", acted after retry " + _mindRetryActed + (_cfg.MindRetries ? "" : " ([Mind] MindRetries off)") +
                    "; taken up by something else mid-act " + _mindActsTakenUp + "; chosen quietly (the law, children, the story's) " + _mindChoseQuietly;
         }
 

@@ -47,26 +47,35 @@ namespace EnrageWestworld.InGame
                 return false;
             Ped p = new Ped(h);
             float pd = p.Exists() ? p.Position.DistanceTo(Game.Player.Character.Position) : 999f;
-            if (!p.Exists() || pd > _cfg.PickMetres || MindActWhyNot(p, h) != null)
+            // sat or leaning: asked too (NIGHT4 fix 3), offered only what they can do from a seat (MindRetry.SeatedOption)
+            bool seated = _cfg.MindRetries && _cfg.MindActsSeatedLooks && p.Exists() && PED.IS_PED_USING_ANY_SCENARIO(h);
+            if (!p.Exists() || pd > _cfg.PickMetres || MindActWhyNot(p, h, seated) != null)
                 return false;
-            if (pd > PickNear && (Voice.Hash(w.Id + "|" + now / 30000) & 1) == 1)
-                return false;   // the outer ring: half its choices go to the model, the rest are the mind's own (NIGHT3 item 2)
-            List<KeyValuePair<string, string>> ranked = Choosing.Ranked(w.Needs, w.Traits, c, Choosing.SeedFor(w.Id, _store.LastGameMin), 3);
+            if (pd > PickNear && (_pending.Count >= 2 || !_cfg.MindRetries) && (Voice.Hash(w.Id + "|" + now / 30000) & 1) == 1)
+                return false;   // the outer ring: half its choices go to the model, the rest are the mind's own (NIGHT3 item 2), unless the model is idle (NIGHT4 fix 3)
+            List<KeyValuePair<string, string>> ranked = Choosing.Ranked(w.Needs, w.Traits, c, Choosing.SeedFor(w.Id, _store.LastGameMin), seated ? 12 : 3);
             var ids = new List<string>();
             var words = new List<string>();
             foreach (KeyValuePair<string, string> kv in ranked)
             {
+                if (seated && (!MindRetry.SeatedOption(kv.Key) || kv.Key == "rest" || ids.Count >= 3))
+                    continue;
                 ids.Add(kv.Key);
-                words.Add(Choosing.WordsOf(kv.Key));
+                words.Add(Choosing.WordsOf(kv.Key) + (seated ? " (from where they sit)" : ""));
             }
-            if (!ids.Contains(w.Choice))
+            if (seated && MindAlreadyAt("rest", h) != null)
+            {
+                ids.Add("rest");   // staying at what they're doing counts as acting on it (MindAlreadyAt)
+                words.Add("stays where they are, at what they're doing");
+            }
+            if (!seated && !ids.Contains(w.Choice))
             {
                 ids.Insert(0, w.Choice);   // the mind's own is always among them
                 words.Insert(0, Choosing.WordsOf(w.Choice));
             }
-            int th;
-            float td;
-            Plan plan = PlanSeekable(w.Id, h, now, out th, out td);
+            int th = 0;
+            float td = 0f;
+            Plan plan = seated ? null : PlanSeekable(w.Id, h, now, out th, out td);
             if (plan != null && ids.Count < Language.MostOptions + 1)
             {
                 ids.Add("plan:seek");
@@ -94,6 +103,8 @@ namespace EnrageWestworld.InGame
             if (!_engine.LanguageAnswers.AskPick(new LanguageAsk { Key = key, Name = w.Name, PersonId = w.Id, Request = r, AskedAtMs = Environment.TickCount }))
                 return false;
             _picksAsked++;
+            if (seated)
+                _picksSeatedAsked++;
             _pending.Add(new PendingPick { W = w, Handle = h, Key = key, Mind = w.Choice, Ids = ids, Words = words, Plan = ids.Contains("plan:seek") ? plan : null, AskedAt = now, Deadline = now + PickWaitMs, Req = r, Scenes = scenes });
             return true;
         }
@@ -256,7 +267,7 @@ namespace EnrageWestworld.InGame
         }
 
         private int _modelMinEveryday, _modelMinEverydayTaken, _modelMinWaking, _modelMinWakingTaken, _modelMinTalk, _modelMinTalkSaid;
-        private int _picksReached, _picksAnsweredReached, _picksFellBackReached, _picksResolvedActs;
+        private int _picksReached, _picksAnsweredReached, _picksFellBackReached, _picksResolvedActs, _picksSeatedAsked;
 
         /// A pick's act, counted (NIGHT4 fix 4): whether it reached the screen, and whether the model had answered it.
         private void PickReached(bool acted, bool answered)
@@ -316,7 +327,7 @@ namespace EnrageWestworld.InGame
             string store = _engine != null ? ", store: " + _engine.LanguageAnswers.PicksAsked + " queued, " + _engine.LanguageAnswers.PicksAnswered + " answered, " + _engine.LanguageAnswers.PicksFailed + " failed, " +
                            _engine.LanguageAnswers.PicksDropped + " dropped" : "";
             return (_langReady ? "on" : "on, the server not ready") + ": " + _picksAsked + " asked this session, " + _picksTaken + " picked (" + _picksSame + " the mind's own, " + _picksPlan + " a plan's step), " +
-                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting; reached the screen " + _picksReached + " of " + _picksResolvedActs + " (" + _picksAnsweredReached + " the model answered, " + _picksFellBackReached + " the mind's own after no answer); thoughts with them " + _pickThoughtsShown + " shown, " + _pickThoughtsHeld + " held by the check" + store + (_pickLast != null ? "; last: " + _pickLast : "") + "; scenes from their own reasons: " + MindScenesStatus();
+                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting; reached the screen " + _picksReached + " of " + _picksResolvedActs + " (" + _picksAnsweredReached + " the model answered, " + _picksFellBackReached + " the mind's own after no answer); seated asked " + _picksSeatedAsked + "; thoughts with them " + _pickThoughtsShown + " shown, " + _pickThoughtsHeld + " held by the check" + store + (_pickLast != null ? "; last: " + _pickLast : "") + "; scenes from their own reasons: " + MindScenesStatus();
         }
     }
 }
