@@ -123,6 +123,25 @@ namespace EnrageWestworld.Core
             return w.Clamp();
         }
 
+        /// What goes through their head as their own mind settles the turn (the no-model run, item 1; ActThoughts.TurnPool): the
+        /// reason for the choice, beside the choice's words.
+        internal static readonly Dictionary<string, string[]> Turns = new Dictionary<string, string[]>
+        {
+            { "husband|rant", new[] { "She'll hear me if I have to shout the street down.", "Every word makes it worse. And still they come.", "Let the street hear. I'm in the right." } },
+            { "husband|raise", new[] { "Red behind the eyes. Can't see past it.", "She pushed me to this. She did.", "Hand's moving before the head says yes." } },
+            { "husband|storm", new[] { "Can't stand another word. Out.", "Walk away before I do something I'll regret.", "Done with it. All of it." } },
+            { "husband|ease", new[] { "Everybody's looking. Leave it.", "Not in front of the whole town.", "Swallow it. Finish this at home." } },
+            { "wife|argue", new[] { "Not this time. He'll hear me.", "Years of biting my tongue. No more.", "If he can shout, so can I." } },
+            { "wife|plead", new[] { "Calm him down before it gets worse.", "Soft words. Soft. It's worked before.", "Please, not in front of everybody." } },
+            { "wife|sob", new[] { "Can't hold it in any longer.", "Too tired to fight. Too tired of all of it.", "Everybody seeing me cry. Can't help it." } },
+            { "wife|cower", new[] { "Make myself small. Small.", "Don't look at him. Wait for it to pass.", "Not the hand. Please, not the hand." } },
+            { "wife|leave", new[] { "Turn round and go. He can follow or not.", "Let him shout at the wall.", "My sister's. Anywhere but here." } },
+            { "neighbour|watch", new[] { "Those two again.", "Watch, and remember, in case the law asks.", "None of mine. Still, I'll see how it ends." } },
+            { "neighbour|stepin", new[] { "Not on my street. Not while I'm standing here.", "Somebody has to tell him to stop.", "He'll quit if somebody stands up to him." } },
+            { "neighbour|law", new[] { "This is the sheriff's business. Fetch him.", "Before he hurts her. Get the law.", "Let the law deal with him. Quick." } },
+            { "neighbour|walkon", new[] { "Man and wife. Not my place.", "Seen it before, will again. Walk on.", "Keep out of other folks' quarrels." } },
+        };
+
         public static string Words(string role, string id, string him, string her)
         {
             if (role == "husband")

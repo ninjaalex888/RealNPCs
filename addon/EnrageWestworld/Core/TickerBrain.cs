@@ -54,6 +54,20 @@ namespace EnrageWestworld.Core
 
         public int FreshCount { get { return _fresh.Count; } }
 
+        /// Whether a thought over this person is up now or waits its turn (pushed, not shown yet): read only, a loop over the
+        /// few waiting (the no-model run, item 1: never a second thought of theirs on top of one).
+        public bool Waiting(int handle)
+        {
+            if (handle == 0)
+                return false;
+            if (Current != null && Current.Handle == handle && Current.Kind == "near")
+                return true;
+            for (int i = 0; i < _fresh.Count; i++)
+                if (_fresh[i].Handle == handle)
+                    return true;
+            return false;
+        }
+
         /// A new notice: it gets a turn soon and then joins the rotation.
         public void Push(string label, string text, string kind = "news", int handle = 0)
         {

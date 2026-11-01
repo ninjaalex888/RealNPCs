@@ -50,6 +50,21 @@ namespace EnrageWestworld.Core
             return w.Clamp();
         }
 
+        /// The mind's options over every fact (the tests): w1's, then w2's and w3's.
+        public static readonly string[] Ids = { "haveitout", "stare", "letbe", "warn", "hint" };
+
+        /// What goes through their head as their own mind settles it, as they notice him (the no-model run, item 1;
+        /// ActThoughts.TurnPool): the reason for the choice, beside the choice's words; a stare's or a letting be's stands in for
+        /// Thought's at the same moment, a warning's comes before the walk (Thought's after it).
+        internal static readonly Dictionary<string, string[]> Turns = new Dictionary<string, string[]>
+        {
+            { "warn|haveitout", new[] { "What he did, and walking about like nothing. Not past me.", "Saw what he did. Not keeping quiet about it.", "He'll hear what decent folk think of it." } },
+            { "warn|stare", new[] { "Let him see I saw.", "Hold his eye. Make him feel it.", "No words. He'll know what I mean." } },
+            { "warn|letbe", new[] { "Not my quarrel. Let it pass.", "Keep out of it. Better that way.", "Least said, soonest mended." } },
+            { "warn|warn", new[] { "He ought to know what's coming. I'd want telling.", "Tell him quiet, before it's too late.", "He stood by me once. Not letting him walk into it blind." } },
+            { "warn|hint", new[] { "A look'll do. No need to be seen talking.", "Catch his eye. He's sharp enough.", "Point him to it, careful. Not my neck." } },
+        };
+
         /// The option as the model is offered it.
         public static string Words(string id, string fact, string danger)
         {

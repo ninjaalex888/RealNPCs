@@ -101,6 +101,22 @@ namespace EnrageWestworld.Core
             return w;
         }
 
+        /// What goes through their head as their own mind (or the men's leader's nature) settles the turn (the no-model run,
+        /// item 1; ActThoughts.TurnPool): the reason for the choice, beside the choice's words.
+        internal static readonly Dictionary<string, string[]> Turns = new Dictionary<string, string[]>
+        {
+            { "captive|call", new[] { "Somebody must hear. Louder.", "A rider. Shout. Shout now.", "Throat's raw. Keep calling." } },
+            { "captive|bargain", new[] { "Everybody has a price. Find theirs.", "Offer them something. Anything.", "Money talks. Promise it, worry later." } },
+            { "captive|curse", new[] { "Curse them. Curse every one of them.", "Get loose and they'll pay for this.", "Let them hear what I think of them." } },
+            { "captive|quiet", new[] { "Quiet, or they'll hurt me.", "Not a sound. Don't give them a reason.", "Breathe slow. Wait." } },
+            { "captor|warn", new[] { "He'll ride on if he knows what's good for him.", "Warn the stranger off before it gets messy.", "Make him think twice." } },
+            { "captor|bribe", new[] { "Money's money. Let him pay for the fool.", "A few dollars, and the trouble's his.", "Name a price. See how badly he wants it." } },
+            { "captor|leave", new[] { "Not worth a bullet. Not for this.", "Too much trouble. Pack it in.", "Let him have this one. Not worth the hide." } },
+            { "captor|fight", new[] { "He won't take what's ours.", "Draw first. Ask after.", "One stranger. Two of us. Easy." } },
+            { "freed|thank", new[] { "Free. Thank God, free.", "Hands free. Blood coming back into them.", "Alive. Still alive." } },
+            { "freed|run", new[] { "Run. Don't stop till the road bends.", "Away before they come back.", "Free, and not waiting to learn why." } },
+        };
+
         public static string Words(string role, string id, string captive)
         {
             if (role == "captive")

@@ -203,6 +203,25 @@ namespace EnrageWestworld.Core
             }
         }
 
+        /// What goes through their head as their own mind settles the turn (the no-model run, item 1; ActThoughts.TurnPool): the
+        /// reason for the choice, beside the choice's words. {who}: the other of the two (a name they know).
+        internal static readonly Dictionary<string, string[]> Turns = new Dictionary<string, string[]>
+        {
+            { "target|ignore", new[] { "Let the shouting go by. Shouting's all {who} has.", "Eyes front. Keep walking. It'll tire itself out.", "Answer that and it never ends." } },
+            { "target|positive", new[] { "Fair is fair. Own it, and end it here.", "Make it right before it grows teeth.", "Swallow the pride. Cheaper than a fight." } },
+            { "target|negative", new[] { "Called out in the street? I'll give as good as I get.", "Not standing here to be shamed in front of the town.", "Words, is it? Plenty of those in me." } },
+            { "target|threat", new[] { "Come closer, {who}. See what happens.", "Enough. If it's a fight that's wanted, have it.", "Blood's up. Let it come." } },
+            { "accuser|accept", new[] { "Said it, and it was heard. That'll do.", "Owned it, in front of everybody. Let it lie.", "Done. The street saw it. Enough." } },
+            { "accuser|to_crowd", new[] { "Tell them all what {who} did.", "Let the town judge. I've judged already.", "Everybody ought to hear this." } },
+            { "accuser|taunt", new[] { "Look at {who} squirm. Good.", "Rub it in. Every word.", "Made me feel small once. My turn now." } },
+            { "accuser|threat", new[] { "One more word and there'll be a lesson.", "Close enough to see the fear. Let it be plain I mean it.", "This gets answered for. Make sure that's understood." } },
+            { "accuser|walkoff", new[] { "Said my piece. Not wasting another breath.", "Leave {who} standing there with it.", "Not worth the rest of my day." } },
+            { "onlooker|watch", new[] { "This'll be worth seeing.", "Stay put. See how it goes.", "Not my quarrel. Can't look away, though." } },
+            { "onlooker|jeer", new[] { "Hope somebody swings. Day's been dull.", "Best show in town all week.", "Egg them on. Beats a travelling circus." } },
+            { "onlooker|stepin", new[] { "Somebody's going to get hurt. Not on my street.", "Stop it before it starts.", "Somebody here has to keep a cool head." } },
+            { "onlooker|walkoff", new[] { "Not my business. Never was.", "Walk on before somebody asks me to take a side.", "Seen enough quarrels for one life." } },
+        };
+
         private static string MatterWords(string matter)
         {
             switch (matter)

@@ -305,9 +305,10 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(ha, hb, 2000, 0f, 0f, 0f);
                     StagedClip(ha, c.DictA, StreetCallouts.ConfrontClip, "angry", c.WA.Woman, sa, now);
                     Feed.Say(c.WA.Name, StreetCallouts.Confront(c.BName, c.Matter, c.Seed), Speech.When(ha, "angry", hb), ha);
-                    _ticker.Push(c.WB.Name + ", thinking", StreetCallouts.Thought("target", c.AName, c.Matter, c.Seed), "near", hb);
                     c.TAsk = StagedChoose(hb, "target", StreetCallouts.Target(c.MB, c.Matter), sa + "t",
                                           id => StreetCallouts.Words("target", id, c.AName, c.BName, c.Matter), StreetCallouts.Now("target", c.AName, c.BName, c.Matter), c.AName, now);
+                    if (!StagedThink(c.TAsk, now))   // his own mind's draw: the reason for his answer (ActThoughts), else the encounter's thought as before
+                        _ticker.Push(c.WB.Name + ", thinking", StreetCallouts.Thought("target", c.AName, c.Matter, c.Seed), "near", hb);
                     c.Phase = "answer";
                     c.NextAt = now + 3200;
                     break;
@@ -396,7 +397,7 @@ namespace EnrageWestworld.InGame
                     break;
                 case "watch":
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, c.A.Handle, 2000, 0f, 0f, 0f);
-                    if (i == 0)
+                    if (i == 0 && !a.Written)   // (their turn's own thought, if it showed, stands for it: ActThoughts)
                         _ticker.Push(c.OnWho[i].Name + ", thinking", StreetCallouts.Thought("onlooker", c.AName, c.Matter, c.Seed + i), "near", h);
                     break;
                 default:

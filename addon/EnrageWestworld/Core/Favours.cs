@@ -64,6 +64,19 @@ namespace EnrageWestworld.Core
             return w.Clamp();
         }
 
+        /// The mind's options, in the table's order (the tests).
+        public static readonly string[] Ids = { "ask", "hint", "holdback", "coin" };
+
+        /// What goes through their head as their own mind settles it, on the way over (the no-model run, item 1;
+        /// ActThoughts.TurnPool): the reason for the choice, beside the choice's words.
+        internal static readonly Dictionary<string, string[]> Turns = new Dictionary<string, string[]>
+        {
+            { "favour|ask", new[] { "Ask plain. Worst he can say is no.", "Swallow the pride and ask.", "If I don't ask, nobody's going to offer." } },
+            { "favour|hint", new[] { "Tell him how it stands. Let him offer.", "Can't bring myself to beg. Tell it, though.", "A man of means might take the hint." } },
+            { "favour|holdback", new[] { "Walk over. See if the words come.", "Maybe just good day. Maybe.", "Go on. Ask him. Or don't." } },
+            { "favour|coin", new[] { "A dollar. Just a dollar. He won't miss it.", "Ask small. Small is easier to give.", "A dollar gets me to Saturday." } },
+        };
+
         /// The option as the model is offered it (the pick's words, the person's own point of view).
         public static string Words(string id, string worry)
         {

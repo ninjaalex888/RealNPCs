@@ -21,6 +21,10 @@ namespace EnrageWestworld.InGame
             public int Handle, AskedAt, Deadline;
             public LanguageRequest Req;
             public bool Done, ByModel, Asked;
+            // the turn's thought (the no-model run, item 1): the other in it (a name a line may use), the model's own thought shown,
+            // the written one tried (once a turn) and shown (a fixed thought at the same moment then stands aside)
+            public string Other;
+            public bool ModelThought, ThoughtTried, Written;
         }
 
         private sealed class StagedClipCheck
@@ -57,10 +61,10 @@ namespace EnrageWestworld.InGame
         }
 
         /// The mind's own choice for this turn, and with the model on, the same options asked of it.
-        private StagedAsk StagedChoose(int h, string role, Staged.Weights w, string seed, Func<string, string> words, string situation, string otherFirst, int now, int most = 0)
+        private StagedAsk StagedChoose(int h, string role, Staged.Weights w, string seed, Func<string, string> words, string situation, string otherFirst, int now, int most = 0, string thinker = null)
         {
             string mind = Staged.Choose(w, seed);
-            var a = new StagedAsk { Handle = h, Role = role, Mind = mind, Picked = mind, AskedAt = now, Deadline = now + PickWaitMs };
+            var a = new StagedAsk { Handle = h, Role = role, Mind = mind, Picked = mind, AskedAt = now, Deadline = now + PickWaitMs, Other = otherFirst, Name = thinker };   // (`thinker`: the name over a thought for someone the mind doesn't know, the spawned wife)
             a.Ids = Staged.Offer(w, mind, most > 0 ? most : Language.MostOptions);   // (`most`: the chance meeting offers three)
             a.Words = a.Ids.Select(words).ToList();
             a.Done = true;
@@ -101,8 +105,13 @@ namespace EnrageWestworld.InGame
         /// label, "kind, name", is made only once it settles (the frame-cost audit, NIGHT4 item 6: made every 250 ms wait before).
         private bool StagedSettle(StagedAsk a, string kind, string name, int now)
         {
-            if (a == null || a.Done)
+            if (a == null)
                 return true;
+            if (a.Done)
+            {
+                StagedThink(a, now);   // the mind's own draw, never asked of the model: its written thought (once a turn)
+                return true;
+            }
             string answer = null;
             long ms = 0;
             bool came = _engine != null && _engine.LanguageAnswers.TakePick(a.Key, out answer, out ms);
@@ -115,6 +124,7 @@ namespace EnrageWestworld.InGame
             {
                 _stagedLate++;
                 Log.Write("ENCOUNTER pick " + what + ": " + a.Name + " offered " + offered + " -> no answer in " + PickWaitMs / 1000.0 + " s: the mind's own (" + a.Mind + ")");
+                StagedThink(a, now);
                 return true;
             }
             string thought;
@@ -123,6 +133,7 @@ namespace EnrageWestworld.InGame
             {
                 _stagedUnread++;
                 Log.Write("ENCOUNTER pick " + what + ": " + a.Name + " offered " + offered + " -> \"" + (answer ?? "").Trim() + "\" names none of them: the mind's own (" + a.Mind + ")");
+                StagedThink(a, now);
                 return true;
             }
             _stagedTaken++;
@@ -133,8 +144,50 @@ namespace EnrageWestworld.InGame
                 _stagedMindOwn++;
             Log.Write("ENCOUNTER pick " + what + ": " + a.Name + " offered " + offered + " -> " + id + (id == a.Mind ? ", the mind's own too" : ", not the mind's (" + a.Mind + ")") + ", " + ms + " ms");
             if (ENTITY.DOES_ENTITY_EXIST(a.Handle))
-                PickThought(a.Name, a.Handle, thought, a.Req, a.Id);
+                a.ModelThought = PickThought(a.Name, a.Handle, thought, a.Req, a.Id);
+            StagedThink(a, now);   // the model's pick with no thought of its own that showed: the written one for what it picked
             return true;
+        }
+
+        /// The turn's written thought (the no-model run, item 1; WestworldScript.ActThoughts.cs): once a turn, as it settles by
+        /// the mind's own draw, or by the model's pick when its own thought didn't show; over their head when they're in view.
+        /// True when it showed (now or before), so a fixed thought of the encounter's at the same moment can stand aside.
+        private bool StagedThink(StagedAsk a, int now)
+        {
+            if (a == null || !a.Done)
+                return false;
+            if (a.ThoughtTried)
+                return a.Written;
+            if (!_cfg.ActThoughts || a.ModelThought || ActThoughts.TurnPool(a.Role, a.Picked) == null)
+            {
+                a.ThoughtTried = true;
+                return false;
+            }
+            if (!StagedThinkSeen(a.Handle))
+                return false;   // not yet in view, or too far (a walk-up still coming): tried again on a later settle, not used up
+            a.ThoughtTried = true;
+            string name = a.Name, id = a.Id;
+            if (id == null && ENTITY.DOES_ENTITY_EXIST(a.Handle))
+            {
+                MindWho mw = MindKnown(a.Handle, now);   // the mind's own draw never asked who they are (the model's path did)
+                if (mw != null && mw.Id != null)
+                {
+                    id = mw.Id;
+                    name = mw.Name ?? name;
+                }
+            }
+            a.Written = TurnThoughtFor(a.Handle, name, id, a.Role, a.Picked, a.Other, now);
+            return a.Written;
+        }
+
+        /// The thinker in view and within PickMetres, so a turn's one try isn't spent on someone still walking up from afar.
+        private bool StagedThinkSeen(int h)
+        {
+            Ped p = h != 0 ? new Ped(h) : null;
+            if (p == null || !p.Exists())
+                return false;
+            Ped me = Game.Player.Character;
+            return NodInView(me, p) && p.Position.DistanceTo(me.Position) <= _cfg.PickMetres;
         }
 
         private static string By(StagedAsk a)

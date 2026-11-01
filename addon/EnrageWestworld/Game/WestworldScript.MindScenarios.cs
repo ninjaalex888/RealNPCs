@@ -311,7 +311,10 @@ namespace EnrageWestworld.InGame
             _mindActs.Add(a);
             _mindActNextAt = now + MindActGapMs;
             if (!test)
+            {
                 S1Started(w, now);
+                _mindActBegun = a;   // its thought waits for the real start once up (S1Send)
+            }
             NoteMindAct(kind + ", gets up");
             _mindActLast = w.Name + " gets up to " + Choosing.WordsOf(kind);
             Log.Write("MIND gets up: " + w.Name + " (" + a.FromType + ") -> " + Choosing.WordsOf(kind) + (a.PointType != null ? ", to " + a.PointType : "") + " (" + (test ? "the Testing row" : w.ChoiceWhy) + ", " + (int)at.DistanceTo(me.Position) + " m from you; exit " + a.Exit.Path + ")");
@@ -506,6 +509,11 @@ namespace EnrageWestworld.InGame
                 a.Stage1 = false;   // a walk to someone, a place or home: the act's own handling from here (MindActsStep)
             _mindActLast = w.Name + " gets up and " + did;
             Log.Write("MIND acts: " + w.Name + " gets up and " + did + " (" + w.ChoiceWhy + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
+            if (a.ThoughtDue)
+            {
+                a.ThoughtDue = false;
+                ActThoughtFor(w, h, a, a.ThoughtWhy, now, false, false);   // the real start, up and on their way: the thought the get-up waited for
+            }
             return 1;
         }
 

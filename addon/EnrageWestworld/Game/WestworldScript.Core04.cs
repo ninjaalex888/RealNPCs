@@ -625,6 +625,8 @@ namespace EnrageWestworld.InGame
                 if (_tickerLine != was)
                     Safe("thought sound", () => ThoughtSound(_tickerLine, now));
                     Safe("aloud", () => AloudAsk(_tickerLine, now));   // said aloud in their own voice, if it fits (WestworldScript.Aloud.cs)
+                if (_tickerLine != was && _tickerLine != null && _tickerLine.Kind == "near" && _tickerLine.Handle != 0)
+                    NoteTheirThought(_tickerLine.Handle, now);   // a thought over someone came up: no act's or turn's thought of theirs on top of it (WestworldScript.ActThoughts.cs)
             }
             TickerLine line = _tickerLine;
             // a thought goes over its thinker's head (WestworldScript.OverHead.cs), under its own guard, and with

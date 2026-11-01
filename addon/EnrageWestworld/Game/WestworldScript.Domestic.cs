@@ -259,8 +259,8 @@ namespace EnrageWestworld.InGame
                     {
                         bool watched = (me.Position.DistanceTo(c.Man.Position) < 20f && NodInView(me, c.Man)) || LawWatching(c.Man, c.Wife) != null;
                         c.HisAsk = StagedChoose(hm, "husband", Domestic.Husband(c.MM, c.Matter, c.Turn, watched, c.Struck, sa), sa + "h",
-                                                id => Domestic.Words("husband", id, c.HisName, c.HerName), Domestic.Now("husband", c.HisName, c.HerName, c.Matter), c.HerName, now);
-                        if (c.Turn == 0)
+                                                id => Domestic.Words("husband", id, c.HisName, c.HerName), Domestic.Now("husband", c.HisName, c.HerName, c.Matter), c.HerName, now, 0, c.WM.Name);
+                        if (c.Turn == 0 && !StagedThink(c.HisAsk, now))   // his own mind's draw: the reason for this turn (ActThoughts), else the encounter's thought as before
                             _ticker.Push(c.WM.Name + ", thinking", Domestic.Thought("husband", c.Matter, c.Seed), "near", hm);
                     }
                     if (!StagedSettle(c.HisAsk, "domestic", c.WM.Name, now))
@@ -273,7 +273,7 @@ namespace EnrageWestworld.InGame
                 case "hers":
                     if (c.HerAsk == null)
                         c.HerAsk = StagedChoose(hw, "wife", Domestic.Wife(c.MW, c.His, c.Struck), sa + "w",
-                                                id => Domestic.Words("wife", id, c.HisName, c.HerName), Domestic.Now("wife", c.HisName, c.HerName, c.Matter), c.HisName, now);
+                                                id => Domestic.Words("wife", id, c.HisName, c.HerName), Domestic.Now("wife", c.HisName, c.HerName, c.Matter), c.HisName, now, 0, c.HerFull);   // (her name over a thought: the spawned wife is no one the mind knows)
                     if (!StagedSettle(c.HerAsk, "domestic", c.HerFull, now))
                     {
                         c.NextAt = now + 250;
@@ -489,6 +489,7 @@ namespace EnrageWestworld.InGame
             string pick = Staged.Choose(Domestic.Neighbour(StagedMindOf(c.WN, null), tw != null ? tw.Warmth : 0, c.Struck, law != null), c.Seed + "|n");
             DomCount("neighbour " + pick, null);
             Log.Write("ENCOUNTER domestic: neighbour " + c.WN.Name + " " + (pick == "stepin" ? "steps in" : pick == "law" ? "goes for the law" : pick == "watch" ? "watches" : "walks on") + " (mind)");
+            TurnThoughtFor(hn, c.WN.Name, c.WN.Id, "neighbour", pick, null, now);   // the reason, over their head (ActThoughts)
             string line = Domestic.FromNeighbour(pick, c.HisName, c.Seed);
             switch (pick)
             {

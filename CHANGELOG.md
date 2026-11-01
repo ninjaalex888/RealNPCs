@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **A thought with what people choose to do** (`[Mind] ActThoughts`, on as it comes; works without the AI model). When someone near you and in sight gets up to go home, heads for a drink, sits down to rest, keeps clear of you or goes over to greet a friend by their own mind's choice, a thought over their head says what moves them to it: tired, thirsty, sore at someone, wanting company. Each turn of an encounter (a callout, a domestic, the hogtied, a favour asked, a warning) gets one too, the reason for the answer they chose. The lines are by temper (bold, fearful, cold or plain), never the same one twice in a day for one person, a person at most once in 3 minutes and never on top of another thought of theirs. With the AI model on and answering, its own thought comes first and these fill in only where it gave none. Not yet seen in game.
 - The settings panel's "The world and its people" page is called "World and people" now.
 
 ## 0.7.12 (2026-11-01)

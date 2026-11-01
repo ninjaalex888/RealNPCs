@@ -44,6 +44,9 @@ namespace EnrageWestworld.InGame
                                         // against MindScenarios.AtOnce until it ends, walks to a place, home or a talk included (the review)
             public int Partner;         // talk: the other of two the walker joins (found before the get-up, kept for S1Send)
             public int EnrageAskedAt = int.MinValue / 2;   // S1GameHasThem's last ask of enRAGE (once a second at most)
+            public int About;           // the one the act is about (the friend, the talker, the foe), for its thought's name; never read as Toward (MindTalkable)
+            public bool ThoughtDue;     // a get-up whose act's thought waits for the real start, once up (S1Send; the no-model run, item 1)
+            public string ThoughtWhy;   // ... and the choice's why it was chosen for, kept from then
         }
 
         private readonly List<MindAct> _mindActs = new List<MindAct>();
@@ -144,6 +147,8 @@ namespace EnrageWestworld.InGame
         private string MindActOn(MindWho w, int h, int now)
         {
             w.AlreadyAt = false;   // set again by MindActTry when they're at it already
+            bool retry = w.Retrying;
+            _mindActBegun = null;   // set by whatever starts: a standing act, a look from a seat, a get-up (not "at it already")
             string lost = MindActTry(w, h, now);
             if (lost == LostOff)
                 return lost;
@@ -156,12 +161,38 @@ namespace EnrageWestworld.InGame
                 if (w.Retrying)
                     _mindRetryActed++;
                 w.Retrying = false;
+                MindActThought(w, h, now, retry);
                 return null;
             }
             int n;
             _mindActLost.TryGetValue(lost, out n);
             _mindActLost[lost] = n + 1;
             return lost;
+        }
+
+        private MindAct _mindActBegun;   // what MindActTry just started, for MindActOn's thought; null for "at it already" and anything refused
+
+        /// The thought with an act just begun (the no-model run, item 1; WestworldScript.ActThoughts.cs): at once for a standing
+        /// act or a look from a seat; a get-up's waits for the real start once they're up (S1Send), so a get-up put back or
+        /// with nothing to go to never has one; "at it already" none. Never on a retry, nor when the model's thought came.
+        private void MindActThought(MindWho w, int h, int now, bool retry)
+        {
+            MindAct a = _mindActBegun;
+            _mindActBegun = null;
+            if (a == null || !_cfg.ActThoughts)
+                return;
+            if (a.GettingUp)
+            {
+                if (retry || w.ModelThought)
+                    ActThoughtHeld(retry ? "a retry" : "the model's own thought");
+                else
+                {
+                    a.ThoughtDue = true;
+                    a.ThoughtWhy = w.ChoiceWhy;
+                }
+                return;
+            }
+            ActThoughtFor(w, h, a, w.ChoiceWhy, now, retry, w.ModelThought);
         }
 
         private string MindActTry(MindWho w, int h, int now)
@@ -243,6 +274,7 @@ namespace EnrageWestworld.InGame
                 S1Started(w, now);
             }
             _mindActs.Add(a);
+            _mindActBegun = a;   // a real start: its thought (MindActOn)
             _mindActNextAt = now + MindActGapMs;
             NoteMindAct(kind);
             _mindActLast = w.Name + " " + did;
@@ -333,6 +365,7 @@ namespace EnrageWestworld.InGame
                         a.To = at + dir * 15f;
                         TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, a.To.X, a.To.Y, a.To.Z, 1f, -1, 1f, 0, 0f);
                         a.Until = now + 25000;
+                        a.About = foe;   // whom the thought names, if they know them
                         did = "steps clear of " + (MindNameOf(foe) ?? "someone they can't abide");
                         break;
                     }
@@ -355,6 +388,7 @@ namespace EnrageWestworld.InGame
                         if (to == 0)
                             return kind == "greet" ? LostNoFriend : LostNoTalk;
                         a.Toward = to;
+                        a.About = to;
                         a.Joining = partner != 0;
                         TASK.TASK_GO_TO_ENTITY(h, to, 20000, 1f, a.Joining ? 1.3f : 1.4f, 0f, 0);
                         a.Until = now + 20000;
@@ -531,7 +565,10 @@ namespace EnrageWestworld.InGame
                 return kind == "greet" ? LostNoFriend : kind == "talk" ? LostNoTalk : LostSatNoLook;
             int ms = 6000 + (int)(Voice.Hash(w.Id + "|" + kind + "|look") % 2000);
             TASK.TASK_LOOK_AT_ENTITY(h, target, ms, 0, 51, 0);
-            _mindActs.Add(new MindAct { Handle = h, Kind = kind, Name = w.Name, Started = now, Until = now + ms, Seated = true });
+            var look = new MindAct { Handle = h, Kind = kind, Name = w.Name, Started = now, Until = now + ms, Seated = true, About = atYou ? 0 : target };
+            _mindActs.Add(look);
+            if (!test)
+                _mindActBegun = look;   // a real start of a look: its thought (MindActOn)
             _mindActNextAt = now + MindActGapMs;
             _mindSeatedLooks++;
             NoteMindAct(kind + ", a look from a seat");
@@ -814,7 +851,7 @@ namespace EnrageWestworld.InGame
             MindActingShare(Game.GameTime, out acting, out scenes, out named, out already);
             return MindShareWords(acting, scenes, named, already) + "; " + S1Status() + "; " + (_cfg.MindActsSeatedLooks ? "watch, looks and showoff on: " + _mindSeatedLooks + " looks from a seat, " + _mindAlreadyAt + " already at what they chose; " : "watch, looks and showoff off ([Mind] MindActsSeatedLooks); ") +
                    _mindActsDone + " acted on their choices this session (" + (_mindActCount.Count == 0 ? "none yet" : string.Join(", ", _mindActCount.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
-                   "), " + _mindActs.Count + " acting now, " + _mindActsSkipped + " passed over" + (_mindActLast != null ? "; last: " + _mindActLast : "") +
+                   "), " + (_cfg.ActThoughts ? _actThoughtsShown + " with a thought, " : "with a thought: off ([Mind] ActThoughts), ") + _mindActs.Count + " acting now, " + _mindActsSkipped + " passed over" + (_mindActLast != null ? "; last: " + _mindActLast : "") +
                    "; of " + _mindActsTried + " tried, not acted: " + (_mindActLost.Count == 0 ? "none" : string.Join(", ", _mindActLost.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
                    "; retried " + _mindRetried + ", acted after retry " + _mindRetryActed + (_cfg.MindRetries ? "" : " ([Mind] MindRetries off)") +
                    "; taken up by something else mid-act " + _mindActsTakenUp + "; chosen quietly (the law, children, the story's) " + _mindChoseQuietly;

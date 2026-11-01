@@ -235,9 +235,10 @@ namespace EnrageWestworld.InGame
                     if (pick == "holdback")
                     {
                         string t = Favours.After("holdback", w.Id + "|" + now / 60000);
-                        _ticker.Push(w.Name + ", thinking", t, "near", h);
+                        if (!w.Ask.Written)   // the turn's own thought, if it showed on the walk (ActThoughts), stands for this one
+                            _ticker.Push(w.Name + ", thinking", t, "near", h);
                         _favourLast = w.Name + ": lost their nerve" + (w.Test ? " (a test)" : "");
-                        Log.Write("FAVOUR " + w.Name + ": held back; thinks: " + t);
+                        Log.Write("FAVOUR " + w.Name + ": held back; thinks: " + (w.Ask.Written ? "the turn's own thought" : t));
                         FavourLetGo(h);
                         return;
                     }

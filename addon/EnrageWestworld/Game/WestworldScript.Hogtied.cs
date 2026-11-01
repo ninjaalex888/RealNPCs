@@ -379,6 +379,8 @@ namespace EnrageWestworld.InGame
             // their calls, by their own nature (the first asked of the model)
             if (h.CallAsk != null && StagedSettle(h.CallAsk, "hogtied", h.Name, now))
             {
+                if (h.CallAsk.Written)
+                    h.Thought = true;   // the call's own thought showed (ActThoughts): the first-sight thought stands aside
                 HogSay(h, h.CallAsk.Picked, h.CallAsk, now);
                 h.CallAsk = null;
             }
@@ -387,7 +389,7 @@ namespace EnrageWestworld.InGame
                 h.NextCall = now + 7000 + _rng.Next(3000);
                 Staged.Weights w = Hogtied.Captive(h.MC, h.Captors, d < 30f);
                 if (h.Calls == 0)
-                    h.CallAsk = StagedChoose(ch, "captive", w, h.Seed + "c0", id => Hogtied.Words("captive", id, Person.FirstOf(h.Name)), Hogtied.Now("captive", Person.FirstOf(h.Name), h.Captors), null, now);
+                    h.CallAsk = StagedChoose(ch, "captive", w, h.Seed + "c0", id => Hogtied.Words("captive", id, Person.FirstOf(h.Name)), Hogtied.Now("captive", Person.FirstOf(h.Name), h.Captors), null, now, 0, h.Name);
                 else
                     HogSay(h, Staged.Choose(w, h.Seed + "c" + h.Calls), null, now);
                 h.Calls++;
@@ -411,6 +413,8 @@ namespace EnrageWestworld.InGame
             HogCount("captive " + pick, a);
             if (a != null)
                 Log.Write("ENCOUNTER hogtied: " + h.Name + " chose " + pick + " (" + By(a) + ")");
+            else if (TurnThoughtFor(ch, h.Name, h.R != null ? h.R.Id : null, "captive", pick, null, now))
+                h.Thought = true;   // a later call, their own nature's draw: its reason over them (ActThoughts), and no first-sight thought on top
             string line = Hogtied.FromCaptive(pick, h.Captors, h.Seed + h.Calls);
             if (line == null)
                 return;   // quiet, in fear
@@ -425,6 +429,7 @@ namespace EnrageWestworld.InGame
             int lh = lead.Handle;
             HogCount("captor " + pick, null);
             Log.Write("ENCOUNTER hogtied: the men's leader chose " + pick + " (mind; " + h.Captors + ")");
+            TurnThoughtFor(lh, HogMan, null, "captor", pick, null, now);   // his reason, over his head (ActThoughts; a stranger: the frame guard only)
             TASK.CLEAR_PED_TASKS(lh, false, false);
             TASK.TASK_TURN_PED_TO_FACE_ENTITY(lh, me.Handle, 2000, 0f, 0f, 0f);
             switch (pick)
@@ -525,7 +530,7 @@ namespace EnrageWestworld.InGame
                 else
                     HogFight(h, men, now, "you cut " + Person.FirstOf(h.Name) + " loose under their noses");
             }
-            h.FreedAsk = StagedChoose(ch, "freed", Hogtied.Freed(h.MC, h.Captors), h.Seed + "f", id => Hogtied.Words("freed", id, Person.FirstOf(h.Name)), Hogtied.Now("freed", Person.FirstOf(h.Name), h.Captors), null, now);
+            h.FreedAsk = StagedChoose(ch, "freed", Hogtied.Freed(h.MC, h.Captors), h.Seed + "f", id => Hogtied.Words("freed", id, Person.FirstOf(h.Name)), Hogtied.Now("freed", Person.FirstOf(h.Name), h.Captors), null, now, 0, h.Name);
             h.Phase = "freed";
             h.PhaseUntil = now + 2500;
         }

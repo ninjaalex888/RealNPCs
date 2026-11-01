@@ -52,6 +52,7 @@ namespace EnrageWestworld.InGame
             public int SeatedAskAt;
             public bool SeatedAsked;
             public int Stage1RestUntil;     // the seat kept them, or no fitting point was near: no stage-1 start for them until then (0.7.12 stage 1)
+            public bool ModelThought;       // the model's own thought came with the present choice (PickResolve, from PickThought): no written one over it (the no-model run, item 1)
         }
 
         private const int ChooseMs = 60000, ChoiceLinesAMinute = 5;
@@ -463,6 +464,7 @@ namespace EnrageWestworld.InGame
                 w.Retries = 0;
                 w.ActWhyNot = null;
                 w.ChoiceTriedAt = now;
+                w.ModelThought = false;   // a new choice: no thought has come with it yet
                 if (!quiet && MindChosenQuietly(h))
                     _mindChoseQuietly++;   // the law, a child, the story's own: chosen for the mind's sake, never an act tried (NIGHT4 fix 4)
                 else if (!quiet && !PickAsk(w, h, now, c))

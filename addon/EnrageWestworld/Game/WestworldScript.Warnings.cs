@@ -321,9 +321,10 @@ namespace EnrageWestworld.InGame
                     }
                     else
                         _warnLetBe++;
-                    _ticker.Push(w.Name + ", thinking", t, "near", h);
+                    if (!w.Ask.Written)   // the turn's own thought, if it showed at the settle (ActThoughts), stands for this one
+                        _ticker.Push(w.Name + ", thinking", t, "near", h);
                     _warnLast = w.Name + ": " + (w.Pick == "stare" ? "stared you down" : "let it be") + " (" + w.Fact + ")" + (w.Test ? " (a test)" : "");
-                    Log.Write("WARN " + w.Name + ": " + w.Pick + "; thinks: " + t);
+                    Log.Write("WARN " + w.Name + ": " + w.Pick + "; thinks: " + (w.Ask.Written ? "the turn's own thought" : t));
                     _warnWalk = null;   // the look plays out by itself; nothing held
                     return;
                 }
@@ -338,6 +339,7 @@ namespace EnrageWestworld.InGame
             }
             if (w.SaidAt == 0)
             {
+                StagedThink(w.Ask, now);   // the turn's thought, if it waited for them to come into view (once a turn)
                 float d = w.Ped.Position.DistanceTo(me.Position);
                 if (d < w.Nearest)
                     w.Nearest = d;

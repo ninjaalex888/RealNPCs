@@ -257,7 +257,8 @@ namespace EnrageWestworld.InGame
             if (_cfg == null || !_cfg.MindLive)
                 return "off ([Mind] MindLive): the mind moves nobody";
             return "this session: " + _standUpByMind + " stepped in by their minds, " + _standUpBullyMind + " bullies answered by theirs (" + _standUpTookAway + " times the other was taken away), " + _onlooked + " onlookers acted, " + _fallByMind + " falls answered by the mind, " +
-                   (_rescued + _rescueRefused) + " despairs someone went to (" + _rescued + " talked down), " + _passMinded + " greetings changed, " + _youNods + " acknowledged you as you passed, " + _doubtStirs + " stirred from doubt, " + _revivedSeen + " times the revived dead were seen";
+                   (_rescued + _rescueRefused) + " despairs someone went to (" + _rescued + " talked down), " + _passMinded + " greetings changed, " + _youNods + " acknowledged you as you passed, " + _doubtStirs + " stirred from doubt, " + _revivedSeen + " times the revived dead were seen; " +
+                   _mindActsDone + " acts of their own choosing, " + (_cfg.ActThoughts ? _actThoughtsShown + " with a thought, and " + _turnThoughtsShown + " encounter turns with one (TEST act thoughts)" : "with a thought: off ([Mind] ActThoughts)");
         }
 
         /// F7: on or off, how many were talked down, refused, hesitated, looked for.
