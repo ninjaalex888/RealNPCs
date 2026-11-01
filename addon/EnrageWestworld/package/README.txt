@@ -1,4 +1,4 @@
-RealNPCs 0.7.12 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.13 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -68,6 +68,17 @@ Set it up once:
 
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
+
+
+NEW IN 0.7.13
+-------------
+- A thought with what people choose to do, no AI model needed ([Mind] ActThoughts, on). Someone
+  near you who gets up to go home, heads for a drink, sits down to rest, keeps clear of you or goes
+  over to a friend shows what moves them to it; each turn of an encounter shows the reason for the
+  answer chosen. One person at most once every 90 s (ActThoughtEachSeconds), never within 15 s of
+  another thought of theirs (ActThoughtGapSeconds). With the model on, its own thought comes first.
+  Loaded and running in game; not yet seen on screen.
+- The settings page "The world and its people" is "World and people" now.
 
 
 NEW IN 0.7.12
