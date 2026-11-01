@@ -97,9 +97,9 @@ NEW IN 0.7.11
   the stalker is a stranger who turns up out of sight behind you, in StalkerBlackOutfit of
   StalkerBlackModel. StalkerEveryMinutes 15 (was 34) and StalkerChance 35 (was 20): about once
   in 45 minutes of play, where it was about once in three hours. An ini on the old stock values
-  moves to the new ones; values of your own are kept. Which outfit is truly black isn't known
-  yet: the Testing row "Stalker outfit: show the next candidate" (TestStalkerOutfitKey) shows
-  each and says the two lines to copy.
+  moves to the new ones; values of your own are kept. He keeps low, crouched until he runs,
+  and shows as a red dot on the map. The Testing row "Stalker outfit: show the next
+  candidate" (TestStalkerOutfitKey) shows other outfits and says the two lines to copy.
 - The free local AI model turns itself on. AI MODEL (OLLAMA) ([Mind] Language) is the large
   gold switch at the top of the settings panel, with its status beside it ("on, answering",
   "on, NOT ANSWERING", "off"...). At each start RealNPCs asks Ollama; if it runs and holds
@@ -139,8 +139,8 @@ NEW IN 0.7.11
   RealNPCs' that held them (a street scene, a fight, the ring, a waking act, Talk, a walk-up to
   you, a lawman's job, Bravery), so the game's own reaction takes over: hands up, begging.
 - Also new, mostly not yet seen in game: the street's trouble waits while a lawman within 25 m
-  is looking, and on a Sunday morning by the church ([Scenes] BeingWatched); the street hushes
-  for two game hours after a killing (one in Saint Denis; [Mind] HushHours, HushHoursSaintDenis),
+  is looking, and on a Sunday morning by the church ([Scenes] BeingWatched); the street no longer
+  hushes after a killing unless you ask for it ([Mind] HushHours, HushHoursSaintDenis, 0),
   never after a brawl, and the town is on edge for some hours ([Mind] MindTownMood); onlookers run
   from real danger, and fright spreads; stress that builds, and honour rules in Lemoyne ([Mind]
   MindTempers); personal space ([World] PersonalSpace); why a scene starts, as a thought
@@ -1228,9 +1228,9 @@ in the file. The new ones:
             testing, with Language, MindWakes and LanguageVariety); MindStartsScenes (true, in
             testing, with LanguagePicks); PickMetres (25), PicksAtOnce (8); MindTownMood,
             MindTempers (true, in testing).
-            HushHours (2), HushHoursSaintDenis (1): with MindTownMood, for this many game hours after
+            HushHours (0), HushHoursSaintDenis (0): with MindTownMood, for this many game hours after
             the latest killing in a town its street holds back its own fights, thefts and callouts
-            (0-12; 0 never). Someone beaten to death in a brawl, a Testing row's own trouble (your
+            (0-12; 0 never, as it comes, for a livelier world; 2 and 1 for a short quiet). Someone beaten to death in a brawl, a Testing row's own trouble (your
             own killings still hush, but not of the test's own people), and brawls, roughs and
             standoffs never hush it; a brawler shot or cut in the fight is a killing and does.
 [Output]    NewsTo = corner | ticker | gamefeed
