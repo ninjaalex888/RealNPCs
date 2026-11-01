@@ -308,7 +308,10 @@ namespace EnrageWestworld.InGame
                     c.TAsk = StagedChoose(hb, "target", StreetCallouts.Target(c.MB, c.Matter), sa + "t",
                                           id => StreetCallouts.Words("target", id, c.AName, c.BName, c.Matter), StreetCallouts.Now("target", c.AName, c.BName, c.Matter), c.AName, now);
                     if (!StagedThink(c.TAsk, now))   // his own mind's draw: the reason for his answer (ActThoughts), else the encounter's thought as before
+                    {
                         _ticker.Push(c.WB.Name + ", thinking", StreetCallouts.Thought("target", c.AName, c.Matter, c.Seed), "near", hb);
+                        c.TAsk.ThoughtTried = true;   // the fixed thought stood for this turn: no turn thought on top of it at a later settle
+                    }
                     c.Phase = "answer";
                     c.NextAt = now + 3200;
                     break;
@@ -398,7 +401,10 @@ namespace EnrageWestworld.InGame
                 case "watch":
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, c.A.Handle, 2000, 0f, 0f, 0f);
                     if (i == 0 && !a.Written)   // (their turn's own thought, if it showed, stands for it: ActThoughts)
+                    {
                         _ticker.Push(c.OnWho[i].Name + ", thinking", StreetCallouts.Thought("onlooker", c.AName, c.Matter, c.Seed + i), "near", h);
+                        a.ThoughtTried = true;
+                    }
                     break;
                 default:
                     StagedLetGo(o, true);
