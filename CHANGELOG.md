@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The crowd that walked over to ring a fight and cheer is off (`[Scenes] FightCrowds`; an upgraded ini has it off too): some of them froze where they stopped. Brawls still draw people in to fight (settings version 182).
+- One name per person, wherever it shows: the brawl's knock-outs, the ledger of the dead and the mind now use the name over their head (enRAGE's card when it gives one), as the scenes do.
 - Fixed: onlookers who got up off a bench or the bar to watch a brawl could freeze where they stood and not move again. They now get up the game's own way, as everyone else does since 0.7.12.
 - Brawls draw people in sooner: in a fight's first 10 seconds onlookers are readier still to join (`[Mind] BrawlOpeningBoost`, 20, on top of BrawlJoinBoost), so two at it grow into a brawl more often; someone may still go down early (settings version 181).
 - Fixed: someone with a name card from enRAGE was called by that name in the scenes but by RealNPCs' own name in their thoughts and the brawl's log; the name over their head is used everywhere now.

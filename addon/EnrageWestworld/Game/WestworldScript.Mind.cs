@@ -869,7 +869,7 @@ namespace EnrageWestworld.InGame
                     return w;
                 Person rp = PersonOf(rec);
                 w.Id = rp.Id;
-                w.Name = rp.Name;
+                w.Name = ShownName(h, rp.Name);
                 w.Kind = "record";
                 w.Src = TraitSource.From(rp, "record");
                 w.P = rp;
@@ -882,7 +882,7 @@ namespace EnrageWestworld.InGame
                     Folk f = Snapshot.Of(ac);
                     var fp = new Person { Id = f.Key, Name = f.Name, Woman = f.Woman, Home = f.Town, Personality = f.Temper };   // not PersonOfFolk: that makes their state
                     w.Id = f.Key;
-                    w.Name = f.Name;
+                    w.Name = ShownName(h, f.Name);
                     w.Kind = "folk";
                     w.Src = TraitSource.From(fp, "folk");
                     w.P = fp;

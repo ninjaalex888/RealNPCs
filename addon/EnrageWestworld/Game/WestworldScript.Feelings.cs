@@ -99,6 +99,7 @@ namespace EnrageWestworld.InGame
         /// The name to show for someone: enRAGE's for them, else theirs as a resident, else what they look like.
         private string NameToShow(int handle)
         {
+            // the same order as ShownName: enRAGE's card, then ours (one name per person everywhere; Lex, 2026-11-01)
             string enrages = _bridge.EnrageNameAt(handle);
             if (enrages != null && enrages.Trim().Length > 0)
                 return enrages;

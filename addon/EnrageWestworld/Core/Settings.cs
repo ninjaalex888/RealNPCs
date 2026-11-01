@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 181;
+        public const int CurrentVersion = 182;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -266,7 +266,7 @@ namespace EnrageWestworld.Core
         public bool ReasonVariety = true;   // [Scenes] the street's reasons take turns: a worry said once a visit, the last four scenes' kinds weigh against their own, snapping starts lower (NIGHT4 fix 5; settings version 166)
         public bool ChanceFirst = true;   // [Scenes] the chance meeting (songs, tales, haggling, standoffs) goes first when no reason is strong, the argument's share stops growing past weight 1.5, main scenes start nearer you, and two held in chairs far apart aren't cast (NIGHT4 fix 7; settings version 166)
         public bool HorseThieves = true;   // [Scenes] with MindLive: a man whose mind leans to it takes a horse with nobody on it and rides off; its owner shouts after him (the NPC-life run, step 5; settings version 137)
-        public bool FightCrowds = true;   // [Scenes] with MindLive: a crowd rings a street fight and cheers it on (the fearful keep away) (the NPC-life run, step 5; settings version 136)
+        public bool FightCrowds = false;   // off as it comes from settings version 182 (Lex, 2026-11-01: onlookers froze; "remove the feature that tells the NPCs to gather as a crowd") [Scenes] with MindLive: a crowd rings a street fight and cheers it on (the fearful keep away) (the NPC-life run, step 5; settings version 136)
         public bool NightScenes = true;   // [Scenes] with MindLive: at night, a mugging by someone whose mind leans to it, and a drunk taken home by a friend (the NPC-life run, step 5; settings version 135)
         public bool Aftermath = true;   // [Scenes] with MindLive: after a street fight near you, a friend tends the one who went down and a lawman near has a word with the one left standing (the NPC-life run, Lex 2026-10-30; settings version 131)
         public float ChanceMeetMetres = 6f;   // [Scenes] two people this far apart may meet by chance, one walking over to the other (3.4, standing together, until settings version 134; Lex, 2026-10-30)
@@ -758,6 +758,11 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: new in this version: [Mind] SeatedBrawls (on): two people sat or leaning at a bar or a table may come to blows, getting up first the game's own way (before, their quarrel stayed words).");
                 if (s.SettingsVersion < 181)
                     log?.Invoke("Settings: new in this version: [Mind] BrawlOpeningBoost (20): in a fight's first 10 seconds onlookers are readier still to join in, so two at it grow into a brawl more often.");
+                if (s.SettingsVersion < 182 && s.FightCrowds)
+                {
+                    s.FightCrowds = false;
+                    log?.Invoke("Settings: [Scenes] FightCrowds is off now: people no longer walk over to stand in a ring round a fight (some froze where they stopped). Brawls still draw people in to fight.");
+                }
                 if (s.SettingsVersion == 177 && KeyIs(s.SettingsKey, "Alt+F") && (KeyIs(s.SettingsKey2, "None") || string.IsNullOrEmpty(s.SettingsKey2)))
                 {
                     s.SettingsKey2 = "Alt+R";   // version 177 left Alt+F alone for a day: Alt+R back as the second key (Lex, 2026-11-01)

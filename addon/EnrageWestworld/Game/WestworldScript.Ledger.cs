@@ -124,7 +124,7 @@ namespace EnrageWestworld.InGame
                 if (rb.R.PostId == null)
                 {
                     k.Id = rb.R.Id;
-                    k.Name = rb.R.Name;
+                    k.Name = ShownName(h, rb.R.Name);   // the name over his head (enRAGE's card when it gives one), as the scenes say it (Lex, 2026-11-01)
                     k.Kind = "resident";
                 }
                 return k.Id != null ? k : null;
@@ -133,7 +133,7 @@ namespace EnrageWestworld.InGame
             if (rec != null)
             {
                 k.Id = rec.Id;
-                k.Name = rec.Name;
+                k.Name = ShownName(h, rec.Name);
                 k.Kind = "record";
                 return k;
             }
@@ -142,7 +142,7 @@ namespace EnrageWestworld.InGame
             {
                 Folk f = Snapshot.Of(a);
                 k.Id = f.Key;
-                k.Name = f.Name;
+                k.Name = ShownName(h, f.Name);
                 k.Kind = "folk";
                 return k;
             }
