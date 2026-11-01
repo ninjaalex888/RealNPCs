@@ -550,7 +550,7 @@ namespace EnrageWestworld.InGame
                 NameCardsStep(now);   // always on: before the Testing overlays, so a crowd's cards aren't the ones the frame's text budget drops (Lex, 2026-10-30)
             }
             Draw.Part = Draw.PartMinds;
-            ShowMindsStep(now);   // the Testing page's cards over people (WestworldScript.ShowMinds.cs)
+            ShowMindsStep(now);   // Show minds, the cards over people (the UI page; WestworldScript.ShowMinds.cs)
             Draw.Part = Draw.PartWake;
             WakeTagsStep(now);    // and its wake stages over heads (WestworldScript.WakeTags.cs)
             Draw.Part = Draw.PartNews;

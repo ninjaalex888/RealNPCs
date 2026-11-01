@@ -1,4 +1,4 @@
-// Show minds (overnight 2026-10-27, the Testing page's tool): a small card over each named person within 11 m (at
+// Show minds (overnight 2026-10-27; a Testing page tool, on the UI page since 2026-11-01): a small card over each named person within 11 m (at
 // most four, nearest first): who they are and their temper, their mood and the worry they're living through and its
 // stage, their ties, and what is on their mind now (the strongest pull, Engine.MindCard). The cards are worked out
 // twice a second and only drawn each frame, inside Draw.FrameBudget (four lines each). Only people the add-on already
