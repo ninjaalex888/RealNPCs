@@ -82,6 +82,48 @@ namespace EnrageWestworld.Core
             { "lift", new Rule("lift", false, 25, 120, 240, 0) },                    // a thief lifts your money: two game hours between, a town every four (2026-10-29)
         };
 
+        /// The storyteller's (Core/Storyteller.cs) scales on the walk-ups' and small moments' odds and kind rests, set by the
+        /// game when its band changes (1 as built, and always 1 with [World] Storyteller off). Only the kinds below take them,
+        /// and never a place's or a person's rest, a big moment's quiet or the night's budget: those are the repeat guards.
+        public static float StoryChance = 1f, StoryRest = 1f;
+
+        /// A kind's chance now: scaled for the walk-ups and small moments (capped at 90, or the kind's own when higher).
+        public static int ChanceNow(Rule r)
+        {
+            if (StoryChance == 1f || !StoryChances(r.Kind))
+                return r.Chance;
+            int c = (int)Math.Round(r.Chance * Math.Max(0.6f, Math.Min(1.5f, StoryChance)));
+            return StoryChance > 1f ? Math.Min(c, Math.Max(r.Chance, 90)) : c;
+        }
+
+        /// A kind's own rest now (game minutes): scaled for the same kinds, at most halved; a place's and a person's never.
+        public static long KindRestNow(Rule r)
+        {
+            if (StoryRest == 1f || r.KindRest <= 0)
+                return r.KindRest;
+            switch (r.Kind)
+            {
+                case "grudge": case "lonely": case "thanks": case "fall": case "standup": case "round": case "drink": case "lift": case "patient": case "campfire":
+                    return (long)(r.KindRest * Math.Max(0.5f, Math.Min(1.25f, StoryRest)));
+                case "traveller":
+                    return (long)(r.KindRest * Math.Max(0.6f, Math.Min(1f, StoryRest)));   // a man asking the way: sooner at most, never rarer
+                default:
+                    return r.KindRest;
+            }
+        }
+
+        private static bool StoryChances(string kind)
+        {
+            switch (kind)
+            {
+                case "grudge": case "lonely": case "thanks": case "fall": case "standup": case "round": case "drink": case "lift": case "patient":
+                case "callout": case "kin":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         /// Why this kind can't happen here and now, or null when it may. `roll` is 0-99 (seeded by the caller). With
         /// `test`, nothing stands in the way, and `skipped` says what would have.
         /// ignoreBig: the quiet after a big moment and the night's budget don't apply, only the kind's own rests (the
@@ -92,7 +134,8 @@ namespace EnrageWestworld.Core
             Rule r;
             if (s == null || !Rules.TryGetValue(kind, out r))
                 return null;
-            string why = Rest(s, r, place, who, now, ignoreBig) ?? (roll >= r.Chance ? "the roll (" + roll + " of " + r.Chance + "%)" : null);
+            int chance = ChanceNow(r);
+            string why = Rest(s, r, place, who, now, ignoreBig) ?? (roll >= chance ? "the roll (" + roll + " of " + chance + "%)" : null);
             if (test)
             {
                 skipped = why;
@@ -104,8 +147,9 @@ namespace EnrageWestworld.Core
         private static string Rest(PaceState s, Rule r, string place, string who, long now, bool ignoreBig = false)
         {
             long t;
-            if (r.KindRest > 0 && s.LastKind.TryGetValue(r.Kind, out t) && now - t >= 0 && now - t < r.KindRest)
-                return "a " + r.Kind + " " + (now - t) + " min ago (rests " + r.KindRest + ")";
+            long kindRest = KindRestNow(r);
+            if (kindRest > 0 && s.LastKind.TryGetValue(r.Kind, out t) && now - t >= 0 && now - t < kindRest)
+                return "a " + r.Kind + " " + (now - t) + " min ago (rests " + kindRest + ")";
             if (r.PlaceRest > 0 && place != null && s.LastPlace.TryGetValue(r.Kind + "|" + place, out t) && now - t >= 0 && now - t < r.PlaceRest)
                 return "a " + r.Kind + " here " + (now - t) + " min ago";
             if (r.WhoRest > 0 && who != null && s.LastWho.TryGetValue(r.Kind + "|" + who, out t) && now - t >= 0 && now - t < r.WhoRest)
@@ -208,8 +252,10 @@ namespace EnrageWestworld.Core
                 return "none";
             string big = BigWhyNot(s, now);
             var resting = Rules.Values.Select(r => new { r, t = s.LastKind.TryGetValue(r.Kind, out long t) ? t : long.MinValue })
-                .Where(x => x.t != long.MinValue && x.r.KindRest > 0 && now - x.t < x.r.KindRest).Select(x => x.r.Kind + " " + (x.r.KindRest - (now - x.t)) + " min").ToList();
-            return "big moments " + (big ?? "may come") + "; " + s.BigTonight + " tonight; resting: " + (resting.Count == 0 ? "nothing" : string.Join(", ", resting));
+                .Where(x => x.t != long.MinValue && KindRestNow(x.r) > 0 && now - x.t < KindRestNow(x.r)).Select(x => x.r.Kind + " " + (KindRestNow(x.r) - (now - x.t)) + " min").ToList();
+            return "big moments " + (big ?? "may come") + "; " + s.BigTonight + " tonight; resting: " + (resting.Count == 0 ? "nothing" : string.Join(", ", resting)) +
+                   (StoryChance != 1f || StoryRest != 1f ? "; the storyteller has the walk-ups' odds x" + StoryChance.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) +
+                    " and their rests x" + StoryRest.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) : "");
         }
     }
 }
