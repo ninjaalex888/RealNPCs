@@ -211,6 +211,9 @@ namespace EnrageWestworld.Core
                 case "encounter:callout":
                     kind = id == target ? "challenge" : "slight";   // called out before the street: the one called out takes it as a challenge, the rest as hard words seen
                     break;
+                case "encounter:domestic":
+                    kind = h.Outcome != null && h.Outcome.StartsWith("struck", StringComparison.Ordinal) ? "shove" : "slight";   // a man's hand on his wife seen, or hard words at his door
+                    break;
                 case "encounter:visitor":
                     kind = id != "player" ? "uncanny" : null;   // whoever saw the figure over the body (the visitor's record names the player as its target)
                     break;

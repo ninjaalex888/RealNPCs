@@ -179,6 +179,7 @@ namespace EnrageWestworld.InGame
                 case "supper":
                 case "campfire":
                 case "callout2":
+                case "domestic":
                     said = RequestEncounter(a.Id, how, out asked);
                     if (!asked)
                         return said;
@@ -189,6 +190,7 @@ namespace EnrageWestworld.InGame
                             : a.Id == "traveller" ? "the hour (07:00-19:00), being on a road, once a day, the roll (not the towns)"
                             : a.Id == "supper" ? "the hour (17:30-21:00), being on a road, once a day, the lawman rule, the roll (not the towns or the ticker); it takes no money, moves no clock and saves nothing"
                             : a.Id == "campfire" ? "the hour (20:00-04:00), the rest between fires, the roll (not the towns)"
+                            : a.Id == "domestic" ? "the hour (08:00-21:00), the rest between them, the people's rests, the roll (it still needs a town's street and a named man on his feet 6-35 m off)"
                             : a.Id == "callout2" ? "the hour (08:00-20:00, not the noon hour), the rest between them, the people's rests, the roll (it still needs a town's street and two people with something between them)"
                             : "the hour, the place (the wilds at night; by day the open or a town's edge), once a night, the gap between gatherings, the roll";
                     return null;

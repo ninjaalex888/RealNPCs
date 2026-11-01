@@ -94,6 +94,8 @@ namespace EnrageWestworld.Core
             E("clip", "script_story@mry1@ig@ig6_jamie_attempts_suicide", "grief,shame", "withdraw", "strong", "any", "standing", Played + " (despair, 2026-10-27)"),
             E("clip", "script_re@town_confront@male@barfight", "anger,contempt", "confront", "moderate", "men", "standing", "NOT YET SEEN: the street callout's set (NIGHT4 item 4; callover, confront, to_crowd, taunt, threat, ignore, positive, negative; the log's ENCOUNTER clips line proves each)"),
             E("clip", "script_re@town_confront@female@drunk_duel", "anger,contempt", "confront", "moderate", "women", "standing", "NOT YET SEEN: the street callout's set for a woman (NIGHT4 item 4)"),
+            E("clip", "script_re@domestic_dispute@rhodes", "anger,contempt", "confront", "moderate", "men", "standing", "NOT YET SEEN: a husband's temper, his rant (NIGHT4 item 4; head_in_clouds, live_on_moon, thats_rhodes, grass_greener _husband)"),
+            E("clip", "script_re@domestic_dispute@annesburg", "anger,contempt", "confront", "moderate", "men", "standing", "NOT YET SEEN: a husband's temper, his rant (you_married_husband, shoulda_husband)"),
             E("clip", "ai_combat@damage@writhe@base / writhe_loop", "fear,grief", "freeze", "strong", "any", "any", "NOT YET SEEN: despair's knife writhe"),
             // movement tasks the scenes use, proven in play
             E("move", "TASK_SMART_FLEE_PED", "fear", "avoid", "moderate", "any", "any", "NOT YET SEEN: last night's visitor and robbery"),

@@ -700,6 +700,10 @@ NEW IN 0.6.0
   day, someone with a real grievance against another (a debt, a theft, a beating, hard words) calls
   him out in front of whoever is about; each answers by their own nature, or the AI model picks
   among the same few things. Walk up and it ends. Testing page: "Someone calls out another".
+- A husband's temper ([Encounters] DomesticDisputes, DomesticChance 30). In a town by day, a man
+  starts in on his wife in the street; he rants, storms off or lets it drop, and now and then
+  strikes her (rarely, once); she gives it back, pleads, sobs or walks off; a neighbour may step
+  in or fetch the law. Once he has struck her, dealing with him is no crime.
 - Night encounters ([Encounters]). Out in the wilds between ten at night and four in the morning,
   you may hear a woman crying somewhere off the road (CryingWomanChance, 15 percent on each roll
   every EncounterEveryMinutes, 12, at most once a night). She kneels in the dark and calls for

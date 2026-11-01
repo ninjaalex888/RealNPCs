@@ -68,6 +68,8 @@ namespace EnrageWestworld.InGame
                     return "a man is held at gunpoint nearby";
                 if (_streetCallout != null)
                     return _streetCallout.WA.Name + " is calling " + _streetCallout.WB.Name + " out in the street";
+                if (_domestic != null)
+                    return _domestic.WM.Name + " is shouting at his wife in the street";
                 if (_hermit != null)
                     return _hermit.R.Name + " is at " + Their(_hermit.R) + " camp nearby";
                 return _gathering != null ? "a gathering is standing out there" : null;
@@ -96,6 +98,8 @@ namespace EnrageWestworld.InGame
                 SupperStep(now);
             if (_streetCallout != null)
                 StreetCalloutStep(now);
+            if (_domestic != null)
+                DomesticStep(now);
             StagedChecksStep(now);
             VisitorBodyStep();   // a body left behind goes once nobody can see (WestworldScript.Visitor.cs)
             HermitStep(now);   // a hermit at his camp, when you come near one
@@ -157,16 +161,16 @@ namespace EnrageWestworld.InGame
         }
 
         private int _encounterTurn;
-        private const int EncounterKinds = 9;   // the eight before NIGHT4 item 4, then the street callout
+        private const int EncounterKinds = 10;   // the eight before NIGHT4 item 4, then the street callout and the husband's temper
 
         /// The kinds that happen in a town's street among the people already there (they don't wait on the Director's scene).
         private static bool StreetKind(int kind)
         {
-            return kind == 8;
+            return kind == 8 || kind == 9;
         }
 
         /// A re-staged encounter (WestworldScript.Staged.cs) is going on.
-        private bool StagedLive { get { return _streetCallout != null; } }
+        private bool StagedLive { get { return _streetCallout != null || _domestic != null; } }
 
         /// One kind's chance on this roll: true when it started. A kind already out is passed over (one of each, for now).
         private bool TryEncounter(int kind, List<string> notNow, int now)
@@ -269,6 +273,16 @@ namespace EnrageWestworld.InGame
                         return false;
                     }
                     return EncounterRoll("called out before the street", _cfg.PublicCalloutChance) && StartStreetCallout(now, false);
+                case 9:
+                    if (!_cfg.DomesticDisputes || _domestic != null)
+                        return false;
+                    not = DomesticNotNow();
+                    if (not != null)
+                    {
+                        notNow.Add("a husband's temper: " + not);
+                        return false;
+                    }
+                    return EncounterRoll("a husband's temper", _cfg.DomesticChance) && StartDomestic(now, false);
                 default:
                     if (!_cfg.Campfires || _campfire != null)
                         return false;
@@ -291,7 +305,7 @@ namespace EnrageWestworld.InGame
             get
             {
                 return (_crying != null ? 1 : 0) + (_exec != null ? 1 : 0) + (HermitWithYou() ? 1 : 0) + (_gathering != null ? 1 : 0) + (_visitor != null ? 1 : 0) +
-                       (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0) + (_streetCallout != null ? 1 : 0);
+                       (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0) + (_streetCallout != null ? 1 : 0) + (_domestic != null ? 1 : 0);
             }
         }
 
@@ -310,6 +324,7 @@ namespace EnrageWestworld.InGame
                 case "campfire": return _campfire != null;
                 case "gathering": return _gathering != null;
                 case "callout2": return _streetCallout != null;
+                case "domestic": return _domestic != null;
                 default: return false;
             }
         }
@@ -327,6 +342,7 @@ namespace EnrageWestworld.InGame
                 : kind == "supper" ? (_cfg.SupperInvitation ? null : "The supper invitation is off ([Encounters] SupperInvitation).")
                 : kind == "campfire" ? (_cfg.Campfires ? null : "Campfires are off ([Encounters] Campfires).")
                 : kind == "callout2" ? (_cfg.PublicCallouts ? null : "Street callouts are off ([Encounters] PublicCallouts).")
+                : kind == "domestic" ? (_cfg.DomesticDisputes ? null : "A husband's temper is off ([Encounters] DomesticDisputes).")
                 : _cfg.Gatherings ? null : "Gatherings are off ([Encounters] Gatherings; they need West World on too).";
             if (off != null)
                 return off;
@@ -358,6 +374,8 @@ namespace EnrageWestworld.InGame
                     return "A fire will be lit near you, out of sight, with men round it. Go and see.";
                 case "callout2":
                     return "Somebody near you with a grievance will call another out, if two such are about. Watch the street.";
+                case "domestic":
+                    return "A man near you will start in on his wife in the street. Watch, or step in.";
                 default:
                     return "The awake will gather somewhere near you, out of sight.";
             }
@@ -365,7 +383,7 @@ namespace EnrageWestworld.InGame
 
         private string KeyOf(string kind)
         {
-            if (kind == "visitor" || kind == "traveller" || kind == "supper" || kind == "campfire" || kind == "callout2")
+            if (kind == "visitor" || kind == "traveller" || kind == "supper" || kind == "campfire" || kind == "callout2" || kind == "domestic")
                 return "its Testing page row";
             KeySpec k = kind == "execution" ? _execKey : kind == "crying" ? _cryingKey : kind == "hermit" ? _hermitKey : _gatherKey;
             return k.ToString();
@@ -411,6 +429,10 @@ namespace EnrageWestworld.InGame
                     }
                     else
                         StartSupper(now, true);
+                    break;
+                case "domestic":
+                    if (!StartDomestic(now, true))
+                        Log.Write("ENCOUNTER test, domestic: not now: " + (_domWhyNot ?? "?"));
                     break;
                 case "callout2":
                     if (!StartStreetCallout(now, true))
@@ -479,7 +501,7 @@ namespace EnrageWestworld.InGame
         {
             bool streetOnly;
             string why = EncounterBlocker(out streetOnly);
-            return streetOnly && kind == "callout2" ? null : why;
+            return streetOnly && (kind == "callout2" || kind == "domestic") ? null : why;
         }
 
         /// streetOnly: what keeps them back is only the Director's scene in the street (the street's own kinds go ahead).
@@ -855,6 +877,8 @@ namespace EnrageWestworld.InGame
                 EndCampfire(why);
             if (_streetCallout != null)
                 EndStreetCallout(why, false);
+            if (_domestic != null)
+                EndDomestic(why);
             if (_supper != null || _supperDarkSince != 0)
                 EndSupper(why);   // the dark lifted and the controls given back, if it was down
             VisitorLeftClear();   // a mission or shutdown: what it left goes with it
@@ -876,6 +900,7 @@ namespace EnrageWestworld.InGame
             if (_campfire != null) on.Add("a campfire (" + _campfire.Phase + ")");
             if (_supper != null) on.Add("the supper invitation (" + _supper.Phase + ")");
             if (_streetCallout != null) on.Add("a street callout (" + _streetCallout.Phase + ")");
+            if (_domestic != null) on.Add("a husband's temper (" + _domestic.Phase + ")");
             if (_stalker != null) on.Add("a stalker");
             string live = (on.Count > 0 ? string.Join(", ", on) : "none") + " (" + EncountersLive + " counted, at most " + _cfg.EncountersAtOnce + ")";
             return "live: " + live + ", next roll in " + Math.Max(0, (_nextEncounterRoll - now) / 1000) + " s every " + _cfg.EncounterEveryMinutes + " min" +
