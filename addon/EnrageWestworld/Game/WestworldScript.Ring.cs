@@ -100,7 +100,7 @@ namespace EnrageWestworld.InGame
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, true);   // the fight doesn't send them off: they came to see it
                 if (PED.IS_PED_USING_ANY_SCENARIO(p.Handle))
                 {
-                    TASK.CLEAR_PED_TASKS(p.Handle, true, false);   // up the game's way first; over once they're on their feet
+                    ScenarioExit.SoftUp(p.Handle, x => TASK.TASK_STAND_STILL(x, 3000));   // up Rockstar's way (the exit flag and the next task, no bare clear: that froze people in the pose; Lex, 2026-11-01, Valentine: Cyrus and Zenas); over once on their feet
                     _ringRising.Add(new[] { p.Handle, now + 1500, i, now });
                     rose++;
                     continue;
@@ -143,6 +143,8 @@ namespace EnrageWestworld.InGame
                 }
                 if (PED.IS_PED_USING_ANY_SCENARIO(r[0]))
                 {
+                    if (now - r[3] > 4000 && now - r[3] <= 5500)
+                        ScenarioExit.Reask(r[0], x => TASK.TASK_STAND_STILL(x, 3000));   // asked again, Rockstar's guarded way (never mid-exit)
                     if (now - r[3] > 6000)
                     {
                         _ringRising.RemoveAt(k);

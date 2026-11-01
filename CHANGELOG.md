@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: onlookers who got up off a bench or the bar to watch a brawl could freeze where they stood and not move again. They now get up the game's own way, as everyone else does since 0.7.12.
 - Brawls draw people in sooner: in a fight's first 10 seconds onlookers are readier still to join (`[Mind] BrawlOpeningBoost`, 20, on top of BrawlJoinBoost), so two at it grow into a brawl more often; someone may still go down early (settings version 181).
 - Fixed: someone with a name card from enRAGE was called by that name in the scenes but by RealNPCs' own name in their thoughts and the brawl's log; the name over their head is used everywhere now.
 - **People start scenes from their own reasons, without the AI model** (`[Mind] MindStartsScenes`, on). Someone near you with a reason of their own to go to someone else near (a debt to call in, a friend to comfort, a quarrel to pick up, good news to tell) may go and start it, with the written why over their head, on top of the street's own scenes: at most one a minute, never past MainScenesAtOnce. Their temper leans it (the assertive and the angry to a quarrel, the soft-hearted to comfort, the sociable to news), and so does a feeling that fits. With the model's picks on, the model still chooses among those reasons too. F7 TEST mind scenes counts "by their own minds". Not yet seen in game (settings version 179).
