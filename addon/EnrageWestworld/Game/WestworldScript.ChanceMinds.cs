@@ -61,6 +61,27 @@ namespace EnrageWestworld.InGame
         /// held and ChanceWaitStep plays it once the pick is settled).
         private string ChanceMindKind(Ped a, Ped b, Ped crowd, SceneCast cast, string seed, bool saloon, bool asSecond, int now, out string by)
         {
+            // its own catch, as MeetLean's: a fault is the roll for this one meeting, never the street's scenes switched off
+            try
+            {
+                return ChanceMindKindOf(a, b, crowd, cast, seed, saloon, asSecond, now, out by);
+            }
+            catch (Exception ex)
+            {
+                Log.Detail("CHANCE the minds' choice failed: " + ex.Message);
+                if (_chanceWait == null)
+                {
+                    _staged.Remove(a.Handle);
+                    _staged.Remove(b.Handle);
+                }
+                cast.MindLead = 0;
+                by = "roll";
+                return null;
+            }
+        }
+
+        private string ChanceMindKindOf(Ped a, Ped b, Ped crowd, SceneCast cast, string seed, bool saloon, bool asSecond, int now, out string by)
+        {
             by = "roll";
             MindWho wa = MindKnown(a.Handle, now), wb = MindKnown(b.Handle, now);
             bool ka = wa != null && wa.Id != null, kb = wb != null && wb.Id != null;
@@ -126,7 +147,17 @@ namespace EnrageWestworld.InGame
                 ChanceWaitAbort("[Mind] MindChanceMeetings off");
                 return;
             }
-            if (!StagedSettle(w.Ask, "chance", w.Ask.Name, now) && now - w.Since < PickWaitMs + 2000)
+            bool settled;
+            try
+            {
+                settled = StagedSettle(w.Ask, "chance", w.Ask.Name, now);
+            }
+            catch (Exception ex)
+            {
+                ChanceWaitAbort("the pick failed: " + ex.Message);   // never two people held, and the chance meetings stopped, by a fault
+                return;
+            }
+            if (!settled && now - w.Since < PickWaitMs + 2000)
                 return;
             _chanceWait = null;
             _staged.Remove(w.A.Handle);
@@ -134,7 +165,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             string whyNot = me == null || !me.Exists() || me.IsDead ? "you're down"
                           : _director.Busy ? "another scene started meanwhile"
-                          : ChanceGone(w.A) ?? ChanceGone(w.B) ?? (w.Crowd != null ? ChanceGone(w.Crowd) : null)
+                          : ChanceGone(w.A) ?? ChanceGone(w.B)
                           ?? (w.A.Position.DistanceTo(me.Position) > StreetMetres + 8f ? "you've walked on" : null)
                           ?? (MISC.GET_MISSION_FLAG() ? "a mission" : null);
             if (whyNot != null)
@@ -143,6 +174,11 @@ namespace EnrageWestworld.InGame
                 _chanceWaitWhyDropped = whyNot;
                 Log.Detail("CHANCE let go after the model's pick: " + whyNot);
                 return;
+            }
+            if (w.Crowd != null && ChanceGone(w.Crowd) != null)
+            {
+                w.Crowd = null;   // the bystander was never held: taken meanwhile, the two play on alone
+                w.Cast.HasCrowd = false;
             }
             string by = w.Ask.ByModel ? "model" : "mind";
             string kind = ChanceKindSet(w.Cast, w.Lean, w.Ask.Picked);
