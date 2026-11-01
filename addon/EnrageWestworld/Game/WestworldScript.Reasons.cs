@@ -774,9 +774,8 @@ namespace EnrageWestworld.InGame
             if (!_restMsOf.TryGetValue(h, out ms))
                 ms = PersonRestMs;
             // a trouble weight over 1 shortens the rests too: in a thin town everyone near has just been in a scene
-            // (Lex, 2026-10-28: "there isn't many people in town"); at 5, 24 s and 3 min after blows
-            if (_cfg.TroubleWeight > 1f)
-                ms = (int)(ms / _cfg.TroubleWeight);
+            // (Lex, 2026-10-28: "there isn't many people in town"); at most by half since NIGHT4 (at 5 it was 24 s: one man in seven scenes in three minutes)
+            ms = Reasons.RestFor(ms, _cfg.TroubleWeight);   // (at most halved, never under a minute: NIGHT4 fix 6)
             return now - at < ms;
         }
 
@@ -808,7 +807,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             int now = Game.GameTime;
             int fought = _restMsOf.Keys.Count(h => Resting(h, now));
-            string sat = fought > 0 ? fought + " who came to blows sitting it out (" + (int)(FoughtRestMs / Math.Max(1f, _cfg.TroubleWeight) / 60000) + " min); " : "";
+            string sat = fought > 0 ? fought + " who came to blows sitting it out (" + (int)(Reasons.RestFor(FoughtRestMs, _cfg.TroubleWeight) / 60000) + " min; everyone else " + Reasons.RestFor(PersonRestMs, _cfg.TroubleWeight) / 1000 + " s between scenes); " : "";
             sat += (_cfg.ReasonVariety && _streetKinds.Count > 0 ? "the street lately: " + string.Join(", ", _streetKinds) + " (each the same kind -" + Reasons.SameKindPenalty + "); " : "") + (_reasonWords > 0 ? _reasonWords + " blows played as words this session (one of them sat or leaning); " : "") + (_reasonCant > 0 ? _reasonCant + " reasons that couldn't be played passed over a while; " : "");
             List<Candidate> people = ReasonCandidates(me, now);
             if (people.Count < 2)

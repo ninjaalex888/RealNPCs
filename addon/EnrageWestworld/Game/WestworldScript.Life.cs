@@ -696,6 +696,8 @@ namespace EnrageWestworld.InGame
         }
 
         /// A widow grieving for a man the player shot here, or men getting up a posse over what he did.
+        private const int SpecialRestMs = 180000;
+
         private bool SpecialScene(List<Ped> pool, Ped me, bool saloon, int now)
         {
             _nextSpecial = now + 30000;
@@ -711,7 +713,7 @@ namespace EnrageWestworld.InGame
                     {
                         if (string.IsNullOrEmpty(f.Name))
                             f.Name = Scenes.FirstName(f.Woman, f.Id);   // from now on, the dead have a name
-                        f.Mourned = true;
+                        _engine.NoteMourned(f, g);   // one mourner a town a game day (NIGHT4 fix 6)
                         string seed = f.Id + "|mourn";
                         SceneCast cast = BuildCast(mourner, friend, null, saloon, me, now, seed);
                         cast.DeadName = f.Name;
@@ -723,6 +725,7 @@ namespace EnrageWestworld.InGame
                         Scene s = Scenes.Mourn(cast, seed);
                         Log.Write("WIDOW scene for " + f.Name + " (" + (f.Label ?? "a stranger") + ", killed by you in " + f.Town + ")");
                         StartScene(s, new List<Ped> { mourner, friend }, cast, seed, now);
+                        _nextSpecial = now + SpecialRestMs + _rng.Next(SpecialRestMs * 2 / 3);   // 3-5 real minutes before the next widow or posse (NIGHT4 fix 6; was 30 s)
                         return true;
                     }
                 }
@@ -757,6 +760,7 @@ namespace EnrageWestworld.InGame
                         Scene s = Scenes.Posse(cast, seed);
                         Log.Write("POSSE talk in " + _placeTown + " over: " + cast.CrimeRumour);
                         StartScene(s, new List<Ped> { a, b }, cast, seed, now);
+                        _nextSpecial = now + SpecialRestMs + _rng.Next(SpecialRestMs * 2 / 3);
                         return true;
                     }
                 }

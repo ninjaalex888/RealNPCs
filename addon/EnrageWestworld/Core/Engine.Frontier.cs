@@ -58,13 +58,30 @@ namespace EnrageWestworld.Core
                                   : Voice.Pick(d.Id + "desc", "it was a big man in a worn hat", "it was a tall man who gave no name", "it was a rough-looking stranger");
         }
 
-        /// A stranger the player killed in this town in the last week, not yet mourned on screen.
+        /// A stranger the player killed in this town in the last week, not yet mourned on screen; none on a game day the town has
+        /// mourned someone already (NIGHT4 fix 6: one widow grieved two lawmen forty seconds apart, the same line both times).
         public Fallen MournFor(string town, long now)
         {
-            if (town == null)
+            if (town == null || MournedToday(Store.Fallen, town, now))
                 return null;
             return Store.Fallen.Where(f => f.Town == town && !f.Mourned && f.Returned == 0 && now - f.At < 7 * 1440 && now - f.At > 120)
                 .OrderByDescending(f => f.At).FirstOrDefault();
+        }
+
+        /// Whether someone was grieved on screen in this town on this game day.
+        public static bool MournedToday(IEnumerable<Fallen> fallen, string town, long now)
+        {
+            foreach (Fallen f in fallen)
+                if (f.Town == town && f.Mourned && f.MournedAt > 0 && f.MournedAt / 1440 == now / 1440)
+                    return true;
+            return false;
+        }
+
+        /// Marks the dead as grieved on screen now.
+        public void NoteMourned(Fallen f, long now)
+        {
+            f.Mourned = true;
+            f.MournedAt = now;
         }
 
         /// The latest small items from the papers, for somebody to read aloud.

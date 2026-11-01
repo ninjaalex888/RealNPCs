@@ -42,6 +42,18 @@ namespace EnrageWestworld.Core
                 last.RemoveAt(0);
         }
 
+        /// A person's rest between scenes (real ms) under a trouble weight (NIGHT4 fix 6): a weight over 1 shortens it, by half
+        /// at most and never under a minute. The weight scales the odds of blows, not how soon the same person is cast again
+        /// (at 5 the two-minute rest had become 24 s, and one man was in seven scenes in three minutes).
+        public const int RestFloorMs = 60000;
+
+        public static int RestFor(int ms, float troubleWeight)
+        {
+            if (troubleWeight <= 1f)
+                return ms;
+            return System.Math.Max(System.Math.Min(ms, RestFloorMs), (int)(ms / System.Math.Min(troubleWeight, 2f)));
+        }
+
         /// The kind of the snap family (a worry said aloud, which Exchanges dresses as a snap, a brush-off or a word of comfort).
         public static bool SnapFamily(string kind)
         {
