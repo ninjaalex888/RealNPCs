@@ -112,6 +112,8 @@ namespace EnrageWestworld.InGame
                         bool sour = t != null && t.Warmth < 0;
                         if (!sour && bOwesA == null && aOwesB == null)
                             continue;
+                        if (!test && _scDoneToday.Contains(ScPairKey(a.Who.Id, b.Who.Id) + "|" + g / 1440))
+                            continue;   // these two had it out before the street today already (NIGHT4 item 6)
                         float apart = pos[i].DistanceTo(pos[j]);
                         if (apart < (test ? 2f : 4f) || apart > (test ? 18f : 14f) || (!ScInView(me, pool, view, i) && !ScInView(me, pool, view, j)))
                             continue;
@@ -177,6 +179,12 @@ namespace EnrageWestworld.InGame
             StoryEncounterStarted("callout", best, test);
             _scStarted++;
             if (!test)
+            {
+                if (_scDoneToday.Count > 200)
+                    _scDoneToday.Clear();
+                _scDoneToday.Add(ScPairKey(ca.Who.Id, cb.Who.Id) + "|" + g / 1440);
+            }
+            if (!test)
                 _scNextOk = now + 6 * 60000;
             Log.Write("ENCOUNTER callout: " + ca.Who.Name + " calls out " + cb.Who.Name + " over " + c.Matter + " in " + _placeTown + " (" + (wronged ? "the one wronged" : "the hotter head") + ", " +
                       (tie != null ? "their tie " + tie.Kind + " " + tie.Warmth : "no tie") + (debt ? ", a debt" : "") + "; " + (int)ca.Ped.Position.DistanceTo(cb.Ped.Position) + " m apart, " + (int)best + " m from you; " +
@@ -208,7 +216,8 @@ namespace EnrageWestworld.InGame
             return ties;
         }
 
-        private const float EncounterSceneApart = 12f;   // a street encounter starts at least this far from a full scene's people
+        private const float EncounterSceneApart = 12f;
+        private readonly HashSet<string> _scDoneToday = new HashSet<string>();   // pair|game day: a callout between two once a day (this session)   // a street encounter starts at least this far from a full scene's people
 
         private static string ScPairKey(string a, string b)
         {

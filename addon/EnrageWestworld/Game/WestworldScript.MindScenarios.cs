@@ -221,9 +221,10 @@ namespace EnrageWestworld.InGame
                 a.PointHash = Natives.Hash(pl.InPlace);
                 a.PointType = pl.InPlace;
                 a.InPlace = true;
-                TASK.TASK_START_SCENARIO_IN_PLACE_HASH(a.Handle, a.PointHash, hold, true, 0u, -1f, false);   // the Director's proven call
+                int brief = MindScenarios.InPlaceHoldMs(seed);   // 12-25 s in place, not a point's minute or more (NIGHT4 item 6)
+                TASK.TASK_START_SCENARIO_IN_PLACE_HASH(a.Handle, a.PointHash, brief, true, 0u, -1f, false);   // the Director's proven call
                 a.ReachBy = now + 5000;
-                a.Until = a.ReachBy + hold;
+                a.Until = a.ReachBy + brief;
                 a.NextPoll = now + 2000;
                 did = MindScenarios.Words(pl.InPlace) + " (no fitting spot near)";
                 return null;
@@ -328,7 +329,7 @@ namespace EnrageWestworld.InGame
                     if (x == h || !ENTITY.DOES_ENTITY_EXIST(x) || ENTITY.IS_ENTITY_DEAD(x))
                         continue;
                     Vector3 xa = ENTITY.GET_ENTITY_COORDS(x, true, true);
-                    if (xa.DistanceTo(at) > 14.5f || PED.IS_PED_USING_ANY_SCENARIO(x) || NotFree(x) || IsMindActing(x))
+                    if (xa.DistanceTo(at) > 14.5f || PED.IS_PED_USING_ANY_SCENARIO(x) || NotFree(x) || IsMindActing(x) || !MindTalkable(x))
                         continue;
                     _pairWho[n] = x;
                     _pairAt[n] = xa;
@@ -425,6 +426,9 @@ namespace EnrageWestworld.InGame
                         a.TookUp = true;
                         a.NextPoll = now + 2000;
                         _s1TookUp++;
+                        MindWho tw;
+                        if (!a.InPlace && _mindWho.TryGetValue(h, out tw))
+                            tw.Stage1RestUntil = now + MindScenarios.FailRestMs;   // sat or leaning where they chose: not got up again for 4 min (NIGHT4 item 6: benches sat on and left in turn)
                         string k = MindScenarios.CountKind(a.PointType, a.InPlace);
                         int n;
                         _s1TookKind.TryGetValue(k, out n);

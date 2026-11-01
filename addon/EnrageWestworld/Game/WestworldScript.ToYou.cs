@@ -241,7 +241,10 @@ namespace EnrageWestworld.InGame
             if (sum == _ynMinuteSum)
                 return;   // nobody looked at this minute (no one near): no line
             _ynMinuteSum = sum;
-            Log.Write("NOD you minute: " + _ynMinuteNods + " shown; " + YouNodPassedOver());
+            if (_ynMinuteNods > 0)
+                Log.Write("NOD you minute: " + _ynMinuteNods + " shown; " + YouNodPassedOver());
+            else if (Log.Debug)
+                Log.Detail("NOD you minute: 0 shown; " + YouNodPassedOver());   // a minute nobody was shown: Detail only (NIGHT4 item 6: it was written every minute in a town)
             _ynMinuteNods = 0;
         }
 

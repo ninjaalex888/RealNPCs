@@ -233,7 +233,10 @@ namespace EnrageWestworld.InGame
             _mindActNextAt = now + MindActGapMs;
             NoteMindAct(kind);
             _mindActLast = w.Name + " " + did;
-            Log.Write("MIND acts: " + w.Name + " " + did + " (" + w.ChoiceWhy + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
+            if (!did.StartsWith("keeps an eye on the street", StringComparison.Ordinal))
+                Log.Write("MIND acts: " + w.Name + " " + did + " (" + w.ChoiceWhy + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
+            else if (Log.Debug)
+                Log.Detail("MIND acts: " + w.Name + " " + did + " (" + w.ChoiceWhy + ", " + (int)at.DistanceTo(me.Position) + " m from you)");   // the commonest act, at Detail (NIGHT4 item 6: the log Lex reads)
             return null;
         }
 
@@ -522,7 +525,10 @@ namespace EnrageWestworld.InGame
             string whom = atYou ? "you" : MindNameOf(target) ?? "someone near";
             string did = kind == "watch" ? (atYou ? "keeps an eye on you" : "keeps an eye on the street (" + whom + ")") : kind == "keepclear" ? "eyes you warily" : "looks over at " + whom;
             _mindActLast = w.Name + " " + did + " from where they sit";
-            Log.Write("MIND acts: " + w.Name + " " + did + " from where they sit (" + (test ? "the Testing row" : w.ChoiceWhy) + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
+            if (test || !did.StartsWith("keeps an eye on the street", StringComparison.Ordinal))
+                Log.Write("MIND acts: " + w.Name + " " + did + " from where they sit (" + (test ? "the Testing row" : w.ChoiceWhy) + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
+            else if (Log.Debug)
+                Log.Detail("MIND acts: " + w.Name + " " + did + " from where they sit (" + w.ChoiceWhy + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
             return null;
         }
 
@@ -721,13 +727,29 @@ namespace EnrageWestworld.InGame
                 if (oh == h || !ENTITY.DOES_ENTITY_EXIST(oh) || ENTITY.IS_ENTITY_DEAD(oh) || NotFree(oh) || IsMindActing(oh) || PED.IS_PED_IN_COMBAT(oh, 0))
                     continue;
                 float d = ENTITY.GET_ENTITY_COORDS(oh, true, true).DistanceTo(at);
-                if (d > 2.5f && d < bestD)
+                if (d > 2.5f && d < bestD && MindTalkable(oh))
                 {
                     bestD = d;
                     best = oh;
                 }
             }
             return best;
+        }
+
+        /// Someone a walker may go up to for a talk: on foot, a grown-up, not the law, and not one another walker is already
+        /// going to (NIGHT4 item 6: two converged on one passer-by, and one trotted after a rider). A loop: no allocation.
+        private bool MindTalkable(int oh)
+        {
+            if (PED.IS_PED_ON_MOUNT(oh) || PED.IS_PED_IN_ANY_VEHICLE(oh, false))
+                return false;
+            for (int i = 0; i < _mindActs.Count; i++)
+                if (_mindActs[i].Toward == oh || _mindActs[i].Partner == oh)
+                    return false;
+            MindWho o;
+            if (_mindWho.TryGetValue(oh, out o) && o.TradeGroup == "law")
+                return false;
+            Ped p = new Ped(oh);
+            return IsGrownUp(p) && !Natives.IsLaw(p);
         }
 
         private string MindNameOf(int h)

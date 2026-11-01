@@ -56,6 +56,10 @@ namespace EnrageWestworld.InGame
 		public const float OverheardScale = 0.37f;
 		private static string _subText, _ovrText;
 		private static int _subFrom, _subUntil, _ovrFrom, _ovrUntil;
+		private static int _ovrPed;
+		private static float _ovrMetres = -1f;
+		private const int OverheardLeastMs = 2500;
+		public static int OverheardHeldBack;   // lines not shown over another speaker's still new caption (F7 could say)
 		private static string _drawnNoted, _ovrNoted;
 
 		/// [Output] Subtitles (on, unless "off").
@@ -291,11 +295,21 @@ namespace EnrageWestworld.InGame
 		/// What someone says near the player that the game gives no subtitle of its own (a street scene, a hello, the doctor,
 		/// the law chase): in the same box, the game's way, for ms (Lex, 2026-10-30: spoken lines as subtitles, never on the
 		/// bar with the thoughts). Not while the subtitles are off, nor over a line said to the player still showing.
-		public static bool Overheard(string speaker, string text, int ms)
+		/// `ped` and `metres` (from the player): a line from someone else doesn't replace one up less than OverheardLeastMs unless
+		/// its speaker is nearer (NIGHT4 item 6: two full scenes and a quiet talk flipped the one box every second).
+		public static bool Overheard(string speaker, string text, int ms, int ped = 0, float metres = -1f)
 		{
 			if (!SubtitlesOn || SubtitleMode == "off" || string.IsNullOrEmpty(text))
 				return false;
 			int now = Game.GameTime;
+			if (ped != 0 && _ovrPed != 0 && ped != _ovrPed && _ovrText != null && now < _ovrUntil && now >= _ovrFrom && now - _ovrFrom < OverheardLeastMs &&
+				metres >= 0f && _ovrMetres >= 0f && metres >= _ovrMetres)
+			{
+				OverheardHeldBack++;
+				return false;
+			}
+			_ovrPed = ped;
+			_ovrMetres = metres;
 			string sub = (string.IsNullOrEmpty(speaker) ? "" : speaker + ": ") + "\"" + text.Trim() + "\"";
 			_ovrText = Clean(sub);
 			_ovrFrom = now;

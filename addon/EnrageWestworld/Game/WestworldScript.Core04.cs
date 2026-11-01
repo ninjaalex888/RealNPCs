@@ -576,8 +576,9 @@ namespace EnrageWestworld.InGame
                 Log.Detail("CAPTION " + label + ": " + text + " (no subtitle: off screen)");   // between others, only who you can see (Lex, 2026-10-31: hard to tell where it came from)
                 return;
             }
-            bool shown = toYou ? Feed.ToYouCaption(label, text, Math.Max(1500, ms)) : Feed.Overheard(label, text, Math.Max(1500, ms));   // to the player: the top box; else the one under it
-            Log.Detail("CAPTION " + (toYou ? "(to you) " : "") + label + ": " + text + (shown ? "" : " (no subtitle: [Output] Subtitles off)"));
+            float metres = !toYou && handle != 0 && ENTITY.DOES_ENTITY_EXIST(handle) ? ENTITY.GET_ENTITY_COORDS(handle, true, true).DistanceTo(Game.Player.Character.Position) : -1f;
+            bool shown = toYou ? Feed.ToYouCaption(label, text, Math.Max(1500, ms)) : Feed.Overheard(label, text, Math.Max(1500, ms), handle, metres);   // to the player: the top box; else the one under it (a newer caption from someone else, farther off, waits its turn)
+            Log.Detail("CAPTION " + (toYou ? "(to you) " : "") + label + ": " + text + (shown ? "" : " (no subtitle: [Output] Subtitles off, or another speaker's caption still new)"));
         }
 
         private void FrameImpl(int now)

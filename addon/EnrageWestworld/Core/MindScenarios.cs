@@ -235,7 +235,7 @@ namespace EnrageWestworld.Core
                 case "eat":
                     return new Plan { Choice = choice, Types = EatPoints, Radius = PointMetres, Place = "saloon" };
                 case "work":
-                    return new Plan { Choice = choice, Types = WorkPoints, Radius = PointMetres, InPlace = gentry ? TallyInPlace : LookOverInPlace };
+                    return new Plan { Choice = choice, Types = WorkPoints, Radius = PointMetres, InPlace = gentry ? TallyInPlace : null };   // no crouch over nothing in the street (NIGHT4 item 6): no work point, no act
                 default:
                     return null;
             }
@@ -313,6 +313,15 @@ namespace EnrageWestworld.Core
         public static int ReachMs(float metres)
         {
             return ReachMinMs + (int)(Math.Max(0f, Math.Min(40f, metres)) * ReachPerMetreMs);
+        }
+
+        /// Something in place when no point fits (a smoke, a stare, the fan, the tally): 12-25 s, as the Director's smoke (15 s) and
+        /// the watch's stare (10 s), never a point's minute or more (NIGHT4 item 6: a stoic stare for two minutes in the street).
+        public const int InPlaceHoldMinMs = 12000, InPlaceHoldSpanMs = 13000;
+
+        public static int InPlaceHoldMs(uint seed)
+        {
+            return InPlaceHoldMinMs + (int)((seed >> 3) % (uint)(InPlaceHoldSpanMs + 1));
         }
 
         /// How long they keep a point once there before the act lets go (they keep it after, as the game's own ambient life).

@@ -52,7 +52,7 @@ namespace EnrageWestworld.InGame
             float pd = p.Exists() ? p.Position.DistanceTo(Game.Player.Character.Position) : 999f;
             // sat or leaning: asked too (NIGHT4 fix 3), offered only what they can do from a seat (MindRetry.SeatedOption)
             bool seated = _cfg.MindRetries && (_cfg.MindActsSeatedLooks || _cfg.MindActsScenarios) && p.Exists() && PED.IS_PED_USING_ANY_SCENARIO(h);
-            bool getsUp = seated && _cfg.MindActsScenarios;   // stage 1: "gets up and ..." options too
+            bool getsUp = seated && _cfg.MindActsScenarios && !(w.Stage1RestUntil != 0 && now < w.Stage1RestUntil && w.Stage1RestUntil - now <= MindScenarios.FailRestMs);   // stage 1: "gets up and ..." options too, but not while they rest where they just sat (NIGHT4 item 6)
             if (!p.Exists() || pd > _cfg.PickMetres || MindActWhyNot(p, h, seated) != null)
                 return false;
             if (seated && w.SeatedAsked && now - w.SeatedAskAt >= 0 && now - w.SeatedAskAt < SeatedAskRestMs)

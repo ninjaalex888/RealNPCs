@@ -29,7 +29,7 @@ namespace EnrageWestworld.InGame
             public string Matter, Seed, Town, HisName, HerName, HerFull;
             public StagedAsk HisAsk, HerAsk;
             public string His, Hers;
-            public int StartedAt, NextAt, Turn, Rant, StruckAt;
+            public int StartedAt, NextAt, Turn, Rant, StruckAt, GatherBy;
             public bool Spawned, Struck, YouIn, YouHit, Test, FairGame;
             public uint WifeModel;
             public string Outcome;
@@ -85,7 +85,7 @@ namespace EnrageWestworld.InGame
                 for (int i = 0; i < pn; i++)
                 {
                     Candidate m = pool[i];
-                    if (m.Who.Woman)
+                    if (m.Who.Woman || (!test && DomDoneWith(m, now)))
                         continue;
                     float d = pos[i].DistanceTo(mePos);
                     if (d < 6f || d > 35f || (!test && _director.FullSceneMetres(pos[i]) < EncounterSceneApart))
@@ -99,10 +99,10 @@ namespace EnrageWestworld.InGame
                             w = pool[j];
                     }
                     float score = d - (w != null ? 20f : 0f);
-                    if (score - 5f >= best)
+                    if (score - DomInViewMetres >= best)
                         continue;
                     if (NodInView(me, m.Ped))
-                        score -= 5f;
+                        score -= DomInViewMetres;   // in front of you counts as much as his sweetheart near (NIGHT4 item 6: it was 5 m, so most began behind the camera)
                     if (score >= best)
                         continue;
                     best = score;
@@ -160,9 +160,16 @@ namespace EnrageWestworld.InGame
             }
             StagedLoad(Domestic.Dicts.Concat(new[] { SobDict }), now);
             StagedHold(c.Man);
-            TASK.TASK_STAND_STILL(c.Man.Handle, 20000);
+            TASK.TASK_STAND_STILL(c.Man.Handle, 45000);   // (45 s: the spawn and her timed walk; was 20 s, NIGHT4 item 6)
             _domestic = c;
             _domStarted++;
+            if (!test)
+            {
+                if (_domDoneToday.Count > 200)
+                    _domDoneToday.Clear();
+                _domDoneToday.Add(man.Who.Id + "|" + _store.LastGameMin / 1440);
+            }
+            _domLastManId = man.Who.Id;
             StoryEncounterStarted("domestic", man.Ped.Position.DistanceTo(me.Position), test);
             if (!test)
                 _domNextOk = now + 8 * 60000;
@@ -226,7 +233,7 @@ namespace EnrageWestworld.InGame
             switch (c.Phase)
             {
                 case "gather":
-                    if (c.Wife.Position.DistanceTo(c.Man.Position) > 2.6f && now - c.StartedAt < 30000)
+                    if (c.Wife.Position.DistanceTo(c.Man.Position) > 2.6f && now < c.GatherBy)
                     {
                         if (now - c.StartedAt > 600 && !PED.IS_PED_IN_COMBAT(hw, 0))
                             TASK.TASK_GO_TO_ENTITY(hw, hm, 20000, Natives.Brisk, 1.6f, 0f, 0);
@@ -290,18 +297,56 @@ namespace EnrageWestworld.InGame
             if (!Spawner.Ready(c.WifeModel))
                 return;
             Vector3 at;
-            if (!EncounterSpot(Game.Player.Character, 18f, 32f, out at))
-                return;
+            if (!DomWifeSpot(c.Man, out at) && !EncounterSpot(Game.Player.Character, 18f, 32f, out at))
+                return;   // near him, out of your sight (NIGHT4 item 6: placed by you, she could start 60 m from him); else as before
             Ped w = Spawner.Spawn(c.WifeModel, at, 0f);
             if (w == null)
                 return;
             c.Wife = w;
+            _domLastWife = w;
             _encounterPeds.Add(w.Handle);
             StagedHold(w);
             TASK.TASK_GO_TO_ENTITY(w.Handle, c.Man.Handle, 25000, Natives.Brisk, 1.6f, 0f, 0);
             c.Phase = "gather";
             c.NextAt = now + 1500;
+            c.GatherBy = now + Math.Min(30000, 8000 + (int)(at.DistanceTo(c.Man.Position) * 1000f));   // her walk timed from her spawn, a second a metre (it was 30 s from the start, the spawn's wait in it)
             Log.Write("ENCOUNTER domestic: his wife " + c.HerFull + " comes up the street, " + (int)at.DistanceTo(c.Man.Position) + " m from him");
+        }
+
+        private const float DomInViewMetres = 20f;
+        private readonly HashSet<string> _domDoneToday = new HashSet<string>();   // id|game day: one domestic a man a day (this session)
+        private string _domLastManId;
+        private Ped _domLastWife;
+
+        /// He had one today already, or the wife we made for his last one still walks within 60 m of him (NIGHT4 item 6: a second
+        /// copy of her came up the street while the first walked away).
+        private bool DomDoneWith(Candidate m, int now)
+        {
+            if (_domDoneToday.Contains(m.Who.Id + "|" + _store.LastGameMin / 1440))
+                return true;
+            return m.Who.Id == _domLastManId && _domLastWife != null && _domLastWife.Exists() && !_domLastWife.IsDead && _domLastWife.Position.DistanceTo(m.Ped.Position) < 60f;
+        }
+
+        /// A spot 12-25 m from him, out of your sight, for his wife to come from.
+        private bool DomWifeSpot(Ped man, out Vector3 at)
+        {
+            Ped me = Game.Player.Character;
+            Vector3 cam = CAM.GET_FINAL_RENDERED_CAM_COORD(), m = man.Position;
+            for (int tries = 0; tries < 6; tries++)
+            {
+                double a = _rng.NextDouble() * Math.PI * 2;
+                float d = 12f + (float)_rng.NextDouble() * 13f;
+                Vector3 c = m + new Vector3((float)Math.Cos(a) * d, (float)Math.Sin(a) * d, 0f);
+                Vector3 safe;
+                if (!Natives.StandSpot(c, m.Z, out safe) || safe.DistanceTo(me.Position) < 10f)
+                    continue;
+                if (!Natives.Blocked(cam, safe + new Vector3(0f, 0f, 1.2f), me.Handle) && Natives.Looking(safe + new Vector3(0f, 0f, 1f), 50f))
+                    continue;   // in your sight: not there
+                at = safe;
+                return true;
+            }
+            at = Vector3.Zero;
+            return false;
         }
 
         private static string SurnameOf(string fullName)
