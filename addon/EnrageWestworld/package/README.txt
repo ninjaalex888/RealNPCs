@@ -1,4 +1,4 @@
-RealNPCs 0.7.14 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.15 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -68,6 +68,20 @@ Set it up once:
 
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
+
+
+NEW IN 0.7.15
+-------------
+- Brawls at the bar: two people sat or leaning may come to blows, getting up first the game's
+  own way ([Mind] SeatedBrawls, on); onlookers join more readily in a fight's first 10 s
+  ([Mind] BrawlOpeningBoost, 20). The crowd that ringed a fight is off ([Scenes] FightCrowds):
+  some of them froze. Seen in game in the Valentine saloon.
+- Without the AI model: thoughts said aloud in their own recorded voice, from what they feel
+  most ([Mind] ThoughtsAloud), and scenes people start for their own reasons, on top of the
+  street's ([Mind] MindStartsScenes). Not yet seen in game.
+- A table of the game's 592 voices ships inside RealNPCs (line names and take counts only).
+- The settings panel opens on Alt+F or Alt+R; Alt+F11 is left to enRAGE.
+- Fixed: one name per person everywhere; people frozen after a reload or by the fight crowd.
 
 
 NEW IN 0.7.14
