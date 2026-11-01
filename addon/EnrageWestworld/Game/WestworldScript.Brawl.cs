@@ -19,6 +19,8 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private const int BrawlEveryMs = 1500;
+        private const int BrawlHeardMs = 4000;
+        private const float BrawlHeardMetres = 60f;
 
         private sealed class LawHand
         {
@@ -52,7 +54,10 @@ namespace EnrageWestworld.InGame
                 BrawlHoldoutsPrune();
                 List<int> a, b;
                 if (MISC.GET_MISSION_FLAG() || !_director.FightSides(out a, out b) || !ENTITY.DOES_ENTITY_EXIST(a[0]))
+                {
+                    BrawlDotClear();   // the fight is over: his red dot goes (WestworldScript.BrawlDot.cs)
                     return;
+                }
                 if (_brawlFightFor != _director.FightId)
                 {
                     _brawlFightFor = _director.FightId;
@@ -61,6 +66,7 @@ namespace EnrageWestworld.InGame
                     _brawlDrawRolled.Clear();
                 }
                 Vector3 mid = ENTITY.GET_ENTITY_COORDS(a[0], true, true);
+                BrawlDotStep(a, now);
                 if (BrawlsOn && _cfg.LadderShots && _cfg.BrawlDraws && BrawlDraw(a, b, mid, now))
                     return;
                 if (_cfg.BrawlLaw)
@@ -113,6 +119,8 @@ namespace EnrageWestworld.InGame
             if (test && a.Count + b.Count < 5 && now - _brawlFightSince < 15000)
                 return;   // the Testing row lets it grow first, so both halves are seen
             Ped law = BrawlFindLaw(mid, test ? 70f : Math.Max(35f, _cfg.BrawlCrowdMetres + 5f), !test, a[0]);   // the law notices from as far as the crowd does ([Mind] BrawlCrowdMetres)
+            if (law == null && !test && now - _brawlFightSince >= BrawlHeardMs)
+                law = BrawlFindLaw(mid, BrawlHeardMetres, false, a[0]);   // a fight is heard: after a few seconds any free lawman within 60 m comes, sight or not (Lex, 2026-11-01: the law sometimes never came)
             if (law == null)
             {
                 if (test && now - _brawlFightSince > 20000 && _brawlLawFor != -_director.FightId)
