@@ -696,6 +696,10 @@ NEW IN 0.6.0
   crime noted. Save him and the town hears of it; wait or ride on and they shoot him, and his kin
   and his town hear. To see it now: press [, or the settings panel's Testing page.
   CONTENT NOTE: a man can be shot dead in front of you. Executions = false turns it off.
+- Called out before the street ([Encounters] PublicCallouts, PublicCalloutChance 35). In a town by
+  day, someone with a real grievance against another (a debt, a theft, a beating, hard words) calls
+  him out in front of whoever is about; each answers by their own nature, or the AI model picks
+  among the same few things. Walk up and it ends. Testing page: "Someone calls out another".
 - Night encounters ([Encounters]). Out in the wilds between ten at night and four in the morning,
   you may hear a woman crying somewhere off the road (CryingWomanChance, 15 percent on each roll
   every EncounterEveryMinutes, 12, at most once a night). She kneels in the dark and calls for

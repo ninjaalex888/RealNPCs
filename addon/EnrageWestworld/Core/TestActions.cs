@@ -38,6 +38,7 @@ namespace EnrageWestworld.Core
             new Entry("traveller", "Encounters", "A traveller asking the way", "TestTravellerKey", needs: "out of the towns; best on a road"),
             new Entry("supper", "Encounters", "The supper invitation (a test takes no money)", "TestSupperKey", needs: "out of the towns, the ticker on; best on a road; takes no money and leaves the clock alone"),
             new Entry("campfire", "Encounters", "Strangers at a campfire", "TestCampfireKey", needs: "out of the towns; a test takes turns with and without the traveller who walks in"),
+            new Entry("callout2", "Encounters", "Someone calls out another before the street", "TestCallout2Key", needs: "a town's street, two named people on their feet 2-18 m apart with something between them (a tie gone sour: a quarrel, a beating, a theft; or a debt), one in your view"),
             new Entry("lift", "Encounters", "A man bumps into you and lifts your money", "TestLiftYouKey", needs: "a man near you (4-22 m) free to send, $2 or more in your pocket; he walks into you, takes a fifth of it ($1-25) and runs: catch him to get it back"),
             new Entry("visitor", "Encounters", "The night visitor", "TestVisitorKey", needs: "in a town, out of doors, no lawman within 60 m"),
             new Entry("gathering", "Encounters", "A gathering of the awake", "GatheringKey", field: true),

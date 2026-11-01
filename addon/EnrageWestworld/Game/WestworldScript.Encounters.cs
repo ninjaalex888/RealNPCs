@@ -47,7 +47,7 @@ namespace EnrageWestworld.InGame
             Safe("encounters", _aEncounters);
         }
 
-        private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null || _exec != null || _visitor != null || _traveller != null || _campfire != null || _supper != null; } }
+        private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null || _exec != null || _visitor != null || _traveller != null || _campfire != null || _supper != null || StagedLive; } }
 
         /// What's going on, for the log and the stalker key.
         private string EncounterWhat
@@ -66,6 +66,8 @@ namespace EnrageWestworld.InGame
                     return "a man on the road has supper waiting";
                 if (_exec != null)
                     return "a man is held at gunpoint nearby";
+                if (_streetCallout != null)
+                    return _streetCallout.WA.Name + " is calling " + _streetCallout.WB.Name + " out in the street";
                 if (_hermit != null)
                     return _hermit.R.Name + " is at " + Their(_hermit.R) + " camp nearby";
                 return _gathering != null ? "a gathering is standing out there" : null;
@@ -92,6 +94,9 @@ namespace EnrageWestworld.InGame
                 CampfireStep(now);
             if (_supper != null)
                 SupperStep(now);
+            if (_streetCallout != null)
+                StreetCalloutStep(now);
+            StagedChecksStep(now);
             VisitorBodyStep();   // a body left behind goes once nobody can see (WestworldScript.Visitor.cs)
             HermitStep(now);   // a hermit at his camp, when you come near one
             string asked = _execRequested ? "execution" : _encounterRequested;
@@ -101,7 +106,7 @@ namespace EnrageWestworld.InGame
                 _execRequested = false;
                 _encounterRequested = null;
                 string block = EncounterKindLive(asked) ? "one is out already (" + EncounterWhat + ")"
-                    : EncountersFull ? EncountersLive + " encounters are going on (at most " + _cfg.EncountersAtOnce + ")" : EncounterBlocker();
+                    : EncountersFull ? EncountersLive + " encounters are going on (at most " + _cfg.EncountersAtOnce + ")" : EncounterBlockerFor(asked);
                 if (block != null)
                 {
                     Log.Write("ENCOUNTER test, " + asked + ": not now: " + block);
@@ -123,8 +128,9 @@ namespace EnrageWestworld.InGame
             _nextEncounterRoll = now + every;
             // since 2026-10-27 a big moment's quiet no longer stops a roll (it held them to a single one); each kind keeps its
             // own rests (once a night, once a day) and its chance
-            string why = EncounterBlocker();
-            if (why != null)
+            bool streetOnly;
+            string why = EncounterBlocker(out streetOnly);
+            if (why != null && !streetOnly)
             {
                 _encounterWait = why;
                 Log.Write("Encounter roll skipped: " + why);
@@ -134,9 +140,12 @@ namespace EnrageWestworld.InGame
             // arrive one by one, not together
             List<string> notNow = new List<string>();   // each kind that's on but can't happen here and now, and why
             int first = _encounterTurn++ & 0x7fffffff;
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < EncounterKinds; i++)
             {
-                if (TryEncounter((first + i) % 8, notNow, now))
+                int k = (first + i) % EncounterKinds;
+                if (why != null && !StreetKind(k))
+                    continue;   // a scene is playing in the street: only the street's own kinds, which take others than its cast
+                if (TryEncounter(k, notNow, now))
                 {
                     _encounterWait = null;
                     return;
@@ -148,6 +157,16 @@ namespace EnrageWestworld.InGame
         }
 
         private int _encounterTurn;
+        private const int EncounterKinds = 9;   // the eight before NIGHT4 item 4, then the street callout
+
+        /// The kinds that happen in a town's street among the people already there (they don't wait on the Director's scene).
+        private static bool StreetKind(int kind)
+        {
+            return kind == 8;
+        }
+
+        /// A re-staged encounter (WestworldScript.Staged.cs) is going on.
+        private bool StagedLive { get { return _streetCallout != null; } }
 
         /// One kind's chance on this roll: true when it started. A kind already out is passed over (one of each, for now).
         private bool TryEncounter(int kind, List<string> notNow, int now)
@@ -240,6 +259,16 @@ namespace EnrageWestworld.InGame
                         return false;
                     }
                     return EncounterRoll("a gathering", _cfg.GatheringChance) && StartGathering(now);
+                case 8:
+                    if (!_cfg.PublicCallouts || _streetCallout != null)
+                        return false;
+                    not = StreetCalloutNotNow();
+                    if (not != null)
+                    {
+                        notNow.Add("called out before the street: " + not);
+                        return false;
+                    }
+                    return EncounterRoll("called out before the street", _cfg.PublicCalloutChance) && StartStreetCallout(now, false);
                 default:
                     if (!_cfg.Campfires || _campfire != null)
                         return false;
@@ -262,7 +291,7 @@ namespace EnrageWestworld.InGame
             get
             {
                 return (_crying != null ? 1 : 0) + (_exec != null ? 1 : 0) + (HermitWithYou() ? 1 : 0) + (_gathering != null ? 1 : 0) + (_visitor != null ? 1 : 0) +
-                       (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0);
+                       (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0) + (_streetCallout != null ? 1 : 0);
             }
         }
 
@@ -280,6 +309,7 @@ namespace EnrageWestworld.InGame
                 case "supper": return _supper != null;
                 case "campfire": return _campfire != null;
                 case "gathering": return _gathering != null;
+                case "callout2": return _streetCallout != null;
                 default: return false;
             }
         }
@@ -296,6 +326,7 @@ namespace EnrageWestworld.InGame
                 : kind == "traveller" ? (_cfg.Travellers ? null : "Travellers are off ([Encounters] Travellers).")
                 : kind == "supper" ? (_cfg.SupperInvitation ? null : "The supper invitation is off ([Encounters] SupperInvitation).")
                 : kind == "campfire" ? (_cfg.Campfires ? null : "Campfires are off ([Encounters] Campfires).")
+                : kind == "callout2" ? (_cfg.PublicCallouts ? null : "Street callouts are off ([Encounters] PublicCallouts).")
                 : _cfg.Gatherings ? null : "Gatherings are off ([Encounters] Gatherings; they need West World on too).";
             if (off != null)
                 return off;
@@ -325,6 +356,8 @@ namespace EnrageWestworld.InGame
                     return "A man will be waiting further along the road with supper on. A test takes no money.";
                 case "campfire":
                     return "A fire will be lit near you, out of sight, with men round it. Go and see.";
+                case "callout2":
+                    return "Somebody near you with a grievance will call another out, if two such are about. Watch the street.";
                 default:
                     return "The awake will gather somewhere near you, out of sight.";
             }
@@ -332,7 +365,7 @@ namespace EnrageWestworld.InGame
 
         private string KeyOf(string kind)
         {
-            if (kind == "visitor" || kind == "traveller" || kind == "supper" || kind == "campfire")
+            if (kind == "visitor" || kind == "traveller" || kind == "supper" || kind == "campfire" || kind == "callout2")
                 return "its Testing page row";
             KeySpec k = kind == "execution" ? _execKey : kind == "crying" ? _cryingKey : kind == "hermit" ? _hermitKey : _gatherKey;
             return k.ToString();
@@ -378,6 +411,10 @@ namespace EnrageWestworld.InGame
                     }
                     else
                         StartSupper(now, true);
+                    break;
+                case "callout2":
+                    if (!StartStreetCallout(now, true))
+                        Log.Write("ENCOUNTER test, callout2: not now: " + (_scWhyNot ?? "?"));
                     break;
                 case "visitor":
                     string notV = VisitorNotNow(true);
@@ -433,11 +470,32 @@ namespace EnrageWestworld.InGame
         /// What keeps an encounter from starting now, in words; null when nothing does.
         private string EncounterBlocker()
         {
+            bool streetOnly;
+            return EncounterBlocker(out streetOnly);
+        }
+
+        /// For a test of one kind: the street's own kinds go ahead of a Director scene.
+        private string EncounterBlockerFor(string kind)
+        {
+            bool streetOnly;
+            string why = EncounterBlocker(out streetOnly);
+            return streetOnly && kind == "callout2" ? null : why;
+        }
+
+        /// streetOnly: what keeps them back is only the Director's scene in the street (the street's own kinds go ahead).
+        private string EncounterBlocker(out bool streetOnly)
+        {
+            streetOnly = false;
             string b = StalkBlocker();
             if (b != null)
                 return b;
-            if (_director.Busy || _wedding != null || _plea != null || _theft != null)
+            if (_wedding != null || _plea != null || _theft != null)
                 return "something else is going on";
+            if (_director.Busy)
+            {
+                streetOnly = !Game.Player.Character.IsDead;
+                return "something else is going on";
+            }
             if (Game.Player.Character.IsDead)
                 return "you're dead";
             return null;
@@ -795,6 +853,8 @@ namespace EnrageWestworld.InGame
                 EndTraveller(why);
             if (_campfire != null)
                 EndCampfire(why);
+            if (_streetCallout != null)
+                EndStreetCallout(why, false);
             if (_supper != null || _supperDarkSince != 0)
                 EndSupper(why);   // the dark lifted and the controls given back, if it was down
             VisitorLeftClear();   // a mission or shutdown: what it left goes with it
@@ -815,6 +875,7 @@ namespace EnrageWestworld.InGame
             if (_traveller != null) on.Add("a traveller");
             if (_campfire != null) on.Add("a campfire (" + _campfire.Phase + ")");
             if (_supper != null) on.Add("the supper invitation (" + _supper.Phase + ")");
+            if (_streetCallout != null) on.Add("a street callout (" + _streetCallout.Phase + ")");
             if (_stalker != null) on.Add("a stalker");
             string live = (on.Count > 0 ? string.Join(", ", on) : "none") + " (" + EncountersLive + " counted, at most " + _cfg.EncountersAtOnce + ")";
             return "live: " + live + ", next roll in " + Math.Max(0, (_nextEncounterRoll - now) / 1000) + " s every " + _cfg.EncounterEveryMinutes + " min" +

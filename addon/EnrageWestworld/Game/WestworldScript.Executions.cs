@@ -46,7 +46,7 @@ namespace EnrageWestworld.InGame
         private bool IsExecutionPed(int h)
         {
             Execution e = _exec;
-            return e != null && ((e.Captive != null && e.Captive.Handle == h) || e.Men.Any(m => m != null && m.Handle == h));
+            return IsStaged(h) || e != null && ((e.Captive != null && e.Captive.Handle == h) || e.Men.Any(m => m != null && m.Handle == h));
         }
 
         /// Why there can't be one here and now; null when there can.

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 168;
+        public const int CurrentVersion = 169;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -207,6 +207,9 @@ namespace EnrageWestworld.Core
         public string GatheringHours = "any";   // any: the night's (midnight to 03:30, the wilds) and by day, in the open or at a town's edge; night: the night's only, as before settings version 163 (Lex, 2026-10-31: "make them happen more often and at any time of day")
         public int GatheringGapHours = 6;       // game hours at least between gatherings, so they don't stack (settings version 163)
         public string GatheringKey = "None";
+        // re-staged from the game's own encounters, with the town's people choosing by their minds (NIGHT4 item 4; settings version 169)
+        public bool PublicCallouts = true;      // by day in a town, one of the people about calls another out before the street over something real between them
+        public int PublicCalloutChance = 35;
 
         // [World]
         public bool Deeds = true;
@@ -426,6 +429,7 @@ namespace EnrageWestworld.Core
                 g.Travellers = false;
                 g.SupperInvitation = false;
                 g.Executions = false;
+                g.PublicCallouts = false;
                 g.Hermits = false;
                 g.Gatherings = false;
             }
@@ -722,6 +726,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: new in this version: [World] Storyteller (lively; calm, wild or off as before): quiet streets and roads get the next scene, walk-up or encounter sooner, and something big a short breather.");
                 if (s.SettingsVersion < 168)
                     log?.Invoke("Settings: new in this version: [Mind] MindActsScenarios (on): people sat or leaning get up for what their minds choose, and rests, meals, drinks and work go to a spot of the game's of that kind; [Scenes] MainScenesAtOnce (2): a second full street scene at least 20 m from the first.");
+                if (s.SettingsVersion < 169)
+                    log?.Invoke("Settings: new in this version: [Encounters] PublicCallouts (on): in a town by day, one of the people about calls another out before the street, and each answers by their own mind.");
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -779,6 +785,7 @@ namespace EnrageWestworld.Core
             CampfireChance = Math.Max(0, Math.Min(100, CampfireChance));
             SupperChance = Math.Max(0, Math.Min(100, SupperChance));
             ExecutionChance = Math.Max(0, Math.Min(100, ExecutionChance));
+            PublicCalloutChance = Math.Max(0, Math.Min(100, PublicCalloutChance));
             HermitChance = Math.Max(0, Math.Min(100, HermitChance));
             GatheringChance = Math.Max(0, Math.Min(100, GatheringChance));
             GatheringHours = (GatheringHours ?? "").Trim().ToLowerInvariant() == "night" ? "night" : "any";
@@ -1072,6 +1079,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("SupperChance = " + SupperChance + "   ; percent on each roll, half past five to nine in the evening, once a day at most");
             b.AppendLine("Executions = " + B(Executions) + "   ; out on the roads, two men holding one of a nearby town's people on his knees at gunpoint, for a reason from his own life. Ride on and they go through with it");
             b.AppendLine("ExecutionChance = " + ExecutionChance + "   ; percent on each roll, once a day at most, outside the towns");
+            b.AppendLine("PublicCallouts = " + B(PublicCallouts) + "   ; by day in a town (not the noon hour), one of the people about calls another out in front of the street over something real between them (a debt, a theft, a beating, hard words). Each answers by their own mind (or the model, with LanguagePicks): let it go, own up, give it back, square up; those near watch, jeer, step in or walk off. Walk up and it ends. No guns; two who square up go to the street's quarrel");
+            b.AppendLine("PublicCalloutChance = " + PublicCalloutChance + "   ; percent on each encounter roll while one may happen (six real minutes at least between them)");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: the awake stand in a silent circle, facing in: from midnight to half past three out in the wilds (once a night), and with GatheringHours any by day too, in an open field or just outside a town's edge");

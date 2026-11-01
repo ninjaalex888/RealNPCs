@@ -47,6 +47,7 @@ namespace EnrageWestworld.Core
         public string Focus, FocusId, Shape; // what their mind goes to this time, and the thought's shape
         public bool WeatherOff;              // the weather left out (it isn't the focus)
         public List<string> Recent = new List<string>();    // their last thoughts shown (the model is told to think of something else)
+        public string Now;                   // Kind "pick" in a staged encounter (Core/Staged.cs): what is going on around them this moment, in a few words
 
         /// The variety rules apply here: set, and a thought or a pick (Talk's answers and the remarks said aloud keep their own).
         public bool Varied
@@ -129,6 +130,7 @@ namespace EnrageWestworld.Core
             b.Append("Where: ").Append(r.Place ?? "the street").Append(r.Town != null ? " in " + r.Town : " away from any town").Append(", ")
              .Append(HourWords(r.Hour)).Append(", ").Append(r.Year).Append(r.Weather != null && !r.WeatherOff ? ", " + r.Weather : "").Append(".\n");
             if (!string.IsNullOrEmpty(r.Mood)) b.Append("Mood: ").Append(r.Mood).Append(".\n");
+            if (!string.IsNullOrEmpty(r.Now)) b.Append("Right now: ").Append(r.Now).Append(".\n");
             if (!string.IsNullOrEmpty(r.Feeling))
             {
                 b.Append("Feeling: ").Append(r.Feeling).Append(r.Strength != null ? " (" + r.Strength + ")" : "");

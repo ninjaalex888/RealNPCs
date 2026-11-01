@@ -208,6 +208,9 @@ namespace EnrageWestworld.Core
                     // by the player, he feels the rescue; the record's outcome says which: night 2026-10-28)
                     kind = ExecutionKind(h.Outcome, id == target);
                     break;
+                case "encounter:callout":
+                    kind = id == target ? "challenge" : "slight";   // called out before the street: the one called out takes it as a challenge, the rest as hard words seen
+                    break;
                 case "encounter:visitor":
                     kind = id != "player" ? "uncanny" : null;   // whoever saw the figure over the body (the visitor's record names the player as its target)
                     break;

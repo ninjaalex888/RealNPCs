@@ -528,7 +528,7 @@ namespace EnrageWestworld.InGame
                 if (!gone && TakenUp(h))
                 {
                     _mindActsTakenUp++;
-                    bool owns = _director.Involves(h) || InTalk(h) || (_menu != null && _menu.Handle == h) || _ring.Contains(h) || JoinIsPending(h) || InWakeAct(h);
+                    bool owns = _director.Involves(h) || InTalk(h) || (_menu != null && _menu.Handle == h) || _ring.Contains(h) || JoinIsPending(h) || InWakeAct(h) || IsStaged(h);
                     MindActDrop(i, owns);   // another feature has them now (Talk, a walk-up, a scene, the ring, a wake act): the act ends, with no new orders (the cross-cutting review; a nod is not enough)
                     continue;
                 }

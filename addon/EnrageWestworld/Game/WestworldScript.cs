@@ -1203,6 +1203,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST links: " + LinksStatus());
 			Log.Write("TEST posts: " + PostsStatus());
 			Log.Write("TEST encounters: " + EncountersStatus());
+			Log.Write("TEST callouts: " + StreetCalloutStatus());
 			Log.Write("TEST subtitles: " + SubtitlesStatus());
 			Log.Write("TEST territory: " + TerritoryStatus());
 			Log.Write("TEST flirt prompt: " + FlirtPromptStatus());
