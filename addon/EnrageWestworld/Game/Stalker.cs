@@ -25,7 +25,8 @@ namespace EnrageWestworld.InGame
         private Ped _ped;
         private Mode _mode = Mode.Follow;
         private Blip _dot;           // his red dot on the map (Lex, 2026-10-31), ours to take away
-        private bool _crouchSaid;
+        private bool _crouchSaid, _dotSaid;
+        private int _crouchAt, _crouchTries, _dotMadeAt;
 
         /// The game's own small red enemy dot on him, as the pickpocket has (BLIP_STYLE_ENEMY). With StalkerBlack on he is
         /// always a stranger we made, with no dot of his own.
@@ -37,6 +38,7 @@ namespace EnrageWestworld.InGame
                 {
                     _dot = new Blip(MAP.BLIP_ADD_FOR_ENTITY(Natives.Hash("BLIP_STYLE_ENEMY"), h));
                     _dot.Label = "Stalker";
+                    _dotMadeAt = Game.GameTime;
                 }
             }
             catch (Exception ex)
@@ -238,14 +240,31 @@ namespace EnrageWestworld.InGame
             // crouched the whole time he's after you, until he runs (Lex, 2026-10-31): a new order can stand him up, so the
             // crouch is put back each think; an act's own animation (a kneel, lying down) plays as it is, and StartFlee and
             // Spawner.StandUp undo it
-            if (_mode != Mode.Flee && (_mode != Mode.Act || _step == ActStep.Go || _step == ActStep.Creep || _step == ActStep.Shift) && !PED.GET_PED_CROUCH_MOVEMENT(h))
+            // at most every 3 s, and given up after three asks the game never takes: asked four times a second, a crouch that
+            // didn't take seemed to hold him in place (Lex, 2026-10-31: "he might've been frozen")
+            if (_crouchTries < 3 && now >= _crouchAt && _mode != Mode.Flee && (_mode != Mode.Act || _step == ActStep.Go || _step == ActStep.Creep || _step == ActStep.Shift))
             {
-                PED._SET_PED_CROUCH_MOVEMENT(h, true, 0, false);
-                if (!_crouchSaid)
+                _crouchAt = now + 3000;
+                if (PED.GET_PED_CROUCH_MOVEMENT(h))
                 {
-                    _crouchSaid = true;
-                    Log.Write("STALKER " + Label + " keeps low: crouched until he runs");
+                    if (!_crouchSaid)
+                    {
+                        _crouchSaid = true;
+                        Log.Write("STALKER " + Label + " keeps low: crouched until he runs");
+                    }
+                    _crouchTries = 0;
                 }
+                else
+                {
+                    PED._SET_PED_CROUCH_MOVEMENT(h, true, 0, false);
+                    if (++_crouchTries >= 3)
+                        Log.Write("STALKER " + Label + ": the game won't keep him crouched (asked 3 times); he walks upright");
+                }
+            }
+            if (!_dotSaid && now - _dotMadeAt > 3000)
+            {
+                _dotSaid = true;
+                Log.Write("STALKER " + Label + " dot: " + (_dot == null ? "none made" : MAP.DOES_BLIP_EXIST(_dot.Handle) ? "on the map, " + (int)dist + " m from you" : "made but gone"));
             }
 
             switch (_mode)
