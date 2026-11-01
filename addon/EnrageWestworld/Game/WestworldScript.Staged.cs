@@ -57,11 +57,11 @@ namespace EnrageWestworld.InGame
         }
 
         /// The mind's own choice for this turn, and with the model on, the same options asked of it.
-        private StagedAsk StagedChoose(int h, string role, Staged.Weights w, string seed, Func<string, string> words, string situation, string otherFirst, int now)
+        private StagedAsk StagedChoose(int h, string role, Staged.Weights w, string seed, Func<string, string> words, string situation, string otherFirst, int now, int most = 0)
         {
             string mind = Staged.Choose(w, seed);
             var a = new StagedAsk { Handle = h, Role = role, Mind = mind, Picked = mind, AskedAt = now, Deadline = now + PickWaitMs };
-            a.Ids = Staged.Offer(w, mind, Language.MostOptions);
+            a.Ids = Staged.Offer(w, mind, most > 0 ? most : Language.MostOptions);   // (`most`: the chance meeting offers three)
             a.Words = a.Ids.Select(words).ToList();
             a.Done = true;
             if (!PicksOn || a.Ids.Count < 2 || !ENTITY.DOES_ENTITY_EXIST(h))

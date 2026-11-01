@@ -88,6 +88,8 @@ namespace EnrageWestworld.Core
             return k < Warmth.Length ? Warmth[k] : 0;
         }
         public string[] Tempers = new string[3];            // A, B and C's temperaments (Reactions.Listener); null: none known
+        public int MindLead;                                // a chance meeting the minds chose: whose side a cold shoulder or a loan is on (0 A, 1 B; Scenes.Minds.cs)
+        public string MindWorry;                            // ... and the asker's money worry (debt, bank, savings, cards)
         public int Friend = -1;                             // the quarrel ladder's friend at hand, the cast's third: 0 a friend of A, 1 of B, -1 nobody (Scenes.Ladder.cs)
     }
 
@@ -128,26 +130,7 @@ namespace EnrageWestworld.Core
 
         public static Scene Choose(SceneCast c, string seed, bool allowFight)
         {
-            List<KeyValuePair<string, int>> w = new List<KeyValuePair<string, int>>();
-            bool mixed = c.AWoman != c.BWoman;
-            bool twoMen = !c.AWoman && !c.BWoman;
-            if (mixed)
-                w.Add(new KeyValuePair<string, int>("flirt", c.Saloon ? 14 : 18));
-            w.Add(new KeyValuePair<string, int>("argue", Weighted(16, ArgueWeight(c))));
-            if (twoMen && allowFight)
-                w.Add(new KeyValuePair<string, int>("brawl", Weighted(c.Saloon ? 20 : 10, c.Trouble)));   // twice the old 10 and 5 (Lex, 2026-10-28: brawls often)
-            else if (c.WomenFight && allowFight)
-                w.Add(new KeyValuePair<string, int>("brawl", Weighted((c.Saloon ? 20 : 10) * (c.AWoman ? Reasons.WomanFightPercent : 100) * (c.BWoman ? Reasons.WomanFightPercent : 100) / 10000, c.Trouble)));   // a woman in it: half the share for each (Lex, 2026-10-29)
-            if (mixed && !c.Night)
-                w.Add(new KeyValuePair<string, int>("propose", 3));
-            if (c.Saloon && twoMen)
-                w.Add(new KeyValuePair<string, int>("cheat", 10));
-            w.Add(new KeyValuePair<string, int>("debt", 7));
-            if (c.Rumours.Count > 0)
-                w.Add(new KeyValuePair<string, int>("gossip", c.Saloon ? 30 : 18));
-            w.Add(new KeyValuePair<string, int>("hosts", c.HostTier >= 2 ? 16 : c.HostTier == 1 ? 9 : c.Night ? 6 : 3));
-            FrontierWeights(c, w, twoMen, allowFight);
-            w.RemoveAll(x => c.Off.Contains(x.Key));
+            List<KeyValuePair<string, int>> w = ChanceWeights(c, allowFight);   // the kinds this cast and place allow (Scenes.Minds.cs, where the minds lean them)
             if (w.Count == 0)
                 return null;
             int total = w.Sum(x => x.Value);
@@ -178,6 +161,8 @@ namespace EnrageWestworld.Core
                 case "gossip": return c.Rumours.Count > 0 ? Gossip(c, seed) : Argue(c, seed);
                 case "hosts": return HostTalk(c, seed);
                 case "jealous": return Jealous(c, seed);
+                case "brushoff": return Brushoff(c, seed, c.MindLead);   // the minds' own kinds (Scenes.Minds.cs), never rolled
+                case "favour": return AskFavour(c, seed, c.MindLead, c.MindWorry);
                 default: return MakeFrontier(kind, c, seed);
             }
         }

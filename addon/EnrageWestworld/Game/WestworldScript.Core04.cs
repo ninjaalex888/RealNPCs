@@ -293,6 +293,7 @@ namespace EnrageWestworld.InGame
                 ThanksAbort();       // and someone walking over to thank you
                 LonelyAbort();       // and someone lonely hoping for a word
                 FavourAbort();       // and someone coming to ask a favour, or to warn you (NIGHT4 item 6)
+                ChanceWaitAbort("the add-on stopped");   // and a chance meeting waiting on the model's pick
                 WarnAbort();
                 KinAbort();
                 LanguageStop();      // the language layer's worker thread
@@ -1062,6 +1063,7 @@ namespace EnrageWestworld.InGame
             ThanksAbort();
             LonelyAbort();
             FavourAbort();
+            ChanceWaitAbort("a mission started");
             WarnAbort();
             KinAbort();
             SoberVoices(true);
@@ -1154,6 +1156,7 @@ namespace EnrageWestworld.InGame
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             LonelyStep(now);    // someone lonely who knows you comes over (WestworldScript.Lonely.cs)
             FavourStep(now);    // someone in trouble comes to ask a favour (WestworldScript.Favours.cs)
+            ChanceWaitStep(now);   // a chance meeting waiting on the model's pick (WestworldScript.ChanceMinds.cs)
             WarnStep(now);      // someone who saw what you did, or knows who's after you (WestworldScript.Warnings.cs)
             BelowStep(now);     // the voice below the saloon floor, late at night (WestworldScript.Below.cs)
             MindShadowStep(now);   // the mind in shadow mode: traits, needs, feelings and mood, reported only (WestworldScript.Mind.cs)

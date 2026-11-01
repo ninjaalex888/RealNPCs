@@ -198,8 +198,8 @@ namespace EnrageWestworld.InGame
         private bool ChanceScene(List<Ped> pool, Ped me, bool saloon, int now, bool asSecond = false)
         {
             // now and then a chance meeting between the two standing closest (asSecond: the second full scene's, on its own timer)
-            if (pool.Count < 2 || (now < _nextChance && !asSecond))
-                return false;
+            if (pool.Count < 2 || (now < _nextChance && !asSecond) || _chanceWait != null)
+                return false;   // (one waiting on the model's pick: ChanceWaitStep)
             Ped a = null, b = null;
             float best = Math.Max(2f, _cfg.ChanceMeetMetres);   // was 3.4 m, standing together already; farther, one walks over (AddMeet; the NPC-life run, step 4)
             if (_chancePos.Length < pool.Count)
@@ -257,20 +257,49 @@ namespace EnrageWestworld.InGame
                 _oldDays++;
                 Log.Write("OLD DAYS " + (cast.Names[0] ?? "an old man") + " & " + (cast.Names[1] ?? "another") + ": " + s.Beats[0].Line);
             }
+            string by = "roll";
             if (s == null)
             {
-                s = Scenes.Choose(cast, seed, true);
-                if (s != null && s.Kind == "hosts" && cast.HostTier < 0)
-                    s = Scenes.Argue(cast, seed);
-                if (s != null && s.Kind == "debt" && !_cfg.Debts)
-                    s = Scenes.Argue(cast, seed);
-                if (s != null && s.Kind == "pickpocket" && (cast.AWoman || _theft != null))
-                    s = Scenes.SmallTalk(cast, seed);
-                if (s != null && Observed.Holds(s.Kind) && ChanceWatched(a, b))
-                    s = s.Kind == "pickpocket" ? Scenes.SmallTalk(cast, seed) : Scenes.Argue(cast, seed);   // being watched (Core/Observed.cs): with the law looking on, words (looked for only once trouble is chosen)
-                if (s != null && s.Cast > 2 && crowd != null)
-                    people.Add(crowd);
+                string kind = null;
+                if (ChanceMindsOn)
+                {
+                    // the two minds choose what passes between them ([Mind] MindChanceMeetings; WestworldScript.ChanceMinds.cs)
+                    kind = ChanceMindKind(a, b, crowd, cast, seed, saloon, asSecond, now, out by);
+                    if (by == "wait")
+                        return true;   // the model has 2.5 s to pick among the mind's likeliest; ChanceWaitStep plays it
+                }
+                s = ChanceKindScene(kind, cast, seed, a, b, crowd, people, ref by);
             }
+            return ChancePlay(s, people, a, b, cast, seed, me, saloon, now, asSecond, by);
+        }
+
+        /// The chance meeting's scene: the kind the minds chose (null: the roll, as before), and the street's own corrections.
+        private Scene ChanceKindScene(string kind, SceneCast cast, string seed, Ped a, Ped b, Ped crowd, List<Ped> people, ref string by)
+        {
+            Scene s = kind != null ? Scenes.Make(kind, cast, seed) : null;
+            if (s == null)
+            {
+                if (kind != null)
+                    by = "roll";   // a kind the place couldn't make after all
+                s = Scenes.Choose(cast, seed, true);
+            }
+            if (s != null && s.Kind == "hosts" && cast.HostTier < 0)
+                s = Scenes.Argue(cast, seed);
+            if (s != null && s.Kind == "debt" && !_cfg.Debts)
+                s = Scenes.Argue(cast, seed);
+            if (s != null && s.Kind == "pickpocket" && (cast.AWoman || _theft != null))
+                s = Scenes.SmallTalk(cast, seed);
+            if (s != null && Observed.Holds(s.Kind) && ChanceWatched(a, b))
+                s = s.Kind == "pickpocket" ? Scenes.SmallTalk(cast, seed) : Scenes.Argue(cast, seed);   // being watched (Core/Observed.cs): with the law looking on, words (looked for only once trouble is chosen)
+            if (s != null && s.Cast > 2 && crowd != null)
+                people.Add(crowd);
+            return s;
+        }
+
+        /// The chance meeting staged: the second scene's quiet way, or the first's with the ladder, the walk-over, the barkeep
+        /// and the step-in. `by`: who chose its kind (mind, model or roll), for F7.
+        private bool ChancePlay(Scene s, List<Ped> people, Ped a, Ped b, SceneCast cast, string seed, Ped me, bool saloon, int now, bool asSecond, string by)
+        {
             if (s == null)
                 return false;
             if (asSecond)
@@ -285,6 +314,7 @@ namespace EnrageWestworld.InGame
                 if (!StartScene(s, people, cast, seed, now, asSecond: true))
                     return false;
                 NoteMainScene(s.Kind, Math.Min(a.Position.DistanceTo(me.Position), b.Position.DistanceTo(me.Position)), true);
+                ChanceNoteBy(by, s.Kind, a, b);
                 return true;
             }
             if (s.Kind == "gossip" && saloon && _cfg.JobRumours)
@@ -302,6 +332,7 @@ namespace EnrageWestworld.InGame
             if (!StartScene(s, people, cast, seed, now))
                 return false;
             NoteMainScene(s.Kind, Math.Min(a.Position.DistanceTo(me.Position), b.Position.DistanceTo(me.Position)), true);
+            ChanceNoteBy(by, s.Kind, a, b);
             _nextChance = now + (int)(_cfg.DramaGapSeconds * 1000 * Story.Chance);   // (x the storyteller's)   // x1.5 until 2026-10-30 (Lex: more at once)   // was x3 (Lex, 2026-10-29: the chance meetings carry the lively kinds: songs, tales, haggling, small talk); from the start, not the try (2026-10-30)
             return true;
         }

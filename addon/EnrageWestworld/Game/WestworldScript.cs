@@ -1202,6 +1202,7 @@ namespace EnrageWestworld.InGame
 			MarkRegulars();
 			Log.Write("TEST ties: " + TiesStatus());
 			Log.Write("TEST reasons: " + ReasonsStatus() + "; " + Reasons.CourtStatus());
+			Log.Write("TEST chance meetings: " + ChanceMindsStatus());
 			Log.Write("TEST links: " + LinksStatus());
 			Log.Write("TEST posts: " + PostsStatus());
 			Log.Write("TEST encounters: " + EncountersStatus());

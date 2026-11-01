@@ -101,6 +101,7 @@ namespace EnrageWestworld.InGame
             LonelyAbort();
             FavourAbort();   // the walk-ups to Arthur (NIGHT4 item 6: favours and warnings never stopped on a wipe, a mission or a reload; thanks and the lonely not on a wipe)
             WarnAbort();
+            ChanceWaitAbort(why);   // a chance meeting waiting on the model's pick
             KinAbort();
             _sightSeen.Clear();
             _sightTown.Clear();
