@@ -114,7 +114,7 @@ namespace EnrageWestworld.InGame
                     noted.Add("a callout (it answers the gun itself)");
                     return null;
                 }
-                EndStreetCallout("you drew on " + (MindNameOf(h) ?? "one of them"), false);
+                EndStreetCallout((MindNameOf(h) ?? "one of them") + " under your gun", false);
                 return "a callout";
             }
             DomesticRow d = _domestic;
@@ -125,7 +125,7 @@ namespace EnrageWestworld.InGame
                     noted.Add("a domestic (he struck her: the fight is its own)");
                     return null;
                 }
-                EndDomestic("you drew on " + (AimIs(d.Man, h) ? "him" : MindNameOf(h) ?? "one of them"));
+                EndDomestic((AimIs(d.Man, h) ? "he" : MindNameOf(h) ?? "one of them") + " under your gun");
                 return "a domestic";
             }
             if (_hog != null)

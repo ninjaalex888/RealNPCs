@@ -219,7 +219,7 @@ namespace EnrageWestworld.InGame
             int hm = c.Man.Handle, hw = c.Wife.Handle;
             if (!c.Struck && c.Phase != "end" && PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, hm))
             {
-                EndDomestic("you drew on him");   // the game's own answer to a gun (no rant, no blow over the hands-up; StagedLetGo gives no wander to one aimed at)
+                EndDomestic("under your gun");   // the game's own answer to a gun (no rant, no blow over the hands-up; StagedLetGo gives no wander to one aimed at)
                 return;
             }
             if (!c.YouIn && !c.Struck && c.Phase != "gather" && c.Phase != "end" && me.Position.DistanceTo(c.Man.Position) < 3f)

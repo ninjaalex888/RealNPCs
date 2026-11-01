@@ -275,8 +275,8 @@ namespace EnrageWestworld.InGame
         /// One of the men is within `metres` of `at` (a loop: no closure a step).
         private static bool HogAnyWithin(List<Ped> men, Vector3 at, float metres)
         {
-            for (int i = 0; i < men.Count; i++)
-                if (men[i].Position.DistanceTo(at) < metres)
+            foreach (Ped man in men)
+                if (man.Position.DistanceTo(at) < metres)
                     return true;
             return false;
         }
@@ -291,15 +291,15 @@ namespace EnrageWestworld.InGame
                 ulong slot = 0;
                 int aimed = PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(Game.Player.Handle, (int*)&slot) ? (int)slot : 0;
                 bool aiming = false, hurt = false;
-                for (int i = 0; i < men.Count; i++)   // loops, not Any: no closures a step (the frame-cost audit)
-                    if (aimed != 0 && men[i].Handle == aimed)
+                foreach (Ped man in men)   // a List's own enumerator, not Any: no closures a step (the frame-cost audit)
+                    if (aimed != 0 && man.Handle == aimed)
                         aiming = true;
                 h.AimSince = aiming ? (h.AimSince == 0 ? now : h.AimSince) : 0;
                 if (!h.Fought)
                 {
                     hurt = men.Count < h.Guards.Count;   // once: a fight over stays over (the damage marks and the dead stay true)
-                    for (int i = 0; i < men.Count && !hurt; i++)
-                        hurt = ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(men[i].Handle, me.Handle, true, false);
+                    for (int k = 0; k < men.Count && !hurt; k++)
+                        hurt = ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(men[k].Handle, me.Handle, true, false);
                 }
                 bool rushed = h.Captors == "kidnappers" && HogAnyWithin(men, meAt, 6f);
                 bool drawnOn = aiming && now - h.AimSince > 1200 && h.Captors != "bounty";
