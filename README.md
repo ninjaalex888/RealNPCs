@@ -119,7 +119,7 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 
 | Key | What it does |
 |---|---|
-| Alt+F | The RealNPCs settings panel: RealNPCs, West World, Stalkers and every enRAGE setting in one place, with larger text. Press it again to close it. Alt+F11 is left to enRAGE's own settings menu (ReplaceEnrageSettings = true gives it to this panel, on enRAGE 0.9.5.3 only) |
+| Alt+F or Alt+R | The RealNPCs settings panel: RealNPCs, West World, Stalkers and every enRAGE setting in one place, with larger text. Press either again to close it. Alt+F11 is left to enRAGE's own settings menu (ReplaceEnrageSettings = true gives it to this panel, on enRAGE 0.9.5.3 only) |
 | F7 | Shows what the nearest person enRAGE knows thinks of you, and writes a status line to the log. The town regulars and the fully awake around you show on the map for a minute |
 | H | Locked on to someone: Flirt. After her yes, once she has said it, the same H is Hook up (nothing of RealNPCs' is on G, enRAGE's key) |
 | N | Read your letters, diaries and clippings, or take a diary you've just found |
@@ -132,13 +132,13 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 | Q | Locked on to someone RealNPCs knows: Talk (`TalkKey`; a pad's RB). It is the game's own lock-on "target info" control, with its own icon: rebind that control in the game's Settings > Controls to use another key (e.g. T), and the icon follows (rebound to T, the same press also turns the ticker, and next to a telegraph clerk opens enRAGE's telegraph). In the list: up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it, Backspace (B) to leave |
 | T | The next line on the ticker now (on a long line, its next part first). T is enRAGE's telegraph key too: near a telegraph clerk, both happen |
 
-Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings, and RealNPCs leaves it alone; Alt+F is the way into RealNPCs' panel (`ReplaceEnrageSettings = true` lets Alt+F11 open it instead, on enRAGE 0.9.5.3 only). About 15 seconds after loading, a notice says which key to use.
+Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings, and RealNPCs leaves it alone; Alt+F or Alt+R is the way into RealNPCs' panel (`ReplaceEnrageSettings = true` lets Alt+F11 open it instead, on enRAGE 0.9.5.3 only). About 15 seconds after loading, a notice says which key to use.
 
 ## Settings and log
 
 Everything is kept in `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\`:
 
-- `RealNPCs.ini` holds the settings. Every feature can be turned off or tuned, each option has a comment, and saved changes take effect in game within a few seconds. The settings panel (Alt+F) edits it too, along with enRAGE's `NemesisMod.ini`, and CasualHookups' settings when that mod is installed.
+- `RealNPCs.ini` holds the settings. Every feature can be turned off or tuned, each option has a comment, and saved changes take effect in game within a few seconds. The settings panel (Alt+F or Alt+R) edits it too, along with enRAGE's `NemesisMod.ini`, and CasualHookups' settings when that mod is installed.
 - `RealNPCs.log` records what happened. Please attach it to bug reports. While the mind underneath is being tested (`[Mind] MindShadow`, on), it also writes `MIND` lines: each nearby person's traits, needs, feelings and mood, what they would do now (`MIND would:`), what they've come to believe (`MIND believes:`) and, with `[Mind] MindLevels` on, the day of the people away (`MIND away:`). They change nothing anyone does; `[Mind] MindLive` (off) lets them reach the screen, as moods and as thoughts of what people really feel.
 - `backup\` holds a copy of `NemesisMod.ini` (and `CasualHookups.ini`) from before the panel first changed it in each session, and CasualHookups' original settings from before RealNPCs first set them (and `CasualHookups.chances-at-start`, the chances it started the current game with).
 - `arthur.json` and `john.json` hold what people know and feel about you. `diaries\` holds the diaries you've found, as text files.

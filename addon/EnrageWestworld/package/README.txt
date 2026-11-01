@@ -1415,7 +1415,7 @@ in the file. The new ones:
                 plays (the game's own Subtitles option has to be on too)
             TestKey (F7), FlirtKey (None), WakeKey (Y), ReaderKey (N), ReloadIni (true),
             ReplaceEnrageSettings (false): true lets Alt+F11 open the RealNPCs panel (enRAGE 0.9.5.3 only),
-            SettingsKey (Alt+F) opens and closes it with any enRAGE version (SettingsKey2: a second key, None),
+            SettingsKey (Alt+F) and SettingsKey2 (Alt+R) open and close it with any enRAGE version,
             PanelSlowsTime (true), PanelTimeScale (0.25): the world slows to a quarter speed while the
             panel is open, as it does for the weapon wheel (never in a story mission)
 All the older options are still there and work the same.
@@ -1423,8 +1423,8 @@ All the older options are still there and work the same.
 
 KEYS
 ----
-Alt+F     the RealNPCs settings panel (all RealNPCs and enRAGE settings; SettingsKey), and it closes
-          it again (SettingsKey2 can be a second key). Its Testing page lists everything
+Alt+F     the RealNPCs settings panel (all RealNPCs and enRAGE settings; SettingsKey). Alt+R
+          (SettingsKey2) opens it too, and either closes it again. Its Testing page lists everything
           RealNPCs can make happen near you now, by group: Enter on a row sets its key, Space fires it
           (the panel closes first; on a gamepad, A fires it), Delete leaves it without a key. A key
           another test has already moves to the new one and leaves that test without a key; one of
