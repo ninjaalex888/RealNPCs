@@ -1143,6 +1143,8 @@ in the file. The new ones:
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
             SmallTalk, Pickpockets, PosseTalk, Mourners, Pleading, ArrivalTalk (all true),
             ScenesAtOnce (4): the scene and quiet talks beside it elsewhere on the street (1-6),
+            MainScenesAtOnce (2): a second full scene 20 m or more from the first, words and walk-overs
+            only (fights, rough handling and thefts stay one at a time); 1: one at a time,
             Aftermath (true): after a fight a friend tends the loser and the law has a word with the winner,
             FightCrowds (true): a ring of onlookers around a fistfight, NightScenes (true): a mugging, a
             drunk taken home, HorseThieves (true), GangShootouts (true): rival gangs who meet fight it

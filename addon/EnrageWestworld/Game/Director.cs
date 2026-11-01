@@ -83,6 +83,13 @@ namespace EnrageWestworld.InGame
         internal static readonly uint SmokeHash = Natives.Hash("WORLD_HUMAN_SMOKE");   // a smoke in place (the scenes' "smoke" step, the mind's showoff)
         internal static readonly uint Crouch = Natives.Hash("WORLD_HUMAN_CROUCH_INSPECT");   // the crouch over something on the ground (also the night visitor's)
         private Live _live;
+        // a second full scene at once ([Scenes] MainScenesAtOnce 2; NIGHT4 item 3), at least SecondApart from the first's people and
+        // never the same people; only what SecondOk allows (words, the walk-over, someone walking up), so the one-owner machinery
+        // (the fight, the ring and the joiners, the rough move, Happened, the pickpocket, the fall) only ever sees _live. Never
+        // promoted: when _live ends first, the second plays out as the second
+        private Live _second;
+        public const float SecondApart = SceneSlots.Apart;
+        public int SecondStarted, SecondRefusedApart;
         // quiet talks playing at the same time as the scene, elsewhere on the street (the NPC-life run, Lex 2026-10-30: "several
         // at once"): words only, never blows, a walk-over or a callback, so the scene's one-owner parts (the rough move, the
         // fight, Happened, the pickpocket's cast) stay the scene's
@@ -110,7 +117,7 @@ namespace EnrageWestworld.InGame
         /// other (WestworldScript.Aftermath.cs).
         public Action<int, int> FightOver;
         /// "meet" gave up: the two never got close enough, so nothing happened between them.
-        public Action<Ped, Ped> NeverMet;
+        public Action<Ped, Ped, bool> NeverMet;   // (the two, and whether it was the second scene)
         /// Asked as the third sets off to walk over (the one who steps in, a friend, a spouse): why they mayn't be moved
         /// now, or null. They were free when the scene was built; a story mission, enRAGE or a fight may have taken them
         /// up since (night 2026-10-29: the mind moves people, checked at the roll and again at the moment).
@@ -123,7 +130,13 @@ namespace EnrageWestworld.InGame
         /// The quiet talks playing beside the scene now.
         public int SideCount { get { return _side.Count; } }
         /// Anything playing, the scene or a quiet talk (DramaTick ticks while there is).
-        public bool AnyPlaying { get { return _live != null || _side.Count > 0; } }
+        public bool AnyPlaying { get { return _live != null || _second != null || _side.Count > 0; } }
+        /// A second full scene is playing ([Scenes] MainScenesAtOnce).
+        public bool SecondBusy { get { return _second != null; } }
+        /// The full scenes playing now (not the quiet talks): 0, 1 or 2.
+        public int MainCount { get { return (_live != null ? 1 : 0) + (_second != null ? 1 : 0); } }
+        /// The second scene's kind, or null.
+        public string SecondKind { get { return _second != null ? _second.Scene.Kind : null; } }
         public string LastSummary { get; private set; }
         public string CurrentKind { get { return _live != null ? _live.Scene.Kind : null; } }
 
@@ -165,7 +178,7 @@ namespace EnrageWestworld.InGame
         public List<KeyValuePair<string, Vector3>> TickerLines()
         {
             var all = new List<KeyValuePair<string, Vector3>>();
-            foreach (Live l in new[] { _live }.Concat(_side))
+            foreach (Live l in new[] { _live, _second }.Concat(_side))
             {
                 if (l == null || l.Scene == null || string.IsNullOrEmpty(l.Scene.Summary) || l.Cast == null || l.Cast.Length == 0 || l.Cast[0] == null || !l.Cast[0].Exists())
                     continue;
@@ -186,7 +199,7 @@ namespace EnrageWestworld.InGame
         {
             if (h == 0)
                 return null;
-            foreach (Live l in _live != null ? new[] { _live }.Concat(_side).ToArray() : _side.ToArray())
+            foreach (Live l in new[] { _live, _second }.Where(x => x != null).Concat(_side).ToArray())
             {
                 foreach (Ped p in l.Cast)
                     if (p != null && p.Handle == h)
@@ -229,6 +242,10 @@ namespace EnrageWestworld.InGame
                     if (j[0] == handle)
                         return true;
             }
+            if (_second != null)
+                foreach (Ped p in _second.Cast)
+                    if (p != null && p.Handle == handle)
+                        return true;
             foreach (Live x in _side)
                 foreach (Ped p in x.Cast)
                     if (p != null && p.Handle == handle)
@@ -292,12 +309,20 @@ namespace EnrageWestworld.InGame
 
         /// Starts a scene with these people (2 or 3). names: acquaintance names when enRAGE knows them, else null.
         /// side: a quiet talk beside the scene (Quiet), at most maxSide at once.
-        public bool Start(Scene s, List<Ped> cast, string[] knownNames, string seed, Action done, SceneCast info = null, bool side = false, int maxSide = 1)
+        /// second: a second full scene beside the first ([Scenes] MainScenesAtOnce), only when the first plays, SecondOk allows
+        /// it and its people are SecondApart from the first's. Any full scene keeps SecondApart from the other's people.
+        public bool Start(Scene s, List<Ped> cast, string[] knownNames, string seed, Action done, SceneCast info = null, bool side = false, int maxSide = 1, bool second = false)
         {
-            if (s == null || cast.Count < s.Cast || (side ? _side.Count >= maxSide || !Quiet(s) : _live != null))
+            if (s == null || cast.Count < s.Cast || (side ? _side.Count >= maxSide || !Quiet(s) : second ? _live == null || _second != null || !SecondOk(s) : _live != null))
                 return false;
             if (cast.Take(s.Cast).Any(p => p != null && Involves(p.Handle)))
                 return false;
+            Live other = side ? null : second ? _live : _second;
+            if (other != null && !SceneSlots.FarEnough(XY(cast.Take(s.Cast)), XY(other.Cast)))
+            {
+                SecondRefusedApart++;
+                return false;   // two full scenes keep 20 m apart, whichever began first
+            }
             Live l = new Live
             {
                 Scene = s, Cast = cast.Take(s.Cast).ToArray(), Names = new string[s.Cast], Introduced = new bool[s.Cast], Women = new bool[s.Cast],
@@ -314,6 +339,11 @@ namespace EnrageWestworld.InGame
             l.Side = side;
             if (side)
                 _side.Add(l);
+            else if (second)
+            {
+                _second = l;
+                SecondStarted++;
+            }
             else
                 _live = l;
             foreach (string d in Gestures.Dicts)
@@ -324,13 +354,44 @@ namespace EnrageWestworld.InGame
                 AUDIO.SET_PED_IS_DRUNK(l.Cast[0].Handle, true);   // he sounds it, too
                 l.MadeDrunk = true;
             }
-            Log.Write("SCENE " + (side ? "(beside, " + _side.Count + " now) " : "") + s.Kind + ": " + string.Join(" & ", l.Names));
+            Log.Write("SCENE " + (side ? "(beside, " + _side.Count + " now) " : second ? "(second) " : "") + s.Kind + ": " + string.Join(" & ", l.Names));
             return true;
         }
 
         // what a quiet talk may do: words, turning to each other, a smoke or a flask, walking off; nothing that needs the
         // scene's one-owner machinery (blows, the rough move, a walk-over, a drunk on the floor, a callback)
         private static readonly HashSet<string> QuietActs = new HashSet<string> { "face", "faceone", "lookplayer", "smoke", "flask", "whittle", "stoic", "stand", "walkaway" };
+
+        // what a second full scene may do besides a quiet talk's: the walk-over and someone walking up (their state is the scene's own)
+        private static readonly HashSet<string> SecondActs = new HashSet<string> { "face", "faceone", "lookplayer", "smoke", "flask", "whittle", "stoic", "stand", "walkaway", "meet", "approach" };
+        private static readonly HashSet<string> SecondNot = new HashSet<string> { "pickpocket", "lift", "rough", "drunk", "help", "passby", "hosts", "carry" };
+
+        private static float[] XY(IEnumerable<Ped> ps)
+        {
+            var xy = new List<float>();
+            foreach (Ped p in ps)
+                if (p != null && p.Exists())
+                {
+                    Vector3 v = p.Position;
+                    xy.Add(v.X);
+                    xy.Add(v.Y);
+                }
+            return xy.ToArray();
+        }
+
+        /// Can this scene play as a second full scene: two or three people, no fight, no quarrel ladder, nothing noted at a cue,
+        /// not a theft, a rough move, a drunk, a fall or a host, and only the quiet acts, the walk-over and someone walking up.
+        public static bool SecondOk(Scene s)
+        {
+            return s != null && (s.Cast == 2 || s.Cast == 3) && !s.Fight && s.Ladder == null && !s.NoteAtCue && !SecondNot.Contains(s.Kind) && s.Beats.All(b => b.Act == null || SecondActs.Contains(b.Act));
+        }
+
+        /// Stops the second scene (a test making room).
+        public void AbortSecond(string why)
+        {
+            if (_second != null)
+                Stop(_second, why);
+        }
 
         /// Can this scene play as a quiet talk beside another: two people, no fight, no quarrel ladder, only quiet acts.
         public static bool Quiet(Scene s)
@@ -388,13 +449,14 @@ namespace EnrageWestworld.InGame
         public void AbortAll(string why)
         {
             Abort(why);
+            AbortSecond(why);
             foreach (Live x in _side.ToArray())
                 Stop(x, why);
         }
 
         private void Stop(Live l, string why)
         {
-            Log.Write("SCENE " + (l.Side ? "(beside) " : "") + "stopped after " + l.Index + " of " + l.Scene.Beats.Count + " beats: " + why);
+            Log.Write("SCENE " + (l.Side ? "(beside) " : ReferenceEquals(l, _second) ? "(second) " : "") + "stopped after " + l.Index + " of " + l.Scene.Beats.Count + " beats: " + why);
             End(l);
         }
 
@@ -402,6 +464,8 @@ namespace EnrageWestworld.InGame
         {
             if (ReferenceEquals(l, _live))
                 _live = null;
+            else if (ReferenceEquals(l, _second))
+                _second = null;
             else
                 _side.Remove(l);
             if (l.Slamming)
@@ -540,12 +604,14 @@ namespace EnrageWestworld.InGame
         }
 
         /// sideSay: where a quiet talk's lines go (the subtitle near you, never the queue the scene's lines take).
-        public void Tick(Ped player, Action<string, string, bool, bool, int> say, Action<string, string, bool, bool, int> sideSay = null)
+        public void Tick(Ped player, Action<string, string, bool, bool, int> say, Action<string, string, bool, bool, int> sideSay = null, Action<string, string, bool, bool, int> secondSay = null)
         {
             _player = player.Handle;
             _say = say;
             if (_live != null)
                 TickOne(_live, player, say);
+            if (_second != null)
+                TickOne(_second, player, secondSay ?? say);   // its voices as any scene's; its words as a subtitle near you, never the first's queue
             if (_side.Count > 0)
                 foreach (Live x in _side.ToArray())
                     TickOne(x, player, sideSay ?? ((a, b, c, d2, e) => { }));
@@ -731,7 +797,7 @@ namespace EnrageWestworld.InGame
                 {
                     Ped walker = l.Cast[l.MeetWalker], waiter = l.Cast[1 - l.MeetWalker];   // why, for the log: how far off, and whether a scenario held them
                     if (NeverMet != null)
-                        NeverMet(l.Cast[0], l.Cast[1]);
+                        NeverMet(l.Cast[0], l.Cast[1], ReferenceEquals(l, _second));
                     Stop(l, "they never got close enough to talk (still " + waiter.Position.DistanceTo(walker.Position).ToString("0.0") + " m apart" +
                           (PED.IS_PED_USING_ANY_SCENARIO(walker.Handle) ? ", a scenario held the walker" : "") +
                           (PED.IS_PED_USING_ANY_SCENARIO(waiter.Handle) ? ", a scenario held the other" : "") + ")");
@@ -780,7 +846,7 @@ namespace EnrageWestworld.InGame
             }
             if (l.Index >= l.Scene.Beats.Count)
             {
-                Log.Write("SCENE " + (l.Side ? "(beside) " : "") + "over: " + l.Scene.Kind + " (" + string.Join(" & ", l.Names) + "), played to the end");
+                Log.Write("SCENE " + (l.Side ? "(beside) " : ReferenceEquals(l, _second) ? "(second) " : "") + "over: " + l.Scene.Kind + " (" + string.Join(" & ", l.Names) + "), played to the end");
                 End(l);
                 return;
             }

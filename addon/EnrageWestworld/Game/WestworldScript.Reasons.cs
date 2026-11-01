@@ -375,7 +375,7 @@ namespace EnrageWestworld.InGame
         /// The strongest reason near the player that he can see, played as a scene. False if there's none.
         /// side: a quiet talk beside the scene (SideScene): only people clear allows, standing together already, and only a
         /// scene Director.Quiet allows, without the walk-over, the ladder, the barkeep or anyone stepping in.
-        private bool ReasonScene(Ped me, bool saloon, int now, bool side = false, Func<Ped, bool> clear = null, List<PairReason> found = null)
+        private bool ReasonScene(Ped me, bool saloon, int now, bool side = false, Func<Ped, bool> clear = null, List<PairReason> found = null, bool asSecond = false)
         {
             if (found == null)
             {
@@ -397,7 +397,7 @@ namespace EnrageWestworld.InGame
                     _farHeldSkipped++;
                     continue;   // two in chairs a few steps apart: the walk-over never comes (NIGHT4 fix 7: 5 of 14 main scenes died there)
                 }
-                if (PlayPairReason(pr, me, saloon, now, side, null))
+                if (PlayPairReason(pr, me, saloon, now, side, null, asSecond))
                     return true;
             }
             return false;
@@ -442,7 +442,7 @@ namespace EnrageWestworld.InGame
         /// One pair's reason played: the cast, the trouble kinds' settings and their fallback, the scene, the ladder, the
         /// walk-over, the barkeep, someone stepping in, a bystander. Shared by the Director's own pick (ReasonScene) and a
         /// person's own (the model's pick, WestworldScript.MindScenes.cs; `by` says so in the log). False when it can't be played.
-        private bool PlayPairReason(PairReason pr, Ped me, bool saloon, int now, bool side, string by)
+        private bool PlayPairReason(PairReason pr, Ped me, bool saloon, int now, bool side, string by, bool asSecond = false)
         {
             Ped first = pr.Why.BFirst ? pr.B.Ped : pr.A.Ped, second = pr.Why.BFirst ? pr.A.Ped : pr.B.Ped;
             string seed = first.Handle + "|" + second.Handle + "|" + now / 60000;
@@ -479,11 +479,28 @@ namespace EnrageWestworld.InGame
             Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);
             if (s == null || (side && !Director.Quiet(s)))
                 return false;
+            if (asSecond)
+            {
+                AddMeet(s, kind, first, second, pr.Apart);   // the second full scene: the walk-over may come; no ladder, barkeep or step-in (theirs is the first's)
+                if (!Director.SecondOk(s))
+                {
+                    _secondRefusedOk++;
+                    return false;   // the pair keeps its reason for the first scene's turn
+                }
+            }
             Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
                       " (strength " + pr.Why.Strength + (pr.Why.Leaned != null ? ", the mind: " + pr.Why.Leaned : "") + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you" +
                       (by != null ? "; " + by : "") + ")");
             List<Ped> cast2 = new List<Ped> { first, second };
             NotePairPlayed(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);
+            if (asSecond)
+            {
+                if (!StartScene(s, cast2, cast, seed, now, asSecond: true))
+                    return false;
+                NotePlayedReason(pr, doer, asWords);
+                NoteMainScene(s.Kind, Math.Min(pr.A.Ped.Position.DistanceTo(me.Position), pr.B.Ped.Position.DistanceTo(me.Position)), false);
+                return true;
+            }
             if (side)
             {
                 if (!StartScene(s, cast2, cast, seed, now, side: true))
@@ -867,7 +884,7 @@ namespace EnrageWestworld.InGame
             int now = Game.GameTime;
             int fought = _restMsOf.Keys.Count(h => Resting(h, now));
             string sat = fought > 0 ? fought + " who came to blows sitting it out (" + (int)(Reasons.RestFor(FoughtRestMs, _cfg.TroubleWeight) / 60000) + " min; everyone else " + Reasons.RestFor(PersonRestMs, _cfg.TroubleWeight) / 1000 + " s between scenes); " : "";
-            sat += MainScenesWords() + "; " + (_cfg.ReasonVariety && _streetKinds.Count > 0 ? "the street lately: " + string.Join(", ", _streetKinds) + " (each the same kind -" + Reasons.SameKindPenalty + "); " : "") + (_reasonWords > 0 ? _reasonWords + " blows played as words this session (one of them sat or leaning); " : "") + (_reasonCant > 0 ? _reasonCant + " reasons that couldn't be played passed over a while; " : "");
+            sat += MainScenesWords() + "; " + SecondScenesWords() + "; " + (_cfg.ReasonVariety && _streetKinds.Count > 0 ? "the street lately: " + string.Join(", ", _streetKinds) + " (each the same kind -" + Reasons.SameKindPenalty + "); " : "") + (_reasonWords > 0 ? _reasonWords + " blows played as words this session (one of them sat or leaning); " : "") + (_reasonCant > 0 ? _reasonCant + " reasons that couldn't be played passed over a while; " : "");
             List<Candidate> people = ReasonCandidates(me, now);
             if (people.Count < 2)
                 return sat + people.Count + " named people free near you; no pairs";

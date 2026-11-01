@@ -135,12 +135,25 @@ namespace EnrageWestworld.InGame
         }
 
         /// From the Director's NeverMet: the scene's two never got close enough, so it never reached the screen.
-        private void StoryNeverMet()
+        private void StoryNeverMet(bool second = false)
         {
-            string kind = _storyMainKind;
-            _storyMainKind = null;
+            string kind = second ? _storySecondKind : _storyMainKind;
+            if (second)
+                _storySecondKind = null;
+            else
+                _storyMainKind = null;
             if (_story != null && kind != null)
-                _story.Retract(kind, _storyMainAt);
+                _story.Retract(kind, second ? _storySecondAt : _storyMainAt);
+        }
+
+        private string _storySecondKind;   // the second full scene noted at its start ([Scenes] MainScenesAtOnce), until its walk-over gives up
+        private int _storySecondAt = int.MinValue / 2;
+
+        /// A second full scene began: noted at once (SecondOk: nothing waits for a cue), so it can be taken back on its own.
+        private void StorySecondStarted(string kind, int now)
+        {
+            _storySecondAt = now;
+            _storySecondKind = "scene:" + kind;
         }
 
         /// For F7: TEST story.

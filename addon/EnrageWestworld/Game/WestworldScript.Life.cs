@@ -48,7 +48,7 @@ namespace EnrageWestworld.InGame
                 if (_director.Busy)
                     FallWatchStep(me, now);   // the player may give the fallen a hand up first (WestworldScript.Kindness.cs)
                 if (_director.AnyPlaying)
-                    _director.Tick(me, SceneSay, SideSay);
+                    _director.Tick(me, SceneSay, SideSay, SideSay);   // (a second full scene's words: a subtitle near you, as a quiet talk's)
             }
             if (_after != null)
                 AftermathStep(me, now);   // what follows a fight: a friend tends the loser, the law has a word (WestworldScript.Aftermath.cs)
@@ -65,6 +65,7 @@ namespace EnrageWestworld.InGame
                 RingStep(now);   // a crowd rings the fight (WestworldScript.Ring.cs)
                 JoinStep(now);   // onlookers who join a fight, from their minds (WestworldScript.JoinIn.cs)
                 SideScene(me, now);   // a quiet talk elsewhere while the scene plays (the NPC-life run)
+                SecondMainScene(me, now);   // a second full scene 20 m off ([Scenes] MainScenesAtOnce; NIGHT4 item 3)
                 return;
             }
             _fallWatch = null;
@@ -81,11 +82,11 @@ namespace EnrageWestworld.InGame
                 // unchecked: the review of item 2 found the abort reached the old paths)
                 _director.ThirdFree = p => _cfg.MindLive ? MayDirectWhyNot(p) : null;
                 // a fight that never came to anything (the walker never got there) sits nobody out for long
-                _director.NeverMet = (one, other) =>
+                _director.NeverMet = (one, other, second) =>
                 {
                     _restMsOf.Remove(one.Handle);
                     _restMsOf.Remove(other.Handle);
-                    StoryNeverMet();   // nothing reached the screen: the storyteller takes it back (WestworldScript.Story.cs)
+                    StoryNeverMet(second);   // nothing reached the screen: the storyteller takes it back (WestworldScript.Story.cs)
                 };
                 _director.SlamStop = () =>
                 {
@@ -185,10 +186,10 @@ namespace EnrageWestworld.InGame
         }
 
         /// A chance meeting between the two standing closest (nobody with a reason, or ChanceFirst's turn). True if one started.
-        private bool ChanceScene(List<Ped> pool, Ped me, bool saloon, int now)
+        private bool ChanceScene(List<Ped> pool, Ped me, bool saloon, int now, bool asSecond = false)
         {
-            // now and then a chance meeting between the two standing closest
-            if (pool.Count < 2 || now < _nextChance)
+            // now and then a chance meeting between the two standing closest (asSecond: the second full scene's, on its own timer)
+            if (pool.Count < 2 || (now < _nextChance && !asSecond))
                 return false;
             Ped a = null, b = null;
             float best = Math.Max(2f, _cfg.ChanceMeetMetres);   // was 3.4 m, standing together already; farther, one walks over (AddMeet; the NPC-life run, step 4)
@@ -259,6 +260,20 @@ namespace EnrageWestworld.InGame
             }
             if (s == null)
                 return false;
+            if (asSecond)
+            {
+                // the second full scene: the walk-over may come, nothing that needs the first's machinery (no ladder, barkeep or step-in)
+                AddMeet(s, s.Kind, a, b, a.Position.DistanceTo(b.Position));
+                if (!Director.SecondOk(s))
+                {
+                    _secondRefusedOk++;
+                    return false;
+                }
+                if (!StartScene(s, people, cast, seed, now, asSecond: true))
+                    return false;
+                NoteMainScene(s.Kind, Math.Min(a.Position.DistanceTo(me.Position), b.Position.DistanceTo(me.Position)), true);
+                return true;
+            }
             if (s.Kind == "gossip" && saloon && _cfg.JobRumours)
                 AddJobTalk(s, seed);
             Scene unladdered = s;
@@ -278,7 +293,51 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
-        private int _nextSide;
+        private int _nextSide, _nextSecond, _secondRefusedOk, _secondTried;
+
+        /// A second full scene while the first plays ([Scenes] MainScenesAtOnce 2; NIGHT4 item 3): two people with a reason, else
+        /// the two standing closest, at least 20 m from every one of the first scene's people and never the same people, and only
+        /// a scene Director.SecondOk allows (words, the walk-over, someone walking up; never blows, a theft or the rough move, whose
+        /// machinery is the first's alone). Its words are subtitles near you; on its own gap, as the first's.
+        private void SecondMainScene(Ped me, int now)
+        {
+            if (!_cfg.Drama || SceneSlots.Mains(_cfg.MainScenesAtOnce) < 2 || _director.SecondBusy || now < _nextSecond ||
+                _stalker != null || _wedding != null || _theft != null || _plea != null || _visitor != null)
+                return;
+            _nextSecond = now + 8000;   // looked again in a few seconds when nobody fits
+            bool saloon = _placeKind == "saloon";
+            if (_interiorType != 0 && !saloon)
+                return;
+            _secondTried++;
+            Vector3 c0 = default(Vector3), c1 = default(Vector3), c2 = default(Vector3);
+            int nc = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                Ped c = _director.CastAt(i);
+                if (c == null || !c.Exists())
+                    continue;
+                if (nc == 0) c0 = c.Position; else if (nc == 1) c1 = c.Position; else c2 = c.Position;
+                nc++;
+            }
+            float apart = Director.SecondApart;
+            Func<Ped, bool> clear = p => !_director.Involves(p.Handle) && (nc < 1 || p.Position.DistanceTo(c0) >= apart) && (nc < 2 || p.Position.DistanceTo(c1) >= apart) && (nc < 3 || p.Position.DistanceTo(c2) >= apart);
+            if (ReasonScene(me, saloon, now, false, clear, null, true))
+                return;
+            List<Ped> pool = Peds.All().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
+                                                         !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
+                                                         ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres + 10f &&
+                                                         !Resting(p.Handle, now) && clear(p) && !NotFree(p.Handle)).ToList();   // a little wider than the first's 13 m: 20 m from it, on the street's far side
+            ChanceScene(pool, me, saloon, now, true);
+        }
+
+        /// F7: the full scenes at once ([Scenes] MainScenesAtOnce).
+        private string SecondScenesWords()
+        {
+            if (_cfg.MainScenesAtOnce < 2)
+                return "one full scene at a time ([Scenes] MainScenesAtOnce 1)";
+            return "full scenes now " + _director.MainCount + " of " + _cfg.MainScenesAtOnce + (_director.SecondKind != null ? " (the second: " + _director.SecondKind + ")" : "") +
+                   ", second scenes started " + _director.SecondStarted + " (looked for " + _secondTried + " times), refused by what a second may play " + _secondRefusedOk + ", by 20 m " + _director.SecondRefusedApart;
+        }
         private const float StreetMetres = 13f;   // chance meetings and the quiet talks start this near you: 60% of the 22 m it was (Lex, 2026-10-30), close enough to hear and read
         private const float SideApart = 10f;   // a quiet talk keeps this far from the scene's people
 
@@ -462,7 +521,7 @@ namespace EnrageWestworld.InGame
                    "; in sight: " + (_engine.Nearby != null ? _engine.Nearby.Count : 0) + " (noted " + (g - _engine.NearbyAt) + " game min ago)";
         }
 
-        private bool StartScene(Scene s, List<Ped> people, SceneCast cast, string seed, int now, bool test = false, bool side = false)
+        private bool StartScene(Scene s, List<Ped> people, SceneCast cast, string seed, int now, bool test = false, bool side = false, bool asSecond = false)
         {
             if (s != null && people != null && people.Take(s.Cast).Any(p => p != null && AimedLately(p.Handle, now)))
             {
@@ -491,6 +550,22 @@ namespace EnrageWestworld.InGame
                 Onlookers(people);
                 return true;
             }
+            if (asSecond)
+            {
+                // a second full scene ([Scenes] MainScenesAtOnce): noted at once (Director.SecondOk: nothing in it waits for a cue)
+                if (!_director.Start(s, people, names, seed, () => { }, cast, false, 1, true))
+                    return false;
+                int gap2 = (int)(_cfg.DramaGapSeconds * 1000 * (0.75 + _rng.NextDouble() * 0.5) * (_hush ? TownMood.HushGap : 1f));
+                _nextSecond = now + Math.Max(Math.Min(gap2, 20000), (int)(gap2 * Story.Drama));   // its own gap, as the first's
+                var p2 = new Pending { S = s, People = new List<Ped>(people), Names = names };
+                NoteHappened(p2, s.Kind);
+                StorySecondStarted(s.Kind, now);
+                NoteInScene(people, s.Kind, now);
+                Onlookers(people);
+                return true;
+            }
+            if (test && _director.SecondBusy)
+                _director.AbortSecond("made room for a test");   // a test's scene is never kept 20 m off by the second
             if (_director.Start(s, people, names, seed, () => { }, cast))
             {
                 if (test)
