@@ -76,7 +76,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 int h = _lawGiveBack[i].Key;
                 _lawGiveBack.RemoveAt(i);
-                if (Spawner.IsBorrowed(h) && !(_bodyClear != null && _bodyClear.Law == h) && !_brawlLaw.Exists(x => x.Law == h))
+                if (Spawner.IsBorrowed(h) && !(_bodyClear != null && _bodyClear.Law == h) && !_brawlLaw.Exists(x => x.Law == h) && !(_domestic != null && _domestic.Law != null && _domestic.Law.Handle == h))
                     Spawner.Release(new Ped(h), false);   // back to his rounds (GiveBack: stood up, unblocked, tasks cleared, wandering)
             }
         }

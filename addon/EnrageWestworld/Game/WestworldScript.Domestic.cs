@@ -29,8 +29,8 @@ namespace EnrageWestworld.InGame
             public string Matter, Seed, Town, HisName, HerName, HerFull;
             public StagedAsk HisAsk, HerAsk;
             public string His, Hers;
-            public int StartedAt, NextAt, Turn, Rant, StruckAt, GatherBy;
-            public bool Spawned, Struck, YouIn, YouHit, Test, FairGame;
+            public int StartedAt, NextAt, Turn, Rant, StruckAt, GatherBy, LawAt;
+            public bool Spawned, Struck, YouIn, YouHit, Test, FairGame, LawOwned;
             public uint WifeModel;
             public string Outcome;
         }
@@ -503,7 +503,10 @@ namespace EnrageWestworld.InGame
                     if (law != null)
                     {
                         c.Law = law;
-                        StagedHold(law);
+                        c.LawAt = now;
+                        _staged.Add(law.Handle);   // held from every other feature while the encounter runs (NotFree), as its other people
+                        c.LawOwned = LawTake(law.Handle);   // ours while he walks over, as the other law jobs take theirs (WestworldScript.LawTake.cs): events blocked, his task kept
+                        Log.Write("ENCOUNTER domestic: a lawman " + (int)law.Position.DistanceTo(c.Man.Position) + " m off is fetched to have a word (" + LawTakeWords(c.LawOwned) + ")");
                         TASK.TASK_GO_TO_ENTITY(law.Handle, hm, 20000, Natives.Brisk, 2f, 0f, 0);
                         Feed.Say("A lawman", Domestic.LawWord(c.HisName, c.Seed), Speech.When(law.Handle, "warned", hm), law.Handle);
                         c.Outcome = (c.Struck ? "he struck her; " : "") + "the law had a word";
@@ -580,7 +583,7 @@ namespace EnrageWestworld.InGame
                 if (p != null && !(p == c.Man && c.YouHit))
                     StagedLetGo(p, true);
             if (c.Law != null)
-                StagedLetGo(c.Law, false);   // the lawman back to the game's own rounds, no wander, as our other law jobs hand back (NIGHT4 item 6)
+                DomLawBack(c);
             if (c.Wife != null)
             {
                 bool walking = c.Hers == "leave";
@@ -590,6 +593,32 @@ namespace EnrageWestworld.InGame
             }
             _domLast = (c.WM != null ? c.WM.Name : "?") + " and " + (c.HerFull ?? "his wife") + ": " + why + (c.Test ? " (a test)" : "");
             Log.Write("ENCOUNTER domestic: over (" + why + ")");
+        }
+
+        /// The fetched lawman handed back the way the other law jobs hand theirs back (LawGiveBack: Spawner.Release, unblocked
+        /// and back to his rounds) once his walk over has had its 20 s; at once in a mission (the hand-backs don't step
+        /// then) or if he's down; one fighting you keeps that fight. One the game or a gun has had back already: only freed.
+        private void DomLawBack(DomesticRow c)
+        {
+            int h = c.Law.Handle;
+            _staged.Remove(h);
+            if (!Spawner.IsBorrowed(h))
+            {
+                if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !_director.Involves(h) && !_ring.Contains(h) && !JoinIsPending(h))   // (as StagedLetGo: one a scene, the ring or a join has now is theirs)
+                {
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+                    PED.SET_PED_KEEP_TASK(h, false);
+                }
+                return;
+            }
+            if (MISC.GET_MISSION_FLAG() || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+            {
+                _lawGiveBack.RemoveAll(kv => kv.Key == h);
+                Spawner.Release(c.Law, false);
+                return;
+            }
+            bool atYou = PED.IS_PED_IN_COMBAT(h, Game.Player.Character.Handle);
+            LawGiveBack(h, atYou ? Game.GameTime : Math.Max(Game.GameTime + 1500, c.LawAt + 20000), atYou);
         }
 
         private string DomesticStatus()

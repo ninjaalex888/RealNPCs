@@ -272,6 +272,11 @@ namespace EnrageWestworld.InGame
                     what.Add("a lawman's job (breaking up a fight)");
                     lawJob = true;
                 }
+            if (!lawJob && _lawGiveBack.Exists(kv => kv.Key == h))
+            {
+                what.Add("a lawman's job, done and waiting to be handed back");   // (the domestic's fetched lawman walking over, or a brawl's after the rope)
+                lawJob = true;
+            }
             if (lawJob)
             {
                 _lawGiveBack.RemoveAll(kv => kv.Key == h);
