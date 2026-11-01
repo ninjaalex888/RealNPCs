@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 175;
+        public const int CurrentVersion = 176;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -763,6 +763,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: new in this version: [Mind] ActThoughtEachSeconds (90) and ActThoughtGapSeconds (15): thoughts with what people choose to do come more often, and to people right beside you too; and an encounter shows both the reason for a quarrel and the first answer to it.");
                 if (s.SettingsVersion < 175)
                     log?.Invoke("Settings: new in this version: [Mind] BrawlJoinBoost (20): onlookers are readier to join a fight, so two men fighting grow into a big brawl more often (0 as before); BrawlStarterDot (on): the one who started a fight wears a red dot on the map, and stepping in against him is self-defence; and a fight is heard: after a few seconds any free lawman within 60 m comes, whether he saw it or not.");
+                if (s.SettingsVersion < 176)
+                    log?.Invoke("Settings: [Mind] ThoughtsAloud works without the AI model now: as a thought shows over someone near, what they feel most may come out aloud in their own recorded voice (a curse, a frightened word, thanks, relief).");
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -1025,7 +1027,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("HushHoursSaintDenis = " + F(HushHoursSaintDenis) + "   ; the same for Saint Denis, a city used to trouble (0-12 game hours; 0 never)");
             b.AppendLine("MindTempers = " + B(MindTempers) + "   ; (in testing) with MindLive on: someone slighted, quarrelled with or beaten in the last few hours may take it out on someone who won't hit back; and in Lemoyne's towns, where honour rules, quarrels climb a little faster and backing down costs more");
             b.AppendLine("StrainChance = " + StrainChance + "   ; with MindTempers on: someone with two or more troubles at once snaps at someone who won't hit back this percent of the time when they meet (0-100; a coward is always picked on; the timid and the loyal never snap)");
-            b.AppendLine("ThoughtsAloud = " + B(ThoughtsAloud) + "   ; (in testing) with Language on: as a thought shows over someone within 12 m, the model looks through the remarks their own voice has recorded and, if one fits, they say it aloud (most thoughts stay unspoken); the words show in the lower subtitle box when your local word list has them");
+            b.AppendLine("ThoughtsAloud = " + B(ThoughtsAloud) + "   ; as a thought shows over someone within 12 m, they may say something aloud in their own recorded voice (most thoughts stay unspoken). No AI model needed: what they feel most decides it (a curse when angry, a frightened word, thanks, relief; grief and shame stay inside). With the AI model on and a voice list for that voice, the model picks the remark that fits instead");
             b.AppendLine("LanguageUrl = " + LanguageUrl + "   ; where Ollama listens");
             b.AppendLine("LanguageModel = " + LanguageModel + "   ; the model it holds (ollama pull <name>)");
             b.AppendLine();

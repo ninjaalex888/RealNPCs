@@ -2,7 +2,8 @@
 // over the head of someone within 12 m whose voice the add-on knows, the model is asked which of that voice's own remarks
 // fits it, if any; a pick is played in their voice, with its words in the lower subtitle box when the word list has them.
 // Most thoughts stay unspoken (the model's 0). One every 20 s at most, each person once in four minutes; never someone
-// already speaking or in a scene. Behind [Mind] ThoughtsAloud, with Language and MindLive.
+// already speaking or in a scene. Behind [Mind] ThoughtsAloud and MindLive; without the model, or without a voice list for that
+// voice, the rules say it instead (AloudRules, the no-model run item 2): the strongest feeling now, a remark of that kind by name.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,9 +35,9 @@ namespace EnrageWestworld.InGame
         /// A thought just came up on someone near: ask whether they say any of it aloud.
         private void AloudAsk(TickerLine line, int now)
         {
-            if (!_cfg.ThoughtsAloud || !_cfg.MindLive || !_cfg.Language || !_langReady || _engine == null || _aloud != null || line == null || line.Kind != "near" || line.Key == null || string.IsNullOrEmpty(line.Text))
+            if (!_cfg.ThoughtsAloud || !_cfg.MindLive || _engine == null || _aloud != null || line == null || line.Kind != "near" || line.Key == null || string.IsNullOrEmpty(line.Text))
                 return;
-            if (now < _aloudNextAt || Speech.Book == null)
+            if (now < _aloudNextAt)
                 return;
             if (!Voice.Chance(line.Key + "|aloud|" + line.Text, 50))
                 return;   // half the thoughts are never offered: most stay unspoken whatever the model would say
@@ -52,12 +53,15 @@ namespace EnrageWestworld.InGame
             MindWho w;
             if (!_mindWho.TryGetValue(h, out w) || w.Id == null)
                 return;
-            string bank = Speech.BankOf(h);
-            if (bank == null)
-                return;   // a voice we can't be sure of: no list of its remarks to offer
-            List<AloudOption> options = ThoughtVoice.Options(l => Speech.Book.Takes(bank, l), (l, t) => Speech.Book.Words(bank, l, t), w.Id + "|" + now / 60000);
-            if (options.Count < 2)
+            // the model picks only with a voice list for this voice and the model answering; else the rules choose (AloudRules,
+            // the no-model run, item 2): what they feel most now, played by name so the game picks a take the voice has
+            string bank = _cfg.Language && _langReady ? Speech.BankOf(h) : null;
+            List<AloudOption> options = bank != null ? ThoughtVoice.Options(l => Speech.Book.Takes(bank, l), (l, t) => Speech.Book.Words(bank, l, t), w.Id + "|" + now / 60000) : null;
+            if (options == null || options.Count < 2)
+            {
+                AloudByRule(line.Key, h, w, now);
                 return;
+            }
             string why;
             LanguageRequest r = MindRequestOf(w, h, now, out why);
             if (r == null)
@@ -152,14 +156,56 @@ namespace EnrageWestworld.InGame
             log(head + "says " + o.Line + (o.Take > 0 ? " take " + o.Take : "") + (o.Words != null ? " (\"" + o.Words + "\")" : " (" + o.Text + ")"));
         }
 
+        private int _aloudRuleSaid, _aloudRuleKept, _aloudRuleNoLine;
+        private string _aloudRuleLast;
+
+        /// Said aloud by rule (AloudRules): their strongest feeling now, a remark of that kind by name (the game picks a take the
+        /// voice has). Counted, and the 20 s gap and the person's 4 minutes started, only when a line really played: a voice
+        /// without any of them stays quiet and the turn isn't spent.
+        private void AloudByRule(string key, int h, MindWho w, int now)
+        {
+            int kind = -1;
+            float left = 0f;
+            bool masked = false, aboutNear = false;
+            FeltAt best;
+            if (_engine.Shadow != null && _engine.Shadow.Strongest(w.Id, _store.LastGameMin, out best, out left))
+            {
+                kind = best.Kind;
+                masked = best.Masked;
+                aboutNear = best.AboutId == "player";   // Arthur is within 12 m: a reproach has its hearer
+            }
+            bool wet = !_engine.NowIndoors && (_engine.NowWeather == "rain" || _engine.NowWeather == "storm");
+            string[] set = AloudRules.Say(kind, left, masked, aboutNear, _cfg.CrudeTalk, InHisCups(new Ped(h), w.P), wet);
+            if (set == null)
+            {
+                _aloudRuleKept++;
+                return;
+            }
+            if (!Speech.SayAny(h, set, 0))
+            {
+                _aloudRuleNoLine++;
+                return;
+            }
+            _aloudAt[key] = now;
+            if (_aloudAt.Count > 200)
+                _aloudAt.Clear();
+            _aloudNextAt = now + AloudGapMs;
+            _aloudRuleSaid++;
+            _aloudRuleLast = w.Name + ": " + set[0] + (kind >= 0 ? " (" + Feeling.Kinds[kind] + ")" : "");
+            Log.Detail("MIND aloud by rule: " + _aloudRuleLast);
+        }
+
         private string AloudStatus()
         {
             if (!_cfg.ThoughtsAloud)
                 return "off ([Mind] ThoughtsAloud)";
-            if (!(_cfg.MindLive && _cfg.Language))
-                return "waiting on [Mind] Language and MindLive";
+            string rules = "by rule (no AI model needed): " + _aloudRuleSaid + " said, " + _aloudRuleKept + " kept in, " + _aloudRuleNoLine + " with no such line in their voice" + (_aloudRuleLast != null ? " (last: " + _aloudRuleLast + ")" : "");
+            if (!_cfg.MindLive)
+                return "waiting on [Mind] MindLive";
+            if (!_cfg.Language)
+                return rules;
             return (_langReady ? "on" : "on, the server not ready") + ": " + _aloudAsked + " asked, " + _aloudSaid + " said aloud, " + _aloudKept + " kept in, " + _aloudLate + " late, " + _aloudUnread + " unreadable" +
-                   (Speech.Book != null ? "; voices known " + Speech.Book.BankCount + ", words for " + Speech.Book.WordCount + " recordings" : "") + (_aloudLast != null ? "; last: " + _aloudLast : "");
+                   (Speech.Book != null ? "; voices known " + Speech.Book.BankCount + ", words for " + Speech.Book.WordCount + " recordings" : "") + (_aloudLast != null ? "; last: " + _aloudLast : "") + "; " + rules;
         }
     }
 }

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Thoughts said aloud, without the AI model** (`[Mind] ThoughtsAloud`, on). As a thought shows over someone within 12 m, what they feel most may come out aloud in their own recorded voice: a curse when they are angry (a disapproving sound with CrudeTalk off), "shame on you" at the one they despise close by, a frightened word, thanks, relief, things going well; drunk talk, or grumbling at the rain, when nothing stronger is on them. Grief, shame, guilt, pride, envy and pity stay inside, and so does anything they hide. The game picks a recording their voice has, so it needs no voice list; one every 20 s at most, each person once in 4 minutes, about half of thoughts never offered. With the AI model on and a voice list for that voice, the model picks as before. F7 TEST aloud counts "by rule". Not yet seen in game (settings version 176).
+
 ## 0.7.14 (2026-11-01)
 
 Fights that grow into brawls, a red dot on whoever started it, and the law that hears a fight.
