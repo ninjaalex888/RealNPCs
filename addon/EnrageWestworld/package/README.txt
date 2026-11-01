@@ -40,8 +40,18 @@ anywhere, and there's no account and no cost. Everything the model writes is che
 written line is used instead, so the game never waits on it. It's still in testing, so expect
 the odd strange line.
 
-What you need: a graphics card with about 5 GB of memory free beside RDR2 (a 12 GB card or
-more; RealNPCs is developed on a 16 GB card), and about 5 GB of disk space.
+What you need, only if you add the model: a graphics card with about 5 GB of memory free
+beside RDR2 (a 12 GB card or more; RealNPCs is developed on a 16 GB card), and about 5 GB of
+disk space. Graphics card memory, with RDR2 on medium settings:
+- 12 GB or more (e.g. RTX 3060 12 GB, 4070, RX 6700 XT): recommended; the game and the model
+  fit with room to spare.
+- 10 GB (e.g. RTX 3080 10 GB): workable at medium settings at 1080p; tight at higher settings.
+- 8 GB or less: too tight for the model beside the game: play without it. Everything still
+  works.
+- No room to spare: RealNPCs runs fully on its own written lines.
+A slower card can still run the model: answers just come a little later (under half a second
+on a fast card, about a second or more on a mid-range one), and any answer that takes longer
+than 2.5 seconds is replaced by the written line, so the game never waits for it.
 
 Set it up once:
 1. Install Ollama from https://ollama.com/download and leave it running (it sits in the
