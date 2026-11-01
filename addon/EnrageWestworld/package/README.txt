@@ -62,7 +62,7 @@ Set it up once:
 3. Start the game. RealNPCs finds Ollama and the model by itself and turns the AI model on,
    with a one-time notice saying so. Within a few seconds, people near you start thinking in
    the model's words.
-4. To check it's working, open the settings panel (Alt+R): AI MODEL (OLLAMA) at the top of the
+4. To check it's working, open the settings panel (Alt+F): AI MODEL (OLLAMA) at the top of the
    Essentials page shows whether it's on and answering. Turn it off there whenever you like;
    once you've turned it off, RealNPCs leaves it off.
 
@@ -1414,8 +1414,8 @@ in the file. The new ones:
             Subtitles (on | off): what people say to you, on the game's subtitle line while their voice
                 plays (the game's own Subtitles option has to be on too)
             TestKey (F7), FlirtKey (None), WakeKey (Y), ReaderKey (N), ReloadIni (true),
-            ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel (enRAGE 0.9.5.3 only),
-            SettingsKey (Alt+R) and SettingsKey2 (Alt+F) open and close it with any enRAGE version,
+            ReplaceEnrageSettings (false): true lets Alt+F11 open the RealNPCs panel (enRAGE 0.9.5.3 only),
+            SettingsKey (Alt+F) opens and closes it with any enRAGE version (SettingsKey2: a second key, None),
             PanelSlowsTime (true), PanelTimeScale (0.25): the world slows to a quarter speed while the
             panel is open, as it does for the weapon wheel (never in a story mission)
 All the older options are still there and work the same.
@@ -1423,8 +1423,8 @@ All the older options are still there and work the same.
 
 KEYS
 ----
-Alt+R     the RealNPCs settings panel (all RealNPCs and enRAGE settings; SettingsKey). Alt+F
-          (SettingsKey2) opens it too, and either closes it again. Its Testing page lists everything
+Alt+F     the RealNPCs settings panel (all RealNPCs and enRAGE settings; SettingsKey), and it closes
+          it again (SettingsKey2 can be a second key). Its Testing page lists everything
           RealNPCs can make happen near you now, by group: Enter on a row sets its key, Space fires it
           (the panel closes first; on a gamepad, A fires it), Delete leaves it without a key. A key
           another test has already moves to the new one and leaves that test without a key; one of
@@ -1436,7 +1436,7 @@ Alt+R     the RealNPCs settings panel (all RealNPCs and enRAGE settings; Setting
           "Bring the test cast here" brings eight people the tests need (a mother,
           two old men, a preacher and a listener, three men for a bully) to stroll about a spot 10 m in
           front of you; they're kept in the save, so the same people come each time, and
-          "Let the test cast go" takes them away. There is also a row that wipes every NPC's memory (Enter twice). Alt+F11 opens it as well, but
+          "Let the test cast go" takes them away. There is also a row that wipes every NPC's memory (Enter twice). With ReplaceEnrageSettings on, Alt+F11 opens it too, but
           only on enRAGE 0.9.5.3; on other versions Alt+F11 opens enRAGE's own.
           About 15 seconds after loading, a notice says which key to use.
 RB+D-pad  on a controller: hold RB and press D-pad up for the settings panel, left for F7, right
