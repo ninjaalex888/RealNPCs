@@ -59,21 +59,16 @@ namespace EnrageWestworld.InGame
 
         /// Hands someone borrowed back with no orders of ours (aimed at: the game's own answer to the gun takes over):
         /// unblocked, KEEP_TASK off, nothing cleared and no wander given.
-        public static unsafe void GiveToGame(int h)
+        public static void GiveToGame(int h)
         {
             if (!Borrowed.Contains(h))
                 return;
-            bool light = Light.Contains(h), cast = Cast.Contains(h);
             Quiet.Add(h);
-            GiveBack(h);   // out of ours, stood up, unblocked; quiet: no tasks cleared, no wander
-            if (!ENTITY.DOES_ENTITY_EXIST(h))
-                return;
-            PED.SET_PED_KEEP_TASK(h, false);
-            if (!light && !cast)
-                ENTITY.SET_PED_AS_NO_LONGER_NEEDED(&h);
+            GiveBack(h);   // out of ours, stood up, unblocked, KEEP_TASK off, no longer needed; quiet: no tasks cleared, no wander
         }
 
-        /// Hands someone borrowed back to the game, going about their day again.
+        /// Hands someone borrowed back to the game, going about their day again (quiet: with whatever orders they have now;
+        /// still KEEP_TASK off and no longer needed, so one fully borrowed is never left a mission entity nobody holds).
         private static unsafe void GiveBack(int h)
         {
             Ours.Remove(h);
@@ -83,11 +78,10 @@ namespace EnrageWestworld.InGame
                 return;
             StandUp(h);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
-            if (quiet)
-                return;   // enRAGE's own orders stand
-            TASK.CLEAR_PED_TASKS(h, true, false);
+            if (!quiet)
+                TASK.CLEAR_PED_TASKS(h, true, false);   // quiet: enRAGE's own orders stand (a fight, an interrogation)
             PED.SET_PED_KEEP_TASK(h, false);
-            if (!ENTITY.IS_ENTITY_DEAD(h))
+            if (!quiet && !ENTITY.IS_ENTITY_DEAD(h))
                 TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // going about their day, not left standing where we put them
             if (light || Cast.Contains(h))
                 return;   // one of enRAGE's records: never "no longer needed" (that could let the game clear one enRAGE spawned); one of the test cast stays ours to keep
