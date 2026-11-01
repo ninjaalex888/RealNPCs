@@ -453,7 +453,7 @@ namespace EnrageWestworld.InGame
         /// One pair's reason played: the cast, the trouble kinds' settings and their fallback, the scene, the ladder, the
         /// walk-over, the barkeep, someone stepping in, a bystander. Shared by the Director's own pick (ReasonScene) and a
         /// person's own (the model's pick, WestworldScript.MindScenes.cs; `by` says so in the log). False when it can't be played.
-        private bool PlayPairReason(PairReason pr, Ped me, bool saloon, int now, bool side, string by, bool asSecond = false)
+        private bool PlayPairReason(PairReason pr, Ped me, bool saloon, int now, bool side, string by, bool asSecond = false, bool writtenWhy = false)
         {
             Ped first = pr.Why.BFirst ? pr.B.Ped : pr.A.Ped, second = pr.Why.BFirst ? pr.A.Ped : pr.B.Ped;
             string seed = first.Handle + "|" + second.Handle + "|" + now / 60000;
@@ -510,6 +510,8 @@ namespace EnrageWestworld.InGame
                     return false;
                 NotePlayedReason(pr, doer, asWords);
                 NoteMainScene(s.Kind, Math.Min(pr.A.Ped.Position.DistanceTo(me.Position), pr.B.Ped.Position.DistanceTo(me.Position)), false);
+                if (writtenWhy)
+                    ReasonThought(pr, me, seed, cast);   // a start of their own mind's, by rule: the written why (the no-model run, item 3)
                 return true;
             }
             if (side)
@@ -533,7 +535,7 @@ namespace EnrageWestworld.InGame
                 return false;   // not begun: nothing counted, nobody rested (the review; ChanceScene notes only after a start too)
             NotePlayedReason(pr, doer, asWords);
             NoteMainScene(s.Kind, Math.Min(pr.A.Ped.Position.DistanceTo(me.Position), pr.B.Ped.Position.DistanceTo(me.Position)), false);
-            if (by == null)
+            if (by == null || writtenWhy)
                 ReasonThought(pr, me, seed, cast);   // why, over the one whose reason it is (a mind's own pick has the model's thought)
             return true;
         }
@@ -747,7 +749,9 @@ namespace EnrageWestworld.InGame
                 case "brawl":
                     // a man in a chair the game won't let go of never comes to blows, even pulled out of it (Lex, 2026-10-30:
                     // Bryant and David sat through their own brawl); words between them instead
-                    return PED.IS_PED_USING_ANY_SCENARIO(first.Handle) || PED.IS_PED_USING_ANY_SCENARIO(second.Handle) ? "one of them is sat or leaning" : null;
+                    // With [Mind] SeatedBrawls (on, 2026-11-01) they get up first, Rockstar's way (Director.FightOrder: the exit flag, asked
+                    // again, pulled only past 8 s; Game/ScenarioExit.cs): in a saloon nearly everyone is sat or leaning (Lex, Valentine)
+                    return !_cfg.SeatedBrawls && (PED.IS_PED_USING_ANY_SCENARIO(first.Handle) || PED.IS_PED_USING_ANY_SCENARIO(second.Handle)) ? "one of them is sat or leaning" : null;
                 case "drunk":
                     if (!_cfg.DrunkChallenges) return "DrunkChallenges is off";
                     return STREAMING.DOES_ANIM_DICT_EXIST(Director.DrunkDict) ? null : "this game is missing the drunk-dueler animation set";

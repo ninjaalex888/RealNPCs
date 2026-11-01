@@ -467,8 +467,8 @@ namespace EnrageWestworld.InGame
                 w.ModelThought = false;   // a new choice: no thought has come with it yet
                 if (!quiet && MindChosenQuietly(h))
                     _mindChoseQuietly++;   // the law, a child, the story's own: chosen for the mind's sake, never an act tried (NIGHT4 fix 4)
-                else if (!quiet && !PickAsk(w, h, now, c))
-                    MindActOn(w, h, now);   // and now they do it (WestworldScript.MindActs.cs; the NPC-life run); or the model picks first (WestworldScript.Picks.cs)
+                else if (!quiet && !PickAsk(w, h, now, c) && !MindSelfStart(w, h, now))
+                    MindActOn(w, h, now);   // the model not asked: a reason of their own may start a scene first (WestworldScript.MindScenes.cs; the no-model run, item 3)   // and now they do it (WestworldScript.MindActs.cs; the NPC-life run); or the model picks first (WestworldScript.Picks.cs)
             }
             else if (!quiet && _cfg.MindRetries && _cfg.MindLive && _cfg.MindActs && MindRetry.Should(w.ChoiceActed, w.ActWhyNot) && w.Retries < MindRetriesMost && !Choosing.CarriesOn(w.Choice) &&
                      now - w.ChoiceTriedAt >= ChooseMs - 1000 && !_pending.Exists(x => x.Handle == h) && !MindChosenQuietly(h))

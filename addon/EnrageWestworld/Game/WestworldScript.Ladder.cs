@@ -37,7 +37,7 @@ namespace EnrageWestworld.InGame
             Scene s = LadderSceneOf(old, first, second, doer, done, cast, seed, matter, people, now, force);
             // the ladder came to blows between two who are sat or leaning: the chair keeps them (Lex, 2026-10-30), so the
             // quarrel stays words
-            if (s != null && s != old && s.Fight && (PED.IS_PED_USING_ANY_SCENARIO(first.Handle) || PED.IS_PED_USING_ANY_SCENARIO(second.Handle)))
+            if (s != null && s != old && s.Fight && !_cfg.SeatedBrawls && (PED.IS_PED_USING_ANY_SCENARIO(first.Handle) || PED.IS_PED_USING_ANY_SCENARIO(second.Handle)))
             {
                 Log.Write("LADDER would come to blows, but one of them is sat or leaning: words only");
                 return old.Fight ? Scenes.Argue(cast, seed) : old;

@@ -26,11 +26,11 @@ namespace EnrageWestworld.InGame
         private string _mindSceneLast;
 
         /// Why a person's own pick can't start a scene now (the street's own rails, as the Director's tick has them), or null.
-        private string MindSceneWhyNot(bool test = false)
+        private string MindSceneWhyNot(bool test = false, bool onTop = false)
         {
             if (!test && !_cfg.MindStartsScenes) return "off ([Mind] MindStartsScenes)";
             if (!_cfg.Drama) return "street scenes are off";
-            if (_director.Busy) return "a street scene is going on";
+            if (_director.Busy && !onTop) return "a street scene is going on";
             if (_stalker != null || _wedding != null || _theft != null || _plea != null || _visitor != null) return "something else has the street";
             if (_interiorType != 0 && _placeKind != "saloon") return "indoors";
             if (_missionPaused) return "a mission";
@@ -166,9 +166,63 @@ namespace EnrageWestworld.InGame
             return "nobody near with a reason of their own to start a scene (named people with ties, worries or a quarrel, within the street's reach)";
         }
 
+        private const int SelfStartGapMs = 60000;   // at most one scene a minute started by a mind's own reason, by rule (on top of the street's)
+        private int _selfStartNextAt, _selfStartWeighed, _selfStartStarted, _selfStartPassed;
+        private string _selfStartLast;
+
+        /// Without the model: someone near with a new choice may go to start a scene from a reason of their own instead (the
+        /// no-model run, item 3; Reasons.SelfStartPull). On top of the street's own scenes (Lex, 2026-11-01): the first slot if
+        /// it's free, else the second ([Scenes] MainScenesAtOnce), never past them; once a minute at most; the street's rails as
+        /// for a pick. True when a scene began (their everyday choice waits).
+        private bool MindSelfStart(MindWho w, int h, int now)
+        {
+            if (!_cfg.MindStartsScenes || w == null || w.Id == null || (now < _selfStartNextAt && now >= _selfStartNextAt - SelfStartGapMs))
+                return false;
+            bool second = _director.Busy;
+            if (second && (SceneSlots.Mains(_cfg.MainScenesAtOnce) < 2 || _director.SecondBusy))
+                return false;   // both slots taken: never past the scenes-at-once limits
+            if (MindSceneWhyNot(false, true) != null)
+                return false;
+            List<KeyValuePair<PairReason, string>> mine = MindReasonsFor(w.Id, now);
+            if (mine.Count == 0)
+                return false;
+            FeltAt felt;
+            float left;
+            string urge = _engine.Shadow != null && _engine.Shadow.Strongest(w.Id, _store.LastGameMin, out felt, out left) ? felt.Urge : null;
+            KeyValuePair<PairReason, string> best = default(KeyValuePair<PairReason, string>);
+            float pull = 0f;
+            foreach (KeyValuePair<PairReason, string> kv in mine)
+            {
+                float p = Reasons.SelfStartPull(kv.Key.Why, w.Traits, urge);
+                if (p > pull)
+                {
+                    pull = p;
+                    best = kv;
+                }
+            }
+            _selfStartWeighed++;
+            if (best.Key == null || !Reasons.SelfStarts(pull, w.Id + "|" + now / 60000))
+            {
+                _selfStartPassed++;
+                return false;
+            }
+            PairReason pr = best.Key;
+            if (!pr.A.Ped.Exists() || pr.A.Ped.IsDead || !pr.B.Ped.Exists() || pr.B.Ped.IsDead || NotFree(pr.A.Ped.Handle) || NotFree(pr.B.Ped.Handle))
+                return false;
+            if (!PlayPairReason(pr, Game.Player.Character, _placeKind == "saloon", now, false, "their own mind", second, true))
+                return false;
+            _selfStartNextAt = now + SelfStartGapMs;
+            _selfStartStarted++;
+            _mindScenesStarted++;
+            _selfStartLast = w.Name + " " + best.Value + (second ? " (beside the street's scene)" : "");
+            Log.Write("MIND starts: " + w.Name + " " + best.Value + " (their own mind, pull " + pull.ToString("0.00") + (second ? ", as the second scene" : "") + ")");
+            return true;
+        }
+
         private string MindScenesStatus()
         {
-            return (_cfg.MindStartsScenes ? "on" : "off ([Mind] MindStartsScenes)") + ": offered in " + _mindScenesOffer + " picks, picked " + _mindScenesPicked + ", started " + _mindScenesStarted +
+            return (_cfg.MindStartsScenes ? "on" : "off ([Mind] MindStartsScenes)") + ": by their own minds without the model " + _selfStartStarted + " started of " + _selfStartWeighed + " weighed (" + _selfStartPassed + " not moved enough)" + (_selfStartLast != null ? ", last: " + _selfStartLast : "") +
+                   "; with the model: offered in " + _mindScenesOffer + " picks, picked " + _mindScenesPicked + ", started " + _mindScenesStarted +
                    ", not now " + _mindScenesFailed + ", far pairs in chairs not offered " + _mindFarHeldSkipped + (_mindSceneLast != null ? "; last: " + _mindSceneLast : "");
         }
     }

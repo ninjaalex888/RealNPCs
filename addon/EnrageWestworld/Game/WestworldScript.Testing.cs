@@ -531,7 +531,8 @@ namespace EnrageWestworld.InGame
                     float apart = a.Ped.Position.DistanceTo(b.Ped.Position);
                     if (apart > 10f)
                     {
-                        last = "the nearest pairs are over 10 m apart";
+                        if (last == null)
+                            last = "the nearest pairs are over 10 m apart";   // a close pair's own reason first, never hidden by a far one (Lex, 2026-11-01)
                         continue;
                     }
                     string wont = PairWont(kind, a.Who, b.Who) ?? SceneNeeds(kind, a.Who, b.Who);
