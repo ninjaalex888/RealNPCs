@@ -1112,6 +1112,9 @@ in the file. The new ones:
 [Display]   FeelingBars (true): bars under people near you for their fear, fondness and anger,
             FeelingBarsMetres (15), FeelingBarsShowEmpty (false): the empty part of each bar too,
             GrudgeMeter (true): the "Sore at you" panel, top right,
+            VramGauge (model; on, off): a small gauge at the top left, how much of your graphics
+            card's memory is in use (VRAM 11.3 / 15.6 GB, as Task Manager counts it), amber over
+            85%, red over 95%; model shows it only while the AI model is on,
             NameCards (known; off, everyone): names over the heads of people RealNPCs knows, in
             the game's title type, NameCardsMetres (25), NameCardsKnownMetres (75),
             NameCardsAlways (true): a name over everyone in range, hidden only by walls,
