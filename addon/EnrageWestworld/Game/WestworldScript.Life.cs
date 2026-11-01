@@ -145,6 +145,7 @@ namespace EnrageWestworld.InGame
             // the chance meeting first when it's due and nobody has a strong reason (NIGHT4 fix 7, [Scenes] ChanceFirst: it got one
             // main slot in an evening, since a reason always came first, and it carries the songs, tales, haggling and standoffs)
             List<PairReason> found = null;
+            bool chanceTried = false;
             if (_cfg.ChanceFirst && pool.Count >= 2 && now >= _nextChance)
             {
                 List<Candidate> people = ReasonCandidates(me, now);
@@ -153,6 +154,7 @@ namespace EnrageWestworld.InGame
                 if (strongest < ChanceFirstBelow)
                 {
                     _chanceFirstTried++;
+                    chanceTried = true;
                     if (ChanceScene(pool, me, saloon, now))
                     {
                         _chanceFirstPlayed++;
@@ -163,7 +165,8 @@ namespace EnrageWestworld.InGame
             // first, two people near you who have a reason to have something to do with each other (Reasons.cs)
             if (ReasonScene(me, saloon, now, found: found))
                 return;
-            ChanceScene(pool, me, saloon, now);
+            if (!chanceTried)
+                ChanceScene(pool, me, saloon, now);   // (not twice in a tick: ChanceFirst's turn already tried it)
         }
 
         private const int ChanceFirstBelow = 50;

@@ -361,7 +361,7 @@ namespace EnrageWestworld.InGame
                 case "sight":
                     return SightFire(now, out skipped);
                 case "seatedlook":
-                    skipped = "their choice (a watch is used), the 1.5 s gap and the acts at once; the look at you every 10 s still holds";
+                    skipped = "their choice (a watch is used), the 1.5 s gap, the acts at once and the one look at you every 10 s";
                     return SeatedLookTest(now);   // WestworldScript.MindActs.cs
                 case "nod":
                     return NodFire(now, out skipped);

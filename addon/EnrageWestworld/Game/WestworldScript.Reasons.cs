@@ -429,7 +429,7 @@ namespace EnrageWestworld.InGame
             if (all == 0)
                 return "no main scenes yet";
             return all + " main scenes (" + _mainChance + " chance meetings; " + _chanceFirstPlayed + " of " + _chanceFirstTried + " chance-first turns played" + (_cfg.ChanceFirst ? "" : ", [Scenes] ChanceFirst off") +
-                   "; " + _farHeldSkipped + " far pairs in chairs passed over): " +
+                   "; far pairs in chairs passed over " + _farHeldSkipped + " times): " +
                    string.Join(", ", _mainKinds.OrderByDescending(kv => kv.Value).Take(10).Select(kv => kv.Key + " " + kv.Value + " (" + (int)(_mainMetres[kv.Key] / kv.Value) + " m)"));
         }
 
