@@ -70,7 +70,7 @@ namespace EnrageWestworld.InGame
         private static readonly string[][] SharedPages =
         {
             new[] { "West World and stalkers", "WestWorld", "Stalkers" },
-            new[] { "The world and its people", "World", "Features" },
+            new[] { "World and people", "World", "Features" },
             new[] { "Pacing, files and the log", "Pacing", "Quiet", "Output" },
         };
         private static readonly Dictionary<string, string> OurTitles = new Dictionary<string, string>

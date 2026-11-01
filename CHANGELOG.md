@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The settings panel's "The world and its people" page is called "World and people" now.
+
 ## 0.7.12 (2026-11-01)
 
 People get up and go about what their minds choose, two street scenes play at once, a storyteller keeps the world lively, three encounters come from the game's own, more people deal with you, and violence against Arthur is on as it comes. None of it needs the AI model.

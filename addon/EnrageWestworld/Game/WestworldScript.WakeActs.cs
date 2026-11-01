@@ -1553,7 +1553,7 @@ namespace EnrageWestworld.InGame
             bool midGetUp = act.Kind == "getup" && act.Phase == 0 && act.Exit != null;
             if (midGetUp && !ENTITY.IS_ENTITY_DEAD(h))
                 ScenarioExit.Dropped(act.Exit, Game.GameTime, _wakeAborting, why ?? (_wakeAborting ? "a mission or stopping" : "ended"));
-            // someone still in a scenario (sat, leaning, at the bar, or put back after a get-up) is left in it: a bare clear is
+            // someone whose scenario holds them yet (sat, leaning, at the bar, or put back after a get-up) is left in it: a bare clear is
             // what stopped people's scenario clips and froze them in the pose (2026-11-01, Game/ScenarioExit.cs)
             if (!act.Passive && !act.LeaveOrders && !midGetUp && act.Kind != "glance" && act.Kind != "lookaround" && !ENTITY.IS_ENTITY_DEAD(h) && !PED.IS_PED_USING_ANY_SCENARIO(h))
             {

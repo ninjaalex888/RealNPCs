@@ -3,10 +3,10 @@
 // standing smokers and bar drinkers as well as the seated, stayed in their scenario or stood frozen in its pose, and were
 // left as they were. Rockstar's scripts never do that (the study, script_rel):
 //   the soft exit   the scenario's exit flag, then the next task the same tick, no clear between (av_fox_sit.c 1949:
-//                   NORMAL_EXIT then TASK_STAND_STILL; barcustomer_interaction.c 863: NORMAL_EXIT then TASK_USE_SCENARIO_POINT)
+//                   the normal exit flag, then stand still; barcustomer_interaction.c 863: the normal exit, then back to a point)
 //   the second ask  a soft clear only while ACTIVE_IN_SCENARIO(p, 0) and not EXITING_SCENARIO(p, 1), never mid-exit
 //                   (cv_amb_whisper_sit.c 10468, beat_street_fight.c 4694); the IMMEDIATE flag first (cv_amb_light_smoke func_384)
-//   the hard pull   IMMEDIATE_EXIT, CLEAR_PED_TASKS_IMMEDIATELY(p, true, true), DETACH_ENTITY if attached
+//   the hard pull   the immediate exit flag, every task cleared at once (both flags true), detached if attached
 //                   (cv_amb_whisper_sit.c 4082, cornwall1_outro.c 804, beat_street_fight.c 17060), the next task the same tick
 //   "out"           not using the scenario and not exiting it (barcustomer_interaction.c 825)
 // And never left frozen: whoever isn't out in time is put back (their own point, their type in place, or a wander), looked at
@@ -204,7 +204,7 @@ namespace EnrageWestworld.InGame
         }
 
         /// Pulled out of a scenario, then `next` the same tick (no idle pose between). Off camera (past 100 m, or the screen faded)
-        /// Rockstar's forced way: the immediate exit flag, CLEAR_PED_TASKS_IMMEDIATELY, detached if attached (cv_amb_whisper_sit.c
+        /// Rockstar's forced way: the immediate exit flag, their tasks cleared at once, detached if attached (cv_amb_whisper_sit.c
         /// 4082). In view never that (the immediate clear off a bar is what T-posed a man, 2026-10-30): the immediate flag and a
         /// soft clear (cv_amb_light_smoke func_384, whisper_sit 10468). Returns the branch, for the log.
         public static string Pull(int h, System.Action<int> next)
