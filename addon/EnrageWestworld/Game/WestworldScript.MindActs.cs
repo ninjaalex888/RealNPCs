@@ -38,6 +38,7 @@ namespace EnrageWestworld.InGame
             public uint PointHash;
             public Vector3 PointAt, StartAt;
             public string PointType, FromType;
+            public ExitAsk Exit;        // the get-up's ask out of the scenario (Game/ScenarioExit.cs): what they were in, the path, the flags
             public bool Blocked;        // events blocked for the get-up, as the waking's Take (unblocked once up and sent on, or let go)
             public bool S1Begun;        // began as a stage-1 start (a get-up, or a standing rest/meal/drink/work by type): counted
                                         // against MindScenarios.AtOnce until it ends, walks to a place, home or a talk included (the review)

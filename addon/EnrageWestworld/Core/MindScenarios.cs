@@ -20,9 +20,14 @@ namespace EnrageWestworld.Core
         public const int AtOnce = 3;                         // getting up or walking to a point at once
         public const float ApartMetres = 8f;                 // never two starting within this of each other (never a street at once)
         public const int FailRestMs = 240000;                // a person the seat kept, or with no point near, is left 4 min
-        // ---- the get-up (the waking's exactly, WakeHold.cs "getup": events blocked, one non-immediate clear, the flag polled, 9 s
-        // at most; once up, stood still 3 s and the next order 2.5 s on. The review: no re-ask, it starts the getting up over) ----
+        // ---- the get-up (shared with the waking's, WakeHold.cs "getup"; the natives in Game/ScenarioExit.cs). Rockstar's way
+        // (av_fox_sit.c, barcustomer_interaction.c): the scenario's exit flag, then the next task the same tick, never a bare
+        // clear (Lex, 2026-11-01, Valentine: of 23 asked up by one CLEAR_PED_TASKS, 20 stayed put or froze in the pose,
+        // standing smokers and bar drinkers too). Up once neither in a scenario nor exiting it; asked once more at 4 s,
+        // Rockstar's guarded way, only if they never began the exit; at 9 s (12 s if mid-exit) put back in a scenario, never
+        // left as is, and looked at again 3 s on. Once up, stood still 3 s and the next order 2.5 s on ----
         public const int UpMostMs = 9000, PollMs = 250, StandMs = 3000, SendAfterUpMs = 2500;
+        public const int ReaskAtMs = 4000, ExitGraceMs = 3000, RestoreCheckMs = 3000;
         // ---- the walk and the hold ----
         public const float PointMetres = 15f, PointFromYou = 1.5f;
         public const int ReachMinMs = 12000, ReachPerMetreMs = 1000, HoldMinMs = 60000, HoldSpanMs = 90000;
@@ -330,15 +335,43 @@ namespace EnrageWestworld.Core
             return HoldMinMs + (int)(seed % (uint)(HoldSpanMs + 1));
         }
 
-        /// The getting-up step's decision, from the scenario flag and the time since the one ask: "up" (stood still, then sent
-        /// on), "kept" (9 s: the seat kept them, give up, never pulled, never asked again), or null (wait). As the waking's.
-        public static string UpStep(bool inScenario, int sinceAskMs)
+        /// The getting-up step's decision, from the game's scenario flags and the time since the ask: "up" (out of the scenario
+        /// and not exiting it: stood still, then sent on), "reask" (4 s on and they never began the exit: once, Rockstar's
+        /// guarded way), "restore" (9 s still in it, or 12 s still exiting: put back in a scenario, never left frozen), or null
+        /// (wait; never asked again mid-exit). As the waking's.
+        public static string UpStep(bool usingAny, bool exiting, bool active, int sinceAskMs, bool askedTwice)
         {
-            if (!inScenario)
+            if (!usingAny && !exiting)
                 return "up";
+            if (exiting)
+                return sinceAskMs >= UpMostMs + ExitGraceMs ? "restore" : null;
             if (sinceAskMs >= UpMostMs)
-                return "kept";
+                return "restore";
+            if (!askedTwice && active && sinceAskMs >= ReaskAtMs)
+                return "reask";
             return null;
+        }
+
+        /// A chair, bench, steps or table type: never started in place (it needs the seat under them; their own point, or a
+        /// wander, instead).
+        public static bool SeatType(string name)
+        {
+            if (name == null)
+                return false;
+            string k = Kind(name);
+            return k == Seat || k == Table || name.StartsWith("PROP_HUMAN_SEAT_", StringComparison.Ordinal) || name.StartsWith("GENERIC_SEAT_", StringComparison.Ordinal) ||
+                   name.StartsWith("PROP_CAMP_SEAT_", StringComparison.Ordinal);
+        }
+
+        /// How someone the scenario kept is put back: their own point again when it's there and free (or still theirs), else
+        /// their type in place where they stand (never a seat type), else on their way.
+        public static string RestorePick(bool pointOk, bool seatType, bool hasType)
+        {
+            if (pointOk)
+                return "point";
+            if (hasType && !seatType)
+                return "in place";
+            return "wander";
         }
     }
 }

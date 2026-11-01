@@ -135,6 +135,7 @@ namespace EnrageWestworld.InGame
         private void WanderLaterClear()
         {
             _wanderLater.Clear();
+            ScenarioExit.Clear();   // and the looks at those put back after a get-up (every caller: a mission, a wipe, stopping)
         }
 
         private string SabbathStatus()

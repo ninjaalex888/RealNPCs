@@ -1,13 +1,14 @@
 // Stage 1 of 0.7.12 (NIGHT4 queue item 3; Lex, 2026-10-31: "people near Arthur visibly act on their own minds"): the
 // mind's everyday choices acted through the game's own scenarios (Core/MindScenarios.cs has the pure parts). Someone sat
-// or leaning whose choice gets them up is asked up the waking's way exactly (WakeHold.cs "getup": events blocked as its
-// Take, one CLEAR_PED_TASKS, never the immediate one, the scenario flag polled, 9 s at most, no re-ask; once up, stood
-// still 3 s and the next order 2.5 s on), then goes on to it: a bench, a chair, the steps, a wall, a post, a rail, the bar, a table, a broom, found by type
+// or leaning whose choice gets them up is asked up Rockstar's way, as the waking's (Game/ScenarioExit.cs: events blocked as
+// its Take, the scenario's exit flag and a stand-still the same tick, never a bare clear; asked once more at 4 s only if they
+// never began the exit; at 9 s put back in their scenario, never left frozen; once up, stood still 3 s and the next order
+// 2.5 s on), then goes on to it: a bench, a chair, the steps, a wall, a post, a rail, the bar, a table, a broom, found by type
 // (FIND_SCENARIO_OF_TYPE_HASH, Rockstar's ambient_load pattern: find by type, check it exists and is free, use it), or the
 // saloon, the store, the church, home, a stroll, someone to talk to (two already talking first). Standing people's rests,
 // meals, drinks and work go by type too, where before the nearest point of any kind was taken (work became a smoke). One
-// start every 4-6 s near you, three at once, never two within 8 m; a chair that never lets go is left be (counted), never
-// pulled; each let go to the game's own ambient life when done. Behind [Mind] MindActsScenarios (with MindLive, MindActs).
+// start every 4-6 s near you, three at once, never two within 8 m; someone not out in time is put back (counted, and
+// looked at 3 s on); each let go to the game's own ambient life when done. Behind [Mind] MindActsScenarios (with MindLive, MindActs).
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<string, int> _s1Lost = new Dictionary<string, int>();
         private readonly Dictionary<string, int> _s1TypeFound = new Dictionary<string, int>(), _s1TypeNone = new Dictionary<string, int>();
         private string _s1Last;
-        private const string S1Kept = "the seat kept them (9 s)", S1NoPoint = "no fitting point near (typed)", S1Never = "never reached the point", S1Nothing = "up, but nothing to go to",
+        private const string S1Kept = "not out of their scenario in time: put back", S1NoPoint = "no fitting point near (typed)", S1Never = "never reached the point", S1Nothing = "up, but nothing to go to",
                              S1Taken = "the game took them (a fight, a flee, a fall) or enRAGE";
         // points they never reached, skipped by the next searches for a while (the review: no navmesh route, the same point each time)
         private const int S1BadPoints = 8, S1BadPointMs = 300000;
@@ -47,6 +48,14 @@ namespace EnrageWestworld.InGame
                 if (_s1BadPoint[i] == p && now < _s1BadUntil[i] && _s1BadUntil[i] - now <= S1BadPointMs)
                     return true;
             return false;
+        }
+
+        // ScenarioExit.Step's "another feature has them now": the look at someone put back after a get-up is left alone (made once)
+        private Func<int, bool> _exitBusy;
+
+        private bool ExitBusy(int h)
+        {
+            return _director.Involves(h) || InTalk(h) || IsStaged(h) || IsMindActing(h) || !CanDirect(new Ped(h)) || S1GameHasThem(h);   // nobody else's, enRAGE's included (MayDirect's rule)
         }
 
         private void S1Lose(string why)
@@ -287,7 +296,9 @@ namespace EnrageWestworld.InGame
                 return LostNoFoe;
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);   // the waking's Take: nothing pulls them back to the point or into a reaction halfway out
             a.Blocked = true;
-            TASK.CLEAR_PED_TASKS(h, true, false);   // up the game's own way, never pulled out (the waking's: a man pulled off a bar went into a T pose)
+            // up Rockstar's way: the exit flag (toward the point, when there is one) and the stand-still the same tick, no
+            // clear (a bare clear froze 20 of 23 in Valentine, 2026-11-01; ScenarioExit.cs)
+            a.Exit = ScenarioExit.Ask(h, w.Name, "MIND", a.Point != 0 ? (Vector3?)a.PointAt : null, now);
             Spawner.StandUp(h);
             a.Until = now + MindScenarios.UpMostMs + 60000;
             _mindActs.Add(a);
@@ -296,7 +307,7 @@ namespace EnrageWestworld.InGame
                 S1Started(w, now);
             NoteMindAct(kind + ", gets up");
             _mindActLast = w.Name + " gets up to " + Choosing.WordsOf(kind);
-            Log.Write("MIND gets up: " + w.Name + " (" + a.FromType + ") -> " + Choosing.WordsOf(kind) + (a.PointType != null ? ", to " + a.PointType : "") + " (" + (test ? "the Testing row" : w.ChoiceWhy) + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
+            Log.Write("MIND gets up: " + w.Name + " (" + a.FromType + ") -> " + Choosing.WordsOf(kind) + (a.PointType != null ? ", to " + a.PointType : "") + " (" + (test ? "the Testing row" : w.ChoiceWhy) + ", " + (int)at.DistanceTo(me.Position) + " m from you; exit " + a.Exit.Path + ")");
             return null;
         }
 
@@ -383,7 +394,7 @@ namespace EnrageWestworld.InGame
                 }
                 if (a.GettingUp)
                 {
-                    string step = MindScenarios.UpStep(PED.IS_PED_USING_ANY_SCENARIO(h), now - a.UpAskedAt);
+                    string step = ScenarioExit.Poll(a.Exit, now);   // the flags logged on change; the one second ask made there
                     if (step == "up")
                     {
                         a.GettingUp = false;
@@ -392,12 +403,13 @@ namespace EnrageWestworld.InGame
                         TASK.TASK_STAND_STILL(h, MindScenarios.StandMs);   // on their feet: 3 s stood, the next order 2.5 s on (the waking's Phase 1, exactly)
                         a.SendAt = now + MindScenarios.SendAfterUpMs;
                         a.NextPoll = a.SendAt;
-                        Log.Detail("MIND acts: " + a.Name + " is up from " + a.FromType + " in " + (now - a.UpAskedAt) / 100 / 10.0 + " s");
+                        Log.Write("MIND up: " + a.Name + " from " + a.FromType + " (" + ScenarioExit.UpWords(a.Exit, now) + ")");
                         return 1;
                     }
-                    if (step == "kept")
+                    if (step == "restore")
                     {
-                        // the chair never let go (Reasons.cs: some never do): left be, never pulled, and not asked again for a while
+                        // not out in time: put back in their scenario (their point, their type in place, or a wander), never left
+                        // as is, looked at again 3 s on (ScenarioExit.Step); not asked again for a while
                         MindWho kw;
                         if (_mindWho.TryGetValue(h, out kw))
                         {
@@ -405,7 +417,7 @@ namespace EnrageWestworld.InGame
                             kw.ActWhyNot = S1Kept;
                         }
                         S1Lose(S1Kept);
-                        Log.Write("MIND gave up: " + a.Name + " the seat kept them (" + a.FromType + ", " + MindScenarios.UpMostMs / 1000 + " s)");
+                        ScenarioExit.Restore(a.Exit, now);
                         return 2;
                     }
                     return 1;
@@ -493,7 +505,7 @@ namespace EnrageWestworld.InGame
         private string S1Status()
         {
             if (!_cfg.MindActsScenarios)
-                return "getting up and the game's own spots off ([Mind] MindActsScenarios)";
+                return "getting up and the game's own spots off ([Mind] MindActsScenarios); " + ScenarioExit.Status();
             float nearest;
             int active = S1Active(Game.Player.Character.Position, out nearest);
             return "stage 1: " + _s1Starts + " started, got up " + _s1GotUp + (_s1GotUp > 0 ? " (" + (_s1UpMsSum / _s1GotUp) / 100 / 10.0 + " s on average)" : "") + ", walked to a point " + _s1Walked +
@@ -501,7 +513,8 @@ namespace EnrageWestworld.InGame
                    ", joined two talking " + _s1Joined + ", stopped to watch you " + _s1Watched +
                    "; failed: " + (_s1Lost.Count == 0 ? "none" : string.Join(", ", _s1Lost.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
                    "; getting up or on the way now (to a point, the bar, home or a talk) " + active + " of " + MindScenarios.AtOnce + " (one start every " + MindScenarios.GapMs / 1000 + "-" + (MindScenarios.GapMs + MindScenarios.GapJitterMs) / 1000 + " s, never two within " + (int)MindScenarios.ApartMetres + " m)" +
-                   "; types found " + _s1TypeFound.Count + ", never found here " + _s1TypeNone.Keys.Count(k => !_s1TypeFound.ContainsKey(k)) + (_s1Last != null ? "; last: " + _s1Last : "");
+                   "; types found " + _s1TypeFound.Count + ", never found here " + _s1TypeNone.Keys.Count(k => !_s1TypeFound.ContainsKey(k)) + (_s1Last != null ? "; last: " + _s1Last : "") +
+                   "; " + ScenarioExit.Status();
         }
 
         /// The Testing row: the nearest person the mind knows who is sat or leaning, free, within 15 m, gets up for their own

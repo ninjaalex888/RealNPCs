@@ -508,7 +508,7 @@ namespace EnrageWestworld.InGame
             }
             // someone still sitting where they fell gets up as the scene ends, whatever ended it, and goes on their way
             if (l.Sat >= 0 && l.Sat < l.Cast.Length && l.Cast[l.Sat] != null && l.Cast[l.Sat].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[l.Sat].Handle))
-                TASK.CLEAR_PED_TASKS(l.Cast[l.Sat].Handle, true, false);
+                ScenarioExit.SoftUp(l.Cast[l.Sat].Handle, x => TASK.TASK_WANDER_STANDARD(x, 10f, 10));   // the exit flag and the wander the same tick (Game/ScenarioExit.cs)
             if ((l.Scene.Kind == "help" || l.Scene.Kind == "passby") && l.Cast.Length > 1 && l.Cast[1] != null && l.Cast[1].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[1].Handle) &&
                 !PED.IS_PED_USING_ANY_SCENARIO(l.Cast[1].Handle))
                 TASK.TASK_WANDER_STANDARD(l.Cast[1].Handle, 10f, 10);
@@ -1052,8 +1052,10 @@ namespace EnrageWestworld.InGame
                     return 600;
                 case "fight":
                     l.WasFighting = true;
-                    TASK.CLEAR_PED_TASKS(h, true, false);
-                    TASK.CLEAR_PED_TASKS(t, true, false);
+                    // up off the bar or a seat Rockstar's way: the exit flag and a stand-still the same tick, never a bare clear
+                    // (it froze people in the pose, 2026-11-01; Game/ScenarioExit.cs); the fight is ordered once they're up
+                    ScenarioExit.SoftUp(h, x => TASK.TASK_STAND_STILL(x, 2000));
+                    ScenarioExit.SoftUp(t, x => TASK.TASK_STAND_STILL(x, 2000));
                     uint fists = Natives.Hash("WEAPON_UNARMED");
                     foreach (Ped p in l.Cast.Take(2))
                         WEAPON.SET_CURRENT_PED_WEAPON(p.Handle, fists, true, 0, false, false);
@@ -1196,7 +1198,7 @@ namespace EnrageWestworld.InGame
                 case "getup":
                     if (l.Sat == who)
                         l.Sat = -1;
-                    TASK.CLEAR_PED_TASKS(h, true, false);
+                    ScenarioExit.SoftUp(h, x => TASK.TASK_STAND_STILL(x, 2200));   // up off the ground Rockstar's way: the exit flag and the next task, no bare clear
                     if (l.Scene.Kind == "help" || l.Scene.Kind == "passby")
                         Report(l, l.Scene.Kind);   // helped up, or left to get up alone: it happened
                     return 2200;
@@ -1622,16 +1624,19 @@ namespace EnrageWestworld.InGame
             {
                 if (!PED.IS_PED_USING_ANY_SCENARIO(p))
                     continue;
-                up = false;
-                // still leaning or sat: asked again to get up the game's way; pulled out at once only past 8 s, and the fight
-                // ordered on a later tick (Lex, 2026-10-30: a man pulled off the bar after 3 s went into a T pose)
+                // still leaning or sat: asked again Rockstar's guarded way (never mid-exit); pulled out only past 8 s, Rockstar's
+                // forced way (the immediate exit flag, the clear, detached), with the fight given the same tick: no idle pose
+                // between (Lex, 2026-10-30: a man pulled off the bar went into a T pose; the flag and the detach were missing)
                 if (now - l.FightAskedAt > 8000)
                 {
-                    TASK.CLEAR_PED_TASKS_IMMEDIATELY(p, false, true);
+                    ScenarioExit.Pull(p);
+                    TASK.TASK_COMBAT_PED(p, p == l.FightA ? l.FightB : l.FightA, 0, 16);
                     Log.Write("SCENE fight: " + (p == l.FightA ? l.Names[0] : l.Names[1]) + " was still sat or leaning " + (now - l.FightAskedAt) / 1000 + " s after the word: pulled out of it");
+                    continue;
                 }
-                else if (now - l.FightAskedAt > 4000)
-                    TASK.CLEAR_PED_TASKS(p, true, false);
+                up = false;
+                if (now - l.FightAskedAt > 4000)
+                    ScenarioExit.Reask(p, x => TASK.TASK_STAND_STILL(x, 4000));
             }
             if (!up)
             {

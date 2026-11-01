@@ -51,6 +51,7 @@ namespace EnrageWestworld.InGame
             public float ShotPoint;         // despair: the shot's point in its clip (0-1): the clip's own event when it names one, else the set point
             public string ShotEvent;        // despair: that event's name, or null
             public bool ClipOn, ClipSeen, ClipSped, ShotDone, ClipRetried, Borrowed, Sobbed, LeaveOrders;   // LeaveOrders: let be for enRAGE's sake, so its orders stay; Borrowed: taken over for despair's last steps (handed back in EndWakeAct); Sobbed: the last words said sobbing
+            public ExitAsk Exit;            // getup: the ask out of the scenario (Game/ScenarioExit.cs)
             public Person P;
             public PersonState St;
             public Resident Res;
@@ -1547,7 +1548,9 @@ namespace EnrageWestworld.InGame
                 WEAPON.REMOVE_WEAPON_FROM_PED(h, Natives.Hash(act.Weapon), true, TakeReason);   // never left holding what we gave them
             else if (act.Ending == "despair" && act.Method == "gun" && act.Phase >= 4 && !ENTITY.IS_ENTITY_DEAD(h))
                 WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);   // stopped with their own gun out: put away
-            if (!act.Passive && !act.LeaveOrders && act.Kind != "glance" && act.Kind != "lookaround" && !ENTITY.IS_ENTITY_DEAD(h))
+            // someone still in a scenario (sat, leaning, at the bar, or put back after a get-up) is left in it: a bare clear is
+            // what stopped people's scenario clips and froze them in the pose (2026-11-01, Game/ScenarioExit.cs)
+            if (!act.Passive && !act.LeaveOrders && act.Kind != "glance" && act.Kind != "lookaround" && !ENTITY.IS_ENTITY_DEAD(h) && !PED.IS_PED_USING_ANY_SCENARIO(h))
             {
                 TASK.CLEAR_PED_TASKS(h, true, false);
                 if (act.SaverHeeded)

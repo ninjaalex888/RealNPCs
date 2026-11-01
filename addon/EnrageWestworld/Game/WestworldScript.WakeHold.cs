@@ -218,8 +218,10 @@ namespace EnrageWestworld.InGame
                     if (!PED.IS_PED_USING_ANY_SCENARIO(h))
                         return false;
                     Take(act);
-                    TASK.CLEAR_PED_TASKS(h, true, false);   // up the game's own way, never pulled out (a man pulled off a bar went into a T pose)
-                    act.Until = now + 9000;
+                    // up Rockstar's way: the exit flag and a stand-still the same tick, never a bare clear (it froze people in the
+                    // pose, 2026-11-01) and never pulled out (a man pulled off a bar went into a T pose); put back if not out in time
+                    act.Exit = ScenarioExit.Ask(h, act.Name, "WAKE", null, now);
+                    act.Until = now + MindScenarios.UpMostMs + MindScenarios.ExitGraceMs + 1000;   // the restore (StepOdd) comes first
                     return true;
                 case "preach":
                 {
@@ -298,11 +300,22 @@ namespace EnrageWestworld.InGame
                     StepLashOut(act, me, now);
                     break;
                 case "getup":
-                    if (act.Phase == 0 && !PED.IS_PED_USING_ANY_SCENARIO(h))
+                    if (act.Phase == 0 && act.Exit != null)
                     {
-                        act.Phase = 1;   // on their feet: a moment stood, then the next link is a standing one
-                        TASK.TASK_STAND_STILL(h, 3000);
-                        act.Until = Math.Min(act.Until, now + 2500);
+                        string up = ScenarioExit.Poll(act.Exit, now);   // out of it and not exiting; the one guarded second ask made there
+                        if (up == "up")
+                        {
+                            act.Phase = 1;   // on their feet: a moment stood, then the next link is a standing one
+                            TASK.TASK_STAND_STILL(h, 3000);
+                            act.Until = Math.Min(act.Until, now + 2500);
+                            Log.Write("WAKE up: " + act.Name + " from " + ScenarioExit.TypeWords(act.Exit) + " (" + ScenarioExit.UpWords(act.Exit, now) + ")");
+                        }
+                        else if (up == "restore")
+                        {
+                            act.Phase = 2;   // not out in time: put back in their scenario, never left frozen; the link ends (a sat one next, or handed back)
+                            ScenarioExit.Restore(act.Exit, now);
+                            act.Until = now;
+                        }
                     }
                     break;
                 case "preach":
