@@ -104,12 +104,10 @@ namespace EnrageWestworld.InGame
                         noId++;
                         continue;
                     }
-                    if (w.Traits == null && lasts && w.Src != null)
-                        w.Traits = _engine.Shadow.TraitsOf(w.Src);   // worked out now (they were skipped until something else had)
-                    if (w.Traits == null)
+                    if (w.Traits == null && !lasts)
                     {
                         noTraits++;
-                        continue;
+                        continue;   // as before the switch: skipped until something else has worked them out
                     }
                     int at;
                     if (!test && _youNodAt.TryGetValue(w.Id, out at) && now - at >= 0 && now - at < YouNodAgainMs)
@@ -124,6 +122,13 @@ namespace EnrageWestworld.InGame
                     if (a == null)
                     {
                         noFeel++;
+                        continue;
+                    }
+                    if (w.Traits == null && w.Src != null)
+                        w.Traits = _engine.Shadow.TraitsOf(w.Src);   // worked out only for one who feels something (the frame-cost review: not a crowd at once)
+                    if (w.Traits == null)
+                    {
+                        noTraits++;
                         continue;
                     }
                     if (_director.Involves(h) || _director.Leaving(h) || IsOnlooking(h) || IsRescuer(h))

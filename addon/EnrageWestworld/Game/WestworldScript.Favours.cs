@@ -108,8 +108,8 @@ namespace EnrageWestworld.InGame
             foreach (int h in _mindNear)
             {
                 MindWho w;
-                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null)
-                    continue;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || w.TradeGroup == "law")
+                    continue;   // a lawman on duty never comes begging
                 // the pure tests first: the worry at its worst and mendable, before any native
                 string worry;
                 int stage;
@@ -133,7 +133,7 @@ namespace EnrageWestworld.InGame
                     continue;   // a woman doesn't walk up to a man after dark or in a saloon
                 Ped p = new Ped(h);
                 float metres = p.Position.DistanceTo(mePos);
-                if (metres > FavourMetres || !NodInView(me, p) || MayDirectWhyNot(p) != null || NotFree(h) || _director.Involves(h) || PED.IS_PED_USING_ANY_SCENARIO(h))
+                if (metres > FavourMetres || !NodInView(me, p) || MayDirectWhyNot(p) != null || NotFree(h) || _director.Involves(h) || PED.IS_PED_USING_ANY_SCENARIO(h) || Natives.IsLaw(p))
                     continue;
                 string temper = w.Src != null ? w.Src.Temper : null, regard = SightRegard(p, w.Id);
                 bool knows = _engine.KnowsYourName(w.Id), kind = Interact.KindLately(_store.WorldLog, w.Id, g);
@@ -190,7 +190,7 @@ namespace EnrageWestworld.InGame
             StagedSettle(w.Ask, "favour", now);   // the model's answer, if it came (else the mind's own stands)
             if (_menu != null && _menu.Handle == h)
             {
-                if (w.SaidAt == 0 && w.Ask.Picked != "holdback")
+                if (w.SaidAt == 0 && w.Ask.Picked != "holdback" && w.Ask.Picked != "coin")
                 {
                     FavourTold(w);   // Talk before they'd said it: they tell it now (the menu lists the fix)
                     TalkRefreshOptions();
@@ -241,7 +241,8 @@ namespace EnrageWestworld.InGame
                         FavourLetGo(h);
                         return;
                     }
-                    FavourTold(w);
+                    if (pick != "coin")
+                        FavourTold(w);   // a dollar asked: they haven't told the trouble, so Talk keeps its plain dollar (the review)
                 }
                 else if (now > w.Until)
                 {

@@ -13,6 +13,7 @@ namespace EnrageWestworld.Core
     {
         public const string Saw = "saw", Grudge = "grudge", Law = "law";
         public const float Cowed = 0.3f;   // fear of him at least this (the mood's fading) and nobody has it out with him
+        public const float GrudgeAnger = 0.45f;   // w2: anger at him still this strong (the mood's fading), not a bump's lingering
 
         /// Whether they'd warn him at all (w2, w3): never someone afraid of him or against him; someone fond of him, grateful
         /// to him, or a loyal soul who has met him.
@@ -24,8 +25,9 @@ namespace EnrageWestworld.Core
         }
 
         /// The mind's table for the fact, in a fixed order. w1: haveitout (only the hot and the proud, not cowed), stare,
-        /// letbe. w2/w3: warn, hint, letbe. Every temper can let it be and do one thing more.
-        public static Staged.Weights Weights(string fact, StagedMind m, bool cowed)
+        /// letbe. w2/w3: warn, hint, letbe. Every temper can let it be and do one thing more. `knowsDanger` false (w2, no
+        /// tie between the warner and the grudge-holder): no warning by name, only the hint.
+        public static Staged.Weights Weights(string fact, StagedMind m, bool cowed, bool knowsDanger = true)
         {
             string t = m != null ? m.Temper : null;
             bool sore = m != null && m.Mood == "sore";
@@ -43,7 +45,7 @@ namespace EnrageWestworld.Core
                 int warn = 3 + (t == "Loyal" ? 2 : 0) + (fond ? 2 : 0) - (t == "Coward" ? 2 : 0);
                 int hint = 2 + (t == "Coward" ? 2 : 0) + (t == "Cold" || t == "Proud" ? 1 : 0);
                 int let = 1 + (t == "Cold" ? 2 : 0) + (t == "Greedy" ? 2 : 0);
-                w.Add("warn", warn < 1 ? 1 : warn).Add("hint", hint).Add("letbe", let);
+                w.Add("warn", fact == Grudge && !knowsDanger ? 0 : warn < 1 ? 1 : warn).Add("hint", hint).Add("letbe", let);
             }
             return w.Clamp();
         }
@@ -55,8 +57,8 @@ namespace EnrageWestworld.Core
             {
                 case "haveitout": return "walk up and tell him to his face what you think of what he did";
                 case "stare": return "stare him down from where you stand, and say nothing";
-                case "warn": return fact == Law ? "walk over and tell him quietly the law is asking after him" : "walk over and tell him quietly " + (danger ?? "a man") + " means him harm";
-                case "hint": return fact == Law ? "catch his eye and look toward the lawman, with a word" : "catch his eye and look toward " + (danger ?? "the man") + ", with a word";
+                case "warn": return fact == Law ? "walk over and tell him quietly the law is asking after him" : "walk over and tell him quietly " + (danger ?? "someone near") + " means him harm";
+                case "hint": return fact == Law ? "catch his eye and look toward the lawman, with a word" : "catch his eye and look toward " + (danger ?? "the one glaring at him") + ", with a word";
                 default: return "let it be; it's none of your business";
             }
         }
@@ -69,7 +71,7 @@ namespace EnrageWestworld.Core
             {
                 case Saw: return "You saw " + him + " do violence in " + (town ?? "town") + " today; he has stopped near you.";
                 case Law: return "The law in " + (town ?? "town") + " is asking about something " + him + " did; a lawman is close, and " + him + " has stopped near you.";
-                default: return "You know " + (danger ?? "a man near here") + " means " + him + " harm; " + him + " has stopped near you.";
+                default: return (danger != null ? "You know " + danger : "You've seen someone near here who") + " means " + him + " harm; " + him + " has stopped near you.";
             }
         }
 
@@ -89,8 +91,8 @@ namespace EnrageWestworld.Core
                     if (fact == Law)
                         return Pick(seed, "A word, " + m + ". The deputy's asking about that business" + (place != null ? " " + place : "") + ". I'd keep moving.",
                                     "The law's been asking after the man who did that" + (place != null ? " " + place : "") + ", " + m + ". Figured you'd want to hear it.");
-                    return Pick(seed, (danger ?? "A fellow") + " was asking where you'd got to, " + m + ". I'd not stand about.",
-                                "Watch yourself, " + m + ". " + (danger ?? "A man near here") + " has it in for you, and he's not far off.");
+                    return Pick(seed, (danger ?? "Somebody") + " was asking where you'd got to, " + m + ". I'd not stand about.",
+                                "Watch yourself, " + m + ". " + (danger ?? "Somebody near here") + " has it in for you, and isn't far off.");
                 case "hint":
                     return fact == Law ? Pick(seed, "Law's about, " + m + ". That's all.", "I'd mind that badge, " + m + ".")
                                        : Pick(seed, "Mind who's at your back, " + m + ".", "Wouldn't linger here, " + m + ". That's all I'll say.");
