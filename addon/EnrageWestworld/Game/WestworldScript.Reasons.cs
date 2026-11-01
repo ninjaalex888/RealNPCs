@@ -246,7 +246,7 @@ namespace EnrageWestworld.InGame
                     SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(a.Id) && t.Has(b.Id));
                     Reason why = Reasons.Between(a, b, tie, day, now, where, link);
                     why = PlanLean(why, a, b);   // a plan between them (WestworldScript.Plans.cs)
-                    if (why != null && PairPlayedLately(a.Id, b.Id, why.Kind))
+                    if (why != null && (PairPlayedLately(a.Id, b.Id, why.Kind) || PairCantLately(a.Id, b.Id, why.Kind)))
                         why = null;   // the same reason between the same two, played lately: not again so soon (Pearl and Frank, four times in two minutes)
                     if (why != null && _cfg.MindLive && _cfg.MindMeetings)
                         MeetLean(why, people[i], people[j]);   // their moods today lean which reason the street plays (Core/Reasons.Mood.cs)
@@ -317,6 +317,29 @@ namespace EnrageWestworld.InGame
             _pairPlayed[PairKey(a, b, kind)] = _store.LastGameMin;
         }
 
+        // pairs whose reason couldn't be played at all (no fallback the game side could take), by game minute: passed over for
+        // PairCantRestMinutes, so they stop writing the same line and stop holding one of ReasonScene's four tries (NIGHT4
+        // fix 1: Jacob Cash and Nolan Cutler, refused twelve times in an evening)
+        private readonly Dictionary<string, long> _pairCant = new Dictionary<string, long>();
+        private const long PairCantRestMinutes = 20;   // about 40 real seconds
+        private int _reasonCant, _reasonWords;
+
+        private bool PairCantLately(string a, string b, string kind)
+        {
+            long at;
+            long g = _store.LastGameMin;
+            return a != null && b != null && _pairCant.TryGetValue(PairKey(a, b, kind), out at) && g - at >= 0 && g - at < PairCantRestMinutes;
+        }
+
+        private void NotePairCant(string a, string b, string kind)
+        {
+            if (a == null || b == null)
+                return;
+            if (_pairCant.Count > 300)
+                _pairCant.Clear();
+            _pairCant[PairKey(a, b, kind)] = _store.LastGameMin;
+        }
+
         /// The strongest reason near the player that he can see, played as a scene. False if there's none.
         /// side: a quiet talk beside the scene (SideScene): only people clear allows, standing together already, and only a
         /// scene Director.Quiet allows, without the walk-over, the ladder, the barkeep or anyone stepping in.
@@ -351,14 +374,19 @@ namespace EnrageWestworld.InGame
             Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
             // the trouble scenes (Scenes.Trouble.cs): each needs its setting, and the rough move a surface by the victim;
             // when one can't be played the reason falls back (a fistfight, or words) or the pair is passed over
-            string cant = TroubleCant(kind, first, second, cast);
-            if (cant != null)
+            // (blows between two where one is sat or leaning are had out in words, the matter kept: Reasons.Settle; NIGHT4 fix 1)
+            string note;
+            string played = Reasons.Settle(kind, pr.Why.Fallback, k => TroubleCant(k, first, second, cast), out note);
+            if (note != null)
+                Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + note);
+            if (played == null)
             {
-                Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + kind + " can't be played (" + cant + ")" + (pr.Why.Fallback != null ? ", so " + pr.Why.Fallback : ""));
-                if (pr.Why.Fallback == null || TroubleCant(pr.Why.Fallback, first, second, cast) != null)
-                    return false;
-                kind = pr.Why.Fallback;
+                _reasonCant++;
+                NotePairCant(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);   // passed over for a while: no more log lines, and its Take(4) slot goes to another pair
+                return false;
             }
+            bool asWords = played != kind && played == "argue" && (kind == "brawl" || kind == "rough");
+            kind = played;
             if (cast.Off.Contains(kind) || (kind == "debt" && !_cfg.Debts) || (kind == "hosts" && cast.HostTier < 0) || (kind == "gossip" && cast.Rumours.Count == 0))
                 return false;
             if (_hush && by == null && !side && TownMood.Hushed(kind))
@@ -379,6 +407,8 @@ namespace EnrageWestworld.InGame
                       (by != null ? "; " + by : "") + ")");
             List<Ped> cast2 = new List<Ped> { first, second };
             NotePairPlayed(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);
+            if (asWords)
+                _reasonWords++;   // blows the chair kept to words (F7 TEST reasons)
             if (side)
                 return StartScene(s, cast2, cast, seed, now, side: true);
             Scene unladdered = s;
@@ -744,6 +774,7 @@ namespace EnrageWestworld.InGame
             int now = Game.GameTime;
             int fought = _restMsOf.Keys.Count(h => Resting(h, now));
             string sat = fought > 0 ? fought + " who came to blows sitting it out (" + (int)(FoughtRestMs / Math.Max(1f, _cfg.TroubleWeight) / 60000) + " min); " : "";
+            sat += (_reasonWords > 0 ? _reasonWords + " blows played as words this session (one of them sat or leaning); " : "") + (_reasonCant > 0 ? _reasonCant + " reasons that couldn't be played passed over a while; " : "");
             List<Candidate> people = ReasonCandidates(me, now);
             if (people.Count < 2)
                 return sat + people.Count + " named people free near you; no pairs";

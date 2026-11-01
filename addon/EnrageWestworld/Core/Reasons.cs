@@ -143,7 +143,7 @@ namespace EnrageWestworld.Core
                         return new Reason { Kind = "rough", Fallback = "brawl", Strength = 72 - 10 * tie.Warmth, BFirst = !Rough(a.Temper),
                                             Why = "their quarrel comes to blows, and " + (Rough(a.Temper) ? a.Name : b.Name) + " has the temper to do it rough" };
                     // the first time words; then it picks up again (and may be made up: Exchanges); two hot men, blows
-                    return new Reason { Kind = blows ? "brawl" : tie.Stage >= 1 || tie.Kind != "argue" ? "x:quarrel" : "argue", Strength = 70 - 10 * tie.Warmth,
+                    return new Reason { Kind = blows ? "brawl" : tie.Stage >= 1 || tie.Kind != "argue" ? "x:quarrel" : "argue", Fallback = blows ? "argue" : null, Strength = 70 - 10 * tie.Warmth,
                                         Why = blows ? "their quarrel comes to blows" : "their quarrel picks up again" };
                 }
                 // a friend of someone grieving (word of a friend's death in the last three days) offers sympathy, the first
@@ -207,6 +207,32 @@ namespace EnrageWestworld.Core
             return s;   // (a sore day is these added up already: not counted again)
         }
 
+        /// What is played of a reason the game side may refuse (`cant`: why a kind can't be played with these two now, or null):
+        /// the reason's own kind, else its fallback, else words. Blows always fall back to words (a brawl between two where
+        /// one is sat or leaning: they have it out in words, the matter kept), and so does a rough move that falls back to a
+        /// brawl that can't be played either. Null when nothing can be played; `note` says what was done, for the log.
+        public static string Settle(string kind, string fallback, Func<string, string> cant, out string note)
+        {
+            note = null;
+            string why = cant != null ? cant(kind) : null;
+            if (why == null)
+                return kind;
+            string next = fallback ?? (kind == "brawl" ? "argue" : null);
+            note = kind + " can't be played (" + why + ")";
+            for (int i = 0; i < 2 && next != null; i++)
+            {
+                string why2 = cant(next);
+                if (why2 == null)
+                {
+                    note += next == "argue" && (kind == "brawl" || kind == "rough") ? ", so played as words" : ", so " + next;
+                    return next;
+                }
+                note += "; nor " + next + " (" + why2 + ")";
+                next = next == "brawl" ? "argue" : null;
+            }
+            return null;
+        }
+
         /// The two ids in a fixed order, so a roll between them is the same whichever comes first in a scan.
         private static string PairKey(Someone a, Someone b)
         {
@@ -230,7 +256,7 @@ namespace EnrageWestworld.Core
                 bool hot = Hot(x);
                 // a hot man at the worst of it snaps at a man who won't take it: it comes to blows
                 if (hot && Hot(y) && MayFight(x, y, where, "snap" + gameDay) && Voice.Chance(x.Id + gameDay + "snapblows", Weighted(35, where.Trouble)))   // was 20 (Lex, 2026-10-28: brawls often)
-                    all.Add(new Reason { Kind = "brawl", Strength = 56, Matter = "nothing", Why = x.Name + " is at the worst of it (" + kind + ") and snaps at " + y.Name + ", who won't take it" });
+                    all.Add(new Reason { Kind = "brawl", Fallback = "argue", Strength = 56, Matter = "nothing", Why = x.Name + " is at the worst of it (" + kind + ") and snaps at " + y.Name + ", who won't take it" });
                 else
                     all.Add(new Reason { Kind = "x:snap", Strength = hot ? 55 : 45, Why = x.Name + " is at the worst of it (" + kind + ")" });
             }
@@ -294,7 +320,7 @@ namespace EnrageWestworld.Core
                 else if (twoMen && Voice.Hash(x.Id + y.Id + gameDay + "drough") % 100 < RoughChance)
                     all.Add(new Reason { Kind = "rough", Fallback = "brawl", Strength = 57, Matter = "drink", Why = x.Name + " has drink and temper in him, and does it rough" });
                 else
-                    all.Add(new Reason { Kind = "brawl", Strength = 56, Matter = "drink", Why = x.Name + " has drink and temper in him, and " + y.Name + " answers it" });
+                    all.Add(new Reason { Kind = "brawl", Fallback = "argue", Strength = 56, Matter = "drink", Why = x.Name + " has drink and temper in him, and " + y.Name + " answers it" });
             }
             else if (x.Temper == "Hothead" && twoMen && where.Saloon && where.Trouble > 0f)
             {
@@ -318,7 +344,7 @@ namespace EnrageWestworld.Core
                 int full = where.Saloon ? HotBloodSaloonChance : HotBloodStreetChance;
                 int pct = hx && (hy || y.Temper == "Cold") || hy && x.Temper == "Cold" ? full : hx || hy ? full / 2 : full / 4;
                 if (Voice.Chance(PairKey(x, y) + gameDay + "hotblood", Weighted(pct, where.Trouble)))
-                    all.Add(new Reason { Kind = "brawl", Strength = where.Saloon ? 50 : 47,
+                    all.Add(new Reason { Kind = "brawl", Fallback = "argue", Strength = where.Saloon ? 50 : 47,
                                          Why = hx && hy ? x.Name + " and " + y.Name + " are both hot-blooded, and neither will give way"
                                              : hx || hy ? (hx ? x.Name : y.Name) + " has a temper, and " + (hx ? y.Name : x.Name) + " won't be pushed"
                                              : x.Name + " and " + y.Name + " rub each other the wrong way, and neither will give way" });

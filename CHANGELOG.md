@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Quarrels in a chair are had out in words.** When two people with a reason to come to blows can't, because one of them is sat or leaning, they have it out in words over the same matter instead of nothing happening. A pair that can't be played at all is passed over for a while, so others nearby get their turn.
+
 ## 0.7.11 (2026-10-31)
 
 Talk to people, brawls that grow, a braver town, the stalker in black, and the free AI model that turns itself on.
