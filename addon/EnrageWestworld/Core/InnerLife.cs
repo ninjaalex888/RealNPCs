@@ -227,21 +227,49 @@ namespace EnrageWestworld.Core
             "I know that face. Know it from here. Every time, from right here.",
             "Third time, or fourth. I've stopped pretending I don't notice him.",
             "Back again, that one. The town's got used to him. I haven't.", "That stranger, and still a stranger. Some men stay one on purpose.",
-            "Him again. The dog knows him now. The dog's a better judge than me.", "Back once more. Every time he comes the paper has something new in it.", "That one again. I'd give a dollar to know what he's after in this town.", "Seen him so often now I'd miss him if he stopped coming. Odd thing to think."
+            "Him again. The dog knows him now. The dog's a better judge than me.", "Back once more. Every time he comes the paper has something new in it.", "That one again. I'd give a dollar to know what he's after in this town.", "Seen him so often now I'd miss him if he stopped coming. Odd thing to think.",
+            // the no-model run, item 6 (2026-11-01): more of them, so a town regular's second look isn't the first one again
+            "Him again. I'd know that walk in a crowd of a hundred.", "There he is. Every time I see him I tell myself I won't look.", "Back, and nobody sent for him. That's how it always is with him.",
+            "Same stranger. Same way of reading the street before he steps into it.", "Him. The last time he was here, something happened after. Can't say what. Something.", "I've seen him enough to know his horse before I know him.",
+            "He comes, he goes, the town talks a week, then he comes again.", "That one. I described him to my wife once. She knew him at once.", "Back. Looks older than last time, or I do.",
+            "Him again. I keep meaning to ask where he's from, and I keep not asking.", "There's that man. Children stop playing when he passes. I notice that.", "He's back. I'd hoped the road had swallowed him. I'd hoped it hadn't, too.",
+            "That stranger. Walks in like he's come to collect, every time.", "Knew he'd be back. Men like that circle the same towns like hawks.", "Him again. Bought a drink last time and never touched it. I remember things like that.",
+            "Back in {town}. The sheriff will find a reason to stand on his porch now.", "I'd swear he's looking for someone. The same faces he studies every time.", "That one again. Gives the same short nod. I've started giving it back.",
+            "Saw him out past the last houses at dawn once. Didn't think he slept.", "Him. Familiar the way a scar's familiar.", "Every time he's here the night's louder. Could be chance. Could be him.",
+            "He's back, and the street goes careful. I go careful with it.", "Knew the hat before I knew the man. Now I know both.", "That fellow again. Mud of three counties on him this time.",
+            "Never stays long enough to be a neighbour, never gone long enough to be forgotten.", "That one's back. Wonder if he ever thinks of this town when he's gone. Doubt it.", "Seen him come in quiet and leave loud. Today it's quiet, so far.",
+            "Him again, and me pretending to be busy again."
         };
 
         private static readonly string[] SeenArmed =
         {
             "Gun hand never far from the gun. Not for show. For use.", "Holster's worn smooth at the edge. That's years of drawing.", "Doesn't lift the gun. Doesn't need to. The weight shows in how he stands.",
             "Two guns. One's for show, or he's twice as dangerous as he looks.", "Rifle on the saddle, pistol on the hip. Prepared for weather I can't see.", "Coat cut away from the holster. Somebody tailored that on purpose.",
-            "Gun's clean and the rest of him isn't. Says what he looks after.", "Thumb sits on the hammer while he stands and looks about. Doesn't seem to know it's there.", "Wears it high on the belt, butt forward, cavalry fashion. Not a farmer's way of carrying it."
+            "Gun's clean and the rest of him isn't. Says what he looks after.", "Thumb sits on the hammer while he stands and looks about. Doesn't seem to know it's there.", "Wears it high on the belt, butt forward, cavalry fashion. Not a farmer's way of carrying it.",
+            "Wears the gun like other men wear a watch. Without a thought for it.", "Hand drifts to the holster when a door bangs. Then away again, slow.", "Belt's full of cartridges. Expecting a long day or a short war.",
+            "Never seen him draw. Don't care to.", "The gun's old. Older than him, maybe. Somebody's before it was his.", "Keeps his gun side to the wall when he can. I've watched him do it.",
+            "That rifle's had its stock mended. Broke it on something. Or someone.", "He has the look of a man who's been shot at and didn't care for it.", "Carries more iron than the blacksmith's apron.",
+            "Even with his hands empty he looks armed.", "Knife on the belt as well. A man who doesn't like to run short.", "Gun's oiled. You can smell it from here. He looks after what keeps him breathing.",
+            "Holster tied down at the thigh. Not a townsman's habit.", "He shifts the gun belt when he sits, like it's part of sitting.", "There's a nick in the grip. I'd like the story. I'd hate to hear it.",
+            "Doesn't wave the gun about. The ones who wave it are the ones you laugh at later."
         };
 
         private static readonly string[] SeenMounted =
         {
             "Sits that horse like a chair. Never been afraid of it, or never shows.", "Horse is better fed than half this street.", "Horse is watching me. Rider isn't. Somehow that's worse.",
             "Reins loose in one hand. The horse does the thinking and he lets it.", "Rides a horse that's been somewhere. Scars on the chest, calm in the eye.", "Looks down from the saddle like the street's a map he's already read.",
-            "Horse stands square while he looks about. Well broke, or well frightened.", "Dismounts on the far side from me. Keeps the horse between us. Careful man.", "Saddle's worth more than the horse. Or he stole one of them."
+            "Horse stands square while he looks about. Well broke, or well frightened.", "Dismounts on the far side from me. Keeps the horse between us. Careful man.", "Saddle's worth more than the horse. Or he stole one of them.",
+            "Rides in slow. A man in a hurry gets noticed. He wants to be noticed less.", "Horse is lathered at the neck. Came a long way, or came fast.", "Good animal. Good animals cost money, and money comes from somewhere.",
+            "Sits easy, but his eyes don't. Up and down the street twice before he lets the horse walk on.", "That horse has carried trouble before. You can see it in how it stands for nothing.", "Saddlebags heavy. Wouldn't care to guess with what.",
+            "He talks to the horse. Low, so nobody else hears. Kinder to it than to people, I'd wager.", "Horse throws its head by the gunsmith's. Smells powder, or remembers it.", "Rides like the cavalry taught him, or like he taught himself and nobody told him different.",
+            "Mud to the horse's belly. Came by the river road, then.", "Horse is better shod than I am.", "He ties the horse loose at the rail. Wants to be able to leave in a hurry.",
+            "Leans on the horn to look about. Takes his time. Has plenty, it seems.", "The horse is fond of him. You can tell by how it leans.", "Bedroll tied on behind. Doesn't plan to sleep under anybody's roof.",
+            "He rides past and the dust takes a long time settling.", "Horse has a brand I don't know. Bought far off, or taken far off.", "Steps down light for a man that size.",
+            "Watches the street from up there like a man on a hill watches weather.", "Horse stamps and he doesn't even look. They know each other.", "Spurs never touch the horse. Just there to say he could.",
+            "Rope on the saddle, coiled neat. A man who ropes things for a living, or used to.", "Rides one-handed. The other hand stays free. For what, I wonder.", "Horse and man both look like they'd rather be out of town.",
+            "Rides right up to the boardwalk like the boards are his to stop at.", "That's a horse that's outrun something. Lean in the right places.", "Swings down and the horse just waits. Doesn't need tying, that one.",
+            "Dusty from hat to stirrup. Must have ridden since before dawn.", "His saddle's cracked and mended twice. Won't buy new. Fond of it, or broke.", "He looks my horse over like a buyer. Knows horses, then.",
+            "Rides past slow enough to be seen. Fast enough not to be stopped."
         };
 
         private static readonly string[] Seen =
@@ -249,7 +277,16 @@ namespace EnrageWestworld.Core
             "Doesn't look away first. Never does, I'd wager.", "Carries his weight low, like a man ready to move.", "Smells of woodsmoke and horse.", "Eyes don't rest on one thing. Counts the exits like I do.",
             "Dust on him from three days' road, not three miles.", "Quiet. The kind of quiet that's decided something.",
             "Boots he's walked the soles off. Not a man who rides everywhere.", "Keeps his hat low and his eyes up. Opposite of most.", "Stands where he can see the door. Habit, that. A bad one or a good one.", "Hands still when he talks. Still hands are the ones to watch.",
-            "Spurs that have seen use. Most spurs in town are for the look of them.", "Looks at a man's hands before his face. Learned that somewhere hard.", "Walks the middle of the street, not the boards. Wants room.", "Clean-shaven under all that dust. Takes trouble over something, then."
+            "Spurs that have seen use. Most spurs in town are for the look of them.", "Looks at a man's hands before his face. Learned that somewhere hard.", "Walks the middle of the street, not the boards. Wants room.", "Clean-shaven under all that dust. Takes trouble over something, then.",
+            "Coat's seen weather. Patched at the elbow with a different cloth.", "Big man. Moves smaller than he is.", "He looks at the street like he's read how it ends already.",
+            "Nobody's told him to take his hat off indoors in a long while, I'd guess.", "Beard's a week old. Not a choice. A circumstance.", "There's tiredness in him under the hardness. You only see it if you look.",
+            "Whistles something under his breath. Can't place the tune.", "Strikes a match on his thumbnail. Showing off, or just practised.", "Stands like a man who's been told to wait and doesn't care for it.",
+            "Hat brim's bent where he grabs it. Grabs it a lot, then.", "Speaks soft when he speaks at all. Makes you lean in. Maybe that's the trick of it.", "Knuckles scarred white across the back. Not from farm work.",
+            "Smells like a camp. Coffee and smoke and something that died nearby.", "Walks past the church without a look. Past the saloon without one either. Odd.", "There's a letter half out of his pocket. Read and folded a hundred times.",
+            "Turns his whole body to look, not just his head. Like a man with an old hurt.", "Pays in coin, not paper. Counts it out slow.", "Nods to the old men on the bench. They nod back. Even they don't know him.",
+            "His eyes go up to the roofs. Who looks at roofs?", "Smiles at something nobody said. Something he remembered, maybe.", "Takes up more of the doorway than a door was made for.",
+            "Scrapes his boots before he goes in. A gentleman somewhere in there, buried deep.", "Spits, and doesn't look where it lands. Never been fined for it, I'd guess.", "There's a ring on a string round his neck. Not his, I'd guess.",
+            "Looks at me like he's deciding whether I'm worth the trouble. Decides I'm not.", "Bit of blood on the cuff. Old, or he doesn't care to wash it."
         };
 
         // ---- putting it together ------------------------------------------------------------------
