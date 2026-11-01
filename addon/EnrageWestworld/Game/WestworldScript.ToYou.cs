@@ -184,6 +184,8 @@ namespace EnrageWestworld.InGame
                 }
                 _ynNoId += noId; _ynNoTraits += noTraits; _ynCooldown += cool; _ynNoFeeling += noFeel; _ynBusy += busy; _ynHandle += handle;
                 _ynFar += far; _ynFacing += facing; _ynView += view; _ynSight += sight;
+                if (!test)
+                    return null;   // only the Testing row reads the reason
                 int top = Math.Max(Math.Max(Math.Max(noFeel, far), Math.Max(facing, view)), Math.Max(Math.Max(busy, cool), Math.Max(Math.Max(noTraits, sight), Math.Max(handle, noId))));
                 if (top == 0)
                     return "nobody the mind knows is near";

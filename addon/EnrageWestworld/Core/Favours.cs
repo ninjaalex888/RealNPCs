@@ -21,6 +21,13 @@ namespace EnrageWestworld.Core
             return worry != null && stage == 2 && Interact.Mendable(worry, stage) && (worry == "debt" || worry == "tooth" || worry == "savings");
         }
 
+        /// The money need as Comes reads it: a worry at its worst that a sum can mend presses at least NeedPressed (the
+        /// needs model gives a stage-2 debt about 0.44, a tooth nothing, so a stranger would never be asked; the review).
+        public static float NeedOf(float need, string worry, int stage)
+        {
+            return Asks(worry, stage) && need < NeedPressed ? NeedPressed : need;
+        }
+
         /// Whether they'd come to him at all: never afraid of him or against him; the proud and the cold only to someone
         /// they think well of or who was kind to them lately; anyone else if they know his name, had a kindness of him, or
         /// the money presses hard enough to ask a stranger.

@@ -138,7 +138,7 @@ namespace EnrageWestworld.InGame
                 string temper = w.Src != null ? w.Src.Temper : null, regard = SightRegard(p, w.Id);
                 bool knows = _engine.KnowsYourName(w.Id), kind = Interact.KindLately(_store.WorldLog, w.Id, g);
                 float need = w.Needs != null ? w.Needs[NeedState.Money] : 0f;
-                if (test ? regard == "afraid" || regard == "hostile" : !Favours.Comes(temper, regard, knows, kind, need))
+                if (test ? regard == "afraid" || regard == "hostile" : !Favours.Comes(temper, regard, knows, kind, Favours.NeedOf(need, worry, stage)))
                     continue;
                 if (Pacing.WhyNot(_store.Pace, "favour", _placeTown, w.Id, g, 0, test, out skipped) != null)
                     continue;
@@ -191,7 +191,10 @@ namespace EnrageWestworld.InGame
             if (_menu != null && _menu.Handle == h)
             {
                 if (w.SaidAt == 0 && w.Ask.Picked != "holdback")
+                {
                     FavourTold(w);   // Talk before they'd said it: they tell it now (the menu lists the fix)
+                    TalkRefreshOptions();
+                }
                 FavourHeard(w, h, now, "you stopped to talk");
                 return;
             }
