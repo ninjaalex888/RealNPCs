@@ -227,13 +227,16 @@ namespace EnrageWestworld.InGame
         {
             if (p == null)
                 return;
-            _staged.Remove(p.Handle);
+            int h = p.Handle;
+            _staged.Remove(h);
             if (!p.Exists() || p.IsDead)
                 return;
-            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, false);
-            PED.SET_PED_KEEP_TASK(p.Handle, false);
-            if (wander && !PED.IS_PED_IN_COMBAT(p.Handle, 0) && !PED.IS_PED_FLEEING(p.Handle) && !PED.IS_PED_RAGDOLL(p.Handle) && !_director.Involves(p.Handle))
-                TASK.TASK_WANDER_STANDARD(p.Handle, 10f, 10);
+            if (_director.Involves(h) || _ring.Contains(h) || JoinIsPending(h))
+                return;   // a scene, the fight's ring or a join has them now and sets its own block and tasks (NIGHT4 item 6, the review across features)
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            PED.SET_PED_KEEP_TASK(h, false);
+            if (wander && !AimedLately(h, _now) && !PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h) && !PED.IS_PED_RAGDOLL(h))
+                TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // never over the game's answer to a gun (AimLetGo's ten seconds)
         }
 
         private string StagedStatus()

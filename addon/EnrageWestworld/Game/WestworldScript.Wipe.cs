@@ -97,6 +97,10 @@ namespace EnrageWestworld.InGame
             BelowAbort(why);
             PatientAbort(why);
             GrudgesAbort();
+            ThanksAbort();
+            LonelyAbort();
+            FavourAbort();   // the walk-ups to Arthur (NIGHT4 item 6: favours and warnings never stopped on a wipe, a mission or a reload; thanks and the lonely not on a wipe)
+            WarnAbort();
             KinAbort();
             _sightSeen.Clear();
             _sightTown.Clear();

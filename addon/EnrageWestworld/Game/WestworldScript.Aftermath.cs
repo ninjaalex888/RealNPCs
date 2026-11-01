@@ -135,7 +135,7 @@ namespace EnrageWestworld.InGame
             Vector3 at = a.Winner.Position;
             Ped law = Peds.All().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Position.DistanceTo(at) < 50f && Natives.IsLaw(p) &&
                                                     !PED.IS_PED_ON_MOUNT(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_IN_COMBAT(p.Handle, 0) &&
-                                                    !_director.Involves(p.Handle) && (_theft == null || _theft.Lawman == null || _theft.Lawman.Handle != p.Handle))
+                                                    !NotFree(p.Handle))   // (NotFree: a scene, the theft's or the body's lawman, an encounter's fetched deputy: NIGHT4 item 6)
                                         .OrderBy(p => p.Position.DistanceTo(at)).FirstOrDefault();
             if (law == null)
                 return;

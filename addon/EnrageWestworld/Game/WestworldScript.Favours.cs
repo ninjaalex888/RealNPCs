@@ -133,7 +133,7 @@ namespace EnrageWestworld.InGame
                     continue;   // a woman doesn't walk up to a man after dark or in a saloon
                 Ped p = new Ped(h);
                 float metres = p.Position.DistanceTo(mePos);
-                if (metres > FavourMetres || !NodInView(me, p) || MayDirectWhyNot(p) != null || NotFree(h) || _director.Involves(h) || PED.IS_PED_USING_ANY_SCENARIO(h) || Natives.IsLaw(p))
+                if (metres > FavourMetres || !NodInView(me, p) || MayDirectWhyNot(p) != null || NotFree(h) || AimedLately(h, now) || _director.Involves(h) || PED.IS_PED_USING_ANY_SCENARIO(h) || Natives.IsLaw(p))
                     continue;
                 string temper = w.Src != null ? w.Src.Temper : null, regard = SightRegard(p, w.Id);
                 bool knows = _engine.KnowsYourName(w.Id), kind = Interact.KindLately(_store.WorldLog, w.Id, g);
@@ -302,6 +302,18 @@ namespace EnrageWestworld.InGame
             _favourSettled++;
             _favourAskedIds.Remove(id);
             Log.Write("FAVOUR " + id + ": you settled it ($" + cents / 100 + ", " + (worry ?? "their trouble") + ")");
+        }
+
+        /// A mission, the add-on stopping or a wipe: the one coming over stops, their look and walk cleared, no new order (as
+        /// LonelyAbort).
+        private void FavourAbort()
+        {
+            if (_favourWalk != null && _favourWalk.Ped != null && _favourWalk.Ped.Exists())
+            {
+                TASK.TASK_CLEAR_LOOK_AT(_favourWalk.Ped.Handle);
+                TASK.CLEAR_PED_TASKS(_favourWalk.Ped.Handle, true, false);
+            }
+            _favourWalk = null;
         }
 
         private void FavourLetGo(int h)

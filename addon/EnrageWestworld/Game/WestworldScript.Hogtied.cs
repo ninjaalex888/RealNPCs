@@ -319,6 +319,7 @@ namespace EnrageWestworld.InGame
                 if (d < 40f || (d < 75f && ENTITY.IS_ENTITY_ON_SCREEN(ch) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, ch, 17)))   // the sight test only until they're found, and only in range (the frame-cost audit)
                 {
                     h.Noticed = true;
+                    StoryEncounterStarted("hogtied", d, h.Test);   // counted once you find them (its end's event isn't counted again)
                     _engine.ExecutionSeen(h.R, Bridge.Now());
                     Log.Write("ENCOUNTER hogtied: you found them, " + (int)d + " m off");
                 }
@@ -358,7 +359,7 @@ namespace EnrageWestworld.InGame
                 _hogCarried++;
                 h.Freed = h.Captors == "bounty" ? "delivered up for the bounty" : "carried off";
                 Log.Write("ENCOUNTER hogtied: you rode on; " + h.Name + " is " + h.Freed);
-                Safe("world events", () => RecordEvent("encounter:hogtied", null, h.Captors == "bounty" ? "bounty hunters" : "two men", h.R.Id, h.Name, h.Captive.Position, ch, ch, 0, h.Freed));
+                StoryEncounterEnded("hogtied", h.StartedAt, true, h.Test, () => Safe("world events", () => RecordEvent("encounter:hogtied", null, h.Captors == "bounty" ? "bounty hunters" : "two men", h.R.Id, h.Name, h.Captive.Position, ch, ch, 0, h.Freed)));
                 EndHogtied(h.Freed, true);
                 return;
             }
@@ -567,7 +568,7 @@ namespace EnrageWestworld.InGame
                 _engine.Rescued(h.R, plan, h.Region ?? h.Town, ZoneAt(p), p.X, p.Y, p.Z, Bridge.Now());
             }
             h.Freed = h.ByYou ? "freed by you, " + (pick == "thank" ? "thanked you" : "ran") : "worked free";
-            Safe("world events", () => RecordEvent("encounter:hogtied", null, h.Captors == "bounty" ? "bounty hunters" : "two men", h.R.Id, h.Name, h.Captive.Position, ch, ch, 0, "saved; " + h.Freed));
+            StoryEncounterEnded("hogtied", h.StartedAt, true, h.Test, () => Safe("world events", () => RecordEvent("encounter:hogtied", null, h.Captors == "bounty" ? "bounty hunters" : "two men", h.R.Id, h.Name, h.Captive.Position, ch, ch, 0, "saved; " + h.Freed)));
             if (pick == "thank")
                 TASK.TASK_WANDER_STANDARD(ch, 10f, 10);
             h.Phase = "leaving";

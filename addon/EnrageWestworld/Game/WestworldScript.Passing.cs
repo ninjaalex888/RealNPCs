@@ -296,6 +296,8 @@ namespace EnrageWestworld.InGame
         {
             if (_director.Involves(h) || IsAcknowledging(h) || InTalk(h) || InWakeAct(h) || IsStaged(h))   // (IsStaged: a re-staged encounter holds them, WestworldScript.Staged.cs)
                 return true;
+            if (MindGettingUp(h))
+                return true;   // a stage-1 get-up not yet handed on: the waking's sequence isn't cut by a new order (NIGHT4 item 6)
             return (_bodyClear != null && _bodyClear.Law == h) || (_theft != null && _theft.Lawman != null && _theft.Lawman.Handle == h);   // the law at work too: a body, a lash-out, a chase (the cross-cutting review)
         }
 
@@ -332,7 +334,8 @@ namespace EnrageWestworld.InGame
         private bool TakenUp(int h)
         {
             return _director.Involves(h) || InTalk(h) || (_menu != null && _menu.Handle == h) || IsOnlooking(h) || WalkingUp(h) ||
-                   InWakeAct(h) || _ring.Contains(h) || JoinIsPending(h) || IsStaged(h);   // a wake act, the fight's ring or a join (the review of NIGHT4 item 3)
+                   InWakeAct(h) || _ring.Contains(h) || JoinIsPending(h) || IsStaged(h) ||   // a wake act, the fight's ring or a join (the review of NIGHT4 item 3)
+                   Spawner.IsBorrowed(h);   // the stalker (or a lawman's job) borrowed them: no more orders from the act (NIGHT4 item 6)
         }
 
         private bool IsAcknowledging(int h)

@@ -120,7 +120,7 @@ namespace EnrageWestworld.InGame
                 if (!test)
                 {
                     Pacing.Note(_store.Pace, "thanks", _placeTown, id, g);   // a test leaves the real one its turn
-                    StoryNoticed("you:thanks", 2, p.Position.DistanceTo(me.Position));   // the storyteller (WestworldScript.Story.cs)
+                    StoryNoticed("you:thanks", way == "nod" ? 0 : 2, p.Position.DistanceTo(me.Position));   // the storyteller (WestworldScript.Story.cs; a nod, a 3.5 s look, is nothing to it: it shouldn't end a quiet street, NIGHT4 item 6)
                 }
                 string who = name ?? TalkName(p), seed = id + "|" + owed.Key;
                 float metres = p.Position.DistanceTo(me.Position);

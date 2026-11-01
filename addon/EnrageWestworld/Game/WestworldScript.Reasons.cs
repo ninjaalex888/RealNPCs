@@ -39,6 +39,15 @@ namespace EnrageWestworld.InGame
             public float Apart;
         }
 
+        /// A wake act's own person (a loop, not Any: no closure a ped).
+        private bool WakeActHas(int h)
+        {
+            for (int i = 0; i < _wakeActs.Count; i++)
+                if (_wakeActs[i].Handle == h)
+                    return true;
+            return false;
+        }
+
         /// The people near the player who could be in a scene for a reason: named, free, not busy with anything else.
         private List<Candidate> ReasonCandidates(Ped me, int now, bool test = false)
         {
@@ -51,7 +60,8 @@ namespace EnrageWestworld.InGame
                     continue;   // the distance first: IsRecord is a reflection call into enRAGE, too dear for every ped in the world
                 if (!Natives.Bystander(p, me.Handle, IsRecord(h)) || Spawner.IsOurs(h) ||
                     MayDirectWhyNot(p) != null ||   // never the story's own people, grown-ups only; enRAGE's people unless it has them busy
-                    PostKindOf(p) != null || IsHermit(h) || IsGatherer(h) || IsExecutionPed(h) || _wakeActs.Any(w => w.Handle == h) || IsAcknowledging(h) || InTalk(h) || _director.Involves(h) ||
+                    PostKindOf(p) != null || IsHermit(h) || IsGatherer(h) || IsExecutionPed(h) || WakeActHas(h) || IsAcknowledging(h) || InTalk(h) || _director.Involves(h) ||
+                    IsStaged(h) || MindGettingUp(h) ||   // an encounter's, or a get-up not yet handed on (NIGHT4 item 6, the review across features)
                     PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_ON_MOUNT(h))
                     continue;
                 if (!test && Resting(h, now))
@@ -90,6 +100,7 @@ namespace EnrageWestworld.InGame
                     : IsAcknowledging(h) ? "nodding to you"
                     : InTalk(h) ? "in a conversation"
                     : _director.Involves(h) ? "in a scene"
+                    : IsStaged(h) || MindGettingUp(h) ? "an encounter's, or getting up"
                     : PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_ON_MOUNT(h) ? "riding or in a wagon"
                     : SomeoneOf(p) == null ? "no identity (" + (ResidentWhy(p) ?? "none made") + ")"
                     : "free";

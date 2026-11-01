@@ -157,7 +157,7 @@ namespace EnrageWestworld.InGame
                         noTraits++;
                         continue;
                     }
-                    if (_director.Involves(h) || _director.Leaving(h) || IsOnlooking(h) || IsRescuer(h))
+                    if (_director.Involves(h) || _director.Leaving(h) || IsOnlooking(h) || IsRescuer(h) || IsStaged(h) || WalkingUp(h) || MindGettingUp(h))   // (an encounter's, a walk-up's or a get-up's: NIGHT4 item 6)
                     {
                         busy++;
                         continue;

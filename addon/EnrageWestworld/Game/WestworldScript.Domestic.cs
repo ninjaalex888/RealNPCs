@@ -88,8 +88,8 @@ namespace EnrageWestworld.InGame
                     if (m.Who.Woman)
                         continue;
                     float d = pos[i].DistanceTo(mePos);
-                    if (d < 6f || d > 35f)
-                        continue;
+                    if (d < 6f || d > 35f || (!test && _director.FullSceneMetres(pos[i]) < EncounterSceneApart))
+                        continue;   // (and clear of a full scene's people: the review across features)
                     // his sweetheart near him plays his wife: a courted tie, standing within 15 m
                     Candidate w = null;
                     for (int j = 0; j < pn && w == null; j++)
@@ -163,6 +163,7 @@ namespace EnrageWestworld.InGame
             TASK.TASK_STAND_STILL(c.Man.Handle, 20000);
             _domestic = c;
             _domStarted++;
+            StoryEncounterStarted("domestic", man.Ped.Position.DistanceTo(me.Position), test);
             if (!test)
                 _domNextOk = now + 8 * 60000;
             Log.Write("ENCOUNTER domestic: " + man.Who.Name + " (" + (man.Who.Temper ?? "plain") + (c.MM.Drunk ? ", in his cups" : "") + ", " + c.Matter + ") and " + c.HerFull +
@@ -209,6 +210,11 @@ namespace EnrageWestworld.InGame
                 return;
             }
             int hm = c.Man.Handle, hw = c.Wife.Handle;
+            if (!c.Struck && c.Phase != "end" && PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, hm))
+            {
+                EndDomestic("you drew on him");   // the game's own answer to a gun (no rant, no blow over the hands-up; StagedLetGo gives no wander to one aimed at)
+                return;
+            }
             if (!c.YouIn && !c.Struck && c.Phase != "gather" && c.Phase != "end" && me.Position.DistanceTo(c.Man.Position) < 3f)
             {
                 DomYouStepIn(c, now);
@@ -514,18 +520,22 @@ namespace EnrageWestworld.InGame
             {
                 if (c.WW != null)
                     Ties.Note(_store.Ties, c.WM.Id, c.WM.Name, c.WW.Id, c.WW.Name, c.Town, c.Struck ? "rough" : "argue", Bridge.Now(), c.Struck ? c.WM.Id : null);
-                Safe("world events", () => RecordEvent("encounter:domestic", c.WM.Id, c.WM.Name, c.WW != null ? c.WW.Id : null, c.HerFull, c.Man.Position, c.Man.Handle, c.Man.Handle, c.Wife != null && c.Wife.Exists() ? c.Wife.Handle : 0,
-                                                       (c.Struck ? "struck; " : "words; ") + why));
+                StoryEncounterEnded("domestic", c.StartedAt, c.Phase != "gather", c.Test, () => Safe("world events", () => RecordEvent("encounter:domestic", c.WM.Id, c.WM.Name, c.WW != null ? c.WW.Id : null, c.HerFull, c.Man.Position, c.Man.Handle, c.Man.Handle, c.Wife != null && c.Wife.Exists() ? c.Wife.Handle : 0,
+                                                       (c.Struck ? "struck; " : "words; ") + why)));
             }
+            else
+                StoryEncounterEnded("domestic", c.StartedAt, false, c.Test, null);   // she never came: nothing reached the screen
             if (c.FairGame && !c.YouHit && c.Man != null && c.Man.Exists() && !c.Man.IsDead)
                 NoWanted(c.Man.Handle, false);   // an ordinary man again once it's over (dead, he stays as he fell)
             else if (c.FairGame && c.YouHit && c.Man != null && c.Man.Exists() && !c.Man.IsDead)
                 NoWanted(c.Man.Handle, true);    // you are fighting him: PCF 6 stays on, and Watch lifts it with his self-defence mark, five minutes on, as for any attacker
             if (c.FairGame && c.Man != null && !c.YouHit)
                 _cameAtYouSeen.Remove(c.Man.Handle);   // he walks the street after: no longer fair game (a fight you had with him stays judged as one he started, as the execution's men)
-            foreach (Ped p in new[] { c.Man, c.Neighbour, c.Law })
+            foreach (Ped p in new[] { c.Man, c.Neighbour })
                 if (p != null && !(p == c.Man && c.YouHit))
                     StagedLetGo(p, true);
+            if (c.Law != null)
+                StagedLetGo(c.Law, false);   // the lawman back to the game's own rounds, no wander, as our other law jobs hand back (NIGHT4 item 6)
             if (c.Wife != null)
             {
                 bool walking = c.Hers == "leave";

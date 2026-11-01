@@ -382,6 +382,13 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// Something else of ours has them: a wake act (or its other), an encounter, Talk, a walk-up, a get-up or any mind act,
+        /// the fight's ring or a join (NIGHT4 item 6: the stalker took a callout's caller, two features' actor at once).
+        private bool StalkerTaken(int h)
+        {
+            return NotFree(h) || IsMindActing(h) || _ring.Contains(h) || JoinIsPending(h) || WalkingUp(h);
+        }
+
         /// The person near you with the most history with you who can be turned, or null (why says what was there).
         private Ped StalkerCandidate(out string why)
         {
@@ -412,7 +419,7 @@ namespace EnrageWestworld.InGame
                 {
                     // one of enRAGE's people, while it has no use for them (StalkerRecords); one who hates you is likeliest
                     string no = !_cfg.StalkerRecords ? "StalkerRecords off" : RecordStalkWhyNot(ped);
-                    if (no != null || Natives.InteriorType(h) != 0 || _director.Involves(h) || _wakeActs.Any(w => w.Handle == h))
+                    if (no != null || Natives.InteriorType(h) != 0 || _director.Involves(h) || StalkerTaken(h))
                     {
                         enrage++;
                         continue;
@@ -430,7 +437,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 }
                 if (Natives.IsChild(ped) || Natives.StoryModel(ped) || Natives.IsLaw(ped) || !IsGrownUp(ped) || !CanDirect(ped) ||
-                    Natives.InteriorType(h) != 0 || _director.Involves(h) || _wakeActs.Any(w => w.Handle == h))
+                    Natives.InteriorType(h) != 0 || _director.Involves(h) || StalkerTaken(h))
                 {
                     busy++;
                     if (_bridge.AcquaintanceAt(h) != null)

@@ -103,7 +103,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 witnesses++;
                 if (Spawner.IsOurs(h) || Natives.StoryModel(p) || !IsGrownUp(p) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) ||
-                    PED.IS_PED_USING_ANY_SCENARIO(h) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || _director.Involves(h) || MayDirectWhyNot(p) != null)
+                    PED.IS_PED_USING_ANY_SCENARIO(h) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || _director.Involves(h) || IsStaged(h) || MindGettingUp(h) || WalkingUp(h) || InTalk(h) || MayDirectWhyNot(p) != null)
                     continue;
                 looking.Add(p);
             }

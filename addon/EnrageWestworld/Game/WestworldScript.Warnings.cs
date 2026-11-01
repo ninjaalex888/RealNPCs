@@ -226,7 +226,7 @@ namespace EnrageWestworld.InGame
                 if (woman && !test && (Natives.Night() || _engine.NowIndoors))
                     continue;
                 Ped p = new Ped(h);
-                if (p.Position.DistanceTo(mePos) > WarnMetres || !NodInView(me, p) || MayDirectWhyNot(p) != null || NotFree(h) || _director.Involves(h) || PED.IS_PED_USING_ANY_SCENARIO(h) || Natives.IsLaw(p))
+                if (p.Position.DistanceTo(mePos) > WarnMetres || !NodInView(me, p) || MayDirectWhyNot(p) != null || NotFree(h) || AimedLately(h, now) || _director.Involves(h) || PED.IS_PED_USING_ANY_SCENARIO(h) || Natives.IsLaw(p))
                     continue;
                 if (nearestNamed == null)
                     nearestNamed = p;
@@ -398,6 +398,18 @@ namespace EnrageWestworld.InGame
                 Log.Write("WARN " + w.Name + ": turns away; thinks: " + t);
                 WarnLetGo(h);
             }
+        }
+
+        /// A mission, the add-on stopping or a wipe: the one coming over stops, their look and walk cleared, no new order (as
+        /// LonelyAbort).
+        private void WarnAbort()
+        {
+            if (_warnWalk != null && _warnWalk.Ped != null && _warnWalk.Ped.Exists())
+            {
+                TASK.TASK_CLEAR_LOOK_AT(_warnWalk.Ped.Handle);
+                TASK.CLEAR_PED_TASKS(_warnWalk.Ped.Handle, true, false);
+            }
+            _warnWalk = null;
         }
 
         private void WarnLetGo(int h)

@@ -292,6 +292,8 @@ namespace EnrageWestworld.InGame
                 GrudgesAbort();      // someone walking up to have it out with you stops (their walk order cleared)
                 ThanksAbort();       // and someone walking over to thank you
                 LonelyAbort();       // and someone lonely hoping for a word
+                FavourAbort();       // and someone coming to ask a favour, or to warn you (NIGHT4 item 6)
+                WarnAbort();
                 KinAbort();
                 LanguageStop();      // the language layer's worker thread
                 SoberVoices(true);   // the drink goes out of every voice we put it in
@@ -1058,6 +1060,8 @@ namespace EnrageWestworld.InGame
             GrudgesAbort();
             ThanksAbort();
             LonelyAbort();
+            FavourAbort();
+            WarnAbort();
             KinAbort();
             SoberVoices(true);
             if (_rough != null)

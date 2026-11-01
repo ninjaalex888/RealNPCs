@@ -98,6 +98,41 @@ namespace EnrageWestworld.InGame
                 _aimSeen.Remove(h);
         }
 
+        /// One a re-staged encounter holds is aimed at (NIGHT4 item 6, the review across features: "nothing of ours held them"
+        /// before, and the encounter's next turn played over the hands-up). The callout's two answer it themselves (its step-in:
+        /// the caller gives way; the end gives no wander to one aimed at); anyone else of a callout, or the domestic's people
+        /// (but a man who has struck her: that fight is the encounter's own), ends it, all let go. The hogtied's own answer the
+        /// gun (the men's draw, the captive tied): noted. What was let go, or null.
+        private string StagedAimLetGo(int h, int now, List<string> noted)
+        {
+            StreetCallout c = _streetCallout;
+            if (c != null && (AimIs(c.A, h) || AimIs(c.B, h) || c.On.Exists(o => AimIs(o, h))))
+            {
+                if ((AimIs(c.A, h) || AimIs(c.B, h)) && !c.YouIn && c.Phase != "call" && c.Phase != "end")
+                {
+                    ScYouStepIn(c, true, now);
+                    noted.Add("a callout (it answers the gun itself)");
+                    return null;
+                }
+                EndStreetCallout("you drew on " + (MindNameOf(h) ?? "one of them"), false);
+                return "a callout";
+            }
+            DomesticRow d = _domestic;
+            if (d != null && (AimIs(d.Man, h) || AimIs(d.Wife, h) || AimIs(d.Neighbour, h) || AimIs(d.Law, h)))
+            {
+                if (d.Struck && AimIs(d.Man, h))
+                {
+                    noted.Add("a domestic (he struck her: the fight is its own)");
+                    return null;
+                }
+                EndDomestic("you drew on " + (AimIs(d.Man, h) ? "him" : MindNameOf(h) ?? "one of them"));
+                return "a domestic";
+            }
+            if (_hog != null)
+                noted.Add("the hogtied (they answer the gun themselves)");
+            return null;
+        }
+
         /// The first look at someone aimed at: what of ours holds them, let go.
         private void AimLook(int h, int now)
         {
@@ -188,6 +223,15 @@ namespace EnrageWestworld.InGame
                         TalkEnd(_talk, "cut short: one of them was aimed at", now);
                         break;
                     }
+            if (IsStaged(h))
+            {
+                string st = StagedAimLetGo(h, now, noted);
+                if (st != null)
+                {
+                    what.Add(st);
+                    tasked = true;   // the encounter's stand, turn or walk cleared
+                }
+            }
             string walk = WalkUpLetGo(h, noted);
             if (walk != null)
             {

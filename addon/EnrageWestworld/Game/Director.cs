@@ -286,6 +286,23 @@ namespace EnrageWestworld.InGame
             return l != null && i >= 0 && i < l.Cast.Length ? l.Cast[i] : null;
         }
 
+        /// How far `at` is from the nearest of either full scene's people (float.MaxValue with none playing): the encounters keep
+        /// clear of the full scenes (NIGHT4 item 6, the review across features). No allocation.
+        public float FullSceneMetres(Vector3 at)
+        {
+            float best = float.MaxValue;
+            for (int k = 0; k < 2; k++)
+            {
+                Live l = k == 0 ? _live : _second;
+                if (l == null || l.Cast == null)
+                    continue;
+                for (int i = 0; i < l.Cast.Length; i++)
+                    if (l.Cast[i] != null && l.Cast[i].Exists())
+                        best = Math.Min(best, l.Cast[i].Position.DistanceTo(at));
+            }
+            return best;
+        }
+
         public string NameAt(int i)
         {
             Live l = _live;

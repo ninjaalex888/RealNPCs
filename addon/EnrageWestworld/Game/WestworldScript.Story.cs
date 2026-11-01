@@ -134,6 +134,33 @@ namespace EnrageWestworld.InGame
             _storyMainKind = notedNow ? "scene:" + noted : null;   // a scene noted at its cue isn't in the meter yet
         }
 
+        /// A re-staged encounter (the callout, the domestic, the hogtied once found) counted at its start, not only at its end
+        /// (NIGHT4 item 6, the review across features: the meter couldn't see one playing, and a quiet band pulled a scene, a
+        /// side talk and another street kind in on top of it). A test isn't counted, as RecordEvent counts none.
+        private void StoryEncounterStarted(string kind, float metres, bool test)
+        {
+            if (!test)
+                StoryNoticed("encounter:" + kind, 3, metres);
+        }
+
+        /// Its end: the event recorded without counting it again; one that ended before it reached the screen taken back.
+        private void StoryEncounterEnded(string kind, int startedAt, bool reached, bool test, Action record)
+        {
+            if (!reached && !test && _story != null)
+                _story.Retract("encounter:" + kind, startedAt);
+            if (record == null)
+                return;
+            _storyNotingSide = true;
+            try
+            {
+                record();
+            }
+            finally
+            {
+                _storyNotingSide = false;
+            }
+        }
+
         /// From the Director's NeverMet: the scene's two never got close enough, so it never reached the screen.
         private void StoryNeverMet(bool second = false)
         {

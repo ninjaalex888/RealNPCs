@@ -541,9 +541,12 @@ namespace EnrageWestworld.InGame
             float bestD = within;
             foreach (Ped p in Peds.All())
             {
-                if (p.Handle == not1 || p.Handle == not2 || !PED.IS_PED_HUMAN(p.Handle) || ENTITY.IS_ENTITY_DEAD(p.Handle) || Spawner.IsOurs(p.Handle) || Natives.IsChild(p))
-                    continue;
                 float d = p.Position.DistanceTo(around);
+                if (d <= 2f || d >= bestD)
+                    continue;   // the distance first
+                if (p.Handle == not1 || p.Handle == not2 || !PED.IS_PED_HUMAN(p.Handle) || ENTITY.IS_ENTITY_DEAD(p.Handle) || Spawner.IsOurs(p.Handle) || Natives.IsChild(p) ||
+                    NotFree(p.Handle) || IsMindActing(p.Handle))
+                    continue;   // never one another feature has, nor one acting on their mind (NIGHT4 item 6: a get-up's blocked events were left on)
                 if (d > 2f && d < bestD)
                 {
                     best = p;

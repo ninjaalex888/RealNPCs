@@ -83,11 +83,13 @@ namespace EnrageWestworld.InGame
                 int n = pool.Count;
                 var pos = new Vector3[n];
                 var view = new sbyte[n];   // 0 not asked yet, 1 in view, -1 not
+                var byScene = new bool[n];   // within EncounterSceneApart of a full scene's people: kept clear of it (the review across features)
                 var ids = new HashSet<string>();
                 for (int i = 0; i < n; i++)
                 {
                     pos[i] = pool[i].Ped.Position;
                     ids.Add(pool[i].Who.Id);
+                    byScene[i] = !test && _director.FullSceneMetres(pos[i]) < EncounterSceneApart;
                 }
                 Vector3 mePos = me.Position;
                 Dictionary<string, SceneTie> ties = PoolTies(ids);
@@ -100,7 +102,7 @@ namespace EnrageWestworld.InGame
                     for (int j = i + 1; j < n; j++)
                     {
                         Candidate a = pool[i], b = pool[j];
-                        if (a.Who.Id == b.Who.Id)
+                        if (a.Who.Id == b.Who.Id || byScene[i] || byScene[j])
                             continue;
                         SceneTie t;
                         ties.TryGetValue(ScPairKey(a.Who.Id, b.Who.Id), out t);
@@ -172,6 +174,7 @@ namespace EnrageWestworld.InGame
             foreach (Ped o in c.On)
                 StagedHold(o);
             _streetCallout = c;
+            StoryEncounterStarted("callout", best, test);
             _scStarted++;
             if (!test)
                 _scNextOk = now + 6 * 60000;
@@ -204,6 +207,8 @@ namespace EnrageWestworld.InGame
                 }
             return ties;
         }
+
+        private const float EncounterSceneApart = 12f;   // a street encounter starts at least this far from a full scene's people
 
         private static string ScPairKey(string a, string b)
         {
@@ -468,14 +473,16 @@ namespace EnrageWestworld.InGame
             _streetCallout = null;
             if (c == null)
                 return;
-            if (played && c.WA != null && c.WB != null && c.Phase != "call")
+            bool reached = played && c.WA != null && c.WB != null && c.Phase != "call";
+            if (reached)
             {
                 bool mended = c.TAsk != null && c.TAsk.Picked == "positive" && c.AAsk != null && c.AAsk.Picked == "accept";
                 if (!handedOn)
                     Ties.Note(_store.Ties, c.WA.Id, c.WA.Name, c.WB.Id, c.WB.Name, c.Town, mended ? "apology" : "argue", Bridge.Now());
-                if (c.A.Exists())
-                    Safe("world events", () => RecordEvent("encounter:callout", c.WA.Id, c.WA.Name, c.WB.Id, c.WB.Name, c.A.Position, c.A.Handle, c.A.Handle, c.B.Exists() ? c.B.Handle : 0, why));
             }
+            StoryEncounterEnded("callout", c.StartedAt, reached || c.Phase != "call", c.Test, reached && c.A.Exists()
+                ? () => Safe("world events", () => RecordEvent("encounter:callout", c.WA.Id, c.WA.Name, c.WB.Id, c.WB.Name, c.A.Position, c.A.Handle, c.A.Handle, c.B.Exists() ? c.B.Handle : 0, why))
+                : (Action)null);
             foreach (Ped p in new[] { c.A, c.B }.Concat(c.On))
                 if (p != null && !(handedOn && (p == c.A || p == c.B)))
                     StagedLetGo(p, true);

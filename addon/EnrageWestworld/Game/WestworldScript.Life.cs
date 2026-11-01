@@ -337,6 +337,15 @@ namespace EnrageWestworld.InGame
         }
 
         private Action<string, string, bool, bool, int> _dSceneSay, _dSideSay;
+        private readonly Vector3[] _secondStagedAt = new Vector3[8];
+
+        private bool SecondClearOfStaged(Vector3 at, int ns)
+        {
+            for (int i = 0; i < ns; i++)
+                if (at.DistanceTo(_secondStagedAt[i]) < EncounterSceneApart)
+                    return false;
+            return true;
+        }
         private bool _secondChanceTurn;
         private readonly List<Ped> _secondPool = new List<Ped>();
 
@@ -361,6 +370,10 @@ namespace EnrageWestworld.InGame
                 nc++;
             }
             float apart = Director.SecondApart;
+            int ns = 0;   // and clear of an encounter's people (the review across features: four sets of subtitles within a few metres)
+            foreach (int sh in _staged)
+                if (ns < _secondStagedAt.Length && ENTITY.DOES_ENTITY_EXIST(sh))
+                    _secondStagedAt[ns++] = ENTITY.GET_ENTITY_COORDS(sh, true, true);
             if (!chanceTurn)
             {
                 Func<Ped, bool> clear = p =>
@@ -368,7 +381,7 @@ namespace EnrageWestworld.InGame
                     if (_director.Involves(p.Handle) || _ring.Contains(p.Handle) || JoinIsPending(p.Handle))
                         return false;
                     Vector3 at = p.Position;
-                    return (nc < 1 || at.DistanceTo(c0) >= apart) && (nc < 2 || at.DistanceTo(c1) >= apart) && (nc < 3 || at.DistanceTo(c2) >= apart);
+                    return (nc < 1 || at.DistanceTo(c0) >= apart) && (nc < 2 || at.DistanceTo(c1) >= apart) && (nc < 3 || at.DistanceTo(c2) >= apart) && SecondClearOfStaged(at, ns);
                 };
                 ReasonScene(me, saloon, now, false, clear, null, true);
                 return;
@@ -381,7 +394,7 @@ namespace EnrageWestworld.InGame
             foreach (Ped p in Peds.All())
             {
                 Vector3 at = p.Position;
-                if (at.DistanceTo(mePos) >= range || (nc >= 1 && at.DistanceTo(c0) < apart) || (nc >= 2 && at.DistanceTo(c1) < apart) || (nc >= 3 && at.DistanceTo(c2) < apart))
+                if (at.DistanceTo(mePos) >= range || (nc >= 1 && at.DistanceTo(c0) < apart) || (nc >= 2 && at.DistanceTo(c1) < apart) || (nc >= 3 && at.DistanceTo(c2) < apart) || !SecondClearOfStaged(at, ns))
                     continue;
                 int h = p.Handle;
                 if (!Natives.Bystander(p, meH) || Spawner.IsOurs(h) || PostKindOf(p) != null || PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_ON_MOUNT(h) ||

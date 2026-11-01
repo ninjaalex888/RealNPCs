@@ -51,6 +51,19 @@ namespace EnrageWestworld.InGame
         private string _mindActLast;
         private readonly Dictionary<string, int> _mindActCount = new Dictionary<string, int>();
 
+        /// A stage-1 act still getting up, or holding the events blocked before its next order (the 3 s stand, the 2.5 s wait):
+        /// nobody else's to order (NotFree). Once sent on, the act is as any other walk.
+        private bool MindGettingUp(int h)
+        {
+            for (int i = 0; i < _mindActs.Count; i++)
+            {
+                MindAct a = _mindActs[i];
+                if (a.Handle == h && a.Stage1 && (a.GettingUp || a.Blocked))
+                    return true;
+            }
+            return false;
+        }
+
         private bool IsMindActing(int h)
         {
             for (int i = 0; i < _mindActs.Count; i++)
@@ -542,7 +555,7 @@ namespace EnrageWestworld.InGame
                 if (!gone && TakenUp(h))
                 {
                     _mindActsTakenUp++;
-                    bool owns = _director.Involves(h) || InTalk(h) || (_menu != null && _menu.Handle == h) || _ring.Contains(h) || JoinIsPending(h) || InWakeAct(h) || IsStaged(h);
+                    bool owns = _director.Involves(h) || InTalk(h) || (_menu != null && _menu.Handle == h) || _ring.Contains(h) || JoinIsPending(h) || WakeActHas(h) || IsStaged(h) || Spawner.IsBorrowed(h);   // a wake act's own person only: its other and its lawman are never blocked by it (NIGHT4 item 6); the borrowed: the stalker or a law job sets its own
                     MindActDrop(i, owns);   // another feature has them now (Talk, a walk-up, a scene, the ring, a wake act): the act ends, with no new orders (the cross-cutting review; a nod is not enough)
                     continue;
                 }
