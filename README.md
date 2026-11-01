@@ -10,9 +10,11 @@ A mod for Red Dead Redemption 2 that gives the people of the world lives of thei
 >
 > **Story Mode only.** Don't run script mods in Red Dead Online.
 
-## Highly recommended: the free local AI model
+## Optional, highly recommended: the free local AI model
 
-RealNPCs works fully on its own: every thought, answer and choice has a written line behind it, and you don't need anything else installed. **But to get the most out of it, install the free local AI model.** With it on, the people near you:
+> **You don't need it.** RealNPCs runs fully without the AI model and without Ollama: no extra graphics memory, nothing else to install, and every feature works on its own written lines. If your graphics card has no room to spare, simply skip this section.
+
+If your card does have room, **install the free local AI model to get the most out of RealNPCs.** With it on, the people near you:
 
 - **think in their own words**, from who they are, how they feel and what's on their mind, so no two think alike;
 - **choose what they do next** from what their own mind allows: head home, pick a quarrel, call in a debt, court someone;
@@ -22,7 +24,7 @@ RealNPCs works fully on its own: every thought, answer and choice has a written 
 
 It runs on your own graphics card through [Ollama](https://ollama.com): nothing is sent anywhere, and there's no account and no cost. Everything the model writes is checked first (length, names it wasn't given, modern words). When it's slow or a line fails the checks, the written line is used instead, so the game never waits on it. It's still in testing, so expect the odd strange line.
 
-**What you need:** a graphics card with about 5 GB of memory free beside RDR2 (a 12 GB card or more; RealNPCs is developed on a 16 GB card), and about 5 GB of disk space.
+**What you need, only if you add the model:** a graphics card with about 5 GB of memory free beside RDR2 (a 12 GB card or more; RealNPCs is developed on a 16 GB card), and about 5 GB of disk space.
 
 **Set it up once:**
 
@@ -91,7 +93,7 @@ Optional: to have the model answer two people at once, set the Windows environme
 2. Download **[RealNPCs-0.7.11.zip](https://github.com/ninjaalex888/RealNPCs/releases/latest/download/RealNPCs-0.7.11.zip)** from the [latest release](https://github.com/ninjaalex888/RealNPCs/releases/latest) (it's also in the [release](release) folder). It holds `RealNPCs.dll` and a README.txt that explains every feature and setting.
 3. Copy `RealNPCs.dll` into your game's `scripts` folder. enRAGE is not needed; if you use it, RealNPCs goes beside its `NemesisMod.dll` and works with it. To update, just replace the file: what people remember carries over, and your settings are kept. **Coming from enRAGE Westworld** (the old name): delete `EnrageWestworld.dll` from the scripts folder. RealNPCs won't run next to it, and copies your saves, diaries and settings over from the old folder the first time it starts.
 4. Load your Story Mode save. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
-5. **Highly recommended:** set up the free local AI model ([see above](#highly-recommended-the-free-local-ai-model)) so the people near you think, choose and answer in their own words.
+5. **Optional, highly recommended** (not needed to play): set up the free local AI model ([see above](#optional-highly-recommended-the-free-local-ai-model)) so the people near you think, choose and answer in their own words.
 6. Optional: [CasualHookups](https://www.nexusmods.com/reddeadredemption2/mods/7608), a separate mod by its own author, plays an on-screen night together instead of RealNPCs' fade to black. Install it as its page says (`CasualHookups.asi` and `CasualHookups.ini` in the game folder). With it installed, its Flirt works only on a woman who has said yes to your flirting in RealNPCs (`CasualHookupsDecides`, on). The first time RealNPCs starts with it, it changes `CasualHookups.ini` once: its Flirt key moves from G (enRAGE's own lock-on prompts use G) to B, her clothes come back afterwards (enRAGE knows its people by their clothes), and it always gives in, since she has already said yes. The original file is kept as `RealNPCs\backup\CasualHookups.ini.before-realnpcs`. Restart the game once after that: CasualHookups may only read its settings when the game starts. Its settings are on the panel's Romance page. To keep the two mods apart, set `CasualHookupsDecides = false` (or turn Romance or Trysts off): RealNPCs then gives CasualHookups its own chances back from that copy (from the next start; until then RealNPCs holds its Flirt key on every woman), and sets them again if you turn it back on. Chances you set on the panel yourself are left alone.
 
 To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder in `Documents\Rockstar Games\Red Dead Redemption 2\` if you don't want to keep what people remembered.
@@ -193,6 +195,7 @@ The detailed plan, with the ideas, designs and build steps behind each item, is 
 38. **Reactions when aimed at, taken over in stages.** What people do when Arthur points a gun at them, taken from the game a step at a time (hands up, pleading, running, drawing back), each step decided by their own mind and, with the model on, by the model.
 39. **Group acts, and the model's own movements.** Acts for several people at once for the model to choose from (a crowd gathering, a family walking off together, friends closing round one of their own), and the model putting together a person's movements from the game's own animation clips.
 40. **The reputation seeker.** When Arthur's name grows, a young man rides in to make his own by calling him out. To settle first: how often (once in a few game days, only once he's known), whether Arthur can decline by walking off (he jeers, the town talks of it), and whether the young man draws first after a count or only if Arthur draws. A talk-only version could come first: he calls Arthur out, waits, jeers and goes, and the town gets a rumour.
+41. **Richer without the model.** Many players have no graphics memory to spare for the AI model, so RealNPCs should feel just as alive without it: more written thoughts, answers and choices, more variety in them, and the model's best ideas brought back as written lines everyone gets.
 
 ## Credits
 
