@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 172;
+        public const int CurrentVersion = 171;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -130,7 +130,6 @@ namespace EnrageWestworld.Core
         public bool NameCardsSecondLine = true;   // the line under the name (temper, trade, Stranger, gang); off: the name alone (players, 2026-10-30; settings version 117)
         public bool WhosWho = true;               // for everyone (Lex, 2026-10-30; MindLive only for its Lately): the reader (the papers key) ends with a page of the people you've met, read from what is kept (Core/WhosWho.cs; roadmap 24; night 2026-10-29; settings version 116)
         public bool GrudgeMeter = true;
-        public string VramGauge = "model";        // off | on | model: "VRAM 11.3 / 15.6 GB" at the top left, the whole card's memory in use as Windows counts it; model: only while Language is on (Lex, 2026-11-01; Core/Vram.cs; settings version 172)
 
         // [WestWorld] - the master switch and everything under it
         public bool WestWorld = true;
@@ -745,8 +744,6 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: new in this version: [Mind] MindPassingLasts (on): people near you show what they feel about what you did for hours after, not minutes; [Scenes] FavoursAsked (on): someone in money trouble may come and ask you, and Talk lists the fix; [Scenes] CourtFolkAges (on): enRAGE's townsfolk may court each other on the street; [Scenes] WarnedYou (on): someone who saw what you did may have words with you, and a friend may warn you of a grudge or the law.");
                 if (s.SettingsVersion < 171)
                     log?.Invoke("Settings: new in this version: [Mind] MindChanceMeetings (on): what passes between two people who meet by chance near you comes from their minds: friends talk and sing, foes quarrel or turn their backs, a money worry asks the other for a loan.");
-                if (s.SettingsVersion < 172)
-                    log?.Invoke("Settings: new in this version: [Display] VramGauge (model): a small gauge at the top left shows how much of your graphics card's memory is in use while the AI model is on; on shows it always, off never.");
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -891,7 +888,6 @@ namespace EnrageWestworld.Core
             NameCards = nc == "off" || nc == "everyone" ? nc : "known";
             string sto = (Storyteller ?? "lively").Trim().ToLowerInvariant();
             Storyteller = sto == "off" || sto == "calm" || sto == "wild" ? sto : "lively";
-            VramGauge = Vram.Normal(VramGauge);
             NameCardsMetres = Math.Max(5f, Math.Min(150f, NameCardsMetres));
             NameCardsKnownMetres = Math.Max(5f, Math.Min(150f, NameCardsKnownMetres));
         }
@@ -1036,7 +1032,6 @@ namespace EnrageWestworld.Core
             b.AppendLine("NameCardsSecondLine = " + B(NameCardsSecondLine) + "   ; the smaller line under each name: their temper and trade, \"Stranger\", their gang, \"Wanted\", a nemesis's mood. Off shows the name alone; NameCards = off hides the cards altogether");
             b.AppendLine("WhosWho = " + B(WhosWho) + "   ; the papers you carry end with Who's who, the people you have met, the most recent first: who they are, how they take you, who they are friends or at odds with (and, with [Mind] MindLive, how they feel about you lately); read only");
             b.AppendLine("GrudgeMeter = " + B(GrudgeMeter) + "   ; top right: strangers whose grudge against you is building, with the mark where they'd become a nemesis, and the nemesis after you");
-            b.AppendLine("VramGauge = " + VramGauge + "   ; a small gauge at the top left, under the game's own updates: how much of your graphics card's memory is in use (the game, the AI model and everything else on it), as Task Manager counts it, e.g. VRAM 11.3 / 15.6 GB; amber over 85%, red over 95%. model: only while the AI model ([Mind] Language) is on; on: always; off: never");
             b.AppendLine();
             b.AppendLine("[WestWorld]");
             b.AppendLine("WestWorld = " + B(WestWorld) + "   ; master switch: the people who start to see their world is made. false turns off everything in this section");

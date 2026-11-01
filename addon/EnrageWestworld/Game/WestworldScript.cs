@@ -546,7 +546,6 @@ namespace EnrageWestworld.InGame
 			try { BraveRestoreAll("the script stopped"); } catch { }   // the braver put back as the game had them
 			Shutdown04();
 			Save();
-			try { VramReader.Stop(); } catch { }   // the VRAM gauge's reader thread (WestworldScript.Vram.cs)
 			WatchStop();   // our own threads ended before Script Hook unloads us (a reload froze waiting on one, 2026-10-31)
 			Log.Write("Stopped.");
 		}
@@ -1184,7 +1183,6 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST horse thieves: " + HorseStatus());
 			Log.Write("TEST plans: " + PlansStatus());
 			Log.Write("TEST perf: " + PerfStatus() + "; Core compiled ahead: " + _prejitStatus);
-			Log.Write("TEST vram: " + VramStatus());
 			Log.Write("TEST save: " + SaveStatus());
 			Log.Write("TEST wake voices: " + WakeVoiceStatus());
 			Log.Write("TEST wake anim sets: " + _wakeAnimsResult);

@@ -147,9 +147,9 @@ namespace EnrageWestworld.InGame
         // who spent the frame's text (Lex, 2026-10-31: in a crowd in Saint Denis every name went): the frame's steps set
         // Part as they draw, and Take counts each part's pieces this frame; nothing is made until Spent is asked (the log)
         public const int PartOther = 0, PartTalk = 1, PartThought = 2, PartBar = 3, PartHint = 4, PartFeelings = 5, PartSubtitles = 6,
-                         PartNameCards = 7, PartMinds = 8, PartWake = 9, PartNews = 10, PartVram = 11, Parts = 12;
+                         PartNameCards = 7, PartMinds = 8, PartWake = 9, PartNews = 10, Parts = 11;
         private static readonly string[] PartWords = { "other", "the Talk menu", "the thought over a head", "the bar", "a test's words", "the feelings bars",
-                                                       "the subtitles", "the name cards", "the mind cards", "the wake tags", "the news", "the VRAM gauge" };
+                                                       "the subtitles", "the name cards", "the mind cards", "the wake tags", "the news" };
         public static int Part;
         private static readonly int[] _by = new int[Parts];
         private static int _refused;
