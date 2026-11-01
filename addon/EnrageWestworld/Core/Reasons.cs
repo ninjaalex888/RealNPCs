@@ -364,21 +364,75 @@ namespace EnrageWestworld.Core
         /// Percent of days a free person, taken with someone beside them, tries their luck (from both ids and the day).
         public const int CourtChance = 12;
 
+        /// [Scenes] CourtFolkAges (NIGHT4 item 5): enRAGE's townsfolk keep no birth year, so Romance.AgeOf is -1 for them and
+        /// no courtship with one of them was ever made; with this on, Courtship alone reads an age guessed from who they
+        /// are (Romance.AgeOrGuess, the guess the links and the worries already use). Children and the player's romance
+        /// never read a guess.
+        public static bool CourtGuessAges = true;
+
+        /// Why Courtship gave nothing, counted (F7 TEST reasons:): not a courting place, an age unknown, under age, too many
+        /// years apart, not drawn, spoken for, not today, not taken with them; and how many it made.
+        public static readonly int[] CourtWhyNot = new int[9];
+        public const int CourtNotPlace = 0, CourtAgeUnknown = 1, CourtUnder = 2, CourtApart = 3, CourtNotDrawn = 4, CourtSpokenFor = 5, CourtNotToday = 6, CourtNotTaken = 7, CourtMade = 8;
+
+        public static string CourtStatus()
+        {
+            int[] c = CourtWhyNot;
+            return "courtships " + c[CourtMade] + "; passed over: not a courting place " + c[CourtNotPlace] + ", age unknown " + c[CourtAgeUnknown] + ", under age " + c[CourtUnder] +
+                   ", apart " + c[CourtApart] + ", not drawn " + c[CourtNotDrawn] + ", spoken for " + c[CourtSpokenFor] + ", not today " + c[CourtNotToday] + ", not taken " + c[CourtNotTaken] +
+                   (CourtGuessAges ? " (townsfolk ages guessed)" : " (townsfolk ages unknown: CourtFolkAges off)");
+        }
+
         /// x, free, drawn to y and not against them (x's own answer, judged as the player is: Interest, a yes or a maybe:
         /// it takes some nerve, but a maybe is enough to try), tries their luck; y answers by what y makes of x. Kind "court:answer:why". Never anyone spoken for or under age, nor more
         /// than 15 years apart; only between people with no tie yet (Between calls Own only then).
         public static Reason Courtship(Someone x, Someone y, long gameDay, Place where)
         {
-            if (where == null || !where.Courting || x == null || y == null || x.Id == y.Id || x.P == null || y.P == null || x.Taken)
+            if (where == null || !where.Courting)
+            {
+                CourtWhyNot[CourtNotPlace]++;
                 return null;
-            int ax = Romance.AgeOf(x.P), ay = Romance.AgeOf(y.P);
-            if (ax < 18 || ay < 18 || System.Math.Abs(ax - ay) > 15 || !Romance.DrawnTo(x.Id, x.Woman, y.Woman, where.SameSex))
+            }
+            if (x == null || y == null || x.Id == y.Id || x.P == null || y.P == null)
                 return null;
+            if (x.Taken)
+            {
+                CourtWhyNot[CourtSpokenFor]++;
+                return null;
+            }
+            int ax = CourtGuessAges ? Romance.AgeOrGuess(x.P) : Romance.AgeOf(x.P), ay = CourtGuessAges ? Romance.AgeOrGuess(y.P) : Romance.AgeOf(y.P);
+            if (ax < 0 || ay < 0)
+            {
+                CourtWhyNot[CourtAgeUnknown]++;
+                return null;
+            }
+            if (ax < 18 || ay < 18)
+            {
+                CourtWhyNot[CourtUnder]++;
+                return null;
+            }
+            if (System.Math.Abs(ax - ay) > 15)
+            {
+                CourtWhyNot[CourtApart]++;
+                return null;
+            }
+            if (!Romance.DrawnTo(x.Id, x.Woman, y.Woman, where.SameSex))
+            {
+                CourtWhyNot[CourtNotDrawn]++;
+                return null;
+            }
             if (Voice.Hash(x.Id + "|" + y.Id + "|" + gameDay + "|court") % 100 >= CourtChance)
+            {
+                CourtWhyNot[CourtNotToday]++;
                 return null;   // not today
+            }
             string mine, why;
             if (Interest.Answer(ViewOf(x, y, gameDay, where), out mine) == "no")
+            {
+                CourtWhyNot[CourtNotTaken]++;
                 return null;   // x isn't taken with y
+            }
+            CourtWhyNot[CourtMade]++;
             string answer = Interest.Answer(ViewOf(y, x, gameDay, where), out why);
             // a romance beginning outweighs an everyday snap (45); a rebuff is a smaller thing to see
             return new Reason { Kind = "court:" + answer + ":" + why, Strength = answer == "yes" ? 52 : answer == "maybe" ? 48 : 42,

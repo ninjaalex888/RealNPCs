@@ -14,6 +14,7 @@ namespace EnrageWestworld.InGame
             Observed.RecklessChance = _cfg.WatchedRecklessChance;
             Observed.ChurchMetres = _cfg.WatchedChurchMetres;
             Lonely.CompanyBar = _cfg.LonelyNeed;
+            Reasons.CourtGuessAges = _cfg.CourtFolkAges;   // townsfolk court with an age guessed (NIGHT4 item 5)
             Lonely.WaitMs = _cfg.LonelyWaitSeconds * 1000;
             Lonely.StungRest = _cfg.LonelyRestDays * 1440L;
             Thanks.After = _cfg.ThanksAfterHours * 60L;

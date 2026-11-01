@@ -98,6 +98,23 @@ namespace EnrageWestworld.Core
 			return Voice.NowYear - p.BornYear;
 		}
 
+		/// The age, or for one with no birth year kept (enRAGE's townsfolk) a guess from who they are: 20 to 64, the same
+		/// guess the links (Links.cs) and the worries (InnerLife.Worries.cs) make, so a person's age agrees everywhere. For
+		/// the street's courtships only (Reasons.Courtship with CourtGuessAges); Adult, children and the player's romance
+		/// read AgeOf.
+		public static int AgeOrGuess(Person p)
+		{
+			if (p == null)
+			{
+				return -1;
+			}
+			if (p.BornYear > 0)
+			{
+				return Voice.NowYear - p.BornYear;
+			}
+			return p.Id != null ? 20 + Voice.Hash(p.Id + "|age") % 45 : -1;
+		}
+
 		public static bool Adult(Person p)
 		{
 			return AgeOf(p) >= 18;
