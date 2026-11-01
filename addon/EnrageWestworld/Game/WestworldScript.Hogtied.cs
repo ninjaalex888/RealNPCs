@@ -169,7 +169,7 @@ namespace EnrageWestworld.InGame
                     TASK.CLEAR_PED_TASKS_IMMEDIATELY(ch, true, true);
                     TASK.TASK_START_SCENARIO_IN_PLACE_HASH(ch, Natives.Hash(ExecKneel), -1, true, 0u, -1f, false);
                 }
-                Log.Write("ENCOUNTER hogtied: " + h.Name + (h.Tied ? " is hogtied (the game's own, TASK_KNOCKED_OUT_AND_HOGTIED: seen to take)" : " didn't stay hogtied (IS_PED_HOGTIED false at 2 s): kneeling, bound by words"));
+                Log.Write("ENCOUNTER hogtied: " + h.Name + (h.Tied ? " is hogtied (the game's own, TASK_KNOCKED_OUT_AND_HOGTIED: seen to take; its escape timer reads " + TASK._GET_HOGTIE_ESCAPE_TIMER(ch).ToString("0") + ")" : " didn't stay hogtied (IS_PED_HOGTIED false at 2 s): kneeling, bound by words"));
             }
             switch (h.Phase)
             {
@@ -219,6 +219,7 @@ namespace EnrageWestworld.InGame
             _encounterPeds.Add(ch);
             StagedHold(c);
             TASK.TASK_KNOCKED_OUT_AND_HOGTIED(ch, 0f, 0);   // the game's own hogtie (unproven here: checked at 2 s)
+            TASK._SET_HOGTIE_ESCAPE_TIMER(ch, 600f);   // long enough for you to ride up before they work free by themselves (the game's escape; unproven: the log reads it back)
             h.CheckAt = now + 2000;
             for (int i = 0; i < h.MenModels.Count; i++)
             {
@@ -566,6 +567,8 @@ namespace EnrageWestworld.InGame
                 if (p == null)
                     continue;
                 _staged.Remove(p.Handle);
+                if (p != h.Captive && !h.FairGame || p.Exists() && !p.IsDead && !ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(p.Handle, me.Handle, true, false))
+                    _cameAtYouSeen.Remove(p.Handle);   // a handle the game may give someone else; one you fought stays judged as he started it
                 bool alive = p.Exists() && !p.IsDead;
                 bool seen = alive && ENTITY.IS_ENTITY_ON_SCREEN(p.Handle);
                 bool enrageKnows = alive && _bridge != null && _bridge.Looked(p.Handle);

@@ -473,6 +473,8 @@ namespace EnrageWestworld.InGame
             }
             if (c.FairGame && c.Man != null && c.Man.Exists() && !c.Man.IsDead)
                 PED.SET_PED_CONFIG_FLAG(c.Man.Handle, 6, false);   // an ordinary man again once it's over (dead, he stays as he fell)
+            if (c.FairGame && c.Man != null && !c.YouHit)
+                _cameAtYouSeen.Remove(c.Man.Handle);   // he walks the street after: no longer fair game (a fight you had with him stays judged as one he started, as the execution's men)
             foreach (Ped p in new[] { c.Man, c.Neighbour, c.Law })
                 if (p != null && !(p == c.Man && c.YouHit))
                     StagedLetGo(p, true);
