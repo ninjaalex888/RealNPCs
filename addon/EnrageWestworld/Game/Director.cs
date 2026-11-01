@@ -485,6 +485,24 @@ namespace EnrageWestworld.InGame
         {
             Log.Write("SCENE " + (l.Side ? "(beside) " : ReferenceEquals(l, _second) ? "(second) " : "") + "stopped after " + l.Index + " of " + l.Scene.Beats.Count + " beats: " + why);
             End(l);
+            LetGoCutShort(l);
+        }
+
+        /// A scene cut off before its end (a reload, a mission, the player gone) leaves its people holding its last task: stood
+        /// still facing someone, a gesture held (Lex, 2026-11-01: after an Insert reload "quite a few NPCs near me are in a
+        /// frozen state", gone once he walked away). Each one free of a scenario, not down and not the player is sent on his
+        /// way: their tasks cleared and a wander the same tick. Someone in a scenario is left in it (a bare clear froze them).
+        private void LetGoCutShort(Live l)
+        {
+            for (int i = 0; i < l.Cast.Length; i++)
+            {
+                Ped p = l.Cast[i];
+                if (p == null || !p.Exists() || p.Handle == _player || ENTITY.IS_ENTITY_DEAD(p.Handle) || l.Out.Contains(p.Handle) ||
+                    PED.IS_PED_USING_ANY_SCENARIO(p.Handle) || PED.IS_PED_RAGDOLL(p.Handle))
+                    continue;
+                TASK.CLEAR_PED_TASKS(p.Handle, true, false);
+                TASK.TASK_WANDER_STANDARD(p.Handle, 10f, 10);
+            }
         }
 
         private void End(Live l)
