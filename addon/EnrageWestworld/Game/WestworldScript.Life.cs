@@ -269,7 +269,8 @@ namespace EnrageWestworld.InGame
                     if (by == "wait")
                         return true;   // the model has 2.5 s to pick among the mind's likeliest; ChanceWaitStep plays it
                 }
-                s = ChanceKindScene(kind, cast, seed, a, b, crowd, people, ref by);
+                using (Voice.FreshScope(_cfg.SaidLately))   // the street's talk avoids lines said lately (the no-model run, item 5)
+                    s = ChanceKindScene(kind, cast, seed, a, b, crowd, people, ref by);
             }
             return ChancePlay(s, people, a, b, cast, seed, me, saloon, now, asSecond, by);
         }

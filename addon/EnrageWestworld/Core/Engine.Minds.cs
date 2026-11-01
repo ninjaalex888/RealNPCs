@@ -667,6 +667,9 @@ namespace EnrageWestworld.Core
         // last few thoughts pulls less, so the weather, the place, the trade and the small day get their turn. In memory,
         // capped, cleared with the rest; off, exactly the old choice.
         public const int FrameMinutes = 60, SpreadWindow = 8;
+        // how long a frame is remembered as heard: about an hour of play (1,800 game minutes at 2 s a minute), not the last few
+        // minutes (the no-model run, item 5: a ride hour was 22% repeats, hours 2-3 43-50%); the source spread keeps its hour
+        public const int HeardMinutes = 1800;
         public const double SpreadPerHit = 0.35;   // each of the last eight thoughts from the same source divides its pull by (1 + this)
         private readonly Dictionary<string, long> _recentFrames = new Dictionary<string, long>();
         private readonly List<KeyValuePair<string, long>> _recentSources = new List<KeyValuePair<string, long>>();
@@ -692,13 +695,23 @@ namespace EnrageWestworld.Core
         private bool FrameHeard(string text, long now)
         {
             long at;
-            return _recentFrames.TryGetValue(FrameKey(text), out at) && now - at >= 0 && now - at < FrameMinutes;
+            return _recentFrames.TryGetValue(FrameKey(text), out at) && now - at >= 0 && now - at < HeardMinutes;
         }
 
         private void NoteShown(string source, string text, long now)
         {
-            if (_recentFrames.Count > 2000)
-                _recentFrames.Clear();
+            if (_recentFrames.Count > 4000)
+            {
+                // the frames past the hour go (a wholesale clear would forget the hour too); everything only if that leaves too many
+                var old = new List<string>();
+                foreach (KeyValuePair<string, long> kv in _recentFrames)
+                    if (now - kv.Value >= HeardMinutes || now < kv.Value)
+                        old.Add(kv.Key);
+                foreach (string k in old)
+                    _recentFrames.Remove(k);
+                if (_recentFrames.Count > 4000)
+                    _recentFrames.Clear();
+            }
             _recentFrames[FrameKey(text)] = now;
             _recentSources.Add(new KeyValuePair<string, long>(SourceGroup(source), now));
             while (_recentSources.Count > SpreadWindow)
@@ -758,6 +771,7 @@ namespace EnrageWestworld.Core
             _thought.Clear();
             _today.Clear();
             _recentFrames.Clear();
+            Voice.FreshClear();
             _recentSources.Clear();
             _worryWear.Clear();
             _dossierWear.Clear();
@@ -796,6 +810,8 @@ namespace EnrageWestworld.Core
                 // rather than nothing
                 foreach (Minds.Candidate k in ordered)
                 {
+                    // a line the guard turns down stays marked as thought by them (InnerLife.Pick marks it as it gives it): taking the
+                    // mark off was tried (the no-model run, item 5) and cost each person variety (ticktest 588 -> 525 distinct)
                     string text = k.Make();
                     if (string.IsNullOrEmpty(text) || said.Contains(text))
                         continue;

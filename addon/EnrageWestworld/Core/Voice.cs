@@ -36,7 +36,62 @@ namespace EnrageWestworld.Core
 
         public static string Pick(string seed, params string[] options)
         {
-            return options.Length == 0 ? string.Empty : options[Hash(seed) % options.Length];
+            if (options.Length == 0)
+                return string.Empty;
+            int i = Hash(seed) % options.Length;
+            if (FreshDepth > 0 && options.Length > 1)
+                i = FreshIndex(options, i);
+            return options[i];
+        }
+
+        // Said lately (the no-model run, item 5; [Ticker] SaidLately): while a street scene's lines are being made (FreshScope,
+        // the game side only), a line of three words or more said in the last ~300 such lines gives way to the next one in its
+        // pool that wasn't, so the street's talk repeats far less in an hour. Outside the scope (names, histories, everything
+        // that must come out the same from the same seed, and every offline golden) Pick is exactly as it was.
+        [ThreadStatic] private static int FreshDepth;
+        private const int FreshKeep = 300;
+        private static readonly HashSet<int> FreshSaid = new HashSet<int>();
+        private static readonly Queue<int> FreshOrder = new Queue<int>();
+        public static int FreshSwaps;   // for F7
+
+        private static int FreshIndex(string[] options, int i)
+        {
+            if (options[i] == null || options[i].Count(ch => ch == ' ') < 2)
+                return i;   // a word or two (a matter, a kind): not a line
+            for (int t = 0; t < options.Length; t++)
+            {
+                int k = (i + t) % options.Length;
+                int h = Hash(options[k] ?? "");
+                if (FreshSaid.Contains(h))
+                    continue;
+                if (t > 0)
+                    FreshSwaps++;
+                FreshSaid.Add(h);
+                FreshOrder.Enqueue(h);
+                while (FreshOrder.Count > FreshKeep)
+                    FreshSaid.Remove(FreshOrder.Dequeue());
+                return k;
+            }
+            return i;   // the whole pool said lately: the seed's own
+        }
+
+        /// Lines picked inside the scope avoid those said lately; ends when disposed. Nothing changes with it off.
+        public static IDisposable FreshScope(bool on)
+        {
+            return new Fresh(on);
+        }
+
+        private sealed class Fresh : IDisposable
+        {
+            private bool _on;
+            public Fresh(bool on) { _on = on; if (on) FreshDepth++; }
+            public void Dispose() { if (_on) { FreshDepth--; _on = false; } }
+        }
+
+        public static void FreshClear()
+        {
+            FreshSaid.Clear();
+            FreshOrder.Clear();
         }
 
         public static bool Chance(string seed, int percent)

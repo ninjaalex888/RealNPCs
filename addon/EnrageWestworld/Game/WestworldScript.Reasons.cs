@@ -586,6 +586,12 @@ namespace EnrageWestworld.InGame
         /// `note`: a courtship is noted (its tie and thoughts); a test doesn't. Shared by ReasonScene and the Testing page.
         private Scene BuildSceneFor(string kind, Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, bool apart, bool note, string courtAnswer = null)
         {
+            using (Voice.FreshScope(_cfg.SaidLately))   // the street's talk avoids lines said lately (the no-model run, item 5)
+                return BuildSceneOf(kind, first, second, doer, done, cast, seed, apart, note, courtAnswer);
+        }
+
+        private Scene BuildSceneOf(string kind, Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, bool apart, bool note, string courtAnswer)
+        {
             if (kind == "avoid")
                 return Scenes.Avoid(cast, seed);
             if (kind == "condole")

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Thoughts vary over an hour of play.** No two people near you think the same thought-shape within about an hour of play, where before it was the last few minutes: in the ride test the share of thoughts you had already seen fell from 22% to 0% in the first hour, 43% to 27% in the second and 50% to 40% in the third, with the same lines, and on a quiet day the plain filler gives way to the day, the times and what is going on. The street's scenes and chance meetings pass over lines said lately too (`[Mind] SaidLately`, on; their exact repeats in an hour 15% to 12%). No AI model needed (settings version 183).
+
 ## 0.7.15 (2026-11-01)
 
 Brawls at the bar that grow, thoughts said aloud and scenes people start for their own reasons without the AI model, the game's voices known to every player, and Alt+F or Alt+R for the settings.
