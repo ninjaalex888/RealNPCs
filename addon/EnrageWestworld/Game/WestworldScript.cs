@@ -1212,6 +1212,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST rough: " + RoughStatus());
 			Log.Write("TEST reactions: " + ReactionsStatus());
 			Log.Write("TEST passing: " + PassingStatus());
+			Log.Write("TEST nods you: " + YouNodStatus());
 			Log.Write("TEST sights: " + SightsStatus());
 			Log.Write("TEST kindness: " + KindnessStatus());
 			Log.Write("TEST onlookers: " + OnlookersStatus());

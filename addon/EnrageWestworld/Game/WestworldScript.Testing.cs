@@ -374,6 +374,9 @@ namespace EnrageWestworld.InGame
                     return SeatedLookTest(now);   // WestworldScript.MindActs.cs
                 case "nod":
                     return NodFire(now, out skipped);
+                case "younod":
+                    skipped = "the five minutes a person and their facing you";
+                    return YouNodTest(now);   // WestworldScript.ToYou.cs
                 case "musing":
                     if (!_cfg.HostsQuestionReality)
                         return "HostsQuestionReality is off";

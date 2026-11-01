@@ -19,8 +19,11 @@ namespace EnrageWestworld.Core
         /// What someone does as the player passes, by what they feel about him; null for nothing. `spokeToday`: they gave
         /// him a spoken greeting already this game day (a nod after that). `you`: his surname when they know his name (he
         /// told them, or they asked): the grateful, the sore and the shamed think of him by it, not as a stranger. The
-        /// spoken greeting stays the voice's own (its recorded words, not ours: the review).
-        public static Act ToYou(List<FeltAt> felt, bool woman, string temper, long now, string seed, bool spokeToday = false, string you = null)
+        /// spoken greeting stays the voice's own (its recorded words, not ours: the review). `moodFade` ([Mind] MindPassingLasts,
+        /// NIGHT4 item 5): how strong a feeling still is by the mood's slower fading (Mood.Weight: hours for a slight, as
+        /// Lonely.Sore reads it), not the feeling's own quick one (Mood.Lasting: anger of 0.5 was under MindLeft by 29 game
+        /// minutes, so a feeling past MindAfter showed for about 14 game minutes, and nobody nodded in 3.5 hours).
+        public static Act ToYou(List<FeltAt> felt, bool woman, string temper, long now, string seed, bool spokeToday = false, string you = null, bool moodFade = false)
         {
             if (felt == null)
                 return null;
@@ -30,7 +33,7 @@ namespace EnrageWestworld.Core
             {
                 if (!AboutB(f, "player") || now - f.At < MindAfter)
                     continue;
-                float l = Mood.Lasting(f, now);
+                float l = moodFade ? Mood.Weight(f, now) : Mood.Lasting(f, now);
                 if (f.Kind >= 0 && f.Kind < Feeling.Kinds.Length && Feeling.Kinds[f.Kind] == "fear" && l > fear)
                     fear = l;
                 if (l > left)
