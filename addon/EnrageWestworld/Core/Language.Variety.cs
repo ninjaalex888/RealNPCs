@@ -153,7 +153,7 @@ namespace EnrageWestworld.Core
                 return "";
             string s = " This time the thought is " + (r.Shape ?? Shapes[0]) + ". Start it differently from their thoughts lately.";
             if (r.Stage >= Awakening.Questioning)
-                return s;   // the waking's own brief says what they have come to see
+                return s + AvoidOpenings(r);   // the waking's own brief says what they have come to see; the openings to avoid named (NIGHT4 fix 8)
             if (!MayDoubt(r))
                 return s + " They have no cause to doubt the world is what it seems: an ordinary person on an ordinary day, never wondering whether it is real.";
             return s + " They have lived through something strange (below). Only if it comes to them on its own may they half-wonder at the world; most days their mind is on other things.";
@@ -173,6 +173,24 @@ namespace EnrageWestworld.Core
                     return "too like a thought lately";
             }
             return null;
+        }
+
+        /// The openings of their last three thoughts, named so the model starts elsewhere (NIGHT4 fix 8: 16 of the waking's picks'
+        /// thoughts were held for opening as a recent one); "" with none.
+        public static string AvoidOpenings(LanguageRequest r)
+        {
+            if (r == null || r.Recent.Count == 0)
+                return "";
+            var open = new List<string>();
+            foreach (string t in r.Recent)
+            {
+                string o = Opening(t);
+                if (o != null && !open.Contains(o))
+                    open.Add(o);
+                if (open.Count >= 3)
+                    break;
+            }
+            return open.Count == 0 ? "" : " Do not begin with '" + string.Join("', '", open) + "'.";
         }
 
         private static readonly Regex FirstWords = new Regex(@"\p{L}+(?:'\p{L}+)?", RegexOptions.CultureInvariant);

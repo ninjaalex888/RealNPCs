@@ -172,7 +172,12 @@ namespace EnrageWestworld.Core
             "Pinkerton", "Pinkertons", "Union", "Confederate", "Confederacy", "Rebs", "Yankee", "Yankees",
             "American", "Americans", "Irish", "Italian", "Italians", "Sicilian", "Sicilians", "German", "Germans", "French", "Creole", "Mexican", "Mexicans", "Chinese", "English", "Scotch", "Swede", "Swedes", "Dutch", "Jew", "Jews", "Indian", "Indians",
             "Valentine", "Rhodes", "Strawberry", "Blackwater", "Armadillo", "Tumbleweed", "Annesburg", "Emerald", "Van", "Horn", "Saint", "Denis", "Lagras", "Colter", "Thieves", "Landing",
-            "Lemoyne", "Hanover", "Elizabeth", "Austin", "Ambarino", "Heartlands", "Bayou", "Nwa", "Texas", "Mexico", "Louisiana", "Mississippi", "California", "Chicago", "New", "York", "Orleans", "West", "East", "North", "South", "Lannahechee", "Dakota", "Kamassa", "Grizzlies"
+            "Lemoyne", "Hanover", "Elizabeth", "Austin", "Ambarino", "Heartlands", "Bayou", "Nwa", "Texas", "Mexico", "Louisiana", "Mississippi", "California", "Chicago", "New", "York", "Orleans", "West", "East", "North", "South", "Lannahechee", "Dakota", "Kamassa", "Grizzlies",
+            // NIGHT4 fix 8, the false holds of an evening: God's pronouns and the old second person, the street's own words, the states and Baton Rouge
+            "He", "His", "Him", "Himself", "Thy", "Thee", "Thou", "Thine", "Main", "Street", "Widow", "Livery", "Station", "Baton", "Rouge",
+            "Alabama", "Arizona", "Arkansas", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Maine", "Maryland",
+            "Massachusetts", "Michigan", "Minnesota", "Missouri", "Montana", "Nebraska", "Nevada", "Hampshire", "Jersey", "Carolina", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode", "Island",
+            "Tennessee", "Utah", "Vermont", "Virginia", "Washington", "Wisconsin", "Wyoming", "Territory"
         };
 
         // words that break the frame whatever the line (a plural counts too)
@@ -205,14 +210,14 @@ namespace EnrageWestworld.Core
             if (modern != null)
                 return "a modern word (" + modern + ")";
             HashSet<string> names = r != null ? r.Names() : new HashSet<string>();
-            Func<string, bool> allowed = w => Common.Contains(w) || names.Contains(w) || w.EndsWith("'s", StringComparison.Ordinal) && (names.Contains(w.Substring(0, w.Length - 2)) || Common.Contains(w.Substring(0, w.Length - 2)));
+            Func<string, bool> allowed = w => { string stem = Stem(w); return Common.Contains(w) || names.Contains(w) || stem != w && (names.Contains(stem) || Common.Contains(stem)); };   // (Pa'd, Ma'll, Hale's: NIGHT4 fix 8)
             foreach (Match m in Inner.Matches(plain))
                 if (!allowed(m.Value))
                     return "a name it wasn't given (" + m.Value + ")";
             // a sentence may start with a name too: one of the names the add-on gives people, not given here
             foreach (Match m in Starts.Matches(plain))
             {
-                string w = m.Groups[2].Value, bare = w.EndsWith("'s", StringComparison.Ordinal) ? w.Substring(0, w.Length - 2) : w;
+                string w = m.Groups[2].Value, bare = Stem(w);
                 if (!allowed(w) && (Residents.IsName(bare) || Scenes.IsName(bare)))
                     return "a name it wasn't given (" + w + ")";
             }
@@ -233,6 +238,45 @@ namespace EnrageWestworld.Core
                     return same;
             }
             return null;
+        }
+
+        /// A capitalised word without a contraction or a possessive after it ('s, 'd, 'll, 've, 're): "Pa'd" -> "Pa".
+        public static string Stem(string w)
+        {
+            if (w == null)
+                return null;
+            int q = w.IndexOf('\'');
+            if (q <= 0)
+                return w;
+            string tail = w.Substring(q);
+            return tail == "'s" || tail == "'d" || tail == "'ll" || tail == "'ve" || tail == "'re" ? w.Substring(0, q) : w;
+        }
+
+        /// A thought over MaxChars cut back at its last clause end within the limit (a full stop, a question or exclamation, a
+        /// semicolon, a comma or a dash), when at least 40 characters remain; a comma, semicolon or dash ending becomes a full
+        /// stop. Else the thought as it was (the check holds it). NIGHT4 fix 8: 27 picks' thoughts were held for 111-147 characters.
+        public static string Fit(string t)
+        {
+            if (t == null)
+                return null;
+            string a = t.Trim();
+            if (a.Length <= MaxChars)
+                return a;
+            for (int i = MaxChars - 1; i >= 39; i--)
+            {
+                char c = a[i];
+                bool end = c == '.' || c == '!' || c == '?';
+                bool clause = c == ',' || c == ';' || c == '—' || c == ':' || (c == '-' && a[i - 1] == ' ');
+                if (!end && !clause)
+                    continue;
+                if (end && i + 1 < a.Length && a[i + 1] != ' ')
+                    continue;   // "3.5" or "Mr.Hale": not the end of anything
+                string kept = a.Substring(0, end ? i + 1 : i).TrimEnd(' ', '-', '—');
+                if (kept.Length < 40)
+                    return a;
+                return end ? kept : kept + ".";
+            }
+            return a;
         }
 
         /// How alike two lines are by their words (the line tools' measure: the share of words in common).

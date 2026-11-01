@@ -69,18 +69,22 @@ namespace EnrageWestworld.Core
         // Asked as two lines, "Thought: ..." then "Choice: N", so the thought over their head is the one the choice came
         // from. The thought is held to the same rules as any other (Check); the choice is read as before.
 
-        /// The pick's brief, with the thought's rules after it.
+        /// The pick's brief, with the thought's rules after it. The number comes first (NIGHT4 fix 8), so an answer cut off by
+        /// num_predict keeps its choice; the thought has the ordinary brief's limits and examples (67 picks' thoughts were held
+        /// in an evening, 27 of them too long: the pick brief had no character limit and no examples).
         public static string ThinkPickBrief(LanguageRequest r)
         {
             return PickBrief(r).Replace(" Answer with its number alone.", "") +
-                   " First write the private thought in their head as they decide: " + (r != null && r.Varied ? "short" : "short fragments") + ", the way people think, not speak, " + MaxWords + " words at most, " +
-                   "plain words of the time, no modern words, no poetry, never a name you were not given, never a mention of video games. Then the number of what they do. " +
-                   "Answer in exactly two lines, nothing else:\nThought: the thought\nChoice: the number" + VarietyBrief(r);
+                   " Give the number of what they do, and the private thought in their head as they decide: " + (r != null && r.Varied ? "short" : "short fragments") + ", the way people think, not speak, " +
+                   MaxWords + " words at most, " + MaxChars + " characters at most, " +
+                   "plain words of the time, no modern words, no poetry, never a name you were not given, never a mention of video games. " +
+                   "The shape, not the words, of these: " + Examples[0] + " | " + Examples[1] + " | " + Examples[2] + " " +
+                   "Answer in exactly two lines, nothing else, the number first:\nChoice: the number\nThought: the thought" + VarietyBrief(r);
         }
 
         public static string ThinkPickPrompt(LanguageRequest r)
         {
-            return PickPrompt(r).Replace("Which do they do? The number alone.", "What do they think, and which do they do? Two lines: Thought, then Choice.");
+            return PickPrompt(r).Replace("Which do they do? The number alone.", "Which do they do, and what do they think? Two lines: Choice, then Thought.");
         }
 
         public static string ThinkPickBody(string model, LanguageRequest r)
@@ -88,7 +92,7 @@ namespace EnrageWestworld.Core
             var b = new StringBuilder(1024);
             b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(ThinkPickBrief(r))).Append(",\"prompt\":").Append(JsonString(ThinkPickPrompt(r)));
             b.Append(",\"stream\":false,\"keep_alive\":\"30m\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append((r != null && r.Varied ? 0.85 : 0.7).ToString("0.00", CultureInfo.InvariantCulture))   // a little more freedom for the varied thought (the choice still reads)
-             .Append(",\"num_predict\":72,\"stop\":[\"\\n\\n\\n\"]}}");   // a blank line comes between the two: stopping at one lost the choice (sampled 2026-10-31)
+             .Append(",\"num_predict\":48,\"stop\":[\"\\n\\n\\n\"]}}");   // a blank line comes between the two: stopping at one lost the choice (sampled 2026-10-31); 48 since the number comes first (72 before)
             return b.ToString();
         }
 
@@ -110,7 +114,7 @@ namespace EnrageWestworld.Core
                     choice = ParsePick(line.Substring(7), count);
                 else if (choice < 0 && thought != null && line.Length > 0 && line.Length <= 4 && char.IsDigit(line[0]))
                     choice = ParsePick(line, count);   // a bare number on the line after the thought (seen in sampling)
-                else if (thought == null && choice < 0 && line.Length > 4 && !char.IsDigit(line[0]))
+                else if (thought == null && line.Length > 4 && !char.IsDigit(line[0]))   // (before or after the choice: the number comes first since NIGHT4)
                 {
                     thought = Tidy(line);   // the thought without its label, a number lines below (sampled 2026-10-31: 3 in 90)
                     unlabeled = true;
@@ -118,6 +122,7 @@ namespace EnrageWestworld.Core
             }
             if (choice < 0 && unlabeled)
                 choice = ParsePick(answer, count);   // one unlabeled line with the number in it reads as it always did
+            thought = Fit(thought);   // cut back at a clause end rather than held for its length (NIGHT4 fix 8)
             if (thought != null && thought.Length > 1 && char.IsLower(thought[0]))
                 thought = char.ToUpperInvariant(thought[0]) + thought.Substring(1);
             if (choice < 0 && thought == null)
