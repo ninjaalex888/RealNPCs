@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 173;
+        public const int CurrentVersion = 174;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -82,6 +82,8 @@ namespace EnrageWestworld.Core
         public bool MindRetries = true;   // with MindActs: a choice that never acted for a reason that passes (sat, riding, busy, the gap) is tried again at the minute's recheck, the model asked first; seated people may be asked by the model, offered only what they can do from a seat (NIGHT4 fix 3; settings version 166)
         public bool MindActsScenarios = true;   // with MindActs: people sat or leaning get up (the waking's way, never pulled) for a choice that needs them on their feet, and rests, meals, drinks and work go to the game's own spots of that kind (a bench, a wall, the bar, a broom), a few at a time near you (0.7.12 stage 1; settings version 168)
         public bool ActThoughts = true;   // a written thought over someone near and in view as an act their own mind chose begins (what moves them to it: tired, thirsty, sore at someone, wanting company; needs MindLive and MindActs), and as an encounter's turn is settled by their own mind (callouts, a domestic, the hogtied, a favour, a warning); works without the AI model: with it on and answering, its own thought comes first (the no-model run, item 1; settings version 173)
+        public int ActThoughtEachSeconds = 90;   // a person's act thought at most once in this many seconds (Lex, 2026-11-01: livelier; 180 as built); settings version 174
+        public int ActThoughtGapSeconds = 15;    // never within this many seconds of another, different thought of theirs (45 as built; a repeat of the same line doesn't count)
         public bool LadderShots = true;   // with MindLive and QuarrelLadder: a quarrel the ladder takes to the shot is fired, deadly as in 1899 (Lex, 2026-10-30; settings version 132); off: the standoff breaks off, as before
         public bool MindJoinFights = true;   // with MindLive: an onlooker may join a fistfight on a side, by their nature, drink, and ties to those fighting (Core/JoinIn.cs; the NPC-life run, Lex 2026-10-30; settings version 128)
         public bool MindBrawls = true;       // with MindLive and MindJoinFights: a fight may grow into a brawl, a wave at a time, up to BrawlMost; the law at hand holds most back, not all (Core/Brawl.cs; Lex, 2026-10-31; settings version 160)
@@ -755,6 +757,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: new in this version: [Mind] MindChanceMeetings (on): what passes between two people who meet by chance near you comes from their minds: friends talk and sing, foes quarrel or turn their backs, a money worry asks the other for a loan.");
                 if (s.SettingsVersion < 173)
                     log?.Invoke("Settings: new in this version: [Mind] ActThoughts (on): as someone near you starts what their own mind chose, and at each turn of an encounter, a thought over their head says what moved them to it; written lines, no AI model needed.");
+                if (s.SettingsVersion < 174)
+                    log?.Invoke("Settings: new in this version: [Mind] ActThoughtEachSeconds (90) and ActThoughtGapSeconds (15): thoughts with what people choose to do come more often, and to people right beside you too; and an encounter shows both the reason for a quarrel and the first answer to it.");
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -777,6 +781,8 @@ namespace EnrageWestworld.Core
             WakeStripChance = Math.Max(0, Math.Min(100, WakeStripChance));
             WakeLashOut = Math.Max(0, Math.Min(100, WakeLashOut));
             PickMetres = Math.Max(5, Math.Min(60, PickMetres));
+            ActThoughtEachSeconds = Math.Max(20, Math.Min(600, ActThoughtEachSeconds));
+            ActThoughtGapSeconds = Math.Max(0, Math.Min(120, ActThoughtGapSeconds));
             PicksAtOnce = Math.Max(1, Math.Min(16, PicksAtOnce));
             BrawlMost = Math.Max(Brawl.LeastAtAll, Math.Min(Brawl.MostAtAll, BrawlMost));
             BrawlDrawShare = Math.Max(0, Math.Min(100, BrawlDrawShare));
@@ -972,6 +978,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("MindRetries = " + B(MindRetries) + "   ; with MindActs: someone whose mind chose something they could not do just then (sat, on a horse, busy) tries again a minute later, up to three times; the AI model may be asked for people sat or leaning too, offered only what they can do from where they sit");
             b.AppendLine("MindActsScenarios = " + B(MindActsScenarios) + "   ; with MindActs: people sat or leaning get up when their minds want something else (a bench, the bar, a wall to lean on, their work, a walk home, someone to talk to), the game's own way and never pulled out of a chair; rests, meals, drinks and work go to a spot of that kind nearby (a bench or steps, a wall or a post, the bar rail, a broom), else something fitting where they stand; one starts every few seconds near you, three at most at once, never two side by side");
             b.AppendLine("ActThoughts = " + B(ActThoughts) + "   ; a thought over the head of someone near you as they start what their own mind chose (heading home tired, a drink for the thirst, keeping clear of you; with MindActs) and at each turn of an encounter they settle themselves (a callout, a domestic, the hogtied, a favour, a warning); written lines, works without the AI model (with the model on and answering, its own thought comes first and these fill in where it gave none); one person at most once in 3 minutes, never on top of another thought of theirs");
+            b.AppendLine("ActThoughtEachSeconds = " + ActThoughtEachSeconds + "   ; with ActThoughts: one person's thought with what they chose at most once in this many seconds (20 to 600)");
+            b.AppendLine("ActThoughtGapSeconds = " + ActThoughtGapSeconds + "   ; with ActThoughts: none within this many seconds of another, different thought of theirs (0 to 120)");
             b.AppendLine("LadderShots = " + B(LadderShots) + "   ; with MindLive on: a quarrel that climbs all the way to the shot is fired: the one who pushed it there fires, the other fires back if he carries a gun or runs, and whoever falls stays dead; never in a saloon, with the law near, or unless both carry guns. false: the standoff breaks off");
             b.AppendLine("MindJoinFights = " + B(MindJoinFights) + "   ; with MindLive on: while two people fight, an onlooker may join in on a side: a friend of one, someone with bad blood against the other, a drunk hothead in a saloon; most watch, fewer the bigger the crowd, nobody with the law at hand; a man against a woman seldom (1899); at most three join");
             b.AppendLine("MindBrawls = " + B(MindBrawls) + "   ; with MindLive and MindJoinFights on: a fight can grow into a brawl, a wave at a time: friends and grudges pull people in, and the bigger it gets the less it takes, likelier in a saloon or with drink; the law at hand holds most back on the street, fewer in a saloon riot; false: at most three join, never with the law near");

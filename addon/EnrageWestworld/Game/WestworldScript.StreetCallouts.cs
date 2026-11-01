@@ -307,11 +307,11 @@ namespace EnrageWestworld.InGame
                     Feed.Say(c.WA.Name, StreetCallouts.Confront(c.BName, c.Matter, c.Seed), Speech.When(ha, "angry", hb), ha);
                     c.TAsk = StagedChoose(hb, "target", StreetCallouts.Target(c.MB, c.Matter), sa + "t",
                                           id => StreetCallouts.Words("target", id, c.AName, c.BName, c.Matter), StreetCallouts.Now("target", c.AName, c.BName, c.Matter), c.AName, now);
-                    if (!StagedThink(c.TAsk, now))   // his own mind's draw: the reason for his answer (ActThoughts), else the encounter's thought as before
-                    {
-                        _ticker.Push(c.WB.Name + ", thinking", StreetCallouts.Thought("target", c.AName, c.Matter, c.Seed), "near", hb);
-                        c.TAsk.ThoughtTried = true;   // the fixed thought stood for this turn: no turn thought on top of it at a later settle
-                    }
+                    // what the quarrel is about first, then the reason for his answer (ActThoughts) after it (Lex, 2026-11-01: both)
+                    _ticker.Push(c.WB.Name + ", thinking", StreetCallouts.Thought("target", c.AName, c.Matter, c.Seed), "near", hb);
+                    NoteTheirThought(hb, now);
+                    c.TAsk.BesideReason = true;
+                    StagedThink(c.TAsk, now, true);
                     c.Phase = "answer";
                     c.NextAt = now + 3200;
                     break;

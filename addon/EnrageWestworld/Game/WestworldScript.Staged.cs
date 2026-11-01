@@ -19,6 +19,7 @@ namespace EnrageWestworld.InGame
             public string Key, Mind, Picked, Name, Id, Role;
             public List<string> Ids, Words;
             public int Handle, AskedAt, Deadline;
+            public bool BesideReason;   // its turn thought follows the encounter's own reason on the ticker (Lex, 2026-11-01: both)
             public LanguageRequest Req;
             public bool Done, ByModel, Asked;
             // the turn's thought (the no-model run, item 1): the other in it (a name a line may use), the model's own thought shown,
@@ -152,7 +153,7 @@ namespace EnrageWestworld.InGame
         /// The turn's written thought (the no-model run, item 1; WestworldScript.ActThoughts.cs): once a turn, as it settles by
         /// the mind's own draw, or by the model's pick when its own thought didn't show; over their head when they're in view.
         /// True when it showed (now or before), so a fixed thought of the encounter's at the same moment can stand aside.
-        private bool StagedThink(StagedAsk a, int now)
+        private bool StagedThink(StagedAsk a, int now, bool besideReason = false)
         {
             if (a == null || !a.Done)
                 return false;
@@ -176,7 +177,7 @@ namespace EnrageWestworld.InGame
                     name = mw.Name ?? name;
                 }
             }
-            a.Written = TurnThoughtFor(a.Handle, name, id, a.Role, a.Picked, a.Other, now);
+            a.Written = TurnThoughtFor(a.Handle, name, id, a.Role, a.Picked, a.Other, now, besideReason || a.BesideReason);
             return a.Written;
         }
 

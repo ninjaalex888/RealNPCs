@@ -23,9 +23,11 @@ namespace EnrageWestworld.Core
         /// Minds.TemperGroup's four: plain the most, since most people are.
         public static readonly string[] Groups = { "plain", "bold", "fearful", "cold" };
 
-        // the caps (game ms): a person's act thought at most once in 3 minutes, never within 45 s of another thought of theirs;
+        // the caps (game ms): a person's act thought at most once in PersonGapMs (90 s as it comes, [Mind] ActThoughtEachSeconds),
+        // never within TheirsGapMs of another, different thought of theirs (15 s, ActThoughtGapSeconds; Lex, 2026-11-01: livelier);
         // one act thought every 8 s near you and one encounter turn's every 3 s, and none while the ticker has more than two waiting
-        public const int PersonGapMs = 180000, TheirsGapMs = 45000, ActGapMs = 8000, TurnGapMs = 3000, FreshMost = 2;
+        public static int PersonGapMs = 90000, TheirsGapMs = 15000;
+        public const int ActGapMs = 8000, TurnGapMs = 3000, FreshMost = 2;
         public const int Never = int.MinValue;
 
         // the need keys, in NeedState's order (Choosing.Score's why is NeedState.Names[i])
@@ -242,7 +244,7 @@ namespace EnrageWestworld.Core
                 return "a retry";
             if (modelThought)
                 return "the model's own thought";
-            return Shared(seen, metres, most, now, lastTheirsAt, waiting, nextAt, fresh) ?? (Within(now, lastActAt, PersonGapMs) ? "theirs within 3 minutes" : null);
+            return Shared(seen, metres, most, now, lastTheirsAt, waiting, nextAt, fresh) ?? (Within(now, lastActAt, PersonGapMs) ? "their own act thought lately" : null);
         }
 
         /// The same for an encounter's turn: the model's thought, out of view, a thought of theirs within 45 s or waiting, another
@@ -257,7 +259,7 @@ namespace EnrageWestworld.Core
             if (!seen || metres > most)
                 return "out of view";
             if (waiting || Within(now, lastTheirsAt, TheirsGapMs))
-                return "a thought of theirs within 45 s";
+                return "another thought of theirs just now";
             if (nextAt != Never && now < nextAt && nextAt - now <= Math.Max(ActGapMs, TurnGapMs))
                 return "another a moment ago";
             if (fresh > FreshMost)

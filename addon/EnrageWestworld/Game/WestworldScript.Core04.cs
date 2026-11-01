@@ -233,6 +233,8 @@ namespace EnrageWestworld.InGame
             Feed.SubtitleMode = _cfg.Subtitles;
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
             _ticker.GapMs = _cfg.TickerGapSeconds * 1000;
+            ActThoughts.PersonGapMs = _cfg.ActThoughtEachSeconds * 1000;   // the act thoughts' limits (Lex, 2026-11-01: livelier)
+            ActThoughts.TheirsGapMs = _cfg.ActThoughtGapSeconds * 1000;
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
             _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.None);
             _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.N);
@@ -626,7 +628,7 @@ namespace EnrageWestworld.InGame
                     Safe("thought sound", () => ThoughtSound(_tickerLine, now));
                     Safe("aloud", () => AloudAsk(_tickerLine, now));   // said aloud in their own voice, if it fits (WestworldScript.Aloud.cs)
                 if (_tickerLine != was && _tickerLine != null && _tickerLine.Kind == "near" && _tickerLine.Handle != 0)
-                    NoteTheirThought(_tickerLine.Handle, now);   // a thought over someone came up: no act's or turn's thought of theirs on top of it (WestworldScript.ActThoughts.cs)
+                    NoteTheirThought(_tickerLine.Handle, now, _tickerLine.Text);   // a thought over someone came up: no act's or turn's thought of theirs on top of it (WestworldScript.ActThoughts.cs)
             }
             TickerLine line = _tickerLine;
             // a thought goes over its thinker's head (WestworldScript.OverHead.cs), under its own guard, and with

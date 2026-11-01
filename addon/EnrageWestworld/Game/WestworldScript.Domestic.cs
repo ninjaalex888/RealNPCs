@@ -260,10 +260,12 @@ namespace EnrageWestworld.InGame
                         bool watched = (me.Position.DistanceTo(c.Man.Position) < 20f && NodInView(me, c.Man)) || LawWatching(c.Man, c.Wife) != null;
                         c.HisAsk = StagedChoose(hm, "husband", Domestic.Husband(c.MM, c.Matter, c.Turn, watched, c.Struck, sa), sa + "h",
                                                 id => Domestic.Words("husband", id, c.HisName, c.HerName), Domestic.Now("husband", c.HisName, c.HerName, c.Matter), c.HerName, now, 0, c.WM.Name);
-                        if (c.Turn == 0 && !StagedThink(c.HisAsk, now))   // his own mind's draw: the reason for this turn (ActThoughts), else the encounter's thought as before
+                        if (c.Turn == 0)   // what it's about first, then the reason for this turn (ActThoughts) after it (Lex, 2026-11-01: both)
                         {
                             _ticker.Push(c.WM.Name + ", thinking", Domestic.Thought("husband", c.Matter, c.Seed), "near", hm);
-                            c.HisAsk.ThoughtTried = true;   // the fixed thought stood for this turn: no turn thought on top of it at a later settle
+                            NoteTheirThought(hm, now);
+                            c.HisAsk.BesideReason = true;
+                            StagedThink(c.HisAsk, now, true);
                         }
                     }
                     if (!StagedSettle(c.HisAsk, "domestic", c.WM.Name, now))

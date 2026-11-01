@@ -20,6 +20,7 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private readonly Dictionary<int, int> _theirThoughtAt = new Dictionary<int, int>();     // handle -> when a thought over them last came up on the ticker, or was pushed here
+        private readonly Dictionary<int, string> _theirThoughtText = new Dictionary<int, string>();   // handle -> that thought's words: the same line again isn't "another" (Lex, 2026-11-01)
         private readonly Dictionary<string, int> _actThoughtAt = new Dictionary<string, int>();  // person id -> their last act thought
         private readonly Dictionary<string, int> _actThoughtHeld = new Dictionary<string, int>();
         private int _actThoughtNextAt = ActThoughts.Never, _turnThoughtNextAt = ActThoughts.Never;
@@ -28,10 +29,19 @@ namespace EnrageWestworld.InGame
         private bool _actThoughtGameFailed;
 
         /// A thought over someone came up on the ticker (anyone's, any feature's), or was pushed here: when, by handle.
-        private void NoteTheirThought(int h, int now)
+        private void NoteTheirThought(int h, int now, string text = null)
         {
             if (h == 0)
                 return;
+            string was;
+            if (text != null && _theirThoughtText.TryGetValue(h, out was) && was == text && _theirThoughtAt.ContainsKey(h))
+                return;   // the same line of theirs again (the ticker came back round to it): not a new thought, so the gap doesn't start over
+            if (text != null)
+            {
+                if (_theirThoughtText.Count > 300)
+                    _theirThoughtText.Clear();
+                _theirThoughtText[h] = text;
+            }
             if (_theirThoughtAt.Count > 300)
                 PruneTimes(_theirThoughtAt, now, ActThoughts.TheirsGapMs);
             _theirThoughtAt[h] = now;
@@ -143,7 +153,7 @@ namespace EnrageWestworld.InGame
         /// neighbour, the hogtied men's leader and the captive's later calls): its thought over their head when the caps let
         /// it. `id` null for someone the add-on keeps nothing of (a stranger); `other` the other in it, for a line that names
         /// them. True when it showed.
-        private bool TurnThoughtFor(int h, string name, string id, string role, string option, string other, int now)
+        private bool TurnThoughtFor(int h, string name, string id, string role, string option, string other, int now, bool besideReason = false)
         {
             if (!_cfg.ActThoughts || _engine == null || name == null || ActThoughts.TurnPool(role, option) == null)
                 return false;
@@ -153,7 +163,8 @@ namespace EnrageWestworld.InGame
                 Ped p = new Ped(h);
                 if (!p.Exists() || p.IsDead)
                     return false;
-                string why = ActThoughts.TurnWhyNot(false, NodInView(me, p), p.Position.DistanceTo(me.Position), _cfg.PickMetres, now, TheirThoughtAt(h), _ticker.Waiting(h), _turnThoughtNextAt, _ticker.FreshCount);
+                // beside the encounter's own reason (the callout, the domestic: Lex, 2026-11-01, "both"): it follows that thought on the ticker
+                string why = ActThoughts.TurnWhyNot(false, NodInView(me, p), p.Position.DistanceTo(me.Position), _cfg.PickMetres, now, besideReason ? ActThoughts.Never : TheirThoughtAt(h), !besideReason && _ticker.Waiting(h), _turnThoughtNextAt, besideReason ? 0 : _ticker.FreshCount);
                 if (why == null && ActThoughtAwake(id))
                     why = "awake (the waking's own thoughts)";
                 if (why != null)
