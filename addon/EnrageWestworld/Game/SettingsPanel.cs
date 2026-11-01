@@ -64,6 +64,15 @@ namespace EnrageWestworld.InGame
         private const int PanelBudget = 120;
 
         private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Encounters", "Quiet", "Features", "World", "Scenes", "Romance", "Mind", "Ticker", "Display", "Pacing", "Output" };
+        // Pages that hold more than one section, each under its own heading (Lex, 2026-11-01: "consolidate as many settings as
+        // possible"; 16 pages became 12): { the page's title, its sections in the order they show }. The page stands where its
+        // first section would. The ini keeps its sections, and a master switch still greys only its own section's rows.
+        private static readonly string[][] SharedPages =
+        {
+            new[] { "West World and stalkers", "WestWorld", "Stalkers" },
+            new[] { "The world and its people", "World", "Features" },
+            new[] { "Pacing, files and the log", "Pacing", "Quiet", "Output" },
+        };
         private static readonly Dictionary<string, string> OurTitles = new Dictionary<string, string>
         {
             { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Encounters", "Encounters" }, { "Quiet", "Quiet (enRAGE)" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
@@ -251,19 +260,39 @@ namespace EnrageWestworld.InGame
             {
                 IEnumerable<IniSection> ordered = OurOrder.Select(n => _ours.Sections.FirstOrDefault(x => x.Name.Equals(n, StringComparison.OrdinalIgnoreCase))).Where(s => s != null)
                     .Concat(_ours.Sections.Where(x => x.Name.Length > 0 && !OurOrder.Contains(x.Name, StringComparer.OrdinalIgnoreCase)));
+                var sharedMade = new HashSet<string>(StringComparer.Ordinal);   // the shared pages made so far this reload
                 foreach (IniSection s in ordered)
                 {
                     if (s.Name.Equals("Testing", StringComparison.OrdinalIgnoreCase) || s.Name.Equals("Controller", StringComparison.OrdinalIgnoreCase))
                         continue;   // the Testing page is built from its catalogue, below; the controller's buttons are on the Hotkeys page
                     if (s.Name.Equals("Ticker", StringComparison.OrdinalIgnoreCase))
                         continue;   // on the UI page, below
-                    bool output = s.Name.Equals("Output", StringComparison.OrdinalIgnoreCase);
-                    // the keys are all on the Hotkeys page instead
-                    List<Row> rows = s.Entries.Where(e => !IsOurKey(e.Key) && !(output && UiFromOutput.Contains(e.Key, StringComparer.OrdinalIgnoreCase))).Select(e => new Row { E = e }).ToList();
+                    string[] together = SharedPages.FirstOrDefault(g => g.Skip(1).Contains(s.Name, StringComparer.OrdinalIgnoreCase));
+                    if (together != null)
+                    {
+                        // made once, where its first section stands (that one missing from the ini: where the first of the rest is)
+                        bool firstThere = _ours.Sections.Any(x => x.Name.Equals(together[1], StringComparison.OrdinalIgnoreCase));
+                        if ((firstThere && !s.Name.Equals(together[1], StringComparison.OrdinalIgnoreCase)) || !sharedMade.Add(together[0]))
+                            continue;
+                        var rows = new List<Row>();
+                        foreach (string part in together.Skip(1))
+                        {
+                            IniSection ps = _ours.Sections.FirstOrDefault(x => x.Name.Equals(part, StringComparison.OrdinalIgnoreCase));
+                            List<Row> partRows = ps != null ? SectionRows(ps) : null;
+                            if (partRows == null || partRows.Count == 0)
+                                continue;
+                            rows.Add(new Row { Heading = OurTitles.ContainsKey(part) ? OurTitles[part] : part });
+                            rows.AddRange(partRows);
+                        }
+                        if (rows.Count > 0)
+                            _pages.Add(new Page { Title = together[0], Rows = rows });
+                        continue;
+                    }
+                    List<Row> own = SectionRows(s);
                     if (s.Name.Equals("Display", StringComparison.OrdinalIgnoreCase))
-                        rows = UiRows(rows);
-                    if (rows.Count > 0)
-                        _pages.Add(new Page { Title = OurTitles.ContainsKey(s.Name) ? OurTitles[s.Name] : s.Name, Rows = rows });
+                        own = UiRows(own);
+                    if (own.Count > 0)
+                        _pages.Add(new Page { Title = OurTitles.ContainsKey(s.Name) ? OurTitles[s.Name] : s.Name, Rows = own });
                 }
                 List<IniEntry> ourKeys = KeyOrder.Select(k => _ours.FindKey(k)).Where(e => e != null)
                     .Concat(_ours.Sections.SelectMany(s => s.Entries).Where(e => OurKeys.Contains(e.Key) && !KeyOrder.Contains(e.Key, StringComparer.OrdinalIgnoreCase) && !IsTestKey(e.Key)))
@@ -732,6 +761,13 @@ namespace EnrageWestworld.InGame
         // this setting from the Testing page to the UI page", then the wake stages too), [Ticker]'s bar and the thoughts over
         // heads, and [Output]'s subtitles, notices and the panel's own ways.
         private static readonly string[] UiFromOutput = { "Subtitles", "NewsTo", "WarNewsTo", "TerritoryNews", "UseGameFeed", "PanelShowsAll", "PanelSlowsTime", "PanelTimeScale", "ReplaceEnrageSettings" };
+
+        /// A section's rows: every setting but the keys (they are all on the Hotkeys page) and, from [Output], what the UI page shows.
+        private static List<Row> SectionRows(IniSection s)
+        {
+            bool output = s.Name.Equals("Output", StringComparison.OrdinalIgnoreCase);
+            return s.Entries.Where(e => !IsOurKey(e.Key) && !(output && UiFromOutput.Contains(e.Key, StringComparer.OrdinalIgnoreCase))).Select(e => new Row { E = e }).ToList();
+        }
 
         private List<Row> UiRows(List<Row> display)
         {
@@ -1545,11 +1581,10 @@ namespace EnrageWestworld.InGame
         private static readonly string[][] Essentials =
         {
             new[] { "The world", "WestWorld", "Bravery", "Storyteller", "Stalkers", "StalkerEveryMinutes", "StalkerChance", "StalkerBlack", "Encounters", "Romance", "ScenesAtOnce", "MainScenesAtOnce" },
-            new[] { "Things that happen to you", "Lifts" },   // the pickpocket (Lex, 2026-10-30: not one of the world's big switches)
-            // "On the screen" (names, bars, the meter, the ticker, thoughts over heads, subtitles) was here: they are all on the
-            // UI page, which shows with the essentials now (Lex, 2026-11-01: "take that duplicate group out")
-            new[] { "The law", "SelfDefenceNoBounty" },
-            new[] { "Memory", "ResetAtClerk" },
+            // the pickpocket (Lex, 2026-10-30: not one of the world's big switches), self-defence and the memory reset: one group
+            // where there were three of one row each (Lex, 2026-11-01). "On the screen" (names, bars, the meter, the ticker,
+            // thoughts over heads, subtitles) was here too: all on the UI page, which shows with the essentials now
+            new[] { "You", "Lifts", "SelfDefenceNoBounty", "ResetAtClerk" },
         };
 
         /// The AI MODEL (OLLAMA) switch, first on the first page whichever pages show: larger and gold, with whether it
