@@ -62,6 +62,7 @@ namespace EnrageWestworld.Core
             public bool WomenFight;      // [Scenes] WomenInFights: a woman may come to blows too, half as often a woman (Lex, 2026-10-29); off (and in the old harnesses), two men only
             public bool MindDecides;   // the quarrel ladder plays the quarrel (MindLive, QuarrelLadder): MayFight leaves blows to it (Lex, 2026-10-30)
             public bool Strain;        // [Mind] MindTempers: what weighs on someone at once adds up (Strains; NIGHT3)
+            public bool Variety = true;   // [Scenes] ReasonVariety: x:snap starts at 42, not 45, so gossip, a lift, a drunk and courting win turns (NIGHT4 fix 5; the old harnesses: on, as the game comes)
         }
 
         /// For each woman in a fight, this percent of a man's chance (Lex, 2026-10-29: half as likely, until the mind decides it).
@@ -258,7 +259,7 @@ namespace EnrageWestworld.Core
                 if (hot && Hot(y) && MayFight(x, y, where, "snap" + gameDay) && Voice.Chance(x.Id + gameDay + "snapblows", Weighted(35, where.Trouble)))   // was 20 (Lex, 2026-10-28: brawls often)
                     all.Add(new Reason { Kind = "brawl", Fallback = "argue", Strength = 56, Matter = "nothing", Why = x.Name + " is at the worst of it (" + kind + ") and snaps at " + y.Name + ", who won't take it" });
                 else
-                    all.Add(new Reason { Kind = "x:snap", Strength = hot ? 55 : 45, Why = x.Name + " is at the worst of it (" + kind + ")" });
+                    all.Add(new Reason { Kind = "x:snap", Strength = hot ? 55 : where.Variety ? 42 : 45, Why = x.Name + " is at the worst of it (" + kind + ")" });
             }
             // displaced aggression (NIGHT3, the psychologist's lens): shamed earlier and unable to answer it there, a man takes it
             // out on someone who won't hit back; the one who shamed him isn't the one who pays
@@ -281,7 +282,7 @@ namespace EnrageWestworld.Core
                             snap = r;
                     if (snap != null)
                     {
-                        snap.Strength = Math.Min(64, snap.Strength + bump);
+                        snap.Strength = Math.Min(64, Math.Max(snap.Strength, 45) + bump);   // (the lower start of ReasonVariety is for a worry alone: too much at once comes as hard as before)
                         snap.Why += "; and too much at once (" + string.Join(", ", strains) + ")";
                     }
                     else

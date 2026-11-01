@@ -228,6 +228,7 @@ namespace EnrageWestworld.InGame
             {
                 Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance, Trouble = _cfg.TroubleWeight, WomenFight = _cfg.WomenInFights, MindDecides = LadderOn,
                 Strain = _cfg.MindLive && _cfg.MindTempers,
+                Variety = _cfg.ReasonVariety,
                 Rumours = (!saloon || _cfg.SaloonGossip) && _engine.RumourPool(_placeTown, 1).Count > 0,
                 DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0
             };
@@ -248,6 +249,17 @@ namespace EnrageWestworld.InGame
                     why = PlanLean(why, a, b);   // a plan between them (WestworldScript.Plans.cs)
                     if (why != null && (PairPlayedLately(a.Id, b.Id, why.Kind) || PairCantLately(a.Id, b.Id, why.Kind)))
                         why = null;   // the same reason between the same two, played lately: not again so soon (Pearl and Frank, four times in two minutes)
+                    if (why != null && _cfg.ReasonVariety && Reasons.WorrierRests(why.Kind) && WorrierSaidLately((why.BFirst ? b : a).Id, why.Kind))
+                        why = null;   // they said their worry a little while ago, to someone: once a visit (NIGHT4 fix 5; Core/Reasons.Variety.cs)
+                    if (why != null && _cfg.ReasonVariety)
+                    {
+                        int off = Reasons.StreetPenalty(why.Kind, _streetKinds);
+                        if (off > 0)
+                        {
+                            why.Strength -= off;
+                            why.Why += " (the street has had " + off / Reasons.SameKindPenalty + " of these lately: -" + off + ")";
+                        }
+                    }
                     if (why != null && _cfg.MindLive && _cfg.MindMeetings)
                         MeetLean(why, people[i], people[j]);   // their moods today lean which reason the street plays (Core/Reasons.Mood.cs)
                     if (why != null)
@@ -323,6 +335,26 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<string, long> _pairCant = new Dictionary<string, long>();
         private const long PairCantRestMinutes = 20;   // about 40 real seconds
         private int _reasonCant, _reasonWords;
+
+        // NIGHT4 fix 5 ([Scenes] ReasonVariety): the street's last four scene kinds, and who said their worry aloud, when
+        private readonly List<string> _streetKinds = new List<string>();
+        private readonly Dictionary<string, long> _worrierSaid = new Dictionary<string, long>();
+
+        private bool WorrierSaidLately(string id, string kind)
+        {
+            long at;
+            long g = _store.LastGameMin;
+            return id != null && _worrierSaid.TryGetValue(id + "|" + kind, out at) && g - at >= 0 && g - at < Reasons.WorrierRestMinutes;
+        }
+
+        private void NoteWorrierSaid(string id, string kind)
+        {
+            if (id == null)
+                return;
+            if (_worrierSaid.Count > 300)
+                _worrierSaid.Clear();
+            _worrierSaid[id + "|" + kind] = _store.LastGameMin;
+        }
 
         private bool PairCantLately(string a, string b, string kind)
         {
@@ -407,6 +439,9 @@ namespace EnrageWestworld.InGame
                       (by != null ? "; " + by : "") + ")");
             List<Ped> cast2 = new List<Ped> { first, second };
             NotePairPlayed(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);
+            Reasons.NoteStreet(_streetKinds, pr.Why.Kind);   // the street's last four (NIGHT4 fix 5)
+            if (Reasons.WorrierRests(pr.Why.Kind))
+                NoteWorrierSaid(doer.Id, pr.Why.Kind);
             if (asWords)
                 _reasonWords++;   // blows the chair kept to words (F7 TEST reasons)
             if (side)
@@ -774,7 +809,7 @@ namespace EnrageWestworld.InGame
             int now = Game.GameTime;
             int fought = _restMsOf.Keys.Count(h => Resting(h, now));
             string sat = fought > 0 ? fought + " who came to blows sitting it out (" + (int)(FoughtRestMs / Math.Max(1f, _cfg.TroubleWeight) / 60000) + " min); " : "";
-            sat += (_reasonWords > 0 ? _reasonWords + " blows played as words this session (one of them sat or leaning); " : "") + (_reasonCant > 0 ? _reasonCant + " reasons that couldn't be played passed over a while; " : "");
+            sat += (_cfg.ReasonVariety && _streetKinds.Count > 0 ? "the street lately: " + string.Join(", ", _streetKinds) + " (each the same kind -" + Reasons.SameKindPenalty + "); " : "") + (_reasonWords > 0 ? _reasonWords + " blows played as words this session (one of them sat or leaning); " : "") + (_reasonCant > 0 ? _reasonCant + " reasons that couldn't be played passed over a while; " : "");
             List<Candidate> people = ReasonCandidates(me, now);
             if (people.Count < 2)
                 return sat + people.Count + " named people free near you; no pairs";
