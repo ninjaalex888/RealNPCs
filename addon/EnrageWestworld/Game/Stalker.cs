@@ -160,6 +160,7 @@ namespace EnrageWestworld.InGame
             PED.SET_PED_KEEP_TASK(h, true);
             _startHealth = ENTITY.GET_ENTITY_HEALTH(h);
             MarkDot(h);
+            PED.SET_PED_CONFIG_FLAG(h, 6, true);   // PCF_DontInfluenceWantedLevel, as the game does its own pickpocket: dealing with him is no crime (Lex, 2026-10-31: witnessed assault)
             _nextMutter = Game.GameTime + 25000 + _rng.Next(20000);
             _nextRelocate = Game.GameTime + 20000;
             _stillSince = Game.GameTime;
@@ -185,6 +186,7 @@ namespace EnrageWestworld.InGame
             PED.SET_PED_KEEP_TASK(h, true);
             _startHealth = ENTITY.GET_ENTITY_HEALTH(h);
             MarkDot(h);
+            PED.SET_PED_CONFIG_FLAG(h, 6, true);   // fair game while he stalks you (put back when he is handed back)
             int now = Game.GameTime;
             _nextMutter = now + 25000 + _rng.Next(20000);
             _nextRelocate = now + 20000;
@@ -619,6 +621,8 @@ namespace EnrageWestworld.InGame
             if (_ped != null)
             {
                 ReleaseAnims();
+                if (_ped.Exists() && !_ped.IsDead)
+                    PED.SET_PED_CONFIG_FLAG(_ped.Handle, 6, false);   // an ordinary person again once handed back (dead, he stays as he fell: no murder)
                 bool seen = _ped.Exists() && ENTITY.IS_ENTITY_ON_SCREEN(_ped.Handle);
                 Spawner.Release(_ped, vanish || !seen);
             }
