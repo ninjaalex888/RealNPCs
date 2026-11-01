@@ -122,7 +122,7 @@ namespace EnrageWestworld.Core
         private readonly byte[] _weight = new byte[RingSize];
         private readonly float[] _metres = new float[RingSize];
         private readonly string[] _kind = new string[RingSize];
-        private int _head, _count, _lastUpdate = int.MinValue, _lastNotable, _breatherUntil;
+        private int _head, _count, _lastUpdate = int.MinValue, _lastNotable, _breatherUntil, _bornAt;
         private bool _riding;
 
         public StoryMode Mode { get; private set; }
@@ -135,6 +135,7 @@ namespace EnrageWestworld.Core
         public int Noted { get; private set; }        // notable things counted since the start
         public int Ignored { get; private set; }      // notable kinds too far off to count
         public int BandChanges { get; private set; }
+        public int Retracted { get; private set; }    // counted at a scene's start, then taken back: its two never met
         public bool On { get { return Mode != StoryMode.Off; } }
 
         public StoryMeter(StoryMode mode, int now)
@@ -143,6 +144,7 @@ namespace EnrageWestworld.Core
             Band = StoryBand.Even;
             Was = StoryBand.Even;
             _lastNotable = now;
+            _bornAt = now;
             Where = "not yet read";
             Mults = Table(mode, StoryBand.Even, false);
         }
@@ -247,11 +249,41 @@ namespace EnrageWestworld.Core
             _lastNotable = now;
             Noted++;
             if (weight >= 3)
+                _breatherUntil = Math.Max(_breatherUntil, now + BreatherMs(metres));
+        }
+
+        /// The breather after a weight-3 thing: 30 s, up to 60 for one close by (it only lengthens the gaps; nothing is held back).
+        private static int BreatherMs(float metres)
+        {
+            return BreatherMinMs + (int)((BreatherMaxMs - BreatherMinMs) * Math.Max(0f, 1f - metres / ReachMetres));
+        }
+
+        /// A scene counted at its start whose two never met (the walk-over gave up, so nothing reached the screen): the newest
+        /// entry of that kind noted at or after `since` is taken back, and the quiet clock and the breather go back to what the
+        /// rest of the ring says. True when one was found.
+        public bool Retract(string kind, int since)
+        {
+            for (int k = 0; k < _count; k++)
             {
-                // the breather: 30 s, up to 60 for one close by (it only lengthens the gaps; nothing is held back)
-                int ms = BreatherMinMs + (int)((BreatherMaxMs - BreatherMinMs) * Math.Max(0f, 1f - metres / ReachMetres));
-                _breatherUntil = Math.Max(_breatherUntil, now + ms);
+                int i = (_head - 1 - k + RingSize) % RingSize;
+                if (_weight[i] == 0 || _kind[i] != kind || _at[i] < since)
+                    continue;
+                _weight[i] = 0;
+                Retracted++;
+                int last = _bornAt, breather = 0;
+                for (int j = 0; j < _count; j++)
+                {
+                    if (_weight[j] == 0)
+                        continue;
+                    last = Math.Max(last, _at[j]);
+                    if (_weight[j] >= 3)
+                        breather = Math.Max(breather, _at[j] + BreatherMs(_metres[j]));
+                }
+                _lastNotable = last;
+                _breatherUntil = breather;
+                return true;
             }
+            return false;
         }
 
         /// Every UpdateMs: the band and the multipliers. True when the band changed (the game logs it and pulls the street's
@@ -271,6 +303,7 @@ namespace EnrageWestworld.Core
                 for (int i = 0; i < _count; i++)
                     _at[i] += dt;
                 _lastNotable += dt;
+                _bornAt += dt;
                 if (_breatherUntil > now - dt)
                     _breatherUntil += dt;
                 band = StoryBand.Held;
@@ -328,10 +361,13 @@ namespace EnrageWestworld.Core
         /// The last notable thing, for F7: kind, metres, seconds ago; null when none yet.
         public string Last(int now)
         {
-            if (_count == 0)
-                return null;
-            int i = (_head - 1 + RingSize) % RingSize;
-            return _kind[i] + " " + Math.Round(_metres[i]) + " m off, " + Math.Max(0, now - _at[i]) / 1000 + " s ago";
+            for (int k = 0; k < _count; k++)
+            {
+                int i = (_head - 1 - k + RingSize) % RingSize;
+                if (_weight[i] > 0)
+                    return _kind[i] + " " + Math.Round(_metres[i]) + " m off, " + Math.Max(0, now - _at[i]) / 1000 + " s ago";
+            }
+            return null;
         }
 
         public static string BandName(StoryBand b)
@@ -352,9 +388,12 @@ namespace EnrageWestworld.Core
         private static readonly StoryMults LivelyEven = new StoryMults(1f, 1f, 1f, 50, 1.1f, 1f, 1f, 0.9f, 1.1f, 0.9f, 1f);
         private static readonly StoryMults LivelyQuiet = new StoryMults(0.65f, 0.8f, 0.75f, 58, 1.2f, 0.7f, 1.3f, 0.65f, 1.3f, 0.75f, 0.8f);
         private static readonly StoryMults LivelyBusy = new StoryMults(1.15f, 1.1f, 1.15f, 50, 1f, 1.15f, 0.9f, 1.15f, 0.9f, 1.1f, 1.1f);
-        private static readonly StoryMults WildEven = new StoryMults(1f, 0.9f, 0.75f, 60, 1.2f, 0.85f, 1.2f, 0.75f, 1.25f, 0.75f, 0.85f);
-        private static readonly StoryMults WildQuiet = new StoryMults(0.45f, 0.65f, 0.5f, 65, 1.33f, 0.5f, 1.6f, 0.5f, 1.5f, 0.5f, 0.6f);
-        private static readonly StoryMults WildBusy = new StoryMults(1f, 0.9f, 0.85f, 55, 1.1f, 1f, 1.1f, 0.85f, 1.1f, 0.85f, 0.9f);
+        // Wild's chance meeting first only a little above 50 (the review: at 60/65 it took the main slot from the minds' own
+        // reasons, which run 40-55); its liveliness comes from the gaps, the walk-ups and the scene nearer. Busy lengthens the
+        // main and side gaps in every mode.
+        private static readonly StoryMults WildEven = new StoryMults(1f, 0.9f, 0.75f, 52, 1.2f, 0.85f, 1.2f, 0.75f, 1.25f, 0.75f, 0.85f);
+        private static readonly StoryMults WildQuiet = new StoryMults(0.45f, 0.65f, 0.5f, 55, 1.33f, 0.5f, 1.6f, 0.5f, 1.5f, 0.5f, 0.6f);
+        private static readonly StoryMults WildBusy = new StoryMults(1.1f, 1f, 0.85f, 50, 1.1f, 1f, 1.1f, 0.85f, 1.1f, 0.85f, 0.9f);
 
         private static readonly StoryMults CalmEvenR = CalmEven.Riding(), CalmQuietR = CalmQuiet.Riding(), CalmBusyR = CalmBusy.Riding();
         private static readonly StoryMults LivelyEvenR = LivelyEven.Riding(), LivelyQuietR = LivelyQuiet.Riding(), LivelyBusyR = LivelyBusy.Riding();

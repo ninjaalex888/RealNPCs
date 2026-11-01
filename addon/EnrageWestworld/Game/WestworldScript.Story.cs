@@ -14,7 +14,8 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private StoryMeter _story;
-        private int _storyNextAt, _storyLoggedAt = int.MinValue, _storyPulled;
+        private int _storyNextAt, _storyLoggedAt = int.MinValue, _storyPulled, _storyMainAt = int.MinValue / 2;
+        private string _storyMainKind;   // the main scene noted at its start, until it ends or its walk-over gives up
         private bool _storyNotingSide;   // a quiet talk's words are noted: never notable
         private Action _aStory;
 
@@ -91,11 +92,14 @@ namespace EnrageWestworld.InGame
         private void StoryBandChanged(int now)
         {
             StoryBand band = _story.Band;
-            if (band == StoryBand.Quiet && _cfg.Drama)
+            // only a real change from even or busy (the review: out of a shop, the panel or a moment's combat flag the meter
+            // stood still in, held -> quiet pulled them in on every exit); never a main scene sooner than 20 s after the last
+            if (band == StoryBand.Quiet && _story.Was != StoryBand.Held && _cfg.Drama)
             {
                 int soon = now + 8000;   // the street's own retry while due
+                int mainSoon = Math.Max(soon, _storyMainAt + 20000);
                 bool pulled = false;
-                if (_nextDrama > soon) { _nextDrama = soon; pulled = true; }
+                if (_nextDrama > mainSoon) { _nextDrama = mainSoon; pulled = true; }
                 if (_nextChance > soon) { _nextChance = soon; pulled = true; }
                 if (_nextSide > soon) { _nextSide = soon; pulled = true; }
                 if (pulled)
@@ -122,6 +126,23 @@ namespace EnrageWestworld.InGame
                 _story.Noticed(kind, weight, _now, metres);
         }
 
+        /// A main scene noted at its start (StartScene): its kind as the meter has it, and when, so a walk-over that gives up
+        /// can take it back (the review: 5 of 14 main scenes died on the walk-over, and each kept the street out of quiet).
+        private void StoryMainStarted(string noted, bool notedNow, int now)
+        {
+            _storyMainAt = now;
+            _storyMainKind = notedNow ? "scene:" + noted : null;   // a scene noted at its cue isn't in the meter yet
+        }
+
+        /// From the Director's NeverMet: the scene's two never got close enough, so it never reached the screen.
+        private void StoryNeverMet()
+        {
+            string kind = _storyMainKind;
+            _storyMainKind = null;
+            if (_story != null && kind != null)
+                _story.Retract(kind, _storyMainAt);
+        }
+
         /// For F7: TEST story.
         private string StoryStatus()
         {
@@ -133,7 +154,7 @@ namespace EnrageWestworld.InGame
             return StoryMeter.ModeName(_story.Mode) + ", " + StoryMeter.BandName(_story.Band) + (_story.HeldWhy != null ? " (" + _story.HeldWhy + ")" : "") + " in " + _story.Where +
                    "; tension " + _story.TensionAt(now).ToString("0.00") + "; nothing notable near you for " + _story.QuietSeconds(now) + " s (quiet after " + StoryMeter.QuietAfterSeconds(_story.Mode) + ")" +
                    "; last: " + (last ?? "none yet") + (_story.BreatherSeconds(now) > 0 ? "; breather " + _story.BreatherSeconds(now) + " s more" : "") +
-                   "; noted " + _story.Noted + " (" + _story.Ignored + " too far off), bands changed " + _story.BandChanges + ", the street pulled in " + _storyPulled +
+                   "; noted " + _story.Noted + " (" + _story.Ignored + " too far off, " + _story.Retracted + " taken back: never met), bands changed " + _story.BandChanges + ", the street pulled in " + _storyPulled +
                    "; now: " + m.Sped + (m.EncounterEvery != 1f ? " (encounter rolls every " + (_cfg.EncounterEveryMinutes * m.EncounterEvery).ToString("0.0") + " min)" : "") +
                    (m.Drama != 1f ? " (scene gaps about " + (int)(_cfg.DramaGapSeconds * m.Drama) + " s)" : "");
         }

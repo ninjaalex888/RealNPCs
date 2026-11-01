@@ -85,6 +85,7 @@ namespace EnrageWestworld.InGame
                 {
                     _restMsOf.Remove(one.Handle);
                     _restMsOf.Remove(other.Handle);
+                    StoryNeverMet();   // nothing reached the screen: the storyteller takes it back (WestworldScript.Story.cs)
                 };
                 _director.SlamStop = () =>
                 {
@@ -514,6 +515,7 @@ namespace EnrageWestworld.InGame
                 _pendingNote = !test && (s.Kind == "rough" || s.Kind == "drunk" || s.Kind == "lift" || s.Kind == "help" || s.Kind == "passby" || s.NoteAtCue) ? p : null;
                 if (_pendingNote == null && !test)
                     NoteHappened(p, noted);   // a test leaves no tie between them
+                StoryMainStarted(noted, _pendingNote == null && !test, now);
                 NoteInScene(people, noted, now);
                 Onlookers(people);
                 return true;
