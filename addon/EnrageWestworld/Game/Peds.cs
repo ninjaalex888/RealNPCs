@@ -28,7 +28,10 @@ namespace EnrageWestworld.InGame
         private static readonly Ped[] None = new Ped[0];
         private static Ped[] _frameList = None, _lastGood = None;
         private static int _frame = -1, _lastGoodAt, _thread, _loggedAt = -LogGapMs, _lastCount;
-        private static bool _haveFrame, _apiOnly, _otherThreadLogged;
+        // the API's own wrapper, always: called directly, worldGetAllPeds sometimes faults inside the game (an access
+        // violation .NET can't catch: the game went down, Lex 2026-10-31 20:54, 0.7.11); the wrapper catches it and gives
+        // nobody, and the last good list below covers that
+        private static bool _haveFrame, _apiOnly = true, _otherThreadLogged;
         private static int _calls, _empties, _failures, _keptFrames, _lastKept, _lastFailAt, _peak;
         private static int _failingSince;
         private static bool _failing, _everGood;
@@ -183,7 +186,7 @@ namespace EnrageWestworld.InGame
         public static string Status()
         {
             int now = Environment.TickCount;
-            return (_apiOnly ? "from World.GetAllPeds (worldGetAllPeds can't be called)" : "from worldGetAllPeds") + ", " + _lastCount + " now (most " + _peak + "), " +
+            return (_apiOnly ? "from World.GetAllPeds (its own wrapper catches what worldGetAllPeds throws)" : "from worldGetAllPeds") + ", " + _lastCount + " now (most " + _peak + "), " +
                 _calls + " frames listed; empty " + _empties + ", failed " + _failures + ", the last good list given back " + _keptFrames + " times" +
                 (_lastWhy != null ? "; last trouble " + (now - _lastFailAt) / 1000 + " s ago: " + _lastWhy + " (" + _lastKept + " kept)" : string.Empty) +
                 (_otherThreadLogged ? "; asked for from another thread" : string.Empty);
