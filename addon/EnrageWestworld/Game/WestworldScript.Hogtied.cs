@@ -142,7 +142,14 @@ namespace EnrageWestworld.InGame
                 return;
             }
             int ch = h.Captive.Handle;
-            List<Ped> men = h.Guards.Where(m => m != null && m.Exists() && !m.IsDead).ToList();
+            List<Ped> men = _hogMen;   // one list, refilled each step (the frame-cost audit, NIGHT4 item 6); no callee keeps it
+            men.Clear();
+            for (int i = 0; i < h.Guards.Count; i++)
+            {
+                Ped m = h.Guards[i];
+                if (m != null && m.Exists() && !m.IsDead)
+                    men.Add(m);
+            }
             if (h.FairGame)
                 foreach (Ped m in men)
                     _cameAtYouSeen[m.Handle] = now;
@@ -182,7 +189,7 @@ namespace EnrageWestworld.InGame
                     HogFreedStep(h, men, now);
                     break;
                 case "leaving":
-                    if (now >= h.PhaseUntil || (men.All(m => m.Position.DistanceTo(me.Position) > 150f) && d > 90f))
+                    if (now >= h.PhaseUntil || (!HogAnyWithin(men, me.Position, 150f) && d > 90f))
                         EndHogtied(h.Freed ?? "over");
                     break;
             }
@@ -263,19 +270,38 @@ namespace EnrageWestworld.InGame
             Log.Write("ENCOUNTER hogtied: " + h.Name + " tied up " + (int)at.DistanceTo(me.Position) + " m away, " + h.Guards.Count + " men by them");
         }
 
+        private readonly List<Ped> _hogMen = new List<Ped>();
+
+        /// One of the men is within `metres` of `at` (a loop: no closure a step).
+        private static bool HogAnyWithin(List<Ped> men, Vector3 at, float metres)
+        {
+            for (int i = 0; i < men.Count; i++)
+                if (men[i].Position.DistanceTo(at) < metres)
+                    return true;
+            return false;
+        }
+
         private unsafe void HogHeld(HogRun h, List<Ped> men, float d, int now)
         {
             Ped me = Game.Player.Character;
             int ch = h.Captive.Handle;
-            bool seen = ENTITY.IS_ENTITY_ON_SCREEN(ch) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, ch, 17);
+            Vector3 meAt = me.Position;
             if (h.Phase == "held")
             {
                 ulong slot = 0;
                 int aimed = PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(Game.Player.Handle, (int*)&slot) ? (int)slot : 0;
-                bool aiming = aimed != 0 && men.Any(m => m.Handle == aimed);
+                bool aiming = false, hurt = false;
+                for (int i = 0; i < men.Count; i++)   // loops, not Any: no closures a step (the frame-cost audit)
+                    if (aimed != 0 && men[i].Handle == aimed)
+                        aiming = true;
                 h.AimSince = aiming ? (h.AimSince == 0 ? now : h.AimSince) : 0;
-                bool hurt = !h.Fought && (men.Count < h.Guards.Count || men.Any(m => ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(m.Handle, me.Handle, true, false)));   // once: a fight over stays over (the damage marks and the dead stay true)
-                bool rushed = h.Captors == "kidnappers" && men.Any(m => m.Position.DistanceTo(me.Position) < 6f);
+                if (!h.Fought)
+                {
+                    hurt = men.Count < h.Guards.Count;   // once: a fight over stays over (the damage marks and the dead stay true)
+                    for (int i = 0; i < men.Count && !hurt; i++)
+                        hurt = ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(men[i].Handle, me.Handle, true, false);
+                }
+                bool rushed = h.Captors == "kidnappers" && HogAnyWithin(men, meAt, 6f);
                 bool drawnOn = aiming && now - h.AimSince > 1200 && h.Captors != "bounty";
                 if (men.Count > 0 && (hurt || rushed || drawnOn))
                 {
@@ -283,14 +309,14 @@ namespace EnrageWestworld.InGame
                     return;
                 }
             }
-            else if (men.All(m => m.Position.DistanceTo(h.Captive.Position) > 70f) || now >= h.PhaseUntil)
+            else if (!HogAnyWithin(men, h.Captive.Position, 70f) || now >= h.PhaseUntil)
             {
                 Log.Write("ENCOUNTER hogtied: the fight is over; " + h.Name + " is still tied");
                 h.Phase = "held";   // nobody left to stop you: cut them loose
             }
             if (!h.Noticed)
             {
-                if (d < 40f || (d < 75f && seen))
+                if (d < 40f || (d < 75f && ENTITY.IS_ENTITY_ON_SCREEN(ch) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, ch, 17)))   // the sight test only until they're found, and only in range (the frame-cost audit)
                 {
                     h.Noticed = true;
                     _engine.ExecutionSeen(h.R, Bridge.Now());
@@ -325,7 +351,7 @@ namespace EnrageWestworld.InGame
             }
             if (!h.Noticed)
                 return;
-            bool menBy = men.Any(m => m.Position.DistanceTo(h.Captive.Position) < 70f);   // one still by them to carry them off
+            bool menBy = HogAnyWithin(men, h.Captive.Position, 70f);   // one still by them to carry them off
             if (h.Phase == "held" && d > 110f && menBy)
             {
                 // you rode on: they carry them off
@@ -344,13 +370,13 @@ namespace EnrageWestworld.InGame
                 EndHogtied("left tied, the men dead or gone");
                 return;
             }
-            if (!h.Thought && d < 30f && seen)
+            if (!h.Thought && d < 30f && ENTITY.IS_ENTITY_ON_SCREEN(ch) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, ch, 17))   // (the sight test only until thought)
             {
                 h.Thought = true;
                 _ticker.Push(h.Name + ", thinking", Hogtied.Thought(h.Captors, h.Seed), "near", ch);
             }
             // their calls, by their own nature (the first asked of the model)
-            if (h.CallAsk != null && StagedSettle(h.CallAsk, "hogtied, " + h.Name, now))
+            if (h.CallAsk != null && StagedSettle(h.CallAsk, "hogtied", h.Name, now))
             {
                 HogSay(h, h.CallAsk.Picked, h.CallAsk, now);
                 h.CallAsk = null;
@@ -505,7 +531,7 @@ namespace EnrageWestworld.InGame
 
         private void HogFreedStep(HogRun h, List<Ped> men, int now)
         {
-            if (now < h.PhaseUntil || !StagedSettle(h.FreedAsk, "hogtied freed, " + h.Name, now))
+            if (now < h.PhaseUntil || !StagedSettle(h.FreedAsk, "hogtied freed", h.Name, now))
                 return;
             Ped me = Game.Player.Character;
             int ch = h.Captive.Handle;

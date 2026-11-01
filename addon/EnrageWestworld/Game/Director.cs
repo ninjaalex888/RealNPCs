@@ -175,21 +175,30 @@ namespace EnrageWestworld.InGame
         }
 
         /// Every scene playing now, the scene and the quiet talks, as ("Two men came to blows (Gideon and Asa)", where).
+        /// One list, refilled on each call: read it before the next (the frame-cost audit, NIGHT4 item 6: a new list and a Concat
+        /// every frame before).
         public List<KeyValuePair<string, Vector3>> TickerLines()
         {
-            var all = new List<KeyValuePair<string, Vector3>>();
-            foreach (Live l in new[] { _live, _second }.Concat(_side))
+            _tickerAll.Clear();
+            TickerAdd(_live);
+            TickerAdd(_second);
+            for (int i = 0; i < _side.Count; i++)
+                TickerAdd(_side[i]);
+            return _tickerAll;
+        }
+
+        private readonly List<KeyValuePair<string, Vector3>> _tickerAll = new List<KeyValuePair<string, Vector3>>();
+
+        private void TickerAdd(Live l)
+        {
+            if (l == null || l.Scene == null || string.IsNullOrEmpty(l.Scene.Summary) || l.Cast == null || l.Cast.Length == 0 || l.Cast[0] == null || !l.Cast[0].Exists())
+                return;
+            if (l.BarText == null)
             {
-                if (l == null || l.Scene == null || string.IsNullOrEmpty(l.Scene.Summary) || l.Cast == null || l.Cast.Length == 0 || l.Cast[0] == null || !l.Cast[0].Exists())
-                    continue;
-                if (l.BarText == null)
-                {
-                    string who = l.Names != null ? string.Join(" and ", l.Names.Take(2).Where(n => !string.IsNullOrEmpty(n))) : "";
-                    l.BarText = Grammar.UpperFirst(l.Scene.Summary) + (who.Length > 0 ? " (" + who + ")" : "");
-                }
-                all.Add(new KeyValuePair<string, Vector3>(l.BarText, l.Cast[0].Position));
+                string who = l.Names != null ? string.Join(" and ", l.Names.Take(2).Where(n => !string.IsNullOrEmpty(n))) : "";
+                l.BarText = Grammar.UpperFirst(l.Scene.Summary) + (who.Length > 0 ? " (" + who + ")" : "");
             }
-            return all;
+            _tickerAll.Add(new KeyValuePair<string, Vector3>(l.BarText, l.Cast[0].Position));
         }
 
         /// Arthur aims at this one (WestworldScript.AimLetGo.cs): let go of him at once, so the game's own answer to a gun
@@ -646,7 +655,12 @@ namespace EnrageWestworld.InGame
             int mostMs = l.Scene.Ladder != null ? 150000 : 90000;   // a ladder quarrel that climbs the whole way runs past 90 s (the review)
             if (brawl)
                 mostMs = Math.Max(mostMs, l.FightOnAt - l.StartedAt + BrawlLeastMs + Math.Max(60000, FightMostMs + 15000));
-            bool far = l.Cast.Min(p => p.Position.DistanceTo(player.Position)) > (brawl ? 80f : 50f);
+            Vector3 youAt = player.Position;
+            float nearest = float.MaxValue;
+            for (int i = 0; i < l.Cast.Length; i++)   // a loop, not Min: no closure a frame (the frame-cost audit)
+                if (l.Cast[i] != null)
+                    nearest = Math.Min(nearest, l.Cast[i].Position.DistanceTo(youAt));
+            bool far = nearest > (brawl ? 80f : 50f);
             if (far || now - l.StartedAt > mostMs)
             {
                 Stop(l, far ? "the player left" : "it ran out of time (" + mostMs / 1000 + " s)");

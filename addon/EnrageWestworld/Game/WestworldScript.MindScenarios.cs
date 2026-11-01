@@ -91,6 +91,25 @@ namespace EnrageWestworld.InGame
 
         /// A point of the plan's types near `at`, free, not you, not one another act is heading to: its handle, where and its
         /// type, or 0. At most ten types asked, once a start (every 4 s or more).
+        // a type found taken or missing in a 10 m cell isn't asked there again for 25 s, and a sweep that found nothing holds the
+        // next one, anyone's, for 1 s (the frame-cost audit, NIGHT4 item 6: a full street ran a ten-query sweep for every chooser
+        // and every retry; only a start moved the 4-6 s gap)
+        private readonly Dictionary<long, int> _s1Miss = new Dictionary<long, int>();
+        private int _s1SearchNextAt;
+        private const int S1MissMs = 25000, S1SearchGapMs = 1000;
+
+        private static long S1MissKey(uint hash, Vector3 at)
+        {
+            long cx = (long)Math.Floor(at.X / 10f) & 0xFFFF, cy = (long)Math.Floor(at.Y / 10f) & 0xFFFF;
+            return ((long)hash << 32) | (cx << 16) | cy;
+        }
+
+        /// No sweep failed in the last second (GameTime going back, a reload, never holds it).
+        private bool S1MaySearch(int now)
+        {
+            return now >= _s1SearchNextAt || _s1SearchNextAt - now > S1SearchGapMs;
+        }
+
         private int S1FindPoint(Vector3 at, MindScenarios.Plan pl, out Vector3 pAt, out string name)
         {
             pAt = default(Vector3);
@@ -101,11 +120,18 @@ namespace EnrageWestworld.InGame
                 Vector3 me = Game.Player.Character.Position;
                 int now = Game.GameTime;
                 int asked = 0;
+                if (_s1Miss.Count > 256)
+                    _s1Miss.Clear();
                 foreach (string t in pl.Types)
                 {
-                    if (asked++ >= 10)
+                    if (asked >= 10)
                         break;
                     uint hash = Natives.Hash(t);
+                    long cell = S1MissKey(hash, at);
+                    int missUntil;
+                    if (_s1Miss.TryGetValue(cell, out missUntil) && now < missUntil && now > missUntil - S1MissMs - 1000)
+                        continue;   // none of this type free here a few seconds ago: not asked again yet (the frame-cost audit)
+                    asked++;
                     int p = TASK.FIND_SCENARIO_OF_TYPE_HASH(at, hash, pl.Radius, 1UL, false);   // Rockstar's own args (ambient_load.c)
                     bool ok = p != 0 && TASK.DOES_SCENARIO_POINT_EXIST(p) && TASK._GET_PED_USING_SCENARIO_POINT(p) == 0;
                     Vector3 c = ok ? TASK._GET_SCENARIO_POINT_COORDS(p, true) : default(Vector3);
@@ -127,11 +153,15 @@ namespace EnrageWestworld.InGame
                     if (n == 0)
                         (ok ? (Action<string>)Log.Write : Log.Detail)("MIND scenarios: " + t + (ok ? " found near " + (_placeTown ?? "here") + " (the first)" : " none free near " + (_placeTown ?? "here") + " (the first miss)"));   // which types this game has where, once each
                     if (!ok)
+                    {
+                        _s1Miss[cell] = now + S1MissMs;
                         continue;
+                    }
                     pAt = c;
                     name = t;
                     return p;
                 }
+                _s1SearchNextAt = now + S1SearchGapMs;   // a sweep that found nothing: the next one waits a moment, whoever asks (the frame-cost audit)
                 return 0;
             }
             finally
@@ -160,6 +190,8 @@ namespace EnrageWestworld.InGame
                 pAt = a.PointAt;
                 name = a.PointType;
             }
+            else if (!S1MaySearch(now))
+                return LostGap;   // a sweep found nothing a moment ago: tried again later (the frame-cost audit)
             else
                 p = S1FindPoint(at, pl, out pAt, out name);
             a.Stage1 = true;
@@ -220,6 +252,8 @@ namespace EnrageWestworld.InGame
             // somewhere to go to, before anyone is asked up
             if (MindScenarios.ByPoint(kind))
             {
+                if (!S1MaySearch(now))
+                    return LostGap;   // a sweep found nothing a moment ago: tried again later (the frame-cost audit)
                 MindScenarios.Plan pl = MindScenarios.PlanFor(kind, w.P != null && w.P.Woman, w.TradeGroup == "gentry", _placeKind == "saloon", (uint)Voice.Hash(w.Id + "|" + kind + "|s1"));
                 Vector3 pAt = default(Vector3);
                 string name = null;
@@ -338,7 +372,7 @@ namespace EnrageWestworld.InGame
             try
             {
                 a.NextPoll = now + MindScenarios.PollMs;
-                if (S1GameHasThem(h))
+                if (S1GameHasThem(h, a, now))
                 {
                     // the game took them (a fight, a flee, a fall) or enRAGE has them now: let go with no orders, as MindActWhyNot
                     // refuses at the start (the review: a stand-still, a walk or a wander in the gunfire)
@@ -406,7 +440,7 @@ namespace EnrageWestworld.InGame
                         MindWho nw;
                         if (_mindWho.TryGetValue(h, out nw))
                             nw.Stage1RestUntil = now + MindScenarios.FailRestMs;
-                        Log.Detail("MIND acts: " + a.Name + " never reached " + (a.PointType ?? "the point") + (PED.IS_PED_USING_ANY_SCENARIO(h) ? " (took another: 0x" + ((uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h)).ToString("X8") + ")" : ""));
+                        if (Log.Debug) Log.Detail("MIND acts: " + a.Name + " never reached " + (a.PointType ?? "the point") + (PED.IS_PED_USING_ANY_SCENARIO(h) ? " (took another: 0x" + ((uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h)).ToString("X8") + ")" : ""));
                         if (!PED.IS_PED_USING_ANY_SCENARIO(h))
                             TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // on their way, not stood there
                         return 2;

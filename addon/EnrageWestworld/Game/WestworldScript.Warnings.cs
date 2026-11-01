@@ -190,12 +190,22 @@ namespace EnrageWestworld.InGame
                 }
             int lawH = 0;
             if (deedHere)
-                foreach (Ped q in Peds.All())
-                    if (q != null && q.Exists() && !q.IsDead && Natives.IsLaw(q) && q.Position.DistanceTo(mePos) <= WarnLawMetres)
-                    {
-                        lawH = q.Handle;
-                        break;
-                    }
+            {
+                int wd = WatchEnter("warnings: a lawman near");
+                try
+                {
+                    foreach (Ped q in Peds.All())   // the distance first, the lawman test last (the frame-cost audit)
+                        if (q != null && q.Position.DistanceTo(mePos) <= WarnLawMetres && q.Exists() && !q.IsDead && Natives.IsLaw(q))
+                        {
+                            lawH = q.Handle;
+                            break;
+                        }
+                }
+                finally
+                {
+                    WatchLeave(wd);
+                }
+            }
             int known = 0;
             Ped nearestNamed = null;
             foreach (int h in _mindNear)

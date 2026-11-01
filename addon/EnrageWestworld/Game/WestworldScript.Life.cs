@@ -48,7 +48,7 @@ namespace EnrageWestworld.InGame
                 if (_director.Busy)
                     FallWatchStep(me, now);   // the player may give the fallen a hand up first (WestworldScript.Kindness.cs)
                 if (_director.AnyPlaying)
-                    _director.Tick(me, SceneSay, SideSay, SideSay);   // (a second full scene's words: a subtitle near you, as a quiet talk's)
+                    _director.Tick(me, _dSceneSay ?? (_dSceneSay = SceneSay), _dSideSay ?? (_dSideSay = SideSay), _dSideSay);   // (a second full scene's words: a subtitle near you, as a quiet talk's; the delegates made once, the frame-cost audit)
             }
             if (_after != null)
                 AftermathStep(me, now);   // what follows a fight: a friend tends the loser, the law has a word (WestworldScript.Aftermath.cs)
@@ -138,10 +138,17 @@ namespace EnrageWestworld.InGame
                 return;   // a friend takes up a wrong (WestworldScript.Grudges.cs)
             if (_interiorType == 0 && CalloutScene(me, now, false, out fallWhy))
                 return;   // a man calls another out at noon (WestworldScript.Callout.cs)
-            List<Ped> pool = Peds.All().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
-                                                         !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
-                                                         ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres &&
-                                                         !Resting(p.Handle, now) && !NotFree(p.Handle)).ToList();   // (a quiet talk's two are taken; the waking are in an act of their own; the Talk partner, a walk-up, the law at work: the cross-cutting review)
+            Vector3 mePos = me.Position;
+            var pool = new List<Ped>();
+            foreach (Ped p in Peds.All())
+            {
+                if (p.Position.DistanceTo(mePos) >= StreetMetres)
+                    continue;   // the distance first, enRAGE's record (a reflection call) last (the frame-cost audit, NIGHT4 item 6)
+                int h = p.Handle;
+                if (Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(h) && PostKindOf(p) == null && !PED.IS_PED_IN_ANY_VEHICLE(h, false) && !PED.IS_PED_ON_MOUNT(h) &&
+                    ENTITY.GET_ENTITY_SPEED(h) < 0.8f && !Resting(h, now) && !NotFree(h) && _bridge.RecordAt(h) == null)
+                    pool.Add(p);   // (a quiet talk's two are taken; the waking are in an act of their own; the Talk partner, a walk-up, the law at work: the cross-cutting review)
+            }
             if (pool.Count >= 2 && now >= _nextSpecial && SpecialScene(pool, me, saloon, now))
                 return;
             // the chance meeting first when it's due and nobody has a strong reason (NIGHT4 fix 7, [Scenes] ChanceFirst: it got one
@@ -186,6 +193,8 @@ namespace EnrageWestworld.InGame
         }
 
         /// A chance meeting between the two standing closest (nobody with a reason, or ChanceFirst's turn). True if one started.
+        private Vector3[] _chancePos = new Vector3[32];
+
         private bool ChanceScene(List<Ped> pool, Ped me, bool saloon, int now, bool asSecond = false)
         {
             // now and then a chance meeting between the two standing closest (asSecond: the second full scene's, on its own timer)
@@ -193,10 +202,14 @@ namespace EnrageWestworld.InGame
                 return false;
             Ped a = null, b = null;
             float best = Math.Max(2f, _cfg.ChanceMeetMetres);   // was 3.4 m, standing together already; farther, one walks over (AddMeet; the NPC-life run, step 4)
+            if (_chancePos.Length < pool.Count)
+                _chancePos = new Vector3[Math.Max(pool.Count, _chancePos.Length * 2)];
+            for (int i = 0; i < pool.Count; i++)
+                _chancePos[i] = pool[i].Position;   // each read once, not once a pair (the frame-cost audit)
             for (int i = 0; i < pool.Count; i++)
                 for (int j = i + 1; j < pool.Count; j++)
                 {
-                    float d = pool[i].Position.DistanceTo(pool[j].Position);
+                    float d = _chancePos[i].DistanceTo(_chancePos[j]);
                     if (d < best && !(_cfg.ChanceFirst && d > 2.6f && BothHeld(pool[i].Handle, pool[j].Handle)))   // two in chairs a few steps apart never walk over (NIGHT4 fix 7)
                     {
                         best = d;
@@ -306,11 +319,37 @@ namespace EnrageWestworld.InGame
                 return;
             if (_sideScanAt == now)
                 return;   // the quiet talks' scan ran this frame: this one on the next (the review: two full scans on one frame)
-            _nextSecond = now + 8000;   // looked again in a few seconds when nobody fits
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
+            {
+                _nextSecond = now + 8000;
                 return;
-            _secondTried++;
+            }
+            int wd = WatchEnter("scenes: the second scene's search");
+            try
+            {
+                SecondMainSceneLook(me, now, saloon);   // its own method: its lambdas' captures are made only when it looks, not every frame (the frame-cost audit)
+            }
+            finally
+            {
+                WatchLeave(wd);
+            }
+        }
+
+        private Action<string, string, bool, bool, int> _dSceneSay, _dSideSay;
+        private bool _secondChanceTurn;
+        private readonly List<Ped> _secondPool = new List<Ped>();
+
+        /// The second full scene's search, a pair with a reason on one look and the two standing closest on the next, 4 s apart, so
+        /// each is still looked at every 8 s (the frame-cost audit, NIGHT4 item 6: both whole-street scans on one frame were about
+        /// 1.5-4 ms in Saint Denis).
+        private void SecondMainSceneLook(Ped me, int now, bool saloon)
+        {
+            bool chanceTurn = _secondChanceTurn;
+            _secondChanceTurn = !chanceTurn;
+            _nextSecond = now + 4000;   // looked again in a few seconds when nobody fits
+            if (!chanceTurn)
+                _secondTried++;
             Vector3 c0 = default(Vector3), c1 = default(Vector3), c2 = default(Vector3);
             int nc = 0;
             for (int i = 0; i < 3; i++)
@@ -322,14 +361,35 @@ namespace EnrageWestworld.InGame
                 nc++;
             }
             float apart = Director.SecondApart;
-            Func<Ped, bool> clear = p => !_director.Involves(p.Handle) && !_ring.Contains(p.Handle) && !JoinIsPending(p.Handle) && (nc < 1 || p.Position.DistanceTo(c0) >= apart) && (nc < 2 || p.Position.DistanceTo(c1) >= apart) && (nc < 3 || p.Position.DistanceTo(c2) >= apart);
-            if (ReasonScene(me, saloon, now, false, clear, null, true))
+            if (!chanceTurn)
+            {
+                Func<Ped, bool> clear = p =>
+                {
+                    if (_director.Involves(p.Handle) || _ring.Contains(p.Handle) || JoinIsPending(p.Handle))
+                        return false;
+                    Vector3 at = p.Position;
+                    return (nc < 1 || at.DistanceTo(c0) >= apart) && (nc < 2 || at.DistanceTo(c1) >= apart) && (nc < 3 || at.DistanceTo(c2) >= apart);
+                };
+                ReasonScene(me, saloon, now, false, clear, null, true);
                 return;
-            List<Ped> pool = Peds.All().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
-                                                         !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
-                                                         ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres + 10f &&
-                                                         !Resting(p.Handle, now) && clear(p) && !NotFree(p.Handle)).ToList();   // a little wider than the first's 13 m: 20 m from it, on the street's far side
-            ChanceScene(pool, me, saloon, now, true);
+            }
+            // the chance meeting's pool: the distance first, each position read once, enRAGE's record (a reflection call) last
+            Vector3 mePos = me.Position;
+            int meH = me.Handle;
+            float range = StreetMetres + 10f;   // a little wider than the first's 13 m: 20 m from it, on the street's far side
+            _secondPool.Clear();
+            foreach (Ped p in Peds.All())
+            {
+                Vector3 at = p.Position;
+                if (at.DistanceTo(mePos) >= range || (nc >= 1 && at.DistanceTo(c0) < apart) || (nc >= 2 && at.DistanceTo(c1) < apart) || (nc >= 3 && at.DistanceTo(c2) < apart))
+                    continue;
+                int h = p.Handle;
+                if (!Natives.Bystander(p, meH) || Spawner.IsOurs(h) || PostKindOf(p) != null || PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_ON_MOUNT(h) ||
+                    ENTITY.GET_ENTITY_SPEED(h) >= 0.8f || Resting(h, now) || _director.Involves(h) || _ring.Contains(h) || JoinIsPending(h) || NotFree(h) || _bridge.RecordAt(h) != null)
+                    continue;
+                _secondPool.Add(p);
+            }
+            ChanceScene(_secondPool, me, saloon, now, true);
         }
 
         /// F7: the full scenes at once ([Scenes] MainScenesAtOnce).

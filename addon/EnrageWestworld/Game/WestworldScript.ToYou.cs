@@ -86,6 +86,32 @@ namespace EnrageWestworld.InGame
 
         /// One pass over the people near: the first who feels something about him and can show it starts. Null if one did,
         /// else the commonest reason nobody did. `test` (the Testing row): the five minutes and the facing skipped.
+        /// "id|hour", made once an hour a person (the frame-cost audit, NIGHT4 item 6: a new string for everyone near every 1.5 s).
+        private static string YouNodSeed(MindWho w, long g)
+        {
+            long hour = g / 60;
+            if (w.NodSeed == null || w.NodSeedHour != hour)
+            {
+                w.NodSeed = w.Id + "|" + hour;
+                w.NodSeedHour = hour;
+            }
+            return w.NodSeed;
+        }
+
+        private readonly List<string> _youNodGone = new List<string>();
+
+        /// Only the cooldowns that have run out go. Its own method, so the pass captures nothing (a lambda over `now` made a
+        /// closure on every pass).
+        private void YouNodPrune(int now)
+        {
+            _youNodGone.Clear();
+            foreach (KeyValuePair<string, int> kv in _youNodAt)
+                if (now - kv.Value >= YouNodAgainMs || now < kv.Value)
+                    _youNodGone.Add(kv.Key);
+            for (int i = 0; i < _youNodGone.Count; i++)
+                _youNodAt.Remove(_youNodGone[i]);
+        }
+
         private string YouNodPass(Ped me, int now, bool test)
         {
             {
@@ -117,7 +143,7 @@ namespace EnrageWestworld.InGame
                     }
                     long day;
                     bool spoke = _youSpokeDay.TryGetValue(w.Id, out day) && day == g / 1440;
-                    Passing.Act a = Passing.ToYou(_engine.Shadow.Felt(w.Id), w.P.Woman, w.Src != null ? w.Src.Temper : null, g, w.Id + "|" + (g / 60), spoke,
+                    Passing.Act a = Passing.ToYou(_engine.Shadow.Felt(w.Id), w.P.Woman, w.Src != null ? w.Src.Temper : null, g, YouNodSeed(w, g), spoke,
                                                   _engine.KnowsYourName(w.Id) ? YourSurname() : null, lasts);   // the cheap test first (his name, if they know it)
                     if (a == null)
                     {
@@ -163,8 +189,7 @@ namespace EnrageWestworld.InGame
                         continue;
                     }
                     if (_youNodAt.Count > 500)
-                        foreach (string k in _youNodAt.Where(kv => now - kv.Value >= YouNodAgainMs || now < kv.Value).Select(kv => kv.Key).ToList())
-                            _youNodAt.Remove(k);   // only the cooldowns that have run out
+                        YouNodPrune(now);
                     _youNodAt[w.Id] = now;
                     if (a.Speaks)
                     {

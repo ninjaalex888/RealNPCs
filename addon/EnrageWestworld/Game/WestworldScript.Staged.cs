@@ -92,8 +92,14 @@ namespace EnrageWestworld.InGame
             return a;
         }
 
-        /// True once the turn is settled: the model's pick, or the mind's own when it's late or names none of them.
         private bool StagedSettle(StagedAsk a, string what, int now)
+        {
+            return StagedSettle(a, what, null, now);
+        }
+
+        /// True once the turn is settled: the model's pick, or the mind's own when it's late or names none of them. The log's
+        /// label, "kind, name", is made only once it settles (the frame-cost audit, NIGHT4 item 6: made every 250 ms wait before).
+        private bool StagedSettle(StagedAsk a, string kind, string name, int now)
         {
             if (a == null || a.Done)
                 return true;
@@ -103,6 +109,7 @@ namespace EnrageWestworld.InGame
             if (!came && now < a.Deadline && now >= a.AskedAt)
                 return false;
             a.Done = true;
+            string what = name == null ? kind : kind + ", " + name;
             string offered = string.Join(" | ", a.Words.Select((x, k) => (k + 1) + " " + x));
             if (!came)
             {

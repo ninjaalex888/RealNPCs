@@ -75,34 +75,72 @@ namespace EnrageWestworld.InGame
             SceneTie tie = null;
             bool debt = false, wronged = false;
             float best = float.MaxValue;
-            for (int i = 0; i < pool.Count; i++)
-                for (int j = 0; j < pool.Count; j++)
+            int wd = WatchEnter("callout: the pair search");
+            try
+            {
+                // (the frame-cost audit, NIGHT4 item 6: each position read once, the ties and debts looked up from one pass each,
+                // each pair once with both ways round inside, and the line-of-sight test only for a pair with something between them)
+                int n = pool.Count;
+                var pos = new Vector3[n];
+                var view = new sbyte[n];   // 0 not asked yet, 1 in view, -1 not
+                var ids = new HashSet<string>();
+                for (int i = 0; i < n; i++)
                 {
-                    if (i == j || pool[i].Who.Id == pool[j].Who.Id)
-                        continue;
-                    Candidate a = pool[i], b = pool[j];
-                    float apart = a.Ped.Position.DistanceTo(b.Ped.Position);
-                    if (apart < (test ? 2f : 4f) || apart > (test ? 18f : 14f) || (!NodInView(me, a.Ped) && !NodInView(me, b.Ped)))
-                        continue;
-                    SceneTie t = _store.Ties.FirstOrDefault(x => x.Has(a.Who.Id) && x.Has(b.Who.Id));
-                    WorryLink link = _store.Links.LastOrDefault(l => l.Id == b.Who.Id && l.Kind == "debt" && l.OtherId == a.Who.Id);   // b worries over what he owes a (the link is the worrier's; the one at the other end is owed): a is the one wronged, and calls it in
-                    bool sour = t != null && t.Warmth < 0;
-                    if (!sour && link == null)
-                        continue;
-                    bool aWronged = link != null || (t != null && t.Did(b.Who.Id));
-                    string matter = StreetCallouts.MatterOf(t != null ? t.Kind : null, t != null && t.Courted, link != null);
-                    if (!StreetCallouts.Calls(StagedMindOf(a.Who, b.Who.Id), StagedMindOf(b.Who, a.Who.Id), aWronged, matter))
-                        continue;   // (the pair is looked at both ways round)
-                    float fromYou = Math.Min(a.Ped.Position.DistanceTo(me.Position), b.Ped.Position.DistanceTo(me.Position));
-                    if (fromYou >= best)
-                        continue;
-                    ca = a;
-                    cb = b;
-                    tie = t;
-                    debt = link != null;
-                    wronged = aWronged;
-                    best = fromYou;
+                    pos[i] = pool[i].Ped.Position;
+                    ids.Add(pool[i].Who.Id);
                 }
+                Vector3 mePos = me.Position;
+                Dictionary<string, SceneTie> ties = PoolTies(ids);
+                var owes = new Dictionary<string, WorryLink>();   // "debtor|owed": the last, as LastOrDefault had it
+                foreach (WorryLink l in _store.Links)
+                    if (l.Kind == "debt" && l.Id != null && l.OtherId != null && ids.Contains(l.Id) && ids.Contains(l.OtherId))
+                        owes[l.Id + "|" + l.OtherId] = l;
+                var minds = new Dictionary<string, StagedMind>();
+                for (int i = 0; i < n; i++)
+                    for (int j = i + 1; j < n; j++)
+                    {
+                        Candidate a = pool[i], b = pool[j];
+                        if (a.Who.Id == b.Who.Id)
+                            continue;
+                        SceneTie t;
+                        ties.TryGetValue(ScPairKey(a.Who.Id, b.Who.Id), out t);
+                        WorryLink bOwesA, aOwesB;
+                        owes.TryGetValue(b.Who.Id + "|" + a.Who.Id, out bOwesA);
+                        owes.TryGetValue(a.Who.Id + "|" + b.Who.Id, out aOwesB);
+                        bool sour = t != null && t.Warmth < 0;
+                        if (!sour && bOwesA == null && aOwesB == null)
+                            continue;
+                        float apart = pos[i].DistanceTo(pos[j]);
+                        if (apart < (test ? 2f : 4f) || apart > (test ? 18f : 14f) || (!ScInView(me, pool, view, i) && !ScInView(me, pool, view, j)))
+                            continue;
+                        float fromYou = Math.Min(pos[i].DistanceTo(mePos), pos[j].DistanceTo(mePos));
+                        if (fromYou >= best)
+                            continue;
+                        // a calls out b (b owes a: the link is the worrier's, the one at the other end is owed, and calls it in), then b calls out a
+                        for (int way = 0; way < 2; way++)
+                        {
+                            Candidate x = way == 0 ? a : b, y = way == 0 ? b : a;
+                            WorryLink link = way == 0 ? bOwesA : aOwesB;
+                            if (!sour && link == null)
+                                continue;
+                            bool xWronged = link != null || (t != null && t.Did(y.Who.Id));
+                            string matter = StreetCallouts.MatterOf(t != null ? t.Kind : null, t != null && t.Courted, link != null);
+                            if (!StreetCallouts.Calls(ScMind(minds, x.Who), ScMind(minds, y.Who), xWronged, matter))
+                                continue;
+                            ca = x;
+                            cb = y;
+                            tie = t;
+                            debt = link != null;
+                            wronged = xWronged;
+                            best = fromYou;
+                            break;   // the same distance from you both ways: the first way round stands, as before
+                        }
+                    }
+            }
+            finally
+            {
+                WatchLeave(wd);
+            }
             if (ca == null)
             {
                 _scWhyNot = "nobody about with something between them, the right distance apart (" + pool.Count + " named and free near you)";
@@ -141,6 +179,52 @@ namespace EnrageWestworld.InGame
                       (tie != null ? "their tie " + tie.Kind + " " + tie.Warmth : "no tie") + (debt ? ", a debt" : "") + "; " + (int)ca.Ped.Position.DistanceTo(cb.Ped.Position) + " m apart, " + (int)best + " m from you; " +
                       c.On.Count + " named near to see it)" + (test ? ", a test" : ""));
             return true;
+        }
+
+        /// Every onlooker's turn settled (a loop, not Any: no closure each 250 ms wait).
+        private bool ScOnlookersSettled(StreetCallout c, int now)
+        {
+            for (int i = 0; i < c.OnAsk.Count; i++)
+                if (!StagedSettle(c.OnAsk[i], "callout, onlooker", now))
+                    return false;
+            return true;
+        }
+
+        /// The ties between any two of these people, by ScPairKey, from one pass over the store (the first of a pair's, as
+        /// FirstOrDefault had it): the encounter starts' pair searches look them up (the frame-cost audit, NIGHT4 item 6).
+        private Dictionary<string, SceneTie> PoolTies(HashSet<string> ids)
+        {
+            var ties = new Dictionary<string, SceneTie>();
+            foreach (SceneTie t in _store.Ties)
+                if (t.A != null && t.B != null && ids.Contains(t.A) && ids.Contains(t.B))
+                {
+                    string k = ScPairKey(t.A, t.B);
+                    if (!ties.ContainsKey(k))
+                        ties[k] = t;
+                }
+            return ties;
+        }
+
+        private static string ScPairKey(string a, string b)
+        {
+            return string.CompareOrdinal(a, b) < 0 ? a + "|" + b : b + "|" + a;
+        }
+
+        /// On screen with nothing in the way, asked once per person for the pair search.
+        private static bool ScInView(Ped me, List<Candidate> pool, sbyte[] view, int i)
+        {
+            if (view[i] == 0)
+                view[i] = NodInView(me, pool[i].Ped) ? (sbyte)1 : (sbyte)-1;
+            return view[i] > 0;
+        }
+
+        /// The pair search's leanings, once per person (Calls reads only the tempers; the warmth is filled at the start).
+        private StagedMind ScMind(Dictionary<string, StagedMind> minds, Someone who)
+        {
+            StagedMind m;
+            if (!minds.TryGetValue(who.Id, out m))
+                minds[who.Id] = m = StagedMindOf(who, null);
+            return m;
         }
 
         private void StreetCalloutStep(int now)
@@ -214,7 +298,7 @@ namespace EnrageWestworld.InGame
                     c.NextAt = now + 3200;
                     break;
                 case "answer":
-                    if (!StagedSettle(c.TAsk, "callout, " + c.WB.Name, now))
+                    if (!StagedSettle(c.TAsk, "callout", c.WB.Name, now))
                     {
                         c.NextAt = now + 250;
                         return;
@@ -237,7 +321,7 @@ namespace EnrageWestworld.InGame
                     c.NextAt = now + 3200;
                     break;
                 case "reply":
-                    if (!StagedSettle(c.AAsk, "callout, " + c.WA.Name, now) || c.OnAsk.Any(x => !StagedSettle(x, "callout, onlooker", now)))
+                    if (!StagedSettle(c.AAsk, "callout", c.WA.Name, now) || !ScOnlookersSettled(c, now))
                     {
                         c.NextAt = now + 250;
                         return;

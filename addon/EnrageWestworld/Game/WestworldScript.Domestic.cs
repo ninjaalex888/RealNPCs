@@ -68,20 +68,51 @@ namespace EnrageWestworld.InGame
             List<Candidate> pool = ReasonCandidates(me, now, test).Where(x => !PED.IS_PED_USING_ANY_SCENARIO(x.Ped.Handle) && !IsMindActing(x.Ped.Handle) && MindActWhyNot(x.Ped, x.Ped.Handle) == null).ToList();
             Candidate man = null, wife = null;
             float best = float.MaxValue;
-            foreach (Candidate m in pool.Where(x => !x.Who.Woman))
+            int wd = WatchEnter("domestic: the man search");
+            try
             {
-                float d = m.Ped.Position.DistanceTo(me.Position);
-                if (d < 6f || d > 35f)
-                    continue;
-                // his sweetheart near him plays his wife: a courted tie, standing within 15 m
-                Candidate w = pool.Where(x => x.Who.Woman && x.Ped.Position.DistanceTo(m.Ped.Position) < 15f)
-                                  .FirstOrDefault(x => { SceneTie t = _store.Ties.FirstOrDefault(y => y.Has(x.Who.Id) && y.Has(m.Who.Id)); return t != null && t.Courted; });
-                float score = d - (w != null ? 20f : 0f) - (NodInView(me, m.Ped) ? 5f : 0f);
-                if (score >= best)
-                    continue;
-                best = score;
-                man = m;
-                wife = w;
+                // each position read once, the ties from one pass, the sight test only when it could change the pick (the frame-cost audit)
+                int pn = pool.Count;
+                var pos = new Vector3[pn];
+                var ids = new HashSet<string>();
+                for (int i = 0; i < pn; i++)
+                {
+                    pos[i] = pool[i].Ped.Position;
+                    ids.Add(pool[i].Who.Id);
+                }
+                Dictionary<string, SceneTie> ties = PoolTies(ids);
+                Vector3 mePos = me.Position;
+                for (int i = 0; i < pn; i++)
+                {
+                    Candidate m = pool[i];
+                    if (m.Who.Woman)
+                        continue;
+                    float d = pos[i].DistanceTo(mePos);
+                    if (d < 6f || d > 35f)
+                        continue;
+                    // his sweetheart near him plays his wife: a courted tie, standing within 15 m
+                    Candidate w = null;
+                    for (int j = 0; j < pn && w == null; j++)
+                    {
+                        SceneTie t;
+                        if (pool[j].Who.Woman && pos[j].DistanceTo(pos[i]) < 15f && ties.TryGetValue(ScPairKey(pool[j].Who.Id, m.Who.Id), out t) && t.Courted)
+                            w = pool[j];
+                    }
+                    float score = d - (w != null ? 20f : 0f);
+                    if (score - 5f >= best)
+                        continue;
+                    if (NodInView(me, m.Ped))
+                        score -= 5f;
+                    if (score >= best)
+                        continue;
+                    best = score;
+                    man = m;
+                    wife = w;
+                }
+            }
+            finally
+            {
+                WatchLeave(wd);
             }
             if (man == null)
             {
@@ -219,7 +250,7 @@ namespace EnrageWestworld.InGame
                         if (c.Turn == 0)
                             _ticker.Push(c.WM.Name + ", thinking", Domestic.Thought("husband", c.Matter, c.Seed), "near", hm);
                     }
-                    if (!StagedSettle(c.HisAsk, "domestic, " + c.WM.Name, now))
+                    if (!StagedSettle(c.HisAsk, "domestic", c.WM.Name, now))
                     {
                         c.NextAt = now + 250;
                         return;
@@ -230,7 +261,7 @@ namespace EnrageWestworld.InGame
                     if (c.HerAsk == null)
                         c.HerAsk = StagedChoose(hw, "wife", Domestic.Wife(c.MW, c.His, c.Struck), sa + "w",
                                                 id => Domestic.Words("wife", id, c.HisName, c.HerName), Domestic.Now("wife", c.HisName, c.HerName, c.Matter), c.HisName, now);
-                    if (!StagedSettle(c.HerAsk, "domestic, " + c.HerFull, now))
+                    if (!StagedSettle(c.HerAsk, "domestic", c.HerFull, now))
                     {
                         c.NextAt = now + 250;
                         return;
@@ -387,7 +418,22 @@ namespace EnrageWestworld.InGame
         {
             int hn = c.Neighbour.Handle, hm = c.Man.Handle;
             SceneTie tw = c.WW != null ? _store.Ties.FirstOrDefault(x => x.Has(c.WN.Id) && x.Has(c.WW.Id)) : null;
-            Ped law = Peds.All().FirstOrDefault(p => p != null && p.Exists() && !p.IsDead && Natives.IsLaw(p) && p.Position.DistanceTo(c.Man.Position) < 50f && !PED.IS_PED_IN_COMBAT(p.Handle, 0) && !Spawner.IsOurs(p.Handle) && !NotFree(p.Handle));
+            Ped law = null;
+            Vector3 manAt = c.Man.Position;
+            int wd = WatchEnter("domestic: a lawman near");
+            try
+            {
+                foreach (Ped p in Peds.All())   // the distance first, the lawman test (a model name and a group) last (the frame-cost audit)
+                    if (p != null && p.Position.DistanceTo(manAt) < 50f && p.Exists() && !p.IsDead && !PED.IS_PED_IN_COMBAT(p.Handle, 0) && !Spawner.IsOurs(p.Handle) && !NotFree(p.Handle) && Natives.IsLaw(p))
+                    {
+                        law = p;
+                        break;
+                    }
+            }
+            finally
+            {
+                WatchLeave(wd);
+            }
             // the neighbour's own mind, at once (the two in it are the ones the model is asked for: one ask at a time each turn)
             string pick = Staged.Choose(Domestic.Neighbour(StagedMindOf(c.WN, null), tw != null ? tw.Warmth : 0, c.Struck, law != null), c.Seed + "|n");
             DomCount("neighbour " + pick, null);

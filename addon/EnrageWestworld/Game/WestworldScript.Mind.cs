@@ -27,6 +27,8 @@ namespace EnrageWestworld.InGame
             public Traits Traits;           // worked out when first looked at (the engine's cache by id), kept here so a look allocates nothing
             public uint Model;
             public int CheckedAt;
+            public string NodSeed;          // "id|hour" for the ToYou nods, made once an hour (WestworldScript.ToYou.cs)
+            public long NodSeedHour = -1;
             public bool Told;               // their MIND line is written this session
             public Person P;                // as the add-on knows them (for the worry, the goals)
             public NeedState Needs;         // worked out when looked at, again after NeedsMs (step 3)

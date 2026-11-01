@@ -37,6 +37,16 @@ namespace EnrageWestworld.Core
                                                       "PROP_HUMAN_SEAT_CHAIR_PORCH", "GENERIC_SEAT_CHAIR_SCENARIO", "WORLD_HUMAN_SEAT_STEPS" };
         public static readonly string[] RestLeans = { Wh("LEAN_BACK_WALL"), Wh("LEAN_WALL_RIGHT"), Wh("LEAN_WALL_LEFT"), Wh("LEAN_POST_LEFT"),
                                                       Wh("LEAN_POST_RIGHT"), Wh("LEAN_RAILING"), Wh("LEAN_BACK_RAILING") };
+        // the rest's two orders, made once (the frame-cost audit, NIGHT4 item 6: a list and an array on every plan before)
+        private static readonly string[] RestSeatsFirst = Both(RestSeats, RestLeans), RestLeansFirst = Both(RestLeans, RestSeats);
+
+        private static string[] Both(string[] a, string[] b)
+        {
+            var t = new string[a.Length + b.Length];
+            a.CopyTo(t, 0);
+            b.CopyTo(t, a.Length);
+            return t;
+        }
         // other seats and leans seen in the game's log (counted as a rest where someone already is)
         public static readonly string[] OtherRests = { "WORLD_HUMAN_LEAN_BACK_WALL_NO_PROPS", "WORLD_HUMAN_LEAN_BACK_WALL_SMOKING", "WORLD_HUMAN_LEAN_RAILING_SMOKING",
                                                        "PROP_HUMAN_SEAT_BENCH_TIRED", "PROP_HUMAN_SEAT_CHAIR_READ_NEWSPAPER", "PROP_HUMAN_SEAT_CHAIR_WHITTLE",
@@ -218,10 +228,7 @@ namespace EnrageWestworld.Core
                     {
                         // a seat or a lean, which first by who they are (half and half), both looked for
                         bool seatFirst = (seed & 1) == 0 || woman;
-                        var t = new List<string>();
-                        t.AddRange(seatFirst ? RestSeats : RestLeans);
-                        t.AddRange(seatFirst ? RestLeans : RestSeats);
-                        return new Plan { Choice = choice, Types = t.ToArray(), Radius = PointMetres, InPlace = woman ? FanInPlace : (seed & 2) == 0 ? SmokeInPlace : StareInPlace };
+                        return new Plan { Choice = choice, Types = seatFirst ? RestSeatsFirst : RestLeansFirst, Radius = PointMetres, InPlace = woman ? FanInPlace : (seed & 2) == 0 ? SmokeInPlace : StareInPlace };
                     }
                 case "drink":
                     return new Plan { Choice = choice, Types = DrinkPoints, Radius = PointMetres, Place = "saloon", InPlace = saloon ? DrinkInPlace : null };

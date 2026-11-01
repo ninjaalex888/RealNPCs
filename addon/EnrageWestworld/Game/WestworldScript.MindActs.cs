@@ -42,6 +42,7 @@ namespace EnrageWestworld.InGame
             public bool S1Begun;        // began as a stage-1 start (a get-up, or a standing rest/meal/drink/work by type): counted
                                         // against MindScenarios.AtOnce until it ends, walks to a place, home or a talk included (the review)
             public int Partner;         // talk: the other of two the walker joins (found before the get-up, kept for S1Send)
+            public int EnrageAskedAt = int.MinValue / 2;   // S1GameHasThem's last ask of enRAGE (once a second at most)
         }
 
         private readonly List<MindAct> _mindActs = new List<MindAct>();
@@ -84,10 +85,23 @@ namespace EnrageWestworld.InGame
                     MindActDrop(i);
         }
 
-        /// The game itself has them (a fight, a flee, a fall) or enRAGE does: a stage-1 act lets go with no orders (the review).
-        private bool S1GameHasThem(int h)
+        /// The game itself has them (a fight, a flee, a fall) or enRAGE is driving them: a stage-1 act lets go with no orders (the
+        /// review). enRAGE is asked only whether it has them at work (a fight, a job, the questioning), the rule MayDirect keeps,
+        /// not whether they are one of its people: a standing record's walk to the bar was dropped at its first poll (NIGHT4 item
+        /// 6). With `a`, enRAGE (reflection calls) is asked at most once a second for that act; the three natives every poll.
+        private bool S1GameHasThem(int h, MindAct a = null, int now = 0)
         {
-            return PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h) || (_bridge != null && _bridge.RecordAt(h) != null);
+            if (PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h))
+                return true;
+            if (_bridge == null)
+                return false;
+            if (a != null)
+            {
+                if (now - a.EnrageAskedAt >= 0 && now - a.EnrageAskedAt < 1000)
+                    return false;
+                a.EnrageAskedAt = now;
+            }
+            return IsRecord(h) && (_bridge.EnrageFighter(h) || _bridge.Interrogating);
         }
 
         // what became of every choice tried (NIGHT4 fix 4): acted, or the reason it wasn't, so F7 can say where they go
@@ -142,7 +156,7 @@ namespace EnrageWestworld.InGame
             if (why != null)
             {
                 _mindActsSkipped++;
-                Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (" + why + ")");
+                if (Log.Debug) Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (" + why + ")");
                 return why;
             }
             if (sat)
@@ -158,7 +172,7 @@ namespace EnrageWestworld.InGame
                     return null;
                 }
                 if (kind == "drink" || kind == "eat" || kind == "work")
-                    Log.Detail("MIND acts: " + w.Name + " " + Choosing.WordsOf(kind) + ", not at it where they sit (scenario 0x" + ((uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h)).ToString("X8") + ")");   // the unknown ones, for the lists
+                    if (Log.Debug) Log.Detail("MIND acts: " + w.Name + " " + Choosing.WordsOf(kind) + ", not at it where they sit (scenario 0x" + ((uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h)).ToString("X8") + ")");   // the unknown ones, for the lists
             }
             if (now < _mindActNextAt)
                 return LostGap;
@@ -231,7 +245,7 @@ namespace EnrageWestworld.InGame
                         if (lost != null)
                         {
                             _mindActsSkipped++;
-                            Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (" + lost + ")");
+                            if (Log.Debug) Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (" + lost + ")");
                             return lost;
                         }
                         break;
@@ -241,7 +255,7 @@ namespace EnrageWestworld.InGame
                     if (!TASK.DOES_SCENARIO_EXIST_IN_AREA(at, 15f, true, 0, false))
                     {
                         _mindActsSkipped++;
-                        Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (no seat or spot free nearby (15 m))");
+                        if (Log.Debug) Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (no seat or spot free nearby (15 m))");
                         return LostNoSpot;
                     }
                     TASK._TASK_USE_NEAREST_SCENARIO_TO_COORD(h, at, 15f, 90000, false, true, false, false);
@@ -559,7 +573,7 @@ namespace EnrageWestworld.InGame
                 {
                     a.LookAt = 0;
                     if (a.Spot)
-                        Log.Detail("MIND acts: " + a.Name + (PED.IS_PED_USING_ANY_SCENARIO(h) ? " took a spot (scenario type " + TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h) + ")" : " found no spot to take"));
+                        if (Log.Debug) Log.Detail("MIND acts: " + a.Name + (PED.IS_PED_USING_ANY_SCENARIO(h) ? " took a spot (scenario type " + TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h) + ")" : " found no spot to take"));
                 }
                 bool arrived = !gone && a.Toward != 0 && ENTITY.DOES_ENTITY_EXIST(a.Toward) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(ENTITY.GET_ENTITY_COORDS(a.Toward, true, true)) < 2f;
                 bool there = !gone && a.To != default(Vector3) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(a.To) < 3f;
@@ -592,7 +606,7 @@ namespace EnrageWestworld.InGame
                     else
                         TASK.TASK_STAND_STILL(h, 30000);
                     a.Until = now + (a.Arrive == "spot" ? 150000 : 30000);
-                    Log.Detail("MIND acts: " + a.Name + " is at the " + a.Kind + (PED.IS_PED_USING_ANY_SCENARIO(h) ? ", and took a spot" : ""));
+                    if (Log.Debug) Log.Detail("MIND acts: " + a.Name + " is at the " + a.Kind + (PED.IS_PED_USING_ANY_SCENARIO(h) ? ", and took a spot" : ""));
                     if (a.Kind == "store")
                         Safe("plans", () => PlanAtStore(h, now));   // something to give, for a plan to court or to thank (WestworldScript.Plans.cs)
                     continue;
