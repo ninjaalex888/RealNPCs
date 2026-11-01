@@ -112,8 +112,8 @@ namespace EnrageWestworld.Core
                     thought = Tidy(line.Substring(8).Trim());
                 else if (line.StartsWith("Choice:", StringComparison.OrdinalIgnoreCase))
                     choice = ParsePick(line.Substring(7), count);
-                else if (choice < 0 && thought != null && line.Length > 0 && line.Length <= 4 && char.IsDigit(line[0]))
-                    choice = ParsePick(line, count);   // a bare number on the line after the thought (seen in sampling)
+                else if (choice < 0 && line.Length > 0 && line.Length <= 4 && char.IsDigit(line[0]))
+                    choice = ParsePick(line, count);   // a bare number on a line of its own, before the thought or after it (sampling; the review)
                 else if (thought == null && line.Length > 4 && !char.IsDigit(line[0]))   // (before or after the choice: the number comes first since NIGHT4)
                 {
                     thought = Tidy(line);   // the thought without its label, a number lines below (sampled 2026-10-31: 3 in 90)

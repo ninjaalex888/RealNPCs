@@ -43,6 +43,12 @@ namespace EnrageWestworld.InGame
             public bool ChoiceActed, Retrying;
             public int ChoiceTriedAt, ActedAt, Retries;
             public string ActWhyNot;
+            // the review of NIGHT4 item 1: the mind's own key, apart from Choice (which a model's pick replaces), so a pick
+            // stands until the mind itself changes its mind; "at it already" kept out of the acting share; seated asks rested
+            public string MindChoice;
+            public bool AlreadyAt;
+            public int SeatedAskAt;
+            public bool SeatedAsked;
         }
 
         private const int ChooseMs = 60000, ChoiceLinesAMinute = 5;
@@ -436,10 +442,12 @@ namespace EnrageWestworld.InGame
             w.Recent.Note(ch.Key, g);
             if (ch.Key == "eat")
                 w.AteAt = g;   // the shadow's own meal: hunger falls for it at the next needs
-            bool changed = ch.Key != w.Choice;
+            bool changed = ch.Key != (w.MindChoice ?? w.Choice);   // against the mind's own, not a model's pick standing in for it (the review)
             if (changed)
             {
                 w.Choice = ch.Key;
+                w.MindChoice = ch.Key;
+                w.AlreadyAt = false;
                 w.ChoiceWhy = ch.Value + (c.Plan != null && Choosing.PlanLean(c.Plan, ch.Key) > 0 ? ", and a plan (" + c.Plan + ")" : "");
                 w.ChoiceNext = next;
                 w.ChoiceTold = false;
@@ -898,6 +906,9 @@ namespace EnrageWestworld.InGame
                 w.Concerns = was.Concerns;
                 w.NeedsAt = was.NeedsAt;
                 w.Choice = was.Choice;
+                w.MindChoice = was.MindChoice;
+                w.SeatedAskAt = was.SeatedAskAt;
+                w.SeatedAsked = was.SeatedAsked;
                 w.ChoiceWhy = was.ChoiceWhy;
                 w.ChoiceNext = was.ChoiceNext;
                 w.ChoiceHeld = was.ChoiceHeld;

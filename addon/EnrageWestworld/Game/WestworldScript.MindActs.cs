@@ -60,6 +60,7 @@ namespace EnrageWestworld.InGame
         /// an act began; else why not (counted for F7, and kept on the person: MindWho.ActWhyNot).
         private string MindActOn(MindWho w, int h, int now)
         {
+            w.AlreadyAt = false;   // set again by MindActTry when they're at it already
             string lost = MindActTry(w, h, now);
             if (lost == LostOff)
                 return lost;
@@ -107,10 +108,13 @@ namespace EnrageWestworld.InGame
                 {
                     // sat on a bench and choosing a rest, at the bar and choosing a drink: they're doing it (counted, never a refusal)
                     _mindAlreadyAt++;
+                    w.AlreadyAt = true;   // counted apart from those visibly acting (the review: a sweeper's broom is no act of the mind's)
                     NoteMindAct(kind + ", at it already");
                     Log.Detail("MIND acts: " + w.Name + " " + Choosing.WordsOf(kind) + ", and is at it already (" + already + ")");
                     return null;
                 }
+                if (kind == "drink" || kind == "eat" || kind == "work")
+                    Log.Detail("MIND acts: " + w.Name + " " + Choosing.WordsOf(kind) + ", not at it where they sit (scenario 0x" + ((uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h)).ToString("X8") + ")");   // the unknown ones, for the lists
             }
             if (now < _mindActNextAt)
                 return LostGap;
@@ -239,7 +243,7 @@ namespace EnrageWestworld.InGame
                         int target = MindLookTarget(h, at, me, now, true, out atYou);
                         if (target != 0)
                             TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, target, 1500, 0f, 0f, 0f);
-                        a.Then = Natives.Hash(w.P != null && w.P.Woman ? "WORLD_HUMAN_STARE_STOIC" : (Voice.Hash(w.Id + "|showoff") & 1) == 0 ? "WORLD_HUMAN_SMOKE" : "WORLD_HUMAN_STARE_STOIC");
+                        a.Then = (w.P == null || !w.P.Woman) && (Voice.Hash(w.Id + "|showoff") & 1) == 0 ? Director.SmokeHash : Natives.Hash("WORLD_HUMAN_STARE_STOIC");
                         a.ThenAt = now + (target != 0 ? 1500 : 0);
                         a.Until = now + 15000;
                         did = "makes sure to be seen" + (target != 0 ? " (facing " + (atYou ? "you" : MindNameOf(target) ?? "the street") + ")" : "");
@@ -570,9 +574,9 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.MindLive || !_cfg.MindActs)
                 return "off ([Mind] MindActs, with MindLive)";
-            int acting, scenes, named;
-            MindActingShare(Game.GameTime, out acting, out scenes, out named);
-            return MindShareWords(acting, scenes, named) + "; " + (_cfg.MindActsSeatedLooks ? "watch, looks and showoff on: " + _mindSeatedLooks + " looks from a seat, " + _mindAlreadyAt + " already at what they chose; " : "watch, looks and showoff off ([Mind] MindActsSeatedLooks); ") +
+            int acting, scenes, named, already;
+            MindActingShare(Game.GameTime, out acting, out scenes, out named, out already);
+            return MindShareWords(acting, scenes, named, already) + "; " + (_cfg.MindActsSeatedLooks ? "watch, looks and showoff on: " + _mindSeatedLooks + " looks from a seat, " + _mindAlreadyAt + " already at what they chose; " : "watch, looks and showoff off ([Mind] MindActsSeatedLooks); ") +
                    _mindActsDone + " acted on their choices this session (" + (_mindActCount.Count == 0 ? "none yet" : string.Join(", ", _mindActCount.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
                    "), " + _mindActs.Count + " acting now, " + _mindActsSkipped + " passed over" + (_mindActLast != null ? "; last: " + _mindActLast : "") +
                    "; of " + _mindActsTried + " tried, not acted: " + (_mindActLost.Count == 0 ? "none" : string.Join(", ", _mindActLost.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
@@ -589,9 +593,9 @@ namespace EnrageWestworld.InGame
 
         /// The goal's measure in game (NIGHT4 fix 4): of the named people in the mind's near ring, how many are acting on their
         /// minds now (an act under way, or their present choice acted in the last two minutes) and how many are in a scene.
-        private void MindActingShare(int now, out int acting, out int scenes, out int named)
+        private void MindActingShare(int now, out int acting, out int scenes, out int named, out int already)
         {
-            acting = scenes = named = 0;
+            acting = scenes = named = already = 0;
             for (int i = 0; i < _mindNear.Count; i++)
             {
                 int h = _mindNear[i];
@@ -599,16 +603,20 @@ namespace EnrageWestworld.InGame
                 if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                     continue;
                 named++;
-                if (IsMindActing(h) || (w.ChoiceActed && now - w.ActedAt >= 0 && now - w.ActedAt < 120000))
+                bool lately = w.ChoiceActed && now - w.ActedAt >= 0 && now - w.ActedAt < 120000;
+                if (IsMindActing(h) || (lately && !w.AlreadyAt))
                     acting++;
+                else if (lately)
+                    already++;   // at it already (a seat, the bar, a broom): what they chose, but nothing the mind made them do (the review)
                 else if (_director != null && _director.Involves(h))
                     scenes++;
             }
         }
 
-        private static string MindShareWords(int acting, int scenes, int named)
+        private static string MindShareWords(int acting, int scenes, int named, int already)
         {
-            return named == 0 ? "no one the mind knows within its ring" : acting + " of " + named + " named near you acting on their minds (" + (100 * acting / named) + "%), " + scenes + " more in a scene (" + (100 * (acting + scenes) / named) + "% in all)";
+            return named == 0 ? "no one the mind knows within its ring" : acting + " of " + named + " named near you acting on their minds (" + (100 * acting / named) + "%), " + scenes + " more in a scene (" + (100 * (acting + scenes) / named) + "% in all); " +
+                   already + " more at what they chose already, not counted (" + (100 * already / named) + "%)";
         }
 
         private int _mindShareMinuteAt, _mindShareLastTried;
@@ -623,9 +631,9 @@ namespace EnrageWestworld.InGame
                 return;
             int tried = _mindActsTried - _mindShareLastTried;
             _mindShareLastTried = _mindActsTried;
-            int acting, scenes, named;
-            MindActingShare(now, out acting, out scenes, out named);
-            Log.Write("MIND acting minute: " + MindShareWords(acting, scenes, named) + "; " + tried + " choices tried this minute, " + _mindActsDone + " acts this session");
+            int acting, scenes, named, already;
+            MindActingShare(now, out acting, out scenes, out named, out already);
+            Log.Write("MIND acting minute: " + MindShareWords(acting, scenes, named, already) + "; " + tried + " choices tried this minute, " + _mindActsDone + " acts this session");
         }
     }
 }

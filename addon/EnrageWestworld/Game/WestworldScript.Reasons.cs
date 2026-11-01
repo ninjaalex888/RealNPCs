@@ -484,13 +484,13 @@ namespace EnrageWestworld.InGame
                       (by != null ? "; " + by : "") + ")");
             List<Ped> cast2 = new List<Ped> { first, second };
             NotePairPlayed(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);
-            Reasons.NoteStreet(_streetKinds, pr.Why.Kind);   // the street's last four (NIGHT4 fix 5)
-            if (Reasons.WorrierRests(pr.Why.Kind))
-                NoteWorrierSaid(doer.Id, pr.Why.Kind);
-            if (asWords)
-                _reasonWords++;   // blows the chair kept to words (F7 TEST reasons)
             if (side)
-                return StartScene(s, cast2, cast, seed, now, side: true);
+            {
+                if (!StartScene(s, cast2, cast, seed, now, side: true))
+                    return false;
+                NotePlayedReason(pr, doer, asWords);
+                return true;
+            }
             Scene unladdered = s;
             s = LadderScene(s, first, second, doer, done, cast, seed, pr.Why.Matter, cast2, now);   // an argue or a brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs)
             if (_hush && by == null && s != unladdered && TownMood.Hushed(s.Kind))
@@ -501,10 +501,23 @@ namespace EnrageWestworld.InGame
             if (s.Ladder == null || s.Cast == 2)   // (the ladder found no friend of its own: a stranger may still step in, the review)
                 StandUpFor(s, cast2, cast, seed, now, false, out stood);   // someone may step in before the blow (WestworldScript.StandUp.cs); the ladder has its own friend
             AddBystander(s, cast2, cast, seed, now);
+            if (!StartScene(s, cast2, cast, seed, now))
+                return false;   // not begun: nothing counted, nobody rested (the review; ChanceScene notes only after a start too)
+            NotePlayedReason(pr, doer, asWords);
             NoteMainScene(s.Kind, Math.Min(pr.A.Ped.Position.DistanceTo(me.Position), pr.B.Ped.Position.DistanceTo(me.Position)), false);
-            if (StartScene(s, cast2, cast, seed, now) && by == null)
+            if (by == null)
                 ReasonThought(pr, me, seed, cast);   // why, over the one whose reason it is (a mind's own pick has the model's thought)
             return true;
+        }
+
+        /// A reason's scene has begun: the street's last four (NIGHT4 fix 5), the worrier's rest, the chair's words counted.
+        private void NotePlayedReason(PairReason pr, Someone doer, bool asWords)
+        {
+            Reasons.NoteStreet(_streetKinds, pr.Why.Kind);
+            if (Reasons.WorrierRests(pr.Why.Kind))
+                NoteWorrierSaid(doer.Id, pr.Why.Kind);
+            if (asWords)
+                _reasonWords++;   // blows the chair kept to words (F7 TEST reasons)
         }
 
         /// The reason, shown: the one whose reason it is thinks why as they go over, when he can see them.

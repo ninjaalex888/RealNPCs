@@ -57,6 +57,11 @@ namespace EnrageWestworld.InGame
                 Candidate chooser = Reasons.ChosenBySecond(pr.Why, first.Who, Bridge.Now() / 1440) ? second : first, other = chooser == first ? second : first;   // the friend offers sympathy, the wronged keep clear, the one owed calls it in
                 if (chooser.Who == null || chooser.Who.Id != id || other.Who == null)
                     continue;
+                if (_cfg.ChanceFirst && pr.Apart > 2.6f && BothHeld(pr.A.Ped.Handle, pr.B.Ped.Handle))
+                {
+                    _farHeldSkipped++;
+                    continue;   // two in chairs a few steps apart: the walk-over never comes (fix 7's skip, on the model's path too: the review)
+                }
                 string words = Reasons.ActWords(pr.Why, Person.FirstOf(other.Who.Name));
                 if (words == null)
                     continue;

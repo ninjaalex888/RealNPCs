@@ -80,6 +80,7 @@ namespace EnrageWestworld.InGame
             public int Warm;        // the tie's warmth, -3..3 (0 none)
         }
 
+        internal static readonly uint SmokeHash = Natives.Hash("WORLD_HUMAN_SMOKE");   // a smoke in place (the scenes' "smoke" step, the mind's showoff)
         internal static readonly uint Crouch = Natives.Hash("WORLD_HUMAN_CROUCH_INSPECT");   // the crouch over something on the ground (also the night visitor's)
         private Live _live;
         // quiet talks playing at the same time as the scene, elsewhere on the street (the NPC-life run, Lex 2026-10-30: "several
@@ -1177,7 +1178,7 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_DRINK_FLASK"), 8000, true, 0u, -1f, false);
                     return 900;
                 case "smoke":
-                    TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_SMOKE"), 15000, true, 0u, -1f, false);
+                    TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, SmokeHash, 15000, true, 0u, -1f, false);
                     return 900;
                 case "whittle":
                     TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_SIT_GROUND_WHITTLE"), 20000, true, 0u, -1f, false);

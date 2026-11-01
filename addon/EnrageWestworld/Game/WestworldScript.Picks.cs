@@ -28,6 +28,8 @@ namespace EnrageWestworld.InGame
         }
 
         private const float PickNear = 15f;   // within this, a person's every new choice may be asked; past it ([Mind] PickMetres), half of them
+        private const int SeatedAskRestMs = 240000;   // one seated ask a person this often at most (the review of NIGHT4 item 1)
+        private int _picksSeatedRested;
         private const int PickWaitMs = 2500, PicksLoud = 40;   // how many wait at once and how far out: [Mind] PicksAtOnce, PickMetres (NIGHT3 item 2)
         private readonly List<PendingPick> _pending = new List<PendingPick>();
         private int _picksAsked, _picksTaken, _picksSame, _picksLate, _picksUnread, _picksPlan, _picksLogged;
@@ -51,6 +53,11 @@ namespace EnrageWestworld.InGame
             bool seated = _cfg.MindRetries && _cfg.MindActsSeatedLooks && p.Exists() && PED.IS_PED_USING_ANY_SCENARIO(h);
             if (!p.Exists() || pd > _cfg.PickMetres || MindActWhyNot(p, h, seated) != null)
                 return false;
+            if (seated && w.SeatedAsked && now - w.SeatedAskAt >= 0 && now - w.SeatedAskAt < SeatedAskRestMs)
+            {
+                _picksSeatedRested++;
+                return false;   // one seated ask a person every four minutes: the mind's own acts meanwhile (the review: every seat in range was asked each minute)
+            }
             if (pd > PickNear && (_pending.Count >= 2 || !_cfg.MindRetries) && (Voice.Hash(w.Id + "|" + now / 30000) & 1) == 1)
                 return false;   // the outer ring: half its choices go to the model, the rest are the mind's own (NIGHT3 item 2), unless the model is idle (NIGHT4 fix 3)
             List<KeyValuePair<string, string>> ranked = Choosing.Ranked(w.Needs, w.Traits, c, Choosing.SeedFor(w.Id, _store.LastGameMin), seated ? 12 : 3);
@@ -104,7 +111,11 @@ namespace EnrageWestworld.InGame
                 return false;
             _picksAsked++;
             if (seated)
+            {
                 _picksSeatedAsked++;
+                w.SeatedAsked = true;
+                w.SeatedAskAt = now;
+            }
             _pending.Add(new PendingPick { W = w, Handle = h, Key = key, Mind = w.Choice, Ids = ids, Words = words, Plan = ids.Contains("plan:seek") ? plan : null, AskedAt = now, Deadline = now + PickWaitMs, Req = r, Scenes = scenes });
             return true;
         }
@@ -327,7 +338,7 @@ namespace EnrageWestworld.InGame
             string store = _engine != null ? ", store: " + _engine.LanguageAnswers.PicksAsked + " queued, " + _engine.LanguageAnswers.PicksAnswered + " answered, " + _engine.LanguageAnswers.PicksFailed + " failed, " +
                            _engine.LanguageAnswers.PicksDropped + " dropped" : "";
             return (_langReady ? "on" : "on, the server not ready") + ": " + _picksAsked + " asked this session, " + _picksTaken + " picked (" + _picksSame + " the mind's own, " + _picksPlan + " a plan's step), " +
-                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting; reached the screen " + _picksReached + " of " + _picksResolvedActs + " (" + _picksAnsweredReached + " the model answered, " + _picksFellBackReached + " the mind's own after no answer); seated asked " + _picksSeatedAsked + "; thoughts with them " + _pickThoughtsShown + " shown, " + _pickThoughtsHeld + " held by the check" + store + (_pickLast != null ? "; last: " + _pickLast : "") + "; scenes from their own reasons: " + MindScenesStatus();
+                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting; reached the screen " + _picksReached + " of " + _picksResolvedActs + " (" + _picksAnsweredReached + " the model answered, " + _picksFellBackReached + " the mind's own after no answer); seated asked " + _picksSeatedAsked + " (" + _picksSeatedRested + " passed over, asked under 4 min before); thoughts with them " + _pickThoughtsShown + " shown, " + _pickThoughtsHeld + " held by the check" + store + (_pickLast != null ? "; last: " + _pickLast : "") + "; scenes from their own reasons: " + MindScenesStatus();
         }
     }
 }
