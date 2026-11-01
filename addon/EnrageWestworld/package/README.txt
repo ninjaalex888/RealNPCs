@@ -130,8 +130,7 @@ NEW IN 0.7.11
   game (carried 12 m and set down); jogging with it is new and not yet seen.
 - Name plates stay up in crowds and after a saloon: the nearest eight are always drawn. After
   going in and out of a saloon every name could go for minutes, because the list of people in
-  the world came back empty; RealNPCs now reads it from Script Hook itself, and keeps the last
-  good list while there's trouble.
+  the world came back empty; RealNPCs now keeps the last good list while there's trouble.
 - Bold thieves ([Scenes] BoldThieves, 25): that percent of would-be thieves try it anyway with
   the law looking on (a hothead, a greedy one or a drunk 38%). By the church on a Sunday every
   thief still waits.
