@@ -3,6 +3,7 @@
 ## Unreleased
 
 - **Quarrels in a chair are had out in words.** When two people with a reason to come to blows can't, because one of them is sat or leaning, they have it out in words over the same matter instead of nothing happening. A pair that can't be played at all is passed over for a while, so others nearby get their turn.
+- **People watch, look up and make sure to be seen** (`[Mind] MindActsSeatedLooks`, on; settings version 166). Someone whose mind says to keep watch now looks at you when you're close and in view, or at whoever is about, or stands and watches the street; before, only those who had seen you violent did anything. People sat or leaning look up from their seat at you, a friend or someone to talk to, without being made to get up. Someone who wants to be seen turns to the street and smokes or stands there. Someone already at what they chose (a drink at the bar, a rest on a bench) counts as doing it. Testing row: "Someone sat or leaning looks up".
 
 ## 0.7.11 (2026-10-31)
 

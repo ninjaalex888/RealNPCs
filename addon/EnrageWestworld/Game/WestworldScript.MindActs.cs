@@ -28,6 +28,9 @@ namespace EnrageWestworld.InGame
             public bool Spot;           // sent to the nearest scenario point
             public string Arrive;       // at the place: "spot" (take the nearest seat or the bar), "browse" (a while at the counter), null
             public bool Arrived;
+            public uint Then;           // a scenario in place to start at ThenAt (showoff: after the turn to face the street)
+            public int ThenAt;
+            public bool Seated;         // a look from where they sit (NIGHT4 fix 2): their scenario is never touched
         }
 
         private readonly List<MindAct> _mindActs = new List<MindAct>();
@@ -49,7 +52,9 @@ namespace EnrageWestworld.InGame
         private int _mindActsTried, _mindActsTakenUp, _mindChoseQuietly;
         private const string LostOff = "off", LostGap = "the 1.5 s gap", LostAtOnce = "10 acting at once", LostActing = "acting already", LostStand = "stand or showoff: no act",
                              LostUrge = "a feeling's urge: no act", LostNoSpot = "no free spot within 15 m", LostNoFoe = "nobody to step clear of", LostNoFriend = "no friend near",
-                             LostNoTalk = "nobody to talk to", LostWatch = "watch: never saw you violent", LostNoAct = "no act for this choice";
+                             LostNoTalk = "nobody to talk to", LostWatch = "watch: never saw you violent", LostNoAct = "no act for this choice",
+                             LostBusyNod = "nodding to someone or listening to you", LostSatNoLook = "sat, leaning or at something already";
+        private int _mindAlreadyAt, _mindLookAtYouAt, _mindSeatedLooks;
 
         /// A choice for someone near and in view (MindChooseFor, a pick's answer): what they do about it, if anything. Null when
         /// an act began; else why not (counted for F7, and kept on the person: MindWho.ActWhyNot).
@@ -76,24 +81,40 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.MindLive || !_cfg.MindActs || w.Choice == null)
                 return LostOff;
-            if (now < _mindActNextAt)
-                return LostGap;
-            if (_mindActs.Count >= MindActsAtOnce)
-                return LostAtOnce;
             if (IsMindActing(h))
                 return LostActing;
             string kind = w.Choice;
-            if (kind == "stand" || kind == "showoff" || Choosing.CarriesOn(kind))
+            bool looks = _cfg.MindActsSeatedLooks;   // NIGHT4 fix 2: watch, seated looks, showoff and "already at it"
+            if (kind == "stand" || Choosing.CarriesOn(kind) || (kind == "showoff" && !looks))
                 return LostStand;
             Ped p = new Ped(h);
             Ped me = Game.Player.Character;
-            string why = MindActWhyNot(p, h);
+            bool sat = looks && PED.IS_PED_USING_ANY_SCENARIO(h);
+            string why = MindActWhyNot(p, h, sat);
             if (why != null)
             {
                 _mindActsSkipped++;
                 Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (" + why + ")");
                 return why;
             }
+            if (sat)
+            {
+                string already = MindAlreadyAt(kind, h);
+                if (already != null)
+                {
+                    // sat on a bench and choosing a rest, at the bar and choosing a drink: they're doing it (counted, never a refusal)
+                    _mindAlreadyAt++;
+                    NoteMindAct(kind + ", at it already");
+                    Log.Detail("MIND acts: " + w.Name + " " + Choosing.WordsOf(kind) + ", and is at it already (" + already + ")");
+                    return null;
+                }
+            }
+            if (now < _mindActNextAt)
+                return LostGap;
+            if (_mindActs.Count >= MindActsAtOnce)
+                return LostAtOnce;
+            if (sat)
+                return MindSeatedLook(w, h, kind, now, me, false);
             Vector3 at = p.Position;
             var a = new MindAct { Handle = h, Kind = kind, Name = w.Name, Started = now, Until = now + 60000 };
             string did;
@@ -174,28 +195,176 @@ namespace EnrageWestworld.InGame
                         break;
                     }
                 case "watch":
-                    if (!_engine.SawYouViolent(w.Id, 3))
-                        return LostWatch;
-                    TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 8000, 0, 51, 0);
-                    a.Until = now + 8000;
-                    did = "keeps a wary eye on you";
-                    break;
+                    {
+                        bool feared = _engine.SawYouViolent(w.Id, 3);
+                        if (!looks)
+                        {
+                            if (!feared)
+                                return LostWatch;
+                            TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 8000, 0, 51, 0);
+                            a.Until = now + 8000;
+                            did = "keeps a wary eye on you";
+                            break;
+                        }
+                        if (IsAcknowledging(h))
+                            return LostBusyNod;
+                        // a look at you within 15 m in view (one person every 10 s), else at the nearest stranger; nobody to look
+                        // at: a stoic stare in place (NIGHT4 fix 2: watch was the commonest unacted choice and never reached the screen)
+                        bool atYou;
+                        int target = MindLookTarget(h, at, me, now, true, out atYou);
+                        if (target != 0)
+                        {
+                            int ms = 6000 + (int)(Voice.Hash(w.Id + "|watch") % 2000);
+                            TASK.TASK_LOOK_AT_ENTITY(h, target, ms, 0, 51, 0);
+                            a.Until = now + ms;
+                            did = atYou ? (feared ? "keeps a wary eye on you" : "keeps an eye on you") : "keeps an eye on the street (" + (MindNameOf(target) ?? "a passer-by") + ")";
+                        }
+                        else
+                        {
+                            TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_STARE_STOIC"), 10000, true, 0u, -1f, false);
+                            a.Until = now + 10000;
+                            did = "keeps an eye on the street (stands and watches)";
+                        }
+                        break;
+                    }
+                case "showoff":
+                    {
+                        if (IsAcknowledging(h))
+                            return LostBusyNod;
+                        // turned to face whoever is about, then one of the in-place scenarios the scenes already use (Director.cs)
+                        bool atYou;
+                        int target = MindLookTarget(h, at, me, now, true, out atYou);
+                        if (target != 0)
+                            TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, target, 1500, 0f, 0f, 0f);
+                        a.Then = Natives.Hash(w.P != null && w.P.Woman ? "WORLD_HUMAN_STARE_STOIC" : (Voice.Hash(w.Id + "|showoff") & 1) == 0 ? "WORLD_HUMAN_SMOKE" : "WORLD_HUMAN_STARE_STOIC");
+                        a.ThenAt = now + (target != 0 ? 1500 : 0);
+                        a.Until = now + 15000;
+                        did = "makes sure to be seen" + (target != 0 ? " (facing " + (atYou ? "you" : MindNameOf(target) ?? "the street") + ")" : "");
+                        break;
+                    }
                 default:
                     return kind.StartsWith("urge:", StringComparison.Ordinal) ? LostUrge : LostNoAct;
             }
             _mindActs.Add(a);
             _mindActNextAt = now + MindActGapMs;
-            _mindActsDone++;
-            int n;
-            _mindActCount.TryGetValue(kind, out n);
-            _mindActCount[kind] = n + 1;
+            NoteMindAct(kind);
             _mindActLast = w.Name + " " + did;
             Log.Write("MIND acts: " + w.Name + " " + did + " (" + w.ChoiceWhy + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
             return null;
         }
 
+        private void NoteMindAct(string key)
+        {
+            _mindActsDone++;
+            int n;
+            _mindActCount.TryGetValue(key, out n);
+            _mindActCount[key] = n + 1;
+        }
+
+        // the game's scenario types, by name (rdr3_discoveries' list, as Roughs.cs has them), for "at it already" (NIGHT4 fix 2)
+        private static readonly string[] EatScenarios = { "PROP_HUMAN_SEAT_CHAIR_TABLE_EATING_KNIFE_FORK", "PROP_CAMP_SEAT_CHAIR_TABLE_STEW" };
+        private static readonly string[] WorkScenarios = { "WORLD_HUMAN_BARTENDER_CLEAN_GLASS", "WORLD_HUMAN_BARTENDER" };
+        private static uint[] _eatHashes, _workHashes, _barHashes;
+
+        private static string ScenarioOf(int h, uint type, string[] names, ref uint[] hashes)
+        {
+            if (hashes == null)
+            {
+                var hs = new uint[names.Length];
+                for (int i = 0; i < names.Length; i++)
+                    hs[i] = Natives.Hash(names[i]);
+                hashes = hs;
+            }
+            for (int i = 0; i < hashes.Length; i++)
+                if (type == hashes[i] || PED.IS_PED_USING_SCENARIO_HASH(h, hashes[i]))
+                    return names[i];
+            return null;
+        }
+
+        /// Sat or leaning in a scenario that already is what their mind chose (a rest anywhere they sit or lean but at work, a drink
+        /// at the bar, a meal at a table, the barkeep's work): the scenario's name, else null (an unknown type is logged by number).
+        private string MindAlreadyAt(string kind, int h)
+        {
+            if (kind != "rest" && kind != "drink" && kind != "eat" && kind != "work")
+                return null;
+            uint type = (uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h);
+            string work = ScenarioOf(h, type, WorkScenarios, ref _workHashes);
+            if (kind == "work")
+                return work;
+            if (kind == "rest")
+                return work == null ? "sat or leaning, scenario 0x" + type.ToString("X8") : null;
+            if (kind == "drink")
+                return ScenarioOf(h, type, BarScenarios, ref _barHashes);
+            return ScenarioOf(h, type, EatScenarios, ref _eatHashes);
+        }
+
+        /// Whom someone at `at` looks at: you, within 15 m and in plain view (one person every 10 s at most), else the nearest
+        /// other person in the mind's near ring within 15 m; 0 for nobody.
+        private int MindLookTarget(int h, Vector3 at, Ped me, int now, bool allowYou, out bool atYou)
+        {
+            atYou = false;
+            if (allowYou && at.DistanceTo(me.Position) <= 15f && (now - _mindLookAtYouAt >= 10000 || now < _mindLookAtYouAt) && NodInView(me, new Ped(h)))
+            {
+                _mindLookAtYouAt = now;
+                atYou = true;
+                return me.Handle;
+            }
+            int best = 0;
+            float bestD = 15f;
+            for (int i = 0; i < _mindNear.Count; i++)
+            {
+                int oh = _mindNear[i];
+                if (oh == h || !ENTITY.DOES_ENTITY_EXIST(oh) || ENTITY.IS_ENTITY_DEAD(oh))
+                    continue;
+                float d = ENTITY.GET_ENTITY_COORDS(oh, true, true).DistanceTo(at);
+                if (d < bestD)
+                {
+                    bestD = d;
+                    best = oh;
+                }
+            }
+            return best;
+        }
+
+        /// Someone sat or leaning acts on a look-only choice from where they are: a watch (you or the street), a wary look at you
+        /// (keep clear), a look at a friend (greet) or at someone near to talk to. TASK_LOOK_AT_ENTITY only, as the waking's glance,
+        /// which plays on seated people; the scenario is never touched. Null when the look began, else why not.
+        private string MindSeatedLook(MindWho w, int h, string kind, int now, Ped me, bool test)
+        {
+            if (kind != "watch" && kind != "keepclear" && kind != "greet" && kind != "talk")
+                return LostSatNoLook;   // getting up for it is stage 1 of 0.7.12, not built
+            if (IsAcknowledging(h))
+                return LostBusyNod;
+            Vector3 at = ENTITY.GET_ENTITY_COORDS(h, true, true);
+            bool atYou = false;
+            int target;
+            if (kind == "greet")
+                target = MindFriendNear(w, h);
+            else if (kind == "keepclear")
+            {
+                target = MindLookTarget(h, at, me, now, true, out atYou);
+                if (!atYou)
+                    target = 0;   // a wary look is at you or nobody
+            }
+            else
+                target = MindLookTarget(h, at, me, now, kind == "watch", out atYou);
+            if (target == 0)
+                return kind == "greet" ? LostNoFriend : kind == "talk" ? LostNoTalk : LostSatNoLook;
+            int ms = 6000 + (int)(Voice.Hash(w.Id + "|" + kind + "|look") % 2000);
+            TASK.TASK_LOOK_AT_ENTITY(h, target, ms, 0, 51, 0);
+            _mindActs.Add(new MindAct { Handle = h, Kind = kind, Name = w.Name, Started = now, Until = now + ms, Seated = true });
+            _mindActNextAt = now + MindActGapMs;
+            _mindSeatedLooks++;
+            NoteMindAct(kind + ", a look from a seat");
+            string whom = atYou ? "you" : MindNameOf(target) ?? "someone near";
+            string did = kind == "watch" ? (atYou ? "keeps an eye on you" : "keeps an eye on the street (" + whom + ")") : kind == "keepclear" ? "eyes you warily" : "looks over at " + whom;
+            _mindActLast = w.Name + " " + did + " from where they sit";
+            Log.Write("MIND acts: " + w.Name + " " + did + " from where they sit (" + (test ? "the Testing row" : w.ChoiceWhy) + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
+            return null;
+        }
+
         /// Why this body mayn't be moved by its own choice now, or null.
-        private string MindActWhyNot(Ped p, int h)
+        private string MindActWhyNot(Ped p, int h, bool sitOk = false)
         {
             if (!p.Exists() || p.IsDead)
                 return "gone";
@@ -203,7 +372,7 @@ namespace EnrageWestworld.InGame
                 return "aimed at just now";   // left to the game's own answer to a gun (WestworldScript.AimLetGo.cs)
             if (Natives.StoryModel(p) || !IsGrownUp(p) || Natives.IsLaw(p))
                 return "the story's, a child or the law";
-            if (PED.IS_PED_USING_ANY_SCENARIO(h))
+            if (!sitOk && PED.IS_PED_USING_ANY_SCENARIO(h))   // (sitOk: a look from where they sit, which never touches the scenario; NIGHT4 fix 2)
                 return "sat, leaning or at something already";
             if (PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h))
                 return "riding, fighting or running";
@@ -225,6 +394,12 @@ namespace EnrageWestworld.InGame
                     _mindActsTakenUp++;
                     _mindActs.RemoveAt(i);   // another feature has them now (Talk, a walk-up, a scene): the act ends, with no new orders (the cross-cutting review; a nod is not enough)
                     continue;
+                }
+                if (!gone && a.Then != 0 && now >= a.ThenAt)
+                {
+                    if (!PED.IS_PED_USING_ANY_SCENARIO(h) && !_director.Involves(h))
+                        TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, a.Then, 12000, true, 0u, -1f, false);   // showoff: in place, facing the street (NIGHT4 fix 2)
+                    a.Then = 0;
                 }
                 if (!gone && a.LookAt > 0 && now >= a.LookAt)
                 {
@@ -353,6 +528,40 @@ namespace EnrageWestworld.InGame
             return _mindWho.TryGetValue(h, out o) && o.Name != null ? o.Name : null;
         }
 
+        /// The Testing row (NIGHT4 fix 2): the nearest person the mind knows who is sat or leaning, free, within 15 m, looks up
+        /// from where they sit as a watch would have them. Null when it played, else why not.
+        private string SeatedLookTest(int now)
+        {
+            if (!_cfg.MindLive || !_cfg.MindActs || !_cfg.MindActsSeatedLooks)
+                return "[Mind] MindLive, MindActs and MindActsSeatedLooks must be on";
+            Ped me = Game.Player.Character;
+            int best = 0;
+            float bestD = 15f;
+            string lastWhy = null;
+            foreach (int h in _mindNear)
+            {
+                MindWho w;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || !PED.IS_PED_USING_ANY_SCENARIO(h) || IsMindActing(h))
+                    continue;
+                string why = MindActWhyNot(new Ped(h), h, true);
+                if (why != null)
+                {
+                    lastWhy = w.Name + ": " + why;
+                    continue;
+                }
+                float d = ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(me.Position);
+                if (d < bestD)
+                {
+                    bestD = d;
+                    best = h;
+                }
+            }
+            if (best == 0)
+                return "nobody the mind knows sat or leaning and free within 15 m" + (lastWhy != null ? " (the last passed over: " + lastWhy + ")" : "");
+            _mindLookAtYouAt = 0;   // the row always tries you first
+            return MindSeatedLook(_mindWho[best], best, "watch", now, me, true);
+        }
+
         /// F7: what the minds did this session.
         private string MindActsStatus()
         {
@@ -360,7 +569,7 @@ namespace EnrageWestworld.InGame
                 return "off ([Mind] MindActs, with MindLive)";
             int acting, scenes, named;
             MindActingShare(Game.GameTime, out acting, out scenes, out named);
-            return MindShareWords(acting, scenes, named) + "; " +
+            return MindShareWords(acting, scenes, named) + "; " + (_cfg.MindActsSeatedLooks ? "watch, looks and showoff on: " + _mindSeatedLooks + " looks from a seat, " + _mindAlreadyAt + " already at what they chose; " : "watch, looks and showoff off ([Mind] MindActsSeatedLooks); ") +
                    _mindActsDone + " acted on their choices this session (" + (_mindActCount.Count == 0 ? "none yet" : string.Join(", ", _mindActCount.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
                    "), " + _mindActs.Count + " acting now, " + _mindActsSkipped + " passed over" + (_mindActLast != null ? "; last: " + _mindActLast : "") +
                    "; of " + _mindActsTried + " tried, not acted: " + (_mindActLost.Count == 0 ? "none" : string.Join(", ", _mindActLost.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +

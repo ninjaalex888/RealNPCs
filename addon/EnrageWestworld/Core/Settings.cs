@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 165;
+        public const int CurrentVersion = 166;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -78,6 +78,7 @@ namespace EnrageWestworld.Core
         public bool MindStandUp = true;      // with MindLive: who steps into a rough or a brawl between two others comes from the onlookers' own minds, and whether the bully backs down from his (Core/StepIn.cs; roadmap 39; night 2026-10-29, item 2; settings version 107); off, the old roll
         public bool MindPlans = true;   // with MindLive: plans over days, from a wrong done them, a kindness, a debt, a sweetheart; the holder seeks the other out and the street leans to the scene (the NPC-life run, step 6; settings version 139)
         public bool MindActs = true;   // with MindLive: someone near and in view does what their mind just chose: a stroll, the nearest bench, chair, bar or work spot, a walk off home, clear of you or of a foe, over to a friend (the NPC-life run, Lex 2026-10-30; settings version 130)
+        public bool MindActsSeatedLooks = true;   // with MindActs: watch acts for everyone (a look at you or the street), people sat or leaning act on look-only choices from their seat, showoff plays in place, and a choice someone is already at counts as acted (NIGHT4 fix 2; settings version 166)
         public bool LadderShots = true;   // with MindLive and QuarrelLadder: a quarrel the ladder takes to the shot is fired, deadly as in 1899 (Lex, 2026-10-30; settings version 132); off: the standoff breaks off, as before
         public bool MindJoinFights = true;   // with MindLive: an onlooker may join a fistfight on a side, by their nature, drink, and ties to those fighting (Core/JoinIn.cs; the NPC-life run, Lex 2026-10-30; settings version 128)
         public bool MindBrawls = true;       // with MindLive and MindJoinFights: a fight may grow into a brawl, a wave at a time, up to BrawlMost; the law at hand holds most back, not all (Core/Brawl.cs; Lex, 2026-10-31; settings version 160)
@@ -709,6 +710,8 @@ namespace EnrageWestworld.Core
                     s.LanguageChosen = true;   // on before RealNPCs could find the model by itself: the player's own choice, kept (2026-10-31)
                 if (s.SettingsVersion < 165)
                     log?.Invoke("Settings: the street's hush now follows only the latest killing in a town, for HushHours (" + F(s.HushHours) + ") game hours, Saint Denis HushHoursSaintDenis (" + F(s.HushHoursSaintDenis) + "); HushFear and HushFearSaintDenis are gone (Lex in Saint Denis, 2026-10-31: brawls kept the street hushed).");   // the old keys are skipped on reading and not written again
+                if (s.SettingsVersion < 166)
+                    log?.Invoke("Settings: new in this version: [Mind] MindActsSeatedLooks, MindRetries, [Scenes] ReasonVariety, ChanceFirst (all on; the minds act on more of their choices, the street's reasons and chance meetings take turns).");
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -916,6 +919,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("BullyTurnsMeant = " + BullyTurnsMeant + "   ; taken off when the one who stepped in looks like he means it (a proud or hot-tempered man) (0-100). Never on a woman who steps in");
             b.AppendLine("MindPlans = " + B(MindPlans) + "   ; with MindLive on: people carry plans over the next few days (to get even with someone who wronged them, to thank someone who helped, to pay a debt back, to court a sweetheart); near you, they go to find that person, and the scene it wants plays between them");
             b.AppendLine("MindActs = " + B(MindActs) + "   ; with MindLive on: people near you do what their minds choose: take a stroll, sit down on the nearest bench or chair, go to the bar or the card table, get on with the work, head off home, keep clear of you or of someone they can't abide, go over to a friend for a word; never someone already sat or busy, a few at a time");
+            b.AppendLine("MindActsSeatedLooks = " + B(MindActsSeatedLooks) + "   ; with MindActs: people keep an eye on you or the street when their minds say watch, people sat or leaning look up at you or a friend from their seat (never made to get up), someone who wants to be seen stands where the street can see them, and someone already at what they chose (a drink at the bar, a rest on a bench) counts as doing it");
             b.AppendLine("LadderShots = " + B(LadderShots) + "   ; with MindLive on: a quarrel that climbs all the way to the shot is fired: the one who pushed it there fires, the other fires back if he carries a gun or runs, and whoever falls stays dead; never in a saloon, with the law near, or unless both carry guns. false: the standoff breaks off");
             b.AppendLine("MindJoinFights = " + B(MindJoinFights) + "   ; with MindLive on: while two people fight, an onlooker may join in on a side: a friend of one, someone with bad blood against the other, a drunk hothead in a saloon; most watch, fewer the bigger the crowd, nobody with the law at hand; a man against a woman seldom (1899); at most three join");
             b.AppendLine("MindBrawls = " + B(MindBrawls) + "   ; with MindLive and MindJoinFights on: a fight can grow into a brawl, a wave at a time: friends and grudges pull people in, and the bigger it gets the less it takes, likelier in a saloon or with drink; the law at hand holds most back on the street, fewer in a saloon riot; false: at most three join, never with the law near");

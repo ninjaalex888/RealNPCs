@@ -86,6 +86,7 @@ namespace EnrageWestworld.Core
             new Entry("round", "People", "Someone stands the house a drink", "TestRoundKey", needs: "a saloon, two named people within 6 m of each other"),
             new Entry("sight", "People", "Someone reacts to how you look", "TestSightKey", needs: "someone within 10 m who can see you; looking ordinary, bloodied, drunk, filthy and soaked in turn"),
             new Entry("nod", "People", "Two who know each other acknowledge it", "TestNodKey", needs: "two people with a tie within 10 m of each other"),
+            new Entry("seatedlook", "People", "Someone sat or leaning looks up (the mind's seated look)", "TestSeatedLookKey", needs: "[Mind] MindLive, MindActs and MindActsSeatedLooks; someone the mind knows sat or leaning within 15 m, free (they look at you if you are in view, else at the nearest person; their seat is never touched)"),
             // ---- street scenes: the nearest named pair that fits plays it now (no tie or memory is noted for a test) --
             new Entry("scene:argue", "Street scenes", "An argument", "TestArgueKey", needs: "two named people within 16 m"),
             new Entry("scene:brawl", "Street scenes", "A fistfight", "TestBrawlKey", needs: "two named people within 16 m; women too with WomenInFights"),
