@@ -216,7 +216,7 @@ namespace EnrageWestworld.Core
         public int DomesticChance = 30;
         public bool Hogtied = true;             // out of the towns by day, one of a nearby town's people tied up by the road with two men by them, who they are from the captive's own life
         public int HogtiedChance = 20;
-        public bool HogtiedMenDraw = true;   // on as it comes from version 172 (Lex, 2026-11-01: violence against Arthur on by default);     // the hogtied's men may draw on you unprovoked as you come near; off: they fight only once you step in, as the execution's men (turns on Arthur: off, its own switch)
+        public bool HogtiedMenDraw = true;   // on as it comes from version 172 (Lex, 2026-11-01: violence against Arthur on by default): the hogtied's men may draw on you unprovoked as you come near; off: they fight only once you step in, as the execution's men
 
         // [World]
         public bool Deeds = true;
@@ -745,7 +745,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 168)
                     log?.Invoke("Settings: new in this version: [Mind] MindActsScenarios (on): people sat or leaning get up for what their minds choose, and rests, meals, drinks and work go to a spot of the game's of that kind; [Scenes] MainScenesAtOnce (2): a second full street scene at least 20 m from the first.");
                 if (s.SettingsVersion < 169)
-                    log?.Invoke("Settings: new in this version: [Encounters] PublicCallouts (on): in a town by day, one of the people about calls another out before the street, and each answers by their own mind; DomesticDisputes (on): a man starts in on his wife in the street, and she and a neighbour answer by their own minds; Hogtied (on): away from the towns, someone tied up by the road with two men by them; HogtiedMenDraw (off): those men may draw on you unprovoked.");
+                    log?.Invoke("Settings: new in this version: [Encounters] PublicCallouts (on): in a town by day, one of the people about calls another out before the street, and each answers by their own mind; DomesticDisputes (on): a man starts in on his wife in the street, and she and a neighbour answer by their own minds; Hogtied (on): away from the towns, someone tied up by the road with two men by them; HogtiedMenDraw (on as it comes since 172): those men may draw on you unprovoked.");
                 if (s.SettingsVersion < 170)
                     log?.Invoke("Settings: new in this version: [Mind] MindPassingLasts (on): people near you show what they feel about what you did for hours after, not minutes; [Scenes] FavoursAsked (on): someone in money trouble may come and ask you, and Talk lists the fix; [Scenes] CourtFolkAges (on): enRAGE's townsfolk may court each other on the street; [Scenes] WarnedYou (on): someone who saw what you did may have words with you, and a friend may warn you of a grudge or the law.");
                 if (s.SettingsVersion < 172)
