@@ -471,8 +471,10 @@ namespace EnrageWestworld.InGame
                 Safe("world events", () => RecordEvent("encounter:domestic", c.WM.Id, c.WM.Name, c.WW != null ? c.WW.Id : null, c.HerFull, c.Man.Position, c.Man.Handle, c.Man.Handle, c.Wife != null && c.Wife.Exists() ? c.Wife.Handle : 0,
                                                        (c.Struck ? "struck; " : "words; ") + why));
             }
-            if (c.FairGame && c.Man != null && c.Man.Exists() && !c.Man.IsDead)
-                PED.SET_PED_CONFIG_FLAG(c.Man.Handle, 6, false);   // an ordinary man again once it's over (dead, he stays as he fell)
+            if (c.FairGame && !c.YouHit && c.Man != null && c.Man.Exists() && !c.Man.IsDead)
+                NoWanted(c.Man.Handle, false);   // an ordinary man again once it's over (dead, he stays as he fell)
+            else if (c.FairGame && c.YouHit && c.Man != null && c.Man.Exists() && !c.Man.IsDead)
+                NoWanted(c.Man.Handle, true);    // you are fighting him: PCF 6 stays on, and Watch lifts it with his self-defence mark, five minutes on, as for any attacker
             if (c.FairGame && c.Man != null && !c.YouHit)
                 _cameAtYouSeen.Remove(c.Man.Handle);   // he walks the street after: no longer fair game (a fight you had with him stays judged as one he started, as the execution's men)
             foreach (Ped p in new[] { c.Man, c.Neighbour, c.Law })

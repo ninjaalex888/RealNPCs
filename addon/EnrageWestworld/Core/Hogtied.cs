@@ -57,8 +57,9 @@ namespace EnrageWestworld.Core
             return w;
         }
 
-        /// The men's leader, as the player comes near. Bounty hunters never start a fight (a lawful claim).
-        public static Staged.Weights Captor(StagedMind m, string captors)
+        /// The men's leader, as the player comes near. Bounty hunters never start a fight (a lawful claim); with mayDraw
+        /// false ([Encounters] HogtiedMenDraw off) nobody does, and the men fight only once the player steps in.
+        public static Staged.Weights Captor(StagedMind m, string captors, bool mayDraw = true)
         {
             var w = new Staged.Weights().Add("warn", 4).Add("bribe", 2).Add("leave", 1).Add("fight", 1);
             switch (m.Temper)
@@ -77,6 +78,8 @@ namespace EnrageWestworld.Core
                 default: w.Add("fight", 1); break;
             }
             w.Clamp();
+            if (!mayDraw)
+                w.Add("fight", -w.Of("fight"));
             if (w.Of("warn") == 0)
                 w.Add("warn", 1);
             return w;

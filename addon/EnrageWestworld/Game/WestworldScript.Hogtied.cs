@@ -4,8 +4,8 @@
 // in 2 s, the execution's kneel, bound by words), two men standing 8-12 m off: bounty hunters for a known thief, a
 // creditor's men over a debt, else the region's outlaws. A mark on the map. The captive calls, bargains, curses or
 // keeps quiet, by their nature (the first call put to the model with LanguagePicks); the men's leader, as you come
-// within 25 m, warns you off, names a price (greet him to pay it), packs up and goes, or (outlaws, and creditors' men
-// at a push; never bounty hunters) draws. Shoot at them, hold a gun on one, or come within 6 m of outlaws and they
+// within 25 m, warns you off, names a price (greet him to pay it), packs up and goes, or (with [Encounters] HogtiedMenDraw,
+// off by default; outlaws, and creditors' men at a push; never bounty hunters) draws. Shoot at them, hold a gun on one, or come within 6 m of outlaws and they
 // fight: from then they are fair game (outlaws are from the start, as the execution's men). Cut the captive loose with
 // the game's own prompt (or, kneeling, stand by them 2 s), and they thank you and go home or run; ride on and the men
 // carry them off. Never seen in four minutes: it ends quietly. Turning on Arthur once freed is not built ([Encounters]
@@ -31,7 +31,7 @@ namespace EnrageWestworld.InGame
             public readonly List<uint> MenModels = new List<uint>();
             public string Captors, Town, Region, Seed, Name, Lead, Freed;
             public int Price, StartedAt, CheckAt, NextCall, PhaseUntil, NearSince, AimSince, Calls, Tries;
-            public bool Tied, Noticed, Offered, Paid, Thought, Test, FairGame, ByYou;
+            public bool Tied, Noticed, Offered, Paid, Thought, Test, FairGame, ByYou, Fought;
             public StagedAsk CallAsk, LeadAsk, FreedAsk;
             public StagedMind MC;
             public Blip Mark;
@@ -113,6 +113,7 @@ namespace EnrageWestworld.InGame
                     h.MenModels.Add(Spawner.ModelFor(null, false, _rng.Next()));
             h.Lead = Voice.Pick(h.Seed + "lead", "Hothead", "Greedy", "Cold", "Coward", "Proud", "Loyal", null);   // the leader's temper (a stranger: his nature, seeded)
             _hog = h;
+            StagedLoad(new[] { Hogtied.StruggleDict }, now);   // the thanks clip and the gestures, asked for now so they are in by the time they are freed
             _hogStarted++;
             if (!test)
                 Pacing.NoteBig(_store.Pace, _store.LastGameMin);
@@ -273,10 +274,10 @@ namespace EnrageWestworld.InGame
                 int aimed = PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(Game.Player.Handle, (int*)&slot) ? (int)slot : 0;
                 bool aiming = aimed != 0 && men.Any(m => m.Handle == aimed);
                 h.AimSince = aiming ? (h.AimSince == 0 ? now : h.AimSince) : 0;
-                bool hurt = men.Count < h.Guards.Count || men.Any(m => ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(m.Handle, me.Handle, true, false));
+                bool hurt = !h.Fought && (men.Count < h.Guards.Count || men.Any(m => ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(m.Handle, me.Handle, true, false)));   // once: a fight over stays over (the damage marks and the dead stay true)
                 bool rushed = h.Captors == "kidnappers" && men.Any(m => m.Position.DistanceTo(me.Position) < 6f);
                 bool drawnOn = aiming && now - h.AimSince > 1200 && h.Captors != "bounty";
-                if (hurt || rushed || drawnOn)
+                if (men.Count > 0 && (hurt || rushed || drawnOn))
                 {
                     HogFight(h, men, now, hurt ? "you fired on them" : rushed ? "you came right at them" : "you drew and kept it on them");
                     return;
@@ -324,7 +325,8 @@ namespace EnrageWestworld.InGame
             }
             if (!h.Noticed)
                 return;
-            if (h.Phase == "held" && d > 110f && men.Count > 0)
+            bool menBy = men.Any(m => m.Position.DistanceTo(h.Captive.Position) < 70f);   // one still by them to carry them off
+            if (h.Phase == "held" && d > 110f && menBy)
             {
                 // you rode on: they carry them off
                 _hogCarried++;
@@ -332,6 +334,14 @@ namespace EnrageWestworld.InGame
                 Log.Write("ENCOUNTER hogtied: you rode on; " + h.Name + " is " + h.Freed);
                 Safe("world events", () => RecordEvent("encounter:hogtied", null, h.Captors == "bounty" ? "bounty hunters" : "two men", h.R.Id, h.Name, h.Captive.Position, ch, ch, 0, h.Freed));
                 EndHogtied(h.Freed, true);
+                return;
+            }
+            if (h.Phase == "held" && d > 110f && !menBy)
+            {
+                // the men dead or run off and you rode on without cutting them loose: left tied (the game's escape timer, or the
+                // clear-up, has them after)
+                Log.Write("ENCOUNTER hogtied: you rode on; " + h.Name + " is left tied, the men dead or gone");
+                EndHogtied("left tied, the men dead or gone");
                 return;
             }
             if (!h.Thought && d < 30f && seen)
@@ -359,7 +369,7 @@ namespace EnrageWestworld.InGame
             if (h.Phase == "held" && men.Count > 0 && d < 25f && h.LeadAsk == null && h.Offered == false)
             {
                 Ped lead = men[0];
-                Staged.Weights w = Hogtied.Captor(new StagedMind { Temper = h.Lead }, h.Captors);
+                Staged.Weights w = Hogtied.Captor(new StagedMind { Temper = h.Lead }, h.Captors, _cfg.HogtiedMenDraw);   // off: never unprovoked
                 string mind = Staged.Choose(w, h.Seed + "lead");
                 h.LeadAsk = new StagedAsk { Handle = lead.Handle, Mind = mind, Picked = mind, Done = true, Ids = Staged.Offer(w, mind, Language.MostOptions) };   // a stranger: his seeded nature, never the model's
                 h.Offered = true;
@@ -456,6 +466,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_COMBAT_PED(m.Handle, me.Handle, 0, 16);
             }
             h.FairGame = true;   // they fight: fair game from now
+            h.Fought = true;
             h.Phase = "fight";
             h.PhaseUntil = now + 180000;
             _hogFought++;

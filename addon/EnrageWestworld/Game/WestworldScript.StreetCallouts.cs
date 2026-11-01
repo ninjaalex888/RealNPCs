@@ -85,7 +85,7 @@ namespace EnrageWestworld.InGame
                     if (apart < (test ? 2f : 4f) || apart > (test ? 18f : 14f) || (!NodInView(me, a.Ped) && !NodInView(me, b.Ped)))
                         continue;
                     SceneTie t = _store.Ties.FirstOrDefault(x => x.Has(a.Who.Id) && x.Has(b.Who.Id));
-                    WorryLink link = _store.Links.LastOrDefault(l => l.Id == a.Who.Id && l.Kind == "debt" && l.OtherId == b.Who.Id);
+                    WorryLink link = _store.Links.LastOrDefault(l => l.Id == b.Who.Id && l.Kind == "debt" && l.OtherId == a.Who.Id);   // b worries over what he owes a (the link is the worrier's; the one at the other end is owed): a is the one wronged, and calls it in
                     bool sour = t != null && t.Warmth < 0;
                     if (!sour && link == null)
                         continue;
