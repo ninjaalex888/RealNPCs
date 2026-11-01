@@ -293,7 +293,7 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
-        private int _nextSide, _nextSecond, _secondRefusedOk, _secondTried;
+        private int _nextSide, _nextSecond, _secondRefusedOk, _secondTried, _sideScanAt;
 
         /// A second full scene while the first plays ([Scenes] MainScenesAtOnce 2; NIGHT4 item 3): two people with a reason, else
         /// the two standing closest, at least 20 m from every one of the first scene's people and never the same people, and only
@@ -304,6 +304,8 @@ namespace EnrageWestworld.InGame
             if (!_cfg.Drama || SceneSlots.Mains(_cfg.MainScenesAtOnce) < 2 || _director.SecondBusy || now < _nextSecond ||
                 _stalker != null || _wedding != null || _theft != null || _plea != null || _visitor != null)
                 return;
+            if (_sideScanAt == now)
+                return;   // the quiet talks' scan ran this frame: this one on the next (the review: two full scans on one frame)
             _nextSecond = now + 8000;   // looked again in a few seconds when nobody fits
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
@@ -320,7 +322,7 @@ namespace EnrageWestworld.InGame
                 nc++;
             }
             float apart = Director.SecondApart;
-            Func<Ped, bool> clear = p => !_director.Involves(p.Handle) && (nc < 1 || p.Position.DistanceTo(c0) >= apart) && (nc < 2 || p.Position.DistanceTo(c1) >= apart) && (nc < 3 || p.Position.DistanceTo(c2) >= apart);
+            Func<Ped, bool> clear = p => !_director.Involves(p.Handle) && !_ring.Contains(p.Handle) && !JoinIsPending(p.Handle) && (nc < 1 || p.Position.DistanceTo(c0) >= apart) && (nc < 2 || p.Position.DistanceTo(c1) >= apart) && (nc < 3 || p.Position.DistanceTo(c2) >= apart);
             if (ReasonScene(me, saloon, now, false, clear, null, true))
                 return;
             List<Ped> pool = Peds.All().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
@@ -354,6 +356,7 @@ namespace EnrageWestworld.InGame
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
                 return;
+            _sideScanAt = now;   // the second full scene's scan waits a frame (the review)
             Ped c0 = _director.CastAt(0);
             Vector3? sceneAt = c0 != null && c0.Exists() ? c0.Position : (Vector3?)null;
             Func<Ped, bool> clear = p => !_director.Involves(p.Handle) && (sceneAt == null || p.Position.DistanceTo(sceneAt.Value) >= SideApart);

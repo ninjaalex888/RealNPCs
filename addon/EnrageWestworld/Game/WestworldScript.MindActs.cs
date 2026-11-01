@@ -33,11 +33,15 @@ namespace EnrageWestworld.InGame
             public bool Seated;         // a look from where they sit (NIGHT4 fix 2): their scenario is never touched
             // stage 1 (WestworldScript.MindScenarios.cs): getting up, then to a point of the game's by type
             public bool Stage1;         // getting up, or on the way to a point or something in place (S1Step polls it)
-            public bool GettingUp, ReAsked, TookUp, InPlace, Joining;
+            public bool GettingUp, TookUp, InPlace, Joining;
             public int UpAskedAt, NextPoll, SendAt, Point, ReachBy;
             public uint PointHash;
             public Vector3 PointAt, StartAt;
             public string PointType, FromType;
+            public bool Blocked;        // events blocked for the get-up, as the waking's Take (unblocked once up and sent on, or let go)
+            public bool S1Begun;        // began as a stage-1 start (a get-up, or a standing rest/meal/drink/work by type): counted
+                                        // against MindScenarios.AtOnce until it ends, walks to a place, home or a talk included (the review)
+            public int Partner;         // talk: the other of two the walker joins (found before the get-up, kept for S1Send)
         }
 
         private readonly List<MindAct> _mindActs = new List<MindAct>();
@@ -52,6 +56,38 @@ namespace EnrageWestworld.InGame
                 if (_mindActs[i].Handle == h)
                     return true;
             return false;
+        }
+
+        /// An act ends: removed, and the get-up's event block let go (unless `takerBlocks`: the scene, Talk, the menu, the ring, a
+        /// join or a wake act that took them sets and clears its own).
+        private void MindActDrop(int i, bool takerBlocks = false)
+        {
+            MindAct a = _mindActs[i];
+            _mindActs.RemoveAt(i);
+            S1Unblock(a, takerBlocks);
+        }
+
+        private static void S1Unblock(MindAct a, bool takerBlocks)
+        {
+            if (!a.Blocked)
+                return;
+            a.Blocked = false;
+            if (!takerBlocks && ENTITY.DOES_ENTITY_EXIST(a.Handle))
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(a.Handle, false);
+        }
+
+        /// A mission or the add-on stopping: any get-up still holding events blocked is let go (no orders).
+        private void MindActsLetGoBlocked()
+        {
+            for (int i = _mindActs.Count - 1; i >= 0; i--)
+                if (_mindActs[i].Blocked)
+                    MindActDrop(i);
+        }
+
+        /// The game itself has them (a fight, a flee, a fall) or enRAGE does: a stage-1 act lets go with no orders (the review).
+        private bool S1GameHasThem(int h)
+        {
+            return PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h) || (_bridge != null && _bridge.RecordAt(h) != null);
         }
 
         // what became of every choice tried (NIGHT4 fix 4): acted, or the reason it wasn't, so F7 can say where they go
@@ -162,7 +198,10 @@ namespace EnrageWestworld.InGame
                 return lost;
             }
             if (byPoint)
+            {
+                a.S1Begun = true;   // counted against the three at once until it ends (the review)
                 S1Started(w, now);
+            }
             _mindActs.Add(a);
             _mindActNextAt = now + MindActGapMs;
             NoteMindAct(kind);
@@ -258,9 +297,18 @@ namespace EnrageWestworld.InGame
                     {
                         // a talk joins two already talking first (stage 1), else the nearest someone to talk to
                         int partner = 0;
-                        int to = kind == "greet" ? MindFriendNear(w, h) : MindPairToJoin(h, at, out partner);
-                        if (to == 0 && kind == "talk")
-                            to = MindSomeoneToTalkTo(h, at);
+                        int to = 0;
+                        if (kind == "talk" && a.Toward != 0 && MindStillToTalk(a.Toward, a.Partner, h, at))
+                        {
+                            to = a.Toward;   // the one found before the get-up (MindGetUp), still there: no second search
+                            partner = a.Partner;
+                        }
+                        else
+                        {
+                            to = kind == "greet" ? MindFriendNear(w, h) : MindPairToJoin(h, at, out partner);
+                            if (to == 0 && kind == "talk")
+                                to = MindSomeoneToTalkTo(h, at);
+                        }
                         if (to == 0)
                             return kind == "greet" ? LostNoFriend : LostNoTalk;
                         a.Toward = to;
@@ -368,11 +416,13 @@ namespace EnrageWestworld.InGame
             {
                 // only where the scenario truly is the choice (guard 4, Core/MindScenarios.AtItAlready): a smoke or a stare is no meal,
                 // a broom no rest; a type the lists don't know is nothing (they may get up and go to one that is)
+                // the review: a seat or lean the lists don't know (or type 0, an in-place sit) is a rest, as before stage 1
                 string name = MindScenarios.NameOf(type);
-                if (name != null)
-                    return MindScenarios.AtItAlready(kind, name) ? name : null;
-                if (kind == "rest")
+                bool? atIt = MindScenarios.AtItOrUnknown(kind, name);
+                if (atIt == false)
                     return null;
+                if (atIt == true)
+                    return name ?? "sat or leaning, scenario 0x" + type.ToString("X8");
             }
             string work = ScenarioOf(h, type, WorkScenarios, ref _workHashes);
             if (kind == "work")
@@ -462,7 +512,7 @@ namespace EnrageWestworld.InGame
                 return MindRetry.Sat;
             if (PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h))
                 return MindRetry.Riding;
-            if (NotFree(h) || Spawner.IsOurs(h))   // (NotFree: a scene, Talk, a walk-up, a nod, a wake act and its other, the law at work)
+            if (NotFree(h) || Spawner.IsOurs(h) || _ring.Contains(h) || JoinIsPending(h))   // (NotFree: a scene, Talk, a walk-up, a nod, a wake act and its other, the law at work; the fight's ring and a join: the review)
                 return MindRetry.Busy;
             return MayDirectWhyNot(p);
         }
@@ -478,12 +528,13 @@ namespace EnrageWestworld.InGame
                 if (!gone && TakenUp(h))
                 {
                     _mindActsTakenUp++;
-                    _mindActs.RemoveAt(i);   // another feature has them now (Talk, a walk-up, a scene): the act ends, with no new orders (the cross-cutting review; a nod is not enough)
+                    bool owns = _director.Involves(h) || InTalk(h) || (_menu != null && _menu.Handle == h) || _ring.Contains(h) || JoinIsPending(h) || InWakeAct(h);
+                    MindActDrop(i, owns);   // another feature has them now (Talk, a walk-up, a scene, the ring, a wake act): the act ends, with no new orders (the cross-cutting review; a nod is not enough)
                     continue;
                 }
                 if (!gone && AimedLately(h, now))
                 {
-                    _mindActs.RemoveAt(i);   // aimed at: the game's own answer to a gun has them (WestworldScript.AimLetGo.cs), no orders of ours
+                    MindActDrop(i);   // aimed at: the game's own answer to a gun has them (WestworldScript.AimLetGo.cs), no orders of ours
                     continue;
                 }
                 if (!gone && a.Stage1)
@@ -494,7 +545,7 @@ namespace EnrageWestworld.InGame
                         continue;
                     if (s1 == 2)
                     {
-                        _mindActs.RemoveAt(i);
+                        MindActDrop(i);
                         continue;
                     }
                 }
@@ -511,6 +562,13 @@ namespace EnrageWestworld.InGame
                         Log.Detail("MIND acts: " + a.Name + (PED.IS_PED_USING_ANY_SCENARIO(h) ? " took a spot (scenario type " + TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h) + ")" : " found no spot to take"));
                 }
                 bool arrived = !gone && a.Toward != 0 && ENTITY.DOES_ENTITY_EXIST(a.Toward) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(ENTITY.GET_ENTITY_COORDS(a.Toward, true, true)) < 2f;
+                bool there = !gone && a.To != default(Vector3) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(a.To) < 3f;
+                if (a.S1Begun && (arrived || (there && !a.Arrived)) && S1GameHasThem(h))
+                {
+                    S1Lose(S1Taken);   // a stage-1 walk the game took (a fight, a flee, a fall) or enRAGE: no arrival orders, no wander (the review; asked only on arrival, not each frame)
+                    MindActDrop(i);
+                    continue;
+                }
                 if (arrived)
                 {
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, a.Toward, 2000, 0f, 0f, 0f);   // face to face: a talk may start between them
@@ -524,7 +582,6 @@ namespace EnrageWestworld.InGame
                         Log.Write("MIND acts: " + a.Name + " joins " + (MindNameOf(a.Toward) ?? "two") + " talking");
                     }
                 }
-                bool there = !gone && a.To != default(Vector3) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(a.To) < 3f;
                 if (there && a.Arrive != null && !a.Arrived && !_director.Involves(h))
                 {
                     // at the place: a seat, the bar rail or a pew nearby, or a while at the counter, then their own way
@@ -544,7 +601,7 @@ namespace EnrageWestworld.InGame
                     continue;   // a while there
                 if (gone || arrived || there || now >= a.Until || _director.Involves(h))
                 {
-                    _mindActs.RemoveAt(i);
+                    MindActDrop(i, !gone && _director.Involves(h));
                     if (!gone && there && (a.Kind == "home" || a.Kind == "shelter" || a.Kind == "saloon" || a.Kind == "store" || a.Kind == "church"))
                         TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // on their way, beyond the scene
                 }
@@ -613,6 +670,19 @@ namespace EnrageWestworld.InGame
                 }
             }
             return best;
+        }
+
+        /// The one a seated talker was getting up to talk to (and the other of the pair, if any): still there, free, near enough.
+        private bool MindStillToTalk(int to, int partner, int h, Vector3 at)
+        {
+            if (to == h || !ENTITY.DOES_ENTITY_EXIST(to) || ENTITY.IS_ENTITY_DEAD(to) || NotFree(to) || IsMindActing(to) || PED.IS_PED_IN_COMBAT(to, 0))
+                return false;
+            Vector3 ta = ENTITY.GET_ENTITY_COORDS(to, true, true);
+            if (ta.DistanceTo(at) > 14f)
+                return false;
+            if (partner == 0)
+                return true;
+            return ENTITY.DOES_ENTITY_EXIST(partner) && !ENTITY.IS_ENTITY_DEAD(partner) && !NotFree(partner) && !IsMindActing(partner) && ENTITY.GET_ENTITY_COORDS(partner, true, true).DistanceTo(ta) <= 2.5f;
         }
 
         private int MindSomeoneToTalkTo(int h, Vector3 at)

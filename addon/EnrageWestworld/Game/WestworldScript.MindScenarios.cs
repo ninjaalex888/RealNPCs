@@ -1,8 +1,8 @@
 // Stage 1 of 0.7.12 (NIGHT4 queue item 3; Lex, 2026-10-31: "people near Arthur visibly act on their own minds"): the
 // mind's everyday choices acted through the game's own scenarios (Core/MindScenarios.cs has the pure parts). Someone sat
-// or leaning whose choice gets them up is asked up the waking's way (WakeHold.cs "getup": one CLEAR_PED_TASKS, never the
-// immediate one, the scenario flag polled, 9 s at most, with the scene code's re-ask at 4 s), stands a moment, then goes
-// on to it: a bench, a chair, the steps, a wall, a post, a rail, the bar, a table, a broom, found by type
+// or leaning whose choice gets them up is asked up the waking's way exactly (WakeHold.cs "getup": events blocked as its
+// Take, one CLEAR_PED_TASKS, never the immediate one, the scenario flag polled, 9 s at most, no re-ask; once up, stood
+// still 3 s and the next order 2.5 s on), then goes on to it: a bench, a chair, the steps, a wall, a post, a rail, the bar, a table, a broom, found by type
 // (FIND_SCENARIO_OF_TYPE_HASH, Rockstar's ambient_load pattern: find by type, check it exists and is free, use it), or the
 // saloon, the store, the church, home, a stroll, someone to talk to (two already talking first). Standing people's rests,
 // meals, drinks and work go by type too, where before the nearest point of any kind was taken (work became a smoke). One
@@ -25,7 +25,29 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<string, int> _s1Lost = new Dictionary<string, int>();
         private readonly Dictionary<string, int> _s1TypeFound = new Dictionary<string, int>(), _s1TypeNone = new Dictionary<string, int>();
         private string _s1Last;
-        private const string S1Kept = "the seat kept them (9 s)", S1NoPoint = "no fitting point near (typed)", S1Never = "never reached the point", S1Nothing = "up, but nothing to go to";
+        private const string S1Kept = "the seat kept them (9 s)", S1NoPoint = "no fitting point near (typed)", S1Never = "never reached the point", S1Nothing = "up, but nothing to go to",
+                             S1Taken = "the game took them (a fight, a flee, a fall) or enRAGE";
+        // points they never reached, skipped by the next searches for a while (the review: no navmesh route, the same point each time)
+        private const int S1BadPoints = 8, S1BadPointMs = 300000;
+        private readonly int[] _s1BadPoint = new int[S1BadPoints], _s1BadUntil = new int[S1BadPoints];
+        private int _s1BadNext;
+
+        private void S1RememberBad(int p, int now)
+        {
+            if (p == 0)
+                return;
+            _s1BadPoint[_s1BadNext] = p;
+            _s1BadUntil[_s1BadNext] = now + S1BadPointMs;
+            _s1BadNext = (_s1BadNext + 1) % S1BadPoints;
+        }
+
+        private bool S1IsBad(int p, int now)
+        {
+            for (int i = 0; i < S1BadPoints; i++)
+                if (_s1BadPoint[i] == p && now < _s1BadUntil[i] && _s1BadUntil[i] - now <= S1BadPointMs)
+                    return true;
+            return false;
+        }
 
         private void S1Lose(string why)
         {
@@ -34,7 +56,8 @@ namespace EnrageWestworld.InGame
             _s1Lost[why] = n + 1;
         }
 
-        /// Stage-1 acts getting up or on their way to a point now, and the nearest of their starts to `at`.
+        /// Stage-1 acts getting up or on their way now (to a point, the bar, home, a talk: every act begun as a stage-1 start, until
+        /// it ends or is there; the review), and the nearest of their starts to `at`.
         private int S1Active(Vector3 at, out float nearest)
         {
             int n = 0;
@@ -42,7 +65,7 @@ namespace EnrageWestworld.InGame
             for (int i = 0; i < _mindActs.Count; i++)
             {
                 MindAct a = _mindActs[i];
-                if (!a.Stage1 || a.TookUp)
+                if (!a.S1Begun || a.TookUp || a.Arrived)
                     continue;
                 n++;
                 float d = a.StartAt.DistanceTo(at);
@@ -76,6 +99,7 @@ namespace EnrageWestworld.InGame
             try
             {
                 Vector3 me = Game.Player.Character.Position;
+                int now = Game.GameTime;
                 int asked = 0;
                 foreach (string t in pl.Types)
                 {
@@ -87,6 +111,8 @@ namespace EnrageWestworld.InGame
                     Vector3 c = ok ? TASK._GET_SCENARIO_POINT_COORDS(p, true) : default(Vector3);
                     if (ok && (c.DistanceTo(at) > pl.Radius + 1f || c.DistanceTo(me) < MindScenarios.PointFromYou))
                         ok = false;
+                    if (ok && S1IsBad(p, now))
+                        ok = false;   // never reached a while ago: another type, or nothing
                     if (ok)
                         for (int i = 0; i < _mindActs.Count; i++)
                             if (_mindActs[i].Point == p)
@@ -188,7 +214,7 @@ namespace EnrageWestworld.InGame
                 if (gate != null)
                     return gate;
             }
-            var a = new MindAct { Handle = h, Kind = kind, Name = w.Name, Started = now, Stage1 = true, GettingUp = true, StartAt = at, UpAskedAt = now, NextPoll = now + MindScenarios.PollMs };
+            var a = new MindAct { Handle = h, Kind = kind, Name = w.Name, Started = now, Stage1 = true, S1Begun = true, GettingUp = true, StartAt = at, UpAskedAt = now, NextPoll = now + MindScenarios.PollMs };
             uint type = (uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h);
             a.FromType = MindScenarios.NameOf(type) ?? "scenario 0x" + type.ToString("X8");
             // somewhere to go to, before anyone is asked up
@@ -219,9 +245,13 @@ namespace EnrageWestworld.InGame
                     to = MindSomeoneToTalkTo(h, at);
                 if (to == 0)
                     return LostNoTalk;
+                a.Toward = to;   // kept for S1Send (rechecked there, not searched again: the review)
+                a.Partner = partner;
             }
             else if (kind == "steerclear" && MindFoeNear(w, h) == 0)
                 return LostNoFoe;
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);   // the waking's Take: nothing pulls them back to the point or into a reaction halfway out
+            a.Blocked = true;
             TASK.CLEAR_PED_TASKS(h, true, false);   // up the game's own way, never pulled out (the waking's: a man pulled off a bar went into a T pose)
             Spawner.StandUp(h);
             a.Until = now + MindScenarios.UpMostMs + 60000;
@@ -244,32 +274,52 @@ namespace EnrageWestworld.InGame
 
         /// Two already talking, 4-12 m off, both free and standing within 2.5 m of each other: the nearer of them (a third joins
         /// in), and the other in `partner`; 0 for none. Over the mind's near ring only.
+        // MindPairToJoin's one pass (the review: it was O(n^2) in natives): who, where, and whether standing and free, reused
+        private readonly int[] _pairWho = new int[Levels.NearAllMax];
+        private readonly Vector3[] _pairAt = new Vector3[Levels.NearAllMax];
+
         private int MindPairToJoin(int h, Vector3 at, out int partner)
         {
             partner = 0;
             if (!_cfg.MindActsScenarios)
                 return 0;
+            int n = 0;
+            int wd = WatchEnter("mind acts: a pair to join");
+            try
+            {
+                // the natives once each: only people who could be one of the pair (within 12 + 2.5 m, standing, free, not acting)
+                for (int i = 0; i < _mindNear.Count && n < _pairWho.Length; i++)
+                {
+                    int x = _mindNear[i];
+                    if (x == h || !ENTITY.DOES_ENTITY_EXIST(x) || ENTITY.IS_ENTITY_DEAD(x))
+                        continue;
+                    Vector3 xa = ENTITY.GET_ENTITY_COORDS(x, true, true);
+                    if (xa.DistanceTo(at) > 14.5f || PED.IS_PED_USING_ANY_SCENARIO(x) || NotFree(x) || IsMindActing(x))
+                        continue;
+                    _pairWho[n] = x;
+                    _pairAt[n] = xa;
+                    n++;
+                }
+            }
+            finally
+            {
+                WatchLeave(wd);
+            }
+            // then the pairs, in plain arithmetic: the nearer of two standing within 2.5 m of each other, 4-12 m off
             int best = 0;
             float bestD = 12f;
-            for (int i = 0; i < _mindNear.Count; i++)
+            for (int i = 0; i < n; i++)
             {
-                int x = _mindNear[i];
-                if (x == h || !ENTITY.DOES_ENTITY_EXIST(x) || ENTITY.IS_ENTITY_DEAD(x))
+                float d = _pairAt[i].DistanceTo(at);
+                if (d < 4f || d >= bestD)
                     continue;
-                Vector3 xa = ENTITY.GET_ENTITY_COORDS(x, true, true);
-                float d = xa.DistanceTo(at);
-                if (d < 4f || d >= bestD || PED.IS_PED_USING_ANY_SCENARIO(x) || NotFree(x) || IsMindActing(x))
-                    continue;
-                for (int j = 0; j < _mindNear.Count; j++)
+                for (int j = 0; j < n; j++)
                 {
-                    int y = _mindNear[j];
-                    if (y == h || y == x || !ENTITY.DOES_ENTITY_EXIST(y) || ENTITY.IS_ENTITY_DEAD(y) || ENTITY.GET_ENTITY_COORDS(y, true, true).DistanceTo(xa) > 2.5f)
+                    if (j == i || _pairAt[j].DistanceTo(_pairAt[i]) > 2.5f)
                         continue;
-                    if (PED.IS_PED_USING_ANY_SCENARIO(y) || NotFree(y) || IsMindActing(y))
-                        continue;
-                    best = x;
+                    best = _pairWho[i];
                     bestD = d;
-                    partner = y;
+                    partner = _pairWho[j];
                     break;
                 }
             }
@@ -288,24 +338,26 @@ namespace EnrageWestworld.InGame
             try
             {
                 a.NextPoll = now + MindScenarios.PollMs;
+                if (S1GameHasThem(h))
+                {
+                    // the game took them (a fight, a flee, a fall) or enRAGE has them now: let go with no orders, as MindActWhyNot
+                    // refuses at the start (the review: a stand-still, a walk or a wander in the gunfire)
+                    S1Lose(S1Taken);
+                    Log.Detail("MIND acts: " + a.Name + " let go: " + S1Taken + (a.GettingUp ? " (getting up)" : ""));
+                    return 2;
+                }
                 if (a.GettingUp)
                 {
-                    string step = MindScenarios.UpStep(PED.IS_PED_USING_ANY_SCENARIO(h), now - a.UpAskedAt, a.ReAsked);
+                    string step = MindScenarios.UpStep(PED.IS_PED_USING_ANY_SCENARIO(h), now - a.UpAskedAt);
                     if (step == "up")
                     {
                         a.GettingUp = false;
                         _s1GotUp++;
                         _s1UpMsSum += now - a.UpAskedAt;
-                        TASK.TASK_STAND_STILL(h, MindScenarios.StandMs);   // on their feet: a moment stood (the waking's Phase 1), then on
+                        TASK.TASK_STAND_STILL(h, MindScenarios.StandMs);   // on their feet: 3 s stood, the next order 2.5 s on (the waking's Phase 1, exactly)
                         a.SendAt = now + MindScenarios.SendAfterUpMs;
                         a.NextPoll = a.SendAt;
                         Log.Detail("MIND acts: " + a.Name + " is up from " + a.FromType + " in " + (now - a.UpAskedAt) / 100 / 10.0 + " s");
-                        return 1;
-                    }
-                    if (step == "reask")
-                    {
-                        a.ReAsked = true;
-                        TASK.CLEAR_PED_TASKS(h, true, false);   // asked again, the game's own way (the scene code's FightOrder at 4 s), never the immediate one
                         return 1;
                     }
                     if (step == "kept")
@@ -350,6 +402,10 @@ namespace EnrageWestworld.InGame
                     if (now >= a.ReachBy)
                     {
                         S1Lose(S1Never);
+                        S1RememberBad(a.Point, now);   // the next searches skip it a while (the review)
+                        MindWho nw;
+                        if (_mindWho.TryGetValue(h, out nw))
+                            nw.Stage1RestUntil = now + MindScenarios.FailRestMs;
                         Log.Detail("MIND acts: " + a.Name + " never reached " + (a.PointType ?? "the point") + (PED.IS_PED_USING_ANY_SCENARIO(h) ? " (took another: 0x" + ((uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h)).ToString("X8") + ")" : ""));
                         if (!PED.IS_PED_USING_ANY_SCENARIO(h))
                             TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // on their way, not stood there
@@ -378,10 +434,12 @@ namespace EnrageWestworld.InGame
             }
             string did;
             Vector3 at = ENTITY.GET_ENTITY_COORDS(h, true, true);
+            S1Unblock(a, false);   // the get-up is over: the walk itself goes as a standing person's, the game's reactions free
             string lost = MindActBegin(a, w, h, a.Kind, now, me, at, out did);
             if (lost != null)
             {
                 S1Lose(S1Nothing);
+                w.Stage1RestUntil = now + MindScenarios.FailRestMs;   // not got up again for nothing straight after (the review)
                 Log.Detail("MIND acts: " + a.Name + " got up, but " + lost + ": on their way");
                 TASK.TASK_WANDER_STANDARD(h, 10f, 10);
                 return 2;
@@ -404,7 +462,7 @@ namespace EnrageWestworld.InGame
                    ", took up " + _s1TookUp + " (" + (_s1TookKind.Count == 0 ? "none yet" : string.Join(", ", _s1TookKind.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) + ")" +
                    ", joined two talking " + _s1Joined + ", stopped to watch you " + _s1Watched +
                    "; failed: " + (_s1Lost.Count == 0 ? "none" : string.Join(", ", _s1Lost.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
-                   "; getting up or on the way now " + active + " of " + MindScenarios.AtOnce + " (one start every " + MindScenarios.GapMs / 1000 + "-" + (MindScenarios.GapMs + MindScenarios.GapJitterMs) / 1000 + " s, never two within " + (int)MindScenarios.ApartMetres + " m)" +
+                   "; getting up or on the way now (to a point, the bar, home or a talk) " + active + " of " + MindScenarios.AtOnce + " (one start every " + MindScenarios.GapMs / 1000 + "-" + (MindScenarios.GapMs + MindScenarios.GapJitterMs) / 1000 + " s, never two within " + (int)MindScenarios.ApartMetres + " m)" +
                    "; types found " + _s1TypeFound.Count + ", never found here " + _s1TypeNone.Keys.Count(k => !_s1TypeFound.ContainsKey(k)) + (_s1Last != null ? "; last: " + _s1Last : "");
         }
 

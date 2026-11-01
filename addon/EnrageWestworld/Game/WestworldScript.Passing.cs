@@ -294,15 +294,21 @@ namespace EnrageWestworld.InGame
         /// Taken by something else of ours already: a street scene, a waking act, a conversation, a nod, a sight, a walk-up.
         private bool NotFree(int h)
         {
-            if (_director.Involves(h) || IsAcknowledging(h) || InTalk(h))
+            if (_director.Involves(h) || IsAcknowledging(h) || InTalk(h) || InWakeAct(h))
                 return true;
+            return (_bodyClear != null && _bodyClear.Law == h) || (_theft != null && _theft.Lawman != null && _theft.Lawman.Handle == h);   // the law at work too: a body, a lash-out, a chase (the cross-cutting review)
+        }
+
+        /// A wake act has them, or they're its other or its lawman.
+        private bool InWakeAct(int h)
+        {
             for (int i = 0; i < _wakeActs.Count; i++)   // a loop, not Any: no closure (the mind's acts ask this every frame)
             {
                 WakeAct x = _wakeActs[i];
                 if (x.Handle == h || (x.Other == h && x.Other != 0) || (x.LawHandle == h && x.LawHandle != 0))
                     return true;
             }
-            return (_bodyClear != null && _bodyClear.Law == h) || (_theft != null && _theft.Lawman != null && _theft.Lawman.Handle == h);   // the law at work too: a body, a lash-out, a chase (the cross-cutting review)
+            return false;
         }
 
         /// Someone is coming up to Arthur already, or he's taken up (the Talk menu, a pickpocket at work): never two walk-ups together, for
@@ -325,7 +331,8 @@ namespace EnrageWestworld.InGame
         /// pre-commit check: a nod ended a greeting walk before its face-to-face).
         private bool TakenUp(int h)
         {
-            return _director.Involves(h) || InTalk(h) || (_menu != null && _menu.Handle == h) || IsOnlooking(h) || WalkingUp(h);
+            return _director.Involves(h) || InTalk(h) || (_menu != null && _menu.Handle == h) || IsOnlooking(h) || WalkingUp(h) ||
+                   InWakeAct(h) || _ring.Contains(h) || JoinIsPending(h);   // a wake act, the fight's ring or a join (the review of NIGHT4 item 3)
         }
 
         private bool IsAcknowledging(int h)

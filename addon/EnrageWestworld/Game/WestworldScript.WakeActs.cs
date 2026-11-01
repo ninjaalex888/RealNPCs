@@ -295,8 +295,8 @@ namespace EnrageWestworld.InGame
                     break;
                 int cool;
                 if ((_wakeCool.TryGetValue(h, out cool) && now < cool) || _wakeActs.Any(a => a.Handle == h) || (_animTest != null && _animTest.Handle == h) || (_gunTest != null && _gunTest.Handle == h) || PED.IS_PED_IN_COMBAT(h, 0) ||
-                    PED.IS_PED_FLEEING(h) || InTalk(h) || LawBusy(ped) || (_cfg != null && _cfg.MindLive && (IsOnlooking(h) || IsRescuer(h) || IsAcknowledgingYou(h) || _director.Leaving(h))))
-                    continue;   // with the mind on, someone acting on what they saw, walking to a despair, greeting you or walking off with someone is busy (the collision audit, night 2026-10-29)
+                    PED.IS_PED_FLEEING(h) || InTalk(h) || LawBusy(ped) || (_cfg != null && _cfg.MindLive && (IsOnlooking(h) || IsRescuer(h) || IsAcknowledgingYou(h) || _director.Leaving(h) || IsMindActing(h))))
+                    continue;   // (acting on their own mind, stage 1's get-up too: the review of NIGHT4 item 3) with the mind on, someone acting on what they saw, walking to a despair, greeting you or walking off with someone is busy (the collision audit, night 2026-10-29)
                 bool known = _resBind.ContainsKey(h);
                 if (!known && bound >= 3)
                     continue;
@@ -1555,6 +1555,7 @@ namespace EnrageWestworld.InGame
         /// Gives everyone back, now (a mission started, or the add-on is stopping).
         private void WakeActsAbort()
         {
+            MindActsLetGoBlocked();   // a get-up of the mind's holding events blocked lets go too (WestworldScript.MindActs.cs)
             foreach (WakeAct act in _wakeActs)
                 EndWakeAct(act);
             _wakeActs.Clear();

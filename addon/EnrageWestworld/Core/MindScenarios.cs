@@ -20,8 +20,9 @@ namespace EnrageWestworld.Core
         public const int AtOnce = 3;                         // getting up or walking to a point at once
         public const float ApartMetres = 8f;                 // never two starting within this of each other (never a street at once)
         public const int FailRestMs = 240000;                // a person the seat kept, or with no point near, is left 4 min
-        // ---- the get-up (the waking's, WakeHold.cs: one non-immediate clear, the flag polled, 9 s at most; FightOrder's re-ask at 4 s) ----
-        public const int UpMostMs = 9000, ReAskMs = 4000, PollMs = 250, StandMs = 1000, SendAfterUpMs = 800;
+        // ---- the get-up (the waking's exactly, WakeHold.cs "getup": events blocked, one non-immediate clear, the flag polled, 9 s
+        // at most; once up, stood still 3 s and the next order 2.5 s on. The review: no re-ask, it starts the getting up over) ----
+        public const int UpMostMs = 9000, PollMs = 250, StandMs = 3000, SendAfterUpMs = 2500;
         // ---- the walk and the hold ----
         public const float PointMetres = 15f, PointFromYou = 1.5f;
         public const int ReachMinMs = 12000, ReachPerMetreMs = 1000, HoldMinMs = 60000, HoldSpanMs = 90000;
@@ -29,15 +30,17 @@ namespace EnrageWestworld.Core
         // the kinds of point (Kind)
         public const string Seat = "seat", Lean = "lean", Bar = "bar", Table = "table", Work = "work", Standing = "standing", Unknown = "unknown";
 
+        // two in-place names the lists below share (static readonly, before the arrays that read them: initialised in order)
+        public static readonly string LookOverInPlace = Wh("CROUCH_INSPECT"), CigarInPlace = Wh("SMOKE_CIGAR");
         // rest: a seat, else a lean (a wall, a post, a railing; a hitching rail is a railing point: the list has no HITCH type)
         public static readonly string[] RestSeats = { "PROP_HUMAN_SEAT_BENCH", "PROP_HUMAN_SEAT_BENCH_PORCH", "GENERIC_SEAT_BENCH_SCENARIO", "PROP_HUMAN_SEAT_CHAIR",
                                                       "PROP_HUMAN_SEAT_CHAIR_PORCH", "GENERIC_SEAT_CHAIR_SCENARIO", "WORLD_HUMAN_SEAT_STEPS" };
-        public static readonly string[] RestLeans = { "WORLD_HUMAN_LEAN_BACK_WALL", "WORLD_HUMAN_LEAN_WALL_RIGHT", "WORLD_HUMAN_LEAN_WALL_LEFT", "WORLD_HUMAN_LEAN_POST_LEFT",
-                                                      "WORLD_HUMAN_LEAN_POST_RIGHT", "WORLD_HUMAN_LEAN_RAILING", "WORLD_HUMAN_LEAN_BACK_RAILING" };
+        public static readonly string[] RestLeans = { Wh("LEAN_BACK_WALL"), Wh("LEAN_WALL_RIGHT"), Wh("LEAN_WALL_LEFT"), Wh("LEAN_POST_LEFT"),
+                                                      Wh("LEAN_POST_RIGHT"), Wh("LEAN_RAILING"), Wh("LEAN_BACK_RAILING") };
         // other seats and leans seen in the game's log (counted as a rest where someone already is)
         public static readonly string[] OtherRests = { "WORLD_HUMAN_LEAN_BACK_WALL_NO_PROPS", "WORLD_HUMAN_LEAN_BACK_WALL_SMOKING", "WORLD_HUMAN_LEAN_RAILING_SMOKING",
                                                        "PROP_HUMAN_SEAT_BENCH_TIRED", "PROP_HUMAN_SEAT_CHAIR_READ_NEWSPAPER", "PROP_HUMAN_SEAT_CHAIR_WHITTLE",
-                                                       "PROP_HUMAN_SEAT_CHAIR_SMOKING", "WORLD_HUMAN_SMOKE", "WORLD_HUMAN_SMOKE_CIGAR", "WORLD_HUMAN_SIT_SMOKE" };
+                                                       "PROP_HUMAN_SEAT_CHAIR_SMOKING", "WORLD_HUMAN_SMOKE", CigarInPlace, "WORLD_HUMAN_SIT_SMOKE" };
         // drink: the bar rail, or a chair at a table with a glass
         public static readonly string[] DrinkPoints = { "WORLD_HUMAN_BARCUSTOMER", "WORLD_HUMAN_BARCUSTOMER_BEER", "WORLD_HUMAN_BARCUSTOMER_WHISKEY", "SC_WORLD_HUMAN_STAND_BAR",
                                                         "PROP_HUMAN_SEAT_CHAIR_TABLE_DRINKING" };
@@ -52,13 +55,19 @@ namespace EnrageWestworld.Core
                                                       "SC_WORLD_HUMAN_PUSH_BROOM_WORKING", "WORLD_HUMAN_HAMMER_GROUND", "WORLD_HUMAN_PITCH_HAY_SPREAD" };
         // in place, when no point fits (each seen in the game's log or already played by the Director)
         public const string SmokeInPlace = "WORLD_HUMAN_SMOKE", FanInPlace = "WORLD_HUMAN_FAN", StareInPlace = "WORLD_HUMAN_STARE_STOIC", DrinkInPlace = "WORLD_HUMAN_DRINKING",
-                            TallyInPlace = "WORLD_HUMAN_CLIPBOARD", LookOverInPlace = "WORLD_HUMAN_CROUCH_INSPECT";
+                            TallyInPlace = "WORLD_HUMAN_CLIPBOARD";
         // standing scenarios: no seat to get up from (they clear in a moment)
-        public static readonly string[] StandingKinds = { "WORLD_HUMAN_SMOKE", "WORLD_HUMAN_SMOKE_CIGAR", "WORLD_HUMAN_STARE_STOIC", "WORLD_HUMAN_DRINKING", "WORLD_HUMAN_FAN",
-                                                          "WORLD_HUMAN_INSPECT", "WORLD_HUMAN_CROUCH_INSPECT", "WORLD_HUMAN_STAND_WAITING", "WORLD_HUMAN_WAITING_IMPATIENT",
+        public static readonly string[] StandingKinds = { "WORLD_HUMAN_SMOKE", CigarInPlace, "WORLD_HUMAN_STARE_STOIC", "WORLD_HUMAN_DRINKING", "WORLD_HUMAN_FAN",
+                                                          "WORLD_HUMAN_INSPECT", LookOverInPlace, "WORLD_HUMAN_STAND_WAITING", "WORLD_HUMAN_WAITING_IMPATIENT",
                                                           "WORLD_HUMAN_COFFEE_DRINK", "WORLD_HUMAN_SMOKE_NERVOUS_STRESSED" };
 
         private static Dictionary<uint, string> _names;
+
+        /// A standing-about type's full name from the part after the game's prefix (a method, so the arrays above may use it).
+        private static string Wh(string rest)
+        {
+            return "WORLD_HUMAN_" + rest;
+        }
 
         /// The game's hash of a name: GET_HASH_KEY over the lower-cased name, the same sum Natives.Hash makes.
         public static uint Joaat(string s)
@@ -86,7 +95,7 @@ namespace EnrageWestworld.Core
             {
                 var d = new Dictionary<uint, string>();
                 foreach (string[] list in new[] { RestSeats, RestLeans, OtherRests, DrinkPoints, OtherDrinks, EatPoints, WorkPoints, OtherWork, StandingKinds,
-                                                  new[] { "GENERIC_SEAT_CHAIR_TABLE_SCENARIO", "PROP_HUMAN_SEAT_CHAIR_TABLE_FAN_WHORE", "PROP_HUMAN_PIANO", "WORLD_HUMAN_GUARD_LEAN_WALL", "WORLD_HUMAN_GUARD_LAZY" } })
+                                                  new[] { "GENERIC_SEAT_CHAIR_TABLE_SCENARIO", "PROP_HUMAN_SEAT_CHAIR_TABLE_FAN_WHORE", "PROP_HUMAN_PIANO" } })
                     foreach (string n in list)
                         d[Joaat(n)] = n;
                 _names = d;
@@ -176,6 +185,17 @@ namespace EnrageWestworld.Core
                 default:
                     return false;
             }
+        }
+
+        /// Guard 4 with the types the lists don't know (null: an unknown hash, or 0 from an in-place sit): a rest anywhere they
+        /// sit or lean that the lists don't know is a rest (the review: unknown seats are the commonest, and getting them up to
+        /// sit down again elsewhere looks wrong); true or false for a known type; null for an unknown type and any other choice
+        /// (the game's older lists decide: the bar, a meal, the barkeep's work).
+        public static bool? AtItOrUnknown(string choice, string name)
+        {
+            if (name != null)
+                return AtItAlready(choice, name);
+            return choice == "rest" ? true : (bool?)null;
         }
 
         /// How to act on one choice by the game's points: the types to look for (in order), how far, what to play in place when
@@ -294,16 +314,14 @@ namespace EnrageWestworld.Core
             return HoldMinMs + (int)(seed % (uint)(HoldSpanMs + 1));
         }
 
-        /// The getting-up step's decision, from the scenario flag and the time since the ask: "up" (send them on), "reask" (one
-        /// more non-immediate clear, once, at 4 s), "kept" (9 s: the seat kept them, give up, never pulled), or null (wait).
-        public static string UpStep(bool inScenario, int sinceAskMs, bool reAsked)
+        /// The getting-up step's decision, from the scenario flag and the time since the one ask: "up" (stood still, then sent
+        /// on), "kept" (9 s: the seat kept them, give up, never pulled, never asked again), or null (wait). As the waking's.
+        public static string UpStep(bool inScenario, int sinceAskMs)
         {
             if (!inScenario)
                 return "up";
             if (sinceAskMs >= UpMostMs)
                 return "kept";
-            if (!reAsked && sinceAskMs >= ReAskMs)
-                return "reask";
             return null;
         }
     }
