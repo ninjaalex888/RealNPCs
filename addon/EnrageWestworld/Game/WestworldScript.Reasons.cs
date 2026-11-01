@@ -221,7 +221,7 @@ namespace EnrageWestworld.InGame
         }
 
         /// Every pair close enough to each other with a reason, strongest first.
-        private List<PairReason> PairReasons(List<Candidate> people, bool saloon)
+        private List<PairReason> PairReasons(List<Candidate> people, bool saloon, float perMetre = 2f)
         {
             long now = Bridge.Now(), day = now > 0 ? now / 1440 : -1;
             Reasons.Place where = new Reasons.Place
@@ -267,7 +267,7 @@ namespace EnrageWestworld.InGame
                 }
             // the strongest reason, but close together and close to the player counts: a scene 5 m off is one he sees
             Vector3 mp = Game.Player.Character.Position;
-            return found.OrderByDescending(x => x.Why.Strength - x.Apart * 2f - Math.Min(x.A.Ped.Position.DistanceTo(mp), x.B.Ped.Position.DistanceTo(mp)) * 2f).ToList();
+            return found.OrderByDescending(x => x.Why.Strength - x.Apart * 2f - Math.Min(x.A.Ped.Position.DistanceTo(mp), x.B.Ped.Position.DistanceTo(mp)) * perMetre).ToList();   // (3 a metre for main scenes in a full street: NIGHT4 fix 7)
         }
 
         /// The mind's lean on a reason between two people it already knows: their moods today against their nature, and how
@@ -375,23 +375,68 @@ namespace EnrageWestworld.InGame
         /// The strongest reason near the player that he can see, played as a scene. False if there's none.
         /// side: a quiet talk beside the scene (SideScene): only people clear allows, standing together already, and only a
         /// scene Director.Quiet allows, without the walk-over, the ladder, the barkeep or anyone stepping in.
-        private bool ReasonScene(Ped me, bool saloon, int now, bool side = false, Func<Ped, bool> clear = null)
+        private bool ReasonScene(Ped me, bool saloon, int now, bool side = false, Func<Ped, bool> clear = null, List<PairReason> found = null)
         {
-            List<Candidate> people = ReasonCandidates(me, now);
-            if (clear != null)
-                people = people.Where(c => clear(c.Ped)).ToList();
-            if (people.Count < 2)
-                return false;
-            foreach (PairReason pr in PairReasons(people, saloon).Take(4))
+            if (found == null)
+            {
+                List<Candidate> people = ReasonCandidates(me, now);
+                if (clear != null)
+                    people = people.Where(c => clear(c.Ped)).ToList();
+                if (people.Count < 2)
+                    return false;
+                found = PairReasons(people, saloon, side ? 2f : MainPerMetre(people.Count));
+            }
+            foreach (PairReason pr in found.Take(4))
             {
                 // anywhere within the radius, behind him too: the street goes on whether he looks or not (Lex, 2026-10-30: "we
                 // don't need to be checking the player camera ... just the radius"; once it needed one of the two in plain view)
                 if (side && pr.Apart > 2.6f)
                     continue;   // a talk beside has no walk-over
+                if (!side && _cfg.ChanceFirst && pr.Apart > 2.6f && BothHeld(pr.A.Ped.Handle, pr.B.Ped.Handle))
+                {
+                    _farHeldSkipped++;
+                    continue;   // two in chairs a few steps apart: the walk-over never comes (NIGHT4 fix 7: 5 of 14 main scenes died there)
+                }
                 if (PlayPairReason(pr, me, saloon, now, side, null))
                     return true;
             }
             return false;
+        }
+
+        // NIGHT4 fix 7: the main scenes this session, by kind, with how far from you they began (F7 TEST reasons)
+        private readonly Dictionary<string, int> _mainKinds = new Dictionary<string, int>();
+        private readonly Dictionary<string, float> _mainMetres = new Dictionary<string, float>();
+        private int _mainChance;
+
+        private void NoteMainScene(string kind, float metres, bool chance)
+        {
+            if (kind == null)
+                return;
+            int n;
+            float m;
+            _mainKinds.TryGetValue(kind, out n);
+            _mainMetres.TryGetValue(kind, out m);
+            _mainKinds[kind] = n + 1;
+            _mainMetres[kind] = m + metres;
+            if (chance)
+                _mainChance++;
+            Log.Detail("SCENE main: " + kind + (chance ? " (a chance meeting)" : " (a reason)") + ", " + (int)metres + " m from you");
+        }
+
+        private string MainScenesWords()
+        {
+            int all = _mainKinds.Values.Sum();
+            if (all == 0)
+                return "no main scenes yet";
+            return all + " main scenes (" + _mainChance + " chance meetings; " + _chanceFirstPlayed + " of " + _chanceFirstTried + " chance-first turns played" + (_cfg.ChanceFirst ? "" : ", [Scenes] ChanceFirst off") +
+                   "; " + _farHeldSkipped + " far pairs in chairs passed over): " +
+                   string.Join(", ", _mainKinds.OrderByDescending(kv => kv.Value).Take(10).Select(kv => kv.Key + " " + kv.Value + " (" + (int)(_mainMetres[kv.Key] / kv.Value) + " m)"));
+        }
+
+        /// Both held by a scenario (sat, leaning, at the bar).
+        private static bool BothHeld(int a, int b)
+        {
+            return PED.IS_PED_USING_ANY_SCENARIO(a) && PED.IS_PED_USING_ANY_SCENARIO(b);
         }
 
         /// One pair's reason played: the cast, the trouble kinds' settings and their fallback, the scene, the ladder, the
@@ -456,6 +501,7 @@ namespace EnrageWestworld.InGame
             if (s.Ladder == null || s.Cast == 2)   // (the ladder found no friend of its own: a stranger may still step in, the review)
                 StandUpFor(s, cast2, cast, seed, now, false, out stood);   // someone may step in before the blow (WestworldScript.StandUp.cs); the ladder has its own friend
             AddBystander(s, cast2, cast, seed, now);
+            NoteMainScene(s.Kind, Math.Min(pr.A.Ped.Position.DistanceTo(me.Position), pr.B.Ped.Position.DistanceTo(me.Position)), false);
             if (StartScene(s, cast2, cast, seed, now) && by == null)
                 ReasonThought(pr, me, seed, cast);   // why, over the one whose reason it is (a mind's own pick has the model's thought)
             return true;
@@ -808,7 +854,7 @@ namespace EnrageWestworld.InGame
             int now = Game.GameTime;
             int fought = _restMsOf.Keys.Count(h => Resting(h, now));
             string sat = fought > 0 ? fought + " who came to blows sitting it out (" + (int)(Reasons.RestFor(FoughtRestMs, _cfg.TroubleWeight) / 60000) + " min; everyone else " + Reasons.RestFor(PersonRestMs, _cfg.TroubleWeight) / 1000 + " s between scenes); " : "";
-            sat += (_cfg.ReasonVariety && _streetKinds.Count > 0 ? "the street lately: " + string.Join(", ", _streetKinds) + " (each the same kind -" + Reasons.SameKindPenalty + "); " : "") + (_reasonWords > 0 ? _reasonWords + " blows played as words this session (one of them sat or leaning); " : "") + (_reasonCant > 0 ? _reasonCant + " reasons that couldn't be played passed over a while; " : "");
+            sat += MainScenesWords() + "; " + (_cfg.ReasonVariety && _streetKinds.Count > 0 ? "the street lately: " + string.Join(", ", _streetKinds) + " (each the same kind -" + Reasons.SameKindPenalty + "); " : "") + (_reasonWords > 0 ? _reasonWords + " blows played as words this session (one of them sat or leaning); " : "") + (_reasonCant > 0 ? _reasonCant + " reasons that couldn't be played passed over a while; " : "");
             List<Candidate> people = ReasonCandidates(me, now);
             if (people.Count < 2)
                 return sat + people.Count + " named people free near you; no pairs";

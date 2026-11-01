@@ -56,6 +56,7 @@ namespace EnrageWestworld.Core
         public bool Saloon;
         public bool Night;
         public float Trouble = 1f;   // [Scenes] TroubleWeight: the brawl's and the argument's share of a chance meeting scaled by it
+        public bool ArgueCapped = true;   // [Scenes] ChanceFirst: the argument's share scaled by the weight up to 1.5 only, the brawl's by all of it (NIGHT4 fix 7: at 5, argue was half of all chance meetings)
         public bool WomenFight;      // [Scenes] WomenInFights: a brawl with a woman in it, at half the share for each woman (Lex, 2026-10-29)
         public int HostTier;     // how strange the town feels (0-2)
         public List<string> Rumours = new List<string>();   // third-person rumours that can be gossiped
@@ -118,6 +119,13 @@ namespace EnrageWestworld.Core
             return weight <= 0f ? 0 : Math.Max(1, (int)Math.Round(w * weight));
         }
 
+        /// The trouble weight an argument's share takes: all of it, or (ArgueCapped) at most 1.5, so a high weight brings blows,
+        /// not a street of arguments.
+        public static float ArgueWeight(SceneCast c)
+        {
+            return c.ArgueCapped ? Math.Min(c.Trouble, 1.5f) : c.Trouble;
+        }
+
         public static Scene Choose(SceneCast c, string seed, bool allowFight)
         {
             List<KeyValuePair<string, int>> w = new List<KeyValuePair<string, int>>();
@@ -125,7 +133,7 @@ namespace EnrageWestworld.Core
             bool twoMen = !c.AWoman && !c.BWoman;
             if (mixed)
                 w.Add(new KeyValuePair<string, int>("flirt", c.Saloon ? 14 : 18));
-            w.Add(new KeyValuePair<string, int>("argue", Weighted(16, c.Trouble)));
+            w.Add(new KeyValuePair<string, int>("argue", Weighted(16, ArgueWeight(c))));
             if (twoMen && allowFight)
                 w.Add(new KeyValuePair<string, int>("brawl", Weighted(c.Saloon ? 20 : 10, c.Trouble)));   // twice the old 10 and 5 (Lex, 2026-10-28: brawls often)
             else if (c.WomenFight && allowFight)

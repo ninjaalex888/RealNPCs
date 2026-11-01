@@ -142,19 +142,53 @@ namespace EnrageWestworld.InGame
                                                          !Resting(p.Handle, now) && !NotFree(p.Handle)).ToList();   // (a quiet talk's two are taken; the waking are in an act of their own; the Talk partner, a walk-up, the law at work: the cross-cutting review)
             if (pool.Count >= 2 && now >= _nextSpecial && SpecialScene(pool, me, saloon, now))
                 return;
+            // the chance meeting first when it's due and nobody has a strong reason (NIGHT4 fix 7, [Scenes] ChanceFirst: it got one
+            // main slot in an evening, since a reason always came first, and it carries the songs, tales, haggling and standoffs)
+            List<PairReason> found = null;
+            if (_cfg.ChanceFirst && pool.Count >= 2 && now >= _nextChance)
+            {
+                List<Candidate> people = ReasonCandidates(me, now);
+                found = people.Count >= 2 ? PairReasons(people, saloon, MainPerMetre(people.Count)) : new List<PairReason>();
+                int strongest = found.Count > 0 ? found.Max(x => x.Why.Strength) : 0;
+                if (strongest < ChanceFirstBelow)
+                {
+                    _chanceFirstTried++;
+                    if (ChanceScene(pool, me, saloon, now))
+                    {
+                        _chanceFirstPlayed++;
+                        return;
+                    }
+                }
+            }
             // first, two people near you who have a reason to have something to do with each other (Reasons.cs)
-            if (ReasonScene(me, saloon, now))
+            if (ReasonScene(me, saloon, now, found: found))
                 return;
-            // nobody with a reason: now and then a chance meeting between the two standing closest, where you can see
+            ChanceScene(pool, me, saloon, now);
+        }
+
+        private const int ChanceFirstBelow = 50;
+        private int _chanceFirstTried, _chanceFirstPlayed, _farHeldSkipped;
+
+        /// Main scenes: points off a pair's strength for each metre from you (NIGHT4 fix 7, ChanceFirst: 3 with six or more free,
+        /// so the scene is one you see; 2 as before in a thin street, where a far pair is all there is).
+        private float MainPerMetre(int free)
+        {
+            return _cfg.ChanceFirst && free >= 6 ? 3f : 2f;
+        }
+
+        /// A chance meeting between the two standing closest (nobody with a reason, or ChanceFirst's turn). True if one started.
+        private bool ChanceScene(List<Ped> pool, Ped me, bool saloon, int now)
+        {
+            // now and then a chance meeting between the two standing closest
             if (pool.Count < 2 || now < _nextChance)
-                return;
+                return false;
             Ped a = null, b = null;
             float best = Math.Max(2f, _cfg.ChanceMeetMetres);   // was 3.4 m, standing together already; farther, one walks over (AddMeet; the NPC-life run, step 4)
             for (int i = 0; i < pool.Count; i++)
                 for (int j = i + 1; j < pool.Count; j++)
                 {
                     float d = pool[i].Position.DistanceTo(pool[j].Position);
-                    if (d < best)
+                    if (d < best && !(_cfg.ChanceFirst && d > 2.6f && BothHeld(pool[i].Handle, pool[j].Handle)))   // two in chairs a few steps apart never walk over (NIGHT4 fix 7)
                     {
                         best = d;
                         a = pool[i];
@@ -162,7 +196,7 @@ namespace EnrageWestworld.InGame
                     }
                 }
             if (a == null)
-                return;   // anywhere in the radius, seen or not (Lex, 2026-10-30)
+                return false;   // anywhere in the radius, seen or not (Lex, 2026-10-30)
             // the older one tells the tales
             if (Director.OldModel(b) && !Director.OldModel(a))
             {
@@ -216,7 +250,7 @@ namespace EnrageWestworld.InGame
                     people.Add(crowd);
             }
             if (s == null)
-                return;
+                return false;
             if (s.Kind == "gossip" && saloon && _cfg.JobRumours)
                 AddJobTalk(s, seed);
             Scene unladdered = s;
@@ -229,8 +263,11 @@ namespace EnrageWestworld.InGame
             if (s.Ladder == null || s.Cast == 2)
                 StandUpFor(s, people, cast, seed, now, false, out stood);
             AddBystander(s, people, cast, seed, now);
-            if (StartScene(s, people, cast, seed, now))
-                _nextChance = now + (int)(_cfg.DramaGapSeconds * 1000);   // x1.5 until 2026-10-30 (Lex: more at once)   // was x3 (Lex, 2026-10-29: the chance meetings carry the lively kinds: songs, tales, haggling, small talk); from the start, not the try (2026-10-30)
+            if (!StartScene(s, people, cast, seed, now))
+                return false;
+            NoteMainScene(s.Kind, Math.Min(a.Position.DistanceTo(me.Position), b.Position.DistanceTo(me.Position)), true);
+            _nextChance = now + (int)(_cfg.DramaGapSeconds * 1000);   // x1.5 until 2026-10-30 (Lex: more at once)   // was x3 (Lex, 2026-10-29: the chance meetings carry the lively kinds: songs, tales, haggling, small talk); from the start, not the try (2026-10-30)
+            return true;
         }
 
         private int _nextSide;
@@ -668,7 +705,7 @@ namespace EnrageWestworld.InGame
             long g = Bridge.Now();
             SceneCast cast = new SceneCast
             {
-                AWoman = !PED.IS_PED_MALE(a.Handle), BWoman = !PED.IS_PED_MALE(b.Handle), Town = _placeTown, Saloon = saloon, Night = Natives.Night(), Trouble = _cfg.TroubleWeight, WomenFight = _cfg.WomenInFights,
+                AWoman = !PED.IS_PED_MALE(a.Handle), BWoman = !PED.IS_PED_MALE(b.Handle), Town = _placeTown, Saloon = saloon, Night = Natives.Night(), Trouble = _cfg.TroubleWeight, ArgueCapped = _cfg.ChanceFirst, WomenFight = _cfg.WomenInFights,
                 HostTier = TownHostTier(), HasCrowd = crowd != null, CWoman = crowd != null && !PED.IS_PED_MALE(crowd.Handle), OldTimer = Director.OldModel(a),
                 PlayerNear = a.Position.DistanceTo(me.Position) < 12f,
                 Names = SceneNames(a, b, crowd),
