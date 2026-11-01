@@ -1230,8 +1230,9 @@ in the file. The new ones:
             MindTempers (true, in testing).
             HushHours (2), HushHoursSaintDenis (1): with MindTownMood, for this many game hours after
             the latest killing in a town its street holds back its own fights, thefts and callouts
-            (0-12; 0 never). A man beaten to death in a brawl, the Testing rows, and brawls, roughs
-            and standoffs never hush it.
+            (0-12; 0 never). Someone beaten to death in a brawl, a Testing row's own trouble (your
+            own killings still hush, but not of the test's own people), and brawls, roughs and
+            standoffs never hush it; a brawler shot or cut in the fight is a killing and does.
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left

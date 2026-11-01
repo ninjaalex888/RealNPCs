@@ -92,6 +92,8 @@ namespace EnrageWestworld.InGame
                 _known.Remove(h);
                 _deadNoted.Remove(h);
             }
+            if (_brawlFatal.Count > 0)
+                _brawlFatal.RemoveWhere(x => !ENTITY.DOES_ENTITY_EXIST(x));   // a body gone: its handle never makes someone later "a beating" (the review, 2026-10-31; only past 200 before)
             foreach (int h in _downed.Keys.Where(x => !ENTITY.DOES_ENTITY_EXIST(x)).ToList())
             {
                 Downed d = _downed[h];

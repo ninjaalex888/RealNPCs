@@ -2,16 +2,17 @@
 // moves people less). Worked out when asked from the happenings already kept (Store.WorldLog: kind, town, game minute),
 // so nothing new is saved. A killing makes a whole town afraid for some hours, worst in the first (halving every three
 // game hours): the safety need rises for everyone there (more so at night), so people out go home, keep clear and
-// watch; a gunfight between gangs, a robbery, a mugging weigh less; a brawl or a rough very little, and a man beaten to
-// death in a brawl half a killing. And the same kind of trouble seen again in a town within the week moves an onlooker
-// less each time: the third brawl draws a look, not a gasp.
+// watch; a gunfight between gangs, a robbery, a mugging weigh less; a brawl or a rough very little, and someone beaten
+// to death in a brawl half a killing. And the same kind of trouble seen again in a town within the week moves an
+// onlooker less each time: the third brawl draws a look, not a gasp.
 // The hush (the game developer's "drama director": quiet after something big) is apart from the fear since Lex in Saint
 // Denis, 2026-10-31 ("I would've expected to see some brawls, or some events but not much is happening": the day's
 // deaths and brawls together held the fear near 1 for two days, and the brawls fed the hush that stopped brawls). Only a
 // killing hushes a street, only the latest one in that town counts, and only for [Mind] HushHours (2 game hours; Saint
 // Denis HushHoursSaintDenis, 1): the street's timing holds back the fights, the shoves, the drunken trouble, the thefts
-// and the noon callouts, and leaves longer between scenes. A man beaten to death in a brawl ("a beating") and anything
-// from a Testing row never start a hush; brawls, rings, roughs, shoves and standoffs never do. Plain C#, no game.
+// and the noon callouts, and leaves longer between scenes. Someone beaten to death in a brawl ("a beating") and a Testing
+// row's own trouble (FromTest: what befalls the test's people, and what else soon after a fire isn't the player's doing)
+// never start a hush; brawls, rings, roughs, shoves and standoffs never do. Plain C#, no game.
 using System;
 using System.Collections.Generic;
 
@@ -69,10 +70,19 @@ namespace EnrageWestworld.Core
             return h != null && h.Kind == "death" && (h.Outcome == Beating || (h.Outcome == "bare hands" && h.DoerId != "player"));
         }
 
-        /// A killing that may hush a street: not a man beaten to death in a brawl, nothing from a Testing row.
+        /// A killing that may hush a street: not someone beaten to death in a brawl, nothing from a Testing row.
         public static bool Hushing(Happening h)
         {
             return h != null && Killing(h.Kind) && !Beaten(h) && !h.Test;
+        }
+
+        /// Whether a happening is a Testing row's own (Happening.Test, so it never hushes a street): one that touched the
+        /// test's own people (`testPeople`: the test cast, a test scene's cast), or anything else soon after a row fired
+        /// (`sinceFire`) that wasn't the player's doing. His own killing is his, whatever was fired before it (the review,
+        /// 2026-10-31: a man he shot two real minutes after a test never hushed the street, and F7 said the hush did nothing).
+        public static bool FromTest(bool testPeople, bool sinceFire, string doerId)
+        {
+            return testPeople || (sinceFire && doerId != "player");
         }
 
         /// How much a happening of this kind frightens a town (0: not at all).
@@ -103,7 +113,7 @@ namespace EnrageWestworld.Core
             }
         }
 
-        /// How much this happening frightens its town: by its kind, and a man beaten to death in a brawl half a killing.
+        /// How much this happening frightens its town: by its kind, and someone beaten to death in a brawl half a killing.
         public static float Weight(Happening h)
         {
             if (h == null)
@@ -169,7 +179,7 @@ namespace EnrageWestworld.Core
             string what;
             switch (f.Worst.Kind)
             {
-                case "death": what = Beaten(f.Worst) ? "a man beaten to death" : "a killing"; break;
+                case "death": what = Beaten(f.Worst) ? "someone beaten to death" : "a killing"; break;   // a woman too (WomenInFights): the happening has no sex
                 case "deed:murder": case "deed:kill": what = "a killing"; break;
                 case "scene:standoff": what = "guns drawn in the street"; break;
                 case "deed:robbery": what = "a robbery"; break;

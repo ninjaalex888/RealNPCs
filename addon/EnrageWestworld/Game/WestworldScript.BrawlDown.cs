@@ -6,6 +6,7 @@
 // hothead at him, bad blood, an old man; less with the law close, a friend of his in it, a fair fight). Knocked out: down
 // 20-40 s, nobody can finish him, then up and on his way. Killed: the town's own death handling (LedgerNote: minds, word
 // of it, the awake who see it). Before this every fist down lay there for good while the ledger called it "out cold".
+// Found dead shot or cut (DiedOfBlows false) he is no beating: nothing is rolled, the ledger books him as any killing.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace EnrageWestworld.InGame
         }
 
         private readonly Dictionary<int, BrawlKo> _brawlOut = new Dictionary<int, BrawlKo>();   // knocked out in a brawl: held down, unhurtable, until they come to
-        private readonly HashSet<int> _brawlFatal = new HashSet<int>();   // killed in a brawl by our roll (or before it): a death, never "out cold"
+        private readonly HashSet<int> _brawlFatal = new HashSet<int>();   // killed in a brawl by our roll (or by its blows before it, never shot or cut: DiedOfBlows): a death, never "out cold", booked "a beating"; the ledger lets a gone body's handle go
         private readonly List<FatalDue> _brawlFatalDue = new List<FatalDue>();
         private int _brawlKnockedOut, _brawlCameTo, _brawlKilled, _brawlGameFirst;
         private string _brawlDownLast;
@@ -48,6 +49,16 @@ namespace EnrageWestworld.InGame
             _known.Remove(h);   // the ledger may have him as nobody from before the brawl gave him a name (its 10 s cache)
             Known k = KnownAt(p, now);
             string name = k != null && k.Name != null ? k.Name : MindNameOf(h) ?? Director.Kind(p, !PED.IS_PED_MALE(h));
+            if (dead && !DiedOfBlows(h))
+            {
+                // shot or cut while still in the fight (a lawman, a stray bullet, a drawn gun, Arthur's): a killing like any
+                // other, the ledger's own with the game's cause, so it hushes the street; never "a beating" (the review,
+                // 2026-10-31: _brawlFatal made the ledger book it so, and the death ledger said "a beating, by your hand")
+                uint cause = PED.GET_PED_CAUSE_OF_DEATH(h);
+                _brawlDownLast = name + " shot or cut down in the fight";
+                Log.Write("BRAWL down: " + name + " lies dead in the fight, by " + (Weapons.Phrase(cause) ?? "a weapon") + ": not a beating (the ledger books it as the game has it)");
+                return;
+            }
             MindWho v = MindKnown(h, now), a = by != 0 && ENTITY.DOES_ENTITY_EXIST(by) ? MindKnown(by, now) : null;
             Traits at = a != null && a.Src != null ? (a.Traits ?? (a.Traits = _engine.Shadow.TraitsOf(a.Src))) : null;
             bool drunk = a != null && InHisCups(new Ped(by), a.P);
@@ -188,6 +199,14 @@ namespace EnrageWestworld.InGame
                 _brawlFatal.RemoveWhere(x => !ENTITY.DOES_ENTITY_EXIST(x));
         }
 
+        /// Whether a man of a brawl the game has dead died of its blows (no cause, fists: DeathLedger.ByBlows), not shot or
+        /// cut. In the fight (OnFighterDown) and after it (BrawlAfterStep) the same test.
+        private static bool DiedOfBlows(int h)
+        {
+            uint cause = PED.GET_PED_CAUSE_OF_DEATH(h);
+            return DeathLedger.ByBlows(cause, cause != 0 ? WEAPON.GET_WEAPONTYPE_GROUP(cause) : 0u);
+        }
+
         /// A reload or the script stopping: nobody stays unhurtable.
         private void BrawlDownsRelease()
         {
@@ -232,14 +251,10 @@ namespace EnrageWestworld.InGame
                     continue;
                 }
                 bool dead = ENTITY.IS_ENTITY_DEAD(h);
-                if (dead)
+                if (dead && !DiedOfBlows(h))
                 {
-                    uint cause = PED.GET_PED_CAUSE_OF_DEATH(h);
-                    if (cause != 0 && !DeathLedger.KnockedOut(false, false, WEAPON.GET_WEAPONTYPE_GROUP(cause)))
-                    {
-                        ended.RemoveAt(i);   // shot or cut after the fight: not a beating, the ledger's own
-                        continue;
-                    }
+                    ended.RemoveAt(i);   // shot or cut after the fight: not a beating, the ledger's own
+                    continue;
                 }
                 if (dead || PED.IS_PED_INCAPACITATED(h))
                 {

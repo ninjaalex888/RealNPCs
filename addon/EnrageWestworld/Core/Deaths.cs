@@ -40,6 +40,15 @@ namespace EnrageWestworld.Core
             return incapacitated || gunButt || weaponGroup == UnarmedGroup || weaponGroup == OtherKnockoutGroup;
         }
 
+        /// Whether a fighter found dead in a brawl died of its blows: no cause the game gives, or one of the knocked-out
+        /// groups (fists, the other enRAGE names). Shot or cut (a lawman, a stray bullet, Arthur's gun) is a killing like
+        /// any other, booked with the game's own cause (the review, 2026-10-31: it was "a beating", so it never hushed the
+        /// street and the ledger said "a beating, by your hand").
+        public static bool ByBlows(uint cause, uint weaponGroup)
+        {
+            return cause == 0 || KnockedOut(false, false, weaponGroup);
+        }
+
         /// The latest death noted for this person, or null.
         public static DeathEntry Of(List<DeathEntry> list, string id)
         {

@@ -65,7 +65,7 @@ namespace EnrageWestworld.InGame
                 return why = "off ([Scenes] Lifts)";
             if (_lifter != null || _theft != null)
                 return why = "a thief is at work already";
-            if (!test && (WalkUpGoing() || _director.Busy || (_hush && _placeTown != null)))
+            if (!test && (WalkUpGoing() || _director.Busy || HushedNow(now)))   // the hush asked now: the drama tick's _hush can stand a minute or more (the review, 2026-10-31)
                 return why = "someone is coming up to you, a scene is on, or the town is hushed";   // (its header always said never with a scene: the cross-cutting review)
             Ped watcher = !test && _cfg.BeingWatched ? LawWatching(me, null) : null;
             if (watcher != null && _cfg.BoldThieves <= 0)

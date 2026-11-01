@@ -2,11 +2,15 @@
 // happenings already kept, worked out at most every 5 s: it raises everyone's safety need there (MindNeeds), goes into the
 // model's request as "The town: ..." (MindRequestOf), and the novelty of a happening scales an onlooker's feeling
 // (MindAppraiseOne). The hush (since 2026-10-31) comes from the latest killing alone, for [Mind] HushHours (Saint Denis
-// HushHoursSaintDenis); a happening recorded within TestHushMs of a Testing row's fire is marked Test and never hushes.
+// HushHoursSaintDenis); a Testing row's own trouble is marked Test and never hushes (FromTestRow: the test's own people,
+// or within TestHushMs of a fire unless it was the player's doing). HushedNow is asked afresh by whoever needs it.
 // With [Mind] MindTownMood and MindLive. F7 TEST town mood:; log TOWN hushed / TOWN hush over.
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
+using RDR2;
+using RDR2.Native;
 
 namespace EnrageWestworld.InGame
 {
@@ -23,14 +27,55 @@ namespace EnrageWestworld.InGame
         private int _hushHeld;
         private Happening _hushLogged;   // the killing whose hush was last logged (TOWN hushed), until it's over
 
-        /// A happening recorded this long after a Testing row fired is the test's (its scene may run a few minutes: a
-        /// standoff, an execution, a brawl and its fates): it never hushes a street. A fallback: no test flag follows the
-        /// people of a test scene to their deaths.
+        /// A happening recorded this long after a Testing row fired (five real minutes, about two and a half game hours: its
+        /// scene may run a few minutes, a standoff, an execution, a brawl and its fates) is the test's unless it was the
+        /// player's own doing; and a test scene's cast are the test's people for as long.
         private const int TestHushMs = 300000;
 
-        private bool FromTestRow()
+        private readonly Dictionary<int, int> _testPeds = new Dictionary<int, int>();   // a test scene's cast, by handle: the test's people until then (game ms)
+
+        /// Whether what is being recorded is a Testing row's own (TownMood.FromTest): done to or by the test's people
+        /// (`focus`, `a`, `b`: the body of a death, the victim of the player's deed), or anything else within TestHushMs of
+        /// a fire that wasn't the player's. The player's own killing after a test still hushes (the review, 2026-10-31).
+        private bool FromTestRow(string doerId, int focus, int a, int b)
         {
-            return _fires > 0 && _now - _lastFireAt >= 0 && _now - _lastFireAt < TestHushMs;
+            bool sinceFire = _fires > 0 && _now - _lastFireAt >= 0 && _now - _lastFireAt < TestHushMs;
+            return TownMood.FromTest(TestPerson(focus) || TestPerson(a) || TestPerson(b), sinceFire, doerId);
+        }
+
+        /// One of the test's own people: the test cast (still bound to their part after they died: TestCastDrop lets the
+        /// body go from the cast as the ledger books it), or one of a test scene's cast for TestHushMs after it began.
+        private bool TestPerson(int h)
+        {
+            if (h == 0 || h == Game.Player.Character.Handle)
+                return false;
+            if (Spawner.IsCast(h))
+                return true;
+            ResBind rb;
+            if (_resBind.TryGetValue(h, out rb) && rb.R != null && rb.R.Cast != null && ENTITY.DOES_ENTITY_EXIST(h) && ENTITY.GET_ENTITY_MODEL(h) == rb.Model)
+                return true;
+            int until;
+            return _testPeds.TryGetValue(h, out until) && _now < until;
+        }
+
+        /// A Testing row's scene began with these people: what happens to them for TestHushMs is the test's.
+        private void MarkTestPeople(List<Ped> people, int now)
+        {
+            if (_testPeds.Count > 64)
+                foreach (int h in _testPeds.Where(kv => now >= kv.Value).Select(kv => kv.Key).ToList())
+                    _testPeds.Remove(h);
+            int me = Game.Player.Character.Handle;
+            foreach (Ped p in people)
+                if (p != null && p.Handle != me)
+                    _testPeds[p.Handle] = now + TestHushMs;
+        }
+
+        /// Whether the street of the town the player is in is hushed now (the latest killing within HushHours), asked
+        /// afresh (TownFearNow is cached 5 s): the pickpocket's own tick read the drama tick's flag, which an encounter or
+        /// the gap after a scene leaves standing for a minute or more (the review, 2026-10-31).
+        private bool HushedNow(int now)
+        {
+            return TownMoodOn && _placeTown != null && TownMood.Hushes(TownFearNow(now));
         }
 
         private static readonly TownFear CalmTown = new TownFear();
