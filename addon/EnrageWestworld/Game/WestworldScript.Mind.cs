@@ -39,6 +39,10 @@ namespace EnrageWestworld.InGame
             public bool ChoiceTold;         // its MIND would line is written (a held one is written on the next look while the choice stands)
             public int ChoseAt;
             public long AteAt = -1;         // the shadow's own meal (the choice was "eat"), so hunger falls for it
+            // NIGHT4 fixes 3-4: whether the present choice became an act, when it was last tried, and why not (MindActOn)
+            public bool ChoiceActed;
+            public int ChoiceTriedAt, ActedAt;
+            public string ActWhyNot;
         }
 
         private const int ChooseMs = 60000, ChoiceLinesAMinute = 5;
@@ -351,6 +355,7 @@ namespace EnrageWestworld.InGame
         /// enRAGE has him" (or whatever else stands in the way) where MayDirect would refuse. Nobody is tasked.
         private void MindChooseStep(int now)
         {
+            MindShareMinute(now);   // the share near you acting on their minds, once a minute (WestworldScript.MindActs.cs)
             if (_mindActs.Count > 0)
                 MindActsStep(now);   // those acting on a choice: done, arrived or gone (WestworldScript.MindActs.cs)
             if (_mindNear.Count == 0)
@@ -440,7 +445,12 @@ namespace EnrageWestworld.InGame
                 _mindChoiceChanges++;
                 if (!quiet)
                     _mindLastChoice = w.Name + " -> " + Choosing.WordsOf(ch.Key);   // F7's last choice is someone near, not the about ring's
-                if (!quiet && !PickAsk(w, h, now, c))
+                w.ChoiceActed = false;
+                w.ActWhyNot = null;
+                w.ChoiceTriedAt = now;
+                if (!quiet && MindChosenQuietly(h))
+                    _mindChoseQuietly++;   // the law, a child, the story's own: chosen for the mind's sake, never an act tried (NIGHT4 fix 4)
+                else if (!quiet && !PickAsk(w, h, now, c))
                     MindActOn(w, h, now);   // and now they do it (WestworldScript.MindActs.cs; the NPC-life run); or the model picks first (WestworldScript.Picks.cs)
             }
             if (quiet)
@@ -582,7 +592,7 @@ namespace EnrageWestworld.InGame
                     if (_mindWho.TryGetValue(h, out w) && w.Id != null && w.Choice != null)
                         near.Add(w.Name + " would " + Choosing.WordsOf(w.Choice) + " (" + w.ChoiceWhy + (w.ChoiceNext != null ? "; next " + Choosing.WordsOf(w.ChoiceNext) : "") + (w.ChoiceHeld != null ? "; but " + w.ChoiceHeld : "") + ")");
                 }
-                return "shadow only, nobody tasked; " + _mindChoices + " choices worked out (once a minute each), " + _mindChoiceChanges + " changed, " + _mindChoiceLines + " MIND would lines, " + _mindChoiceHeld + " held back (5 a minute); last: " + (_mindLastChoice ?? "none") +
+                return (_cfg.MindLive && _cfg.MindActs ? "acted on (TEST minds acting: what became of them); " : "shadow only, nobody tasked ([Mind] MindActs or MindLive off); ") + _mindChoices + " choices worked out (once a minute each), " + _mindChoiceChanges + " changed, " + _mindChoiceLines + " MIND would lines, " + _mindChoiceHeld + " held back (5 a minute); last: " + (_mindLastChoice ?? "none") +
                        (near.Count > 0 ? "; near: " + string.Join("; ", near) : "");
             }
             catch (Exception ex)

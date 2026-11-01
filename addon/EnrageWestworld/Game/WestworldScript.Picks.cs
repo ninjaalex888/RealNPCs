@@ -169,15 +169,20 @@ namespace EnrageWestworld.InGame
                 int si;
                 if (pp.Scenes != null && int.TryParse(picked.Substring(6), out si) && si < pp.Scenes.Count &&
                     MindStartScene(pp.Scenes[si], w, pp.Words[idx], pp.Test ? "the Testing row, the model's pick" : "the model's pick", now))
+                {
+                    w.ChoiceActed = true;
+                    w.ActedAt = now;
+                    PickReached(true, true);
                     return;
-                MindActOn(w, h, now);   // the street couldn't take it: the mind's own
+                }
+                PickReached(MindActOn(w, h, now) == null, idx >= 0);   // the street couldn't take it: the mind's own
                 return;
             }
             if (picked == pp.Mind)
             {
                 if (idx >= 0)
                     _picksSame++;
-                MindActOn(w, h, now);
+                PickReached(MindActOn(w, h, now) == null, idx >= 0);
                 return;
             }
             if (picked == "plan:seek")
@@ -190,9 +195,12 @@ namespace EnrageWestworld.InGame
                 {
                     _picksPlan++;
                     PlanSeekNow(p, h, t, d, now, "the model's pick");
+                    w.ChoiceActed = true;
+                    w.ActedAt = now;
+                    PickReached(true, true);
                     return;
                 }
-                MindActOn(w, h, now);   // the one it's about has gone: the mind's own
+                PickReached(MindActOn(w, h, now) == null, idx >= 0);   // the one it's about has gone: the mind's own
                 return;
             }
             // the model's pick in place of the mind's: the choice, what they did lately and why
@@ -201,7 +209,7 @@ namespace EnrageWestworld.InGame
             w.Choice = picked;
             w.ChoiceWhy = "the model's pick, over " + Choosing.WordsOf(pp.Mind);
             w.ChoiceTold = false;
-            MindActOn(w, h, now);
+            PickReached(MindActOn(w, h, now) == null, idx >= 0);
         }
 
         private int _pickThoughtsShown, _pickThoughtsHeld;
@@ -247,19 +255,44 @@ namespace EnrageWestworld.InGame
             return "answers in " + a[n / 2] + " ms typically, " + a[Math.Min(n - 1, (int)(n * 0.9))] + " ms for 9 in 10, " + a[n - 1] + " ms the slowest (the last " + n + ")";
         }
 
+        private int _modelMinEveryday, _modelMinEverydayTaken, _modelMinWaking, _modelMinWakingTaken, _modelMinTalk, _modelMinTalkSaid;
+        private int _picksReached, _picksAnsweredReached, _picksFellBackReached, _picksResolvedActs;
+
+        /// A pick's act, counted (NIGHT4 fix 4): whether it reached the screen, and whether the model had answered it.
+        private void PickReached(bool acted, bool answered)
+        {
+            _picksResolvedActs++;
+            if (!acted)
+                return;
+            _picksReached++;
+            if (answered)
+                _picksAnsweredReached++;
+            else
+                _picksFellBackReached++;
+        }
+
         private void ModelMinute(int now)
         {
             if (now < _modelMinuteAt)
                 return;
             int asked = _picksAsked + _wakePicksAsked, taken = _picksTaken + _wakePicksTaken, late = _picksLate + _wakePicksLate, unread = _picksUnread + _wakePicksUnread;
-            if (_modelMinuteAt > 0 && asked > _modelMinAsked)
-                Log.Write("MODEL minute: " + (asked - _modelMinAsked) + " picks asked, " + (taken - _modelMinTaken) + " picked, " + (late - _modelMinLate) + " late, " + (unread - _modelMinUnread) + " unreadable; " +
+            // split by who asked (NIGHT4 fix 4: today's 15 everyday picks and 75 waking ones were one number)
+            if (_modelMinuteAt > 0 && (asked > _modelMinAsked || _talkModelAsked > _modelMinTalk))
+                Log.Write("MODEL minute: " + (asked - _modelMinAsked) + " picks asked (everyday " + (_picksAsked - _modelMinEveryday) + ", " + (_picksTaken - _modelMinEverydayTaken) + " picked; waking " +
+                          (_wakePicksAsked - _modelMinWaking) + ", " + (_wakePicksTaken - _modelMinWakingTaken) + " picked), Talk " + (_talkModelAsked - _modelMinTalk) + " asked, " + (_talkModelSaid - _modelMinTalkSaid) + " said; " +
+                          (taken - _modelMinTaken) + " picked in all, " + (late - _modelMinLate) + " late, " + (unread - _modelMinUnread) + " unreadable; " +
                           _pending.Count + " waiting now (at most " + _cfg.PicksAtOnce + ", within " + _cfg.PickMetres + " m); " + ModelTimes());
             _modelMinuteAt = now + 60000;
             _modelMinAsked = asked;
             _modelMinTaken = taken;
             _modelMinLate = late;
             _modelMinUnread = unread;
+            _modelMinEveryday = _picksAsked;
+            _modelMinEverydayTaken = _picksTaken;
+            _modelMinWaking = _wakePicksAsked;
+            _modelMinWakingTaken = _wakePicksTaken;
+            _modelMinTalk = _talkModelAsked;
+            _modelMinTalkSaid = _talkModelSaid;
         }
 
         private string ModelStatus()
@@ -269,7 +302,8 @@ namespace EnrageWestworld.InGame
             int asked = _picksAsked + _wakePicksAsked, late = _picksLate + _wakePicksLate, unread = _picksUnread + _wakePicksUnread;
             string store = _engine != null ? "; the queue: " + (_engine.LanguageAnswers.PicksAsked - _engine.LanguageAnswers.PicksAnswered - _engine.LanguageAnswers.PicksFailed) + " not yet answered, " +
                            _engine.LanguageAnswers.PicksDropped + " turned away (full)" : "";
-            return asked + " picks asked this session (" + _picksAsked + " everyday, " + _wakePicksAsked + " waking), " + (asked > 0 ? (100 * late / asked) + "% late, " + (100 * unread / asked) + "% unreadable" : "none yet") +
+            return asked + " picks asked this session (everyday " + _picksAsked + ", " + _picksTaken + " picked; waking " + _wakePicksAsked + ", " + _wakePicksTaken + " picked); Talk " + _talkModelAsked + " asked, " + _talkModelSaid + " said; " +
+                   (asked > 0 ? (100 * late / asked) + "% late, " + (100 * unread / asked) + "% unreadable" : "none yet") +
                    "; " + ModelTimes() + "; reach " + _cfg.PickMetres + " m (past " + (int)PickNear + " m half as often), " + _pending.Count + " of " + _cfg.PicksAtOnce + " waiting" + store;
         }
 
@@ -282,7 +316,7 @@ namespace EnrageWestworld.InGame
             string store = _engine != null ? ", store: " + _engine.LanguageAnswers.PicksAsked + " queued, " + _engine.LanguageAnswers.PicksAnswered + " answered, " + _engine.LanguageAnswers.PicksFailed + " failed, " +
                            _engine.LanguageAnswers.PicksDropped + " dropped" : "";
             return (_langReady ? "on" : "on, the server not ready") + ": " + _picksAsked + " asked this session, " + _picksTaken + " picked (" + _picksSame + " the mind's own, " + _picksPlan + " a plan's step), " +
-                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting; thoughts with them " + _pickThoughtsShown + " shown, " + _pickThoughtsHeld + " held by the check" + store + (_pickLast != null ? "; last: " + _pickLast : "") + "; scenes from their own reasons: " + MindScenesStatus();
+                   _picksLate + " late, " + _picksUnread + " unreadable, " + _pending.Count + " waiting; reached the screen " + _picksReached + " of " + _picksResolvedActs + " (" + _picksAnsweredReached + " the model answered, " + _picksFellBackReached + " the mind's own after no answer); thoughts with them " + _pickThoughtsShown + " shown, " + _pickThoughtsHeld + " held by the check" + store + (_pickLast != null ? "; last: " + _pickLast : "") + "; scenes from their own reasons: " + MindScenesStatus();
         }
     }
 }

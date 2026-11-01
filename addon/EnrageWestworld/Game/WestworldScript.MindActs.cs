@@ -44,14 +44,47 @@ namespace EnrageWestworld.InGame
             return false;
         }
 
-        /// A choice just changed for someone near and in view (MindChooseFor): what they do about it, if anything.
-        private void MindActOn(MindWho w, int h, int now)
+        // what became of every choice tried (NIGHT4 fix 4): acted, or the reason it wasn't, so F7 can say where they go
+        private readonly Dictionary<string, int> _mindActLost = new Dictionary<string, int>();
+        private int _mindActsTried, _mindActsTakenUp, _mindChoseQuietly;
+        private const string LostOff = "off", LostGap = "the 1.5 s gap", LostAtOnce = "10 acting at once", LostActing = "acting already", LostStand = "stand or showoff: no act",
+                             LostUrge = "a feeling's urge: no act", LostNoSpot = "no free spot within 15 m", LostNoFoe = "nobody to step clear of", LostNoFriend = "no friend near",
+                             LostNoTalk = "nobody to talk to", LostWatch = "watch: never saw you violent", LostNoAct = "no act for this choice";
+
+        /// A choice for someone near and in view (MindChooseFor, a pick's answer): what they do about it, if anything. Null when
+        /// an act began; else why not (counted for F7, and kept on the person: MindWho.ActWhyNot).
+        private string MindActOn(MindWho w, int h, int now)
         {
-            if (!_cfg.MindLive || !_cfg.MindActs || w.Choice == null || now < _mindActNextAt || _mindActs.Count >= MindActsAtOnce || IsMindActing(h))
-                return;
+            string lost = MindActTry(w, h, now);
+            if (lost == LostOff)
+                return lost;
+            _mindActsTried++;
+            w.ActWhyNot = lost;
+            if (lost == null)
+            {
+                w.ChoiceActed = true;
+                w.ActedAt = now;
+                return null;
+            }
+            int n;
+            _mindActLost.TryGetValue(lost, out n);
+            _mindActLost[lost] = n + 1;
+            return lost;
+        }
+
+        private string MindActTry(MindWho w, int h, int now)
+        {
+            if (!_cfg.MindLive || !_cfg.MindActs || w.Choice == null)
+                return LostOff;
+            if (now < _mindActNextAt)
+                return LostGap;
+            if (_mindActs.Count >= MindActsAtOnce)
+                return LostAtOnce;
+            if (IsMindActing(h))
+                return LostActing;
             string kind = w.Choice;
             if (kind == "stand" || kind == "showoff" || Choosing.CarriesOn(kind))
-                return;
+                return LostStand;
             Ped p = new Ped(h);
             Ped me = Game.Player.Character;
             string why = MindActWhyNot(p, h);
@@ -59,7 +92,7 @@ namespace EnrageWestworld.InGame
             {
                 _mindActsSkipped++;
                 Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (" + why + ")");
-                return;
+                return why;
             }
             Vector3 at = p.Position;
             var a = new MindAct { Handle = h, Kind = kind, Name = w.Name, Started = now, Until = now + 60000 };
@@ -78,7 +111,7 @@ namespace EnrageWestworld.InGame
                     {
                         _mindActsSkipped++;
                         Log.Detail("MIND acts not: " + w.Name + " -> " + Choosing.WordsOf(kind) + " (no free spot within 15 m)");
-                        return;
+                        return LostNoSpot;
                     }
                     TASK._TASK_USE_NEAREST_SCENARIO_TO_COORD(h, at, 15f, 90000, false, true, false, false);
                     a.Spot = true;
@@ -119,7 +152,7 @@ namespace EnrageWestworld.InGame
                     {
                         int foe = MindFoeNear(w, h);
                         if (foe == 0)
-                            return;
+                            return LostNoFoe;
                         Vector3 away = at - ENTITY.GET_ENTITY_COORDS(foe, true, true);
                         away.Z = 0f;
                         Vector3 dir = away.Length() < 0.5f ? new Vector3(0f, 1f, 0f) : away.Normalized;
@@ -133,7 +166,7 @@ namespace EnrageWestworld.InGame
                     {
                         int to = kind == "greet" ? MindFriendNear(w, h) : MindSomeoneToTalkTo(h, at);
                         if (to == 0)
-                            return;
+                            return kind == "greet" ? LostNoFriend : LostNoTalk;
                         a.Toward = to;
                         TASK.TASK_GO_TO_ENTITY(h, to, 20000, 1f, 1.4f, 0f, 0);
                         a.Until = now + 20000;
@@ -142,13 +175,13 @@ namespace EnrageWestworld.InGame
                     }
                 case "watch":
                     if (!_engine.SawYouViolent(w.Id, 3))
-                        return;
+                        return LostWatch;
                     TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 8000, 0, 51, 0);
                     a.Until = now + 8000;
                     did = "keeps a wary eye on you";
                     break;
                 default:
-                    return;
+                    return kind.StartsWith("urge:", StringComparison.Ordinal) ? LostUrge : LostNoAct;
             }
             _mindActs.Add(a);
             _mindActNextAt = now + MindActGapMs;
@@ -158,6 +191,7 @@ namespace EnrageWestworld.InGame
             _mindActCount[kind] = n + 1;
             _mindActLast = w.Name + " " + did;
             Log.Write("MIND acts: " + w.Name + " " + did + " (" + w.ChoiceWhy + ", " + (int)at.DistanceTo(me.Position) + " m from you)");
+            return null;
         }
 
         /// Why this body mayn't be moved by its own choice now, or null.
@@ -188,6 +222,7 @@ namespace EnrageWestworld.InGame
                 bool gone = !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h);
                 if (!gone && TakenUp(h))
                 {
+                    _mindActsTakenUp++;
                     _mindActs.RemoveAt(i);   // another feature has them now (Talk, a walk-up, a scene): the act ends, with no new orders (the cross-cutting review; a nod is not enough)
                     continue;
                 }
@@ -323,8 +358,61 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.MindLive || !_cfg.MindActs)
                 return "off ([Mind] MindActs, with MindLive)";
-            return _mindActsDone + " acted on their choices this session (" + (_mindActCount.Count == 0 ? "none yet" : string.Join(", ", _mindActCount.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
-                   "), " + _mindActs.Count + " acting now, " + _mindActsSkipped + " passed over" + (_mindActLast != null ? "; last: " + _mindActLast : "");
+            int acting, scenes, named;
+            MindActingShare(Game.GameTime, out acting, out scenes, out named);
+            return MindShareWords(acting, scenes, named) + "; " +
+                   _mindActsDone + " acted on their choices this session (" + (_mindActCount.Count == 0 ? "none yet" : string.Join(", ", _mindActCount.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
+                   "), " + _mindActs.Count + " acting now, " + _mindActsSkipped + " passed over" + (_mindActLast != null ? "; last: " + _mindActLast : "") +
+                   "; of " + _mindActsTried + " tried, not acted: " + (_mindActLost.Count == 0 ? "none" : string.Join(", ", _mindActLost.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
+                   "; taken up by something else mid-act " + _mindActsTakenUp + "; chosen quietly (the law, children, the story's) " + _mindChoseQuietly;
+        }
+
+        /// The law, a child, one of the story's own: the mind chooses for them, but no act is ever tried (NIGHT4 fix 4).
+        private bool MindChosenQuietly(int h)
+        {
+            Ped p = new Ped(h);
+            return p.Exists() && (Natives.StoryModel(p) || !IsGrownUp(p) || Natives.IsLaw(p));
+        }
+
+        /// The goal's measure in game (NIGHT4 fix 4): of the named people in the mind's near ring, how many are acting on their
+        /// minds now (an act under way, or their present choice acted in the last two minutes) and how many are in a scene.
+        private void MindActingShare(int now, out int acting, out int scenes, out int named)
+        {
+            acting = scenes = named = 0;
+            for (int i = 0; i < _mindNear.Count; i++)
+            {
+                int h = _mindNear[i];
+                MindWho w;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                    continue;
+                named++;
+                if (IsMindActing(h) || (w.ChoiceActed && now - w.ActedAt >= 0 && now - w.ActedAt < 120000))
+                    acting++;
+                else if (_director != null && _director.Involves(h))
+                    scenes++;
+            }
+        }
+
+        private static string MindShareWords(int acting, int scenes, int named)
+        {
+            return named == 0 ? "nobody named near you" : acting + " of " + named + " named near you acting on their minds (" + (100 * acting / named) + "%), " + scenes + " more in a scene (" + (100 * (acting + scenes) / named) + "% in all)";
+        }
+
+        private int _mindShareMinuteAt, _mindShareLastTried;
+
+        /// Once a minute while the mind is trying acts: the share near you acting on their minds, for the log (NIGHT4 fix 4).
+        private void MindShareMinute(int now)
+        {
+            if (now < _mindShareMinuteAt && now >= _mindShareMinuteAt - 120000)
+                return;
+            _mindShareMinuteAt = now + 60000;
+            if (_mindActsTried == _mindShareLastTried || !_cfg.MindLive || !_cfg.MindActs)
+                return;
+            int tried = _mindActsTried - _mindShareLastTried;
+            _mindShareLastTried = _mindActsTried;
+            int acting, scenes, named;
+            MindActingShare(now, out acting, out scenes, out named);
+            Log.Write("MIND acting minute: " + MindShareWords(acting, scenes, named) + "; " + tried + " choices tried this minute, " + _mindActsDone + " acts this session");
         }
     }
 }
