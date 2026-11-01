@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 171;
+        public const int CurrentVersion = 172;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -195,7 +195,7 @@ namespace EnrageWestworld.Core
         public bool Campfires = true;     // [Encounters] strangers at a campfire at night in the wilds (night 2026-10-28, item 14; settings version 90)
         public int CampfireChance = 15;
         public bool VoiceBelow = true;    // [Encounters] West World: late at night in a saloon, a muffled plea from under the boards and the barkeep's thoughts (night 2026-10-28, item 14; settings version 90)
-        public bool SupperInvitation;   // the supper invitation, the player version (Lex, 2026-10-27 18:33; settings version 81); off until it's been tested (Lex, the same evening; version 82)
+        public bool SupperInvitation = true;   // the supper invitation, the player version (Lex, 2026-10-27 18:33; settings version 81); off until tested from version 82; on as it comes from version 172 (Lex, 2026-11-01: violence against Arthur on by default)
         public int SupperChance = 12;
         public string CryingWomanKey = "None";
         public bool Executions = true;
@@ -216,7 +216,7 @@ namespace EnrageWestworld.Core
         public int DomesticChance = 30;
         public bool Hogtied = true;             // out of the towns by day, one of a nearby town's people tied up by the road with two men by them, who they are from the captive's own life
         public int HogtiedChance = 20;
-        public bool HogtiedMenDraw = false;     // the hogtied's men may draw on you unprovoked as you come near; off: they fight only once you step in, as the execution's men (turns on Arthur: off, its own switch)
+        public bool HogtiedMenDraw = true;   // on as it comes from version 172 (Lex, 2026-11-01: violence against Arthur on by default);     // the hogtied's men may draw on you unprovoked as you come near; off: they fight only once you step in, as the execution's men (turns on Arthur: off, its own switch)
 
         // [World]
         public bool Deeds = true;
@@ -609,6 +609,12 @@ namespace EnrageWestworld.Core
                 s.SupperInvitation = false;
                 raised.Add("SupperInvitation on -> off (until it's been tested)");
             }
+            if (s.SettingsVersion < 172)
+            {
+                // off was the stock value until version 172 (Lex, 2026-11-01: violence against Arthur on by default)
+                if (!s.SupperInvitation) { s.SupperInvitation = true; raised.Add("SupperInvitation off -> on (violence against Arthur on by default)"); }
+                if (!s.HogtiedMenDraw) { s.HogtiedMenDraw = true; raised.Add("HogtiedMenDraw off -> on (violence against Arthur on by default)"); }
+            }
             if (raised.Count > 0)
                 log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");
         }
@@ -742,6 +748,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: new in this version: [Encounters] PublicCallouts (on): in a town by day, one of the people about calls another out before the street, and each answers by their own mind; DomesticDisputes (on): a man starts in on his wife in the street, and she and a neighbour answer by their own minds; Hogtied (on): away from the towns, someone tied up by the road with two men by them; HogtiedMenDraw (off): those men may draw on you unprovoked.");
                 if (s.SettingsVersion < 170)
                     log?.Invoke("Settings: new in this version: [Mind] MindPassingLasts (on): people near you show what they feel about what you did for hours after, not minutes; [Scenes] FavoursAsked (on): someone in money trouble may come and ask you, and Talk lists the fix; [Scenes] CourtFolkAges (on): enRAGE's townsfolk may court each other on the street; [Scenes] WarnedYou (on): someone who saw what you did may have words with you, and a friend may warn you of a grudge or the law.");
+                if (s.SettingsVersion < 172)
+                    log?.Invoke("Settings: violence against Arthur is on as it comes (Lex): [Encounters] SupperInvitation and HogtiedMenDraw are on; set either false to turn it off");
                 if (s.SettingsVersion < 171)
                     log?.Invoke("Settings: new in this version: [Mind] MindChanceMeetings (on): what passes between two people who meet by chance near you comes from their minds: friends talk and sing, foes quarrel or turn their backs, a money worry asks the other for a loan.");
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
@@ -1095,7 +1103,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Campfires = " + B(Campfires) + "   ; at night in the wilds, two or three men round a fire off the road call you over for coffee and a tale; now and then a traveller walks in from the dark");
             b.AppendLine("CampfireChance = " + CampfireChance + "   ; percent on each roll, eight in the evening to four, with ten game hours between fires");
             b.AppendLine("VoiceBelow = " + B(VoiceBelow) + "   ; West World: late at night in a saloon, a muffled plea from under the boards behind the bar; the barkeep says it's the pipes, and his thoughts say otherwise; once a night a town");
-            b.AppendLine("SupperInvitation = " + B(SupperInvitation) + "   ; at dusk on the roads, a too-friendly man asks you to supper at his place. Follow him there on foot and you wake in a ditch at first light with most of your cash gone ($250 at most). Ride on and he lets you go. Off until it's been tested");
+            b.AppendLine("SupperInvitation = " + B(SupperInvitation) + "   ; at dusk on the roads, a too-friendly man asks you to supper at his place. Follow him there on foot and you wake in a ditch at first light with most of your cash gone ($250 at most). Ride on and he lets you go. On as it comes (violence against Arthur is on by default); false to turn it off");
             b.AppendLine("SupperChance = " + SupperChance + "   ; percent on each roll, half past five to nine in the evening, once a day at most");
             b.AppendLine("Executions = " + B(Executions) + "   ; out on the roads, two men holding one of a nearby town's people on his knees at gunpoint, for a reason from his own life. Ride on and they go through with it");
             b.AppendLine("ExecutionChance = " + ExecutionChance + "   ; percent on each roll, once a day at most, outside the towns");
@@ -1105,7 +1113,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("DomesticChance = " + DomesticChance + "   ; percent on each encounter roll while one may happen (eight real minutes at least between them)");
             b.AppendLine("Hogtied = " + B(Hogtied) + "   ; away from the towns by day, one of a nearby town's people lies tied up off the road, two men by them: bounty hunters if they're a known thief, a debt's collectors, or outlaws. The captive calls, bargains or curses by their nature; the men warn you off, name a price (greet the leader to pay), pack up or (with HogtiedMenDraw) draw. Cut them loose with the game's own prompt, pay, fight or ride on. Bounty hunters are a lawful claim: shooting them first is a crime");
             b.AppendLine("HogtiedChance = " + HogtiedChance + "   ; percent on each roll, six in the morning to eight at night, once a day at most");
-            b.AppendLine("HogtiedMenDraw = " + B(HogtiedMenDraw) + "   ; off: those men fight only once you step in (fire on them, rush them, hold a gun on them, or cut the captive loose unpaid); on: their leader may also draw on you unprovoked as you come near (it turns on you)");
+            b.AppendLine("HogtiedMenDraw = " + B(HogtiedMenDraw) + "   ; on as it comes: those men may draw on you unprovoked as you come near; off: those men fight only once you step in (fire on them, rush them, hold a gun on them, or cut the captive loose unpaid); on: their leader may also draw on you unprovoked as you come near (it turns on you)");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: the awake stand in a silent circle, facing in: from midnight to half past three out in the wilds (once a night), and with GatheringHours any by day too, in an open field or just outside a town's edge");

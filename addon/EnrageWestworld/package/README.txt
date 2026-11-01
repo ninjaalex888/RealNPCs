@@ -469,7 +469,7 @@ NEW IN 0.6.3
   2 twice as often, 0 never by chance) sets how often people come to blows or quarrel.
 - Night encounters: a figure crouched over a body who stands and stares, then turns up behind
   you; a stranded traveller asking the way (lost, snakebitten, or being robbed on the road);
-  and, off until you switch it on, the supper invitation (CONTENT NOTE: accepting it costs you
+  and the supper invitation, on as it comes (CONTENT NOTE: accepting it costs you
   most of your cash and the night, and it can't be undone; [Encounters] SupperInvitation).
 - People notice how you look (bloodied, drunk, filthy, soaked) and take it by their nature, and
   people who know each other nod, tip a hat or wave as they pass (enemies give a hard look).
@@ -1158,7 +1158,7 @@ in the file. The new ones:
             Travellers (true), TravellerChance (20): by day on the roads, a man on foot asks you the way to
             the nearest town; greet him or stop a moment and he finds his way (one in three is
             snakebit and asks for help instead; one in five is being robbed, and you can step in)
-            SupperInvitation (false until tested), SupperChance (12): at dusk on the roads, a too-friendly man asks
+            SupperInvitation (true; set false to turn it off), SupperChance (12): at dusk on the roads, a too-friendly man asks
             you to supper at his place; follow him there on foot and you wake in a ditch at first
             light with most of your cash gone ($250 at most, and it can't be undone); ride on and
             he lets you go
