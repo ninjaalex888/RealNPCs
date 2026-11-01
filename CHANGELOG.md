@@ -1,9 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.7.14 (2026-11-01)
+
+Fights that grow into brawls, a red dot on whoever started it, and the law that hears a fight.
 
 - Fights grow into brawls more readily: onlookers are readier to join (`[Mind] BrawlJoinBoost`, 20 as it comes; 0 as before). In Saint Denis two men fighting never drew anyone in: every onlooker fell short of the bar to join (settings version 175).
-- The one who threw the first punch wears a small red dot on the map while the fight lasts, and stepping in against him is self-defence (`[Mind] BrawlStarterDot`, on). A fight is heard, too: if no lawman sees it, after a few seconds any free lawman within 60 m comes.
+- The one who threw the first punch wears a small red dot on the map while the fight lasts, and stepping in against him is self-defence (`[Mind] BrawlStarterDot`, on). A fight is heard, too: if no lawman sees it, after a few seconds any free lawman within 60 m comes. Seen in game in Saint Denis.
 
 ## 0.7.13 (2026-11-01)
 

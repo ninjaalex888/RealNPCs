@@ -1,4 +1,4 @@
-RealNPCs 0.7.13 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.14 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -68,6 +68,16 @@ Set it up once:
 
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
+
+
+NEW IN 0.7.14
+-------------
+- Fights grow into brawls: onlookers are readier to join ([Mind] BrawlJoinBoost, 20; 0 as
+  before), so two men fighting can draw in friends, foes and hotheads.
+- Whoever threw the first punch wears a small red dot on the map while the fight lasts, and
+  stepping in against him is self-defence ([Mind] BrawlStarterDot, on).
+- A fight is heard: if no lawman sees it, after a few seconds any free lawman within 60 m comes.
+  Seen in game in Saint Denis.
 
 
 NEW IN 0.7.13
