@@ -1,6 +1,8 @@
 // What the game's voices can say, and the words of the recordings someone has written down.
-// Two optional files in the add-on's data folder (voices\), neither shipped with the add-on:
-//   banks.txt  one voice bank per line: BANK<tab>LINE:takes,LINE:takes,...  (which recordings each voice has)
+// Two optional files in the add-on's data folder (voices\):
+//   banks.txt  one voice bank per line: BANK<tab>LINE:takes,LINE:takes,...  (which recordings each voice has). Without it
+//              the table inside the add-on is used (Data/banks.txt.gz: 592 voices, made from the recordings' file names
+//              alone: line names and take counts, no words, no audio; Lex, 2026-11-01: "ship the table")
 //   words.txt  BANK|LINE|TAKE|the words spoken, one recording per line; # starts a comment
 // A voice bank is named after the ped model it belongs to (0465_A_M_M_VALTOWNFOLK_01_WHITE_01). The game
 // can't say which bank a ped is using, so only models with exactly one bank are trusted: for those the
@@ -14,7 +16,9 @@ namespace EnrageWestworld.Core
 {
     public sealed class VoiceBook
     {
-        private static readonly Regex BankModel = new Regex(@"^\d+_(.+?)_[A-Z]+_\d+$");
+        // the model from the bank: 0013_A_F_M_ASBTOWNFOLK_01_WHITE_01 and 0475_U_M_M_VALBARTENDER_01 (the second read as
+        // "U_M_M" before 2026-11-01, so 57 counter keepers' voices were never known)
+        private static readonly Regex BankModel = new Regex(@"^\d+_(.+?_\d+)(?:_[A-Z]+(?:_\d+)?)?$");
 
         private readonly Dictionary<string, Dictionary<string, int>> _takes = new Dictionary<string, Dictionary<string, int>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, List<string>> _banksByModel = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
@@ -30,6 +34,8 @@ namespace EnrageWestworld.Core
             {
                 if (File.Exists(banksPath))
                     b.ReadBanks(File.ReadAllLines(banksPath));
+                else
+                    b.ReadBanks(Shipped());
                 if (File.Exists(wordsPath))
                     b.ReadWords(File.ReadAllLines(wordsPath), log);
             }
@@ -38,6 +44,25 @@ namespace EnrageWestworld.Core
                 log?.Invoke("Voices: couldn't read the voice files: " + ex.Message);
             }
             return b;
+        }
+
+        /// The table inside the add-on (Data/banks.txt.gz), one bank a line; nothing if it can't be read.
+        public static IEnumerable<string> Shipped()
+        {
+            var lines = new List<string>(600);
+            using (Stream s = typeof(VoiceBook).Assembly.GetManifestResourceStream("RealNPCs.banks.txt.gz"))
+            {
+                if (s == null)
+                    return lines;
+                using (var z = new System.IO.Compression.GZipStream(s, System.IO.Compression.CompressionMode.Decompress))
+                using (var r = new StreamReader(z))
+                {
+                    string l;
+                    while ((l = r.ReadLine()) != null)
+                        lines.Add(l);
+                }
+            }
+            return lines;
         }
 
         public void ReadBanks(IEnumerable<string> lines)
@@ -146,8 +171,13 @@ namespace EnrageWestworld.Core
             }
             if (first == null)
                 return false;
-            line = first;
-            take = 1 + (turn & 0x7fffffff) % Takes(bank, first);
+            // the first three the bank has take turns, as Speech.SayAny does (only the first was ever played before 2026-11-01)
+            var have = new List<string>(3);
+            foreach (string l in set)
+                if (have.Count < 3 && Takes(bank, l) > 0)
+                    have.Add(l);
+            line = have[(turn & 0x7fffffff) % have.Count];
+            take = 1 + ((turn & 0x7fffffff) / have.Count) % Takes(bank, line);
             return true;
         }
 

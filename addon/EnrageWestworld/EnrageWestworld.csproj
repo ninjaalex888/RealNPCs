@@ -18,6 +18,9 @@
     <Compile Include="Core/*.cs;Game/*.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Data/banks.txt.gz" LogicalName="RealNPCs.banks.txt.gz" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="ScriptHookRDRNetAPI">
       <HintPath>../../refs/ScriptHookRDRNetAPI.dll</HintPath>
       <Private>false</Private>
