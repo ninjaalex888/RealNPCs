@@ -1,5 +1,5 @@
-RealNPCs 0.7.11 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
-=======================================================================================================
+RealNPCs 0.7.12 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
 themselves, remember what you did, think about you, keep diaries, gossip, fall in love, marry,
@@ -31,7 +31,8 @@ RealNPCs. With it on, the people near you:
 - choose what they do next from what their own mind allows: head home, pick a quarrel, call in
   a debt, court someone;
 - answer you in their own words when you Talk to them (Q, locked on);
-- say some of their thoughts aloud in their own recorded voice;
+- say some of their thoughts aloud in their own recorded voice (for now this also needs a
+  voice list RealNPCs doesn't ship, so it's silent for nearly everyone);
 - and with West World on, those waking up choose their own strange acts.
 
 It runs on your own graphics card through Ollama (https://ollama.com): nothing is sent
@@ -50,8 +51,9 @@ disk space. Graphics card memory, with RDR2 on medium settings:
   works.
 - No room to spare: RealNPCs runs fully on its own written lines.
 A slower card can still run the model: answers just come a little later (under half a second
-on a fast card, about a second or more on a mid-range one), and any answer that takes longer
-than 2.5 seconds is replaced by the written line, so the game never waits for it.
+on a fast card, about a second or more on a mid-range one), and any answer that comes too
+late (after two to three seconds) gives way to RealNPCs' own line or choice, so the game
+never waits for it.
 
 Set it up once:
 1. Install Ollama from https://ollama.com/download and leave it running (it sits in the
@@ -66,6 +68,110 @@ Set it up once:
 
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
+
+
+NEW IN 0.7.12
+-------------
+- The AI model is optional. RealNPCs runs without it and without Ollama, with no extra graphics
+  memory (see OPTIONAL, HIGHLY RECOMMENDED above for which cards have room for it). Everything
+  new below works without it: people's own minds choose, and with the model on it only picks
+  among the same few things. Making RealNPCs as rich without the model is the next big piece of
+  work (roadmap 41 on GitHub).
+- People get up and go about what their minds choose ([Mind] MindActsScenarios, with MindActs).
+  Someone sat on a bench, leaning on a wall, at the bar or having a smoke whose mind wants a
+  drink, a meal, a rest elsewhere, their work, home or someone to talk to gets up the way the
+  game's own scripts get people up, and goes to it: a bench, a chair or the steps to rest; a
+  wall, a post or a rail to lean on; the bar rail or a table for a drink or a meal; a broom, a
+  cloth or a hammer for the work; two people already talking, to join them. Anyone not up in 9
+  seconds is put back where they were, so nobody is left frozen in a pose. One gets up every 4 to
+  6 seconds near you, three at most at once. Testing row "A seated person gets up and acts on
+  their mind". Seen in game: people getting up from benches and walls, and nobody left frozen.
+  Not yet seen: the walk to a spot of the kind they want.
+- Two street scenes at once ([Scenes] MainScenesAtOnce 2, on the Essentials page; 1 is one at a
+  time, as before). While one full scene plays, a second can start between two other people 20 m
+  or more away, with its own walk-over and its words as subtitles when it's near you. Fights,
+  rough handling and thefts stay one at a time. In the log so far, not yet watched on screen.
+- The storyteller ([World] Storyteller, lively; calm, wild, or off as before; on the Essentials
+  page). When nothing worth stopping for has happened near you for a while (2 minutes in lively,
+  4 in calm, 1 in wild), the next street scene, chance meeting, walk-up and encounter roll come
+  sooner; after something big, a little later for half a minute or so. It only changes the waits,
+  and holds everything as built in a mission, a fight, while wanted or indoors. Seen running in
+  game.
+- Called out before the street ([Encounters] PublicCallouts, PublicCalloutChance 35). In a town
+  by day, someone with a real grievance against another (a debt, a theft, a beating, hard words)
+  calls him out in front of whoever is about; each answers by their own nature, or the AI model
+  picks among the same few things, and up to two people near watch, jeer, step in or walk off.
+  Walk up and it ends. Testing row "Someone calls out another before the street". Not yet seen in
+  game.
+- A husband's temper ([Encounters] DomesticDisputes, DomesticChance 30). In a town by day, a man
+  starts in on his wife in the street; he rants, storms off or lets it drop, and now and then
+  strikes her (rarely, once); she gives it back, pleads, sobs or walks off; a neighbour may step
+  in or fetch the law. Walk up before he's struck her and it's over. Once he has struck her,
+  dealing with him is no crime. Testing row "A husband loses his temper outside his home". Not
+  yet seen in game.
+- Hogtied by the road ([Encounters] Hogtied, HogtiedChance 20). Away from the towns by day, once
+  a day, one of a nearby town's people lies tied up off the road (a mark on the map), two men by
+  them: bounty hunters for a known thief (a lawful claim), a creditor's men, or outlaws. Cut them
+  loose with the game's own prompt, pay the price the men name (greet their leader) or fight;
+  ride on and they're carried off. HogtiedMenDraw (on): their leader may draw on you unprovoked
+  as you come near (bounty hunters never do); set it false and the men fight only once you step
+  in. Testing row "Stage a hogtied captive nearby". Played once through that row: the game's
+  own hogtie took, the leader warned you off, the two men came at you and were killed, and the
+  captive, cut loose, thanked you with the game's own clip. Not yet seen: one met by chance, the
+  price paid, the leader drawing unprovoked, a captive carried off.
+- What they feel about you, as you pass ([Mind] MindPassingLasts). Someone you roughed up gives
+  you a hard look when you pass them hours later; someone you helped tips their hat. Testing row
+  "Someone near shows what they feel about you as you pass". In the log so far (a spit and hard
+  looks among them), not yet watched on screen.
+- A favour asked ([Scenes] FavoursAsked). Someone at the worst of a debt, a bad tooth or a fare
+  they can't make may come up and ask you, or hint, or lose their nerve; then Talk lists the fix.
+  Testing row "Someone in trouble comes to ask a favour". Not yet seen in game.
+- Courting townsfolk ([Scenes] CourtFolkAges). enRAGE's townsfolk, whose ages it doesn't keep,
+  now court each other on the street too. Not yet seen in game.
+- Witnessed, or warned ([Scenes] WarnedYou). Someone who saw what you did may tell you so to your
+  face; someone who thinks well of you may warn you of a man with a grudge near, or the law
+  asking. Words only. Testing row "Someone warns you, or tells you to your face what they saw".
+  Not yet seen in game.
+- Chance meetings from the two minds ([Mind] MindChanceMeetings). What passes between two people
+  who meet by chance near you comes from who they are: friends talk and sing, foes quarrel or
+  turn their backs, the sore snap, someone with money worries trades or asks the other for a loan
+  (given or refused by the other's nature), drink tells tall tales. With the model's picks on,
+  the two may stand still for up to 2.5 s while it chooses. False: rolled by the place alone, as
+  before. In the log so far, not yet watched on screen; the cold shoulder and loan not yet seen.
+- Violence against Arthur is on as it comes: the supper invitation ([Encounters]
+  SupperInvitation: at dusk on the roads, follow a too-friendly man to supper and you wake in a
+  ditch at first light with most of your cash gone) and the hogtied's men drawing on you
+  (HogtiedMenDraw). Set either false to turn it off. The supper invitation was off as it came, so
+  an older ini has it turned on as it upgrades: set it false again to keep it off. Neither has
+  been seen in game yet (the supper invitation not in any version).
+- More of what people's minds choose reaches the screen. Someone keeping watch looks at you or
+  the street, people sat or leaning look up from their seat, and someone who wants to be seen
+  stands where the street can see them ([Mind] MindActsSeatedLooks); a choice they couldn't act
+  on is tried again a minute later, up to three times (MindRetries); the street's scenes take
+  turns, so fewer sharp words ([Scenes] ReasonVariety); chance meetings get their turn, nearer
+  you (ChanceFirst); the same faces less often; fewer of the AI model's thoughts thrown away. Two
+  with a reason to come to blows while one of them is sat or leaning have it out in words
+  instead; getting them up to fight is next.
+- Show minds and "Wake stages over heads (with West World)" are on the settings panel's UI page
+  now, not the Testing page (they stay in [Testing] in the ini). The UI page (names over heads,
+  bars, Show minds, the ticker, subtitles) now shows in the panel's short view too, beside the
+  Essentials, the Hotkeys and the Mod list. The panel has 12 pages, not 16: "West World and
+  stalkers", "The world and its people" and "Pacing, files and the log" each hold two or three
+  sections under their own headings (the ini keeps them all). The Essentials page leaves its
+  screen settings to the UI page beside it, and its pickpocket, self-defence and memory-reset
+  rows are one group, "You".
+- F7 adds TEST story:, TEST callouts:, TEST domestic:, TEST hogtied:, TEST nods you:, TEST
+  favours:, TEST warned: and TEST chance meetings:, and TEST reasons:, TEST minds acting:, TEST
+  model: and TEST picks: count more. The new Testing rows have no key as they come: set one on
+  the Testing page.
+- Fixes: a pick the AI model made stands until the person's own mind changes its choice; a scene
+  that fails to start no longer makes its people wait; someone going over for a word goes only to
+  a grown person on foot, never a lawman; a line between other people isn't cut off by another's
+  within 2.5 s unless that one is nearer you; a friend's grudge over a refused request falls on
+  the one who refused; the stalker never takes anyone RealNPCs is using; lawmen and stalkers
+  handed back are properly released to the game; less work a frame (not measured in game).
+- Settings version 172. An older ini is rewritten with the new lines and your values kept, except
+  the supper invitation (above); the log lists what's new.
 
 
 NEW IN 0.7.11
@@ -87,15 +193,6 @@ NEW IN 0.7.11
   [World] InteractionMenu, TalkKey.
   Talk is basic for now: a fixed list of lines. The aim is real-time talk by microphone, and
   typed text, with the model, where your hardware allows.
-- What they feel about you, as you pass ([Mind] MindPassingLasts). Someone you roughed up gives
-  you a hard look when you pass them hours later; someone you helped tips their hat.
-- A favour asked ([Scenes] FavoursAsked). Someone at the worst of a debt, a bad tooth or a fare
-  they can't make may come up and ask you, or hint, or lose their nerve; then Talk lists the fix.
-- Courting townsfolk ([Scenes] CourtFolkAges). enRAGE's townsfolk, whose ages it doesn't keep,
-  now court each other on the street too.
-- Witnessed, or warned ([Scenes] WarnedYou). Someone who saw what you did may tell you so to your
-  face; someone who thinks well of you may warn you of a man with a grudge near, or the law
-  asking. Words only.
 - Brawls that grow. A fistfight draws people in a wave at a time, up to [Mind] BrawlMost (12)
   fighting: friends and grudges first, from up to BrawlJoinMetres (30) away, most of all in a
   saloon with drink in it. Those sitting or leaning get up to join. The sides balance, a man
@@ -718,19 +815,6 @@ NEW IN 0.6.0
   crime noted. Save him and the town hears of it; wait or ride on and they shoot him, and his kin
   and his town hear. To see it now: press [, or the settings panel's Testing page.
   CONTENT NOTE: a man can be shot dead in front of you. Executions = false turns it off.
-- Called out before the street ([Encounters] PublicCallouts, PublicCalloutChance 35). In a town by
-  day, someone with a real grievance against another (a debt, a theft, a beating, hard words) calls
-  him out in front of whoever is about; each answers by their own nature, or the AI model picks
-  among the same few things. Walk up and it ends. Testing page: "Someone calls out another".
-- A husband's temper ([Encounters] DomesticDisputes, DomesticChance 30). In a town by day, a man
-  starts in on his wife in the street; he rants, storms off or lets it drop, and now and then
-  strikes her (rarely, once); she gives it back, pleads, sobs or walks off; a neighbour may step
-  in or fetch the law. Once he has struck her, dealing with him is no crime.
-- Hogtied by the road ([Encounters] Hogtied, HogtiedChance 20). Away from the towns by day, once a
-  day, one of a nearby town's people lies tied up off the road (a mark on the map), two men by
-  them: bounty hunters for a known thief (a lawful claim), a creditor's men, or outlaws. Cut them
-  loose with the game's own prompt, pay the price the men name (greet their leader), fight or
-  ride on, and they're carried off.
 - Night encounters ([Encounters]). Out in the wilds between ten at night and four in the morning,
   you may hear a woman crying somewhere off the road (CryingWomanChance, 15 percent on each roll
   every EncounterEveryMinutes, 12, at most once a night). She kneels in the dark and calls for
@@ -1162,6 +1246,13 @@ in the file. The new ones:
             you to supper at his place; follow him there on foot and you wake in a ditch at first
             light with most of your cash gone ($250 at most, and it can't be undone); ride on and
             he lets you go
+            PublicCallouts (true), PublicCalloutChance (35): by day in a town, someone calls another
+            out before the street over something real between them; each answers by their own mind
+            DomesticDisputes (true), DomesticChance (30): in a town by day, a man starts in on his
+            wife in the street; she, a neighbour and you decide how it ends
+            Hogtied (true), HogtiedChance (20): away from the towns by day, one of a town's people
+            tied up off the road, two men by them; HogtiedMenDraw (true; set false to turn it off):
+            their leader may draw on you unprovoked as you come near (never bounty hunters)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
             Regulars (true), RegularsPerTown (30), RegularsDress (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
@@ -1213,6 +1304,12 @@ in the file. The new ones:
             BeingWatched (true): the street's trouble waits while a lawman is looking (WatchedLawMetres
             25, WatchedRecklessChance 40, WatchedChurchMetres 60); BoldThieves (25): percent of thieves
             who try it anyway; LonelyRegulars (true), LateThanks (true), ReasonThoughts (true)
+            ReasonVariety (true): the street's scenes take turns, so fewer sharp words; ChanceFirst
+            (true): chance meetings get their turn when nobody near has a strong reason, nearer you
+            FavoursAsked (true, with MindLive): someone hard pressed for money may come and ask you,
+            and Talk lists the fix; WarnedYou (true, with MindLive): a witness may have words with
+            you, and a friend may warn you of a grudge or the law; CourtFolkAges (true): enRAGE's
+            townsfolk court each other too (an age guessed)
 [Romance]   NpcFlirting (true): people near you make eyes at each other and court, each answering by
             what they make of the other; their thoughts on the ticker show it as it happens;
             sweethearts fall out now and then, and one comes back with a small gift to make it up
@@ -1243,8 +1340,15 @@ in the file. The new ones:
             MindActs (true, under MindLive): people near you do what their minds choose (a stroll, the
             nearest bench, chair, bar or work spot, off home, clear of you or a foe, over to a friend).
             MindActsScenarios (true, under MindActs): people sat or leaning get up for it, the game's own
-            way (never pulled out of a chair), and go to a spot of the kind they want: a bench or the steps,
-            a wall or a post, the bar rail, a broom; one every few seconds near you, three at most at once.
+            way (never pulled out of a chair in view), and go to a spot of the kind they want: a bench or
+            the steps, a wall or a post, the bar rail, a broom; one every few seconds near you, three at
+            most at once.
+            MindActsSeatedLooks (true, under MindActs): people watch you or the street, look up from
+            their seat, and make sure to be seen. MindRetries (true, under MindActs): a choice they
+            couldn't act on is tried again a minute later, up to three times.
+            MindPassingLasts (true, with MindPassing): what they feel about you shows for hours as
+            you pass, not minutes. MindChanceMeetings (true, under MindLive): a chance meeting near
+            you comes from the two people's minds; false: rolled by the place alone.
             MindJoinFights (true, under MindLive): onlookers may join a fistfight on a side. MindBrawls
             (true): a fight grows into a brawl, up to BrawlMost (12); BrawlLaw, BrawlPullsYouIn,
             BrawlDraws (all true), BrawlDrawShare (40), BrawlFistsFatal (50: percent of men beaten down
@@ -1305,9 +1409,10 @@ Alt+R     the RealNPCs settings panel (all RealNPCs and enRAGE settings; Setting
           another test has already moves to the new one and leaves that test without a key; one of
           enRAGE's keys, or one RealNPCs needs (F7, the flirt key...), is refused, naming whose it is. The keys are in [Testing] in the ini (TestKeys switches
           them all off). Every street scene has a row (the nearest named pair that fits plays it),
-          and so do pleading, arrivals, letters and the strange remarks. Show minds (off as it comes) puts a card over
-          the people near you: their temper, mood, worry, ties and what is on their mind; Replay fires
-          the last test again. "Bring the test cast here" brings eight people the tests need (a mother,
+          and so do pleading, arrivals, letters and the strange remarks. Show minds (off as it
+          comes; its switch is on the UI page) puts a card over the people near you: their
+          temper, mood, worry, ties and what is on their mind; Replay fires the last test again.
+          "Bring the test cast here" brings eight people the tests need (a mother,
           two old men, a preacher and a listener, three men for a bully) to stroll about a spot 10 m in
           front of you; they're kept in the save, so the same people come each time, and
           "Let the test cast go" takes them away. There is also a row that wipes every NPC's memory (Enter twice). Alt+F11 opens it as well, but
@@ -1334,7 +1439,7 @@ Shift+F7  two people near you talk in their real voices (TestTalkKey)
 Shift+F9  one man near you puts another's face into the bar (TestRoughKey)
 Shift+F2  the subtitle line in each font, to find the game's (TestFontKey)
 Ctrl+F2   Show minds on or off for this session: the card over people near you (TestShowMindsKey;
-          the settings panel's Testing page has the switch that's saved)
+          the settings panel's UI page has the switch that's saved)
           These seven (], [, Y, Ctrl+F2 and the three Shift keys) are the Testing page's; the rest of its
           rows have no key as they come.
 Q         locked on to someone RealNPCs knows: Talk (TalkKey; a pad's RB). It is the game's own
