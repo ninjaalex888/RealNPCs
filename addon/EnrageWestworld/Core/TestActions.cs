@@ -40,6 +40,7 @@ namespace EnrageWestworld.Core
             new Entry("campfire", "Encounters", "Strangers at a campfire", "TestCampfireKey", needs: "out of the towns; a test takes turns with and without the traveller who walks in"),
             new Entry("callout2", "Encounters", "Someone calls out another before the street", "TestCallout2Key", needs: "a town's street, two named people on their feet 2-18 m apart with something between them (a tie gone sour: a quarrel, a beating, a theft; or a debt), one in your view"),
             new Entry("domestic", "Encounters", "A husband loses his temper outside his home", "TestDomesticKey", needs: "a town's street, a named man on his feet 6-35 m from you (his sweetheart near plays his wife, else his wife walks up from out of sight)"),
+            new Entry("hogtied", "Encounters", "Stage a hogtied captive nearby", "TestHogtiedKey", needs: "out of the towns, a town with regulars; a mark on the map; greet the men's leader to pay when he names a price (a test takes no money)"),
             new Entry("lift", "Encounters", "A man bumps into you and lifts your money", "TestLiftYouKey", needs: "a man near you (4-22 m) free to send, $2 or more in your pocket; he walks into you, takes a fifth of it ($1-25) and runs: catch him to get it back"),
             new Entry("visitor", "Encounters", "The night visitor", "TestVisitorKey", needs: "in a town, out of doors, no lawman within 60 m"),
             new Entry("gathering", "Encounters", "A gathering of the awake", "GatheringKey", field: true),

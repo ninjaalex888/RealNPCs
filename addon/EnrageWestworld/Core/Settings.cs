@@ -212,6 +212,8 @@ namespace EnrageWestworld.Core
         public int PublicCalloutChance = 35;
         public bool DomesticDisputes = true;    // in a town, a man shouting at his wife in the street; she and a neighbour answer by their own minds
         public int DomesticChance = 30;
+        public bool Hogtied = true;             // out of the towns by day, one of a nearby town's people tied up by the road with two men by them, who they are from the captive's own life
+        public int HogtiedChance = 20;
 
         // [World]
         public bool Deeds = true;
@@ -433,6 +435,7 @@ namespace EnrageWestworld.Core
                 g.Executions = false;
                 g.PublicCallouts = false;
                 g.DomesticDisputes = false;
+                g.Hogtied = false;
                 g.Hermits = false;
                 g.Gatherings = false;
             }
@@ -730,7 +733,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 168)
                     log?.Invoke("Settings: new in this version: [Mind] MindActsScenarios (on): people sat or leaning get up for what their minds choose, and rests, meals, drinks and work go to a spot of the game's of that kind; [Scenes] MainScenesAtOnce (2): a second full street scene at least 20 m from the first.");
                 if (s.SettingsVersion < 169)
-                    log?.Invoke("Settings: new in this version: [Encounters] PublicCallouts (on): in a town by day, one of the people about calls another out before the street, and each answers by their own mind; DomesticDisputes (on): a man starts in on his wife in the street, and she and a neighbour answer by their own minds.");
+                    log?.Invoke("Settings: new in this version: [Encounters] PublicCallouts (on): in a town by day, one of the people about calls another out before the street, and each answers by their own mind; DomesticDisputes (on): a man starts in on his wife in the street, and she and a neighbour answer by their own minds; Hogtied (on): away from the towns, someone tied up by the road with two men by them.");
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -790,6 +793,7 @@ namespace EnrageWestworld.Core
             ExecutionChance = Math.Max(0, Math.Min(100, ExecutionChance));
             PublicCalloutChance = Math.Max(0, Math.Min(100, PublicCalloutChance));
             DomesticChance = Math.Max(0, Math.Min(100, DomesticChance));
+            HogtiedChance = Math.Max(0, Math.Min(100, HogtiedChance));
             HermitChance = Math.Max(0, Math.Min(100, HermitChance));
             GatheringChance = Math.Max(0, Math.Min(100, GatheringChance));
             GatheringHours = (GatheringHours ?? "").Trim().ToLowerInvariant() == "night" ? "night" : "any";
@@ -1087,6 +1091,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("PublicCalloutChance = " + PublicCalloutChance + "   ; percent on each encounter roll while one may happen (six real minutes at least between them)");
             b.AppendLine("DomesticDisputes = " + B(DomesticDisputes) + "   ; out in a town's street, 08:00 to 21:00, a husband turns on his wife over what's eating him (money, drink, another man). He rants, storms off, lets it drop when he sees he's watched, or now and then strikes her (rarely, once, never worse); she gives it back, pleads, sobs, shrinks back or walks off; a neighbour may step in or fetch the law. Walk up and it ends; once he has struck her, dealing with him is no crime");
             b.AppendLine("DomesticChance = " + DomesticChance + "   ; percent on each encounter roll while one may happen (eight real minutes at least between them)");
+            b.AppendLine("Hogtied = " + B(Hogtied) + "   ; away from the towns by day, one of a nearby town's people lies tied up off the road, two men by them: bounty hunters if they're a known thief, a debt's collectors, or outlaws. The captive calls, bargains or curses by their nature; the men warn you off, name a price (greet the leader to pay), pack up or, outlaws, draw. Cut them loose with the game's own prompt, pay, fight or ride on. Bounty hunters are a lawful claim: shooting them first is a crime");
+            b.AppendLine("HogtiedChance = " + HogtiedChance + "   ; percent on each roll, six in the morning to eight at night, once a day at most");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: the awake stand in a silent circle, facing in: from midnight to half past three out in the wilds (once a night), and with GatheringHours any by day too, in an open field or just outside a town's edge");

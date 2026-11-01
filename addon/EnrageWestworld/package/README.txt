@@ -704,6 +704,11 @@ NEW IN 0.6.0
   starts in on his wife in the street; he rants, storms off or lets it drop, and now and then
   strikes her (rarely, once); she gives it back, pleads, sobs or walks off; a neighbour may step
   in or fetch the law. Once he has struck her, dealing with him is no crime.
+- Hogtied by the road ([Encounters] Hogtied, HogtiedChance 20). Away from the towns by day, once a
+  day, one of a nearby town's people lies tied up off the road (a mark on the map), two men by
+  them: bounty hunters for a known thief (a lawful claim), a creditor's men, or outlaws. Cut them
+  loose with the game's own prompt, pay the price the men name (greet their leader), fight or
+  ride on, and they're carried off.
 - Night encounters ([Encounters]). Out in the wilds between ten at night and four in the morning,
   you may hear a woman crying somewhere off the road (CryingWomanChance, 15 percent on each roll
   every EncounterEveryMinutes, 12, at most once a night). She kneels in the dark and calls for

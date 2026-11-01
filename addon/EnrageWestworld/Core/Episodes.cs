@@ -288,6 +288,7 @@ namespace EnrageWestworld.Core
                 case "scorn": case "brushoff": return past ? "{d} gave {t} the cold shoulder" : "{d} give {t} the cold shoulder";
                 case "flirt": case "court": return past ? "{d} sweet-talked {t}" : "{d} sweet-talk {t}";
                 case "encounter:callout": return past ? "{d} had it out with {t} before the whole street" : "{d} have it out with {t} before the whole street";
+                case "encounter:hogtied": return past ? "{t} was found tied up by the road" : "{t} is found tied up by the road";
                 case "encounter:domestic": return past ? "{d} went at {t} in front of the neighbours" : "{d} go at {t} in front of the neighbours";
                 default:
                     if (k.StartsWith("encounter:", StringComparison.Ordinal))

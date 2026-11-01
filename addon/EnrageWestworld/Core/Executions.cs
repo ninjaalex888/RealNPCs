@@ -188,6 +188,8 @@ namespace EnrageWestworld.Core
         // what he thinks for a few days after he was saved
         public static string After(Plan p, string seed)
         {
+            if (p != null && p.Reason == "hogtied")   // cut loose by the road (Hogtied.cs), not knelt at gunpoint
+                return Voice.Pick(seed + "eh", "Rope marks on both wrists still.", "Trussed in the dirt like a calf. Then a stranger came by.", "Every rider on the road, I look twice now.");
             if (p != null && p.Reason == "debt" && Voice.Chance(seed + "ead", 35))
                 return Fill(Voice.Pick(seed + "eab", "Paid {boss} today. Every cent. Couldn't look him in the eye.", "Every time I pass {boss}'s door my knees go."), p);
             return Voice.Pick(seed + "ea", "Still feel the barrel at the back of my head.", "Knelt in the dirt and begged. Can't stop seeing it.",
