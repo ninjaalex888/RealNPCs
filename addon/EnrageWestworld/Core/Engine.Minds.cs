@@ -808,7 +808,10 @@ namespace EnrageWestworld.Core
             {
                 // the first pass holds back a frame anyone thought within the hour (ThoughtVariety); the second takes it
                 // rather than nothing
-                foreach (Minds.Candidate k in ordered)
+                // the second pass takes a frame heard lately rather than nothing, the pools a whole town shares at the same hour (the
+                // day, the year) last of all: someone's own thought first (the no-model run, item 6c)
+                IEnumerable<Minds.Candidate> round = pass == 1 && variety ? ordered.Where(x => x.Source != "day" && x.Source != "era").Concat(ordered.Where(x => x.Source == "day" || x.Source == "era")) : ordered;
+                foreach (Minds.Candidate k in round)
                 {
                     // a line the guard turns down stays marked as thought by them (InnerLife.Pick marks it as it gives it): taking the
                     // mark off was tried (the no-model run, item 5) and cost each person variety (ticktest 588 -> 525 distinct)
