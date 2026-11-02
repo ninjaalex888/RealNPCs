@@ -854,7 +854,8 @@ namespace EnrageWestworld.InGame
                    "), " + (_cfg.ActThoughts ? _actThoughtsShown + " with a thought, " : "with a thought: off ([Mind] ActThoughts), ") + _mindActs.Count + " acting now, " + _mindActsSkipped + " passed over" + (_mindActLast != null ? "; last: " + _mindActLast : "") +
                    "; of " + _mindActsTried + " tried, not acted: " + (_mindActLost.Count == 0 ? "none" : string.Join(", ", _mindActLost.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value))) +
                    "; retried " + _mindRetried + ", acted after retry " + _mindRetryActed + (_cfg.MindRetries ? "" : " ([Mind] MindRetries off)") +
-                   "; taken up by something else mid-act " + _mindActsTakenUp + "; chosen quietly (the law, children, the story's) " + _mindChoseQuietly;
+                   "; taken up by something else mid-act " + _mindActsTakenUp + "; chosen quietly (the law, children, the story's) " + _mindChoseQuietly +
+                   "; " + HeldWords(Game.Player.Character.Position);
         }
 
         /// The law, a child, one of the story's own: the mind chooses for them, but no act is ever tried (NIGHT4 fix 4).
@@ -906,7 +907,8 @@ namespace EnrageWestworld.InGame
             _mindShareLastTried = _mindActsTried;
             int acting, scenes, named, already;
             MindActingShare(now, out acting, out scenes, out named, out already);
-            Log.Write("MIND acting minute: " + MindShareWords(acting, scenes, named, already) + "; " + tried + " choices tried this minute, " + _mindActsDone + " acts this session");
+            Log.Write("MIND acting minute: " + MindShareWords(acting, scenes, named, already) + "; " + tried + " choices tried this minute, " + _mindActsDone + " acts this session" +
+                      (HeldOn ? "; " + HeldWords(Game.Player.Character.Position) : ""));
         }
     }
 }
