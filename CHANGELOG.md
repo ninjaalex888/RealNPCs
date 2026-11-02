@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The game's own pulsing event dot on the map where one of RealNPCs' happenings is going on near you: a brawl, a gathering of the awake, a callout, a husband's temper, the hogtied, an execution (`[Encounters] EventDots`, on; settings version 187).
+- A gathering's ring all do the same eerie thing together, whichever it is that night.
 - Half the gatherings of the awake are hostile: come within 10 m and every one of them comes at you, bare-handed, all at once (`[Encounters] GatheringHostile`, 50; 0 for never). Fighting them off is self-defence (settings version 186).
 
 ## 0.7.17 (2026-11-01)

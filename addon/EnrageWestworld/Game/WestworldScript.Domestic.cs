@@ -183,6 +183,8 @@ namespace EnrageWestworld.InGame
         {
             DomesticRow c = _domestic;
             Ped me = Game.Player.Character;
+            if (c.Man != null && c.Man.Exists())
+                EventDot("domestic", c.Man.Position);
             if (MISC.GET_MISSION_FLAG() || me.IsDead)
             {
                 EndDomestic(MISC.GET_MISSION_FLAG() ? "a mission started" : "you died");
@@ -565,6 +567,7 @@ namespace EnrageWestworld.InGame
 
         private void EndDomestic(string why)
         {
+            EventDotClear("domestic");
             DomesticRow c = _domestic;
             _domestic = null;
             if (c == null)

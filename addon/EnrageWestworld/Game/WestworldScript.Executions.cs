@@ -132,6 +132,8 @@ namespace EnrageWestworld.InGame
                 ExecutionSpawn(e, now);
                 return;
             }
+            if (e.Captive != null && e.Captive.Exists())
+                EventDot("execution", e.Captive.Position);
             Ped me = Game.Player.Character;
             foreach (Ped m in e.Men)
                 if (m != null && m.Exists() && !m.IsDead)
@@ -484,6 +486,7 @@ namespace EnrageWestworld.InGame
 
         private void EndExecution(string why)
         {
+            EventDotClear("execution");
             Execution e = _exec;
             _exec = null;
             if (e == null)

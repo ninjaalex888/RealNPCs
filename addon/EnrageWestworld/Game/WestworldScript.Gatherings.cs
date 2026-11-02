@@ -180,7 +180,7 @@ namespace EnrageWestworld.InGame
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
                 PED.SET_PED_KEEP_TASK(h, true);
                 ENTITY.SET_ENTITY_HEADING(h, heading);
-                m.Act = GatherActs[(Voice.Hash(g.StartedAt + "|act|" + g.Ring.IndexOf(m)) + g.Ring.IndexOf(m)) % GatherActs.Length];
+                m.Act = GatherActs[Voice.Hash(g.StartedAt + "|act") % GatherActs.Length];   // the whole ring does the same, whichever it is (Lex, 2026-11-01)
                 GatherAct(m);
             }
             g.Ring.RemoveAll(m => m.Ped == null);
@@ -209,6 +209,7 @@ namespace EnrageWestworld.InGame
                 GatherSpawn(now);
                 return;
             }
+            EventDot("gathering", g.Centre);
             foreach (Gatherer m in g.Ring)
                 if (m.R != null && !m.R.Dead && m.Ped.Exists() && m.Ped.IsDead)
                 {
@@ -383,6 +384,7 @@ namespace EnrageWestworld.InGame
 
         private void EndGathering(string why)
         {
+            EventDotClear("gathering");
             Gathering g = _gathering;
             _gathering = null;
             if (g == null)

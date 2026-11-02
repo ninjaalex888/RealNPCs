@@ -245,6 +245,8 @@ namespace EnrageWestworld.InGame
         {
             StreetCallout c = _streetCallout;
             Ped me = Game.Player.Character;
+            if (c.B != null && c.B.Exists())
+                EventDot("callout", c.B.Position);   // the game's event dot (WestworldScript.EventDots.cs)
             if (MISC.GET_MISSION_FLAG() || me.IsDead)
             {
                 EndStreetCallout(MISC.GET_MISSION_FLAG() ? "a mission started" : "you died", false);
@@ -485,6 +487,7 @@ namespace EnrageWestworld.InGame
 
         private void EndStreetCallout(string why, bool played, bool handedOn = false)
         {
+            EventDotClear("callout");
             StreetCallout c = _streetCallout;
             _streetCallout = null;
             if (c == null)

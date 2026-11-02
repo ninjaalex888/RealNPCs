@@ -126,6 +126,8 @@ namespace EnrageWestworld.InGame
         {
             HogRun h = _hog;
             Ped me = Game.Player.Character;
+            if (h.Captive != null && h.Captive.Exists())
+                EventDot("hogtied", h.Captive.Position);
             if (MISC.GET_MISSION_FLAG() || me.IsDead)
             {
                 EndHogtied(MISC.GET_MISSION_FLAG() ? "a mission started" : "you died");
@@ -592,6 +594,7 @@ namespace EnrageWestworld.InGame
 
         private void EndHogtied(string why, bool recorded = false)
         {
+            EventDotClear("hogtied");
             HogRun h = _hog;
             _hog = null;
             if (h == null)

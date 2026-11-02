@@ -56,6 +56,7 @@ namespace EnrageWestworld.InGame
                 if (MISC.GET_MISSION_FLAG() || !_director.FightSides(out a, out b) || !ENTITY.DOES_ENTITY_EXIST(a[0]))
                 {
                     BrawlDotClear();   // the fight is over: his red dot goes (WestworldScript.BrawlDot.cs)
+                    EventDotClear("brawl");
                     return;
                 }
                 if (_brawlFightFor != _director.FightId)
@@ -67,6 +68,7 @@ namespace EnrageWestworld.InGame
                 }
                 Vector3 mid = ENTITY.GET_ENTITY_COORDS(a[0], true, true);
                 BrawlDotStep(a, now);
+                EventDot("brawl", mid);
                 if (BrawlsOn && _cfg.LadderShots && _cfg.BrawlDraws && BrawlDraw(a, b, mid, now))
                     return;
                 if (_cfg.BrawlLaw)
