@@ -16,7 +16,7 @@ using System.Collections.Generic;
 
 namespace EnrageWestworld.Core
 {
-    public static class MindThoughts
+    public static partial class MindThoughts
     {
         public static readonly string[] Whom = { "you", "stranger", "tie" };
         public const int PoolMin = 12, NeedMin = 10;

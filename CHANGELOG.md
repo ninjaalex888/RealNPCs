@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Feelings that know their cause: right after something happens, the thought says what it was most of the time, not just whom it's about. Anger at a shove is not anger at a theft, a slight, a beating, a debt called in before a crowd or the law's hand on a collar; fear after a killing is not fear of a brawl; and gratitude, grief, shame, pride and relief each have their cause (107 lines over 25 feelings and causes). Kept in memory only, nothing new in the save.
 - The waking mutter far more: twenty lines for each stage of the Awakening where there were six (questioning, unravelling, awake), and twelve for the ones who wander off to see where the street ends.
 
 ## 0.7.16 (2026-11-01)

@@ -119,7 +119,9 @@ namespace EnrageWestworld.Core
                 {
                     string kind = Feeling.Kinds[best.Kind], whom, who, you;
                     WhomOf(p, best, kind, day, out whom, out who, out you);
-                    string line = MindThoughts.Line(kind, whom, seed, you, who, used, best.Masked);   // all of its pool said today: the other thoughts; a masked feeling says the mask too
+                    string line = best.Masked ? null : MindThoughts.CauseLine(kind, best.Why, seed, used);   // what caused it, in its own words (MindThoughts.Cause.cs; the no-model run, item 6g)
+                    if (line == null)
+                        line = MindThoughts.Line(kind, whom, seed, you, who, used, best.Masked);   // all of its pool said today: the other thoughts; a masked feeling says the mask too
                     if (line != null)
                     {
                         pull = 40f + 50f * Math.Min(1f, most);
