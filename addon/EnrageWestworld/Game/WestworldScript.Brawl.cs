@@ -57,6 +57,8 @@ namespace EnrageWestworld.InGame
                 {
                     BrawlDotClear();   // the fight is over: his red dot goes (WestworldScript.BrawlDot.cs)
                     EventDotClear("brawl");
+                    if (!MISC.GET_MISSION_FLAG())
+                        LooseFightStep(me, now);   // a fight the scene let go, still going: the law's ear follows it (WestworldScript.LooseFight.cs)
                     return;
                 }
                 if (_brawlFightFor != _director.FightId)

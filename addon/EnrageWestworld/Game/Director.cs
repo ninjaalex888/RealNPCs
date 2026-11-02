@@ -117,6 +117,9 @@ namespace EnrageWestworld.InGame
         /// A fight between the scene's two is over, blows having been traded: the one left standing (the better off), then the
         /// other (WestworldScript.Aftermath.cs).
         public Action<int, int> FightOver;
+        /// A fight scene stopped (someone in combat with the player, or aimed at) while its two were at it: (A, B, when the
+        /// blows began), so the law can still hear it if they go on (WestworldScript.LooseFight.cs).
+        public Action<int, int, int> FightLeftLoose;
         /// "meet" gave up: the two never got close enough, so nothing happened between them.
         public Action<Ped, Ped, bool> NeverMet;   // (the two, and whether it was the second scene)
         /// Asked as the third sets off to walk over (the one who steps in, a friend, a spouse): why they mayn't be moved
@@ -683,10 +686,18 @@ namespace EnrageWestworld.InGame
                     FightDown(l, p.Handle, true);   // killed in a brawl before the down check saw him: dropped from the sides, and it goes on
                     continue;
                 }
-                if (gone || (PED.IS_PED_IN_COMBAT(p.Handle, player.Handle)) ||
-                    PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, p.Handle))
+                bool atYou = !gone && PED.IS_PED_IN_COMBAT(p.Handle, player.Handle);
+                bool aimed = !gone && !atYou && PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, p.Handle);
+                if (gone || atYou || aimed)
                 {
-                    Stop(l, l.ShootUntil > 0 ? "shot down" : "someone in the scene is gone or threatened");
+                    // who and why (Lex, 2026-11-02: a fight stopped here and the law never came; the line didn't say which of it)
+                    int idx = Array.IndexOf(l.Cast, p);
+                    string whoStop = idx >= 0 && l.Names != null && idx < l.Names.Length && !string.IsNullOrEmpty(l.Names[idx]) ? l.Names[idx] : "someone";
+                    string what = gone ? (p == null || !p.Exists() ? " gone" : " dead") : atYou ? " in combat with you" : ", you aimed at them";
+                    Stop(l, l.ShootUntil > 0 ? "shot down" : "someone in the scene is gone or threatened (" + whoStop + what + ")");
+                    // a fistfight between the two of them that goes on without the scene: the law still hears it
+                    if (l.Fighting && l.FightOn && FightLeftLoose != null && l.FightA != 0 && l.FightB != 0)
+                        FightLeftLoose(l.FightA, l.FightB, l.FightOnAt);
                     return;
                 }
             }
