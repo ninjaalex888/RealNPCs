@@ -49,37 +49,44 @@ namespace EnrageWestworld.Core
             { "rain", new[] {
                 "Rain finds the one gap in a collar. Every time, the one gap.", "Boots full of water. Squelch, squelch, all the way home.",
                 "Smell of wet dog and wet wool. Every soul in town smells the same today.", "Should've brought the oilskin. Said that this morning, too.",
-                "Rain on the tin roof like a drummer who's lost the tune.", "Puddles the width of the street. Everybody's a tightrope walker today." } },
+                "Rain on the tin roof like a drummer who's lost the tune.", "Puddles the width of the street. Everybody's a tightrope walker today.",
+                "Rain on the window and a dry roof over me. Small mercies.", "Mud to the ankle. Everybody walks like an old man in this.", "Rain's the only thing in this town that never takes a day off.", "Water running off every hat brim in the street. A town of little waterfalls.", "Wet saddle, wet coat, wet everything. Even my thoughts are damp.", "Drumming on the boardwalk roof all afternoon. Puts a man to sleep standing." } },
             { "storm", new[] {
                 "Thunder like that, my mother used to cover the mirrors.", "Counted between the flash and the boom. Getting closer.",
                 "Horses don't like it. Can't say I do.",
                 "Lightning showed the whole street white. Then black. Then every dog in town.",
-                "Hail now. Hail on the hat like somebody throwing gravel.", "Shutters banging down the row. Somebody's barn door is going to go." } },
+                "Hail now. Hail on the hat like somebody throwing gravel.", "Shutters banging down the row. Somebody's barn door is going to go.",
+                "Wind took somebody's laundry clean over the church.", "Every flash I count the windows. Still all there.", "Storm like this, my father used to say the Lord's moving furniture.", "Thunder rolls down the valley like a wagon on a bad road.", "Smell of struck earth after the flash. Like a match the size of a barn.", "Water coming down so hard it bounces back up off the street." } },
             { "snow", new[] {
                 "Can't feel my toes. Haven't for an hour. That's bad, isn't it.", "Snow muffles everything. Town sounds like it's holding its breath.",
                 "Breath freezing on the scarf. Stiff as a board by the second street.",
                 "Snow on the hat brim, snow down the neck. Same snow, different complaints.",
-                "Snow squeaks under the boot. Means it's colder than it looks.", "Drifts up to the sill. The door opens inward, thank God." } },
+                "Snow squeaks under the boot. Means it's colder than it looks.", "Drifts up to the sill. The door opens inward, thank God.",
+                "Snow on the roofs makes even this town look decent.", "Footprints in the snow tell you who went where. Glad nobody's reading mine.", "Hands so cold the buttons won't do up.", "Children throwing snow at the schoolhouse. Teacher throwing it back.", "White as far as I can see, and the cold comes up through the boots.", "Stove's eating wood like it's paid by the stick." } },
             { "dust", new[] {
                 "Grit in my teeth, grit in my eyes. I'll be tasting dirt till Tuesday.", "Can't see the end of the street. Nor the man standing in it.",
                 "Wind's carrying half of somebody's field. Hope it wasn't mine.",
                 "Tied a kerchief over my mouth. Still taste the road.",
-                "Shut my eyes and the dust finds a way in anyhow.", "Every hat in the street held on with one hand." } },
+                "Shut my eyes and the dust finds a way in anyhow.", "Every hat in the street held on with one hand.",
+                "Dust in the coffee, dust in the bread. Eating the road.", "Sky's gone the colour of a brick.", "Every window in town shut tight and the dust still gets in.", "Horse turns his tail to the wind and waits. Wise animal.", "Blew my nose and it came out brown.", "Wind's been at it since dawn. Feels like it's after something." } },
             { "fog", new[] {
                 "Fog this thick, a man could walk right past his own brother.", "Everything wet and grey and close. Like being inside a cloud's pocket.",
                 "Hoofbeats and no horse. Fog does that. I don't care for it.",
                 "Lamp lit at noon. Can't see the end of my own arm.",
-                "Church bell somewhere in the white. Can't say which way.", "Fog stays in the coat an hour after it's lifted." } },
+                "Church bell somewhere in the white. Can't say which way.", "Fog stays in the coat an hour after it's lifted.",
+                "Fog off the water. Smells of mud and fish and something older.", "Somebody coughed in the fog and I nearly drew. Nerves.", "The street's gone. Just the boards under me and the white.", "Hear a wagon coming and can't see it. Stood still till it passed.", "Fog beads on my sleeve like sweat.", "Morning fog. It'll burn off by ten, they say. They always say." } },
             { "sun", new[] {
                 "Sun on the back of my neck like a warm hand.", "Squinting so long my face'll stay this way.",
                 "Good drying weather. Washing on every line in town, flapping like flags.",
                 "Hot enough to fry an egg on the hitching rail. Somebody ought to try.",
-                "Glare off the river like a struck match. Hat brim's no use.", "Horses standing in whatever shade a post makes." } },
+                "Glare off the river like a struck match. Hat brim's no use.", "Horses standing in whatever shade a post makes.",
+                "Shade's worth a dollar a foot today.", "Sweat in the hatband by nine. Long day of it.", "Sun's so bright the white houses hurt to look at.", "Dog lying flat under the porch. Smartest one on the street.", "Sun on the water trough, flies on the sun. Summer.", "Hot wind like an oven door left open." } },
             { "grey", new[] {
                 "Sky the colour of dishwater. Can't make up its mind.", "Grey day. Grey mood. One follows the other like a dog.",
                 "Can't make up its mind to rain. Can't make up mine to work.",
                 "Low cloud sitting on the roofs like a hen on eggs.",
-                "Grey since dawn. Grey till dark, I'd wager. A day for mending harness.", "Not a shadow in the street. Everything looks the same age." } }
+                "Grey since dawn. Grey till dark, I'd wager. A day for mending harness.", "Not a shadow in the street. Everything looks the same age.",
+                "Sky pressing down like a lid on a pot.", "Grey and still. Even the birds have nothing to say.", "Couldn't tell you what hour it is by the light. Could be any.", "Weather that can't decide. I know the feeling.", "Damp in the air that's not quite rain. Gets in the joints.", "Dull light, dull work, dull thoughts. Good day to get nothing done." } }
         };
 
         private static readonly Dictionary<string, string[]> ByPlace = new Dictionary<string, string[]>
@@ -398,36 +405,48 @@ namespace EnrageWestworld.Core
         {
             { "Proud", new[] { "Look at {name}, preening. Some folks were born to be looked at, and know it.", "{name} talks like a man who's never been told no.",
                                "{name} nodded at me like a king to a stable boy. I'll remember the nod.",
-                "{name} wears that coat like it was cut for somebody grander. It wasn't." } },
+                "{name} wears that coat like it was cut for somebody grander. It wasn't.",
+                "{name} spends more on hats than I do on bread.", "{name} walks the boardwalk like the boards were laid for {name}.", "{name} expects a door held. Folks do it, too.", "{name} laughs a little too loud so the room hears. I hear.", "{name} would rather be wrong than be told." } },
             { "Loyal", new[] { "{name} looks done in. Ought to ask after {name}.", "Haven't seen {name} smile in a week. Something's wrong at home.",
                                "If {name} needs a hand with that roof, I'll go Saturday. Nobody asked. Doesn't matter.",
-                "{name}'s boots want mending. Ought to say. Ought to just do it." } },
+                "{name}'s boots want mending. Ought to say. Ought to just do it.",
+                "{name} looks thin. Somebody ought to bring a pie round. Somebody's me.", "{name} stood by me when it counted. I don't forget that.", "{name} won't ask for help. Never has. That's why you offer.", "{name}'s boy is running wild. Might have a quiet word with {name}.", "{name} works too hard with that cough." } },
             { "Drifter", new[] { "{name} will be standing right there when I'm long gone. Rooted like a fence post.", "Wonder if {name} ever wanted to just walk away.",
                                  "{name} knows every name in this town. I know the names of three roads out.",
-                "{name} has never slept under the open sky. Can see it from here." } },
+                "{name} has never slept under the open sky. Can see it from here.",
+                "{name} has a house and a family and a pew. Sounds heavy to carry.", "{name} gazes down the east road sometimes. I've seen it.", "{name} thinks this town is the world. It's a dot on a map.", "{name} will die within a mile of the cradle. Can't decide if that's sad.", "{name} asked where I'm headed. Said wherever. Got a jealous look for it." } },
             { "Cold", new[] { "{name} talks too much. Always has.", "{name} wants something. Folks only smile like that when they want something.",
                               "{name} cried at a funeral last month. Didn't know the man. Some folks just like to be seen.",
-                "{name} says good morning to everybody. Costs nothing, means nothing." } },
-            { "Hothead", new[] { "{name} keeps looking over here. Let {name} look. See what it gets.", "{name} laughed just now. At me? Better not have been at me.", "{name} stood in my way just now. Didn't mean to, likely. Likely.", "If {name} says my name in that voice once more there'll be words." } },
+                "{name} says good morning to everybody. Costs nothing, means nothing.",
+                "{name} remembers everybody's birthday. Must have nothing else to think about.", "{name} wants to be liked. It shows all over.", "{name} is crying again. There's always something with {name}.", "{name} gives to the collection plate where everybody can see.", "{name} tells the same story every Saturday. Same laugh at the same place." } },
+            { "Hothead", new[] { "{name} keeps looking over here. Let {name} look. See what it gets.", "{name} laughed just now. At me? Better not have been at me.", "{name} stood in my way just now. Didn't mean to, likely. Likely.", "If {name} says my name in that voice once more there'll be words.",
+                "{name} bumped my shoulder last week. Said sorry. Too late, I'd say.", "{name} talks big at the bar. Let {name} try it on me.", "{name} gave me a look. Saw it. Don't care to see it twice.", "{name} has a mouth. Somebody'll close it one day.", "{name} thinks I'm slow. Let {name} find out." } },
             { "Greedy", new[] { "{name} owes somebody money. You can tell by the shoes.", "{name} would sell a sick mule as a racehorse. I'd know.",
                                 "Wonder what {name} paid for that hat. Too much. Folks like {name} always pay too much.",
-                "{name}'s wearing new boots. Who paid for those, I wonder." } },
-            { "Coward", new[] { "{name} keeps looking at me. Did I do something? I didn't do anything.", "Stand behind {name} if trouble starts. {name} is wider than me.", "{name} looks like trouble waiting on a reason. Keep walking.", "Smiled at {name}. Can't hurt to be on {name}'s good side." } },
+                "{name}'s wearing new boots. Who paid for those, I wonder.",
+                "{name} has a new saddle. Money from somewhere.", "{name} counts change twice. Wonder what {name} is short of.", "{name} owns half that row now. Bought it cheap from people who needed the money.", "{name} would charge a drowning man for the rope.", "{name} tips the boy at the livery. Showing off, or buying something." } },
+            { "Coward", new[] { "{name} keeps looking at me. Did I do something? I didn't do anything.", "Stand behind {name} if trouble starts. {name} is wider than me.", "{name} looks like trouble waiting on a reason. Keep walking.", "Smiled at {name}. Can't hurt to be on {name}'s good side.",
+                "{name} has a temper. Heard it through the wall once.", "{name} is looking for a fight today. Not with me. Please not with me.", "{name} carries a gun. Why does {name} carry a gun?", "If {name} asks, I'll say yes. Easier.", "{name} stared at me at the store. I bought the wrong thing to get out of there." } },
             { "", new[] { "Wonder what {name} does all day. Never once seen {name} in a hurry.", "{name} laughs at everything. Wish I had the knack.",
                          "{name} looks like {name}'s mother. Same chin. Same scowl.", "{name} has a new way of walking. Somebody's in love, or in debt.",
-                         "{name} said good morning yesterday. Didn't today. What changed?" } }
+                         "{name} said good morning yesterday. Didn't today. What changed?",
+                "{name} is talking to the horse again. Sounds like a good conversation.", "{name} has had a haircut. Looks younger. Looks surprised about it.", "{name} hasn't been to church in a month. Folks notice.", "{name} bought a whole sack of sugar. Somebody's baking, or courting.", "{name} sat on the porch all morning and didn't move. Thinking, or not thinking." } }
         };
 
         // a mood that carries: what happened to them today spills over into everything else (mood-congruent thinking)
         private static readonly string[] Sore =
         {
             "Everything's grating today. Even the church bell sounds sour.", "Snapped at the dog. Dog didn't deserve it. Nobody does, today.",
-            "Feel like a fist looking for a wall.", "Whole day's gone crooked. Like a picture nobody straightens."
+            "Feel like a fist looking for a wall.", "Whole day's gone crooked. Like a picture nobody straightens.",
+            "Everybody's in my way today. Every single body.", "Spilled the coffee. Of course I did. Today.", "Somebody said good morning and I wanted to argue with it.", "Kicked the stove. Hurt my foot. The stove won.", 
+            "Can't shake the taste of this morning. Sour as a green apple.", "Every little noise lands like a stone.", "If one more thing goes wrong I'll sit down in the road and stay there.", "Short with everybody. Long with nobody."
         };
         private static readonly string[] Glad =
         {
             "Good day. Can't say why. Won't look at it too hard in case it runs off.", "Caught myself whistling. Haven't whistled since spring.",
-            "Even the flies seem friendly today.", "Folks are kinder than I give them credit for. Some folks."
+            "Even the flies seem friendly today.", "Folks are kinder than I give them credit for. Some folks.",
+            "Sun on my face and nobody wanting anything from me. That'll do.", "Laughed out loud at nothing. Folks looked. Let them.", "Paid a man a compliment and meant it. Felt good on the tongue.", "Feels like the day's on my side for once.", 
+            "Sang a hymn under my breath. Don't even know all the words.", "Gave a child a penny for no reason. Best penny I ever spent.", "Light step all day. Don't know where it came from. Not asking.", "The world's not so bad from where I'm standing."
         };
 
         /// How today has left them: "sore" (roughed up, robbed, sent off empty-handed, made a fool of in drink, in the
