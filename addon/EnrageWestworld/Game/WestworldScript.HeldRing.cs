@@ -63,7 +63,7 @@ namespace EnrageWestworld.InGame
             {
                 string why = all ?? HeldWhyNot(h, at, now);
                 if (why != null)
-                    HeldLetGo(h, why, now);
+                    HeldLetGo(h, why, now, all == null);   // a let-go of everyone (you mounted, fired) leaves no rest: back in once it's over
             }
             if (all != null)
                 return;
@@ -84,7 +84,9 @@ namespace EnrageWestworld.InGame
                     if (_heldRest.TryGetValue(h, out rest) && now < rest && now >= rest - HeldRestMs - 1000)
                         continue;
                     Ped p = new Ped(h);
-                    if (MindChosenQuietly(h) || MindActWhyNot(p, h, true) != null || !CanDirect(p))
+                    if (PED.IS_PED_USING_ANY_SCENARIO(h))
+                        continue;   // sat or at a spot: theirs; the minute's choice gets them up, and on their feet they're taken in (a bench full of the held was a ring of nobody chained)
+                    if (MindChosenQuietly(h) || MindActWhyNot(p, h, false) != null || !CanDirect(p))
                         continue;
                     _held[h] = new Held { Name = w.Name, Since = now, NextAt = now };
                     _heldStarts++;
@@ -147,13 +149,14 @@ namespace EnrageWestworld.InGame
             return MindActWhyNot(p, h, true);
         }
 
-        private void HeldLetGo(int h, string why, int now)
+        private void HeldLetGo(int h, string why, int now, bool rest = true)
         {
             Held hd;
             if (!_held.TryGetValue(h, out hd))
                 return;
             _held.Remove(h);
-            _heldRest[h] = now + HeldRestMs;
+            if (rest)
+                _heldRest[h] = now + HeldRestMs;
             if (_heldRest.Count > 200)
                 _heldRest.Clear();
             _heldEnds++;
