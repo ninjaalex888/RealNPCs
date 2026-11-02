@@ -82,6 +82,7 @@ namespace EnrageWestworld.Core
                         takes[part.Substring(0, colon).Trim()] = n;
                 }
                 _takes[bank] = takes;
+                Origins.Learn(bank);   // the people the bank was recorded for, so a name fits its model (2026-11-02)
                 Match m = BankModel.Match(bank);
                 if (!m.Success)
                     continue;

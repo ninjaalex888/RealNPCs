@@ -127,7 +127,7 @@ namespace EnrageWestworld.Core
             string seed = post.Id + "|" + (post.Former.Count + 1);
             Resident r = Residents.Make(id, seed, modelHash, kind.Woman, post.Town, Trade(kind), now, year);
             for (int i = 0; i < 6 && First(r.Name) == First(before != null ? before.Name : post.LastName); i++)
-                r.Name = Residents.NameFor(kind.Woman, seed + "|again" + i);   // never the same first name as the one before
+                r.Name = Residents.NameFor(kind.Woman, seed + "|again" + i, r.Origin);   // never the same first name as the one before
             r.PostId = post.Id;
             r.KinOf = before != null ? before.Name : post.LastName;
             r.TookOverAt = now;
@@ -144,7 +144,21 @@ namespace EnrageWestworld.Core
                 if (r.Kin == "daughter-in-law")
                     shares = true;
                 if (shares && surname != null)
-                    r.Name = First(r.Name) + " " + surname;
+                {
+                    // kin by blood are of the one before's people: a first name of theirs (one named before 2026-11-02 has no
+                    // people noted, and the plain lists stand)
+                    if (before != null && before.Origin != r.Origin)
+                    {
+                        r.Origin = before.Origin;
+                        string was = First(before.Name);
+                        string first = Residents.FirstName(kind.Woman, seed, r.Origin);
+                        for (int i = 0; i < 6 && first == was; i++)
+                            first = Residents.FirstName(kind.Woman, seed + "|again" + i, r.Origin);
+                        r.Name = first + " " + surname;
+                    }
+                    else
+                        r.Name = First(r.Name) + " " + surname;
+                }
                 int beforeBorn = before != null ? before.BornYear : year - 50;
                 r.BornYear = r.Kin == "son" || r.Kin == "daughter" || r.Kin == "son-in-law" || r.Kin == "daughter-in-law" ? beforeBorn + 22 + Voice.Hash(seed + "y") % 10
                            : r.Kin == "nephew" || r.Kin == "niece" ? beforeBorn + 18 + Voice.Hash(seed + "y") % 12
@@ -208,8 +222,7 @@ namespace EnrageWestworld.Core
         {
             if (string.IsNullOrEmpty(name))
                 return null;
-            string[] p = name.Split(' ');
-            return p.Length > 1 ? p[p.Length - 1] : null;
+            return name.Trim().IndexOf(' ') > 0 ? Residents.SurnameOf(name) : null;   // "Gray Elk" whole
         }
 
         /// How the successor thinks of the one before: "Pa", "my brother", "Uncle Amos", or the old owner's name.

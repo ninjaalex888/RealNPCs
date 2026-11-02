@@ -358,9 +358,7 @@ namespace EnrageWestworld.InGame
 
         private static string SurnameOf(string fullName)
         {
-            string f = fullName ?? "";
-            int sp = f.LastIndexOf(' ');
-            return sp >= 0 ? f.Substring(sp + 1) : f;
+            return Residents.SurnameOf(fullName ?? "");   // "Gray Elk" whole (2026-11-02)
         }
 
         private void DomCount(string what, StagedAsk a)

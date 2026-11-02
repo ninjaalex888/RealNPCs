@@ -58,7 +58,7 @@ namespace EnrageWestworld.Core
         {
             if (string.IsNullOrEmpty(l.OtherName))
                 return null;
-            return l.Kind == "courting" ? Person.FirstOf(l.OtherName) : l.OtherName.Split(' ').Last();
+            return l.Kind == "courting" ? Person.FirstOf(l.OtherName) : Residents.SurnameOf(l.OtherName);
         }
 
         /// The counterpart for this person's worry: a living regular of their town (never a counter keeper, never
