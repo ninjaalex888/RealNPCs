@@ -1,6 +1,5 @@
 // Called out yourself ([Encounters] CalloutsArthur; Core/CalloutsYou.cs). By day in a town, out of doors: one of the named
-// people within 40 m, on their feet and free, with something against you, walks over and says it to your face. Walk off past
-// 15 m and they shout "coward" after you; stay and most put up their fists (MakeHostile: fighting them is self-defence), an
+// people within 40 m, on their feet and free, with something against you, walks over and says it to your face. Walk off past// 12 m and they shout "coward" after you; stay and most put up their fists (MakeHostile: fighting them is self-defence), an
 // armed hothead may draw instead ([Encounters] CalloutsArthurDraw); hold a gun on them and they back off with their hands up.
 // Once a day each person, five real minutes at least between them; it never runs past two minutes.
 using System;
@@ -30,7 +29,7 @@ namespace EnrageWestworld.InGame
         private int _cyStarted, _cyFights, _cyDraws, _cyCoward, _cyBacked, _cySpat, _cyNextOk;
         private readonly HashSet<string> _cyDoneToday = new HashSet<string>();   // id|game day
         private string _cyLast, _cyWhyNot;
-        private const float CallYouFrom = 40f, CallYouWalkOff = 15f;
+        private const float CallYouFrom = 40f, CallYouWalkOff = 12f;
 
         /// Why there can't be one here and now; null when there can.
         private string CallYouNotNow(bool test = false)
@@ -193,7 +192,7 @@ namespace EnrageWestworld.InGame
                     c.Ending = CalloutsYou.Ending(c.W.Temper, c.W.Drunk, c.Matter, armed, _cfg.CalloutsArthurDraw, c.Seed);
                     c.FacedAt = now;
                     c.Phase = "wait";
-                    c.NextAt = now + 3500;
+                    c.NextAt = now + 1000;   // then the 12 m walk-off check every 300 ms for the 7 s they wait on you
                     break;
                 case "wait":
                     if (apart > CallYouWalkOff)
@@ -207,7 +206,7 @@ namespace EnrageWestworld.InGame
                         c.NextAt = now + 3000;
                         return;
                     }
-                    if (now - c.FacedAt < 3500)
+                    if (now - c.FacedAt < 7000)
                     {
                         c.NextAt = now + 300;
                         return;

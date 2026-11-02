@@ -23,7 +23,9 @@ namespace EnrageWestworld.Core
         {
             bool coward = temper == "Coward" && !drunk;
             bool hot = temper == "Hothead" || temper == "Proud" || drunk;
-            bool hostile = p != null && (p.Hate >= 30 || p.Vengeful || p.Murderous);
+            if (p != null && (p.Vengeful || p.Murderous))
+                return null;   // enRAGE has its own plans for the vengeful and the murderous (its own callouts): left to it
+            bool hostile = p != null && p.Hate >= 30;
             if (st != null && deeds != null)
             {
                 var mine = new HashSet<string>(st.SawDeeds.Concat(st.KnownDeeds));
