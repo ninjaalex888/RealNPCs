@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace EnrageWestworld.Core
 {
-    public static class Exchanges
+    public static partial class Exchanges
     {
         // ---- the one at the worst of it, spoken to ------------------------------------------------------
 
@@ -17,6 +17,9 @@ namespace EnrageWestworld.Core
         {
             "Morning, {a}.", "{a}. Hot one today.", "You look done in, {a}.", "{a}! Haven't seen you about."
         };
+
+        private static string[] _helloPool;
+        private static string[] HelloPool { get { return _helloPool ?? (_helloPool = Hello.Concat(MoreHello).ToArray()); } }   // with Exchanges.More.cs's (item 6e)
 
         private static readonly Dictionary<string, string> Snap = new Dictionary<string, string>
         {
@@ -252,9 +255,9 @@ namespace EnrageWestworld.Core
             {
                 case "x:snap":
                     // their worry's own words at its worst; else (a shame, a pile of troubles, a worry settled) a plain snap (the review)
-                    string snapLine = worry != null && stage == 2 && Snap.ContainsKey(worry) ? Snap[worry]
+                    string snapLine = worry != null && stage == 2 && Snap.ContainsKey(worry) ? WorryLine(Snap, MoreSnap, worry, seed + "sn")
                                     : Voice.Pick(seed + "ps", "Not now. It's one thing on top of another.", "Leave me be. I've had a day of it.", "Can't a body get a minute's peace?");
-                    s.Add(1, fill(Voice.Pick(seed + "h", Hello)), "familiar", "face").Add(0, fill(snapLine), "replybad");
+                    s.Add(1, fill(Voice.Pick(seed + "h", HelloPool)), "familiar", "face").Add(0, fill(snapLine), "replybad");
                     Answer(s, manner, fill, seed, KindToTrouble, ColdToTrouble, SharpToTrouble);
                     if (manner == "sharp")
                         s.Add(0, fill(Voice.Pick(seed + "sb", SnapBack)), "angry", "walkaway");
@@ -268,7 +271,7 @@ namespace EnrageWestworld.Core
                     Dictionary<string, string> news = glad ? GoodNews : BadNews;
                     if (worry == null || !news.ContainsKey(worry))
                         return null;
-                    string newsLine = glad && worry == "tooth" && a.P != null && InnerLife.IsSettled(a.P.Id, day) ? "A real dentist pulled it, in Saint Denis. Look at that gap. Handsome, ain't it?" : news[worry];   // he paid for no barber
+                    string newsLine = glad && worry == "tooth" && a.P != null && InnerLife.IsSettled(a.P.Id, day) ? "A real dentist pulled it, in Saint Denis. Look at that gap. Handsome, ain't it?" : WorryLine(news, glad ? MoreGood : MoreBad, worry, seed + "nw");   // he paid for no barber
                     s.Add(0, fill(newsLine), glad ? "cheer" : "chatbad", "face");
                     if (glad)
                         Answer(s, manner, fill, seed, KindToGood, ColdToGood, SharpToGood);
@@ -313,7 +316,7 @@ namespace EnrageWestworld.Core
         /// Every line, with the worry slots as they come, for the tests.
         public static IEnumerable<string> AllLines()
         {
-            return Hello.Concat(Snap.Values).Concat(GoodNews.Values).Concat(BadNews.Values).Concat(KindToTrouble).Concat(ColdToTrouble).Concat(SharpToTrouble)
+            return MoreLines().Concat(Hello).Concat(Snap.Values).Concat(GoodNews.Values).Concat(BadNews.Values).Concat(KindToTrouble).Concat(ColdToTrouble).Concat(SharpToTrouble)
                 .Concat(SnapBack).Concat(KindToGood).Concat(ColdToGood).Concat(SharpToGood).Concat(KindToBad).Concat(ColdToBad).Concat(SharpToBad)
                 .Concat(QuarrelAgain).Concat(MakeUp).Concat(Accept).Concat(Refuse).Concat(Stand).Concat(Dare).Concat(SweetHello).Concat(SweetBack)
                 .Concat(CallIn).Concat(Owe).Concat(OwedKind).Concat(OwedCold).Concat(OwedSharp).Concat(Paid).Concat(PaidCount).Concat(PaidAsk).Concat(PaidWitness).Concat(PaidLast).Concat(Mule).Concat(Fence).Concat(Shake).Concat(Done).Concat(Court).Concat(CourtWarm).Concat(CourtCool).Concat(Yes).Concat(No);
