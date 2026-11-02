@@ -8,8 +8,8 @@
 // off by default; outlaws, and creditors' men at a push; never bounty hunters) draws. Shoot at them, hold a gun on one, or come within 6 m of outlaws and they
 // fight: from then they are fair game (outlaws are from the start, as the execution's men). Cut the captive loose with
 // the game's own prompt (or, kneeling, stand by them 2 s), and they thank you and go home or run; ride on and the men
-// carry them off. Never seen in four minutes: it ends quietly. Turning on Arthur once freed is not built ([Encounters]
-// HogtiedTurnsOnYou does not exist yet: For Lex).
+// carry them off. Never seen in four minutes: it ends quietly. Freed by you, one in four ([Encounters] HogtiedTurnsOnYou)
+// pulls a knife on you instead of thanking you; held at gunpoint, bounty hunters fight back too (Lex, 2026-11-01).
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -304,7 +304,9 @@ namespace EnrageWestworld.InGame
                         hurt = ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(men[k].Handle, me.Handle, true, false);
                 }
                 bool rushed = h.Captors == "kidnappers" && HogAnyWithin(men, meAt, 6f);
-                bool drawnOn = aiming && now - h.AimSince > 1200 && h.Captors != "bounty";
+                // held at gunpoint they fight back, bounty hunters too, a moment later (Lex, 2026-11-01: aimed at, the bounty hunters
+                // were left to enRAGE's own aim reactions and never fought through the encounter)
+                bool drawnOn = aiming && now - h.AimSince > (h.Captors == "bounty" ? 2000 : 1200);
                 if (men.Count > 0 && (hurt || rushed || drawnOn))
                 {
                     HogFight(h, men, now, hurt ? "you fired on them" : rushed ? "you came right at them" : "you drew and kept it on them");
@@ -553,6 +555,20 @@ namespace EnrageWestworld.InGame
             {
                 h.PhaseUntil = now + 1500;   // still on the ground: wait for the rope to be off
                 h.FreedAsk.Done = true;
+                return;
+            }
+            if (h.ByYou && _cfg.HogtiedTurnsOnYou > 0 && Voice.Chance(h.Seed + "|turns", _cfg.HogtiedTurnsOnYou))
+            {
+                // freed, they turn on you: a knife from the boot, and your money wanted ([Encounters] HogtiedTurnsOnYou; violence
+                // against Arthur, on as it comes: Lex, 2026-11-01)
+                MakeHostile(h.Captive, now);
+                WEAPON.GIVE_WEAPON_TO_PED(ch, Natives.Hash("WEAPON_MELEE_KNIFE"), 0, true, false, 0, false, 0.5f, 1f, GiveReason, false, 0f, false);
+                TASK.TASK_COMBAT_PED(ch, me.Handle, 0, 16);
+                Feed.Say(h.Name, Voice.Pick(h.Seed + "|turnsay", "Obliged. Now turn out your pockets.", "Kind of you. Kinder still to hand over that purse.", "You should've left me tied, mister.", "Thanks for the rope. I'll be taking the rest."), Speech.When(ch, "angry", me.Handle), ch, toYou: true);
+                Log.Write("ENCOUNTER hogtied: " + h.Name + ", freed, turned on you (" + _cfg.HogtiedTurnsOnYou + "%)");
+                h.Freed = "freed by you, turned on you";
+                h.Phase = "leaving";
+                h.PhaseUntil = now + 60000;
                 return;
             }
             if (pick == "thank" && h.ByYou)
