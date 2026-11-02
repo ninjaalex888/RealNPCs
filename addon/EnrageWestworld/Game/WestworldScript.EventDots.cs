@@ -36,7 +36,8 @@ namespace EnrageWestworld.InGame
                     _eventDots.Remove(key);
                     try { if (near != null && near.Exists()) near.Delete(); } catch { }
                 }
-                _eventDotReached.Add(key);   // you're there: the dot has done its work
+                if (_eventDotReached.Add(key))   // you're there: the dot has done its work
+                    Log.Write("EVENT DOT " + key + ": you reached it, gone");
                 return;
             }
             try
@@ -49,6 +50,8 @@ namespace EnrageWestworld.InGame
                 }
                 b = new Blip(MAP.BLIP_ADD_FOR_COORDS(Natives.Hash("BLIP_STYLE_RANDOM_EVENT"), at.X, at.Y, at.Z));
                 _eventDots[key] = b;
+                // which white dots are ours (Lex, 2026-11-02: one "seems to be placed wrongly"; the game's own events use the same dot)
+                Log.Write("EVENT DOT " + key + ": made at " + (int)at.X + ", " + (int)at.Y + ", " + (int)Game.Player.Character.Position.DistanceTo(at) + " m from you");
             }
             catch (Exception ex)
             {
@@ -68,6 +71,7 @@ namespace EnrageWestworld.InGame
             {
                 if (b != null && b.Exists())
                     b.Delete();
+                Log.Write("EVENT DOT " + key + ": the happening is over, gone");
             }
             catch { }
         }
