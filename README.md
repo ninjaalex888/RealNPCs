@@ -10,7 +10,7 @@ A mod for Red Dead Redemption 2 that gives the people of the world lives of thei
 >
 > **Story Mode only.** Don't run script mods in Red Dead Online.
 
-## Optional, highly recommended: the free local AI model
+## Optional, recommended: the free local AI model
 
 > **You don't need it.** RealNPCs runs fully without the AI model and without Ollama: no extra graphics memory, nothing else to install, and every feature works on its own written lines. If your graphics card has no room to spare, simply skip this section.
 
@@ -118,7 +118,7 @@ Optional: to have the model answer two people at once, set the Windows environme
 2. Download **[RealNPCs-0.7.18.zip](https://github.com/ninjaalex888/RealNPCs/releases/latest/download/RealNPCs-0.7.18.zip)** from the [latest release](https://github.com/ninjaalex888/RealNPCs/releases/latest) (it's also in the [release](release) folder). It holds `RealNPCs.dll` and a README.txt that explains every feature and setting.
 3. Copy `RealNPCs.dll` into your game's `scripts` folder. enRAGE is not needed; if you use it, RealNPCs goes beside its `NemesisMod.dll` and works with it. To update, just replace the file: what people remember carries over, and your settings are kept. **Coming from enRAGE Westworld** (the old name): delete `EnrageWestworld.dll` from the scripts folder. RealNPCs won't run next to it, and copies your saves, diaries and settings over from the old folder the first time it starts.
 4. Load your Story Mode save. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
-5. **Optional, highly recommended** (not needed to play): set up the free local AI model ([see above](#optional-highly-recommended-the-free-local-ai-model)) so the people near you think, choose and answer in their own words.
+5. **Optional, recommended** (not needed to play): set up the free local AI model ([see above](#optional-recommended-the-free-local-ai-model)) so the people near you think, choose and answer in their own words.
 6. Optional: [CasualHookups](https://www.nexusmods.com/reddeadredemption2/mods/7608), a separate mod by its own author, plays an on-screen night together instead of RealNPCs' fade to black. Install it as its page says (`CasualHookups.asi` and `CasualHookups.ini` in the game folder). With it installed, its Flirt works only on a woman who has said yes to your flirting in RealNPCs (`CasualHookupsDecides`, on). The first time RealNPCs starts with it, it changes `CasualHookups.ini` once: its Flirt key moves from G (enRAGE's own lock-on prompts use G) to B, her clothes come back afterwards (enRAGE knows its people by their clothes), and it always gives in, since she has already said yes. The original file is kept as `RealNPCs\backup\CasualHookups.ini.before-realnpcs`. Restart the game once after that: CasualHookups may only read its settings when the game starts. Its settings are on the panel's Romance page. To keep the two mods apart, set `CasualHookupsDecides = false` (or turn Romance or Trysts off): RealNPCs then gives CasualHookups its own chances back from that copy (from the next start; until then RealNPCs holds its Flirt key on every woman), and sets them again if you turn it back on. Chances you set on the panel yourself are left alone.
 
 To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder in `Documents\Rockstar Games\Red Dead Redemption 2\` if you don't want to keep what people remembered.

@@ -18,7 +18,7 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 Story Mode only. Don't run script mods in Red Dead Online.
 
 
-OPTIONAL, HIGHLY RECOMMENDED: THE FREE LOCAL AI MODEL
+OPTIONAL, RECOMMENDED: THE FREE LOCAL AI MODEL
 -----------------------------------------------------
 YOU DON'T NEED IT. RealNPCs runs fully without the AI model and without Ollama: no extra
 graphics memory, nothing else to install, and every feature works on its own written lines.
@@ -138,7 +138,7 @@ NEW IN 0.7.13
 NEW IN 0.7.12
 -------------
 - The AI model is optional. RealNPCs runs without it and without Ollama, with no extra graphics
-  memory (see OPTIONAL, HIGHLY RECOMMENDED above for which cards have room for it). Everything
+  memory (see OPTIONAL, RECOMMENDED above for which cards have room for it). Everything
   new below works without it: people's own minds choose, and with the model on it only picks
   among the same few things. Making RealNPCs as rich without the model is the next big piece of
   work (roadmap 41 on GitHub).
@@ -288,7 +288,7 @@ NEW IN 0.7.11
   gold switch at the top of the settings panel, with its status beside it ("on, answering",
   "on, NOT ANSWERING", "off"...). At each start RealNPCs asks Ollama; if it runs and holds
   llama3.1:8b, and you have never chosen, the model is turned on and a notice says so once.
-  Turn it off and it stays off ([Mind] LanguageChosen). See OPTIONAL, HIGHLY RECOMMENDED above.
+  Turn it off and it stays off ([Mind] LanguageChosen). See OPTIONAL, RECOMMENDED above.
 - Hook up is on H now, the same key as Flirt: after her yes, once she has said it, the H prompt
   reads Hook up. Nothing of RealNPCs' is on G (enRAGE's Give Money). With CasualHookups, press B
   for its scene when it takes her kind; for a kind it won't take, RealNPCs' own night follows

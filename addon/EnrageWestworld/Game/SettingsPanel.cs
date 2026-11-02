@@ -1596,7 +1596,7 @@ namespace EnrageWestworld.InGame
             if (ai == null)
                 return rows;
             rows.Add(new Row { E = ai, Big = true, Label = "AI MODEL (OLLAMA)",
-                               Help = "Highly recommended. People near you think, choose and answer in their own words, from a free model on your own PC (Ollama with " + ModelName() + "; nothing leaves the machine). Left or Right turns it on or off; once you have chosen, RealNPCs leaves it as you set it." });
+                               Help = "Recommended. People near you think, choose and answer in their own words, from a free model on your own PC (Ollama with " + ModelName() + "; nothing leaves the machine). Left or Right turns it on or off; once you have chosen, RealNPCs leaves it as you set it." });
             rows.Add(new Row { Filler = true });
             rows.Add(new Row { Filler = true });   // a gap: the switch stands apart
             return rows;
@@ -1658,7 +1658,7 @@ namespace EnrageWestworld.InGame
             else if (status.StartsWith("on", StringComparison.Ordinal)) { sr = 230; sg = 194; sb = 112; }
             float sx = left + 0.016f + Draw.Width(r.Label, bigScale), room = right - 0.03f - Draw.Width("OFF", bigScale) - sx;
             Draw.Text(Draw.Fit(status, SmallScale, Math.Max(0.05f, room)), sx, y + 0.006f, SmallScale, sr, sg, sb);
-            Draw.Text(Draw.Fit("People near you think, choose and answer in their own words (a free local model; highly recommended).", SmallScale, W - 0.06f),
+            Draw.Text(Draw.Fit("People near you think, choose and answer in their own words (a free local model; recommended).", SmallScale, W - 0.06f),
                       left + 0.008f, y + rowH * 1.02f, SmallScale, 214, 196, 160);
         }
 
