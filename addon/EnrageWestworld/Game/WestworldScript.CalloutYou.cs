@@ -65,19 +65,27 @@ namespace EnrageWestworld.InGame
             float bestD = float.MaxValue;
             int looked = 0;
             // the Testing row with nobody sore at you near (Lex, 2026-11-02: pressed [ in town, "not seeing it work"): the nearest
-            // one named and free is given a test grievance, hard words between you, so the row always shows something
+            // one named and free is given a test grievance, hard words between you, so the row always shows something. A hothead,
+            // the proud or a drunk first, whoever's nearer (Lex, 2026-11-02, after a coward said his piece and went: the fists
+            // and the draw come from the hot)
             Candidate stand = null;
-            float standD = float.MaxValue;
+            float standD = float.MaxValue, standScore = float.MaxValue;
             foreach (Candidate c in ReasonCandidates(me, now, test))
             {
                 int h = c.Ped.Handle;
                 if (PED.IS_PED_USING_ANY_SCENARIO(h) || IsMindActing(h) || MindActWhyNot(c.Ped, h) != null)
                     continue;
                 float d = c.Ped.Position.DistanceTo(at);
-                if (test && d <= CallYouFrom && d >= 4f && d < standD && !(c.Who.P != null && (c.Who.P.Vengeful || c.Who.P.Murderous)))
+                if (test && d <= CallYouFrom && d >= 4f && !(c.Who.P != null && (c.Who.P.Vengeful || c.Who.P.Murderous)))
                 {
-                    stand = c;
-                    standD = d;
+                    bool hot = c.Who.Temper == "Hothead" || c.Who.Temper == "Proud" || c.Who.Drunk;
+                    float score = d - (hot ? 1000f : 0f) + (c.Who.Temper == "Coward" && !c.Who.Drunk ? 1000f : 0f);
+                    if (score < standScore)
+                    {
+                        stand = c;
+                        standD = d;
+                        standScore = score;
+                    }
                 }
                 if (d > CallYouFrom || d < 4f || d >= bestD)
                     continue;
@@ -97,9 +105,11 @@ namespace EnrageWestworld.InGame
             if (best == null && stand != null)
             {
                 best = stand;
-                matter = "words";
+                // a hothead stands in with an old grudge (fists most of the time, and a draw now and then if armed); the rest over hard words
+                bool hotOne = stand.Who.Temper == "Hothead" || stand.Who.Temper == "Proud" || stand.Who.Drunk;
+                matter = hotOne ? "grudge" : "words";
                 bestD = standD;
-                Log.Write("ENCOUNTER test, callyou: nobody near with something against you; " + stand.Who.Name + " stands in, sore over hard words (a test)");
+                Log.Write("ENCOUNTER test, callyou: nobody near with something against you; " + stand.Who.Name + " (" + (stand.Who.Temper ?? "no temper") + (stand.Who.Drunk ? ", drunk" : "") + ") stands in, sore over " + (hotOne ? "an old grudge" : "hard words") + " (a test)");
             }
             if (best == null)
             {
