@@ -25,6 +25,7 @@ namespace EnrageWestworld.InGame
             public uint Model;
             public bool Woman;
             public float X, Y;      // place in the ring, from the centre
+            public string Act;      // what they do in the ring (GatherActs; Lex, 2026-11-01: "a wide range of eerie animations")
         }
 
         private sealed class Gathering
@@ -33,6 +34,7 @@ namespace EnrageWestworld.InGame
             public Vector3 Centre;
             public readonly List<Gatherer> Ring = new List<Gatherer>();
             public int StartedAt, PhaseAt, NextCreep, NextMurmur;
+            public int ResumeAt, NextHum;   // back to their acts after a stop; the singers' next low sound
             public bool Moving, Spoke, Test;
             public bool Day;   // outside midnight to 03:30 (GatheringHours any): in the open or at a town's edge
         }
@@ -123,6 +125,23 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
+        // What each of the ring does (Lex, 2026-11-01: "a wide range of eerie animations they could be doing in a ring instead such
+        // as kneeling, singing, dancing"): the game's own looping scenarios the add-on already plays elsewhere, in place, facing
+        // in; "sing" stands stock-still and now and then makes a low wordless sound. Mixed round the ring by its seed.
+        private static readonly string[] GatherActs = { "WORLD_HUMAN_GRAVE_MOURNING_KNEEL", "WORLD_HUMAN_DANCING", "sing", "WORLD_HUMAN_STARE_STOIC", "WORLD_HUMAN_SIT_GROUND",
+                                                        "WORLD_HUMAN_GRAVE_MOURNING", "WORLD_HUMAN_SLEEP_GROUND_ARM", "WORLD_HUMAN_CROUCH_INSPECT", "WORLD_HUMAN_GUARD_LANTERN_NERVOUS" };
+
+        private static void GatherAct(Gatherer m)
+        {
+            if (m == null || m.Ped == null || !m.Ped.Exists() || m.Ped.IsDead)
+                return;
+            int h = m.Ped.Handle;
+            if (m.Act == null || m.Act == "sing")
+                TASK.TASK_STAND_STILL(h, -1);
+            else
+                TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash(m.Act), -1, true, 0u, -1f, false);
+        }
+
         private void GatherSpawn(int now)
         {
             Gathering g = _gathering;
@@ -159,9 +178,11 @@ namespace EnrageWestworld.InGame
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
                 PED.SET_PED_KEEP_TASK(h, true);
                 ENTITY.SET_ENTITY_HEADING(h, heading);
-                TASK.TASK_STAND_STILL(h, -1);
+                m.Act = GatherActs[(Voice.Hash(g.StartedAt + "|act|" + g.Ring.IndexOf(m)) + g.Ring.IndexOf(m)) % GatherActs.Length];
+                GatherAct(m);
             }
             g.Ring.RemoveAll(m => m.Ped == null);
+            Log.Write("ENCOUNTER gathering acts: " + string.Join(", ", g.Ring.Select(m => m.Act)));
             if (g.Ring.Count < 3)
             {
                 EndGathering("too few of them could stand there");
@@ -272,6 +293,13 @@ namespace EnrageWestworld.InGame
                         TASK.TASK_STAND_STILL(h, -1);
                         TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, -1, 0, 51, 0);
                     }
+                    g.ResumeAt = now + 4000;   // a moment stock-still, then each back to their act
+                }
+                if (!g.Moving && g.ResumeAt != 0 && now >= g.ResumeAt)
+                {
+                    g.ResumeAt = 0;
+                    foreach (Gatherer m in live)
+                        GatherAct(m);
                 }
             }
             else if (now >= g.NextCreep && nearest < 45f)
@@ -287,6 +315,14 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(m.Ped.Handle, to.X, to.Y, to.Z, Natives.Brisk, -1, 0.3f, 0, 0f);
                     g.Moving = true;
                 }
+            }
+            if (now >= g.NextHum && nearest < 40f && !g.Moving)
+            {
+                // the singers: a low wordless sound now and then, one of them at a time
+                g.NextHum = now + 6000 + _rng.Next(5000);
+                List<Gatherer> singers = live.Where(x => x.Act == "sing").ToList();
+                if (singers.Count > 0)
+                    Speech.SayAny(singers[_rng.Next(singers.Count)].Ped.Handle, Speech.Hum, 0);
             }
             if (now >= g.NextMurmur && nearest < 25f)
             {

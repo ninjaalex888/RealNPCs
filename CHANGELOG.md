@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The gatherings of the awake are eerier: each in the ring does something of their own, mixed round the circle: kneels, dances, stands stock-still and stares, sits or lies on the ground, mourns, crouches, holds up a lantern, or stands and makes a low sound now and then. Caught creeping closer, they still stop dead; a few seconds later each goes back to it.
 - More happening on the street, less idle talk: street scenes come twice as often as they come (`[Scenes] DramaGapSeconds` 30, from 60; an ini on 60 moves), and scenes of nothing but talk (small talk, gossip, a song, a haggle, a tall tale, the paper read out, a round stood) are passed over, along with the quiet talks beside a scene (`[Scenes] EventfulOnly`, on). Quarrels, fights, thefts, cheating, debts, flirts and proposals, snapping and brush-offs, favours, warnings and the waking's questions all stay (settings version 185).
 - The law shoots the one who picked your pocket: with a lawman near, half the time (`[Scenes] LawShootsThieves`, 50) he draws and shoots the thief instead of running him down, and your money comes back off him either way (settings version 184). Pickpockets among townsfolk lifting from each other were already there (`[Scenes] NpcThieves`).
 - The gatherings of the awake are bigger: six to ten stand in the ring, where it was four to seven.
