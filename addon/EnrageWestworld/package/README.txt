@@ -1,4 +1,4 @@
-RealNPCs 0.7.16 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.17 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -68,6 +68,18 @@ Set it up once:
 
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
+
+
+NEW IN 0.7.17
+-------------
+- More happening, less idle talk: street scenes twice as often ([Scenes] DramaGapSeconds 30),
+  and scenes of nothing but talk passed over ([Scenes] EventfulOnly, on).
+- A lawman near may shoot the one who picked your pocket ([Scenes] LawShootsThieves, 50).
+- Gatherings of the awake: six to ten in the ring, each kneeling, dancing, staring, lying on
+  the ground, holding a lantern or making a low sound.
+- Talk varies (three or four answers where there was one) and remembers what it said; feelings
+  know their cause; the waking mutter far more; more of the game's recorded lines between people.
+  All without the AI model. Not yet seen in game.
 
 
 NEW IN 0.7.16

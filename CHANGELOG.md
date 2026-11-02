@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.17 (2026-11-01)
+
+More happening on the street and less idle talk, the law that shoots your pickpocket, eerier and bigger gatherings, Talk that varies, and feelings that know their cause.
 
 - The gatherings of the awake are eerier: each in the ring does something of their own, mixed round the circle: kneels, dances, stands stock-still and stares, sits or lies on the ground, mourns, crouches, holds up a lantern, or stands and makes a low sound now and then. Caught creeping closer, they still stop dead; a few seconds later each goes back to it.
 - More happening on the street, less idle talk: street scenes come twice as often as they come (`[Scenes] DramaGapSeconds` 30, from 60; an ini on 60 moves), and scenes of nothing but talk (small talk, gossip, a song, a haggle, a tall tale, the paper read out, a round stood) are passed over, along with the quiet talks beside a scene (`[Scenes] EventfulOnly`, on). Quarrels, fights, thefts, cheating, debts, flirts and proposals, snapping and brush-offs, favours, warnings and the waking's questions all stay (settings version 185).
