@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.16 (2026-11-01)
+
+Far fewer repeated thoughts: about 650 new written lines and thoughts that vary over an hour of play, all without the AI model.
 
 - The street's exchanges open five times as many ways: twenty hellos where there were four, and for each worry four ways to snap at its worst and to tell how it ended, good or bad, where there was one. With the lines said lately passed over, the street's talk repeats 9% of the time in an hour, from 15% before this version.
 - Twice the weather in people's heads (twelve lines for each kind of weather, where there were six), more for a sore day and a glad one, and more of what each temper thinks watching someone it knows on the street (the proud, the loyal, the drifter, the cold, the hothead, the greedy, the coward, everyone else).

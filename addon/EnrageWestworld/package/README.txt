@@ -1,4 +1,4 @@
-RealNPCs 0.7.15 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.16 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -68,6 +68,16 @@ Set it up once:
 
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
+
+
+NEW IN 0.7.16
+-------------
+- Far fewer repeated thoughts, with no AI model needed: a thought is remembered for about an
+  hour of play, not a few minutes, and about 650 new lines arrive (thoughts about you, every
+  worry's stages, the meals, the days and the year, the weather, sore and glad days, watching
+  the street, and the street's hellos and news). In a three-hour ride, thoughts already seen fell
+  from 22/43/50% by the hour to 0/14/31%; the street's talk repeats 9% of the time in an
+  hour, from 15% ([Mind] SaidLately). Measured offline; not yet seen in game.
 
 
 NEW IN 0.7.15
