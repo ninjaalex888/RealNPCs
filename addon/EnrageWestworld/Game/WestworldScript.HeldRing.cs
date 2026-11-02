@@ -24,7 +24,17 @@ namespace EnrageWestworld.InGame
         {
             public string Name;
             public int Since, NextAt, Acts, Fillers;
+            public int StoodAt = int.MinValue / 2;   // the last standing look (a watch, a show): one each HeldStandMs at most
             public string Last;
+        }
+
+        // a watch or a show is a stand and a look: chained back to back it stopped and turned them every few seconds, which
+        // read as freezing (Lex, 2026-11-02, Valentine). One in this long, else the next choice, a spot or a stroll
+        private const int HeldStandMs = 30000;
+
+        private static bool StandingKind(string kind)
+        {
+            return kind == "watch" || kind == "showoff";
         }
 
         private readonly Dictionary<int, Held> _held = new Dictionary<int, Held>();
@@ -170,9 +180,9 @@ namespace EnrageWestworld.InGame
         private void HeldNext(int h, MindWho w, Held hd, Ped me, int now)
         {
             hd.NextAt = now + 1500;
-            string lost = HeldTry(w, h, now, w.MindChoice ?? w.Choice);
+            string lost = HeldTry(w, hd, h, now, w.MindChoice ?? w.Choice);
             if (lost != null && w.ChoiceNext != null && w.ChoiceNext != (w.MindChoice ?? w.Choice))
-                lost = HeldTry(w, h, now, w.ChoiceNext);
+                lost = HeldTry(w, hd, h, now, w.ChoiceNext);
             if (lost == null)
             {
                 hd.Acts++;
@@ -189,10 +199,13 @@ namespace EnrageWestworld.InGame
 
         /// One choice tried as an act now, the mind's own way (MindActOn), past the street's 1.5 s gap: a held one going on
         /// isn't a new start. Null when it began.
-        private string HeldTry(MindWho w, int h, int now, string kind)
+        private string HeldTry(MindWho w, Held hd, int h, int now, string kind)
         {
             if (kind == null || kind == "stand" || Choosing.CarriesOn(kind))
                 return LostStand;
+            bool standing = StandingKind(kind);
+            if (standing && now - hd.StoodAt < HeldStandMs)
+                return "a standing look lately";
             string was = w.Choice;
             int gap = _mindActNextAt;
             w.Choice = kind;
@@ -204,6 +217,8 @@ namespace EnrageWestworld.InGame
                 if (_mindActNextAt == 0)
                     _mindActNextAt = gap;
             }
+            else if (standing)
+                hd.StoodAt = now;
             return lost;
         }
 
