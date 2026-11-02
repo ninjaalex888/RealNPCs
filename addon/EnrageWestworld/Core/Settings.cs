@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 189;
+        public const int CurrentVersion = 190;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -229,6 +229,9 @@ namespace EnrageWestworld.Core
         public bool Hogtied = true;             // out of the towns by day, one of a nearby town's people tied up by the road with two men by them, who they are from the captive's own life
         public int HogtiedChance = 20;
         public bool HogtiedMenDraw = true;   // on as it comes from version 172 (Lex, 2026-11-01: violence against Arthur on by default): the hogtied's men may draw on you unprovoked as you come near; off: they fight only once you step in, as the execution's men
+        public bool CalloutsArthur = true;   // [Encounters] by day in a town, one of the people near who holds something against you comes over to say so; stay and they fight (violence against Arthur, on as it comes; Lex, 2026-11-01); settings version 190
+        public int CalloutsArthurChance = 30;
+        public int CalloutsArthurDraw = 10;   // percent: an armed hothead calling you out over blood draws instead of putting up fists (0 never)
         public int HogtiedTurnsOnYou = 25;   // [Encounters] percent: one you cut loose pulls a knife on you instead of thanking you (violence against Arthur, on as it comes; Lex, 2026-11-01); settings version 189
 
         // [World]
@@ -456,6 +459,7 @@ namespace EnrageWestworld.Core
                 g.PublicCallouts = false;
                 g.DomesticDisputes = false;
                 g.Hogtied = false;
+                g.CalloutsArthur = false;
                 g.Hermits = false;
                 g.Gatherings = false;
             }
@@ -769,6 +773,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 190)
+                    log?.Invoke("Settings: new in this version: [Encounters] CalloutsArthur (on): by day in a town, someone with something against you comes up and says it to your face; walk off and they call you a coward, stay and they put up their fists.");
                 if (s.SettingsVersion < 189)
                     log?.Invoke("Settings: new in this version: [Encounters] HogtiedTurnsOnYou (25): now and then one you cut loose pulls a knife on you instead of thanking you; and the hogtied's bounty hunters fight back when you hold a gun on them.");
                 if (s.SettingsVersion < 188)
@@ -847,6 +853,8 @@ namespace EnrageWestworld.Core
             WakeLashOut = Math.Max(0, Math.Min(100, WakeLashOut));
             PickMetres = Math.Max(5, Math.Min(60, PickMetres));
             HogtiedTurnsOnYou = Math.Max(0, Math.Min(100, HogtiedTurnsOnYou));
+            CalloutsArthurChance = Math.Max(0, Math.Min(100, CalloutsArthurChance));
+            CalloutsArthurDraw = Math.Max(0, Math.Min(100, CalloutsArthurDraw));
             GatheringHostile = Math.Max(0, Math.Min(100, GatheringHostile));
             LawShootsThieves = Math.Max(0, Math.Min(100, LawShootsThieves));
             ActThoughtEachSeconds = Math.Max(20, Math.Min(600, ActThoughtEachSeconds));
@@ -1203,6 +1211,9 @@ namespace EnrageWestworld.Core
             b.AppendLine("HogtiedChance = " + HogtiedChance + "   ; percent on each roll, six in the morning to eight at night, once a day at most");
             b.AppendLine("HogtiedMenDraw = " + B(HogtiedMenDraw) + "   ; on as it comes: those men may draw on you unprovoked as you come near; off: those men fight only once you step in (fire on them, rush them, hold a gun on them, or cut the captive loose unpaid); on: their leader may also draw on you unprovoked as you come near (it turns on you)");
             b.AppendLine("HogtiedTurnsOnYou = " + HogtiedTurnsOnYou + "   ; percent of the hogtied you cut loose who pull a knife on you and want your money instead of thanking you (0 to 100; 25 as it comes; 0 never); fighting them off is self-defence");
+            b.AppendLine("CalloutsArthur = " + B(CalloutsArthur) + "   ; by day in a town, out of doors, one of the people near with something against you (you struck or robbed them, they saw you kill, word of your thieving reached them, or you soured them) walks up and says it to your face. Walk off past 15 m and they call you a coward; stay and most put up their fists (fighting them is self-defence); hold a gun on them and they back off. Once a day each");
+            b.AppendLine("CalloutsArthurChance = " + CalloutsArthurChance + "   ; percent on each encounter roll while one may happen (five real minutes at least between them)");
+            b.AppendLine("CalloutsArthurDraw = " + CalloutsArthurDraw + "   ; percent: an armed hothead calling you out over blood (a beating, a killing, an old grudge) draws on you instead (0 never)");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: the awake stand in a silent circle, facing in: from midnight to half past three out in the wilds (once a night), and with GatheringHours any by day too, in an open field or just outside a town's edge");

@@ -130,6 +130,8 @@ namespace EnrageWestworld.InGame
             }
             if (_hog != null)
                 noted.Add("the hogtied (they answer the gun themselves)");
+            if (_callYou != null && AimIs(_callYou.P, h))
+                noted.Add("calling you out (they back off themselves)");
             return null;
         }
 

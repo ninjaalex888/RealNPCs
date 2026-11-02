@@ -72,6 +72,8 @@ namespace EnrageWestworld.InGame
                     return _domestic.WM.Name + " is shouting at his wife in the street";
                 if (_hog != null)
                     return "someone lies tied up by the road nearby";
+                if (_callYou != null)
+                    return _callYou.W.Name + " is calling you out";
                 if (_hermit != null)
                     return _hermit.R.Name + " is at " + Their(_hermit.R) + " camp nearby";
                 return _gathering != null ? "a gathering is standing out there" : null;
@@ -104,6 +106,8 @@ namespace EnrageWestworld.InGame
                 DomesticStep(now);
             if (_hog != null)
                 HogtiedStep(now);
+            if (_callYou != null)
+                CallYouStep(now);
             StagedChecksStep(now);
             VisitorBodyStep();   // a body left behind goes once nobody can see (WestworldScript.Visitor.cs)
             HermitStep(now);   // a hermit at his camp, when you come near one
@@ -165,16 +169,16 @@ namespace EnrageWestworld.InGame
         }
 
         private int _encounterTurn;
-        private const int EncounterKinds = 11;   // the eight before NIGHT4 item 4, then the street callout, the husband's temper and the hogtied captive
+        private const int EncounterKinds = 12;   // the eight before NIGHT4 item 4, then the street callout, the husband's temper, the hogtied captive and the callout at you
 
         /// The kinds that happen in a town's street among the people already there (they don't wait on the Director's scene).
         private static bool StreetKind(int kind)
         {
-            return kind == 8 || kind == 9;
+            return kind == 8 || kind == 9 || kind == 11;
         }
 
         /// A re-staged encounter (WestworldScript.Staged.cs) is going on.
-        private bool StagedLive { get { return _streetCallout != null || _domestic != null || _hog != null; } }
+        private bool StagedLive { get { return _streetCallout != null || _domestic != null || _hog != null || _callYou != null; } }
 
         /// One kind's chance on this roll: true when it started. A kind already out is passed over (one of each, for now).
         private bool TryEncounter(int kind, List<string> notNow, int now)
@@ -297,6 +301,16 @@ namespace EnrageWestworld.InGame
                         return false;
                     }
                     return EncounterRoll("hogtied by the road", _cfg.HogtiedChance) && StartHogtied(now, false);
+                case 11:
+                    if (!_cfg.CalloutsArthur || _callYou != null)
+                        return false;
+                    not = CallYouNotNow();
+                    if (not != null)
+                    {
+                        notNow.Add("called out yourself: " + not);
+                        return false;
+                    }
+                    return EncounterRoll("called out yourself", _cfg.CalloutsArthurChance) && StartCallYou(now, false);
                 default:
                     if (!_cfg.Campfires || _campfire != null)
                         return false;
@@ -319,7 +333,7 @@ namespace EnrageWestworld.InGame
             get
             {
                 return (_crying != null ? 1 : 0) + (_exec != null ? 1 : 0) + (HermitWithYou() ? 1 : 0) + (_gathering != null ? 1 : 0) + (_visitor != null ? 1 : 0) +
-                       (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0) + (_streetCallout != null ? 1 : 0) + (_domestic != null ? 1 : 0) + (_hog != null ? 1 : 0);
+                       (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0) + (_streetCallout != null ? 1 : 0) + (_domestic != null ? 1 : 0) + (_hog != null ? 1 : 0) + (_callYou != null ? 1 : 0);
             }
         }
 
@@ -340,6 +354,7 @@ namespace EnrageWestworld.InGame
                 case "callout2": return _streetCallout != null;
                 case "domestic": return _domestic != null;
                 case "hogtied": return _hog != null;
+                case "callyou": return _callYou != null;
                 default: return false;
             }
         }
@@ -359,6 +374,7 @@ namespace EnrageWestworld.InGame
                 : kind == "callout2" ? (_cfg.PublicCallouts ? null : "Street callouts are off ([Encounters] PublicCallouts).")
                 : kind == "domestic" ? (_cfg.DomesticDisputes ? null : "A husband's temper is off ([Encounters] DomesticDisputes).")
                 : kind == "hogtied" ? (_cfg.Hogtied ? null : "Hogtied by the road is off ([Encounters] Hogtied).")
+                : kind == "callyou" ? (_cfg.CalloutsArthur ? null : "Being called out yourself is off ([Encounters] CalloutsArthur).")
                 : _cfg.Gatherings ? null : "Gatherings are off ([Encounters] Gatherings; they need West World on too).";
             if (off != null)
                 return off;
@@ -392,6 +408,8 @@ namespace EnrageWestworld.InGame
                     return "Somebody near you with a grievance will call another out, if two such are about. Watch the street.";
                 case "domestic":
                     return "A man near you will start in on his wife in the street. Watch, or step in.";
+                case "callyou":
+                    return "Somebody near you with something against you will come and call you out, if there's one about. Stand there, walk off, or draw.";
                 case "hogtied":
                     return "Someone will be lying tied up near you, out of sight, with two men by them. Look for the mark on the map.";
                 default:
@@ -401,7 +419,7 @@ namespace EnrageWestworld.InGame
 
         private string KeyOf(string kind)
         {
-            if (kind == "visitor" || kind == "traveller" || kind == "supper" || kind == "campfire" || kind == "callout2" || kind == "domestic" || kind == "hogtied")
+            if (kind == "visitor" || kind == "traveller" || kind == "supper" || kind == "campfire" || kind == "callout2" || kind == "domestic" || kind == "hogtied" || kind == "callyou")
                 return "its Testing page row";
             KeySpec k = kind == "execution" ? _execKey : kind == "crying" ? _cryingKey : kind == "hermit" ? _hermitKey : _gatherKey;
             return k.ToString();
@@ -454,6 +472,10 @@ namespace EnrageWestworld.InGame
                 case "domestic":
                     if (!StartDomestic(now, true))
                         Log.Write("ENCOUNTER test, domestic: not now: " + (_domWhyNot ?? "?"));
+                    break;
+                case "callyou":
+                    if (!StartCallYou(now, true))
+                        Log.Write("ENCOUNTER test, callyou: not now: " + (_cyWhyNot ?? "?"));
                     break;
                 case "callout2":
                     if (!StartStreetCallout(now, true))
@@ -522,7 +544,7 @@ namespace EnrageWestworld.InGame
         {
             bool streetOnly;
             string why = EncounterBlocker(out streetOnly);
-            return streetOnly && (kind == "callout2" || kind == "domestic") ? null : why;
+            return streetOnly && (kind == "callout2" || kind == "domestic" || kind == "callyou") ? null : why;
         }
 
         /// streetOnly: what keeps them back is only the Director's scene in the street (the street's own kinds go ahead).
@@ -902,6 +924,8 @@ namespace EnrageWestworld.InGame
                 EndDomestic(why);
             if (_hog != null)
                 EndHogtied(why);
+            if (_callYou != null)
+                EndCallYou(why, false);
             if (_supper != null || _supperDarkSince != 0)
                 EndSupper(why);   // the dark lifted and the controls given back, if it was down
             VisitorLeftClear();   // a mission or shutdown: what it left goes with it
@@ -925,6 +949,7 @@ namespace EnrageWestworld.InGame
             if (_streetCallout != null) on.Add("a street callout (" + _streetCallout.Phase + ")");
             if (_domestic != null) on.Add("a husband's temper (" + _domestic.Phase + ")");
             if (_hog != null) on.Add("someone hogtied (" + _hog.Phase + ")");
+            if (_callYou != null) on.Add("calling you out (" + _callYou.Phase + ")");
             if (_stalker != null) on.Add("a stalker");
             string live = (on.Count > 0 ? string.Join(", ", on) : "none") + " (" + EncountersLive + " counted, at most " + _cfg.EncountersAtOnce + ")";
             return "live: " + live + ", next roll in " + Math.Max(0, (_nextEncounterRoll - now) / 1000) + " s every " + _cfg.EncounterEveryMinutes + " min" +
