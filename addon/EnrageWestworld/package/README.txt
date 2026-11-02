@@ -311,7 +311,7 @@ NEW IN 0.7.11
   letter, nobody rides after you. The telegram says how, where and when. Not yet seen in game.
 - Gatherings of the awake at any hour ([Encounters] GatheringHours any, or night): by day too,
   out in the wilds or just outside a town's edge, never in the street or indoors.
-  GatheringGapHours (6) between them.
+  GatheringGapHours (24) between them. By clear day they come a quarter as often, and only with nobody else in sight; fog and rain count as the dark. Some are gone when you look back.
 - Lawmen carry bodies off the street ([World] LawClearsBodies): a body left 20 s or more in a
   town street is lifted by the nearest lawman on foot within 50 m, the game undertaker's way,
   and carried to a spot he can reach. Testing row "A lawman clears a body". Seen working in
@@ -697,7 +697,7 @@ NEW IN 0.6.2
   the way that fits them: a gun that suits them (drawn, and held a moment, before the shot), a
   knife, or running at a wall. It can be one of
   RealNPCs' own people or one of enRAGE's townsfolk, never enRAGE's nemeses or gang men, and never
-  with you within 3 m. AwakeningDespair (75; 0 turns it off). Everyone gets one fresh chance.
+  with you within 3 m. AwakeningDespair (50; 0 turns it off). Everyone gets one fresh chance.
 - F7 marks the fully awake around you on the map for a minute, with what they'd do, and names the
   nearest who could.
 - Self-defence lasts as long as the fight: whoever came at you stays fair game while they fight on,
@@ -905,7 +905,7 @@ NEW IN 0.6.0
   hurt them and they run, and are back another time. They are never armed. Killing one counts
   like any killing.
 - The gathering (West World). From midnight to half past three in the wilds, on a roll
-  (GatheringChance, 15 percent, at most once a night), six to ten of the awake stand in a
+  (GatheringChance, 10 percent, at most once a night), six to ten of the awake stand in a
   silent ring somewhere off in the dark, facing in: people who have begun to come apart or are
   fully awake, as they looked when you met them, and strangers. Come near and every head turns to
   you. Look away and they are closer; look back and they stop dead, never nearer than a few
@@ -936,7 +936,7 @@ NEW IN 0.5.5
 - Ordinary people's thoughts are now written from real psychology: the body, status anxiety, loss and threat bias, the worries of 1899, the mask over what they feel, and what they notice about you when you are close.
 - Every adult can now be a person with a mind, soldiers and lawmen too. Ordinary people get the full acts; enRAGE's own people and soldiers in its camps only turn their heads, think and speak (their movement is enRAGE's).
 - Fuller acts. Stirring: double-takes. Questioning: standing perfectly still, pacing, walking out to see where the town ends, asking a neighbour if they feel it too. Unravelling: freezing mid-step, shouting at the sky, kneeling, running with no goal. Awake is a lasting state: they come to you, say a few things (who is writing this, is there an outside) and end by pleading, trying to leave town, trying to wake someone or refusing to get up.
-- CONTENT NOTE: a chance (AwakeningDespair, default 75 percent since 0.6.0, 0 turns it off) that a fully awake ordinary person cannot bear it and ends their own life: with a gun that fits them, with poison, with a knife, or by running at a wall. It never happens to anyone keeping a counter, or to anyone enRAGE has busy at that moment (a fight, a job, a ride), and it is not counted as anything you did. Set it to 0 if you would rather not see it.
+- CONTENT NOTE: a chance (AwakeningDespair, default 50 percent since 0.7.19, 75 from 0.6.0; 0 turns it off) that a fully awake ordinary person cannot bear it and ends their own life: with a gun that fits them, with poison, with a knife, or by running at a wall. It never happens to anyone keeping a counter, or to anyone enRAGE has busy at that moment (a fight, a job, a ride), and it is not counted as anything you did. Set it to 0 if you would rather not see it.
 - Acts and words belong together now: people who pace count their steps in their heads, people who freeze lose their sentence halfway, and the one walking up to you thinks about why. The thoughts appear on the ticker as it happens.
 - Ordinary people have inner lives of their own: what a passer-by thinks now comes from their trade, town, temperament, faith or the hour of the day.
 - Gang and faction news (wars, feuds, clashes, rivalries) now appears as the game's pop-up on the right of the screen, away from the bottom ticker, which keeps what people think and do. WarNewsTo in the ini (right or ticker) switches it back.
@@ -1271,7 +1271,7 @@ in the file. The new ones:
             NameCardsBesideEnrage (false): ours even while enRAGE draws its own
 [WestWorld] WestWorld (true): the master switch. false turns off everything below it.
             AwakeningShare (2.25), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
-            or awake person falls apart), AwakeningDespair (75, 0-100, see the content note above),
+            or awake person falls apart), AwakeningDespair (50, 0-100, see the content note above),
             WakeVoices (true): the waking say the game's own lines in the wrong places, more each stage,
             WakeHold (true): from the second stage they stay strange between acts instead of going
             back to their day, for WakeHoldMinutes (3); WakeGestures (true): their hands and bodies
@@ -1303,8 +1303,8 @@ in the file. The new ones:
             towns, once a day), CryingWoman (true), CryingWomanChance (15, percent per roll, 10 pm to
             4 am in the wilds), Hermits (true, needs WestWorld), HermitChance (25, a new
             camp's chance per roll in the wilds), Gatherings (true, needs WestWorld),
-            GatheringChance (15, percent per roll), GatheringHours (any | night): with any, a ring
-            may stand by day too, in the wilds or just outside a town, GatheringGapHours (6), ExecutionKey ([),
+            GatheringChance (10, percent per roll), GatheringHours (any | night): with any, a ring
+            may stand by day too, in the wilds or just outside a town, GatheringGapHours (24), ExecutionKey ([),
             CryingWomanKey, HermitKey, GatheringKey (None): bring one out near you now, for testing
             NightVisitor (true), NightVisitorChance (18): after midnight in a town, a pale figure over a
             body, gone when you look away; the town talks of it next morning

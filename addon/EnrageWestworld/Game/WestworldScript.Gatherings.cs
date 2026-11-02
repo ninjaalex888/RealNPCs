@@ -39,6 +39,37 @@ namespace EnrageWestworld.InGame
             public bool Moving, Spoke, Test;
             public bool Hostile;   // rolled at the start ([Encounters] GatheringHostile): they turn on you when you come within 10 m
             public bool Day;   // outside midnight to 03:30 (GatheringHours any): in the open or at a town's edge
+            public bool Vanishes;   // rolled at the start (a third, never a hostile one): look away once you've seen them and they're gone (Lex, 2026-11-02: eerier)
+            public bool WasSeen;
+            public int UnseenSince;
+        }
+
+        /// The hours a gathering belongs to (Lex, 2026-11-02: rarer, eerier): from 21:00 to 05:00, or any hour in fog, rain or
+        /// a storm. Outside them a gathering rolls at a quarter of its chance, and only with nobody else in sight.
+        private bool GatherDark()
+        {
+            int hour = CLOCK.GET_CLOCK_HOURS(), minute = CLOCK.GET_CLOCK_MINUTES();
+            if (Encounters.GatherHours(hour, minute) || hour >= 21 || hour < 5)
+                return true;
+            string w = InnerLife.WeatherOf(MISC._GET_PREV_WEATHER_TYPE_HASH_NAME());
+            return w == "fog" || w == "rain" || w == "storm";
+        }
+
+        /// By day: who else is about to see it (anyone alive within 80 m and on your screen), or null.
+        private string GatherOthersInSight()
+        {
+            Ped me = Game.Player.Character;
+            Vector3 at = me.Position;
+            int n = 0;
+            foreach (Ped p in Peds.All())
+            {
+                if (p == null || !p.Exists() || p.Handle == me.Handle || p.IsDead || !PED.IS_PED_HUMAN(p.Handle))
+                    continue;
+                if (p.Position.DistanceTo(at) > 80f || !ENTITY.IS_ENTITY_ON_SCREEN(p.Handle))
+                    continue;
+                n++;
+            }
+            return n > 0 ? n + (n == 1 ? " person" : " people") + " in sight within 80 m" : null;
         }
 
         private Gathering _gathering;
@@ -109,6 +140,7 @@ namespace EnrageWestworld.InGame
             int n = Encounters.GatherSize(_rng.Next(100));
             Gathering g = new Gathering { Centre = centre, StartedAt = now, Test = test, Day = day };
             g.Hostile = _cfg.GatheringHostile > 0 && _rng.Next(100) < _cfg.GatheringHostile;   // Lex, 2026-11-01: half of them hostile, only within 10 m
+            g.Vanishes = !g.Hostile && _rng.Next(3) == 0;
             // the awake first, as they looked when they were met; strangers make up the rest
             List<Resident> awake = _store.Residents.Where(r => !r.Dead && r.PostId == null && r.Cast == null && (_hermit == null || _hermit.R != r) && _engine.StageOf(r.Id) >= Awakening.Unravelling)
                 .OrderBy(r => _rng.Next()).Take(n).ToList();
@@ -274,6 +306,22 @@ namespace EnrageWestworld.InGame
             {
                 EndGathering("the night moved on");
                 return;
+            }
+            // a ring you've seen, looked away from for a moment, and looked back at: nobody there (a third of them)
+            if (seen)
+            {
+                g.WasSeen = true;
+                g.UnseenSince = 0;
+            }
+            else if (g.WasSeen && g.Vanishes && !g.Spoke && nearest > 12f)
+            {
+                if (g.UnseenSince == 0)
+                    g.UnseenSince = now;
+                else if (now - g.UnseenSince > 2500)
+                {
+                    EndGathering("gone when you looked back");   // the living vanish only where nobody sees it (EndGathering)
+                    return;
+                }
             }
             // draw on one, hurt one, or fire near them, and the ring breaks
             int aimedAt;

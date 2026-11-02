@@ -160,16 +160,18 @@ namespace EnrageWestworld.Core
                 "Mind yourself. One of us ought to get out." } },
         };
 
-        /// Between one voice moment and the next for someone at this stage, near the player: a step up each stage.
+        /// Between one voice moment and the next for someone at this stage, near the player: a step up each stage. Rarer since
+        /// 2026-11-02 (Lex: "a bit more rare and eerie"; an awake man said his lines 8 times in 40 minutes at 7-11 s): one odd
+        /// line now and then is eerier than a stream of them.
         public static int GapMs(int stage, string seed)
         {
             int r = (Voice.Hash(seed) & 0x7fffffff) % 1000;
             switch (stage)
             {
-                case 1: return 80000 + r * 30;   // 80-110 s
-                case 2: return 35000 + r * 15;   // 35-50 s
-                case 3: return 12000 + r * 8;    // 12-20 s
-                default: return 7000 + r * 4;    // 7-11 s
+                case 1: return 180000 + r * 120;  // 3-5 min (80-110 s before)
+                case 2: return 90000 + r * 60;    // 90-150 s (35-50 s)
+                case 3: return 45000 + r * 30;    // 45-75 s (12-20 s)
+                default: return 25000 + r * 15;   // 25-40 s (7-11 s)
             }
         }
 

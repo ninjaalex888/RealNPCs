@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 190;
+        public const int CurrentVersion = 191;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -146,7 +146,7 @@ namespace EnrageWestworld.Core
         public float AwakeningShare = 2.25f;   // a share of a percent too (0.6); 5 until settings version 138 (Lex, 2026-10-30: fewer waking), 3 until 159 (Lex, 2026-10-31: fewer stirring, a little)
         public int AwakeningDays = 5;   // 1 until settings version 138 (Lex, 2026-10-30: "very slow how fast they progress the stages")
         public int AwakeningBreakdown = 90;
-        public int AwakeningDespair = 75;
+        public int AwakeningDespair = 50;   // 75 until settings version 191 (Lex, 2026-11-02: the waking rarer, so a despair death lands harder)
         public bool WakeVoices = true;   // the waking speak the game's own lines, oddly, more each stage (Core/WakeVoice.cs; settings version 78)
         // the waking held and stranger (settings version 144; Lex, 2026-10-31: they swapped back to the game between acts; Game/WestworldScript.WakeHold.cs)
         public bool WakeHold = true;
@@ -217,9 +217,9 @@ namespace EnrageWestworld.Core
         public bool Gatherings = true;
         public int GatheringHostile = 50;   // [Encounters] percent of gatherings that turn on you once you come within 10 m (Lex, 2026-11-01; violence against Arthur, on as it comes); 0 never; settings version 186
         public bool EventDots = true;   // [Encounters] the game's pulsing event dot on the map where one of ours is going on (Lex, 2026-11-01); settings version 187
-        public int GatheringChance = 15;
+        public int GatheringChance = 10;   // 15 until settings version 191 (Lex, 2026-11-02: rarer and eerier)
         public string GatheringHours = "any";   // any: the night's (midnight to 03:30, the wilds) and by day, in the open or at a town's edge; night: the night's only, as before settings version 163 (Lex, 2026-10-31: "make them happen more often and at any time of day")
-        public int GatheringGapHours = 6;       // game hours at least between gatherings, so they don't stack (settings version 163)
+        public int GatheringGapHours = 24;      // game hours at least between gatherings, so they don't stack (settings version 163; 6 until 191, Lex 2026-11-02: rarer)
         public string GatheringKey = "None";
         // re-staged from the game's own encounters, with the town's people choosing by their minds (NIGHT4 item 4; settings version 169)
         public bool PublicCallouts = true;      // by day in a town, one of the people about calls another out before the street over something real between them
@@ -773,6 +773,16 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 191)
+                {
+                    // 2026-11-02 (Lex): the Awakening's happenings rarer and eerier. The values as they came move; a value of your own is kept
+                    var moved = new List<string>();
+                    if (s.GatheringChance == 15) { s.GatheringChance = 10; moved.Add("GatheringChance 15 -> 10"); }
+                    if (s.GatheringGapHours == 6) { s.GatheringGapHours = 24; moved.Add("GatheringGapHours 6 -> 24"); }
+                    if (s.AwakeningDespair == 75) { s.AwakeningDespair = 50; moved.Add("AwakeningDespair 75 -> 50"); }
+                    log?.Invoke("Settings: the Awakening is rarer and eerier: gatherings mostly after dark or in fog and rain (by day a quarter as often, and only with nobody else in sight), some gone when you look back, the waking's odd lines far fewer" +
+                                (moved.Count > 0 ? "; " + string.Join(", ", moved) : "") + ".");
+                }
                 if (s.SettingsVersion < 190)
                     log?.Invoke("Settings: new in this version: [Encounters] CalloutsArthur (on): by day in a town, someone with something against you comes up and says it to your face; walk off and they call you a coward, stay and they put up their fists.");
                 if (s.SettingsVersion < 189)
