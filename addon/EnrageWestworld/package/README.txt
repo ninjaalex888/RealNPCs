@@ -1,4 +1,4 @@
-RealNPCs 0.7.17 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.18 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -68,6 +68,14 @@ Set it up once:
 
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
+
+
+NEW IN 0.7.18
+-------------
+- Half the gatherings of the awake turn on you within 10 m, the whole ring together, each a red
+  dot ([Encounters] GatheringHostile, 50). A ring does one strange thing together.
+- The game's own event dot on the map where one of RealNPCs' happenings is going on near you,
+  until you reach it ([Encounters] EventDots, on). Seen in game.
 
 
 NEW IN 0.7.17

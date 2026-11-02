@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.18 (2026-11-01)
+
+Hostile gatherings of the awake, the game's own event dot on the map, and eerier rings.
 
 - A hostile gathering comes at you as one band: every one of them a red dot on the map, all of them against you together. The event dot, once you have reached it, stays gone until that happening is over.
 - Fixed: a hostile gathering whose ring was kneeling or sitting never came at you (their act kept them); they get up the game's own way first now, and the same for scattering and for turning to you in the middle. The event dot goes once you are within 8 m of it.
