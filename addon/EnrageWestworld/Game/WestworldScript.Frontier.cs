@@ -38,6 +38,7 @@ namespace EnrageWestworld.InGame
             public Blip Blip;             // his red mark on the map (the lift)
             public int LawSince, LawLookAt;
             public bool LawHeld;          // brought down by the law: held, waiting to be resolved
+        public bool LawShoots;        // the lawman shoots instead of the tackle (your own pocket; [Scenes] LawShootsThieves)
             public int LawHeldAt;
             public int RunCheckAt, RunStalls;   // the watch on his run: where he was at the last look, and how often he stood (StillRunning)
             public Vector3 RunFrom;
@@ -264,6 +265,16 @@ namespace EnrageWestworld.InGame
                 TASK.CLEAR_PED_TASKS(law.Handle, true, false);
                 TASK.TASK_GO_TO_ENTITY(law.Handle, h, -1, 3.0f, 1.2f, 0f, 0);   // at a run
                 LawSay(law, "The deputy", LawChase.Shout(t.Started + "|law"), "SHOUT_STOP");
+                // your own pocket picked, with a lawman near: now and then he draws on the thief instead of running him down (Lex,
+                // 2026-11-01: "the law will shoot the pickpocket"); the money comes back off him all the same
+                if (t.PlayerMark && Voice.Chance(t.Started + "|lawshoot", _cfg.LawShootsThieves))
+                {
+                    t.LawShoots = true;
+                    TASK.CLEAR_PED_TASKS(law.Handle, true, false);
+                    WEAPON.SET_CURRENT_PED_WEAPON(law.Handle, Natives.Hash("WEAPON_REVOLVER_CATTLEMAN"), true, 0, false, false);
+                    TASK.TASK_COMBAT_PED(law.Handle, h, 0, 16);
+                    Log.Write("LAWCHASE the lawman draws on the pickpocket (" + _cfg.LawShootsThieves + "%)");
+                }
                 Log.Write("LAWCHASE a lawman " + (int)law.Position.DistanceTo(t.Thief.Position) + " m off gives chase to the pickpocket");
                 return false;
             }
@@ -272,6 +283,33 @@ namespace EnrageWestworld.InGame
             {
                 t.Lawman = null;
                 t.LawLookAt = now + 600000;   // no second lawman: the player has it from here
+                return false;
+            }
+            if (t.LawShoots && !t.LawHeld)
+            {
+                if (!t.Thief.Exists() || t.Thief.IsDead)
+                {
+                    // shot down: the lawman hands the money back off him, as a catch does
+                    _theft = null;
+                    _thieves.Remove(h);
+                    _lawCatches++;
+                    TASK.CLEAR_PED_TASKS(l.Handle, true, false);
+                    WanderLater(l.Handle, now + 20000);
+                    _lawChaseLast = "shot" + (t.Town != null ? " in " + t.Town : "");
+                    if (t.Blip != null && t.Blip.Exists())
+                        t.Blip.Delete();
+                    LawSay(l, "The deputy", LawChase.Got(t.Started + "|got"), "WON_FIGHT");
+                    LiftResolved(t, "law");
+                    Log.Write("LAWCHASE the lawman shot the pickpocket dead after " + (now - t.LawSince) / 1000 + " s");
+                    return true;
+                }
+                if (now - t.LawSince > 30000)
+                {
+                    t.LawShoots = false;   // never got his shot: the chase on foot instead
+                    TASK.CLEAR_PED_TASKS(l.Handle, true, false);
+                    TASK.TASK_GO_TO_ENTITY(l.Handle, h, -1, 3.0f, 1.2f, 0f, 0);
+                    t.LawSince = now;
+                }
                 return false;
             }
             float d = l.Position.DistanceTo(t.Thief.Position);

@@ -144,7 +144,7 @@ namespace EnrageWestworld.InGame
         private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "WestWorld", "West World (master switch)" }, { "Stalkers", "Stalkers (master switch)" }, { "Ticker", "Ticker (on or off)" },
-            { "LawChases", "A lawman runs a pickpocket down" }, { "Lifts", "A thief lifts your money in town" },
+            { "LawChases", "A lawman runs a pickpocket down" }, { "LawShootsThieves", "... or shoots the one who robbed you (percent)" }, { "Lifts", "A thief lifts your money in town" },
             { "KinWordDaysMin", "A killing seen: kin hear after (game days, at least)" }, { "KinWordDaysMax", "... and at most (game days)" },
             { "UnseenKinWordDaysMin", "A killing nobody saw: kin hear after (game days, at least)" }, { "UnseenKinWordDaysMax", "... and at most (game days)" },
             { "ErrandPace", "Walking pace on errands (1 walk, 2 brisk, 3 run)" },
