@@ -270,6 +270,18 @@ namespace EnrageWestworld.InGame
                         notNow.Add("a gathering: " + not);
                         return false;
                     }
+                    // rarer and eerier (Lex, 2026-11-02): mostly a thing of the dark. By clear day a quarter of the chance, and
+                    // only with nobody else in sight; fog, rain and storm count as the dark
+                    if (!GatherDark())
+                    {
+                        string seenBy = GatherOthersInSight();
+                        if (seenBy != null)
+                        {
+                            notNow.Add("a gathering: by day only with nobody else in sight (" + seenBy + ")");
+                            return false;
+                        }
+                        return EncounterRoll("a gathering by day", Math.Max(1, _cfg.GatheringChance / 4)) && StartGathering(now);
+                    }
                     return EncounterRoll("a gathering", _cfg.GatheringChance) && StartGathering(now);
                 case 8:
                     if (!_cfg.PublicCallouts || _streetCallout != null)
@@ -770,6 +782,9 @@ namespace EnrageWestworld.InGame
             c.Woman = w;
             _encounterPeds.Add(h);
             c.OwnGroup = PED.GET_PED_RELATIONSHIP_GROUP_HASH(h);
+            // nothing but the knife she'll draw (Lex, 2026-11-02: she knelt there with a rifle in her hands): some of the women's
+            // models are made with the game's own loadout, a long gun among it
+            WEAPON.REMOVE_ALL_PED_WEAPONS(h, true, true);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             PED.SET_PED_KEEP_TASK(h, true);
             TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash(Kneel), -1, true, 0u, -1f, false);
@@ -787,6 +802,7 @@ namespace EnrageWestworld.InGame
             {
                 case "knife":
                     MakeHostile(c.Woman, now);
+                    WEAPON.REMOVE_ALL_PED_WEAPONS(h, true, true);   // the knife alone, never a gun the game gave her
                     c.Woman.GiveWeapon(eWeapon.MeleeKnife, 1, eWeaponAttachPoint.Knife, true);
                     TASK.TASK_COMBAT_PED(h, me.Handle, 0, 16);
                     Feed.Say("The crying woman", Encounters.Pick(Encounters.KnifeTurn, h + "k"), Speech.When(h, "mock", me.Handle), toYou: true);
