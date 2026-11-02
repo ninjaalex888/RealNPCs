@@ -230,6 +230,9 @@ namespace EnrageWestworld.Core
         }
 
         /// All of them at once, when you step into the middle.
+        /// What a hostile circle says as it turns on you (Lex, 2026-11-01). All lines are original to this add-on.
+        public static readonly string[] GatherHostile = { "You shouldn't have come so close.", "You're the one who keeps the loop. Not any more.", "Hold him. Hold him down and let us see what he is.", "We remember you. Every time, we remember you." };
+
         public static readonly string[] GatherTogether =
         {
             "You're the one who doesn't come round again.",

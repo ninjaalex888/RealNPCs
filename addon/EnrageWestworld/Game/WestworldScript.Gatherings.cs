@@ -5,7 +5,7 @@
 // who are unravelling or awake, in the looks they were met in, made up with strangers. Within 30 m they all turn
 // their heads to you. While none of them is on your screen they step closer, never nearer than a few metres; the
 // moment one is seen, all of them stop dead. Step into the middle and they speak at once. Draw on one, shoot, or hit
-// one and they scatter. They never attack, and killing one counts as a killing (Watch.cs lets their deaths through).
+// one and they scatter. Half of them (GatheringHostile) come at you, bare-handed, once you are within 10 m; killing one counts as a killing unless they came at you (Watch.cs).
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +36,7 @@ namespace EnrageWestworld.InGame
             public int StartedAt, PhaseAt, NextCreep, NextMurmur;
             public int ResumeAt, NextHum;   // back to their acts after a stop; the singers' next low sound
             public bool Moving, Spoke, Test;
+            public bool Hostile;   // rolled at the start ([Encounters] GatheringHostile): they turn on you when you come within 10 m
             public bool Day;   // outside midnight to 03:30 (GatheringHours any): in the open or at a town's edge
         }
 
@@ -106,6 +107,7 @@ namespace EnrageWestworld.InGame
             }
             int n = Encounters.GatherSize(_rng.Next(100));
             Gathering g = new Gathering { Centre = centre, StartedAt = now, Test = test, Day = day };
+            g.Hostile = _cfg.GatheringHostile > 0 && _rng.Next(100) < _cfg.GatheringHostile;   // Lex, 2026-11-01: half of them hostile, only within 10 m
             // the awake first, as they looked when they were met; strangers make up the rest
             List<Resident> awake = _store.Residents.Where(r => !r.Dead && r.PostId == null && r.Cast == null && (_hermit == null || _hermit.R != r) && _engine.StageOf(r.Id) >= Awakening.Unravelling)
                 .OrderBy(r => _rng.Next()).Take(n).ToList();
@@ -233,6 +235,32 @@ namespace EnrageWestworld.InGame
             {
                 if ((!seen && nearest > 40f) || now - g.PhaseAt > 45000)
                     EndGathering("they scattered");
+                return;
+            }
+            if (g.Phase == "hostile")
+            {
+                foreach (Gatherer m in live)
+                    _cameAtYouSeen[m.Ped.Handle] = now;   // fighting them off is self-defence while they come at you
+                if (nearest > 60f || now - g.PhaseAt > 120000)
+                    EndGathering(nearest > 60f ? "you got away from them" : "they gave up on you");
+                return;
+            }
+            if (g.Hostile && nearest < 10f)
+            {
+                // one of the hostile circles: within 10 m every one of them comes at you, bare hands, at once
+                g.Phase = "hostile";
+                g.PhaseAt = now;
+                foreach (Gatherer m in live)
+                {
+                    int h = m.Ped.Handle;
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+                    TASK.CLEAR_PED_TASKS(h, true, false);
+                    PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);   // they fight to the end
+                    TASK.TASK_COMBAT_PED(h, me.Handle, 0, 16);
+                    _cameAtYouSeen[h] = now;
+                }
+                Feed.Say("All of them, at once", Encounters.Pick(Encounters.GatherHostile, "hostile|" + NightIndex()), toYou: true);
+                Log.Write("ENCOUNTER gathering: a hostile one; within 10 m all " + live.Count + " come at you");
                 return;
             }
             if (now - g.StartedAt > 10 * 60000 && !seen)

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 185;
+        public const int CurrentVersion = 186;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -214,6 +214,7 @@ namespace EnrageWestworld.Core
         public int HermitChance = 25;
         public string HermitKey = "None";
         public bool Gatherings = true;
+        public int GatheringHostile = 50;   // [Encounters] percent of gatherings that turn on you once you come within 10 m (Lex, 2026-11-01; violence against Arthur, on as it comes); 0 never; settings version 186
         public int GatheringChance = 15;
         public string GatheringHours = "any";   // any: the night's (midnight to 03:30, the wilds) and by day, in the open or at a town's edge; night: the night's only, as before settings version 163 (Lex, 2026-10-31: "make them happen more often and at any time of day")
         public int GatheringGapHours = 6;       // game hours at least between gatherings, so they don't stack (settings version 163)
@@ -765,6 +766,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 186)
+                    log?.Invoke("Settings: new in this version: [Encounters] GatheringHostile (50): half the gatherings of the awake turn on you when you come within 10 m of them.");
                 if (s.SettingsVersion < 185)
                 {
                     if (s.DramaGapSeconds == 60)
@@ -834,6 +837,7 @@ namespace EnrageWestworld.Core
             WakeStripChance = Math.Max(0, Math.Min(100, WakeStripChance));
             WakeLashOut = Math.Max(0, Math.Min(100, WakeLashOut));
             PickMetres = Math.Max(5, Math.Min(60, PickMetres));
+            GatheringHostile = Math.Max(0, Math.Min(100, GatheringHostile));
             LawShootsThieves = Math.Max(0, Math.Min(100, LawShootsThieves));
             ActThoughtEachSeconds = Math.Max(20, Math.Min(600, ActThoughtEachSeconds));
             ActThoughtGapSeconds = Math.Max(0, Math.Min(120, ActThoughtGapSeconds));
@@ -1193,6 +1197,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("GatheringChance = " + GatheringChance + "   ; percent on each encounter roll while one may happen");
             b.AppendLine("GatheringHours = " + GatheringHours + "   ; any: at any hour (the night ones as they were, and by day in the open or at a town's edge); night: only from midnight to half past three in the wilds, as before");
             b.AppendLine("GatheringGapHours = " + GatheringGapHours + "   ; game hours at least between one gathering and the next, so they don't come one on another (1-72; a game hour is about two real minutes)");
+            b.AppendLine("GatheringHostile = " + GatheringHostile + "   ; percent of the gatherings of the awake that turn on you, bare-handed, all at once, when you come within 10 m of them; fighting them off is self-defence (0 to 100; 50 as it comes; 0: they never attack)");
             b.AppendLine();
             b.AppendLine("[World]");
             b.AppendLine("Bravery = " + Bravery + "   ; how brave the townsfolk are, 0-100: in a fistfight nobody runs, they gather and watch; with guns most hold their ground and the odd coward still runs; the mod's own frights (an onlooker hurrying off, a fright that spreads, a man a gun is drawn on) mostly stand back and watch instead. Someone you aim at or lock on to is left as the game has them, so hold-ups and robbery work as before. Never lawmen, story characters, mission people or enRAGE's. 0: as the game has it");

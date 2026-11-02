@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Half the gatherings of the awake are hostile: come within 10 m and every one of them comes at you, bare-handed, all at once (`[Encounters] GatheringHostile`, 50; 0 for never). Fighting them off is self-defence (settings version 186).
+
 ## 0.7.17 (2026-11-01)
 
 More happening on the street and less idle talk, the law that shoots your pickpocket, eerier and bigger gatherings, Talk that varies, and feelings that know their cause.
