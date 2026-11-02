@@ -198,10 +198,10 @@ namespace EnrageWestworld.Core
             return hour >= 0 && hour < 3 || hour == 3 && minute < 30;
         }
 
-        /// How many stand in the circle: four to seven.
+        /// How many stand in the circle: six to ten.
         public static int GatherSize(int roll)
         {
-            return 4 + ((roll % 4) + 4) % 4;
+            return 6 + ((roll % 5) + 5) % 5;   // six to ten (Lex, 2026-11-01: two or three more; four to seven before)
         }
 
         public const float CircleRadius = 4f;

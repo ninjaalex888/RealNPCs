@@ -881,7 +881,7 @@ NEW IN 0.6.0
   hurt them and they run, and are back another time. They are never armed. Killing one counts
   like any killing.
 - The gathering (West World). From midnight to half past three in the wilds, on a roll
-  (GatheringChance, 15 percent, at most once a night), four to seven of the awake stand in a
+  (GatheringChance, 15 percent, at most once a night), six to ten of the awake stand in a
   silent ring somewhere off in the dark, facing in: people who have begun to come apart or are
   fully awake, as they looked when you met them, and strangers. Come near and every head turns to
   you. Look away and they are closer; look back and they stop dead, never nearer than a few

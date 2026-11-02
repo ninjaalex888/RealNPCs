@@ -1,7 +1,7 @@
 // The gathering, in the game (the hours, the ring, the creep and the lines are in Core/Encounters.cs). After midnight
 // in the wilds (once a night), and with [Encounters] GatheringHours any at any other hour too, in the open or just
 // outside a town's edge (Lex, 2026-10-31: "make them happen more often and at any time of day"), at least
-// GatheringGapHours apart, on a roll, four to seven of the awake stand in a ring 45-70 m off, out of sight, facing in: residents
+// GatheringGapHours apart, on a roll, six to ten of the awake stand in a ring 45-70 m off, out of sight, facing in: residents
 // who are unravelling or awake, in the looks they were met in, made up with strangers. Within 30 m they all turn
 // their heads to you. While none of them is on your screen they step closer, never nearer than a few metres; the
 // moment one is seen, all of them stop dead. Step into the middle and they speak at once. Draw on one, shoot, or hit

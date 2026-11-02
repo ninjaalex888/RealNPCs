@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The gatherings of the awake are bigger: six to ten stand in the ring, where it was four to seven.
 - More of the game's own recorded voices between people: asked how it's going, someone answers by how they really are (going well, going badly) and the other is glad or sorry to hear it; someone asks for the latest and gets the news; friends rib each other; fog and snow get their own grumbles; and in 1907 people talk of the times. Five line names the add-on tried that no voice has (a howdy, a hi, a greeting, a stare and a sorry) were swapped for ones the voices carry.
 - **Talk that varies and remembers.** Every answer that had one way of putting it now has three or four: someone afraid of you, someone who hates you, and each temper as you offer a drink or money, threaten, ask the news, apologise or say goodbye (about 80 new answers; on average 3.6 answers a situation, from 1.7). Ask the same person the same thing again and they won't give you the very same words. Only the words vary: what the answer does (the money, the liking, whether they step back or square up) stays as it was.
 - Feelings that know their cause: right after something happens, the thought says what it was most of the time, not just whom it's about. Anger at a shove is not anger at a theft, a slight, a beating, a debt called in before a crowd or the law's hand on a collar; fear after a killing is not fear of a brawl; and gratitude, grief, shame, pride and relief each have their cause (107 lines over 25 feelings and causes). Kept in memory only, nothing new in the save.
