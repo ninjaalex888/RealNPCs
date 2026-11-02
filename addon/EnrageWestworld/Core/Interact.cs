@@ -151,7 +151,7 @@ namespace EnrageWestworld.Core
             bool blow = wrongKind != null && wrongKind.StartsWith("deed:", StringComparison.Ordinal);   // a blow or a theft, not words: not so easily forgotten (the review)
             if (regard == "afraid")
             {
-                a.Line = "It's forgotten, mister. All forgotten.";
+                a.Line = Pick(seed + "|tv16", "It's forgotten, mister. All forgotten.", "Never you mind it, mister. It's nothing.", "We're square, mister. Truly.");
                 a.Friendly = false;
                 a.LikeDelta = 2;   // said to placate him, as the thought says
                 a.VoiceFear = 30;
@@ -160,7 +160,7 @@ namespace EnrageWestworld.Core
             }
             if (regard == "hostile")
             {
-                a.Line = "Sorry doesn't mend it.";
+                a.Line = Pick(seed + "|tv17", "Sorry doesn't mend it.", "Saying it doesn't make it so.", "Keep your sorry. I've no use for it.");
                 a.Friendly = false;
                 a.LikeDelta = 2;
                 a.VoiceHate = 40;
@@ -177,21 +177,21 @@ namespace EnrageWestworld.Core
             switch (temper)
             {
                 case "Proud":
-                    a.Line = "An apology. Well. I'll take it, this once.";
+                    a.Line = Pick(seed + "|tv18", "An apology. Well. I'll take it, this once.", "I accept. Don't make a habit of needing to.", "It does you credit. Some credit.");
                     a.Thought = "At least he knows he was wrong.";
                     break;
                 case "Hothead":
-                    a.Line = "Sorry, is it? ...Fine. We're square.";
+                    a.Line = Pick(seed + "|tv19", "Sorry, is it? ...Fine. We're square.", "Well... all right. But don't push me again.", "Hmph. Fine. Fine, then.");
                     a.Thought = "Wanted to hit him. Glad I didn't.";
                     break;
                 case "Cold":
-                    a.Line = "Saying it costs you nothing, mister.";
+                    a.Line = Pick(seed + "|tv20", "Saying it costs you nothing, mister.", "Words. Easy enough to give.", "If you say so.");
                     a.Friendly = false;
                     a.LikeDelta = 2;
                     a.Thought = "Means nothing. Still, he said it.";
                     break;
                 case "Coward":
-                    a.Line = "Oh! It's... it's all right. Really it is.";
+                    a.Line = Pick(seed + "|tv21", "Oh! It's... it's all right. Really it is.", "No, no. It was nothing. Truly nothing.", "That's... thank you. It's all right now.");
                     a.Thought = "He's sorry? He's sorry. Thank the Lord.";
                     break;
                 default:
@@ -256,13 +256,13 @@ namespace EnrageWestworld.Core
                 case "news":
                     if (afraid)
                     {
-                        a.Line = Pick(seed + "|naf", "Me? I hear nothing, mister. Never have.", "Nothing. Nothing at all, I swear it.");
+                        a.Line = Pick(seed + "|naf", "Me? I hear nothing, mister. Never have.", "Nothing. Nothing at all, I swear it.", "I keep to myself, mister. Hear nothing.", "News? I... no. Nothing.");
                         a.VoiceFear = 60;
                         a.Thought = "Tell him nothing. Just get him gone.";
                     }
                     else if (hostile)
                     {
-                        a.Line = "Not a word, not for the likes of you.";
+                        a.Line = Pick(seed + "|tv1", "Not a word, not for the likes of you.", "Ask somebody who likes you. If you can find one.", "News? Not from me. Not to you.", "Not one word will you get out of me, mister.");
                         a.VoiceHate = 40;
                     }
                     else if (worry != null && confides)
@@ -278,13 +278,13 @@ namespace EnrageWestworld.Core
                         a.Thought = Pick(seed + "|nt", "Asking me what folk say about him. Odd.", "Does he know it's him they're talking of?", "Best tell him straight and be done.");
                     }
                     else
-                        a.Line = temper == "Cold" || temper == "Greedy" ? Pick(seed + "|cold", "Nothing I'd tell a stranger.", "News costs, mister.")
-                               : Pick(seed + "|none", "Quiet enough. Nothing worth the telling.", "Same as ever, mister.", "Not much happens here that you'd care about.");
+                        a.Line = temper == "Cold" || temper == "Greedy" ? Pick(seed + "|cold", "Nothing I'd tell a stranger.", "News costs, mister.", "And why would you be wanting to know?", "Ask the paper. It's cheaper than me.")
+                               : Pick(seed + "|none", "Quiet enough. Nothing worth the telling.", "Same as ever, mister.", "Not much happens here that you'd care about.", "Quiet as a church on Monday.", "The usual. Somebody owes somebody, somebody's sweet on somebody.");
                     return a;
                 case "drink":
                     if (hostile)
                     {
-                        a.Line = "I'll buy my own, thank you.";
+                        a.Line = Pick(seed + "|tv2", "I'll buy my own, thank you.", "Keep your whiskey. I drink with friends.", "No. I'd sooner go thirsty.", "Buy it for somebody who wants it.");
                         a.VoiceHate = 30;
                         return a;
                     }
@@ -298,20 +298,20 @@ namespace EnrageWestworld.Core
                     a.Cents = DrinkCents;
                     a.LikeDelta = 8;
                     a.Friendly = !afraid;
-                    a.Line = afraid ? "Sure... sure. Much obliged, mister."
-                           : temper == "Cold" ? "If you're buying." : temper == "Hothead" ? "Now you're talking!" : Pick(seed + "|drink", "Well, I won't say no.", "Well, that's neighbourly.", "I'll take a whiskey, then.");
+                    a.Line = afraid ? Pick(seed + "|tv3", "Sure... sure. Much obliged, mister.", "I... yes. That is good of you. Very good.", "If you're offering. Yes. Thank you.")
+                           : temper == "Cold" ? Pick(seed + "|tv4", "If you're buying.", "I'll not turn it down.", "A drink's a drink.") : temper == "Hothead" ? Pick(seed + "|tv5", "Now you're talking!", "That's the best thing I've heard all day!", "Ha! Pour it, then!") : Pick(seed + "|drink", "Well, I won't say no.", "Well, that's neighbourly.", "I'll take a whiskey, then.", "I'll drink to that, whatever it is.", "I'll not be the one to refuse it.");
                     a.Thought = afraid ? "Drink it and smile. Don't cross him." : Pick(seed + "|dt", "A drink from a stranger. Can't complain.", "Free whiskey's the best kind.", "What's he want for it, I wonder.");
                     return a;
                 case "give":
                     if (hostile)
                     {
-                        a.Line = "Keep it. I want nothing that's been yours.";
+                        a.Line = Pick(seed + "|tv6", "Keep it. I want nothing that's been yours.", "I'd not touch your money if I was starving.", "Put it away before I throw it in the trough.", "Your money? No. Never.");
                         a.VoiceHate = 40;
                         return a;
                     }
                     if (temper == "Proud" && !afraid)
                     {
-                        a.Line = woman ? "Keep your money, mister. I manage." : "Keep your money. I ain't a beggar.";
+                        a.Line = woman ? Pick(seed + "|pgw", "Keep your money, mister. I manage.", "I'll not take a stranger's coin, mister.", "Put that away. I'm not in want.") : Pick(seed + "|pgm", "Keep your money. I ain't a beggar.", "Do I look like I'm holding out a hat?", "Put it away, mister. I earn mine.");
                         a.Then = "walk off";
                         a.Event = "faced";   // money held out to the proud lands as a slight (the review)
                         a.VoiceHate = 20;
@@ -322,10 +322,10 @@ namespace EnrageWestworld.Core
                     a.Cents = moneyWorry ? 500 : 100;
                     a.LikeDelta = moneyWorry ? 20 : 10;
                     a.Friendly = !afraid;
-                    a.Line = afraid ? "That's... good of you, mister. Very good."
+                    a.Line = afraid ? Pick(seed + "|tv7", "That's... good of you, mister. Very good.", "I... thank you. I didn't expect... thank you.", "That's more than kind. More than kind, mister.")
                            : moneyWorry ? Pick(seed + "|mw", "Bless you. That keeps the wolf from the door a while.", "That's... that's the rent. Thank you.")
-                           : temper == "Greedy" ? "A dollar? Is that the whole of it?"
-                           : Pick(seed + "|give", "Well, I'm obliged to you.", "Well, I'll not refuse it. Obliged.", "What's this for? ...Thank you.");
+                           : temper == "Greedy" ? Pick(seed + "|tv8", "A dollar? Is that the whole of it?", "Well, it's a start, I suppose.", "One dollar. A generous man would make it two.")
+                           : Pick(seed + "|give", "Well, I'm obliged to you.", "Well, I'll not refuse it. Obliged.", "What's this for? ...Thank you.", "That's handsome of you. Thank you.", "I don't know what to say. Thank you.");
                     a.Thought = afraid ? "What does he want for it? What will he want?" : moneyWorry ? "Somebody's looking out for me after all." : temper == "Greedy" ? "A soft touch. I'll remember his face." : "Money for nothing. Folks don't do that.";
                     return a;
                 case "name":
@@ -405,7 +405,7 @@ namespace EnrageWestworld.Core
                     a.LikeDelta = -15;
                     if (afraid)
                     {
-                        a.Line = "Steady, mister. I never meant to cross you.";
+                        a.Line = Pick(seed + "|tv9", "Steady, mister. I never meant to cross you.", "Please. I'll keep out of your way. I swear it.", "I hear you, mister. I hear you plain.");
                         a.Then = "step back";
                         a.VoiceFear = 70;
                         a.Thought = "He'll do it. I know he'll do it.";
@@ -414,30 +414,30 @@ namespace EnrageWestworld.Core
                     switch (temper)
                     {
                         case "Coward":
-                            a.Line = "Easy, easy! I never meant you any harm.";
+                            a.Line = Pick(seed + "|tv10", "Easy, easy! I never meant you any harm.", "All right! All right. No need for that.", "I'm going. Look, I'm going.");
                             a.Then = "step back";
                             a.VoiceFear = 60;
                             a.Thought = "Don't look at him. Just don't.";
                             break;
                         case "Hothead":
-                            a.Line = woman ? "Is that a threat? I've faced down meaner." : "You threatening me? Go on, then.";
+                            a.Line = woman ? Pick(seed + "|tv12", "Is that a threat? I've faced down meaner.", "One more threat and you'll find out what I'm made of.", "You'll not frighten me in my own town.") : Pick(seed + "|tv11", "You threatening me? Go on, then.", "Go on. Say it once more.", "Big words. Let's see the rest of you.");
                             a.Then = "square up";
                             a.VoiceHate = 50;
                             a.Thought = "Let him try. Just let him try.";
                             break;
                         case "Proud":
-                            a.Line = "I'll remember that, mister.";
+                            a.Line = Pick(seed + "|tv13", "I'll remember that, mister.", "That tone will cost you one day, mister.", "Mark me. I don't forget.");
                             a.Then = "walk off";
                             a.VoiceHate = 40;
                             a.Thought = "He'll answer for that tone one day.";
                             break;
                         case "Cold":
-                            a.Line = Pick(seed + "|thc", "Noted.", "Big man.");
+                            a.Line = Pick(seed + "|thc", "Noted.", "Big man.", "Are you finished?", "I've been threatened by better.");
                             a.VoiceHate = 20;
                             a.Thought = "His kind don't make old bones.";
                             break;
                         default:
-                            a.Line = Pick(seed + "|th", "Easy now. Easy.", "I didn't mean nothing by it.");
+                            a.Line = Pick(seed + "|th", "Easy now. Easy.", "I didn't mean nothing by it.", "No call for that, mister.", "All right. All right, I hear you.");
                             a.Then = "step back";
                             a.VoiceFear = 40;
                             a.Thought = "What did I do? What did I do to him?";
@@ -445,7 +445,7 @@ namespace EnrageWestworld.Core
                     }
                     return a;
                 default:
-                    a.Line = afraid ? "Yes, mister. Goodbye." : hostile ? "Good riddance." : Pick(seed + "|bye", "Take care, now.", "Go careful, now.", "So long, then.");
+                    a.Line = afraid ? Pick(seed + "|tv14", "Yes, mister. Goodbye.", "Good day, mister. Good day.", "Yes. Go safe. Goodbye.") : hostile ? Pick(seed + "|tv15", "Good riddance.", "Don't hurry back.", "And stay gone.") : Pick(seed + "|bye", "Take care, now.", "Go careful, now.", "So long, then.", "Keep to the road, now.", "Be seeing you.");
                     if (hostile)
                         a.VoiceHate = 20;
                     return a;
@@ -468,7 +468,7 @@ namespace EnrageWestworld.Core
             }
             if (regard == "hostile")
             {
-                a.Line = "I know well enough who you are.";
+                a.Line = Pick(seed + "|tv22", "I know well enough who you are.", "Your name I have. What you are, I have too.", "Your name I'll not forget. Nor your face.");
                 a.VoiceHate = 30;
                 a.Thought = "As if I'd forget it.";
                 return a;

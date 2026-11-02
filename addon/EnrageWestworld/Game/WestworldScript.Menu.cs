@@ -479,9 +479,21 @@ namespace EnrageWestworld.InGame
             bool confides = Interact.Confides(t.Regard, Interact.KindLately(_store.WorldLog, t.Id, _store.LastGameMin), t.Worry, t.Temper);
             PersonState pst = _store.Find(t.Id);
             Happening wrong = o.Id == "sorry" ? Interact.LastWrong(_store.WorldLog, t.Id, _store.LastGameMin) : null;
-            InteractAnswer a = o.Id == "ask" ? Interact.AskedAfter(InnerLife.WorrySaid(t.P, _store.LastGameMin / 1440, seed, pst != null ? pst.Musings : null), t.Temper, seed)   // how it stands today, in their words
-                             : o.Id == "sorry" ? Interact.Sorry(t.Temper, t.Regard, seed, wrong != null ? wrong.Kind : null)
-                             : Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), seed, YourSurname(), t.Self);
+            // asked the same thing again, they don't give the very same words (the no-model run, item 7: the last answer to each person
+            // for each option kept in memory; a few other seeds tried; only the words vary, never what the answer does)
+            string lastKey = t.Id + "|" + o.Id, last;
+            _talkLastLine.TryGetValue(lastKey, out last);
+            InteractAnswer a = null;
+            for (int tries = 0; tries < 4 && (a == null || (last != null && a.Line == last)); tries++)
+            {
+                string sd = tries == 0 ? seed : seed + "|again" + tries;
+                a = o.Id == "ask" ? Interact.AskedAfter(InnerLife.WorrySaid(t.P, _store.LastGameMin / 1440, sd, pst != null ? pst.Musings : null), t.Temper, sd)   // how it stands today, in their words
+                  : o.Id == "sorry" ? Interact.Sorry(t.Temper, t.Regard, sd, wrong != null ? wrong.Kind : null)
+                  : Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd, YourSurname(), t.Self);
+            }
+            if (_talkLastLine.Count > 400)
+                _talkLastLine.Clear();
+            _talkLastLine[lastKey] = a.Line;
             SpeechCaption(Arthur(), o.Label, Game.Player.Character.Handle, 1600, false);
             t.Pending = a;
             t.PendingId = o.Id;
@@ -677,6 +689,8 @@ namespace EnrageWestworld.InGame
 
         /// What they say: their own voice for it when the game has one (afraid, hostile or warm as the answer is), the
         /// words as the top subtitle (said to him).
+        private readonly Dictionary<string, string> _talkLastLine = new Dictionary<string, string>();   // person|option -> the last answer's words (memory only)
+
         private void TalkSay(TalkMenu t, InteractAnswer a)
         {
             if (a == null || string.IsNullOrEmpty(a.Line))
