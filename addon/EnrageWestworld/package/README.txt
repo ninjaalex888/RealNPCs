@@ -75,7 +75,7 @@ NEW IN 0.7.18
 - Half the gatherings of the awake turn on you within 10 m, the whole ring together, each a red
   dot ([Encounters] GatheringHostile, 50). A ring does one strange thing together.
 - The game's own event dot on the map where one of RealNPCs' happenings is going on near you,
-  until you reach it ([Encounters] EventDots, on). Seen in game.
+  until you reach it ([Encounters] EventDots, on). The dot is seen in game; the hostile turn not yet.
 
 
 NEW IN 0.7.17
