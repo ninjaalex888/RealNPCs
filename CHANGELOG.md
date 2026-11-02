@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **As many wake without the AI model as with it.** Someone below the second stage of waking who has cause (something seen that shouldn't have been, a death they woke from, a moment lived twice) now and then wonders at the world in a written thought, at most once a day, and it shakes them a little, as the model's own wondering does (`[Mind] WrittenWakes`, on; 30 lines; settings version 188). Not yet seen in game.
 - The readmes say what runs without the AI model now (a thought with what people do, scenes they start themselves, thoughts aloud, Talk that varies, far fewer repeats), and "recommended" where they said "highly recommended"; thoughts aloud no longer say they need a voice list (it ships since 0.7.15). F7 adds TEST no model: what ran on RealNPCs' own rules this session.
 
 ## 0.7.18 (2026-11-01)

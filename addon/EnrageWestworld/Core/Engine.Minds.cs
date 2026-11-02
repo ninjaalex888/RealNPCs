@@ -825,6 +825,8 @@ namespace EnrageWestworld.Core
                     }
                     said.Add(text);
                     c = new Minds.Choice { Text = text, Source = k.Source, Pull = (int)Math.Round(k.Pull) };
+                    if (k.Source == "wonder")
+                        WonderShown(p.Id, now);
                     if (k.M != null)
                     {
                         k.M.Times++;
@@ -986,6 +988,9 @@ namespace EnrageWestworld.Core
             // the day, the year, and the old timeless frames: low, taking turns
             c.Add(new Minds.Candidate { Source = "day", Pull = 16 + Minds.Jitter(seed, "day", 8), Make = () => InnerLife.DayLine(p, hour, seed, told) });
             c.Add(new Minds.Candidate { Source = "era", Pull = 10 + Minds.Jitter(seed, "era", 8), Make = () => InnerLife.EraLine(p, seed, told) });
+            Minds.Candidate wonder = WonderCandidate(p, st, seed, now);   // the Awakening's written wondering (Engine.Wonder.cs; the no-model run, item 10)
+            if (wonder != null)
+                c.Add(wonder);
             int roll = 58 + Voice.Hash(seed + "ch") % 42;
             string pool = InnerLife.FillerPool(p, roll);
             c.Add(new Minds.Candidate { Source = "filler:" + pool, Pull = 14 + Minds.Jitter(seed, "filler", 10), Make = () => { string ignored; return InnerLife.Filler(p, hour, seed, told, roll, out ignored); } });

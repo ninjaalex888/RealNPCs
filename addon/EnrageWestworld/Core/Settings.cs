@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 187;
+        public const int CurrentVersion = 188;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -75,6 +75,7 @@ namespace EnrageWestworld.Core
         public bool MindLevels = false;   // the shadow's scan run from the levels scheduler (night 2026-10-28, item 7; settings version 89): a near ring in view, the town around every 10-30 s, the people away one time a game day, a budget of work a frame; off, the scan as it was
         public bool QuarrelLadder = true;  // with MindLive: an argue or a brawl between two people the mind knows is played from the quarrel ladder (Core/Escalation.cs, Scenes.Ladder.cs; night 2026-10-28, item 16; settings version 92): how far it goes and how it ends from their traits and the surroundings; the shot is never played
         public bool SaidLately = true;   // the street's talk avoids lines said in the last ~300 (the no-model run, item 5; settings version 183)
+        public bool WrittenWakes = true;   // [Mind] with MindWakes: a rare written wondering in someone with cause below the second stage chips "things are as they seem" as the model's does (the no-model run, item 10); settings version 188
         public bool EventfulOnly = true;   // [Scenes] street scenes of nothing but talk (small talk, gossip, a song, a haggle...) and the quiet talks beside them are passed over (Lex, 2026-11-01); settings version 185
         public bool ThoughtVariety = true;   // no two people near you think the same frame within an hour, and a source that gave the last few thoughts gives way to the others (Lex, 2026-10-29; settings version 93; Engine.Minds.cs)
         public bool MindStandUp = true;      // with MindLive: who steps into a rough or a brawl between two others comes from the onlookers' own minds, and whether the bully backs down from his (Core/StepIn.cs; roadmap 39; night 2026-10-29, item 2; settings version 107); off, the old roll
@@ -767,6 +768,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 188)
+                    log?.Invoke("Settings: new in this version: [Mind] WrittenWakes (on): without the AI model too, people with cause wonder at the world now and then, and it may wake them as the model's wondering does.");
                 if (s.SettingsVersion < 187)
                     log?.Invoke("Settings: new in this version: [Encounters] EventDots (on): the game's pulsing event dot on the map where a brawl, a gathering or one of the encounters is going on near you.");
                 if (s.SettingsVersion < 186)
@@ -1075,6 +1078,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("LanguageChosen = " + B(LanguageChosen) + "   ; set true by itself whenever you change Language (in the settings panel or in this file), or when Language is on at a start, so a Language you turned off stays off. While false and Language is off, each start asks Ollama at LanguageUrl in the background (a few seconds at most) whether it runs and holds LanguageModel, and if it does, turns Language on, once, with a notice");
             b.AppendLine("LanguageVariety = " + B(LanguageVariety) + "   ; (in testing) with Language on: the model's thoughts vary: each one goes to one thing (their work, someone in sight, a memory, the body, the worry, money, kin, faith, the town's talk, a small thing seen; the weather only now and then) in a shape of its own (fragments, a plain sentence, a question, a reckoning, an opinion, a saying half-remembered), never opening the way their last few did; and nobody doubts the world is real without cause (from the second stage of waking, or after something strange: a buried man seen walking, the night visitor, a death they woke from)");
             b.AppendLine("ModelWakes = " + B(ModelWakes) + "   ; (in testing) with Language, MindWakes and LanguageVariety on: someone with cause who wonders at the world in a thought of their own is shaken a little more by it, so the model's own wondering can start them stirring; off, only what they live through moves them");
+            b.AppendLine("WrittenWakes = " + B(WrittenWakes) + "   ; with MindWakes on: someone below the second stage of waking who has cause (something seen that shouldn't have been, a death they woke from, a moment lived twice) now and then wonders at the world in a written thought, at most once a day, and it shakes them a little as the AI model's wondering does; no AI model needed");
             b.AppendLine("LanguageTalk = " + B(LanguageTalk) + "   ; (in testing) with Language on: when you Talk to someone, the model words their answer by their nature, mood and what's on their mind (what it means stays the same: the drink taken, the money refused); if it's slow or says something it shouldn't, the written line");
             b.AppendLine("TalkModelWaitSeconds = " + F(TalkModelWaitSeconds) + "   ; with LanguageTalk on: how long, in seconds, the model may take to word a Talk answer before the written line is said instead (1-7; a request to the model gives up at 8)");
             b.AppendLine("LanguagePicks = " + B(LanguagePicks) + "   ; (in testing) with Language on: for people near you, the model picks what they do next from the few things their mind allows (the best three, and a plan's step), by their nature and how they feel; if it's slow or says nothing sensible, their mind's own choice stands");
