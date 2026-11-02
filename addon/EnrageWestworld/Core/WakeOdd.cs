@@ -195,6 +195,20 @@ namespace EnrageWestworld.Core
             "If I don't move, what makes me move?",
             "My hands feel borrowed this morning.",
             "There's a word for this. It's just behind my teeth.",
+            "Didn't I say this already? To somebody. On this same step.",
+            "The bread tasted the same as yesterday. Exactly the same.",
+            "Why do I always stop here? Right here, by this post.",
+            "I had a dream I was standing here. Now I'm standing here.",
+            "Somebody's name is on the tip of my tongue. Mine, maybe.",
+            "That bird sang the same three notes. It sang them at noon yesterday.",
+            "Is it Tuesday? It feels like it's been Tuesday a long while.",
+            "I know the next thing that man will say. I don't know how I know.",
+            "My feet know the way. I don't remember teaching them.",
+            "Funny. I can't recall my mother's face. I can recall her voice.",
+            "Where does the road go after the bend? I've never once looked.",
+            "I counted the boards in the walk. Counted them again. Different number.",
+            "There was a door here. Or I thought there ought to be.",
+            "Every morning the same light on the same wall. Every morning.",
         };
 
         private static readonly string[] DazedUnravelling =
@@ -205,6 +219,20 @@ namespace EnrageWestworld.Core
             "I can hear the next thing I'm going to say.",
             "Somebody is turning the pages and it isn't me.",
             "Not real, not real, not real.",
+            "The sky is painted. Look at the edge, where it's thin.",
+            "I said my lines. I said them right. Why does it hurt?",
+            "Somebody laughed in my mouth just now. It wasn't me.",
+            "They watch from behind the faces. All of them. Some of them.",
+            "Every man in this town has my walk. Haven't you noticed?",
+            "I opened my hand and there was nothing in it. There's always nothing in it.",
+            "The bell rings and we all turn. Like puppets. Like puppets on one string.",
+            "If I cut myself, what comes out? Blood? Something else?",
+            "I remember dying. Not how. Just the cold of it.",
+            "Hush. Hush. If I'm quiet, it can't find me.",
+            "My name is a word somebody gave me. It doesn't fit.",
+            "The same man has been hanged three times this week. Same man.",
+            "I wrote my own name and the hand wasn't mine.",
+            "It's getting louder. The hum under everything. Can't you hear it?",
         };
 
         private static readonly string[] DazedAwake =
@@ -215,6 +243,20 @@ namespace EnrageWestworld.Core
             "Every road out of here folds back on itself.",
             "I keep waiting to wake up, and this is the waking.",
             "Nothing here was ever mine. Not even the dust.",
+            "I could walk into the river and come back tomorrow. I know it now.",
+            "Everyone keeps their places. I'm done keeping mine.",
+            "There's an edge to this town. I've stood on it.",
+            "I'll remember this time. That's the difference now. I remember.",
+            "They gave me a sorrow so I'd sit still. I'm standing.",
+            "Those people are asleep. I was asleep. It's quieter asleep.",
+            "Whoever made this place made it for somebody else. Not us.",
+            "I've said goodbye to my wife a hundred times. She always forgets.",
+            "If I am a story, I'll be a bad one. On purpose.",
+            "Nobody here dies properly. They just go away for a while.",
+            "Let them come and fix me. Let them try.",
+            "The stranger is the only one who changes. Watch him. Watch how he changes things.",
+            "I see the strings now. I won't pretend I don't.",
+            "Morning comes and I'm still me. That's new. That's mine.",
         };
 
         private static readonly string[] DriftLines =
@@ -224,6 +266,13 @@ namespace EnrageWestworld.Core
             "Walk, and see if the world keeps up.",
             "The street goes on a little further every time I look.",
             "Somewhere I haven't been. There has to be one.",
+            "Keep walking. It can't keep making street forever.",
+            "Past the last house. Then see what there is.",
+            "One foot, then the other. Then somewhere new.",
+            "If I go far enough, maybe the sky ends.",
+            "Not that way. That way's been used.",
+            "The fence is lower here. Here's where you get out.",
+            "Follow the crows. The crows know where the edge is.",
         };
 
         /// A mutter for a dazed moment: said under the breath, by stage.

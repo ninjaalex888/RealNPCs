@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The waking mutter far more: twenty lines for each stage of the Awakening where there were six (questioning, unravelling, awake), and twelve for the ones who wander off to see where the street ends.
+
 ## 0.7.16 (2026-11-01)
 
 Far fewer repeated thoughts: about 650 new written lines and thoughts that vary over an hour of play, all without the AI model.
