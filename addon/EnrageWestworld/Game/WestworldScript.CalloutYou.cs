@@ -64,12 +64,21 @@ namespace EnrageWestworld.InGame
             string matter = null;
             float bestD = float.MaxValue;
             int looked = 0;
+            // the Testing row with nobody sore at you near (Lex, 2026-11-02: pressed [ in town, "not seeing it work"): the nearest
+            // one named and free is given a test grievance, hard words between you, so the row always shows something
+            Candidate stand = null;
+            float standD = float.MaxValue;
             foreach (Candidate c in ReasonCandidates(me, now, test))
             {
                 int h = c.Ped.Handle;
                 if (PED.IS_PED_USING_ANY_SCENARIO(h) || IsMindActing(h) || MindActWhyNot(c.Ped, h) != null)
                     continue;
                 float d = c.Ped.Position.DistanceTo(at);
+                if (test && d <= CallYouFrom && d >= 4f && d < standD && !(c.Who.P != null && (c.Who.P.Vengeful || c.Who.P.Murderous)))
+                {
+                    stand = c;
+                    standD = d;
+                }
                 if (d > CallYouFrom || d < 4f || d >= bestD)
                     continue;
                 if (!test && _cyDoneToday.Contains(c.Who.Id + "|" + g / 1440))
@@ -84,6 +93,13 @@ namespace EnrageWestworld.InGame
                 best = c;
                 matter = m;
                 bestD = d;
+            }
+            if (best == null && stand != null)
+            {
+                best = stand;
+                matter = "words";
+                bestD = standD;
+                Log.Write("ENCOUNTER test, callyou: nobody near with something against you; " + stand.Who.Name + " stands in, sore over hard words (a test)");
             }
             if (best == null)
             {
