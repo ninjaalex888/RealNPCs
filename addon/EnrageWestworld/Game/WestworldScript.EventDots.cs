@@ -15,6 +15,7 @@ namespace EnrageWestworld.InGame
     {
         private readonly Dictionary<string, Blip> _eventDots = new Dictionary<string, Blip>();
         private bool _eventDotFailed;
+        private const float EventDotNearMetres = 8f;
 
         /// The dot for this happening at this spot: made if it isn't there, moved if it is.
         private void EventDot(string key, Vector3 at)
@@ -22,6 +23,11 @@ namespace EnrageWestworld.InGame
             if (_cfg == null || !_cfg.EventDots || _eventDotFailed)
             {
                 EventDotClear(key);
+                return;
+            }
+            if (Game.Player.Character.Position.DistanceTo(at) < EventDotNearMetres)
+            {
+                EventDotClear(key);   // you're there: the dot has done its work (Lex, 2026-11-01: "go away when the character gets within 5-10m")
                 return;
             }
             try

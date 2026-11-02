@@ -255,9 +255,9 @@ namespace EnrageWestworld.InGame
                 {
                     int h = m.Ped.Handle;
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
-                    TASK.CLEAR_PED_TASKS(h, true, false);
                     PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);   // they fight to the end
-                    TASK.TASK_COMBAT_PED(h, me.Handle, 0, 16);
+                    int you = me.Handle;
+                    ScenarioExit.SoftUp(h, x => TASK.TASK_COMBAT_PED(x, you, 0, 16));   // up out of their act the game's way and at you the same tick (a bare clear left the kneeling kneeling: Lex, 2026-11-01)
                     _cameAtYouSeen[h] = now;
                 }
                 Feed.Say("All of them, at once", Encounters.Pick(Encounters.GatherHostile, "hostile|" + NightIndex()), toYou: true);
@@ -299,8 +299,8 @@ namespace EnrageWestworld.InGame
                 foreach (Gatherer m in live)
                 {
                     int h = m.Ped.Handle;
-                    TASK.CLEAR_PED_TASKS(h, true, false);
-                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 3000, 0f, 0f, 0f);
+                    int you = me.Handle;
+                    ScenarioExit.SoftUp(h, x => TASK.TASK_TURN_PED_TO_FACE_ENTITY(x, you, 3000, 0f, 0f, 0f));   // up out of their act, Rockstar's way
                     TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, -1, 0, 51, 0);
                     Speech.SayAny(h, Speech.Hum, me.Handle);   // a wordless sound from every one of them at once
                 }
@@ -370,12 +370,11 @@ namespace EnrageWestworld.InGame
             foreach (Gatherer m in live)
             {
                 int h = m.Ped.Handle;
-                TASK.CLEAR_PED_TASKS(h, true, false);
                 BraveRelease(h);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
-                if (Bravery.Holds(_cfg.Bravery, "scatter|" + h))
-                    TASK.TASK_SMART_FLEE_PED(h, me.Handle, 40f, 20000, 0, 1.3f, 0);   // brave ([World] Bravery): walks off from you, unhurried
-                else
-                    TASK.TASK_SMART_FLEE_PED(h, me.Handle, 200f, -1, 0, 3f, 0);
+                int you = me.Handle;
+                bool brave = Bravery.Holds(_cfg.Bravery, "scatter|" + h);
+                // up out of their act Rockstar's way (a bare clear left the kneeling kneeling), the run the same tick
+                ScenarioExit.SoftUp(h, x => { if (brave) TASK.TASK_SMART_FLEE_PED(x, you, 40f, 20000, 0, 1.3f, 0); else TASK.TASK_SMART_FLEE_PED(x, you, 200f, -1, 0, 3f, 0); });
             }
             if (live.Count > 0)
                 Feed.Say("The ring breaks", Encounters.Pick(Encounters.GatherScatter, "scatter|" + now / 1000), Speech.When(live[0].Ped.Handle, "scared", me.Handle), toYou: true);

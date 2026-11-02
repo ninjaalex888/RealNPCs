@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: a hostile gathering whose ring was kneeling or sitting never came at you (their act kept them); they get up the game's own way first now, and the same for scattering and for turning to you in the middle. The event dot goes once you are within 8 m of it.
 - The game's own pulsing event dot on the map where one of RealNPCs' happenings is going on near you: a brawl, a gathering of the awake, a callout, a husband's temper, the hogtied, an execution (`[Encounters] EventDots`, on; settings version 187).
 - A gathering's ring all do the same eerie thing together, whichever it is that night.
 - Half the gatherings of the awake are hostile: come within 10 m and every one of them comes at you, bare-handed, all at once (`[Encounters] GatheringHostile`, 50; 0 for never). Fighting them off is self-defence (settings version 186).
