@@ -15,6 +15,7 @@ namespace EnrageWestworld.InGame
     {
         private readonly Dictionary<string, Blip> _eventDots = new Dictionary<string, Blip>();
         private bool _eventDotFailed;
+        private readonly HashSet<string> _eventDotReached = new HashSet<string>();
         private const float EventDotNearMetres = 8f;
 
         /// The dot for this happening at this spot: made if it isn't there, moved if it is.
@@ -25,9 +26,17 @@ namespace EnrageWestworld.InGame
                 EventDotClear(key);
                 return;
             }
+            if (_eventDotReached.Contains(key))
+                return;   // you've been there: it stays gone till this happening is over (Lex, 2026-11-01)
             if (Game.Player.Character.Position.DistanceTo(at) < EventDotNearMetres)
             {
-                EventDotClear(key);   // you're there: the dot has done its work (Lex, 2026-11-01: "go away when the character gets within 5-10m")
+                Blip near;
+                if (_eventDots.TryGetValue(key, out near))
+                {
+                    _eventDots.Remove(key);
+                    try { if (near != null && near.Exists()) near.Delete(); } catch { }
+                }
+                _eventDotReached.Add(key);   // you're there: the dot has done its work
                 return;
             }
             try
@@ -50,6 +59,7 @@ namespace EnrageWestworld.InGame
 
         private void EventDotClear(string key)
         {
+            _eventDotReached.Remove(key);   // the happening is over: the next one with this key gets its dot
             Blip b;
             if (!_eventDots.TryGetValue(key, out b))
                 return;

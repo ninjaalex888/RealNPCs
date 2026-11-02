@@ -26,6 +26,7 @@ namespace EnrageWestworld.InGame
             public bool Woman;
             public float X, Y;      // place in the ring, from the centre
             public string Act;      // what they do in the ring (GatherActs; Lex, 2026-11-01: "a wide range of eerie animations")
+            public Blip Dot;        // the red enemy dot while a hostile ring comes at you
         }
 
         private sealed class Gathering
@@ -254,8 +255,13 @@ namespace EnrageWestworld.InGame
                 foreach (Gatherer m in live)
                 {
                     int h = m.Ped.Handle;
-                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
-                    PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);   // they fight to the end
+                    MakeHostile(m.Ped, now);   // one group against you, together, as the crying woman's men (WestworldScript.Encounters.cs)
+                    try
+                    {
+                        if (MAP.GET_BLIP_FROM_ENTITY(h) == 0)
+                            m.Dot = new Blip(MAP.BLIP_ADD_FOR_ENTITY(Natives.Hash("BLIP_STYLE_ENEMY"), h));   // a red dot on each (Lex, 2026-11-01)
+                    }
+                    catch { }
                     int you = me.Handle;
                     ScenarioExit.SoftUp(h, x => TASK.TASK_COMBAT_PED(x, you, 0, 16));   // up out of their act the game's way and at you the same tick (a bare clear left the kneeling kneeling: Lex, 2026-11-01)
                     _cameAtYouSeen[h] = now;
@@ -383,6 +389,13 @@ namespace EnrageWestworld.InGame
 
         private void EndGathering(string why)
         {
+            if (_gathering != null)
+                foreach (Gatherer m in _gathering.Ring)
+                    if (m.Dot != null)
+                    {
+                        try { if (m.Dot.Exists()) m.Dot.Delete(); } catch { }
+                        m.Dot = null;
+                    }
             EventDotClear("gathering");
             Gathering g = _gathering;
             _gathering = null;
