@@ -128,6 +128,14 @@ namespace EnrageWestworld.Core
             return c.ArgueCapped ? Math.Min(c.Trouble, 1.5f) : c.Trouble;
         }
 
+        /// The kinds that are only talk, with nothing happening (the no-model run, Lex 2026-11-01): passed over with [Scenes] EventfulOnly.
+        public static readonly string[] JustTalkKinds = { "smalltalk", "gossip", "song", "talltale", "paper", "pitch", "haggle", "news", "posse", "round", "avoid", "cheer", "glad" };
+
+        public static bool JustTalk(string kind)
+        {
+            return kind != null && Array.IndexOf(JustTalkKinds, kind) >= 0;
+        }
+
         public static Scene Choose(SceneCast c, string seed, bool allowFight)
         {
             List<KeyValuePair<string, int>> w = ChanceWeights(c, allowFight);   // the kinds this cast and place allow (Scenes.Minds.cs, where the minds lean them)

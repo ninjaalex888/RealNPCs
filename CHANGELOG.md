@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- More happening on the street, less idle talk: street scenes come twice as often as they come (`[Scenes] DramaGapSeconds` 30, from 60; an ini on 60 moves), and scenes of nothing but talk (small talk, gossip, a song, a haggle, a tall tale, the paper read out, a round stood) are passed over, along with the quiet talks beside a scene (`[Scenes] EventfulOnly`, on). Quarrels, fights, thefts, cheating, debts, flirts and proposals, snapping and brush-offs, favours, warnings and the waking's questions all stay (settings version 185).
 - The law shoots the one who picked your pocket: with a lawman near, half the time (`[Scenes] LawShootsThieves`, 50) he draws and shoots the thief instead of running him down, and your money comes back off him either way (settings version 184). Pickpockets among townsfolk lifting from each other were already there (`[Scenes] NpcThieves`).
 - The gatherings of the awake are bigger: six to ten stand in the ring, where it was four to seven.
 - More of the game's own recorded voices between people: asked how it's going, someone answers by how they really are (going well, going badly) and the other is glad or sorry to hear it; someone asks for the latest and gets the news; friends rib each other; fog and snow get their own grumbles; and in 1907 people talk of the times. Five line names the add-on tried that no voice has (a howdy, a hi, a greeting, a stare and a sorry) were swapped for ones the voices carry.

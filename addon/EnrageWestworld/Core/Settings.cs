@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 184;
+        public const int CurrentVersion = 185;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -75,6 +75,7 @@ namespace EnrageWestworld.Core
         public bool MindLevels = false;   // the shadow's scan run from the levels scheduler (night 2026-10-28, item 7; settings version 89): a near ring in view, the town around every 10-30 s, the people away one time a game day, a budget of work a frame; off, the scan as it was
         public bool QuarrelLadder = true;  // with MindLive: an argue or a brawl between two people the mind knows is played from the quarrel ladder (Core/Escalation.cs, Scenes.Ladder.cs; night 2026-10-28, item 16; settings version 92): how far it goes and how it ends from their traits and the surroundings; the shot is never played
         public bool SaidLately = true;   // the street's talk avoids lines said in the last ~300 (the no-model run, item 5; settings version 183)
+        public bool EventfulOnly = true;   // [Scenes] street scenes of nothing but talk (small talk, gossip, a song, a haggle...) and the quiet talks beside them are passed over (Lex, 2026-11-01); settings version 185
         public bool ThoughtVariety = true;   // no two people near you think the same frame within an hour, and a source that gave the last few thoughts gives way to the others (Lex, 2026-10-29; settings version 93; Engine.Minds.cs)
         public bool MindStandUp = true;      // with MindLive: who steps into a rough or a brawl between two others comes from the onlookers' own minds, and whether the bully backs down from his (Core/StepIn.cs; roadmap 39; night 2026-10-29, item 2; settings version 107); off, the old roll
         public bool MindPlans = true;   // with MindLive: plans over days, from a wrong done them, a kindness, a debt, a sweetheart; the holder seeks the other out and the street leans to the scene (the NPC-life run, step 6; settings version 139)
@@ -248,7 +249,7 @@ namespace EnrageWestworld.Core
         public string Storyteller = "lively";   // [World] off | calm | lively | wild: the storyteller shortens the waits on a quiet street or road and lengthens them a little after something big; it never starts anything itself (NIGHT4 item 2; settings version 167)
         public bool OwnLooks = false;   // [World] standing alone: an ordinary person is known again by the look of the body they were met in (the model and every piece they wear), so the same townsman met again is the same man (roadmap 34, phase A; night 2026-10-29, item 5; settings version 110); off as it comes until seen in game; with enRAGE running, its own knowing by look is used and this never
         public bool Drama = true;
-        public int DramaGapSeconds = 60;   // 150 until settings version 87, 90 until 101 (Lex, 2026-10-28 and 10-29: the world lively)
+        public int DramaGapSeconds = 30;   // 30 from settings version 185 (Lex, 2026-11-01: "up the frequency"); 150 until 87, 90 until 101, 60 until 185 (Lex, 2026-10-28 and 10-29: the world lively)
         public bool SaloonGossip = true;
         public bool Weddings = true;
         public bool Funerals = true;
@@ -764,6 +765,12 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 185)
+                {
+                    if (s.DramaGapSeconds == 60)
+                        s.DramaGapSeconds = 30;
+                    log?.Invoke("Settings: new in this version: [Scenes] EventfulOnly (on): street scenes of nothing but talk are passed over, and the quiet talks beside them; scenes come more often (DramaGapSeconds 30 as it comes, from 60).");
+                }
                 if (s.SettingsVersion < 182 && s.FightCrowds)
                 {
                     s.FightCrowds = false;
@@ -1273,6 +1280,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Aftermath = " + B(Aftermath) + "   ; with MindLive on: after a street fight near you, a friend of the one who went down (or a kind soul who saw it) goes to see to him, and a lawman near has a word with the one left standing");
             b.AppendLine("ChanceMeetMetres = " + F(ChanceMeetMetres) + "   ; two people up to this far apart may meet by chance near you, one walking over to the other (2-12; 3.4 was standing together only)");
             b.AppendLine("ScenesAtOnce = " + ScenesAtOnce + "   ; street scenes playing at once (1-6): one scene, and the rest quiet talks between other people elsewhere on the street (words only, never blows); 1: just the scene");
+            b.AppendLine("EventfulOnly = " + B(EventfulOnly) + "   ; street scenes and chance meetings of nothing but talk (small talk, gossip, a song, a haggle, a tall tale, the paper read out) are passed over, and so are the quiet talks beside a scene: the street keeps its quarrels, fights, thefts, flirts, debts and troubles; false: the talk too, as before");
             b.AppendLine("MainScenesAtOnce = " + MainScenesAtOnce + "   ; full street scenes at once (1-3; two at most play for now): a second scene with its own words and walk-overs at least 20 m from the first, never the same people (fights, rough handling and thefts only ever in the first); 1: a single scene; the quiet talks of ScenesAtOnce come on top");
             b.AppendLine("GangShootouts = " + B(GangShootouts) + "   ; men of two rival gangs who meet within 90 m of you may fight it out (more often where enRAGE reports a war between them): words, a standoff, then a shootout until a side is beaten or gone; at most one in five minutes");
             b.AppendLine("WomenInFights = " + B(WomenInFights) + "   ; women may come to blows in a quarrel too (with a man or another woman), half as often as two men for each woman in it; false: only two men ever fight");

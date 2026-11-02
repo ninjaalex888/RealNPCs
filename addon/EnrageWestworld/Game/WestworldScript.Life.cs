@@ -630,11 +630,21 @@ namespace EnrageWestworld.InGame
                    "; in sight: " + (_engine.Nearby != null ? _engine.Nearby.Count : 0) + " (noted " + (g - _engine.NearbyAt) + " game min ago)";
         }
 
+        private int _justTalkSkipped;   // for F7
+
         private bool StartScene(Scene s, List<Ped> people, SceneCast cast, string seed, int now, bool test = false, bool side = false, bool asSecond = false)
         {
             if (s != null && people != null && people.Take(s.Cast).Any(p => p != null && AimedLately(p.Handle, now)))
             {
                 Log.Detail("SCENE " + s.Kind + " not started: one of its cast was aimed at a moment ago");   // the game's answer to the gun stands (the aftermath's tend included)
+                return false;
+            }
+            // nothing but talk (small talk, gossip, a song, a haggle...) and the quiet talks beside a scene are passed over with
+            // [Scenes] EventfulOnly (Lex, 2026-11-01: "remove the scenes entirely where they are just gossiping, talking, or other
+            // uneventful things"); the timer starts only on a scene that begins, so the next look comes at once
+            if (_cfg.EventfulOnly && !test && s != null && (side || Scenes.JustTalk(s.Kind)))
+            {
+                _justTalkSkipped++;
                 return false;
             }
             // the labels over the lines say the names the lines were written with (cast.Names, set by BuildCast)
