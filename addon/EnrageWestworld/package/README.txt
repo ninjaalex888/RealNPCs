@@ -31,9 +31,13 @@ RealNPCs. With it on, the people near you:
 - choose what they do next from what their own mind allows: head home, pick a quarrel, call in
   a debt, court someone;
 - answer you in their own words when you Talk to them (Q, locked on);
-- say some of their thoughts aloud in their own recorded voice (for now this also needs a
-  voice list RealNPCs doesn't ship, so it's silent for nearly everyone);
+- say some of their thoughts aloud in their own recorded voice, the remark that fits;
 - and with West World on, those waking up choose their own strange acts.
+
+Without the model they still think, choose and talk on RealNPCs' own rules and written lines:
+a thought with what they choose to do, scenes they start for their own reasons, what they
+feel most said aloud in their own voice, Talk answers that vary and remember, and thousands of
+written thoughts that hardly repeat in an hour. The model words it more freely; it isn't needed.
 
 It runs on your own graphics card through Ollama (https://ollama.com): nothing is sent
 anywhere, and there's no account and no cost. Everything the model writes is checked first

@@ -1152,6 +1152,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST stalker acts: " + Stalker.ActsStatus);
 			Log.Write("TEST worries: " + WorriesStatus());
 			Log.Write("TEST mind: " + MindsStatus());
+			Log.Write("TEST no model: " + _actThoughtsShown + " acts and " + _turnThoughtsShown + " encounter turns with a written thought, " + _selfStartStarted + " scenes started by people's own minds, " + _aloudRuleSaid + " thoughts said aloud by rule, " + _engine.FramesHeld + " repeated thoughts held back, " + Voice.FreshSwaps + " street lines said lately passed over, " + _justTalkSkipped + " scenes of just talk passed over (the AI model " + (_cfg.Language && _langReady ? "on" : "off") + ")");   // the no-model run, item 9: keep score
 			Log.Write("TEST thought variety: " + (_cfg.ThoughtVariety ? "street scenes of just talk passed over " + _justTalkSkipped + (_cfg.EventfulOnly ? "" : " (EventfulOnly off)") + "; " + "on; frames held back within the hour " + _engine.FramesHeld + ", choices with a source's pull spread " + _engine.SourcesSpread + "; the street's lines said lately passed over " + Voice.FreshSwaps + (_cfg.SaidLately ? "" : " (SaidLately off)") : "off ([Mind] ThoughtVariety): the old choice"));
 			Log.Write("TEST language: " + LanguageStatus());
 			Log.Write("TEST picks: " + PicksStatus());

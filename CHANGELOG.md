@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The readmes say what runs without the AI model now (a thought with what people do, scenes they start themselves, thoughts aloud, Talk that varies, far fewer repeats), and "recommended" where they said "highly recommended"; thoughts aloud no longer say they need a voice list (it ships since 0.7.15). F7 adds TEST no model: what ran on RealNPCs' own rules this session.
+
 ## 0.7.18 (2026-11-01)
 
 Hostile gatherings of the awake, the game's own event dot on the map, and eerier rings.
