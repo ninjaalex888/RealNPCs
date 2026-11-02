@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.19 (2026-11-02)
+
+Grudges said to your face, names that fit the person, a rarer and eerier Awakening, and the held ring to try.
 
 - Fixed: two people whose fight scene stopped (when one of them was in combat with you, or you aimed at one) and who fought on anyway were left to it, with no lawman coming. The law hears that fight too now: after a few seconds a free lawman within 60 m comes and breaks it up. The log says who stopped a scene and why.
 - **The held ring** (`[Mind] HeldRing`, off while it's tried; `HeldRingMetres` 12, `HeldRingMinutes` 10). The people near you are held: when one of their acts ends the next begins at once (what their mind chose, else what it ranked next, else the nearest seat or spot, else a short stroll) instead of the game taking them back between acts. Let go 13 m farther out, after ten minutes, or the moment a gun, a fight, a scene, Talk, the law or enRAGE has a claim on them. The log's "MIND acting minute" line and F7's mind acts line say how many in the ring are held (settings 192).

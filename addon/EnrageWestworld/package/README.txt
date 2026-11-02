@@ -1,4 +1,4 @@
-RealNPCs 0.7.18 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.19 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -72,6 +72,27 @@ Set it up once:
 
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
+
+
+NEW IN 0.7.19
+-------------
+- Called out yourself ([Encounters] CalloutsArthur, on): by day in a town, someone with something
+  against you (you struck or robbed them, they saw you kill, you soured them) walks up and says it
+  to your face. Stay and most put up their fists (fighting them is self-defence), walk off past
+  12 m and they call you a coward, hold a gun on them and they back off. Seen in game.
+- The hogtied: hold a gun on the men and bounty hunters fight back; one in four you cut loose
+  pulls a knife on you instead of thanking you ([Encounters] HogtiedTurnsOnYou, 25).
+- Names that fit the person: Chinatown's people get Chinese names, the Wapiti theirs, Hispanic and
+  Black townsfolk names of their own, from the game's own voice recordings; French, Italian,
+  Irish, German and Scandinavian names in the towns they settled. People you've met keep theirs.
+- The Awakening rarer and eerier: gatherings mostly after dark or in fog and rain, some gone
+  when you look back, the waking's odd lines far fewer. GatheringChance 10, GatheringGapHours 24,
+  AwakeningDespair 50 as they come (an ini on the old values is moved; your own are kept).
+- The held ring ([Mind] HeldRing, off while it's tried): the people within 12 m of you go from
+  one act straight into the next instead of the game taking them back between acts.
+- Fixed: the law now comes to a fight its scene let go; the crying woman holds only her knife.
+- Without the AI model, people with cause now and then wonder at the world in a written thought
+  ([Mind] WrittenWakes, on).
 
 
 NEW IN 0.7.18
