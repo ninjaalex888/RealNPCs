@@ -18,6 +18,9 @@ namespace EnrageWestworld.Core
         public string[] Stories;      // the place-story codes for this town (StoryCodes), may be empty
         public bool Crude = true;     // crude remarks allowed ([Scenes] CrudeTalk)
         public bool Sure;             // the test key: every kind the moment allows is tried, without the chance rolls
+        public bool Friends;          // the two are friends (Ties), for teasing (the no-model run, item 8)
+        public int Year;              // the game year (1899, or 1907 in the epilogue), for the year's talk
+        public string Sky;            // "fog" or "snow" when it's that, for their own grumbles
     }
 
     public sealed class TalkTurn
@@ -32,8 +35,31 @@ namespace EnrageWestworld.Core
         public static readonly TalkTurn[] HowsItGoing =
         {
             new TalkTurn { Who = 0, Lines = new[] { "HOWS_IT_GOING" } },
-            new TalkTurn { Who = 1, Lines = new[] { "RESPONSE_WORKING_HARD", "RESPONSE_GENERIC", "RESPONSE_IDLING" } }
+            new TalkTurn { Who = 1, Lines = new[] { "{mood}", "RESPONSE_WORKING_HARD", "RESPONSE_GENERIC", "RESPONSE_IDLING" } },
+            new TalkTurn { Who = 0, Lines = new[] { "{after}" } }   // glad or sorry to hear it, by the answer (item 8); nothing after a plain one
         };
+
+        /// Asking for the latest, the news, and the reaction to it (the no-model run, item 8).
+        public static readonly TalkTurn[] Latest =
+        {
+            new TalkTurn { Who = 0, Lines = new[] { "WHATS_THE_LATEST" } },
+            new TalkTurn { Who = 1, Lines = new[] { "CHAT_RESPONSE_A", "CHAT_RESPONSE_B", "CHAT_RESPONSE_C", "CHAT_RESPONSE_D", "CHAT_RESPONSE_E" } },
+            new TalkTurn { Who = 0, Lines = new[] { "RESPONSE_{letter}", "RESPONSE_GENERIC" } }
+        };
+
+        /// Friends ribbing each other.
+        public static readonly TalkTurn[] Tease =
+        {
+            new TalkTurn { Who = 0, Lines = new[] { "TEASE" } },
+            new TalkTurn { Who = 1, Lines = new[] { "TEASE_RESPONSE", "RESPONSE_GENERIC" } }
+        };
+
+        /// Grumbling at the fog or the snow, each its own.
+        public static readonly TalkTurn[] Fog = { new TalkTurn { Who = 0, Lines = new[] { "CHAT_BAD_WEATHER_FOG", "CHAT_BAD_WEATHER" } }, new TalkTurn { Who = 1, Lines = new[] { "RESPONSE_BAD_WEATHER", "RESPONSE_GENERIC" } } };
+        public static readonly TalkTurn[] Snow = { new TalkTurn { Who = 0, Lines = new[] { "CHAT_BAD_WEATHER_SNOW", "CHAT_BAD_WEATHER" } }, new TalkTurn { Who = 1, Lines = new[] { "RESPONSE_BAD_WEATHER", "RESPONSE_GENERIC" } } };
+
+        /// The talk of 1907, in the epilogue years.
+        public static readonly TalkTurn[] Year1907 = { new TalkTurn { Who = 0, Lines = new[] { "CHAT_1907" } }, new TalkTurn { Who = 1, Lines = new[] { "RESPONSE_GENERIC" } } };
 
         /// Passing on a piece of news or gossip (CHAT_RESPONSE_A..E), and the other's reaction to it: the answer with the
         /// same letter (RESPONSE_A..E), else a general one. The letters are tried in a different order each time.
@@ -175,13 +201,21 @@ namespace EnrageWestworld.Core
                 kinds.Add(CrudeStranger);
             if (c.Stories != null && c.Stories.Length > 0 && roll("story", 25))
                 kinds.Add(PlaceStory(c.Stories));
+            if (c.Friends && roll("tease", 40))
+                kinds.Add(Tease);
+            if (c.Year >= 1907 && roll("1907", 30))
+                kinds.Add(Year1907);
+            if (c.Sky == "fog")
+                kinds.Add(Fog);
+            else if (c.Sky == "snow")
+                kinds.Add(Snow);
             string weather = c.Weather;
             int hour = c.Hour;
             if (weather == "foul")
                 kinds.Add(BadWeather);
             else if (weather == "fine" && hour >= 7 && hour < 19)
                 kinds.Add(GoodWeather);
-            List<TalkTurn[]> rest = new List<TalkTurn[]> { HowsItGoing, Gossip, Greeting };
+            List<TalkTurn[]> rest = new List<TalkTurn[]> { HowsItGoing, Gossip, Greeting, Latest };
             int start = Voice.Hash(seed + "kind") % rest.Count;
             for (int i = 0; i < rest.Count; i++)
                 kinds.Add(rest[(start + i) % rest.Count]);
@@ -189,6 +223,32 @@ namespace EnrageWestworld.Core
         }
 
         /// The lines for a turn, after what was said before it: a reaction answers the letter of the gossip it follows.
+        /// As LinesFor, with the speaker's mood for an answer that can show it (1 doing well, -1 badly, 0 neither): "{mood}"
+        /// is going well or badly, or nothing; "{after}" is glad or sorry to hear it, by what was said before, or nothing (the
+        /// conversation is over). Empty: nothing to say, the talk ends there (the no-model run, item 8).
+        public static string[] LinesFor(TalkTurn turn, string before, int mood)
+        {
+            var lines = new List<string>();
+            foreach (string l in LinesFor(turn, before))
+            {
+                if (l == "{mood}")
+                {
+                    if (mood != 0)
+                        lines.Add(mood > 0 ? "GOING_WELL" : "GOING_BADLY");
+                }
+                else if (l == "{after}")
+                {
+                    if (before == "GOING_WELL")
+                        lines.Add("GLAD_TO_HEAR_THAT");
+                    else if (before == "GOING_BADLY")
+                        lines.Add("SORRY_TO_HEAR_THAT");
+                }
+                else
+                    lines.Add(l);
+            }
+            return lines.ToArray();
+        }
+
         public static string[] LinesFor(TalkTurn turn, string before)
         {
             string letter = before != null && before.StartsWith("CHAT_RESPONSE_") ? before.Substring("CHAT_RESPONSE_".Length) : null;
@@ -205,6 +265,10 @@ namespace EnrageWestworld.Core
         private static readonly Dictionary<string, string> Captions = new Dictionary<string, string>
         {
             { "HOWS_IT_GOING", "[asks how they're getting on]" },
+            { "GOING_WELL", "[says things are going well]" }, { "GOING_BADLY", "[says things are going badly]" },
+            { "GLAD_TO_HEAR_THAT", "[is pleased for them]" }, { "SORRY_TO_HEAR_THAT", "[is sorry to hear it]" },
+            { "WHATS_THE_LATEST", "[asks for the latest]" }, { "TEASE", "[ribs a friend]" },
+            { "CHAT_BAD_WEATHER_FOG", "[grumbles at the fog]" }, { "CHAT_BAD_WEATHER_SNOW", "[grumbles at the snow]" }, { "CHAT_1907", "[talks of the times]" },
             { "RESPONSE_WORKING_HARD", "[says work keeps them busy]" },
             { "RESPONSE_GENERIC", "[agrees]" },
             { "RESPONSE_IDLING", "[says not to mind them]" },

@@ -185,7 +185,7 @@ namespace EnrageWestworld.InGame
                 Ped first = new Ped(lh.Stopped[0]);
                 string line, sw;
                 int take;
-                Speech.PlayFirst(first.Handle, new[] { "GENERIC_SORRY", "GENERIC_YES", "GENERIC_SHOCKED_MED" }, lh.Law, out line, out take, out sw);
+                Speech.PlayFirst(first.Handle, new[] { "BACK_DOWN", "GENERIC_YES", "GENERIC_SHOCKED_MED" }, lh.Law, out line, out take, out sw);
                 if (_cfg.ScenesOnTicker && _cfg.Ticker && first.Position.DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
                     SpeechCaption(MindNameOf(first.Handle) ?? "A man", Brawl.Stopping(lh.Seed), first.Handle, 2500);
             }

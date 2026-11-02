@@ -24,7 +24,7 @@ namespace EnrageWestworld.InGame
         private static readonly Dictionary<string, int> Failed = new Dictionary<string, int>();
         private static int _turn;
 
-        public static readonly string[] Greet = { "GREET_GENERAL_STRANGER", "HOWS_IT_GOING", "GREET_GENERAL_FAMILIAR", "GENERIC_HOWDY", "GENERIC_HI", "CHAT_GREET" };
+        public static readonly string[] Greet = { "GREET_GENERAL_STRANGER", "HOWS_IT_GOING", "GREET_GENERAL_FAMILIAR" };   // GENERIC_HOWDY, GENERIC_HI and CHAT_GREET dropped: no voice of the 592 has them (the no-model run, item 8)
         public static readonly string[] Familiar = { "GREET_GENERAL_FAMILIAR", "HOWS_IT_GOING", "GREET_GENERAL_STRANGER" };
         public static readonly string[] Again = { "GREET_AGAIN" };   // "your memory fading? you already said hello": for the Awakening, not plain greetings
         public static readonly string[] Angry = { "GENERIC_ANGRY_SHOUT", "GENERIC_INSULT_HIGH_NEUTRAL", "WHATS_YOUR_PROBLEM", "GENERIC_ANGRY_REACTION", "GENERIC_CURSE_HIGH", "INSULT_RESPONSE", "GENERIC_INSULT_MED_NEUTRAL" };
@@ -37,7 +37,7 @@ namespace EnrageWestworld.InGame
         public static readonly string[] Bye = { "GENERIC_GOODBYE", "GOODBYE_START", "GENERIC_BYE" };
         public static readonly string[] Threat = { "CHALLENGE_THREATEN", "GET_OUT", "LEAVE_NOW", "DONT_BE_STUPID", "GENERIC_THREATEN" };
         public static readonly string[] ThreatArmed = { "CHALLENGE_THREATEN_ARMED", "CHALLENGE_THREATEN", "FINAL_WARNING" };
-        public static readonly string[] Stare = { "PROVOKE_STARE", "WHATS_YOUR_PROBLEM", "GENERIC_SHOCKED_MED" };
+        public static readonly string[] Stare = { "WHATS_YOUR_PROBLEM", "GENERIC_SHOCKED_MED" };   // PROVOKE_STARE: no voice has it
         public static readonly string[] Won = { "WON_DISPUTE", "WON_FIGHT", "WON_DISPUTE_ESCALATED", "GENERIC_CHEER" };
         public static readonly string[] Mock = { "GENERIC_MOCK", "TAUNT_GEN_NEUTRAL", "TEASE_RESPONSE" };
         public static readonly string[] Cheer = { "GENERIC_CHEER_ON", "GENERIC_CHEER", "GENERIC_EXCITING_EVENT_COMMENT" };
@@ -170,9 +170,9 @@ namespace EnrageWestworld.InGame
         {
             int h = CLOCK.GET_CLOCK_HOURS();
             if (h >= 4 && h < 12)
-                return new[] { "GREET_MORNING", "GREET_GENERAL_STRANGER", "HOWS_IT_GOING", "GENERIC_HOWDY" };
+                return new[] { "GREET_MORNING", "GREET_GENERAL_STRANGER", "HOWS_IT_GOING" };
             if (h >= 18 || h < 4)
-                return new[] { "GREET_EVENING", "GREET_GENERAL_STRANGER", "HOWS_IT_GOING", "GENERIC_HOWDY" };
+                return new[] { "GREET_EVENING", "GREET_GENERAL_STRANGER", "HOWS_IT_GOING" };
             return Greet;
         }
 

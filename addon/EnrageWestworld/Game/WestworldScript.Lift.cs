@@ -176,7 +176,7 @@ namespace EnrageWestworld.InGame
             string sorry = Voice.Pick(now.ToString(), "Pardon me, mister.", "Beg your pardon.", "Excuse me. Clumsy of me.");
             string line, said;
             int t;
-            Speech.PlayFirst(h, new[] { "GENERIC_SORRY", "BUMP", "GENERIC_EXCUSE_ME" }, me.Handle, out line, out t, out said);
+            Speech.PlayFirst(h, new[] { "BUMP", "BACK_DOWN" }, me.Handle, out line, out t, out said);
             if (_cfg.ScenesOnTicker && _cfg.Ticker)
                 SpeechCaption(Grammar.UpperFirst(Director.Kind(p, false)), sorry, h, 2500, true);
             _theft = new Theft

@@ -143,7 +143,12 @@ namespace EnrageWestworld.InGame
             }
             else
             {
-                string[] lines = RealTalk.LinesFor(turn, t.Last);
+                string[] lines = RealTalk.LinesFor(turn, t.Last, TalkMoodOf(me));   // how they're doing shows in the answer (item 8)
+                if (lines.Length == 0)
+                {
+                    TalkEnd(t, "over", now);   // a plain answer has nothing glad or sorry after it
+                    return;
+                }
                 if (!Speech.PlayFirst(me.Handle, lines, them.Handle, out line, out take, out words))
                 {
                     if (TalkTryAgain(t, now))
@@ -196,6 +201,9 @@ namespace EnrageWestworld.InGame
                 Riders = t.Riders,
                 Stories = RealTalk.StoryCodes(_placeTown),
                 Crude = _cfg.CrudeTalk,
+                Friends = TalkFriends(t.People[0], t.People[1]),
+                Year = Voice.NowYear,
+                Sky = TalkSky(),
                 Sure = t.Test
             };
             t.Moment = string.Join(", ", new[] { moment.Riders ? "riders going by" : null, moment.Saloon ? "saloon" : null, moment.Sweethearts ? "sweethearts" : null,
@@ -270,6 +278,47 @@ namespace EnrageWestworld.InGame
         }
 
         /// The two have a romance between them: a warm romantic tie, or one is courting the other now (a current link).
+        /// Two who like each other (a warm tie, not sweethearts), for teasing (the no-model run, item 8).
+        private static string TalkSky()
+        {
+            string w = InnerLife.WeatherOf(MISC._GET_PREV_WEATHER_TYPE_HASH_NAME());
+            return w == "fog" || w == "snow" ? w : null;
+        }
+
+        private bool TalkFriends(Ped a, Ped b)
+        {
+            Someone x = SomeoneOf(a), y = SomeoneOf(b);
+            if (x == null || y == null)
+                return false;
+            SceneTie tie = _store.Ties.FirstOrDefault(s => s.Has(x.Id) && s.Has(y.Id));
+            return tie != null && tie.Warmth >= 2 && !Ties.Sweethearts(tie);
+        }
+
+        /// How a speaker is doing, for "how's it going": 1 well (a worry ended well, or a glad feeling), -1 badly (a worry at its
+        /// worst or ended badly, or a hard feeling), 0 neither or nobody the add-on knows.
+        private int TalkMoodOf(Ped p)
+        {
+            Someone s = p != null && p.Exists() ? SomeoneOf(p) : null;
+            if (s == null || s.P == null)
+                return 0;
+            string kind;
+            int stage;
+            bool good;
+            if (InnerLife.WorryNow(s.P, Bridge.Now() / 1440, out kind, out stage, out good) && stage >= 1)
+                return stage >= 3 && good ? 1 : -1;
+            FeltAt f;
+            float left;
+            if (_engine != null && _engine.Shadow != null && _engine.Shadow.Strongest(s.Id, _store.LastGameMin, out f, out left) && left >= AloudRules.Voiced && f.Kind >= 0 && f.Kind < Feeling.Kinds.Length)
+            {
+                string k = Feeling.Kinds[f.Kind];
+                if (k == "joy" || k == "relief" || k == "gratitude" || k == "pride")
+                    return 1;
+                if (k == "anger" || k == "fear" || k == "grief" || k == "shame" || k == "guilt")
+                    return -1;
+            }
+            return 0;
+        }
+
         private bool TalkSweethearts(Ped a, Ped b)
         {
             Someone x = SomeoneOf(a), y = SomeoneOf(b);
