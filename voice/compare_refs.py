@@ -40,8 +40,8 @@ def main():
     if not banks:
         print("nothing in", cap_dir)
         return 1
+    import soundfile as sf
     import torch
-    import torchaudio
     from chatterbox.tts import ChatterboxTTS
     t = time.time()
     model = ChatterboxTTS.from_pretrained(device=a.device)
@@ -61,7 +61,7 @@ def main():
             with torch.inference_mode():
                 wav = model.generate(a.text, exaggeration=0.5, cfg_weight=0.5)
             path = os.path.join(out, "%s.said-%s.wav" % (bank, how))
-            torchaudio.save(path, wav.detach().cpu(), model.sr)
+            sf.write(path, wav.detach().cpu().squeeze(0).numpy(), model.sr, subtype="PCM_16")
             print("%s %-9s %.1f s of speech in %.1f s -> %s" % (bank, how, wav.shape[-1] / model.sr, time.time() - t, path), flush=True)
     print("listen in", out)
     return 0

@@ -618,12 +618,16 @@ namespace EnrageWestworld.InGame
             {
                 j.Accepted = Speech.PlayAs(j.Handle, j.Voice, j.Line, j.Take, 0);
                 j.PlayedAt = now;
+                if (!j.Accepted)
+                    j.StopAsked = true;   // the game won't say it: the server mustn't keep whatever else it hears
                 return;
             }
             if (!j.Checked && now - j.PlayedAt >= 1200)
             {
                 j.Spoke = Speech.Busy(j.Handle);
                 j.Checked = true;
+                if (!j.Spoke)
+                    j.StopAsked = true;   // accepted but silent (seen in game 2026-11-03: the tap then kept a passer-by's line)
             }
         }
 
