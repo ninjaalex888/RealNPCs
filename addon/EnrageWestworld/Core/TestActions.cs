@@ -136,6 +136,7 @@ namespace EnrageWestworld.Core
             new Entry("cast", "Tools", "Bring the test cast here (kept in the save)", "TestCastKey", needs: "a town, out of doors; eight people the tests need (a mother, two old men, a preacher and a listener, three men for a bully) come and stroll about a spot 10 m in front of you"),
             new Entry("voice", "Tools", "Voice the nearest person now (the voice server)", "TestVoiceKey", needs: "[Mind] VoicedThoughts or VoicedDialogue on, the voice server running (voice\\start-voice-server.cmd), someone within VoiceMetres"),
             new Entry("voicerec", "Tools", "Record the nearest person's voice clip (the voice server)", "TestVoiceRecKey", needs: "[Mind] VoicedThoughts or VoicedDialogue on, the voice server running, someone within 8 m whose voice bank is certain and who isn't speaking; press by press: their own voice, then the bank by its full name, then by its short name"),
+            new Entry("voicerec:all", "Tools", "Record every voice still wanted on the nearest person (about 90 min; again to stop)", "TestVoiceRecAllKey", needs: "the voice server running; whoever is nearest within 10 m says each bank's line in turn, about ten seconds each; it waits through rain, fights and other voices"),
             new Entry("subtitle", "Tools", "Show a test subtitle (RealNPCs' box)", "TestSubtitleKey"),
             new Entry("cast:go", "Tools", "Let the test cast go (they stay in the save)", "TestCastGoKey"),
         };

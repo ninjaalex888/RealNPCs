@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 193;
+        public const int CurrentVersion = 194;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -132,6 +132,7 @@ namespace EnrageWestworld.Core
         public string VoiceUrl = "http://127.0.0.1:5005";   // [Mind] the local voice server; nothing leaves the machine
         public float VoiceMetres = 15f;       // [Mind] voiced within this many metres of you (5-30)
         public int VoiceVolume = 100;         // [Mind] the voices' loudness, percent (10-200)
+        public bool VoiceRecord = true;       // [Mind] with the voice server: the voices recorded from your own game as you meet people (someone whose voice has no clip yet says one of the game's own lines once, in a quiet moment; the server keeps it; nothing of Rockstar's ships)
         public string LanguageUrl = "http://127.0.0.1:11434";   // the local server; nothing leaves the machine
         public string LanguageModel = "llama3.1:8b";           // the model Ollama holds (ollama pull <name>)
 
@@ -781,6 +782,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 194)
+                    log?.Invoke("Settings: new in this version: [Mind] VoiceRecord (on): with the voice server, the voices are recorded from your own game as you meet people; someone whose voice has no clip yet says one of the game's own lines once, in a quiet moment, and the server keeps it.");
                 if (s.SettingsVersion < 193)
                     log?.Invoke("Settings: new in this version: [Mind] VoicedThoughts and VoicedDialogue (both off, in testing), VoiceUrl, VoiceMetres (15), VoiceVolume (100): thoughts and our lines said in each person's own voice, cloned on this PC by the local voice server (voice\\start-voice-server.cmd; needs your own export of the game's voice banks).");
                 if (s.SettingsVersion < 192)
@@ -1139,6 +1142,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("VoiceUrl = " + VoiceUrl + "   ; where the voice server listens");
             b.AppendLine("VoiceMetres = " + F(VoiceMetres) + "   ; voiced within this many metres of you (5 to 30)");
             b.AppendLine("VoiceVolume = " + VoiceVolume + "   ; the voices' loudness, percent (10 to 200)");
+            b.AppendLine("VoiceRecord = " + B(VoiceRecord) + "   ; the voices recorded from your own game as you meet people: someone whose voice has no clip yet says one of the game's own lines once, in a quiet moment, and the voice server keeps it");
             b.AppendLine("LanguageUrl = " + LanguageUrl + "   ; where Ollama listens");
             b.AppendLine("LanguageModel = " + LanguageModel + "   ; the model it holds (ollama pull <name>)");
             b.AppendLine();
