@@ -7,3 +7,4 @@ obj/
 
 # Third-party DLLs (supplied by whoever builds it, never committed)
 *.dll
+__pycache__/

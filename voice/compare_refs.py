@@ -30,7 +30,13 @@ def main():
     with open(os.path.join(a.root, "refs.json"), encoding="utf-8") as f:
         refs = json.load(f)
     cap_dir = os.path.join(a.root, "captured")
-    banks = a.banks or sorted(os.path.splitext(n)[0] for n in os.listdir(cap_dir) if n.lower().endswith(".wav"))
+    found = {}   # bank -> its clip, the kept ones first, then the poor ones (captured\poor, under the bar)
+    for d in (os.path.join(cap_dir, "poor"), cap_dir):
+        if os.path.isdir(d):
+            for n in os.listdir(d):
+                if n.lower().endswith(".wav"):
+                    found[os.path.splitext(n)[0]] = os.path.join(d, n)
+    banks = a.banks or sorted(found)
     if not banks:
         print("nothing in", cap_dir)
         return 1
@@ -41,7 +47,7 @@ def main():
     model = ChatterboxTTS.from_pretrained(device=a.device)
     print("model loaded in %.1f s" % (time.time() - t), flush=True)
     for bank in banks:
-        pair = {"captured": os.path.join(cap_dir, bank + ".wav")}
+        pair = {"captured": found.get(bank) or os.path.join(cap_dir, bank + ".wav")}
         e = refs.get(bank) or {}
         if e.get("ref"):
             pair["export"] = os.path.join(a.root, e["ref"])

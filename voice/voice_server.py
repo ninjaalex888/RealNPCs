@@ -82,7 +82,7 @@ def load_refs(root):
     exported = recorded = 0
     for bank, e in entries.items():
         INFO[bank] = {"model": (e.get("model") or "").upper(), "kind": (e.get("kind") or "").lower(), "age": (e.get("age") or "").lower(),
-                      "tier": int(e.get("tier") or 4), "spanish": "spanish" in (e.get("notes") or "").lower()}
+                      "tier": int(e.get("tier") or 4), "spanish": bool(e.get("spanish")) or "spanish" in (e.get("notes") or "").lower()}
         l = line_of(e)
         if l:
             LINES[bank] = l
@@ -350,18 +350,19 @@ def capture(job):
     if peak > 0:
         y = y * (0.9 / peak)
     job.update({"seconds": round(length, 2), "snr": round(snr, 1)})
-    if snr < ARGS.capture_snr:
-        job["state"] = "poor"
-        job["why"] = "%.0f dB over the sound around it, %.0f needed" % (snr, ARGS.capture_snr)
-        COUNTS["poor"] += 1
-        log("capture %s: poor, %s" % (bank, job["why"]))
-        return
-    d = os.path.join(ARGS.root, "captured")
+    poor = snr < ARGS.capture_snr   # kept too, in captured\poor, to listen to and to set the bar by; never cloned from
+    d = os.path.join(ARGS.root, "captured", "poor" if poor else "")
     os.makedirs(d, exist_ok=True)
     path = os.path.join(d, bank + ".wav")
     sf.write(path, y.astype(np.float32), sr, subtype="PCM_16")
-    add_ref(bank, path, 2 if snr >= 18 else 3)
     job["path"] = path
+    if poor:
+        job["state"] = "poor"
+        job["why"] = "%.0f dB over the sound around it, %.0f needed" % (snr, ARGS.capture_snr)
+        COUNTS["poor"] += 1
+        log("capture %s: poor, %s -> %s" % (bank, job["why"], path))
+        return
+    add_ref(bank, path, 2 if snr >= 18 else 3)
     job["state"] = "captured"
     COUNTS["captured"] += 1
     log("capture %s: %.1f s, %.0f dB over the sound around it -> %s" % (bank, length, snr, path))
