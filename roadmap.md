@@ -2,6 +2,20 @@
 
 Oct 26, 2026 · lexthestoic
 
+## Front of the queue: allies who come to your aid (a player's request, 2026-11-03)
+
+A player wrote in after trying RealNPCs with enRAGE: the people are much more responsive now, and the one thing missing from both mods is an **allied** side to all the hostility. Spend time earning a town's liking, then be able to rely on it. Attacked in town by bandits, or by someone with a grudge, in view of people who like you, those people come to your aid; out on a road, fighting gang members, a couple of strangers you know and get along with happen to ride by and save the day. "It would feel so rewarding to have a town or location full of people that have your back when you need them."
+
+Lex: this goes first after the voices release. What's already there to build it on: the liking bar and feelings with a cause (`FeltAt.Why`), ties between people, who is moved to help and whether they heed it (`Core/Rescue.cs`: `Moves`, `Heeded`), joining a brawl (`BrawlJoinBoost`), the law that hears a fight (a free lawman within 60 m comes), town regulars with memories, and self-defence that keeps a fight for you off your bounty.
+
+Sketch, to be designed before building:
+
+- **When:** you're attacked (combat with you as the target, shots at you, a callout that turns to fists or a gun, an enRAGE nemesis coming for you) within sight of people who like you: liking over a threshold, a friend tie, someone you saved or helped, a regular of a town where your deeds stand well.
+- **Who comes:** the moved ones within about 40 m, up to a few, by temper: the brave first, cowards never, the law on its own rules. Bare hands against a brawler; a gun only if the attacker has one and they carry one. They say a recorded or voiced word as they come.
+- **On the road:** a known friend riding by has a chance to show up when you're fighting a gang: a real person from the ledger brought in, not a stranger.
+- **After:** a word to you, a memory for them ("stood with Arthur against the O'Driscolls"), the tie and the town's liking grow; an ally who dies is grieved and remembered by their town, and that has a cost for you too.
+- **Settings:** `[Encounters] AlliesHelp` (on), `AlliesMetres`, `AlliesMost`, `AlliesLiking`; a Testing row that stages an attack with a friend in sight; an F7 TEST allies line.
+
 ## Status at 0.6.2 (2026-10-26)
 
 This plan was written overnight against 0.6.1. Since then 0.6.2 shipped and a few decisions changed what's below; where this block and a prompt disagree, this block wins.
