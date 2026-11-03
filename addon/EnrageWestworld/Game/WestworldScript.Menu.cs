@@ -12,8 +12,10 @@
 // keyboard is in use, the pad's buttons while a pad is. Arthur's words show as a subtitle, then their answer in their
 // own voice with its subtitle (afraid or hostile when they are), and what it is (a round, charity, a warning) is written
 // down as a happening for the mind, so gratitude, fear, the greetings and the memories follow; the money goes when the
-// answer comes. The person turns to face him while the list is open. It closes on a weapon drawn, 3 m walked, the two
-// of them 5 m apart, combat, a mission, a cutscene, a scene taking them, or 25 s with nothing chosen. Nobody busy with
+// answer comes. The person stops and turns to face him while the list is open (someone on a scenario's walk is asked out
+// of it Rockstar's way; one who walks on anyway is asked again; Lex, 2026-11-03: they kept walking and the list closed).
+// It closes on a weapon drawn, 3 m walked, the two of them 5 m apart, combat, a mission, a cutscene, a scene taking
+// them, or 25 s with nothing chosen. Nobody busy with
 // anything else (a scene, a talk, another script, enRAGE's own business) is offered. [World] InteractionMenu. Testing
 // row "Talk to the nearest person you know".
 using System;
@@ -39,7 +41,7 @@ namespace EnrageWestworld.InGame
             public Person P;           // who they are to the mind, for their worry's words when he asks after it
             public float Reach;
             public List<InteractOption> Options;
-            public int Sel, OpenedAt, LastAt, AnswerAt, ThoughtAt, CloseAt, FaceAt;
+            public int Sel, OpenedAt, LastAt, AnswerAt, ThoughtAt, CloseAt, FaceAt, HeldAt;   // HeldAt: when they were last asked to stand and face him
             public Vector3 From;
             public InteractAnswer Pending;
             public string PendingId, PendingLabel;
@@ -306,12 +308,14 @@ namespace EnrageWestworld.InGame
             {
                 Handle = h, Id = id, Name = name ?? TalkName(p), First = name != null ? Person.FirstOf(name) : TalkName(p), Temper = temper, Worry = worry,
                 Woman = !PED.IS_PED_MALE(h), Devout = w != null && w.Traits != null && w.Traits[Traits.Piety] > 1.2f, MoneyWorry = worry == "debt" || worry == "savings" || worry == "bank",
-                Trade = w != null && w.P != null ? w.P.Trade : null, FolkId = ac != null ? ac.Id : null, Seated = PED.IS_PED_USING_ANY_SCENARIO(h), P = w != null ? w.P : null,
+                Trade = w != null && w.P != null ? w.P.Trade : null, FolkId = ac != null ? ac.Id : null, P = w != null ? w.P : null,
+                Seated = PED.IS_PED_USING_ANY_SCENARIO(h) && ENTITY.GET_ENTITY_SPEED(h) < 0.4f,   // sat, leaning or stood at their point: they talk from there; a scenario's walker is stopped like anyone else
                 Regard = SightRegard(p, id), Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
                 Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440), WorryStage = worryStage
             };
             TalkRefreshOptions();
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);   // the game's own "you're standing too close" and the like wait till goodbye (Lex, 2026-10-31); undone in TalkClose
+            PED.SET_PED_KEEP_TASK(h, true);   // the game's own ambient orders don't take them back off our turn-and-stand while the list is open; undone in TalkClose
             TalkFace(_menu, me, true);
             TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 26000, 0, 51, 0);
             _talkOpened++;
@@ -320,15 +324,19 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
-        /// They turn to face him and keep facing him (one order for the whole time, given again after each answer): a
-        /// turn and then a stand-still replaced the turn at once.
+        /// They stop, turn to face him and keep facing him (one order for the whole time, given again after each answer): a
+        /// turn and then a stand-still replaced the turn at once. The first time, out of a scenario's walk Rockstar's way (the
+        /// exit flag and the turn the same tick, Game/ScenarioExit.cs; a bare clear left them walking on: Lex, 2026-11-03).
         private static void TalkFace(TalkMenu t, Ped me, bool first)
         {
+            t.HeldAt = Game.GameTime;
             if (t.Seated)
                 return;
+            int h = t.Handle, you = me.Handle;
             if (first)
-                TASK.CLEAR_PED_TASKS(t.Handle, true, false);
-            TASK.TASK_TURN_PED_TO_FACE_ENTITY(t.Handle, me.Handle, 26000, 0f, 0f, 0f);
+                ScenarioExit.SoftUp(h, x => TASK.TASK_TURN_PED_TO_FACE_ENTITY(x, you, 26000, 0f, 0f, 0f));
+            else
+                TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, you, 26000, 0f, 0f, 0f);
         }
 
         private void TalkRefreshOptions()
@@ -401,6 +409,11 @@ namespace EnrageWestworld.InGame
             {
                 t.FaceAt = 0;
                 TalkFace(t, me, false);   // stepped back, and turns to him again
+            }
+            else if (!t.Seated && !t.KeepOrders && t.CloseAt == 0 && now - t.HeldAt > 1500 && ENTITY.GET_ENTITY_SPEED(t.Handle) > 0.6f)
+            {
+                TalkFace(t, me, true);   // walking on regardless (their scenario or the game's own orders took them back): asked to stop again
+                Log.Detail("TALK " + t.Name + " walked on while the list was open: asked to stop and face you again");
             }
             if (t.ThoughtAt > 0 && now >= t.ThoughtAt)
             {
@@ -739,6 +752,7 @@ namespace EnrageWestworld.InGame
             if (ENTITY.DOES_ENTITY_EXIST(t.Handle) && !ENTITY.IS_ENTITY_DEAD(t.Handle) && !_director.Involves(t.Handle))
             {
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(t.Handle, false);   // they react to the world again (TalkOpen blocked it)
+                PED.SET_PED_KEEP_TASK(t.Handle, false);
                 TASK.TASK_CLEAR_LOOK_AT(t.Handle);
                 if (!t.Seated)
                 {

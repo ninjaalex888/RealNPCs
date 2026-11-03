@@ -576,8 +576,24 @@ namespace EnrageWestworld.InGame
         {
             if (string.IsNullOrEmpty(text))
                 return;
-            if (voice)
-                VoiceSaid(handle, label, text, toYou);   // in their own voice too, with VoicedDialogue and the voice server (WestworldScript.Voiced.cs); off screen as well
+            VoiceJob said = voice ? VoiceSaid(handle, label, text, toYou) : null;   // in their own voice too, with VoicedDialogue and the voice server (WestworldScript.Voiced.cs); off screen as well
+            if (said != null)
+            {
+                // the subtitle waits for the voice (a second or two to make) and shows as it starts; shown anyway when the voice
+                // isn't coming or takes too long (Lex, 2026-11-03: the voice came behind the words)
+                said.CapLabel = label;
+                said.CapMs = ms;
+                said.CapToYou = toYou;
+                said.CapAskedAt = Environment.TickCount;
+                said.CapText = text;
+                return;
+            }
+            CaptionNow(label, text, handle, ms, toYou);
+        }
+
+        /// The subtitle itself, now: to the player the top box, else the one under it, and only for someone on screen.
+        private void CaptionNow(string label, string text, int handle, int ms, bool toYou)
+        {
             if (!toYou && handle != 0 && ENTITY.DOES_ENTITY_EXIST(handle) && !ENTITY.IS_ENTITY_ON_SCREEN(handle))
             {
                 Log.Detail("CAPTION " + label + ": " + text + " (no subtitle: off screen)");   // between others, only who you can see (Lex, 2026-10-31: hard to tell where it came from)

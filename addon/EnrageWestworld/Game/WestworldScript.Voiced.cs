@@ -5,8 +5,9 @@
 //   [Mind] VoicedThoughts  a thought over someone within VoiceMetres is murmured in their voice a moment after it shows (one
 //                          at a time, one person once in 90 s, 12 s between); that thought isn't also said aloud by rule.
 //   [Mind] VoicedDialogue  what people say near you in our words (the street's scenes, Talk's answers, the encounters' lines)
-//                          is said in their voice, a second or two behind the subtitle. The game's own recorded remark, where
-//                          one plays, still plays.
+//                          is said in their voice; the subtitle waits for the voice (a second or two to make) and shows as it
+//                          starts, or after 3.5 s anyway (Lex, 2026-11-03: the voice came behind the words). The game's own
+//                          recorded remark, where one plays, still plays.
 // The server plays the sound itself, one voice at a time in the order asked; this side keeps telling it how loud and from
 // which side, from the speaker's distance and the camera, while it speaks. The game thread never waits on it: a worker
 // thread does the asking, as the language layer's does (an Insert reload aborts the request under way).
@@ -50,9 +51,13 @@ namespace EnrageWestworld.InGame
             public volatile string TaintFar; // a voice farther off spoke into it: kept as the weaker sort until a clean one comes
             public volatile string TaintSent;   // what the server was told of that (near, far)
             public volatile bool VoiceSet;
+            // the subtitle that waits for this voice (SpeechCaption): shown as the voice starts, or when it isn't coming
+            public string CapLabel, CapText;
+            public int CapMs, CapAskedAt;
+            public bool CapToYou;
         }
 
-        private const int VoiceThoughtGapMs = 12000, VoiceThoughtEachMs = 90000, VoiceMostJobs = 4;
+        private const int VoiceThoughtGapMs = 12000, VoiceThoughtEachMs = 90000, VoiceMostJobs = 4, VoiceCaptionWaitMs = 3500;
         private const float VoiceRecordMetres = 10f;
         // another voice this near the player while it records spoils the clip; farther off, out to the second, it's kept as the
         // weaker sort (a town's street always has someone talking within 20 m: seen in game 2026-11-03, 7 of 8 clips thrown out)
@@ -109,6 +114,8 @@ namespace EnrageWestworld.InGame
             float rx = (float)Math.Cos(yaw), ry = (float)Math.Sin(yaw);   // the camera's right (its forward is -sin, cos)
             foreach (VoiceJob j in jobs)
             {
+                if (j.CapText != null && (j.Played || j.Over || Environment.TickCount - j.CapAskedAt > VoiceCaptionWaitMs))
+                    VoiceCaptionShow(j);   // the voice started (or isn't coming, or took too long): its words now
                 if (j.Over)
                 {
                     VoiceSettle(j);
@@ -137,6 +144,16 @@ namespace EnrageWestworld.InGame
                 float dx = at.X - me.X, dy = at.Y - me.Y, len = (float)Math.Sqrt(dx * dx + dy * dy);
                 j.Pan = len < 0.8f ? 0f : Math.Max(-0.85f, Math.Min(0.85f, (dx * rx + dy * ry) / len));
             }
+        }
+
+        /// The subtitle that waited for this voice, shown now; once.
+        private void VoiceCaptionShow(VoiceJob j)
+        {
+            string text = j.CapText;
+            if (text == null)
+                return;
+            j.CapText = null;
+            CaptionNow(j.CapLabel, text, j.Handle, j.CapMs, j.CapToYou);
         }
 
         private float VoiceVolume(float metres, bool thought)
@@ -213,7 +230,7 @@ namespace EnrageWestworld.InGame
             string text = VoiceText(line.Text);
             if (text == null || !VoiceMayAsk(h, out _))
                 return;
-            if (VoiceAsk(h, line.Label, text, "thought", 8))
+            if (VoiceAsk(h, line.Label, text, "thought", 8) != null)
             {
                 _voiceThoughtNextAt = now + VoiceThoughtGapMs;
                 _voiceThoughtAt[line.Key] = now;
@@ -231,27 +248,30 @@ namespace EnrageWestworld.InGame
             return line != null && _voiceLineKey != null && line.Key == _voiceLineKey && line.Text == _voiceLineText;
         }
 
-        /// Our words said by someone near (a scene, Talk, an encounter): in their own voice, when VoicedDialogue is on.
-        private void VoiceSaid(int handle, string label, string text, bool face)
+        /// Our words said by someone near (a scene, Talk, an encounter): in their own voice, when VoicedDialogue is on. The
+        /// voice asked for, or null when none is (the caller's subtitle then shows at once).
+        private VoiceJob VoiceSaid(int handle, string label, string text, bool face)
         {
             if (_cfg == null || !_cfg.VoicedDialogue || !_voiceReady || handle == 0)
-                return;
+                return null;
             text = VoiceText(text);
             if (text == null)
-                return;
+                return null;
             int now = Environment.TickCount;
             string key = handle + "|" + text;
             if (key == _voiceRecentKey && now - _voiceRecentAt < 8000)
-                return;   // the same line passed on twice (a scene line both captioned and heard)
+                return null;   // the same line passed on twice (a scene line both captioned and heard)
             string why;
             if (!VoiceMayAsk(handle, out why))
-                return;
-            if (VoiceAsk(handle, label, text, "said", face ? 15 : 9))
+                return null;
+            VoiceJob j = VoiceAsk(handle, label, text, "said", face ? 15 : 9);
+            if (j != null)
             {
                 _voiceRecentKey = key;
                 _voiceRecentAt = now;
                 _voiceSaidAsked++;
             }
+            return j;
         }
 
         private bool VoiceMayAsk(int h, out string why)
@@ -288,7 +308,7 @@ namespace EnrageWestworld.InGame
             return t.Length > 300 ? t.Substring(0, 300) : t;
         }
 
-        private bool VoiceAsk(int h, string label, string text, string kind, int waitSeconds)
+        private VoiceJob VoiceAsk(int h, string label, string text, string kind, int waitSeconds)
         {
             MindWho w;
             string person = _mindWho.TryGetValue(h, out w) && w.Id != null ? w.Id : null;
@@ -314,7 +334,7 @@ namespace EnrageWestworld.InGame
             j.Vol = VoiceVolume(d, kind == "thought");
             lock (_voiceLock)
                 _voiceJobs.Add(j);
-            return true;
+            return j;
         }
 
         // ---- the worker ----
@@ -343,7 +363,11 @@ namespace EnrageWestworld.InGame
             _voiceReady = false;
             Speech.RecordingPed = 0;
             lock (_voiceLock)
+            {
+                foreach (VoiceJob j in _voiceJobs)
+                    VoiceCaptionShow(j);   // words waiting on a voice that won't come now
                 _voiceJobs.Clear();
+            }
         }
 
         private void VoiceWork()
@@ -428,7 +452,7 @@ namespace EnrageWestworld.InGame
                         }
                         if (Environment.TickCount - j.NextPoll < 0)
                             continue;
-                        j.NextPoll = Environment.TickCount + 250;
+                        j.NextPoll = Environment.TickCount + (j.State == "making" || j.State == "ready" ? 120 : 250);   // about to start: looked at more often, so its subtitle isn't far behind
                         if (j.State == "playing")
                             VoiceHttp(url + "/place", "{\"id\":" + Language.JsonString(j.Id) + ",\"volume\":" + F(j.Vol) + ",\"pan\":" + F(j.Pan) + "}", 1500);
                         string s = VoiceHttp(url + "/status?id=" + Uri.EscapeDataString(j.Id), null, 1500);
