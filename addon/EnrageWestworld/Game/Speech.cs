@@ -269,6 +269,18 @@ namespace EnrageWestworld.InGame
             return false;
         }
 
+        /// That recording of the line in a named voice bank (null for the ped's own): the voice clips recorded in game
+        /// (WestworldScript.Voiced.cs, the recording row), and a bank tried on another body.
+        public static bool PlayAs(int ped, string voice, string line, int take, int listener)
+        {
+            if (ped == 0 || string.IsNullOrEmpty(line) || take < 1 || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
+                return false;
+            foreach (string prm in ParamsFor(line))
+                if (Play(ped, line, take, Natives.Hash(prm), voice, listener))
+                    return true;
+            return false;
+        }
+
         public static unsafe bool Say(int ped, string line, int listener)
         {
             if (ped == 0 || string.IsNullOrEmpty(line) || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))

@@ -12,6 +12,14 @@
 #   POST /place  {"id","volume","pan"}   the speaker moved
 #   POST /stop   {"id"} or {}            one voice, or every voice
 #   GET  /status?id=..          -> {"state":"queued|making|ready|playing|done|dropped|failed|held|unknown","make_ms":..,"seconds":..}
+#   POST /capture {"id","bank"}  -> {"ok":true,"line":..,"take":..,"seconds":..} or {"held":"why"}: the server records what this
+#                               PC plays for the line's length and a margin (the mod has the person say that line, the game's
+#                               own, the moment it hears back), keeps the spoken part, judges it against the sound around it
+#                               and saves it as <root>\captured\<bank>.wav; /status then says captured|poor|failed, with "snr".
+#                               That way a player's own game gives the clips, and nothing of Rockstar's ships.
+# The clips: refs.json in --root (pick_refs.py over the player's own export) where it is; voices.json beside this script (the
+# shipped list: each bank's line by name, its model, sex and age; no clips, no words) for the rest; captured\ for banks the
+# export doesn't cover, or every bank with --prefer-captured.
 import argparse
 import collections
 import hashlib
@@ -40,6 +48,9 @@ MADE = collections.OrderedDict()    # (ref, kind, text) -> samples, so a line sa
 COUNTS = collections.Counter()
 REFS_BY_MODEL = {}
 REFS_BY_KIND = {}
+INFO = {}                      # bank -> model, kind (sex), age, tier, spanish
+LINES = {}                     # bank -> (line, take, seconds): the game's own recording the voice is cloned from, by name
+CAPTURING = False              # the mixer starts no voice while the output tap records
 
 
 def log(*a):
@@ -48,24 +59,57 @@ def log(*a):
 
 # ---- which recording a person's voice is cloned from ----
 
+def line_of(e):
+    """The line a bank's clip is, by name and take, from the shipped fields or from the export's file name
+    (CHAT_RESPONSE_B_01.wav: line CHAT_RESPONSE_B, take 1); a hashed name (0x03595055) is no use, so the second choice then."""
+    if e.get("line"):
+        return e["line"], int(e.get("take") or 1), float(e.get("seconds") or 0)
+    for key, secs in (("ref", "seconds"), ("alt", "alt_seconds")):
+        base = os.path.splitext(os.path.basename(e.get(key) or ""))[0]
+        if "_" in base and base.rsplit("_", 1)[1].isdigit() and not base.startswith("0x"):
+            name, take = base.rsplit("_", 1)
+            return name, int(take), float(e.get(secs) or 0)
+    return None
+
+
 def load_refs(root):
-    path = os.path.join(root, "refs.json")
-    with open(path, encoding="utf-8") as f:
-        refs = json.load(f)
-    for bank, e in refs.items():
-        if not e.get("ref") or e.get("tier", 0) <= 0:
-            continue
-        clip = os.path.join(root, e["ref"])
-        if not os.path.exists(clip):
-            continue
-        spanish = "spanish" in (e.get("notes") or "").lower()
-        item = (bank, clip, e.get("tier", 4), spanish)
-        REFS_BY_MODEL.setdefault((e.get("model") or "").upper(), []).append(item)
-        REFS_BY_KIND.setdefault((e.get("kind") or "", e.get("age") or ""), []).append(item)
-    for d in (REFS_BY_MODEL, REFS_BY_KIND):
-        for k in d:
-            d[k].sort()
-    log("voices: %d models, %d banks with a reference clip" % (len(REFS_BY_MODEL), sum(len(v) for v in REFS_BY_MODEL.values())))
+    entries = {}
+    for path in (os.path.join(root, "refs.json"), os.path.join(os.path.dirname(os.path.abspath(__file__)), "voices.json")):
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as f:
+                for bank, e in json.load(f).items():
+                    entries.setdefault(bank, {}).update(e)
+    exported = recorded = 0
+    for bank, e in entries.items():
+        INFO[bank] = {"model": (e.get("model") or "").upper(), "kind": (e.get("kind") or "").lower(), "age": (e.get("age") or "").lower(),
+                      "tier": int(e.get("tier") or 4), "spanish": "spanish" in (e.get("notes") or "").lower()}
+        l = line_of(e)
+        if l:
+            LINES[bank] = l
+        clip = os.path.join(root, e["ref"]) if e.get("ref") and int(e.get("tier") or 0) > 0 else None
+        if clip and not os.path.exists(clip):
+            clip = None
+        cap = os.path.join(root, "captured", bank + ".wav")
+        if os.path.exists(cap) and (clip is None or ARGS.prefer_captured):
+            add_ref(bank, cap, 2)
+            recorded += 1
+        elif clip:
+            add_ref(bank, clip, INFO[bank]["tier"])
+            exported += 1
+    log("voices: %d banks known, %d with a line to record; clips: %d from the export, %d recorded in game; %d models" %
+        (len(entries), len(LINES), exported, recorded, len(REFS_BY_MODEL)))
+
+
+def add_ref(bank, clip, tier):
+    """A clip for the bank, into the tables pick_ref chooses from (in place of the bank's old clip, if it had one)."""
+    i = INFO.get(bank) or {}
+    item = (bank, clip, tier, i.get("spanish", False))
+    for d, key in ((REFS_BY_MODEL, i.get("model", "")), (REFS_BY_KIND, (i.get("kind", ""), i.get("age", "")))):
+        lst = [c for c in d.get(key, []) if c[0] != bank]
+        lst.append(item)
+        lst.sort()
+        d[key] = lst
+    CONDS.pop(clip, None)
 
 
 def stable(s):
@@ -237,13 +281,99 @@ def worker():
         log("said %-22s %-38s %4.1f s in %5d ms (%s): %s" % (job["id"][:22], job["bank"][:38], job["seconds"], job["make_ms"], job["kind"], job["text"][:80]))
 
 
+# ---- recording the game's own clips off this PC's output (the player's own game; nothing shipped) ----
+
+def capture_fail(job, why):
+    job["state"] = "failed"
+    job["why"] = why
+    COUNTS["capfail"] += 1
+    log("capture %s: failed, %s" % (job["bank"], why))
+
+
+def capture(job):
+    """Records what this PC plays for the line's length and a margin, keeps the spoken part, judges it against the sound
+    around it (the street, rain, music) and saves it as the bank's clip when it stands clear enough of that."""
+    global CAPTURING
+    bank, secs = job["bank"], job["for"]
+    try:
+        import pyaudiowpatch as pa
+        import soundfile as sf
+    except Exception as e:
+        return capture_fail(job, "no recorder (pip install pyaudiowpatch soundfile): " + repr(e)[:80])
+    chunks = []
+    p = pa.PyAudio()
+    try:
+        api = p.get_host_api_info_by_type(pa.paWASAPI)
+        out = p.get_device_info_by_index(api["defaultOutputDevice"])
+        tap = next((d for d in p.get_loopback_device_info_generator() if out["name"] in d["name"]), None)
+        if tap is None:
+            return capture_fail(job, "no output tap for " + out["name"])
+        sr, ch = int(tap["defaultSampleRate"]), int(tap["maxInputChannels"])
+
+        def heard(data, _frames, _t, _status):
+            chunks.append(np.frombuffer(data, dtype=np.float32).reshape(-1, ch).mean(axis=1))
+            return (None, pa.paContinue)
+
+        s = p.open(format=pa.paFloat32, channels=ch, rate=sr, input=True, input_device_index=tap["index"], frames_per_buffer=2048, stream_callback=heard)
+        CAPTURING = True
+        deadline = time.time() + secs
+        while time.time() < deadline and job["state"] == "recording":
+            time.sleep(0.05)
+        s.stop_stream()
+        s.close()
+    except Exception as e:
+        return capture_fail(job, "the output tap failed: " + repr(e)[:120])
+    finally:
+        CAPTURING = False
+        p.terminate()
+    if job["state"] != "recording":
+        return
+    if not chunks:
+        return capture_fail(job, "the output tap gave nothing (is the game's sound on another device?)")
+    x = np.concatenate(chunks)
+    blk = max(1, sr // 20)   # 50 ms blocks
+    n = len(x) // blk
+    if n < 10:
+        return capture_fail(job, "too short")
+    db = 20 * np.log10(np.sqrt(np.mean(x[:n * blk].reshape(n, blk) ** 2, axis=1)) + 1e-9)
+    floor, loud = float(np.percentile(db, 10)), float(np.percentile(db, 95))
+    if loud < -50:
+        return capture_fail(job, "nothing heard (loudest %.0f dB)" % loud)
+    snr = loud - floor
+    on = np.where(db > max(floor + 10, loud - 35))[0]
+    a, b = max(0, (on[0] - 3) * blk), min(len(x), (on[-1] + 4) * blk)
+    y = x[a:b]
+    length = len(y) / sr
+    if length < 1.5:
+        return capture_fail(job, "only %.1f s heard" % length)
+    peak = float(np.max(np.abs(y)))
+    if peak > 0:
+        y = y * (0.9 / peak)
+    job.update({"seconds": round(length, 2), "snr": round(snr, 1)})
+    if snr < ARGS.capture_snr:
+        job["state"] = "poor"
+        job["why"] = "%.0f dB over the sound around it, %.0f needed" % (snr, ARGS.capture_snr)
+        COUNTS["poor"] += 1
+        log("capture %s: poor, %s" % (bank, job["why"]))
+        return
+    d = os.path.join(ARGS.root, "captured")
+    os.makedirs(d, exist_ok=True)
+    path = os.path.join(d, bank + ".wav")
+    sf.write(path, y.astype(np.float32), sr, subtype="PCM_16")
+    add_ref(bank, path, 2 if snr >= 18 else 3)
+    job["path"] = path
+    job["state"] = "captured"
+    COUNTS["captured"] += 1
+    log("capture %s: %.1f s, %.0f dB over the sound around it -> %s" % (bank, length, snr, path))
+
+
 # ---- playing: every voice at once, each at its own volume and pan, eased so a move doesn't click ----
 
 def mix(outdata, frames, _time, _status):
     out = np.zeros((frames, 2), dtype=np.float32)
     with LOCK:
         now = time.time()
-        if not any(j["state"] == "playing" for j in JOBS.values()):
+        if not CAPTURING and not any(j["state"] == "playing" for j in JOBS.values()):
             ready = sorted((j for j in JOBS.values() if j["state"] == "ready"), key=lambda j: j["asked"])
             for j in ready:
                 if now - j["asked"] > j["wait"] + ARGS.grace:   # its moment passed while another spoke
@@ -286,7 +416,7 @@ def tidy():
         time.sleep(10)
         now = time.time()
         with LOCK:
-            for k in [k for k, j in JOBS.items() if j["state"] not in ("queued", "making", "ready", "playing") and now - j["asked"] > 60]:
+            for k in [k for k, j in JOBS.items() if j["state"] not in ("queued", "making", "ready", "playing", "recording") and now - j["asked"] > 60]:
                 del JOBS[k]
 
 
@@ -318,7 +448,8 @@ class Handler(BaseHTTPRequestHandler):
                 q = sum(1 for j in JOBS.values() if j["state"] in ("queued", "making", "ready"))
                 pl = sum(1 for j in JOBS.values() if j["state"] == "playing")
             self.reply({"ready": READY, "model": MODEL_NAME, "error": LOAD_ERROR, "free_gb": round(free_gb(), 2), "queued": q, "playing": pl,
-                        "made": COUNTS["made"], "held": COUNTS["held"], "dropped": COUNTS["dropped"], "failed": COUNTS["failed"], "again": COUNTS["again"]})
+                        "made": COUNTS["made"], "held": COUNTS["held"], "dropped": COUNTS["dropped"], "failed": COUNTS["failed"], "again": COUNTS["again"],
+                        "captured": COUNTS["captured"], "poor": COUNTS["poor"]})
         elif u.path == "/status":
             jid = (parse_qs(u.query).get("id") or [""])[0]
             with LOCK:
@@ -327,7 +458,8 @@ class Handler(BaseHTTPRequestHandler):
                     self.reply({"state": "unknown"})
                 else:
                     left = (len(j["samples"]) - j["pos"]) / SR if j["state"] == "playing" and "samples" in j else 0
-                    self.reply({"state": j["state"], "make_ms": j.get("make_ms", 0), "seconds": j.get("seconds", 0), "left": round(left, 2), "why": j.get("why"), "bank": j.get("bank")})
+                    self.reply({"state": j["state"], "make_ms": j.get("make_ms", 0), "seconds": j.get("seconds", 0), "left": round(left, 2), "why": j.get("why"), "bank": j.get("bank"),
+                                "snr": j.get("snr"), "path": j.get("path")})
         else:
             self.reply({"error": "no such path"}, 404)
 
@@ -363,11 +495,26 @@ class Handler(BaseHTTPRequestHandler):
                     if "pan" in b:
                         j["pan"] = float(b["pan"])
             self.reply({"ok": j is not None})
+        elif u.path == "/capture":
+            bank, jid = str(b.get("bank") or ""), str(b.get("id") or "")
+            l = LINES.get(bank)
+            if not bank or not jid:
+                return self.reply({"held": "no bank or id"})
+            if l is None:
+                return self.reply({"held": "no line known for " + bank})
+            with LOCK:
+                if CAPTURING or any(j["state"] in ("recording", "playing") for j in JOBS.values()):
+                    return self.reply({"held": "a voice is playing or recording"})
+                secs = min(16.0, (l[2] or 6.0) + 3.0)
+                JOBS[jid] = {"id": jid, "bank": bank, "kind": "capture", "line": l[0], "take": l[1], "for": secs, "text": "",
+                             "asked": time.time(), "state": "recording", "volume": 0.0, "pan": 0.0, "wait": secs}
+            threading.Thread(target=capture, args=(JOBS[jid],), daemon=True).start()
+            self.reply({"ok": True, "line": l[0], "take": l[1], "seconds": l[2], "for": secs})
         elif u.path == "/stop":
             jid = b.get("id")
             with LOCK:
                 for k, j in JOBS.items():
-                    if (jid is None or k == jid) and j["state"] in ("queued", "making", "ready", "playing"):
+                    if (jid is None or k == jid) and j["state"] in ("queued", "making", "ready", "playing", "recording"):
                         j["state"] = "dropped"
                         j.pop("samples", None)
             self.reply({"ok": True})
@@ -386,8 +533,25 @@ def main():
     ap.add_argument("--thought-gain", type=float, default=0.6, help="a thought's loudness against a said line")
     ap.add_argument("--grace", type=float, default=4.0, help="seconds past its wait a made line may still start")
     ap.add_argument("--turbo", action="store_true", help="Chatterbox Turbo (faster; its own download)")
+    ap.add_argument("--capture-snr", type=float, default=12.0, help="a clip recorded in game is kept when it stands this many dB over the sound around it")
+    ap.add_argument("--prefer-captured", action="store_true", help="the clips recorded in game before the export's, where both exist")
+    ap.add_argument("--check", action="store_true", help="load the model (its first download), say one line to nobody, report and exit (install-voice.cmd)")
     ARGS = ap.parse_args()
     load_refs(ARGS.root)
+    if ARGS.check:
+        load_model()
+        if LOAD_ERROR is not None:
+            log("the voice model couldn't start:", LOAD_ERROR)
+            sys.exit(1)
+        try:
+            import torch
+            with torch.inference_mode():
+                wav = MODEL.generate("The voices are ready.") if ARGS.turbo else MODEL.generate("The voices are ready.", exaggeration=0.5, cfg_weight=0.5)
+            log("ready: %s said %.1f s in its own voice; %.1f GB free on the card" % (MODEL_NAME, wav.shape[-1] / SR, free_gb()))
+        except Exception as e:
+            log("the voice model loaded but couldn't speak:", repr(e)[:200])
+            sys.exit(1)
+        sys.exit(0)
     import sounddevice as sd
     stream = sd.OutputStream(samplerate=24000, channels=2, dtype="float32", callback=mix, blocksize=1024)
     threading.Thread(target=load_model, daemon=True).start()

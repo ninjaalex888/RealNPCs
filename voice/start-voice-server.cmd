@@ -1,7 +1,17 @@
 @echo off
-rem RealNPCs' local voice server: thoughts and lines said in each person's own voice, cloned on this PC with Chatterbox
-rem from your own export of the game's voice banks (refs.json + banks\ in VOICE_ROOT). Leave this window open while you play.
-set VOICE_ROOT=C:\mods\voice-test
-set VENV=%VOICE_ROOT%\tts-venv
-"%VENV%\Scripts\python.exe" -I "%~dp0voice_server.py" --root "%VOICE_ROOT%" %*
+setlocal
+rem RealNPCs' voice server: start it before the game and leave this window open. It runs on the Python that
+rem install-voice.cmd put beside it (tts-venv), or, on the development PC, the one in C:\mods\voice-test with its export.
+rem Extra arguments pass through (--turbo, --min-free-gb 1.0, --prefer-captured ...).
+set HOME=%~dp0
+set HOME=%HOME:~0,-1%
+if exist "%HOME%\tts-venv\Scripts\python.exe" (
+  set VENV=%HOME%\tts-venv
+  set VOICE_ROOT=%HOME%
+) else (
+  set VENV=C:\mods\voice-test\tts-venv
+  set VOICE_ROOT=C:\mods\voice-test
+)
+title RealNPCs voice server
+"%VENV%\Scripts\python.exe" -I "%HOME%\voice_server.py" --root "%VOICE_ROOT%" %*
 pause

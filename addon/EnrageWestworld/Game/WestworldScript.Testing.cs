@@ -201,6 +201,9 @@ namespace EnrageWestworld.InGame
                 case "voice":
                     skipped = "nothing: it says a test line, it starts nothing";
                     return VoiceTest(now, out said);
+                case "voicerec":
+                    skipped = "nothing: they say one of the game's own lines and the server records it";
+                    return VoiceRecord(now, out said);
                 case "subtitle":
                     // the box RealNPCs draws what people say near you in (Lex, 2026-10-30: "I'm still not able to see our mods
                     // drawn on subtitles"): one for six seconds, and the log says where it was drawn

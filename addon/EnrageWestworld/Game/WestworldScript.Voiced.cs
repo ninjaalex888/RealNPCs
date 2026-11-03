@@ -10,6 +10,8 @@
 // The server plays the sound itself, one voice at a time in the order asked; this side keeps telling it how loud and from
 // which side, from the speaker's distance and the camera, while it speaks. The game thread never waits on it: a worker
 // thread does the asking, as the language layer's does (an Insert reload aborts the request under way).
+// The recording row (Testing, "voicerec"): the nearest person says the game's own line their voice is cloned from while
+// the server records it off this PC's output, so a player's own game can give the clips with nothing of Rockstar's shipped.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -36,9 +38,15 @@ namespace EnrageWestworld.InGame
             public volatile string State = "waiting", Why, Bank;
             public volatile float Vol = 1f, Pan;
             public volatile int MakeMs;
+            // a recording (Kind "capture"): the line the server wants said, in which bank (null: the person's own voice)
+            public volatile string Line, Voice, Snr, Path;
+            public int Take, PlayedAt;
+            public volatile bool Accepted, Spoke, Checked;
         }
 
         private const int VoiceThoughtGapMs = 12000, VoiceThoughtEachMs = 90000, VoiceMostJobs = 4;
+        private const float VoiceRecordMetres = 8f;
+        private int _voiceRecStyle, _voiceRecorded, _voiceRecordPoor;
         private readonly object _voiceLock = new object();
         private readonly List<VoiceJob> _voiceJobs = new List<VoiceJob>();
         private Thread _voiceThread;
@@ -97,6 +105,11 @@ namespace EnrageWestworld.InGame
                     j.StopAsked = true;   // out of earshot
                     continue;
                 }
+                if (j.Kind == "capture")
+                {
+                    VoiceRecordStep(j);
+                    continue;
+                }
                 j.Vol = VoiceVolume(d, j.Kind == "thought");
                 float dx = at.X - me.X, dy = at.Y - me.Y, len = (float)Math.Sqrt(dx * dx + dy * dy);
                 j.Pan = len < 0.8f ? 0f : Math.Max(-0.85f, Math.Min(0.85f, (dx * rx + dy * ry) / len));
@@ -115,6 +128,19 @@ namespace EnrageWestworld.InGame
             lock (_voiceLock)
                 if (!_voiceJobs.Remove(j))
                     return;
+            if (j.Kind == "capture")
+            {
+                if (j.State == "captured")
+                    _voiceRecorded++;
+                else
+                    _voiceRecordPoor++;
+                string how = j.Voice == null ? "their own voice" : "the bank " + j.Voice + " by name";
+                Log.Write("VOICE recorded: " + j.Name + " (" + j.Bank + ", " + how + "): " + (j.Line ?? "no line") + " take " + j.Take + ", " +
+                    (j.PlayedAt == 0 ? "never played" : (j.Accepted ? "accepted" : "refused") + ", " + (j.Spoke ? "the game spoke" : "no speech heard")) + "; " +
+                    j.State + (j.Why != null ? " (" + j.Why + ")" : "") + (j.Snr != null ? ", " + j.Snr + " dB over the sound around it" : "") + (j.Path != null ? " -> " + j.Path : ""));
+                _voiceLast = j.Name + " (recorded): " + j.State;
+                return;
+            }
             if (j.Played)
             {
                 _voiceSpoken++;
@@ -311,6 +337,11 @@ namespace EnrageWestworld.InGame
                         {
                             j.State = "no server";
                             j.Over = true;
+                            continue;
+                        }
+                        if (j.Kind == "capture")
+                        {
+                            VoiceRecordWork(url, j);
                             continue;
                         }
                         if (!j.Sent)
@@ -511,6 +542,135 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
+        // ---- recording the game's own clips (the Testing row "voicerec") ----
+
+        /// The Testing row: the nearest person within 8 m whose voice bank is certain says the game's own line their voice
+        /// is cloned from, and the server records it off this PC's output (the clip the player's own game gives). Press by
+        /// press: their own voice, then the bank by its full name, then by its short name (which name the game takes is
+        /// what recording every bank on one body will need to know).
+        private string VoiceRecord(int now, out string said)
+        {
+            said = null;
+            if (!VoiceWanted)
+                return "[Mind] VoicedThoughts and VoicedDialogue are both off";
+            if (!_voiceReady)
+                return "the voice server isn't ready (" + _voiceServer + "): start voice\\start-voice-server.cmd";
+            lock (_voiceLock)
+                if (_voiceJobs.Any(j => j.Kind == "capture" && !j.Over))
+                    return "a recording is under way";
+            Vector3 me = Game.Player.Character.Position;
+            int best = 0;
+            float bestD = VoiceRecordMetres;
+            string bank = null;
+            foreach (Ped p in Peds.All())
+            {
+                if (p == null || !p.Exists() || p.Handle == Game.Player.Character.Handle || p.IsDead || !PED.IS_PED_HUMAN(p.Handle))
+                    continue;
+                float d = p.Position.DistanceTo(me);
+                if (d >= bestD)
+                    continue;
+                string b = Speech.BankOf(p.Handle);
+                if (b == null || Speech.Busy(p.Handle))
+                    continue;
+                bestD = d;
+                best = p.Handle;
+                bank = b;
+            }
+            if (best == 0)
+                return "nobody within " + VoiceRecordMetres + " m whose voice bank is certain and who isn't speaking";
+            int style = _voiceRecStyle++ % 3;
+            string voice = style == 0 ? null : style == 1 ? bank : VoiceShortBank(bank);
+            MindWho w;
+            string name = _mindWho.TryGetValue(best, out w) && w.Name != null ? w.Name : "Someone";
+            var job = new VoiceJob
+            {
+                Id = "rec" + (++_voiceSeq) + "-" + (Environment.TickCount & 0xFFFFFF).ToString("x"),
+                Kind = "capture",
+                Name = name,
+                Text = "",
+                Bank = bank,
+                Voice = voice,
+                Handle = best,
+                AskedAt = Environment.TickCount,
+                WaitSeconds = 25,
+            };
+            lock (_voiceLock)
+                _voiceJobs.Add(job);
+            said = name + " (" + bank + ", " + bestD.ToString("0") + " m) says the clip's line in " + (voice == null ? "their own voice" : "the bank by name, " + voice) + "; the server records it";
+            return null;
+        }
+
+        /// The bank's name without the number in front (0013_A_F_M_ASBTOWNFOLK_01_WHITE_01 gives A_F_M_ASBTOWNFOLK_01_WHITE_01).
+        private static string VoiceShortBank(string bank)
+        {
+            int i = bank.IndexOf('_');
+            return i > 0 && i <= 5 && bank.Substring(0, i).All(char.IsDigit) ? bank.Substring(i + 1) : bank;
+        }
+
+        /// The game thread's side of a recording: the moment the server records, the person says the line (their own voice,
+        /// or a bank by name), and a second later the game is asked whether speech really started.
+        private void VoiceRecordStep(VoiceJob j)
+        {
+            if (j.Line == null)
+                return;   // the server hasn't answered yet
+            int now = Environment.TickCount;
+            if (j.PlayedAt == 0)
+            {
+                j.Accepted = Speech.PlayAs(j.Handle, j.Voice, j.Line, j.Take, 0);
+                j.PlayedAt = now;
+                return;
+            }
+            if (!j.Checked && now - j.PlayedAt >= 1200)
+            {
+                j.Spoke = Speech.Busy(j.Handle);
+                j.Checked = true;
+            }
+        }
+
+        /// The worker's side of a recording: the server asked to record, then watched until it has judged the clip.
+        private void VoiceRecordWork(string url, VoiceJob j)
+        {
+            if (!j.Sent)
+            {
+                string r = VoiceHttp(url + "/capture", "{\"id\":" + Language.JsonString(j.Id) + ",\"bank\":" + Language.JsonString(j.Bank) + "}", 3000);
+                j.Sent = true;
+                string held = Language.JsonField(r, "held");
+                if (held != null)
+                {
+                    j.State = "held";
+                    j.Why = held;
+                    j.Over = true;
+                    return;
+                }
+                j.Take = VoiceNum(r, "take");
+                j.Line = Language.JsonField(r, "line");   // the game thread plays it the moment it sees this
+                j.State = "recording";
+                j.NextPoll = Environment.TickCount + 500;
+                return;
+            }
+            if (Environment.TickCount - j.NextPoll < 0)
+                return;
+            j.NextPoll = Environment.TickCount + 500;
+            if (j.StopAsked || Environment.TickCount - j.AskedAt > j.WaitSeconds * 1000)
+            {
+                VoiceHttp(url + "/stop", "{\"id\":" + Language.JsonString(j.Id) + "}", 1500);
+                j.State = j.StopAsked ? "stopped" : "timed out";
+                j.Over = true;
+                return;
+            }
+            string s = VoiceHttp(url + "/status?id=" + Uri.EscapeDataString(j.Id), null, 1500);
+            string state = Language.JsonField(s, "state") ?? "unknown";
+            if (state == "captured" || state == "poor" || state == "failed" || state == "unknown" || state == "dropped")
+            {
+                j.State = state;
+                j.Why = Language.JsonField(s, "why");
+                string snr = VoiceRaw(s, "snr");
+                j.Snr = snr == null || snr == "null" ? null : snr;
+                j.Path = Language.JsonField(s, "path");
+                j.Over = true;
+            }
+        }
+
         private string VoiceStatus()
         {
             if (!VoiceWanted)
@@ -524,6 +684,7 @@ namespace EnrageWestworld.InGame
             return "thoughts " + (_cfg.VoicedThoughts ? "on" : "off") + ", dialogue " + (_cfg.VoicedDialogue ? "on" : "off") + " within " + _cfg.VoiceMetres + " m; server " + _voiceServer + " (" + _cfg.VoiceUrl + ")" +
                    "; asked " + _voiceThoughtsAsked + " thoughts and " + _voiceSaidAsked + " lines, " + _voiceSpoken + " spoken (median " + med + " ms to make), " + _voiceHeld + " held" +
                    (_voiceHeldWhy != null ? " (last: " + _voiceHeldWhy + ")" : "") + ", " + _voiceDropped + " dropped, " + _voiceFailed + " failed, " + _voiceSkipped + " passed over while busy" +
+                   (_voiceRecorded + _voiceRecordPoor > 0 ? "; " + _voiceRecorded + " clips recorded in game (" + _voiceRecordPoor + " not kept)" : "") +
                    (_voiceLast != null ? "; last: " + _voiceLast : "");
         }
     }
