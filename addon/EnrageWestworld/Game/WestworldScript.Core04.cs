@@ -252,6 +252,7 @@ namespace EnrageWestworld.InGame
             Speech.ShoutsCarry = _cfg.ShoutsCarry;
             Observed.BoldThiefChance = _cfg.BoldThieves;   // a thief who tries it with the law looking on ([Scenes] BoldThieves)
             ApplyTunedNumbers();
+            VramApply();       // the VRAM gauge shown or not ([Display] VramGauge, with the AI model; WestworldScript.Vram.cs)
             BuildTestKeys();   // the Testing page's keys ([Testing], WestworldScript.Testing.cs)
             BuildPadKeys();    // and a controller's buttons ([Controller], WestworldScript.Pad.cs)
         }
@@ -542,6 +543,8 @@ namespace EnrageWestworld.InGame
         private void Frame(int now)
         {
             _now = now;
+            Draw.Part = Draw.PartVram;
+            VramStep();   // the VRAM gauge, top left: one piece of the frame's text, before the rest (WestworldScript.Vram.cs)
             Draw.Part = Draw.PartOther;   // each step says who it is, so a frame's text can be told apart (Draw.Spent)
             Safe("ticker", _aFrame);
             Draw.Part = Draw.PartFeelings;

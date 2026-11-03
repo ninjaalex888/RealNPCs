@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 194;
+        public const int CurrentVersion = 195;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -130,7 +130,7 @@ namespace EnrageWestworld.Core
         public bool VoicedThoughts = false;   // [Mind] (in testing) a thought over someone near murmured in their own voice, cloned by the local voice server (voiceoice_server.py) from the game's recordings for their model; settings version 193
         public bool VoicedDialogue = false;   // [Mind] (in testing) our words said near you (scenes, Talk, encounters) said in the speaker's own voice by the voice server
         public string VoiceUrl = "http://127.0.0.1:5005";   // [Mind] the local voice server; nothing leaves the machine
-        public float VoiceMetres = 15f;       // [Mind] voiced within this many metres of you (5-30)
+        public float VoiceMetres = 14f;       // [Mind] voiced within this many metres of you (5-30; 15 until 2026-11-03, Lex: 6% shorter)
         public int VoiceVolume = 100;         // [Mind] the voices' loudness, percent (10-200)
         public bool VoiceRecord = true;       // [Mind] with the voice server: the voices recorded from your own game as you meet people (someone whose voice has no clip yet says one of the game's own lines once, in a quiet moment; the server keeps it; nothing of Rockstar's ships)
         public string LanguageUrl = "http://127.0.0.1:11434";   // the local server; nothing leaves the machine
@@ -149,6 +149,7 @@ namespace EnrageWestworld.Core
         public bool NameCardsSecondLine = true;   // the line under the name (temper, trade, Stranger, gang); off: the name alone (players, 2026-10-30; settings version 117)
         public bool WhosWho = true;               // for everyone (Lex, 2026-10-30; MindLive only for its Lately): the reader (the papers key) ends with a page of the people you've met, read from what is kept (Core/WhosWho.cs; roadmap 24; night 2026-10-29; settings version 116)
         public bool GrudgeMeter = true;
+        public string VramGauge = "model";        // off | on | model: "VRAM 11.3 / 15.6 GB" at the top left, the whole card's memory in use as Windows counts it; model: only while Language is on (Lex, 2026-11-01; Core/Vram.cs; set aside for 0.7.12, back 2026-11-03; settings version 195)
 
         // [WestWorld] - the master switch and everything under it
         public bool WestWorld = true;
@@ -782,6 +783,13 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 195)
+                {
+                    // 2026-11-03 (Lex): the voices heard a little less far (6% shorter); the value as it came moves, a value of your own is kept
+                    string moved = "";
+                    if (s.VoiceMetres == 15f) { s.VoiceMetres = 14f; moved = "; VoiceMetres 15 -> 14"; }
+                    log?.Invoke("Settings: new in this version: [Display] VramGauge (model): a small gauge at the top left shows how much of your graphics card's memory is in use while the AI model is on; on shows it always, off never. The voices are heard within 14 m now (VoiceMetres)" + moved + ".");
+                }
                 if (s.SettingsVersion < 194)
                     log?.Invoke("Settings: new in this version: [Mind] VoiceRecord (on): with the voice server, the voices are recorded from your own game as you meet people; someone whose voice has no clip yet says one of the game's own lines once, in a quiet moment, and the server keeps it.");
                 if (s.SettingsVersion < 193)
@@ -1014,6 +1022,7 @@ namespace EnrageWestworld.Core
             NameCards = nc == "off" || nc == "everyone" ? nc : "known";
             string sto = (Storyteller ?? "lively").Trim().ToLowerInvariant();
             Storyteller = sto == "off" || sto == "calm" || sto == "wild" ? sto : "lively";
+            VramGauge = Vram.Normal(VramGauge);
             NameCardsMetres = Math.Max(5f, Math.Min(150f, NameCardsMetres));
             NameCardsKnownMetres = Math.Max(5f, Math.Min(150f, NameCardsKnownMetres));
         }
@@ -1176,6 +1185,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("NameCardsSecondLine = " + B(NameCardsSecondLine) + "   ; the smaller line under each name: their temper and trade, \"Stranger\", their gang, \"Wanted\", a nemesis's mood. Off shows the name alone; NameCards = off hides the cards altogether");
             b.AppendLine("WhosWho = " + B(WhosWho) + "   ; the papers you carry end with Who's who, the people you have met, the most recent first: who they are, how they take you, who they are friends or at odds with (and, with [Mind] MindLive, how they feel about you lately); read only");
             b.AppendLine("GrudgeMeter = " + B(GrudgeMeter) + "   ; top right: strangers whose grudge against you is building, with the mark where they'd become a nemesis, and the nemesis after you");
+            b.AppendLine("VramGauge = " + VramGauge + "   ; a small gauge at the top left, under the game's own updates: how much of your graphics card's memory is in use (the game, the AI model and everything else on it), as Task Manager counts it, e.g. VRAM 11.3 / 15.6 GB; amber over 85%, red over 95%. model: only while the AI model ([Mind] Language) is on; on: always; off: never");
             b.AppendLine();
             b.AppendLine("[WestWorld]");
             b.AppendLine("WestWorld = " + B(WestWorld) + "   ; master switch: the people who start to see their world is made. false turns off everything in this section");

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The voices are heard a little less far: `VoiceMetres` 14 (from 15; an ini on 15 moves, a value of your own is kept; settings version 195).
+- **The VRAM gauge is back** (set aside for 0.7.12): while the AI model is on, a small `VRAM 11.3 / 15.6 GB` at the top left shows how much of your graphics card's memory is in use (the game, the model and everything else on it, as Task Manager counts it); amber over 85%, red over 95%. `[Display] VramGauge` (model; on shows it always, off never), on the settings panel's UI page.
 - Fixed: Talk (Q in the lock-on menu) on someone walking by left them walking, and the list closed a few steps on, lock-on or not (Lex). They stop and turn to you now, out of a scenario's walk the game's own way, and someone who walks on anyway is asked again.
 - With VoicedDialogue, the subtitle for a line waits for the cloned voice (a second or two to make) and shows as the voice starts, or after 3.5 s anyway (Lex: the voice came behind the words).
 - Fixed: a street scene could call someone by one name while the card over their head and their mind used another (a brawl's captions said Elphege, the card over him Owen). enRAGE had taken the man up between the two under a name of its own, and RealNPCs only settled the name when his card next came round. It's settled the moment any part of RealNPCs names him now, so the mind, the scenes, the ticker and the card say the same name.
