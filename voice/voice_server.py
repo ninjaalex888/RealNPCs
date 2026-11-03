@@ -12,7 +12,8 @@
 #                               (never waits for the voice: the mod asks /status). "need" names the person's own bank
 #                               when it has no clip yet, for the mod to have them record it (own_bank: one of their
 #                               model's banks chosen by who they are, for good).
-#   POST /taint  {"id","why"}    another voice spoke into a recording's window: the clip goes under captured\poor
+#   POST /taint  {"id","why","far"}   another voice spoke into a recording's window: near, the clip goes under captured\poor;
+#                               far (true), it's kept as the weaker sort and recorded again when a clean moment comes
 #   GET  /needed?most=600       -> {"banks":"a,b,c","none":..,"weak":..,"clips":..}: the banks still worth recording
 #   POST /place  {"id","volume","pan"}   the speaker moved
 #   POST /stop   {"id"} or {}            one voice, or every voice
@@ -58,15 +59,25 @@ INFO = {}                      # bank -> model, kind (sex), age, tier, spanish, 
 LINES = {}                     # bank -> (line, take, seconds): the game's own recording the voice is cloned from, by name
 CLIPS = {}                     # bank -> (clip, tier, "export"|"recorded"): the clip its voice is cloned from
 BANKS_BY_MODEL = {}            # model -> every bank the game has for it, clip or no clip
-INDEX = {}                     # bank -> {"snr","seconds","when","tries","last"}: the recordings so far (captured\index.json)
+INDEX = {}                     # bank -> {"snr","seconds","when","tries","last","faint"}: the recordings so far (captured\index.json)
 CAPTURING = False              # the mixer starts no voice while the output tap records
+LOG_PATH = None                # <root>\voice-server.log once the root is known (what a player's report can carry); 2 MB, then the old one is kept once
 TAG = re.compile(r"_(WHITE|BLACK|HISPANIC|ASIAN|NATIVE|IRISH)(?:_|$)")   # mid-name too: A_M_M_CIV_POOR_WHITE_AVOID_14
 ORIGIN_TAG = {"white": "WHITE", "french": "WHITE", "italian": "WHITE", "german": "WHITE", "scandinavian": "WHITE", "black": "BLACK",
               "hispanic": "HISPANIC", "chinese": "ASIAN", "native": "NATIVE", "irish": "IRISH"}
 
 
 def log(*a):
-    print(time.strftime("%H:%M:%S"), *a, flush=True)
+    line = time.strftime("%H:%M:%S") + " " + " ".join(str(x) for x in a)
+    print(line, flush=True)
+    if LOG_PATH:
+        try:
+            if os.path.exists(LOG_PATH) and os.path.getsize(LOG_PATH) > 2000000:
+                os.replace(LOG_PATH, LOG_PATH[:-4] + ".old.log")
+            with open(LOG_PATH, "a", encoding="utf-8") as f:
+                f.write(line + "\n")
+        except Exception:
+            pass
 
 
 # ---- which recording a person's voice is cloned from ----
@@ -161,7 +172,7 @@ def wanted(bank):
         return True
     if c[2] == "export":
         return bool(ARGS.prefer_captured)   # recordings first: the export's banks are recorded too, once
-    return e.get("snr", 0) < ARGS.good_snr
+    return bool(e.get("faint")) or e.get("snr", 0) < ARGS.good_snr   # a voice farther off in it: a clean one is wanted
 
 
 def own_bank(model, person, origin):
@@ -422,12 +433,13 @@ def capture(job):
     e["tries"] = e.get("tries", 0) + 1
     e["last"] = time.time()
     pre = x[:int(sr * 0.3)]
-    job["floor"] = round(float(20 * np.log10(np.sqrt(np.mean(pre * pre)) + 1e-9)), 1) if len(pre) else None
+    job["floor"] = round(max(-90.0, float(20 * np.log10(np.sqrt(np.mean(pre * pre)) + 1e-9))), 1) if len(pre) else None
     blk = max(1, sr // 20)   # 50 ms blocks
     n = len(x) // blk
     if n < 10:
         return capture_fail(job, "too short")
-    db = 20 * np.log10(np.sqrt(np.mean(x[:n * blk].reshape(n, blk) ** 2, axis=1)) + 1e-9)
+    # digital silence (the game muted for a moment) counts as -90 dB, not -180: a clip was judged 143 dB over the sound around it
+    db = np.maximum(20 * np.log10(np.sqrt(np.mean(x[:n * blk].reshape(n, blk) ** 2, axis=1)) + 1e-9), -90.0)
     floor, loud = float(np.percentile(db, 10)), float(np.percentile(db, 95))
     if loud < -50:
         return capture_fail(job, "nothing heard (loudest %.0f dB)" % loud)
@@ -444,14 +456,18 @@ def capture(job):
     except Exception as e:
         log("capture %s: not cleaned (%s)" % (bank, repr(e)[:80]))
     job.update({"seconds": round(length, 2), "snr": round(snr, 1)})
+    faint = job.get("faint")   # a voice farther off spoke into it: kept, as the weaker sort, until a clean one comes
     kept = CLIPS.get(bank)
     kept_snr = e.get("snr") if kept and kept[2] == "recorded" else None
+    kept_faint = bool(e.get("faint")) if kept_snr is not None else False
     why = None   # a clip under the bar is kept too, in captured\poor, to listen to and to set the bar by; never cloned from
     if job.get("tainted"):
         why = "another voice in it (%s)" % job["tainted"]
     elif snr < ARGS.capture_snr:
         why = "%.0f dB over the sound around it, %.0f needed" % (snr, ARGS.capture_snr)
-    elif kept_snr is not None and snr <= kept_snr:
+    elif kept_snr is not None and faint and not kept_faint:
+        why = "a voice farther off in it (%s), and the clip kept is clean" % faint
+    elif kept_snr is not None and (faint or not kept_faint) and snr <= kept_snr:
         why = "%.0f dB over the sound around it, the clip kept has %.0f" % (snr, kept_snr)
     d = os.path.join(ARGS.root, "captured", "poor" if why else "")
     os.makedirs(os.path.join(d, "raw"), exist_ok=True)
@@ -468,11 +484,16 @@ def capture(job):
         log("capture %s: poor, %s (floor %s dB) -> %s" % (bank, why, job["floor"], path))
         return
     e.update({"snr": round(snr, 1), "seconds": round(length, 2), "when": time.strftime("%Y-%m-%d %H:%M")})
+    if faint:
+        e["faint"] = faint
+        job["why"] = "kept as the weaker sort, %s in it" % faint
+    else:
+        e.pop("faint", None)
     save_index()
-    add_ref(bank, path, 2 if snr >= 18 else 3, "recorded")
+    add_ref(bank, path, 3 if faint else 2 if snr >= 18 else 3, "recorded")
     job["state"] = "captured"
     COUNTS["captured"] += 1
-    log("capture %s: %.1f s, %.0f dB over the sound around it (floor %s dB) -> %s" % (bank, length, snr, job["floor"], path))
+    log("capture %s: %.1f s, %.0f dB over the sound around it (floor %s dB)%s -> %s" % (bank, length, snr, job["floor"], ", " + job["why"] if faint else "", path))
 
 
 # ---- playing: every voice at once, each at its own volume and pan, eased so a move doesn't click ----
@@ -561,7 +582,7 @@ class Handler(BaseHTTPRequestHandler):
         elif u.path == "/needed":   # the banks still worth recording, those without a clip first (the batch row)
             most = int((parse_qs(u.query).get("most") or ["600"])[0])
             none = [b for b in sorted(LINES) if b not in CLIPS or (ARGS.prefer_captured and CLIPS[b][2] == "export")]
-            weak = [b for b in sorted(LINES) if b in CLIPS and CLIPS[b][2] == "recorded" and (INDEX.get(b) or {}).get("snr", 0) < ARGS.good_snr]
+            weak = [b for b in sorted(LINES) if b in CLIPS and CLIPS[b][2] == "recorded" and ((INDEX.get(b) or {}).get("snr", 0) < ARGS.good_snr or (INDEX.get(b) or {}).get("faint"))]
             self.reply({"banks": ",".join((none + weak)[:most]), "none": len(none), "weak": len(weak), "clips": len(CLIPS)})
         elif u.path == "/status":
             jid = (parse_qs(u.query).get("id") or [""])[0]
@@ -599,11 +620,14 @@ class Handler(BaseHTTPRequestHandler):
                              "exaggeration": b.get("exaggeration"), "asked": time.time(), "state": "queued"}
             WORK.put(JOBS[jid])
             self.reply({"ok": True, "bank": bank, "voice": how, "need": need})
-        elif u.path == "/taint":   # the mod heard another voice in the recording's window: the clip goes under poor
+        elif u.path == "/taint":   # the mod heard another voice in the recording's window: near, the clip goes under poor; far, it's kept as the weaker sort
             with LOCK:
                 j = JOBS.get(str(b.get("id") or ""))
                 if j is not None and j.get("kind") == "capture":
-                    j["tainted"] = str(b.get("why") or "another voice")
+                    if b.get("far"):
+                        j.setdefault("faint", str(b.get("why") or "a voice farther off"))
+                    else:
+                        j["tainted"] = str(b.get("why") or "another voice")
             self.reply({"ok": j is not None})
         elif u.path == "/place":
             with LOCK:
@@ -642,7 +666,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    global ARGS
+    global ARGS, LOG_PATH
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=r"C:\mods\voice-test")
     ap.add_argument("--port", type=int, default=5005)
@@ -658,6 +682,8 @@ def main():
     ap.add_argument("--prefer-captured", action="store_true", help="the clips recorded in game before the export's, where both exist")
     ap.add_argument("--check", action="store_true", help="load the model (its first download), say one line to nobody, report and exit (install-voice.cmd)")
     ARGS = ap.parse_args()
+    LOG_PATH = os.path.join(ARGS.root, "voice-server.log")
+    log("---- the voice server starts (%s): %s" % (time.strftime("%Y-%m-%d"), " ".join(sys.argv[1:]) or "no options"))
     load_refs(ARGS.root)
     if ARGS.check:
         load_model()

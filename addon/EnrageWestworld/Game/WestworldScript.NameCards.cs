@@ -403,10 +403,25 @@ namespace EnrageWestworld.InGame
             if (ac == null)
                 return;
             _nameAtGreet.Remove(h);
+            ReconcileName(h, ac, was.Key);
+        }
+
+        // The same settling the moment any part of RealNPCs names them (ShownName: the minds, the street's scenes, the ticker),
+        // not only when their card next comes round: a brawl's captions called a man Elphege while his card and the minds called
+        // him Owen, enRAGE having taken him up between the two with the card off him (Lex, 2026-11-03). Once a body; a handle
+        // the game reuses for another model is looked at again.
+        private readonly Dictionary<int, uint> _nameReconciled = new Dictionary<int, uint>();
+
+        /// The name a body we had someone in goes by now that enRAGE has someone there too: ours when enRAGE's is new to it
+        /// (enRAGE's record and its prompt take ours), else enRAGE's (ours goes by it from now on). Null: nothing settled.
+        private string ReconcileName(int h, FolkRef ac, string ours)
+        {
+            if (ac == null || string.IsNullOrEmpty(ours))
+                return null;
             CarryWakeToEnrage(h, ac);
             string theirs = ac.Name;
-            if (theirs == was.Key)
-                return;
+            if (theirs == ours)
+                return ours;
             try
             {
                 if (!ac.IsNew)
@@ -415,22 +430,27 @@ namespace EnrageWestworld.InGame
                     // "our regulars could keep enrage names if enrage installed"), so the next time they're ours alone it's the same
                     ResBind rb;
                     int changed = 0;
-                    if (!string.IsNullOrEmpty(theirs) && _resBind.TryGetValue(h, out rb) && rb != null && rb.R != null && rb.R.Name == was.Key)
+                    if (!string.IsNullOrEmpty(theirs) && _resBind.TryGetValue(h, out rb) && rb != null && rb.R != null && rb.R.Name == ours)
                     {
                         rb.R.Name = theirs;
                         changed = 1 + _store.Rename(rb.R.Id, theirs);
+                        MindWho w;
+                        if (_mindWho.TryGetValue(h, out w) && w.Name == ours)
+                            w.Name = theirs;   // the mind's note of them too, until it looks them up again
                     }
-                    Log.Write("NAME " + was.Key + " is someone enRAGE knew before, " + (theirs ?? "nobody") + " (seen " + ac.TimesSeen + " times): " +
+                    Log.Write("NAME " + ours + " is someone enRAGE knew before, " + (theirs ?? "nobody") + " (seen " + ac.TimesSeen + " times): " +
                               (changed > 0 ? "ours goes by " + theirs + " now (" + changed + " records)" : "its name kept"));
-                    return;
+                    return changed > 0 ? theirs : null;
                 }
-                ac.SetName(was.Key);
-                bool prompt = _bridge.RenameNamedAt(h, was.Key);   // and the lock-on prompt, which enRAGE labels from its own list
-                Log.Write("NAME enRAGE took up " + was.Key + " as " + (theirs ?? "nobody") + ": kept as " + was.Key + (prompt ? " (the prompt too)" : ""));
+                ac.SetName(ours);
+                bool prompt = _bridge.RenameNamedAt(h, ours);   // and the lock-on prompt, which enRAGE labels from its own list
+                Log.Write("NAME enRAGE took up " + ours + " as " + (theirs ?? "nobody") + ": kept as " + ours + (prompt ? " (the prompt too)" : ""));
+                return ours;
             }
             catch (Exception ex)
             {
-                Log.Write("NAME couldn't keep " + was.Key + "'s name when enRAGE took them up: " + ex.Message);
+                Log.Write("NAME couldn't keep " + ours + "'s name when enRAGE took them up: " + ex.Message);
+                return null;
             }
         }
 

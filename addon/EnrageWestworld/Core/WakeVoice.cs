@@ -1,14 +1,15 @@
 // What the waking say in their own recorded voices (0.6.3; Lex, 2026-10-27: "really odd voicelines, fitting voicelines
 // pulled from the game that would make sense for a real person to say if they found out they were an NPC", stages 1 to
-// 4 "quite drastic step ups"). The game's lines were recorded for ordinary moments; said to nobody, said again in the
-// very same take, or aimed at the sky, they turn uncanny, and a thought over the head (our own words, never the
-// recording's) says what the person makes of having said it, so the voice and the thought agree.
+// 4 "quite drastic step ups"). The game's lines were recorded for ordinary moments; said to nobody, or aimed at the
+// sky, they turn uncanny, and a thought over the head (our own words, never the recording's) says what the person
+// makes of having said it, so the voice and the thought agree. Nobody says a line twice over to hear themselves any
+// more (Lex, 2026-11-03: no repeated voice lines).
 //
 // The four stages are four steps of finding out, each louder, more often and nearer to the player than the last:
 //   1 Stirring: a word in the wrong place. A line slips out to nobody; they half notice and explain it away (tired, the
 //     heat). One moment in a minute and a half; to the air, or a glance at the stranger who moves differently.
-//   2 Questioning: the same words again. They test it, the way anyone tests a doubt: say a thing twice and listen (the
-//     same take, word for word), feel watched when he looks their way, say they're leaving and don't. Every 40 s or so.
+//   2 Questioning: a doubt tested. They feel watched when he looks their way and followed when they walk, the sky
+//     presses down, they say they're leaving and don't. Every 40 s or so.
 //   3 Unravelling: strings in the mouth. Their whole stock of words in a rush, a plea to be untied with nothing tying
 //     them, the sky told off. Panic and anger, every 15 s or so.
 //   4 Awake: they know, and they choose. The same few lines, picked on purpose and said to him, the one who isn't on
@@ -27,7 +28,6 @@ namespace EnrageWestworld.Core
         public string Id;
         public int Stage;
         public string[] Lines;      // the first this voice has plays; with Dump, each in turn that the voice has
-        public int Repeat = 1;      // the same take this many times (the questioning's test)
         public bool Dump;           // several different lines in a rush (the unravelling's stock of words)
         public string Look;         // none | you | sky | hands | other
         public string When;         // null | near | watched | moving | other | stayed
@@ -75,18 +75,7 @@ namespace EnrageWestworld.Core
                 "Every street I'm on, there he is, at the far side.",
                 "Nobody else moves like him. Like he means it." } },
 
-            // ---- 2 Questioning: the same words again -------------------------------------------------------------
-            new WakeVoiceMoment { Id = "s2:again", Stage = 2, Lines = new[] { "HOWS_IT_GOING" }, Repeat = 3, Look = "none", Thoughts = new[] {
-                "Three times. Same breath, same words.",
-                "Tried to say it another way. It came out the same.",
-                "Like a music box. Wind me and I play the tune.",
-                "Is that all the ways I have of saying it?" } },
-            new WakeVoiceMoment { Id = "s2:hellohello", Stage = 2, Lines = new[] { "GREET_GENERAL_STRANGER" }, Repeat = 2, Look = "none", Thoughts = new[] {
-                "Listen. Hello, hello. Not a hair's difference.",
-                "A man ought to be able to say a thing two ways. I can't." } },
-            new WakeVoiceMoment { Id = "s2:tailoff", Stage = 2, Lines = new[] { "CONVO_TAIL_OFF" }, Repeat = 2, Look = "sky", Thoughts = new[] {
-                "Same few words again. Like a bird that knows one song.",
-                "Same words, same tune. Who taught me only the one?" } },
+            // ---- 2 Questioning: a doubt tested -------------------------------------------------------------------
             new WakeVoiceMoment { Id = "s2:staring", Stage = 2, Lines = new[] { "PLAYER_STARING" }, Look = "you", When = "watched", ToYou = true, Thoughts = new[] {
                 "When he looks my way, everything holds still for him.",
                 "I can feel it when he's watching. Like lamplight on my neck.",
@@ -100,6 +89,15 @@ namespace EnrageWestworld.Core
             new WakeVoiceMoment { Id = "s2:leaving", Stage = 2, Lines = new[] { "GOODBYE_START", "IM_OUTTA_HERE" }, Look = "none", Thoughts = new[] {
                 "Said I'd be going. My feet didn't hear.",
                 "Going where? Every road I take turns back." } },
+            // in place of the moments that said a thing twice over (gone 2026-11-03): a doubt tested on the people and the day
+            new WakeVoiceMoment { Id = "s2:familiar", Stage = 2, Lines = new[] { "GREET_GENERAL_FAMILIAR" }, Look = "other", When = "other", Thoughts = new[] {
+                "Greeted him like an old friend. Never saw him in my life, or every day. One of the two.",
+                "Knew his face the way you know a wall you pass. Not a name to it.",
+                "Called him friend. The word was ready before I was." } },
+            new WakeVoiceMoment { Id = "s2:weather", Stage = 2, Lines = new[] { "CHAT_GOOD_WEATHER" }, Look = "sky", Thoughts = new[] {
+                "Fine day, I said. It's the same fine day as yesterday. The same as the one before.",
+                "Talked of the weather. The weather doesn't change here. I'd swear it hasn't.",
+                "Good weather. Always good, or always rain. Never anything in between." } },
 
             // ---- 3 Unravelling: strings in the mouth -------------------------------------------------------------
             new WakeVoiceMoment { Id = "s3:stock", Stage = 3, Dump = true, Lines = new[] { "GREET_GENERAL_STRANGER", "GENERIC_GOODBYE", "CHAT_GOOD_WEATHER", "NO_IDEA", "GENERIC_CURSE_HIGH" }, Look = "sky", Thoughts = new[] {

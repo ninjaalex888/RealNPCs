@@ -1175,8 +1175,7 @@ Hosts. Some people start to suspect their world is made. At first it's deja vu a
 Later they notice the loops: the same words, the same faces, the music that comes before trouble.
 The ones who've died and come back, or who watched you die and get up again, say stranger things
 still. Strangers in the street wonder out loud too, in their own recorded voices, unsettled.
-Rarely, someone glitches: freezes and stares, or says the same greeting three
-times exactly alike.
+Rarely, someone glitches: freezes and stares at you, then says what that was like.
 
 Reveries. When you kill one of enRAGE's people (not story characters), there's a chance
 (ReturnChance, 35%) they wake up again a few days later. They remember where they died, what

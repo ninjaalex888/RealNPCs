@@ -1192,7 +1192,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("WakeLashOut = " + WakeLashOut + "   ; percent of holds at the third and fourth stages that end with them turning on you or on someone near: fists while unravelling, their own gun when awake and carrying one; hotheads and the proud more often, cowards less. Coming at you or at someone else is fair game to stop; 0 for never");
             b.AppendLine("HostsQuestionReality = " + B(HostsQuestionReality) + "   ; people sometimes wonder whether their world is real");
             b.AppendLine("RealityChance = " + RealityChance + "   ; percent of remarks and thoughts that drift that way");
-            b.AppendLine("Glitches = " + B(Glitches) + "   ; rarely, someone freezes or repeats themselves");
+            b.AppendLine("Glitches = " + B(Glitches) + "   ; rarely, someone freezes and stares");
             b.AppendLine("Reveries = " + B(Reveries) + "   ; the dead may wake up again, remembering how they died and who did it");
             b.AppendLine("ReturnChance = " + ReturnChance + "   ; percent of the people enRAGE knows (not story characters) who wake up after you kill them");
             b.AppendLine("StrangerReturnChance = " + StrangerReturnChance + "   ; percent of strangers you kill who come back");

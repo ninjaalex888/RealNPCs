@@ -19,6 +19,10 @@ namespace EnrageWestworld.InGame
         // farther away"); the names are the game's own (its scripts use them); a voice that won't shout a line says it as usual
         private static readonly string[] Shouted = { "SPEECH_PARAMS_FORCE_SHOUTED_CLEAR", "SPEECH_PARAMS_FORCE_SHOUTED", "SPEECH_PARAMS_FORCE_NORMAL_CLEAR", "SPEECH_PARAMS_FORCE" };
         public static bool ShoutsCarry = true;   // [Scenes] ShoutsCarry
+        /// A recording under way (WestworldScript.Voiced.cs): while it lasts nobody but the one being recorded says a game
+        /// line through here (the street's talks, the crowd's calls, the brawl's words all come this way), so the clip
+        /// carries their voice alone. 0: nobody held. The game's own remarks aren't ours to hold.
+        public static int RecordingPed;
         private static HashSet<string> _shouts;
         private static readonly HashSet<string> Worked = new HashSet<string>();
         private static readonly Dictionary<string, int> Failed = new Dictionary<string, int>();
@@ -242,7 +246,7 @@ namespace EnrageWestworld.InGame
         /// ped's own. For the voice probe.
         public static unsafe bool Play(int ped, string line, int take, uint paramHash, string voice, int listener)
         {
-            if (ped == 0 || !ENTITY.DOES_ENTITY_EXIST(ped))
+            if (ped == 0 || Held(ped) || !ENTITY.DOES_ENTITY_EXIST(ped))
                 return false;
             ulong* p = stackalloc ulong[8];
             for (int i = 0; i < 8; i++)
@@ -257,8 +261,14 @@ namespace EnrageWestworld.InGame
             return Function.Call<bool>(PlayAmbientSpeech, ped, p);
         }
 
+        /// Whether a recording under way holds this ped's game lines (RecordingPed).
+        private static bool Held(int ped)
+        {
+            return RecordingPed != 0 && ped != RecordingPed;
+        }
+
         /// That recording of the line (take 1..N), with either of the usual speech settings: the same words every time,
-        /// for the waking who hear themselves repeat (Core/WakeVoice.cs). Take 1 exists whenever the voice has the line.
+        /// for the waking (Core/WakeVoice.cs), so what they said is known. Take 1 exists whenever the voice has the line.
         public static bool PlayTake(int ped, string line, int take, int listener)
         {
             if (ped == 0 || string.IsNullOrEmpty(line) || take < 1 || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
@@ -283,7 +293,7 @@ namespace EnrageWestworld.InGame
 
         public static unsafe bool Say(int ped, string line, int listener)
         {
-            if (ped == 0 || string.IsNullOrEmpty(line) || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
+            if (ped == 0 || Held(ped) || string.IsNullOrEmpty(line) || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
                 return false;
             ulong* p = stackalloc ulong[8];
             foreach (string prm in ParamsFor(line))
@@ -309,8 +319,8 @@ namespace EnrageWestworld.InGame
         /// person doesn't answer everything with the same words.
         public static bool SayAny(int ped, string[] set, int listener = 0)
         {
-            if (set == null || set.Length == 0 || ped == 0 || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
-                return false;
+            if (set == null || set.Length == 0 || ped == 0 || Held(ped) || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
+                return false;   // held: before the loop, so no line is noted as failed for this voice
             string[] teased = WithTease(ped, set);
             if (!ReferenceEquals(teased, set) && Say(ped, Tease, listener))
                 return true;   // her come-on, ahead of the turn-taking below
@@ -391,7 +401,7 @@ namespace EnrageWestworld.InGame
             line = null;
             take = 0;
             words = null;
-            if (lines == null || ped == 0 || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
+            if (lines == null || ped == 0 || Held(ped) || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
                 return false;
             lines = WithTease(ped, lines);
             string bank = BankOf(ped);

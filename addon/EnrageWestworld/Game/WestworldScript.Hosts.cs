@@ -1,6 +1,7 @@
 // Hosts in the street: strangers who say odd things about their world (aloud, and with the Windows voice),
-// rare glitches (someone freezes and stares, or says the same greeting three times exactly alike), and the
-// stalker - someone near you with a history with you, a stranger, or someone the player killed who came back.
+// rare glitches (someone freezes and stares, then says what that was like; the one who said the same greeting
+// three times over is gone: Lex, 2026-11-03, no repeated voice lines), and the stalker - someone near you with
+// a history with you, a stranger, or someone the player killed who came back.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,6 @@ namespace EnrageWestworld.InGame
         private sealed class GlitchRun
         {
             public Ped Ped;
-            public string Kind;
             public int Step;
             public int NextAt;
             public string Name;
@@ -108,8 +108,8 @@ namespace EnrageWestworld.InGame
             if (p == null)
                 return;
             bool woman = !PED.IS_PED_MALE(p.Handle);
-            _glitch = new GlitchRun { Ped = p, Kind = _rng.Next(2) == 0 ? "loop" : "freeze", NextAt = now, Name = Grammar.UpperFirst(Director.Kind(p, woman)) };
-            Log.Write("GLITCH " + _glitch.Kind + ": " + _glitch.Name);
+            _glitch = new GlitchRun { Ped = p, NextAt = now, Name = Grammar.UpperFirst(Director.Kind(p, woman)) };
+            Log.Write("GLITCH: " + _glitch.Name + " freezes and stares");
         }
 
         private void GlitchStep(int now)
@@ -123,41 +123,18 @@ namespace EnrageWestworld.InGame
             if (now < g.NextAt)
                 return;
             int h = g.Ped.Handle, me = Game.Player.Character.Handle;
-            if (g.Kind == "loop")
+            if (g.Step == 0)
             {
-                if (g.Step == 0)
-                {
-                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me, 6000, 0f, 0f, 0f);
-                    TASK.TASK_LOOK_AT_ENTITY(h, me, 8000, 0, 51, 0);
-                }
-                if (g.Step < 3)
-                {
-                    // the same line, three times over, exactly alike
-                    Speech.Say(h, "GREET_GENERAL_STRANGER", me);
-                    g.NextAt = now + 1500;
-                }
-                else
-                {
-                    string line = Hosts.Glitch(h + "|g");
-                    Feed.Say(g.Name, line, Speech.When(h, "uneasy", me), h);
-                    g.Step = 99;
-                }
+                TASK.CLEAR_PED_TASKS(h, true, false);
+                TASK.TASK_STAND_STILL(h, 5000);
+                TASK.TASK_LOOK_AT_ENTITY(h, me, 6000, 0, 51, 0);
+                g.NextAt = now + 4500;
             }
             else
             {
-                if (g.Step == 0)
-                {
-                    TASK.CLEAR_PED_TASKS(h, true, false);
-                    TASK.TASK_STAND_STILL(h, 5000);
-                    TASK.TASK_LOOK_AT_ENTITY(h, me, 6000, 0, 51, 0);
-                    g.NextAt = now + 4500;
-                }
-                else
-                {
-                    string line = Hosts.Glitch(h + "|f");
-                    Feed.Say(g.Name, line, Speech.When(h, "uneasy", me), h);
-                    g.Step = 99;
-                }
+                string line = Hosts.Glitch(h + "|f");
+                Feed.Say(g.Name, line, Speech.When(h, "uneasy", me), h);
+                g.Step = 99;
             }
             g.Step++;
         }

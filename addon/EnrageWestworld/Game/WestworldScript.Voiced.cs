@@ -10,8 +10,10 @@
 // The server plays the sound itself, one voice at a time in the order asked; this side keeps telling it how loud and from
 // which side, from the speaker's distance and the camera, while it speaks. The game thread never waits on it: a worker
 // thread does the asking, as the language layer's does (an Insert reload aborts the request under way).
-// The recording row (Testing, "voicerec"): the nearest person says the game's own line their voice is cloned from while
-// the server records it off this PC's output, so a player's own game can give the clips with nothing of Rockstar's shipped.
+// The clips come from the player's own game ([Mind] VoiceRecord): someone whose bank has no clip yet says the game's own line
+// their voice is cloned from, by the bank's name, in a quiet moment, and the server records it off this PC's output, so nothing
+// of Rockstar's ships. While it records, our own game lines are held (Speech.RecordingPed) and another voice near spoils the
+// clip. The Testing rows "voicerec" (the nearest person now) and "voicerec:all" (every bank still wanted, on whoever is nearest).
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -43,15 +45,20 @@ namespace EnrageWestworld.InGame
             public int Take, PlayedAt;
             public volatile bool Accepted, Spoke, Checked;
             public string Origin, How;       // their people (for the bank that fits them); how the server chose the voice (own, model, borrowed)
-            public bool Auto;                // a recording the mod started by itself, or the batch (not the Testing row)
-            public volatile string Tainted;  // another voice spoke into the recording's window
-            public volatile bool TaintSent, VoiceSet;
+            public bool Auto, Batch;         // a recording the mod started by itself (not the Testing row); one of the batch
+            public volatile string Tainted;  // another voice spoke near into the recording's window: the clip can't be kept
+            public volatile string TaintFar; // a voice farther off spoke into it: kept as the weaker sort until a clean one comes
+            public volatile string TaintSent;   // what the server was told of that (near, far)
+            public volatile bool VoiceSet;
         }
 
         private const int VoiceThoughtGapMs = 12000, VoiceThoughtEachMs = 90000, VoiceMostJobs = 4;
         private const float VoiceRecordMetres = 10f;
+        // another voice this near the player while it records spoils the clip; farther off, out to the second, it's kept as the
+        // weaker sort (a town's street always has someone talking within 20 m: seen in game 2026-11-03, 7 of 8 clips thrown out)
+        private const float VoiceTaintNearMetres = 15f, VoiceTaintFarMetres = 25f;
         private const int VoiceRecordGapMs = 20000, VoiceRecordBatchGapMs = 1500, VoiceRecordRetryMs = 600000;
-        private int _voiceRecStyle, _voiceRecorded, _voiceRecordPoor, _voiceRecNextAt, _voiceRecAuto, _voiceRecBatch;
+        private int _voiceRecorded, _voiceRecordPoor, _voiceRecNextAt, _voiceRecAuto, _voiceRecBatch;
         private readonly Dictionary<string, int> _voiceRecTriedAt = new Dictionary<string, int>();
         private readonly HashSet<int> _voiceBankSet = new HashSet<int>();
         private volatile string _voiceRecWantBank;   // the worker's note: the server wants this bank recorded, on this person
@@ -152,13 +159,13 @@ namespace EnrageWestworld.InGame
                     _voiceRecordPoor++;
                 if (j.Auto)
                 {
-                    if (_voiceRecAll)
+                    if (j.Batch)
                         _voiceRecBatch++;
                     else
                         _voiceRecAuto++;
                 }
-                string how = (j.Voice == null ? "their own voice" : "the bank by name") + (j.Auto ? (_voiceRecAll ? ", the batch" : ", by itself") : ", the row");
-                (_voiceRecAll && _voiceRecBatch > 20 ? (Action<string>)Log.Detail : Log.Write)("VOICE recorded: " + j.Name + " (" + j.Bank + ", " + how + "): " + (j.Line ?? "no line") + " take " + j.Take + ", " +
+                string how = (j.Voice == null ? "their own voice" : "the bank by name") + (j.Auto ? (j.Batch ? ", the batch" : ", by itself") : ", the row");
+                (j.Batch && _voiceRecBatch > 20 ? (Action<string>)Log.Detail : Log.Write)("VOICE recorded: " + j.Name + " (" + j.Bank + ", " + how + "): " + (j.Line ?? "no line") + " take " + j.Take + ", " +
                     (j.PlayedAt == 0 ? "never played" : (j.Accepted ? "accepted" : "refused") + ", " + (j.Spoke ? "the game spoke" : "no speech heard")) + "; " +
                     j.State + (j.Why != null ? " (" + j.Why + ")" : "") + (j.Snr != null ? ", " + j.Snr + " dB over the sound around it" : "") + (j.Path != null ? " -> " + j.Path : ""));
                 _voiceLast = j.Name + " (recorded): " + j.State;
@@ -334,6 +341,7 @@ namespace EnrageWestworld.InGame
             try { t.Join(1500); } catch { }
             _voiceThread = null;
             _voiceReady = false;
+            Speech.RecordingPed = 0;
             lock (_voiceLock)
                 _voiceJobs.Clear();
         }
@@ -620,10 +628,10 @@ namespace EnrageWestworld.InGame
             }
             if (best == 0)
                 return "nobody within " + VoiceRecordMetres + " m whose voice bank is certain and who isn't speaking";
-            int style = _voiceRecStyle++ % 3;
-            string voice = style == 0 ? null : style == 1 ? bank : VoiceShortBank(bank);
-            VoiceJob job = VoiceRecordStart(best, bank, voice, false, VoiceRecordBatchGapMs);
-            said = job.Name + " (" + bank + ", " + bestD.ToString("0") + " m) says the clip's line in " + (voice == null ? "their own voice" : "the bank by name, " + voice) + "; the server records it";
+            // the bank by its full name, as the recordings by themselves do (seen in game 2026-11-03: the full name with the number
+            // in front plays, the short name is turned down, and their own voice is the same recording)
+            VoiceJob job = VoiceRecordStart(best, bank, bank, false, VoiceRecordBatchGapMs);
+            said = job.Name + " (" + bank + ", " + bestD.ToString("0") + " m) says the clip's line in the bank by name; the server records it";
             return null;
         }
 
@@ -652,7 +660,7 @@ namespace EnrageWestworld.InGame
 
         /// A recording started: this person says the bank's line (by name, or in their own voice when voice is null) while
         /// the server records; the next one not before the gap, and this bank not again for a while.
-        private VoiceJob VoiceRecordStart(int h, string bank, string voice, bool auto, int gapMs)
+        private VoiceJob VoiceRecordStart(int h, string bank, string voice, bool auto, int gapMs, bool batch = false)
         {
             int now = Environment.TickCount;
             MindWho w;
@@ -666,6 +674,7 @@ namespace EnrageWestworld.InGame
                 Voice = voice,
                 Handle = h,
                 Auto = auto,
+                Batch = batch,
                 AskedAt = now,
                 WaitSeconds = 25,
             };
@@ -711,6 +720,11 @@ namespace EnrageWestworld.InGame
                 why = "you're fighting";
                 return false;
             }
+            if (PED.IS_PED_ON_MOUNT(me) || PED.IS_PED_IN_ANY_VEHICLE(me, false) || ENTITY.GET_ENTITY_SPEED(me) > 2.5f)
+            {
+                why = "you're on the move";   // the clip is cut when they fall out of earshot (seen in game 2026-11-03: a man spoke and the recording stopped)
+                return false;
+            }
             if (h == 0 || h == me || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h))
             {
                 why = "nobody to record";
@@ -726,7 +740,8 @@ namespace EnrageWestworld.InGame
                 why = "farther than " + VoiceRecordMetres + " m";
                 return false;
             }
-            if (Speech.Busy(h) || Speech.Busy(me) || VoiceAnyoneSpeaking(h))
+            float at;
+            if (Speech.Busy(h) || Speech.Busy(me) || VoiceAnyoneSpeaking(h, VoiceTaintFarMetres, out at))
             {
                 why = "someone is speaking";
                 return false;
@@ -734,22 +749,26 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
-        /// Anyone but this person speaking within 20 m of you (the game's own remarks would land in the recording).
-        private bool VoiceAnyoneSpeaking(int except)
+        /// Anyone but this person speaking within so many metres of you (the game's own remarks would land in the recording);
+        /// how far off the nearest of them is.
+        private bool VoiceAnyoneSpeaking(int except, float within, out float nearest)
         {
+            nearest = float.MaxValue;
             Vector3 me = Game.Player.Character.Position;
             foreach (Ped p in Peds.All())
             {
                 if (p == null || !p.Exists() || p.Handle == except || p.Handle == Game.Player.Character.Handle)
                     continue;
-                if (p.Position.DistanceTo(me) <= 20f && Speech.Busy(p.Handle))
-                    return true;
+                float d = p.Position.DistanceTo(me);
+                if (d <= within && d < nearest && Speech.Busy(p.Handle))
+                    nearest = d;
             }
-            return false;
+            return nearest <= within;
         }
 
-        /// Each step: the recording under way watched for another voice; else the recording the server asked for
-        /// (someone's own bank with no clip yet), then the batch.
+        /// Each step: the recording under way watched for another voice (near, the clip is spoilt; farther off, it's kept as the
+        /// weaker sort) and our own game lines held meanwhile; else the recording the server asked for (someone's own bank with
+        /// no clip yet), then the batch.
         private void VoiceRecordStep()
         {
             if (!_voiceReady)
@@ -757,10 +776,17 @@ namespace EnrageWestworld.InGame
             VoiceJob under;
             lock (_voiceLock)
                 under = _voiceJobs.FirstOrDefault(j => j.Kind == "capture" && !j.Over);
+            Speech.RecordingPed = under != null ? under.Handle : 0;
             if (under != null)
             {
-                if (under.PlayedAt != 0 && under.Tainted == null && VoiceAnyoneSpeaking(under.Handle))
-                    under.Tainted = "another voice";
+                float at;
+                if (under.PlayedAt != 0 && under.Tainted == null && VoiceAnyoneSpeaking(under.Handle, VoiceTaintFarMetres, out at))
+                {
+                    if (at <= VoiceTaintNearMetres)
+                        under.Tainted = "a voice " + at.ToString("0") + " m off";
+                    else if (under.TaintFar == null)
+                        under.TaintFar = "a voice " + at.ToString("0") + " m off";
+                }
                 return;
             }
             string bank = _voiceRecWantBank;
@@ -814,7 +840,8 @@ namespace EnrageWestworld.InGame
             string why;
             if (best == 0 || !VoiceMayRecord(best, null, out why))
                 return;
-            VoiceRecordStart(best, _voiceRecQueue.Dequeue(), null, true, VoiceRecordBatchGapMs);
+            string bank = _voiceRecQueue.Dequeue();
+            VoiceRecordStart(best, bank, bank, true, VoiceRecordBatchGapMs, true);   // the bank by name on this body (in their own voice the clip would be theirs, saved under the bank's name)
         }
 
         /// The game's own remarks from this person in the bank their clone is (a model with several banks: the game picks
@@ -829,13 +856,6 @@ namespace EnrageWestworld.InGame
             _voiceBankSet.Add(j.Handle);
             AUDIO.SET_AMBIENT_VOICE_NAME(j.Handle, j.Bank);
             Log.Detail("VOICE: " + j.Name + " speaks the game's lines in " + j.Bank + " from here (their clone's bank)");
-        }
-
-        /// The bank's name without the number in front (0013_A_F_M_ASBTOWNFOLK_01_WHITE_01 gives A_F_M_ASBTOWNFOLK_01_WHITE_01).
-        private static string VoiceShortBank(string bank)
-        {
-            int i = bank.IndexOf('_');
-            return i > 0 && i <= 5 && bank.Substring(0, i).All(char.IsDigit) ? bank.Substring(i + 1) : bank;
         }
 
         /// The game thread's side of a recording: the moment the server records, the person says the line (their own voice,
@@ -892,10 +912,11 @@ namespace EnrageWestworld.InGame
                 return;
             }
             j.NextPoll = Environment.TickCount + 300;
-            if (j.Tainted != null && !j.TaintSent)
+            string taint = j.Tainted != null ? "near" : j.TaintFar != null ? "far" : null;
+            if (taint != null && taint != j.TaintSent)
             {
-                j.TaintSent = true;
-                VoiceHttp(url + "/taint", "{\"id\":" + Language.JsonString(j.Id) + ",\"why\":" + Language.JsonString(j.Tainted) + "}", 1500);
+                j.TaintSent = taint;
+                VoiceHttp(url + "/taint", "{\"id\":" + Language.JsonString(j.Id) + ",\"why\":" + Language.JsonString(j.Tainted ?? j.TaintFar) + ",\"far\":" + (taint == "far" ? "true" : "false") + "}", 1500);
             }
             if (j.StopAsked || Environment.TickCount - j.AskedAt > j.WaitSeconds * 1000)
             {

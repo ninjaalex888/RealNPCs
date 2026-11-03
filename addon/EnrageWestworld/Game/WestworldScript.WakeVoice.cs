@@ -3,8 +3,8 @@
 // then the thought over the head. One woken voice at a time (three awake people by a saloon would be noise). Outside a
 // wake act it's anyone woken within 25 m at their stage's pace (WakeVoice.GapMs), passing over anyone a scene, a talk, a
 // nod, a sight or a speaking act has (shout, ask, freeze, awake: the awake act asks for its own, StepAwake). Voice,
-// look-at and a thought only, never a task, so the look-only and enRAGE's records take part as they are. A repeat
-// replays take 1, the same words; a line the game turns down is tried four more times 750 ms apart, then the next.
+// look-at and a thought only, never a task, so the look-only and enRAGE's records take part as they are. A line
+// plays as take 1, so the words are known; a line the game turns down is tried four more times 750 ms apart, then the next.
 // The Testing page's "Wake voices: every line" plays each line once on the nearest person and logs which the game
 // plays out of its context, so any it always refuses can be taken out of Core/WakeVoice.cs.
 using System;
@@ -286,11 +286,11 @@ namespace EnrageWestworld.InGame
                 if (!r.SawBusy && r.Said.Count > 0)
                     r.Said[r.Said.Count - 1] += " (accepted, no speech started)";
                 r.Speaking = false;
-                r.NextAt = now + (r.M.Dump ? 250 + _rng.Next(350) : r.M.Repeat > 1 ? 900 + _rng.Next(600) : 0);
+                r.NextAt = now + (r.M.Dump ? 250 + _rng.Next(350) : 0);
             }
             if (now < r.NextAt)
                 return;
-            bool more = r.M.Dump ? r.LineIdx < r.M.Lines.Length : !r.Down && r.Played < r.M.Repeat && (r.Line != null || r.LineIdx < r.M.Lines.Length);
+            bool more = r.M.Dump ? r.LineIdx < r.M.Lines.Length : !r.Down && r.Played == 0 && r.LineIdx < r.M.Lines.Length;   // one line, once (no repeats: Lex, 2026-11-03)
             if (!more)
             {
                 WakeVoiceEnd(now, null);
@@ -302,7 +302,7 @@ namespace EnrageWestworld.InGame
             if (!ok && r.Line == null && !r.M.Dump && Speech.Say(h, line, r.Listener))
             {
                 ok = true;
-                take = 0;   // take 1 turned down this time: the game's own take (a repeat then may not be word for word)
+                take = 0;   // take 1 turned down this time: the game's own take (its words then aren't known)
             }
             if (ok)
             {

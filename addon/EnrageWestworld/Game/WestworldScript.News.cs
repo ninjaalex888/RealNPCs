@@ -108,11 +108,31 @@ namespace EnrageWestworld.InGame
         }
 
         /// The name to show for someone: the one enRAGE has given them (on its name card) when it has, else ours, so the
-        /// ticker, the scenes and the card never call the same person two different names.
+        /// ticker, the scenes and the card never call the same person two different names. A body we had someone in that
+        /// enRAGE has just taken up is settled here and now (ReconcileName), as the card settles it when it comes round.
         private string ShownName(int handle, string ours)
         {
             string enrages = _bridge != null ? _bridge.EnrageNameAt(handle) : null;
-            return enrages != null && enrages.Trim().Length > 0 ? enrages : ours;
+            if (enrages == null || enrages.Trim().Length == 0)
+                return ours;
+            if (handle != 0 && ours != null && enrages != ours)
+            {
+                uint model = ENTITY.GET_ENTITY_MODEL(handle), seen;
+                if (!_nameReconciled.TryGetValue(handle, out seen) || seen != model)
+                {
+                    if (_nameReconciled.Count > 400)
+                        _nameReconciled.Clear();
+                    _nameReconciled[handle] = model;
+                    ResBind b;
+                    if (_resBind.TryGetValue(handle, out b) && b != null && b.R != null && b.R.Name == ours && b.Model == model)
+                    {
+                        string settled = ReconcileName(handle, _bridge.AcquaintanceAt(handle), ours);
+                        if (settled != null)
+                            return settled;
+                    }
+                }
+            }
+            return enrages;
         }
 
         /// A small gold mark over the person whose thought is on the ticker: just under their feeling bars if they
