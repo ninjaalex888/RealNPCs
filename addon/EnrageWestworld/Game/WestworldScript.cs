@@ -1169,6 +1169,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST personal space: " + SpaceStatus());
 			Log.Write("TEST reason thoughts: " + ReasonThoughtsStatus());
 			Log.Write("TEST aloud: " + AloudStatus());
+			Log.Write("TEST voice: " + VoiceStatus());
 			Log.Write("TEST mind shadow: " + MindShadowStatus());
 			Log.Write("TEST mind choices: " + MindChoicesStatus());
 			Log.Write("TEST mind beliefs: " + MindBeliefsStatus());

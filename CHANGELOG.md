@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Voiced thoughts and dialogue** (in testing, both off as they come; settings version 193). A local voice server (`voice\voice_server.py`, started with `voice\start-voice-server.cmd`) clones each person's voice on your own PC, using Chatterbox and one of the game's own recordings for their model, and speaks RealNPCs' words in it. `[Mind] VoicedThoughts`: a thought over someone within `VoiceMetres` (15) is murmured in their voice a moment after it shows (one at a time, each person once in 90 s); that thought isn't also said aloud by rule. `[Mind] VoicedDialogue`: what people say near you in RealNPCs' words (the street's scenes, Talk's answers, the encounters) is said in their voice a second or two behind the subtitle. One voice plays at a time, in turn, louder near and panned to the side they stand on. `VoiceVolume` (100%), `VoiceUrl`. The server needs about 3.5 GB of the graphics card, and it stays silent while the card has less than 0.8 GB free. Nothing of Rockstar's ships: it needs your own OpenIV export of the voice banks. There's a row for it on the Testing page (Tools): "Voice the nearest person now". F7 adds TEST voice.
+
 ## 0.7.19 (2026-11-02)
 
 Grudges said to your face, names that fit the person, a rarer and eerier Awakening, and the held ring to try.

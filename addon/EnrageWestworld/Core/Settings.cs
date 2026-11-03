@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 192;
+        public const int CurrentVersion = 193;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -127,6 +127,11 @@ namespace EnrageWestworld.Core
         public bool MindTempers = true;   // with MindLive: displaced aggression (shamed earlier, they take it out on someone who won't hit back) and the culture of honour in Lemoyne (quarrels climb faster, backing down costs more) (settings version 152; NIGHT3)
         public bool Language = false;        // the language layer (2026-10-29; roadmap 15): with MindLive, the mind's own thoughts worded by a local model (Ollama at LanguageUrl, LanguageModel) through Language.Check, the written line always the fallback; off until the generated thoughts pass the checks at scale (settings version 94)
         public bool LanguageChosen;          // Language was set by the player (the panel or this file); while false and Language off, each start asks Ollama off the game thread and turns Language on, once, if it answers with the model (settings version 163)
+        public bool VoicedThoughts = false;   // [Mind] (in testing) a thought over someone near murmured in their own voice, cloned by the local voice server (voiceoice_server.py) from the game's recordings for their model; settings version 193
+        public bool VoicedDialogue = false;   // [Mind] (in testing) our words said near you (scenes, Talk, encounters) said in the speaker's own voice by the voice server
+        public string VoiceUrl = "http://127.0.0.1:5005";   // [Mind] the local voice server; nothing leaves the machine
+        public float VoiceMetres = 15f;       // [Mind] voiced within this many metres of you (5-30)
+        public int VoiceVolume = 100;         // [Mind] the voices' loudness, percent (10-200)
         public string LanguageUrl = "http://127.0.0.1:11434";   // the local server; nothing leaves the machine
         public string LanguageModel = "llama3.1:8b";           // the model Ollama holds (ollama pull <name>)
 
@@ -776,6 +781,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 193)
+                    log?.Invoke("Settings: new in this version: [Mind] VoicedThoughts and VoicedDialogue (both off, in testing), VoiceUrl, VoiceMetres (15), VoiceVolume (100): thoughts and our lines said in each person's own voice, cloned on this PC by the local voice server (voice\\start-voice-server.cmd; needs your own export of the game's voice banks).");
                 if (s.SettingsVersion < 192)
                     log?.Invoke("Settings: new in this version: [Mind] HeldRing (off, in testing), HeldRingMetres (12), HeldRingMinutes (10): the people near you held, one act straight into the next, instead of the game taking them back between acts.");
                 if (s.SettingsVersion < 191)
@@ -983,6 +990,10 @@ namespace EnrageWestworld.Core
             PadLetters = PadChord.Normal(PadLetters) ?? "None";
             PadTickerNext = PadChord.Normal(PadTickerNext) ?? "None";
             if (string.IsNullOrWhiteSpace(LanguageUrl)) LanguageUrl = "http://127.0.0.1:11434";
+            if (string.IsNullOrWhiteSpace(VoiceUrl)) VoiceUrl = "http://127.0.0.1:5005";
+            VoiceUrl = VoiceUrl.Trim().TrimEnd('/');
+            VoiceMetres = Math.Max(5f, Math.Min(30f, VoiceMetres));
+            VoiceVolume = Math.Max(10, Math.Min(200, VoiceVolume));
             if (string.IsNullOrWhiteSpace(LanguageModel)) LanguageModel = "llama3.1:8b";
             LanguageUrl = LanguageUrl.Trim().TrimEnd('/');
             LanguageModel = LanguageModel.Trim();
@@ -1123,6 +1134,11 @@ namespace EnrageWestworld.Core
             b.AppendLine("MindTempers = " + B(MindTempers) + "   ; (in testing) with MindLive on: someone slighted, quarrelled with or beaten in the last few hours may take it out on someone who won't hit back; and in Lemoyne's towns, where honour rules, quarrels climb a little faster and backing down costs more");
             b.AppendLine("StrainChance = " + StrainChance + "   ; with MindTempers on: someone with two or more troubles at once snaps at someone who won't hit back this percent of the time when they meet (0-100; a coward is always picked on; the timid and the loyal never snap)");
             b.AppendLine("ThoughtsAloud = " + B(ThoughtsAloud) + "   ; as a thought shows over someone within 12 m, they may say something aloud in their own recorded voice (most thoughts stay unspoken). No AI model needed: what they feel most decides it (a curse when angry, a frightened word, thanks, relief; grief and shame stay inside). With the AI model on and a voice list for that voice, the model picks the remark that fits instead");
+            b.AppendLine("VoicedThoughts = " + B(VoicedThoughts) + "   ; (in testing) a thought over someone within VoiceMetres is murmured in their own voice a moment after it shows (one at a time, each person once in 90 s). Needs the local voice server running (voice\\start-voice-server.cmd, about 3.5 GB of the graphics card) and your own export of the game's voice banks; without it nothing changes");
+            b.AppendLine("VoicedDialogue = " + B(VoicedDialogue) + "   ; (in testing) what people say near you in RealNPCs' words (the street's scenes, Talk's answers, the encounters) is said in their own voice by the voice server, a second or two behind the subtitle");
+            b.AppendLine("VoiceUrl = " + VoiceUrl + "   ; where the voice server listens");
+            b.AppendLine("VoiceMetres = " + F(VoiceMetres) + "   ; voiced within this many metres of you (5 to 30)");
+            b.AppendLine("VoiceVolume = " + VoiceVolume + "   ; the voices' loudness, percent (10 to 200)");
             b.AppendLine("LanguageUrl = " + LanguageUrl + "   ; where Ollama listens");
             b.AppendLine("LanguageModel = " + LanguageModel + "   ; the model it holds (ollama pull <name>)");
             b.AppendLine();

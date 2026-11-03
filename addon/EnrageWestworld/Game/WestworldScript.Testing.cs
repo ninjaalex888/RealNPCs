@@ -198,6 +198,9 @@ namespace EnrageWestworld.InGame
                             : a.Id == "callout2" ? "the hour (08:00-20:00, not the noon hour), the rest between them, the people's rests, the roll (it still needs a town's street and two people with something between them)"
                             : "the hour, the place (the wilds at night; by day the open or a town's edge), once a night, the gap between gatherings, the roll";
                     return null;
+                case "voice":
+                    skipped = "nothing: it says a test line, it starts nothing";
+                    return VoiceTest(now, out said);
                 case "subtitle":
                     // the box RealNPCs draws what people say near you in (Lex, 2026-10-30: "I'm still not able to see our mods
                     // drawn on subtitles"): one for six seconds, and the log says where it was drawn

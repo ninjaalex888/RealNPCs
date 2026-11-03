@@ -511,6 +511,7 @@ namespace EnrageWestworld.InGame
         /// would fill it, and its waiting holds the next scene back).
         private void SideSay(string label, string line, bool uncanny, bool woman, int ped)
         {
+            VoiceSaid(ped, label, line, false);   // in their own voice within VoiceMetres, captioned or not (WestworldScript.Voiced.cs)
             if (_cfg.ScenesOnTicker && _cfg.Ticker && ped != 0 && ENTITY.DOES_ENTITY_EXIST(ped) && ENTITY.GET_ENTITY_COORDS(ped, true, true).DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
                 SpeechCaption(label, line, ped, Math.Min(7000, 1600 + line.Length * 55));
         }
@@ -1022,6 +1023,7 @@ namespace EnrageWestworld.InGame
         private void SceneSay(string label, string line, bool uncanny, bool woman, int ped)
         {
             Feed.Say(label, line, null, ped);   // the director plays the speakers' own recorded lines
+            VoiceSaid(ped, label, line, false);   // and with VoicedDialogue, our words in their own voice within VoiceMetres (WestworldScript.Voiced.cs)
             // and on the ticker as it is said, while the scene is within earshot (Lex, 2026-10-29: he couldn't tell a woman had stepped in)
             if (_cfg.ScenesOnTicker && _cfg.Ticker && ped != 0 && ENTITY.DOES_ENTITY_EXIST(ped) && ENTITY.GET_ENTITY_COORDS(ped, true, true).DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
                 SpeechCaption(label, line, ped, Math.Min(7000, 1600 + line.Length * 55));

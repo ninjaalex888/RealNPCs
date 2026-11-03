@@ -39,6 +39,8 @@ namespace EnrageWestworld.InGame
                 return;
             if (now < _aloudNextAt)
                 return;
+            if (VoicedThisThought(line))
+                return;   // murmured in their own voice already (WestworldScript.Voiced.cs)
             if (!Voice.Chance(line.Key + "|aloud|" + line.Text, 50))
                 return;   // half the thoughts are never offered: most stay unspoken whatever the model would say
             int at;
@@ -152,7 +154,7 @@ namespace EnrageWestworld.InGame
             _aloudSaid++;
             _aloudLast = a.Name + ": " + (o.Words ?? o.Line);
             if (o.Words != null)
-                SpeechCaption(Person.FirstOf(a.Name), o.Words, h, Math.Min(5000, 1500 + o.Words.Length * 55));
+                SpeechCaption(Person.FirstOf(a.Name), o.Words, h, Math.Min(5000, 1500 + o.Words.Length * 55), false, false);   // the game's own recording says these words: not voiced again
             log(head + "says " + o.Line + (o.Take > 0 ? " take " + o.Take : "") + (o.Words != null ? " (\"" + o.Words + "\")" : " (" + o.Text + ")"));
         }
 

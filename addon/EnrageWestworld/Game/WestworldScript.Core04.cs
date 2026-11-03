@@ -300,6 +300,7 @@ namespace EnrageWestworld.InGame
                 WarnAbort();
                 KinAbort();
                 LanguageStop();      // the language layer's worker thread
+                VoiceStop();         // and the voice server's (WestworldScript.Voiced.cs)
                 SoberVoices(true);   // the drink goes out of every voice we put it in
                 WakeVoiceEnd(_now, "the add-on stopped");
                 AnimTestEnd("the add-on stopped");
@@ -571,10 +572,12 @@ namespace EnrageWestworld.InGame
         // a line being said near you (a scene, the doctor, a hello), as a subtitle in the game's style for its own time, never
         // on the bar, which the thoughts used to share (Lex, 2026-10-30: "There shouldn't be inner thoughts showing at the
         // bottom of the screen"; a mourner's line read as one)
-        private void SpeechCaption(string label, string text, int handle, int ms, bool toYou = false)
+        private void SpeechCaption(string label, string text, int handle, int ms, bool toYou = false, bool voice = true)
         {
             if (string.IsNullOrEmpty(text))
                 return;
+            if (voice)
+                VoiceSaid(handle, label, text, toYou);   // in their own voice too, with VoicedDialogue and the voice server (WestworldScript.Voiced.cs); off screen as well
             if (!toYou && handle != 0 && ENTITY.DOES_ENTITY_EXIST(handle) && !ENTITY.IS_ENTITY_ON_SCREEN(handle))
             {
                 Log.Detail("CAPTION " + label + ": " + text + " (no subtitle: off screen)");   // between others, only who you can see (Lex, 2026-10-31: hard to tell where it came from)
@@ -626,8 +629,11 @@ namespace EnrageWestworld.InGame
                 TickerLine was = _tickerLine;
                 _tickerLine = _ticker.Update(now, _near, _cfg.NewsRoute == "corner" ? null : (Func<string>)(() => _engine.Summary()));   // the news has its own box then
                 if (_tickerLine != was)
+                {
                     Safe("thought sound", () => ThoughtSound(_tickerLine, now));
-                    Safe("aloud", () => AloudAsk(_tickerLine, now));   // said aloud in their own voice, if it fits (WestworldScript.Aloud.cs)
+                    Safe("voiced thought", () => VoiceThought(_tickerLine, now));   // murmured in their own voice (WestworldScript.Voiced.cs), before Aloud, which then stays quiet for it
+                }
+                Safe("aloud", () => AloudAsk(_tickerLine, now));   // said aloud in their own voice, if it fits (WestworldScript.Aloud.cs)
                 if (_tickerLine != was && _tickerLine != null && _tickerLine.Kind == "near" && _tickerLine.Handle != 0)
                     NoteTheirThought(_tickerLine.Handle, now, _tickerLine.Text);   // a thought over someone came up: no act's or turn's thought of theirs on top of it (WestworldScript.ActThoughts.cs)
             }
@@ -1191,6 +1197,7 @@ namespace EnrageWestworld.InGame
             BelowStep(now);     // the voice below the saloon floor, late at night (WestworldScript.Below.cs)
             MindShadowStep(now);   // the mind in shadow mode: traits, needs, feelings and mood, reported only (WestworldScript.Mind.cs)
             LanguageStep(now);     // the language layer's worker and the engine's hand (WestworldScript.Language.cs; its own try/catch)
+            Safe("voice", () => VoiceStep(now));   // voiced thoughts and dialogue: the worker and where each speaker is (WestworldScript.Voiced.cs)
             TestCastStep(now);     // the Testing page's test cast, while they're about (WestworldScript.TestCast.cs)
             if (_drinkVoice != 0 || _drunkVoices.Count > 0)
                 Safe("vices", _aDrinkVoice ?? (_aDrinkVoice = () => { DrinkVoiceStep(_now); SoberVoices(false); }));   // a drinker's voice, and sober again at 4 (WestworldScript.Vices.cs)
