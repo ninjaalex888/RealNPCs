@@ -40,9 +40,12 @@ def main():
     if not banks:
         print("nothing in", cap_dir)
         return 1
+    import numpy as np
     import soundfile as sf
     import torch
     from chatterbox.tts import ChatterboxTTS
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from voice_server import clean_noise
     t = time.time()
     model = ChatterboxTTS.from_pretrained(device=a.device)
     print("model loaded in %.1f s" % (time.time() - t), flush=True)
@@ -51,11 +54,22 @@ def main():
         e = refs.get(bank) or {}
         if e.get("ref"):
             pair["export"] = os.path.join(a.root, e["ref"])
+        if os.path.exists(pair["captured"]):   # and the game's clip with the steady sound under the voice taken off
+            x, sr = sf.read(pair["captured"], dtype="float32")
+            if x.ndim > 1:
+                x = x.mean(axis=1)
+            y = clean_noise(x, sr)
+            peak = float(np.max(np.abs(y)))
+            cleaned = os.path.join(out, "%s.ref-cleaned.wav" % bank)
+            sf.write(cleaned, (y * (0.9 / peak) if peak > 0 else y), sr, subtype="PCM_16")
+            pair["cleaned"] = cleaned
         for how, clip in pair.items():
             if not os.path.exists(clip):
                 print(bank, how, "clip missing:", clip)
                 continue
-            shutil.copyfile(clip, os.path.join(out, "%s.ref-%s.wav" % (bank, how)))
+            dst = os.path.join(out, "%s.ref-%s.wav" % (bank, how))
+            if os.path.abspath(clip) != os.path.abspath(dst):
+                shutil.copyfile(clip, dst)
             t = time.time()
             model.prepare_conditionals(clip, exaggeration=0.5)
             with torch.inference_mode():

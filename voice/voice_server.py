@@ -283,6 +283,22 @@ def worker():
 
 # ---- recording the game's own clips off this PC's output (the player's own game; nothing shipped) ----
 
+def clean_noise(x, sr):
+    """The steady sound under a voice (the street, wind, rain, the game's room tone) taken off by spectral subtraction:
+    the noise's spectrum is the quiet fifth of the frames, per frequency; what's left of a frame is at least a tenth of
+    it, so there are no holes. Lex, 2026-11-03: the clips the game gave cloned well but carried the street."""
+    from scipy.signal import stft, istft
+    n = 1024 if sr >= 32000 else 512
+    _f, _t, Z = stft(x, fs=sr, nperseg=n, noverlap=n * 3 // 4)
+    mag, ph = np.abs(Z), np.angle(Z)
+    energy = mag.mean(axis=0)
+    quiet = mag[:, energy <= np.percentile(energy, 20)]
+    noise = np.median(quiet, axis=1, keepdims=True) if quiet.shape[1] else np.zeros((mag.shape[0], 1))
+    cleaned = np.maximum(mag - 1.5 * noise, 0.1 * mag)
+    _t2, y = istft(cleaned * np.exp(1j * ph), fs=sr, nperseg=n, noverlap=n * 3 // 4)
+    return y[:len(x)].astype(np.float32)
+
+
 def capture_fail(job, why):
     job["state"] = "failed"
     job["why"] = why
@@ -346,15 +362,19 @@ def capture(job):
     length = len(y) / sr
     if length < 1.5:
         return capture_fail(job, "only %.1f s heard" % length)
-    peak = float(np.max(np.abs(y)))
-    if peak > 0:
-        y = y * (0.9 / peak)
+    raw = y
+    try:
+        y = clean_noise(y, sr)
+    except Exception as e:
+        log("capture %s: not cleaned (%s)" % (bank, repr(e)[:80]))
     job.update({"seconds": round(length, 2), "snr": round(snr, 1)})
     poor = snr < ARGS.capture_snr   # kept too, in captured\poor, to listen to and to set the bar by; never cloned from
     d = os.path.join(ARGS.root, "captured", "poor" if poor else "")
-    os.makedirs(d, exist_ok=True)
+    os.makedirs(os.path.join(d, "raw"), exist_ok=True)
     path = os.path.join(d, bank + ".wav")
-    sf.write(path, y.astype(np.float32), sr, subtype="PCM_16")
+    for p, w in ((path, y), (os.path.join(d, "raw", bank + ".wav"), raw)):   # the raw one kept, to clean again another way
+        peak = float(np.max(np.abs(w)))
+        sf.write(p, (w * (0.9 / peak) if peak > 0 else w).astype(np.float32), sr, subtype="PCM_16")
     job["path"] = path
     if poor:
         job["state"] = "poor"
