@@ -9,6 +9,7 @@ if exist "%VOICE_HOME%\tts-venv\Scripts\python.exe" (
   set VENV=%VOICE_HOME%\tts-venv
   set VOICE_ROOT=%VOICE_HOME%
   set HF_HOME=%VOICE_HOME%\tools\hf
+set HF_HUB_DISABLE_SYMLINKS_WARNING=1
 ) else (
   set VENV=C:\mods\voice-test\tts-venv
   set VOICE_ROOT=C:\mods\voice-test

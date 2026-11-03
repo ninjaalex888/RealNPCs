@@ -128,9 +128,9 @@ def pick_ref(model, sex, age, person):
     how = "own"
     if not cands:
         how = "borrowed"
-        cands = REFS_BY_KIND.get(((sex or "male").lower(), (age or "adult").lower())) or REFS_BY_KIND.get(("male", "adult"))
+        cands = REFS_BY_KIND.get(((sex or "male").lower(), (age or "adult").lower())) or REFS_BY_KIND.get(("male", "adult")) or []
         cands = [c for c in cands if c[2] <= 2] or cands
-    if not cands:
+    if not cands:   # no clip at all yet (a player's first minutes, before any voice is recorded)
         return None, None, how
     english = [c for c in cands if not c[3]] or cands
     best = min(c[2] for c in english)
@@ -159,15 +159,15 @@ def load_model():
         log("model %s loaded in %.1f s on %s%s" % (MODEL_NAME, time.time() - t, ARGS.device,
             (", %.2f GB" % (torch.cuda.memory_allocated() / 1e9)) if ARGS.device == "cuda" else ""))
         warm = next(iter(REFS_BY_MODEL.values()), None)
-        if warm:   # the first line said is slow (kernels, caches): say one nobody hears
-            try:
-                t = time.time()
+        try:   # the first line said is slow (kernels, caches): say one nobody hears, in a clip's voice or the model's own
+            t = time.time()
+            if warm:
                 conds_for(warm[0][1], 0.5)
-                with torch.inference_mode():
-                    MODEL.generate("Warming up.") if ARGS.turbo else MODEL.generate("Warming up.", exaggeration=0.5, cfg_weight=0.5)
-                log("warmed up in %.1f s" % (time.time() - t))
-            except Exception as e:
-                log("warm-up failed:", repr(e)[:200])
+            with torch.inference_mode():
+                MODEL.generate("Warming up.") if ARGS.turbo else MODEL.generate("Warming up.", exaggeration=0.5, cfg_weight=0.5)
+            log("warmed up in %.1f s" % (time.time() - t))
+        except Exception as e:
+            log("warm-up failed:", repr(e)[:200])
         READY = True
     except Exception as e:  # the mod sees "not ready" and stays with its own voices
         LOAD_ERROR = repr(e)

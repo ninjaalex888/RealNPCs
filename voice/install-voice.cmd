@@ -11,6 +11,7 @@ set UV=%VOICE_HOME%\tools\uv\uv.exe
 set UV_CACHE_DIR=%VOICE_HOME%\tools\cache
 set UV_PYTHON_INSTALL_DIR=%VOICE_HOME%\tools\python
 set HF_HOME=%VOICE_HOME%\tools\hf
+set HF_HUB_DISABLE_SYMLINKS_WARNING=1
 title RealNPCs voice setup
 echo RealNPCs voices: setting up the voice server in
 echo   %VOICE_HOME%
@@ -25,7 +26,7 @@ mkdir "%VOICE_HOME%\tools\uv" 2>nul
 del "%VOICE_HOME%\tools\uv.zip"
 :venv
 echo [2/4] Python 3.12, in a folder of its own...
-if not exist "%VENV%\Scripts\python.exe" "%UV%" venv --python 3.12 "%VENV%" || goto fail
+if not exist "%VENV%\Scripts\python.exe" "%UV%" venv --managed-python --python 3.12 "%VENV%" || goto fail
 echo [3/4] PyTorch for NVIDIA cards (about 3 GB), Chatterbox and the rest...
 "%UV%" pip install --python "%VENV%\Scripts\python.exe" --index-url https://download.pytorch.org/whl/cu128 torch==2.11.0 torchaudio==2.11.0 || goto fail
 "%UV%" pip install --python "%VENV%\Scripts\python.exe" --no-deps chatterbox-tts==0.1.7 || goto fail
