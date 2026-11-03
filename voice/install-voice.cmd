@@ -1,14 +1,16 @@
 @echo off
 setlocal
 rem RealNPCs voices: sets up the voice server in this folder (2026-11-03). Everything goes under this folder and nothing
-rem else on the PC changes: a Python of its own (tts-venv), PyTorch for NVIDIA cards, Chatterbox, and its voice model.
-rem About 8 GB to download, once. Run it again after a failure: it carries on where it stopped.
+rem else on the PC changes: a Python of its own (tts-venv), PyTorch for NVIDIA cards, Chatterbox, and its voice model
+rem (tools\hf). About 8 GB to download, once. Run it again after a failure: it carries on where it stopped. To remove it
+rem all, delete the folder.
 set VOICE_HOME=%~dp0
 set VOICE_HOME=%VOICE_HOME:~0,-1%
 set VENV=%VOICE_HOME%\tts-venv
 set UV=%VOICE_HOME%\tools\uv\uv.exe
 set UV_CACHE_DIR=%VOICE_HOME%\tools\cache
 set UV_PYTHON_INSTALL_DIR=%VOICE_HOME%\tools\python
+set HF_HOME=%VOICE_HOME%\tools\hf
 title RealNPCs voice setup
 echo RealNPCs voices: setting up the voice server in
 echo   %VOICE_HOME%
