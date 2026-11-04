@@ -551,7 +551,6 @@ namespace EnrageWestworld.InGame
 			try { EventDotsClearAll(); } catch { }   // the event dots go with us
 			try { AlliesAbort(); } catch { }   // the allies' green dots go with us
 			try { JoinPendingDrop("the script stopped"); RingBreak(); } catch { }   // those on their way to a brawl, and the ring round it, let go to the game
-			try { BraveRestoreAll("the script stopped"); } catch { }   // the braver put back as the game had them
 			Shutdown04();
 			Save();
 			try { VramReader.Stop(); } catch { }   // the VRAM gauge's reader thread (WestworldScript.Vram.cs)

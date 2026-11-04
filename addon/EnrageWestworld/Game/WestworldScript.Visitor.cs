@@ -270,7 +270,6 @@ namespace EnrageWestworld.InGame
                     !Natives.Bystander(p, me.Handle, IsRecord(p.Handle)) || MayDirectWhyNot(p) != null || NotFree(p.Handle) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, v.Figure.Handle, 17))
                     continue;
                 v.Fled = true;
-                BraveRelease(p.Handle);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
                 bool stands = Bravery.Holds(_cfg.Bravery, "visitor|" + p.Handle);   // brave ([World] Bravery): stands and stares at it, then backs off at a walk
                 if (stands)
                     TASK.TASK_SMART_FLEE_PED(p.Handle, v.Figure.Handle, 15f, 12000, 0, 1f, 0);

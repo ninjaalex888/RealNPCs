@@ -63,21 +63,15 @@ namespace EnrageWestworld.InGame
                 return;
             _nextLedger = now + 500;
             if (MISC.GET_MISSION_FLAG())
-            {
-                if (_brave.Count > 0)
-                    BraveRestoreAll("a story mission");   // the street as the game has it for the mission (the review, 2026-10-31); asked afresh after it
                 return;   // story missions are left alone, deaths in them too
-            }
             Ped me = Game.Player.Character;
             Vector3 at = me.Position;
-            BraveSweepBegin(now);   // every 2 s this pass is also the bravery sweep (WestworldScript.Bravery.cs): no array of its own
             foreach (Ped p in Peds.All())
             {
                 if (p == null || !p.Exists() || p.Handle == me.Handle || !PED.IS_PED_HUMAN(p.Handle) || p.Position.DistanceTo(at) > LedgerRange)
                     continue;
                 int h = p.Handle;
                 float dist = p.Position.DistanceTo(at);
-                BraveOne(p, h, dist);
                 if (dist < 60f)
                     WatchDowned(p, now);
                 Known k = KnownAt(p, now);
@@ -86,7 +80,6 @@ namespace EnrageWestworld.InGame
                 _deadNoted.Add(h);
                 LedgerNote(h, k.Id, k.Name, k.Kind, _brawlFatal.Contains(h) ? TownMood.Beating : null, null);   // beaten to death in a brawl, booked here before BrawlDown: still "a beating" (never hushes a street)
             }
-            BraveSweepEnd(now);
             foreach (int h in _known.Keys.Where(x => !ENTITY.DOES_ENTITY_EXIST(x)).ToList())
             {
                 _known.Remove(h);

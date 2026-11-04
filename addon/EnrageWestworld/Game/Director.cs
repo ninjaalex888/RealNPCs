@@ -594,7 +594,6 @@ namespace EnrageWestworld.InGame
             {
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(l.Shooter, false);
                 TASK.CLEAR_PED_TASKS(l.Shooter, true, false);
-                FleeOrdered?.Invoke(l.Shooter);   // the run is a run, not cowering ([World] Bravery)
                 TASK.TASK_SMART_FLEE_PED(l.Shooter, l.ShotAt != 0 && ENTITY.DOES_ENTITY_EXIST(l.ShotAt) ? l.ShotAt : _player, 150f, -1, 0, 3f, 0);   // he runs from what he's done
             }
             if (l.FightAttrs != null)
@@ -1294,7 +1293,6 @@ namespace EnrageWestworld.InGame
                         return 600;
                     }
                 case "flee":
-                    FleeOrdered?.Invoke(h);
                     if (Bravery.Holds(BraveryNow, l.Seed + "|flee|" + who))
                         TASK.TASK_SMART_FLEE_PED(h, t, 10f, 6000, 0, 1f, 0);   // brave ([World] Bravery): backs off a few steps, at a walk
                     else
@@ -1361,7 +1359,6 @@ namespace EnrageWestworld.InGame
                         TASK.TASK_COMBAT_PED(h, t, 0, 16);
                         uint theirs = WEAPON.GET_BEST_PED_WEAPON(t, false, false);
                         bool armed = theirs != 0 && theirs != Natives.Hash("WEAPON_UNARMED");
-                        FleeOrdered?.Invoke(t);   // he may run: the run is a run ([World] Bravery)
                         if (armed)
                         {
                             WEAPON.SET_CURRENT_PED_WEAPON(t, theirs, true, 0, false, false);
@@ -1423,7 +1420,6 @@ namespace EnrageWestworld.InGame
                     return 900;
                 case "run":
                     TASK.CLEAR_PED_TASKS(h, true, false);
-                    FleeOrdered?.Invoke(h);
                     TASK.TASK_SMART_FLEE_PED(h, _player != 0 ? _player : t, 180f, -1, 0, 3f, 0);
                     return 300;
                 case "faceplayer":
@@ -1504,17 +1500,18 @@ namespace EnrageWestworld.InGame
         /// A brawl stays a brawl: if a fighter reaches for a gun or a knife, it goes back in the holster.
         private const int FightStartMs = 16000;   // 12 s until 2026-10-30: a man getting up off the bar is given 8 s before he's pulled off it
         // 5 and 46 together make them fight with fists (femga and Halen84 name them CA_ALWAYS_FIGHT and
-        // CA_CAN_FIGHT_ARMED_PEDS_WHEN_NOT_ARMED), 58 CA_DISABLE_FLEE_FROM_COMBAT; since 2026-10-31 ([World] Bravery's half for
-        // fights) 77 CA_DISABLE_RESPONDED_TO_THREAT_BROADCAST, as the game's own street fight sets on its fighters
+        // CA_CAN_FIGHT_ARMED_PEDS_WHEN_NOT_ARMED), 58 CA_DISABLE_FLEE_FROM_COMBAT; since 2026-10-31 (Bravery's until 2026-11-04,
+        // every fight's since) 77 CA_DISABLE_RESPONDED_TO_THREAT_BROADCAST, as the game's own street fight sets on its fighters
         // (beat_street_fight.c), so the fight doesn't send the crowd running, and 78 CA_DISABLE_ALL_RANDOMS_FLEE (named in both
         // lists, no script seen setting it); every one of them put back when the scene ends
         private static readonly int[] FightAttrIds = { 5, 46, 58, 77, 78 };
 
-        /// Whether the fight sets this one of FightAttrIds: 77 and 78 are Bravery's half, so at [World] Bravery 0 a fight
-        /// leaves them as the game has them (the review, 2026-10-31); all five are read and put back either way.
+        /// Whether the fight sets this one of FightAttrIds: all five, always (77 and 78 went with [World] Bravery until
+        /// 2026-11-04; Bravery no longer touches anyone's flight, and a fistfight shouldn't send the crowd running at any
+        /// setting, as the game's own street fight doesn't); all five are read and put back.
         private bool FightAttrMine(int id)
         {
-            return (id != 77 && id != 78) || BraveryNow > 0;
+            return true;
         }
 
         /// The order to fight, once both are on their feet: a man sat or leaning is told to stop (the clear lets him get
@@ -1833,8 +1830,6 @@ namespace EnrageWestworld.InGame
         /// Called once per man per fight, from the frame tick.
         public Action<int, int, int, bool> FighterDown;
 
-        /// Someone in a scene is about to be sent running (the game layer gives him back his own flight first: [World] Bravery).
-        public Action<int> FleeOrdered;
 
         /// The two sides as they stood the moment the last man went down, him included (read in FighterDown).
         public readonly List<int> DownSideA = new List<int>(), DownSideB = new List<int>();

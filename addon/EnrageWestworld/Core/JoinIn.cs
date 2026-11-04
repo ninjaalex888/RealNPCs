@@ -40,6 +40,8 @@ namespace EnrageWestworld.Core
         public static float BrawlBoost;
         /// Added on top in a fight's first 10 s ([Mind] BrawlOpeningBoost / 100, set by the game side; 0 here).
         public static float OpeningBoost;
+        /// [World] Bravery's pull on every onlooker (Bravery.JoinPull, set by the game side; 0 here and at 85): with brawls on or off.
+        public static float BraveryPull;
 
         /// Whether this onlooker joins, and on whose side. sides[0] and sides[1]: who is fighting on each side; warmth(x, y):
         /// the tie between two ids (-3..3, 0 none); witnesses: how many watch; saloon: a saloon's fights draw the drunk and
@@ -103,7 +105,7 @@ namespace EnrageWestworld.Core
                 float tie = friend > 0 ? 0.22f + 0.08f * friend : 0f;
                 if (foe < 0)
                     tie = Math.Max(tie, 0.18f + 0.08f * -foe);
-                float score = tie + heat + momentum;
+                float score = tie + heat + momentum + BraveryPull;
                 if (brawls)
                     score += BrawlBoost + OpeningBoost;
                 // with brawls on, someone with no stake in it sides with the side that's short (Lex, 2026-10-31: in the

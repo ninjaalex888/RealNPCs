@@ -1366,7 +1366,6 @@ namespace EnrageWestworld.InGame
                     WanderLater(p.Handle, Game.GameTime + 5000);
                     continue;
                 }
-                BraveRelease(p.Handle);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
                 TASK.TASK_SMART_FLEE_PED(p.Handle, me.Handle, 120f, -1, 0, 3f, 0);
                 if (!screamed)
                     screamed = Speech.SayAny(p.Handle, Speech.Scared, me.Handle);

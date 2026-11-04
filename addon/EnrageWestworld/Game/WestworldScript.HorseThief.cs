@@ -120,7 +120,6 @@ namespace EnrageWestworld.InGame
                     t.Phase = 1;
                     _horseThefts++;
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(t.Thief.Handle, false);
-                    BraveRelease(t.Thief.Handle);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
                     TASK.TASK_SMART_FLEE_PED(t.Thief.Handle, me.Handle, 400f, -1, 0, 3f, 0);   // away at a gallop
                     MarkThief(t.Thief, now);   // the thief's red dot, fair game
                     _thieves.Add(t.Thief.Handle);

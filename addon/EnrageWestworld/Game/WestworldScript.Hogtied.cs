@@ -582,7 +582,6 @@ namespace EnrageWestworld.InGame
             else
             {
                 Feed.Say(h.Name, Hogtied.Run(h.Seed), Speech.When(ch, "scared", me.Handle), ch, toYou: true);
-                BraveRelease(ch);
                 TASK.TASK_SMART_FLEE_PED(ch, men.Count > 0 ? men[0].Handle : me.Handle, 120f, -1, 0, 3f, 0);
             }
             if (h.ByYou)

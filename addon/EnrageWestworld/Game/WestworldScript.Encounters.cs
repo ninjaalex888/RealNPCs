@@ -709,7 +709,6 @@ namespace EnrageWestworld.InGame
                         PED.SET_PED_RELATIONSHIP_GROUP_HASH(h, c.OwnGroup);
                         PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
                         TASK.CLEAR_PED_TASKS(h, true, false);
-                        BraveRelease(h);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
                         TASK.TASK_SMART_FLEE_PED(h, me.Handle, 300f, -1, 0, 3f, 0);
                         c.Phase = "fled";
                         c.PhaseUntil = now + 30000;
@@ -863,7 +862,6 @@ namespace EnrageWestworld.InGame
                     Feed.Say("The crying woman", Encounters.Pick(Encounters.AmbushCall, h + "a"), Speech.When(h, "mock", me.Handle), toYou: true);
                     _cameAtYouSeen[h] = now;   // she brought them: shooting her as she runs is self-defence too
                     PED.SET_PED_KEEP_TASK(h, true);
-                    BraveRelease(h);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
                     TASK.TASK_SMART_FLEE_PED(h, me.Handle, 300f, -1, 0, 3f, 0);
                     c.Phase = "ambush";
                     c.PhaseUntil = now;

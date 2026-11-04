@@ -425,7 +425,6 @@ namespace EnrageWestworld.InGame
             foreach (Gatherer m in live)
             {
                 int h = m.Ped.Handle;
-                BraveRelease(h);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
                 int you = me.Handle;
                 bool brave = Bravery.Holds(_cfg.Bravery, "scatter|" + h);
                 // up out of their act Rockstar's way (a bare clear left the kneeling kneeling), the run the same tick

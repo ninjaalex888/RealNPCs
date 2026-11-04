@@ -456,7 +456,6 @@ namespace EnrageWestworld.InGame
                 else
                     _director.Abort("a gun drawn in the brawl");
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
-                BraveRelease(target);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
                 WEAPON.SET_CURRENT_PED_WEAPON(h, gun, true, 0, false, false);
                 PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, false);
                 string name = w.Name ?? "a man", at = MindNameOf(target) ?? "the man beating him";

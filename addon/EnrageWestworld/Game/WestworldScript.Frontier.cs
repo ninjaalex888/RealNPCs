@@ -233,7 +233,6 @@ namespace EnrageWestworld.InGame
                 return;
             t.RunStalls++;
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
-            BraveRelease(h);   // the run is a run, not cowering ([World] Bravery; WestworldScript.Bravery.cs)
             if (t.RunStalls % 2 == 1)
                 TASK.TASK_SMART_FLEE_COORD(h, me.Position, 200f, -1, 0, 3f);   // away from where you stand
             else

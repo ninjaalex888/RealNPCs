@@ -241,17 +241,6 @@ namespace EnrageWestworld.InGame
                 what.Add(walk);
                 tasked = true;   // the walk over cleared
             }
-            BraveRec br;
-            if (_brave.TryGetValue(h, out br))
-            {
-                if (br.Set)
-                {
-                    what.Add("bravery (PCF 44)");
-                    BraveRestore(h, br);
-                    _braveAimed++;
-                }
-                br.HeldUntil = now + 20000;
-            }
             if (_rescuedPed == h && now < _rescuedUntil)
             {
                 what.Add("a rescue's thanks");

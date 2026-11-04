@@ -239,6 +239,7 @@ namespace EnrageWestworld.InGame
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
             _ticker.GapMs = _cfg.TickerGapSeconds * 1000;
             JoinIn.BrawlBoost = _cfg.BrawlJoinBoost / 100f;   // onlookers readier to join (Lex, 2026-11-01)
+            JoinIn.BraveryPull = Bravery.JoinPull(_cfg.Bravery);   // [World] Bravery: only how readily onlookers join a fight now (Lex, 2026-11-04)
             ActThoughts.PersonGapMs = _cfg.ActThoughtEachSeconds * 1000;   // the act thoughts' limits (Lex, 2026-11-01: livelier)
             ActThoughts.TheirsGapMs = _cfg.ActThoughtGapSeconds * 1000;
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
@@ -1250,9 +1251,7 @@ namespace EnrageWestworld.InGame
             Safe("lines", _aLater);
             LedgerStep(now);   // deaths are noted whether or not the player has control (not in story missions)
             BodyClearFrameStep();   // a lawman's carry: its reset flags every frame, the controls off too (WestworldScript.Bodies.cs)
-            AimLetGoStep();   // whoever you aim at is let go of whatever of ours held them, before bravery puts PCF 44 back (WestworldScript.AimLetGo.cs)
-            if (_brave.Count > 0)
-                Safe("bravery aim", _aBraveAim ?? (_aBraveAim = () => BraveAimStep(_now)));   // whoever you aim at gets the game's own answer back that frame (WestworldScript.Bravery.cs)
+            AimLetGoStep();   // whoever you aim at is let go of whatever of ours held them (WestworldScript.AimLetGo.cs)
             DeedEyesStep(now);   // who saw a killing is still alive to tell it (WestworldScript.Watch.cs)
             RecordFatesStep(now);   // a record's death RealNPCs caused, written into its record (WestworldScript.Directing.cs)
             TrystWatchdog(now);   // never left dark (outside the trysts' own guard)
