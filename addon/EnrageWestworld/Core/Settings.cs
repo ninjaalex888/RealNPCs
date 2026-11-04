@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 197;
+        public const int CurrentVersion = 198;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -128,8 +128,8 @@ namespace EnrageWestworld.Core
         public bool MindTempers = true;   // with MindLive: displaced aggression (shamed earlier, they take it out on someone who won't hit back) and the culture of honour in Lemoyne (quarrels climb faster, backing down costs more) (settings version 152; NIGHT3)
         public bool Language = false;        // the language layer (2026-10-29; roadmap 15): with MindLive, the mind's own thoughts worded by a local model (Ollama at LanguageUrl, LanguageModel) through Language.Check, the written line always the fallback; off until the generated thoughts pass the checks at scale (settings version 94)
         public bool LanguageChosen;          // Language was set by the player (the panel or this file); while false and Language off, each start asks Ollama off the game thread and turns Language on, once, if it answers with the model (settings version 163)
-        public bool VoicedThoughts = false;   // [Mind] (in testing) a thought over someone near murmured in their own voice, cloned by the local voice server (voiceoice_server.py) from the game's recordings for their model; settings version 193
-        public bool VoicedDialogue = false;   // [Mind] (in testing) our words said near you (scenes, Talk, encounters) said in the speaker's own voice by the voice server
+        public bool VoicedThoughts = true;    // [Mind] on as it comes from settings version 198 (nothing is heard until the voice server runs): a thought over someone near murmured in their own voice, cloned by the local voice server (voiceoice_server.py) from the game's recordings for their model; settings version 193
+        public bool VoicedDialogue = true;    // [Mind] on as it comes from 198: our words said near you (scenes, the talks between people, Talk, encounters) said in the speaker's own voice by the voice server
         public string VoiceUrl = "http://127.0.0.1:5005";   // [Mind] the local voice server; nothing leaves the machine
         public float VoiceMetres = 14f;       // [Mind] voiced within this many metres of you (5-30; 15 until 2026-11-03, Lex: 6% shorter)
         public int VoiceVolume = 100;         // [Mind] the voices' loudness, percent (10-200)
@@ -789,6 +789,14 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 198)
+                {
+                    // 2026-11-03: the voices on as they come (nothing is heard until the voice server runs); an ini from 193-197 with both off
+                    // (never shipped: only the test PC had them) comes on too
+                    if (!s.VoicedThoughts && !s.VoicedDialogue)
+                        s.VoicedThoughts = s.VoicedDialogue = true;
+                    log?.Invoke("Settings: the voices are on as they come now ([Mind] VoicedThoughts, VoicedDialogue, VoiceRecord): nothing is heard until the voice server runs (the zip's voice folder: install-voice.cmd once, then start-voice-server.cmd before you play).");
+                }
                 if (s.SettingsVersion < 197)
                     log?.Invoke("Settings: new in this version: [Encounters] AlliesHelp (on), AlliesMetres (40), AlliesMost (3), AlliesLiking (40), AlliesRoadChance (30): attacked within sight of people who think well of you, some of them come to your aid, with a gun if the attackers have guns; out of the towns a friend from the ledger may happen by.");
                 if (s.SettingsVersion < 196)
@@ -1161,8 +1169,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("MindTempers = " + B(MindTempers) + "   ; (in testing) with MindLive on: someone slighted, quarrelled with or beaten in the last few hours may take it out on someone who won't hit back; and in Lemoyne's towns, where honour rules, quarrels climb a little faster and backing down costs more");
             b.AppendLine("StrainChance = " + StrainChance + "   ; with MindTempers on: someone with two or more troubles at once snaps at someone who won't hit back this percent of the time when they meet (0-100; a coward is always picked on; the timid and the loyal never snap)");
             b.AppendLine("ThoughtsAloud = " + B(ThoughtsAloud) + "   ; as a thought shows over someone within 12 m, they may say something aloud in their own recorded voice (most thoughts stay unspoken). No AI model needed: what they feel most decides it (a curse when angry, a frightened word, thanks, relief; grief and shame stay inside). With the AI model on and a voice list for that voice, the model picks the remark that fits instead");
-            b.AppendLine("VoicedThoughts = " + B(VoicedThoughts) + "   ; (in testing) a thought over someone within VoiceMetres is murmured in their own voice a moment after it shows (one at a time, each person once in 90 s). Needs the local voice server running (voice\\start-voice-server.cmd, about 3.5 GB of the graphics card) and your own export of the game's voice banks; without it nothing changes");
-            b.AppendLine("VoicedDialogue = " + B(VoicedDialogue) + "   ; (in testing) what people say near you in RealNPCs' words (the street's scenes, Talk's answers, the encounters) is said in their own voice by the voice server, a second or two behind the subtitle");
+            b.AppendLine("VoicedThoughts = " + B(VoicedThoughts) + "   ; a thought over someone within VoiceMetres is murmured in their own voice a moment after it shows (one at a time, each person once in 90 s). Needs the local voice server running (voice\\start-voice-server.cmd after voice\\install-voice.cmd once; an NVIDIA card with about 4 GB free); without it nothing changes and nothing is heard");
+            b.AppendLine("VoicedDialogue = " + B(VoicedDialogue) + "   ; what people say near you in RealNPCs' words (the street's scenes, their talks with each other, Talk's answers, the encounters) is said in their own voice by the voice server, the subtitle waiting for the voice");
             b.AppendLine("VoiceUrl = " + VoiceUrl + "   ; where the voice server listens");
             b.AppendLine("VoiceMetres = " + F(VoiceMetres) + "   ; voiced within this many metres of you (5 to 30)");
             b.AppendLine("VoiceVolume = " + VoiceVolume + "   ; the voices' loudness, percent (10 to 200)");

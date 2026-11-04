@@ -18,6 +18,53 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 Story Mode only. Don't run script mods in Red Dead Online.
 
 
+NEW: THE PEOPLE SPEAK IN THEIR OWN VOICES (OPTIONAL, RECOMMENDED)
+------------------------------------------------------------------
+The headline of 0.7.19. With the voice server running, the people near you say RealNPCs' words
+out loud in their own voices: the thought over someone's head is murmured in that person's
+voice a moment after it shows, and what people say near you (the street's scenes, their talks
+with each other, Talk's answers, the encounters) is said in the speaker's own voice, the
+subtitle coming with it. Played for the first time on 2026-11-03, and the town talks.
+
+How it works: each voice is cloned on your own PC, by the open-source Chatterbox model, from
+the game's own recording of that person's voice, and those recordings come from your own game:
+someone whose voice has no clip yet says one of the game's own lines once, in a quiet moment as
+you meet them, and the server records it off your PC's sound and keeps it ([Mind] VoiceRecord,
+on). A clearer recording later replaces a weaker one; another voice too near spoils a clip and
+it's recorded again another time; a person whose model has several voice banks is given one
+for good, by who they are. Nothing of the game's audio ships with RealNPCs, and nothing leaves
+your PC. One voice plays at a time, louder near and from the side the speaker stands on, within
+14 m ([Mind] VoiceMetres); VoiceVolume (100). The game's own recorded remark, where one plays,
+still plays.
+
+What you need: an NVIDIA graphics card with about 4 GB of memory free beside the game (with the
+AI model running too, about 9 GB free: a 16 GB card does both, a 12 GB card one or the other),
+about 8 GB of disk, and a one-time setup of about ten minutes. Without the voice server nothing
+changes: the switches are on as they come, and nothing is heard until it answers (the log says
+so once).
+
+Set it up once:
+1. Keep the zip's "voice" folder somewhere permanent, for instance Documents\RealNPCs\voice. It
+   holds install-voice.cmd, start-voice-server.cmd, voice_server.py and voices.json.
+2. Double-click install-voice.cmd once. It fetches uv, a Python of its own, PyTorch for NVIDIA
+   cards, Chatterbox and its model files into that folder (about 8 GB, once), and ends by saying
+   "The voices are ready." through your speakers. Nothing else on your PC changes; delete the
+   folder to remove it all. If it fails part way (a download dropped), run it again: it carries
+   on where it stopped.
+3. Before you play, double-click start-voice-server.cmd and leave its window open. It takes
+   about 15 seconds to load the model, then says it's listening.
+4. Play. People are recorded as you meet them, so the first voices come after a few minutes in
+   a town; F7's "TEST voice:" line and the server's window (and voice-server.log beside it) say
+   what it's doing.
+
+What to expect, honestly: a line takes a second or two to make, and the words wait for it; the
+clips are recorded off the street, so a voice can carry a little of the sound around the person
+it was recorded from (the server cleans it, and re-records a better one when it can); the voice
+server takes about 3.5 GB of your card and 2.5 GB of memory while it runs. To turn it off:
+[Mind] VoicedThoughts and VoicedDialogue on the settings panel's Mind page, or close the
+server's window.
+
+
 OPTIONAL, RECOMMENDED: THE FREE LOCAL AI MODEL
 -----------------------------------------------------
 YOU DON'T NEED IT. RealNPCs runs fully without the AI model and without Ollama: no extra
@@ -76,6 +123,42 @@ OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
 
 NEW IN 0.7.19
 -------------
+- The voices (see the section above): with the voice server, the people near you speak RealNPCs'
+  words in their own voices, cloned on your PC from your own game as you meet them ([Mind]
+  VoicedThoughts, VoicedDialogue, VoiceRecord, on; VoiceMetres 14, VoiceVolume 100). Seen in
+  game. The zip's "voice" folder holds the one-time installer and the server.
+- People talk to each other from what's on their minds ([Mind] MindTalks, on; no AI model
+  needed): among people who know each other, one brings up the worry they're living through,
+  the times they live in, the stranger as they remember him, a plan they carry, the town's
+  talk, what they're short of, or the day; the other answers from their own nature, kindly,
+  coldly or sharply, and on the times from their own side of the question; with the AI model,
+  in its own words. Said in their own voices with the voice server.
+- The times they live in: about 440 lines of what people in 1899 were really talking of (the
+  election of 1900, Bryan and McKinley, the war in the Philippines, Dewey's homecoming, Cuba and
+  the fever, the Klondike and Nome, the Boers, the reservations and the allotments, Wounded Knee,
+  Geronimo, the trusts and the railroads, the horseless carriage, the telephone, the bicycle,
+  the yellow papers, Jeffries, the Maple Leaf Rag, the blizzard, the century turning, The Hague,
+  Dreyfus, Georgia, the frontier closed, votes for women, wages) and in the epilogue's 1907
+  (Roosevelt and the canal, the Panic, Oklahoma, the white fleet, motorcars and flying machines,
+  San Francisco, the Thaw trial, Monongah, The Jungle, Taft and Bryan, the Cubs, Johnson and
+  Cobb, Ellis Island, the old West gone, the suffrage women, Geronimo's book), each from the
+  month it was in the papers. In the talks above, and when you ask someone the news.
+- Allies who come to your aid ([Encounters] AlliesHelp, on; AlliesMetres 40, AlliesMost 3,
+  AlliesLiking 40, AlliesRoadChance 30): attacked (not by the law) within sight of people who
+  think well of you (enRAGE's fondness, a kindness of yours they remember, a trouble you
+  mended, talks and your name known), some of them come: the brave and the hot first, the loyal
+  for a friend, cowards never, a woman only against fists; against guns they're given a
+  revolver. They shout as they come, go for your attackers, and have a word with you after;
+  they remember standing with you, and enRAGE's townsfolk think better of you for it. Out of
+  the towns a friend from a town's ledger may happen by. Not yet seen in game.
+- The VRAM gauge ([Display] VramGauge, model): "VRAM 11.3 / 15.6 GB" at the top left while the
+  AI model is on; amber over 85%, red over 95%.
+- The voices are heard within 14 m (VoiceMetres, from 15).
+- Fixed: Talk (Q) on someone walking by left them walking and the list closed; they stop and
+  turn to you now. The subtitle for a voiced line waits for the voice. A street scene could call
+  someone by one name while the card over their head used another; one name now. The glitch
+  that repeated a greeting three times is gone, and the questioning stage of the Awakening says
+  nothing twice.
 - Called out yourself ([Encounters] CalloutsArthur, on): by day in a town, someone with something
   against you (you struck or robbed them, they saw you kill, you soured them) walks up and says it
   to your face. Stay and most put up their fists (fighting them is self-defence), walk off past
@@ -1198,6 +1281,8 @@ REQUIREMENTS
 - enRAGE 0.9.5.3 installed and working. If a later enRAGE changes something, the parts that need it
   turn off and the log says which.
 - Optional: CasualHookups, for an on-screen night together (see INSTALL, step 4).
+- Optional: the voices need an NVIDIA graphics card with about 4 GB of memory free beside the
+  game and about 8 GB of disk (see the voices section at the top, and INSTALL, step 5).
 
 
 INSTALL
@@ -1226,6 +1311,9 @@ INSTALL
    RealNPCs gives CasualHookups its own chances back from that copy (from the next start; until
    then it holds CasualHookups' Flirt key on every woman), and sets them again when it's back
    on; chances you set on the panel yourself are left alone.
+5. Optional, recommended: the voices. Keep the zip's "voice" folder somewhere permanent, run
+   install-voice.cmd once (about 8 GB, ten minutes; an NVIDIA card), and run
+   start-voice-server.cmd before you play. The section at the top says the rest.
 
 To uninstall, delete RealNPCs.dll. You can also delete the RealNPCs folder in
 Documents if you don't want to keep what people remembered.
