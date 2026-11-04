@@ -78,6 +78,8 @@ namespace EnrageWestworld.InGame
                 float d = p.Position.DistanceTo(me.Position);
                 if (d > 150f)
                     continue;   // later, when they're nearer
+                if (_cfg.RegularsRoutines && PlanNear(p.Position, now))
+                    continue;   // one of enRAGE's habits or funerals due or running near: its own people are left to it (looked at again once it's over: the review)
                 _regChecked.Add(h);
                 if (d < 20f || ENTITY.IS_ENTITY_ON_SCREEN(h) || ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17))
                     continue;   // too close, or in sight: left as the game made them
@@ -86,8 +88,6 @@ namespace EnrageWestworld.InGame
                 uint model = ENTITY.GET_ENTITY_MODEL(h);
                 bool woman = !PED.IS_PED_MALE(h);
                 bool routines = _cfg.RegularsRoutines;
-                if (routines && PlanNear(p.Position, now))
-                    continue;   // one of enRAGE's habits or funerals due or running near: its own people are left to it
                 string spot = null;
                 int hour = 0, fit = -1;
                 Resident r;
@@ -122,7 +122,10 @@ namespace EnrageWestworld.InGame
                     r.Regular = true;
                     r.Outfit = outfit;
                     if (routines)
+                    {
                         Routines.FitNew(r, spot, hour, InnerLife.Weekday, h + "|" + gameNow, Voice.NowYear);   // no devout churchgoer born at the bar at midnight
+                        _engine.ForgetPerson(r.Id);   // MeetResident may have cached their Person before the nudge (the review; as the test cast's Fit)
+                    }
                 }
                 _engine.KeepResident(r, gameNow);
                 _resBind[h] = new ResBind { R = r, Model = model };

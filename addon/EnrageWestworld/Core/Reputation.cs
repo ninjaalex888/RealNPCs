@@ -31,15 +31,17 @@ namespace EnrageWestworld.Core
         }
 
         /// One passer-by's reaction to an outlaw, by nature: stare (the proud, the hot-headed meet his eye), turnaway (the old,
-        /// the timid), stepoff (off his line, then on their way; never someone standing in a scenario), else follow (a look
-        /// that follows him).
+        /// the timid), stepoff (off his line, then on their way), else follow (a look that follows him); someone in a scenario
+        /// only looks (a stare, or a look that follows).
         public static string ToOutlaw(string temper, bool old, bool inScenario, string seed)
         {
             if (temper == "Proud" || temper == "Hothead")
                 return "stare";
+            if (inScenario)
+                return "follow";   // sat, leaning or at their work: a look, never a turn or a step (the review)
             if (old || temper == "Coward")
                 return "turnaway";
-            if (!inScenario && Voice.Hash(seed + "|step") % 100 < 45)
+            if (Voice.Hash(seed + "|step") % 100 < 45)
                 return "stepoff";
             return "follow";
         }

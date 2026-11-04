@@ -93,6 +93,7 @@ namespace EnrageWestworld.InGame
                 return;
             var probe = new StreetProbe { At = now, Handle = h, Type = type, Name = name, Kind = sceneKind, Town = town, Body = moment == "killed" };
             probe.EventId = StreetRaise(type, h);
+            Vector3 me3 = me.Position;
             foreach (Ped p in Peds.All())
             {
                 int ph = p.Handle;
@@ -101,7 +102,7 @@ namespace EnrageWestworld.InGame
                 float d = p.Position.DistanceTo(at);
                 if (d < Street.Metres)
                     probe.Within++;
-                if (d < 30f && !_director.Involves(ph))
+                if (p.Position.DistanceTo(me3) < 40f && !_director.Involves(ph))   // as they stood around the player, where the guard looks (the review)
                 {
                     if (WEAPON.IS_PED_ARMED(ph, 4))
                         probe.ArmedBefore.Add(ph);
@@ -213,6 +214,14 @@ namespace EnrageWestworld.InGame
             return false;
         }
 
+        /// Free to be turned by the street: a bystander we may direct, in no scene, act, talk, nod, walk-up or speech of the add-on's
+        /// own (SightCant's rules, and the holds the sights don't ask: the review).
+        private bool StreetFree(Ped p, Ped me)
+        {
+            int h = p.Handle;
+            return SightCant(p, me) == null && !NotFree(h) && !WalkingUp(h);
+        }
+
         private string StreetNameOf(int h)
         {
             MindWho w = MindKnown(h, Game.GameTime);
@@ -276,6 +285,18 @@ namespace EnrageWestworld.InGame
             int h = p.Handle;
             if (Natives.IsLaw(p))
                 return "law";
+            // the respected first: the counter keepers and the preachers are the game's own u_ models, which the story-model rule below
+            // would turn away (the review: the doctor never counted)
+            PostKind post = PostKindOf(p);
+            if (post != null)
+            {
+                if (Natives.InteriorType(h) != 0)
+                    return null;   // at their counter, not out in the street
+                return post.Kind == "doctor" ? "doctor" : "keeper";
+            }
+            string model = Models.Name(p);
+            if (model != null && (model.IndexOf("preacher", StringComparison.OrdinalIgnoreCase) >= 0 || model.IndexOf("priest", StringComparison.OrdinalIgnoreCase) >= 0))
+                return "preacher";
             if (Natives.StoryModel(p))
                 return null;
             if (_bridge != null && _bridge.EnrageFighter(h))
@@ -289,16 +310,6 @@ namespace EnrageWestworld.InGame
                 if (InnerLife.WorryNow(w.P, _store.LastGameMin / 1440, out worry, out stage, out good) && worry == "law" && stage <= 2)
                     return "outlaw";
             }
-            PostKind post = PostKindOf(p);
-            if (post != null)
-            {
-                if (Natives.InteriorType(h) != 0)
-                    return null;   // at their counter, not out in the street
-                return post.Kind == "doctor" ? "doctor" : "keeper";
-            }
-            string model = Models.Name(p);
-            if (model != null && (model.IndexOf("preacher", StringComparison.OrdinalIgnoreCase) >= 0 || model.IndexOf("priest", StringComparison.OrdinalIgnoreCase) >= 0))
-                return "preacher";
             return null;
         }
 
@@ -314,8 +325,8 @@ namespace EnrageWestworld.InGame
                 if (_repReactors.Count >= Reputation.MostReactors)
                     break;
                 int ph = p.Handle;
-                if (ph == h || !Natives.Bystander(p, me.Handle, IsRecord(ph)) || p.Position.DistanceTo(at) > Reputation.ReactMetres || PED.IS_PED_IN_ANY_VEHICLE(ph, false) ||
-                    _director.Involves(ph) || !MayDirect(p) || Natives.IsLaw(p) || PostKindOf(p) != null || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(ph, h, 17))
+                if (ph == h || p.Position.DistanceTo(at) > Reputation.ReactMetres || PED.IS_PED_IN_ANY_VEHICLE(ph, false) || Natives.IsLaw(p) || !StreetFree(p, me) ||
+                    !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(ph, h, 17))
                     continue;
                 _repReactors.Add(p);
             }
@@ -349,8 +360,7 @@ namespace EnrageWestworld.InGame
                 }
                 else
                 {
-                    string model = Models.Name(r);
-                    bool old = model != null && model.IndexOf("OLD", StringComparison.OrdinalIgnoreCase) >= 0;
+                    bool old = Director.OldModel(r);   // the game's old builds (_m_o_, _f_o_; the review)
                     string act = Reputation.ToOutlaw(temper, old, PED.IS_PED_USING_ANY_SCENARIO(rh), seed);
                     Vector3 away = r.Position - at;
                     away.Z = 0f;

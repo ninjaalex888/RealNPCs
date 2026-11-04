@@ -45,7 +45,7 @@ namespace EnrageWestworld.InGame
             if (!ENTITY.DOES_ENTITY_EXIST(h))
                 return;
             int now = Game.GameTime;
-            StreetShock(dead ? "killed" : "knockedout", h, "brawl", "down|" + h);   // the street reacts as the game's own crowd would (WestworldScript.Street.cs; once per man)
+            string shockKey = "down|" + h + "|" + now / 10000;   // the street's event for him, once per fall (a handle is reused: the time keeps it one man's; the review)
             Ped p = new Ped(h);
             _known.Remove(h);   // the ledger may have him as nobody from before the brawl gave him a name (its 10 s cache)
             Known k = KnownAt(p, now);
@@ -58,6 +58,7 @@ namespace EnrageWestworld.InGame
                 uint cause = PED.GET_PED_CAUSE_OF_DEATH(h);
                 _brawlDownLast = name + " shot or cut down in the fight";
                 Log.Write("BRAWL down: " + name + " lies dead in the fight, by " + (Weapons.Phrase(cause) ?? "a weapon") + ": not a beating (the ledger books it as the game has it)");
+                StreetShock("killed", h, "brawl", shockKey);   // the street reacts as the game's own crowd would (WestworldScript.Street.cs)
                 return;
             }
             // you put him down: the man he was beating is saved, and yours for good (WestworldScript.Saved.cs; Lex, 2026-11-03)
@@ -112,6 +113,7 @@ namespace EnrageWestworld.InGame
             }
             string byName = by != 0 ? (a != null && a.Name != null ? a.Name : MindNameOf(by) ?? "a man") : "nobody in particular";
             _brawlDownLast = name + " " + (fate == "fatal" ? "killed" : "knocked out") + " by " + byName;
+            StreetShock(fate == "fatal" ? "killed" : "knockedout", h, "brawl", shockKey);   // after the fate, not before it (the review): a man we beat to death is a killing to the street, the body after
             if (fate == "fatal")
             {
                 _brawlKilled++;

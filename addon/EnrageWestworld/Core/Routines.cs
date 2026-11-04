@@ -51,7 +51,9 @@ namespace EnrageWestworld.Core
         }
 
         /// The kind of spot a passer-by stands at, from the interior kind the game side reads (null: out of doors): saloon,
-        /// church, hotel (the bath house too), station, store (every other counter), street.
+        /// church, hotel (the bath house too), station, store (the counters: the general store, the gunsmith, the tailor, the
+        /// barber, the fence, the photographer), street; "other" for the bank, the sheriff's, the doctor's, the theatre and
+        /// the stable, which are nobody's routine (the review).
         public static string SpotOf(string interiorKind)
         {
             if (interiorKind == null)
@@ -60,7 +62,8 @@ namespace EnrageWestworld.Core
             {
                 case "saloon": case "church": case "hotel": case "station": return interiorKind;
                 case "bath": return "hotel";
-                default: return "store";
+                case "genstore": case "gunsmith": case "tailor": case "barber": case "fence": case "photo": case "store": return "store";
+                default: return "other";
             }
         }
 
@@ -109,6 +112,9 @@ namespace EnrageWestworld.Core
                 case "station":
                     f = (d == "night") ? 15 : p.Group == "gentry" || p.Group == "town" ? 55 : 40;
                     break;
+                case "other":
+                    f = 40;   // the bank, the sheriff's, the doctor's, the theatre, the stable: anyone, any hour, nobody's habit
+                    break;
                 default:   // the street
                     if (d == "dawn") f = p.EarlyRiser ? 75 : p.NightOwl ? 10 : 25;
                     else if (d == "morning" || d == "midday" || d == "afternoon") f = sundayMorning && p.Churchgoer ? 15 : !p.Indoors ? 80 : p.Shopper ? 60 : 50;
@@ -130,7 +136,7 @@ namespace EnrageWestworld.Core
             int bestFit = 0;
             foreach (string s in Spots)
             {
-                if (s == "hotel" || s == "station")
+                if (s == "hotel" || s == "station" || s == "other")
                     continue;   // nobody's routine is a hotel
                 int f = Fit(p, s, hour, weekday);
                 if (f > bestFit)
@@ -181,6 +187,7 @@ namespace EnrageWestworld.Core
                 case "store": return d == "morning" || d == "dawn" ? "store|morning" : "store|afternoon";
                 case "hotel": return "hotel";
                 case "station": return "station";
+                case "other": return null;   // no thought of a routine there
                 default: return d == "dawn" ? "street|dawn" : d == "morning" ? "street|morning" : d == "midday" || d == "afternoon" ? "street|day" : d == "evening" ? "street|evening" : "street|night";
             }
         }

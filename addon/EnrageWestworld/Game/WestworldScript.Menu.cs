@@ -1199,9 +1199,8 @@ namespace EnrageWestworld.InGame
                 if (h == a.Handle || h == me.Handle || !p.Exists() || ENTITY.IS_ENTITY_DEAD(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false))
                     continue;
                 float d = p.Position.DistanceTo(a.Position);
-                if (d >= bestD || !ENTITY.IS_ENTITY_ON_SCREEN(h) || !Natives.Bystander(p, me.Handle, IsRecord(h)) || !IsGrownUp(p) || Natives.StoryModel(p) || PostKindOf(p) != null ||
-                    _director.Involves(h) || !MayDirect(p) || InTalk(h))
-                    continue;
+                if (d >= bestD || !ENTITY.IS_ENTITY_ON_SCREEN(h) || !IsGrownUp(p) || Natives.StoryModel(p) || !StreetFree(p, me))
+                    continue;   // free of the game's states and the add-on's own holds (WestworldScript.Street.cs)
                 MindWho w = MindKnown(h, now);
                 if (w == null || w.Id == null || w.Name == null || w.Id == aId)
                     continue;
