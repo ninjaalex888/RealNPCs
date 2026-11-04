@@ -1,4 +1,4 @@
-RealNPCs 0.7.23 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.24 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -130,6 +130,27 @@ Set it up once:
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
 
+
+NEW IN 0.7.24
+-------------
+Smoother: the memory of people is saved every ten minutes in play instead of every minute
+(still at every fade, load and fast travel), and enRAGE's people are read a few each frame
+instead of all at once, so the hitch about once a minute and the smaller one every five
+seconds should be gone.
+Lighter on the graphics card: the AI model as it comes is llama3.2:3b, about 2.3 GB of the
+card instead of about 5. Settings on the old llama3.1:8b move to it, and the 8B keeps being
+used until you run: ollama pull llama3.2:3b. Ollama gives the card back five minutes after
+the last answer. The voice pack keeps its model on a card of 12 GB or more, so a line after
+a quiet spell doesn't wait for it to come back.
+One name for each person: RealNPCs takes the name enRAGE gives the people near you (on its
+card and its lock-on prompt), so the scenes, the Nearby line and the name cards agree. A few
+people enRAGE knew from before can still carry two names; the next version settles them.
+People RealNPCs makes, like a relative who walks up to you, are handed back to the game once
+they have said their piece: you can lock on to them, and greet, antagonize or rob them.
+Brawls grow more readily ([World] Bravery 85 now brings more onlookers in), and onlookers may
+flee a fistfight instead of freezing where they stand.
+1899's thoughts may name Roosevelt (the Rough Rider, governor of New York) and the telephone,
+both real that year.
 
 NEW IN 0.7.23
 -------------

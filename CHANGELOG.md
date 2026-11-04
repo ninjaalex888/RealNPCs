@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.7.24 (2026-11-04)
 
 - **Brawls escalate more easily, and people may flee from them** (`[World] Bravery`; settings version 248; Lex, 2026-11-04: "if we can have the brawls escalate easier but if some NPCs want to flee, that is okay"). Bravery 85, where it comes, now adds a tenth to every onlooker's pull to join a fistfight (in the offline test about three and a half times as many strangers step in); 50 is how they joined before; 0, only a fighter's friend or foe. The fighters no longer carry the combat setting that stopped anyone fleeing from them, which left frightened onlookers cowering where they stood; they keep the one the game's own street fights use, so a fistfight still doesn't empty the street.
 - **Fewer hitches: the save every ten minutes, and enRAGE's people read a few at a time** (Lex, 2026-11-04: "Yes we can save less often, we could even do every 10 minutes"). The memory of people was saved once a minute in play, a 22-26 ms frame each time; now every ten minutes in play, and still within 20 s at any fade, load or fast travel, so a crash in play can lose up to ten minutes of what people remember. Reading enRAGE's people every five seconds took 9-12 ms in one frame; now about 1.5 ms a frame over several frames, and the add-on sees them all together as before (log `OBSERVE enRAGE's people read a slice a frame: N people over M frames`).
