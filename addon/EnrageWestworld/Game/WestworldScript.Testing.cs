@@ -436,6 +436,9 @@ namespace EnrageWestworld.InGame
                         return "nobody 3-16 m off to glitch";
                     skipped = "the 7-15 minutes between glitches";
                     return null;
+                case "wagon":
+                    skipped = "nothing: the probe runs on the nearest wagon out of view";
+                    return WagonProbeStart(now);   // WestworldScript.Wagon.cs (item 26)
                 case "arthur":
                     skipped = "the moment itself and the 20 s between";
                     return ArthurTest(now);   // WestworldScript.ArthurLines.cs
