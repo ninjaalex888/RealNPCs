@@ -454,6 +454,74 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        // One name for one body (Lex, 2026-11-04: "Let's go with your suggestion for matching the names": enRAGE's name
+        // everywhere). enRAGE names the people near you for its lock-on prompt (its _named list, Bridge.EnrageNameAt), often
+        // without taking them up as its own; the scenes said that name (ShownName) while the card, the minds and the ledgers
+        // said our resident's: a brawl and the Nearby line called a man Malachi Kidd (enRAGE's prompt) whose card and thoughts
+        // said Per Nilsson (ours), 2026-11-04 13:35. ReconcileName settles a body only once enRAGE has taken someone up there,
+        // so his never was. Now our resident takes enRAGE's name the moment any part of the add-on looks them up (ResidentOf)
+        // or names them (ShownName), everywhere we keep it (Store.Rename). The one exception: someone you have already met
+        // under our name (talked, greeted, flirted) keeps it, and ours is written into enRAGE's list instead
+        // (Bridge.RenameNamedAt, as for someone enRAGE takes up), so a name you've learned never changes in front of you.
+        // Each body is looked at once in NameSettleGapMs at most (a reflection read of enRAGE's list).
+        private readonly Dictionary<int, int> _nameSettleAt = new Dictionary<int, int>();   // body -> when it may be looked at again
+        private const int NameSettleGapMs = 2000;
+        private int _namesTaken, _namesGiven;
+
+        /// The name this resident goes by now that enRAGE has named the body: enRAGE's (ours renamed to it), or ours (written
+        /// into enRAGE's list: someone you've met). Null: nothing settled (no enRAGE name, the same name, looked at just now).
+        private string SettleName(int h, Resident r)
+        {
+            if (r == null || h == 0 || string.IsNullOrEmpty(r.Name) || _bridge == null || !_bridge.Present || _store == null)
+                return null;
+            int now = Game.GameTime, next;
+            if (_nameSettleAt.TryGetValue(h, out next) && now < next && next - now <= NameSettleGapMs)
+                return null;
+            if (_nameSettleAt.Count > 500)
+                _nameSettleAt.Clear();
+            _nameSettleAt[h] = now + NameSettleGapMs;
+            string theirs = _bridge.EnrageNameAt(h);
+            if (string.IsNullOrWhiteSpace(theirs) || theirs == r.Name)
+                return null;
+            string ours = r.Name;
+            try
+            {
+                if (MetUnderOurs(h, r))
+                {
+                    if (!_bridge.RenameNamedAt(h, ours))
+                        return null;
+                    _namesGiven++;
+                    Log.Write("NAME " + ours + " (you know this name) was " + theirs + " on enRAGE's prompt: the prompt says " + ours + " now");
+                    return ours;
+                }
+                r.Name = theirs;
+                int changed = 1 + _store.Rename(r.Id, theirs);
+                MindWho w;
+                if (_mindWho.TryGetValue(h, out w) && w.Name == ours)
+                    w.Name = theirs;   // the mind's note of them too, until it looks them up again
+                KeyValuePair<string, int> noted;
+                if (_nameAtGreet.TryGetValue(h, out noted) && noted.Key == ours)
+                    _nameAtGreet[h] = new KeyValuePair<string, int>(theirs, noted.Value);   // the greet's own settling (KeepNameAtGreet) keeps this name, not the old one
+                _namesTaken++;
+                Log.Write("NAME " + ours + " goes by " + theirs + ", enRAGE's name for the body, everywhere (" + changed + " records)");
+                return theirs;
+            }
+            catch (Exception ex)
+            {
+                Log.Write("NAME couldn't settle " + ours + "'s name: " + ex.Message);
+                return null;
+            }
+        }
+
+        /// Whether you know this resident by our name: talked, told their name, flirted, any contact, they spoke up to you,
+        /// or you greeted them lately (the card's "met").
+        private bool MetUnderOurs(int h, Resident r)
+        {
+            PersonState st = _store.Find(r.Id);
+            int greetedAt;
+            return (st != null && (st.Talks > 0 || st.KnowsName || st.Flirts > 0 || st.ContactAt > 0 || st.LastRemarkAt > 0)) || _greetedAt.TryGetValue(h, out greetedAt);
+        }
+
         private bool NameCardFillInner(Ped p, NameCard c, bool everyone)
         {
             int h = p.Handle;

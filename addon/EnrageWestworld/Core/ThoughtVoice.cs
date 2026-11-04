@@ -103,7 +103,7 @@ namespace EnrageWestworld.Core
         {
             var b = new StringBuilder(1536);
             b.Append("{\"model\":").Append(Language.JsonString(model)).Append(",\"system\":").Append(Language.JsonString(Brief(r))).Append(",\"prompt\":").Append(Language.JsonString(Prompt(r)));
-            b.Append(",\"stream\":false,\"keep_alive\":\"30m\",\"options\":{\"num_ctx\":1536,\"temperature\":").Append(0.4.ToString("0.00", CultureInfo.InvariantCulture))
+            b.Append(",\"stream\":false,\"keep_alive\":\"" + Language.KeepAlive + "\",\"options\":{\"num_ctx\":1536,\"temperature\":").Append(0.4.ToString("0.00", CultureInfo.InvariantCulture))
              .Append(",\"num_predict\":4,\"stop\":[\"\\n\"]}}");
             return b.ToString();
         }

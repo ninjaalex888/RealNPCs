@@ -1646,7 +1646,7 @@ namespace EnrageWestworld.InGame
         private string ModelName()
         {
             IniEntry m = _ours != null ? _ours.FindKey("LanguageModel") : null;
-            return m != null && m.Value.Trim().Length > 0 ? m.Value.Trim() : "llama3.1:8b";
+            return m != null && m.Value.Trim().Length > 0 ? m.Value.Trim() : EnrageWestworld.Core.Language.DefaultModel;
         }
 
         /// The AI MODEL (OLLAMA) switch: three rows high, gold, ON or OFF large on the right, the status beside the name, a

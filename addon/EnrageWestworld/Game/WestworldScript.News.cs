@@ -170,18 +170,27 @@ namespace EnrageWestworld.InGame
             if (handle != 0 && ours != null && enrages != ours)
             {
                 uint model = ENTITY.GET_ENTITY_MODEL(handle), seen;
+                ResBind b;
+                bool bound = _resBind.TryGetValue(handle, out b) && b != null && b.R != null && b.R.Name == ours && b.Model == model;
                 if (!_nameReconciled.TryGetValue(handle, out seen) || seen != model)
                 {
                     if (_nameReconciled.Count > 400)
                         _nameReconciled.Clear();
                     _nameReconciled[handle] = model;
-                    ResBind b;
-                    if (_resBind.TryGetValue(handle, out b) && b != null && b.R != null && b.R.Name == ours && b.Model == model)
+                    if (bound)
                     {
                         string settled = ReconcileName(handle, _bridge.AcquaintanceAt(handle), ours);
                         if (settled != null)
                             return settled;
                     }
+                }
+                if (bound)
+                {
+                    // enRAGE named the body for its prompt without taking anyone up there (ReconcileName had nobody to settle
+                    // with): our resident takes that name, or, met under ours, gives it (SettleName; Lex, 2026-11-04)
+                    string settled = SettleName(handle, b.R);
+                    if (settled != null)
+                        return settled;
                 }
             }
             return enrages;

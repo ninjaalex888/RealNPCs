@@ -231,7 +231,8 @@ namespace EnrageWestworld.InGame
                         continue;
                     }
                     var sw = Stopwatch.StartNew();
-                    string json = LanguagePost(_cfg.LanguageUrl + "/api/generate", ask.Request.Kind == "say" ? ThoughtVoice.Body(_cfg.LanguageModel, ask.Request) : ask.Request.Kind == "talk" ? Language.TalkBody(_cfg.LanguageModel, ask.Request) : ask.Request.Kind == "free" ? Language.FreeBody(_cfg.LanguageModel, ask.Request) : pick ? Language.PickBody(_cfg.LanguageModel, ask.Request) : Language.RequestBody(_cfg.LanguageModel, ask.Request));
+                    string model = LanguageModelInUse;   // the settings' model, or the 8B while the new default isn't pulled (LanguageCheckServer)
+                    string json = LanguagePost(_cfg.LanguageUrl + "/api/generate", ask.Request.Kind == "say" ? ThoughtVoice.Body(model, ask.Request) : ask.Request.Kind == "talk" ? Language.TalkBody(model, ask.Request) : ask.Request.Kind == "free" ? Language.FreeBody(model, ask.Request) : pick ? Language.PickBody(model, ask.Request) : Language.RequestBody(model, ask.Request));
                     sw.Stop();
                     string answer = Language.ParseResponse(json);
                     if (pick)
@@ -265,7 +266,13 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// GET the server's model list: ready when it answers and holds the model named in the settings.
+        // the model asked: the settings' own, or llama3.1:8b while the new default (llama3.2:3b) isn't pulled but the 8B is
+        // (Language.ModelToUse; Lex, 2026-11-04); set by the server check on the worker thread, read when a request is made
+        private volatile string _langModelInUse;
+        private string LanguageModelInUse { get { return _langModelInUse ?? _cfg.LanguageModel; } }
+
+        /// GET the server's model list: ready when it answers and holds the model named in the settings (or the 8B in the
+        /// new default's place, until that's pulled).
         private void LanguageCheckServer()
         {
             _langChecks++;
@@ -280,15 +287,17 @@ namespace EnrageWestworld.InGame
                 using (var reader = new StreamReader(resp.GetResponseStream(), Encoding.UTF8))
                 {
                     string body = reader.ReadToEnd();
-                    string model = _cfg.LanguageModel;
-                    bool has = body.IndexOf("\"name\":\"" + model + "\"", StringComparison.Ordinal) >= 0 ||
-                               (model.IndexOf(':') < 0 && body.IndexOf("\"name\":\"" + model + ":", StringComparison.Ordinal) >= 0);
+                    string model = _cfg.LanguageModel, note;
+                    string use = Language.ModelToUse(body, model, out note);
+                    bool has = use != null;
                     if (has)
                     {
+                        bool changed = use != _langModelInUse;
+                        _langModelInUse = use;
                         _langReady = true;
-                        _langServer = "ready (" + model + ")";
-                        if (!was)
-                            Log.Write("LANGUAGE server ready at " + _cfg.LanguageUrl + " with " + model);
+                        _langServer = "ready (" + use + (note != null ? ", in place of " + model + " until it's pulled" : "") + ")";
+                        if (!was || changed)
+                            Log.Write("LANGUAGE server ready at " + _cfg.LanguageUrl + " with " + use + (note != null ? ": " + note : ""));
                     }
                     else
                     {

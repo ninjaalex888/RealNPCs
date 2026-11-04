@@ -245,6 +245,38 @@ namespace EnrageWestworld.Core
 
     public static partial class Language
     {
+        // The model and the graphics card (Lex, 2026-11-04, answering on VRAM: "Yes for now" to a smaller default that leaves
+        // the card sooner). Players' cards filled: the game, the 8B model (about 5 GB) and the voice pack (about 2 GB) together,
+        // and a card that runs out pushes the game's own textures off it, which stutters. So the model as it comes is the 3B
+        // (about 2 GB), and Ollama is asked to give the card back after five minutes without a request (thirty before).
+        public const string DefaultModel = "llama3.2:3b", OldDefaultModel = "llama3.1:8b";
+        public const string KeepAlive = "5m";
+
+        /// Whether Ollama's model list (/api/tags) holds this model; a name with no tag matches any tag of it.
+        public static bool ModelHeld(string tagsJson, string model)
+        {
+            if (string.IsNullOrEmpty(tagsJson) || string.IsNullOrEmpty(model))
+                return false;
+            return tagsJson.IndexOf("\"name\":\"" + model + "\"", StringComparison.Ordinal) >= 0 ||
+                   (model.IndexOf(':') < 0 && tagsJson.IndexOf("\"name\":\"" + model + ":", StringComparison.Ordinal) >= 0);
+        }
+
+        /// The model to ask: the one the settings name when Ollama holds it; while the new default (the 3B) isn't pulled yet
+        /// but the old one (the 8B) is, the 8B, so moving players to the smaller default never silences their AI (note says
+        /// so, with the command to pull it); else null (nothing held to ask).
+        public static string ModelToUse(string tagsJson, string configured, out string note)
+        {
+            note = null;
+            if (ModelHeld(tagsJson, configured))
+                return configured;
+            if (string.Equals(configured, DefaultModel, StringComparison.OrdinalIgnoreCase) && ModelHeld(tagsJson, OldDefaultModel))
+            {
+                note = DefaultModel + " isn't pulled yet, so " + OldDefaultModel + " is used until it is (ollama pull " + DefaultModel + "; it takes about 2 GB of the card where the 8B takes 5)";
+                return OldDefaultModel;
+            }
+            return null;
+        }
+
         /// An answer as the model gives it, made fit for the check: outer quotation marks off, a trailing stop kept, one
         /// line of it (the first; a second paragraph is the model talking on), whitespace tidied.
         public static string Tidy(string answer)
@@ -268,7 +300,7 @@ namespace EnrageWestworld.Core
         {
             var b = new StringBuilder(1024);
             b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(Brief(r))).Append(",\"prompt\":").Append(JsonString(Prompt(r)));
-            b.Append(",\"stream\":false,\"keep_alive\":\"30m\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append(temperature.ToString("0.00", CultureInfo.InvariantCulture))
+            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append(temperature.ToString("0.00", CultureInfo.InvariantCulture))
              .Append(",\"num_predict\":").Append(maxTokens).Append(",\"stop\":[\"\\n\\n\"]}}");
             return b.ToString();
         }

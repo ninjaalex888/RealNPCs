@@ -280,6 +280,14 @@ def load_model():
             log("warmed up in %.1f s" % (time.time() - t))
         except Exception as e:
             log("warm-up failed:", repr(e)[:200])
+        if ARGS.idle_seconds is None:
+            # as it comes (Lex, 2026-11-04: "Yes, good suggestion for voice pack"): on a card of 12 GB or more the voices stay
+            # on it while you play, so a line after a quiet spell never waits for the model to come back (moving 2-3 GB back
+            # onto a nearly full card was a hitch of its own); on a smaller card they leave after a quiet minute, as before
+            total = card_total_gib()
+            ARGS.idle_seconds = 0.0 if total >= KEEP_ON_CARD_GIB else 60.0
+            if ARGS.device == "cuda":
+                log("the card has %.1f GB: the voices %s" % (total * 1.073741824, "stay on it while you play (12 GB or more)" if ARGS.idle_seconds == 0 else "leave it after a quiet minute and come back for the next line (under 12 GB)"))
         if ARGS.device == "cuda":
             NEED_GB = round(torch.cuda.memory_reserved() / 1e9 + 0.3, 2)   # what a return to the card needs free
             card_tidy()
@@ -290,6 +298,21 @@ def load_model():
     except Exception as e:  # the mod sees "not ready" and stays with its own voices
         LOAD_ERROR = repr(e)
         log("model failed to load:", LOAD_ERROR)
+
+
+# a 12 GB card reports about 12 GiB of memory; a little under that, so every 12 GB card counts as one
+KEEP_ON_CARD_GIB = 11.5
+
+
+def card_total_gib():
+    """The whole card's memory in GiB (0 off the card or when it can't be read: the voices then leave it when quiet)."""
+    if ARGS.device != "cuda":
+        return 0.0
+    try:
+        import torch
+        return torch.cuda.get_device_properties(0).total_memory / float(1 << 30)
+    except Exception:
+        return 0.0
 
 
 def card_gb():
@@ -991,7 +1014,7 @@ def main():
     ap.add_argument("--thought-gain", type=float, default=0.6, help="a thought's loudness against a said line")
     ap.add_argument("--grace", type=float, default=4.0, help="seconds past its wait a made line may still start")
     ap.add_argument("--turbo", action="store_true", help="Chatterbox Turbo (faster; its own download)")
-    ap.add_argument("--idle-seconds", type=float, default=60.0, help="after this long with nobody speaking the model leaves the card (about 3 GB back to the game) and returns for the next line in under a second; 0 keeps it on the card")
+    ap.add_argument("--idle-seconds", type=float, default=None, help="after this long with nobody speaking the model leaves the card (about 3 GB back to the game) and returns for the next line in under a second; 0 keeps it on the card. Left out: kept on a card of 12 GB or more, given back after 60 s on a smaller one")
     ap.add_argument("--half", dest="half", action="store_true", default=HALF_DEFAULT, help="the Llama backbone in half precision: a gigabyte less of the card while the voices are on it")
     ap.add_argument("--full", dest="half", action="store_false", help="the backbone in full precision (as 0.7.18's test builds)")
     ap.add_argument("--capture-snr", type=float, default=12.0, help="a clip recorded in game is kept when it stands this many dB over the sound around it")

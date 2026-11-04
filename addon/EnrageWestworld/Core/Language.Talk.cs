@@ -178,7 +178,7 @@ namespace EnrageWestworld.Core
         {
             var b = new StringBuilder(1024);
             b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(FreeBrief(r))).Append(",\"prompt\":").Append(JsonString(FreePrompt(r)));
-            b.Append(",\"stream\":false,\"keep_alive\":\"30m\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append(0.7.ToString("0.00", CultureInfo.InvariantCulture))
+            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append(0.7.ToString("0.00", CultureInfo.InvariantCulture))
              .Append(",\"num_predict\":60,\"stop\":[\"\\n\"]}}");
             return b.ToString();
         }
@@ -188,7 +188,7 @@ namespace EnrageWestworld.Core
         {
             var b = new StringBuilder(1024);
             b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(TalkBrief(r))).Append(",\"prompt\":").Append(JsonString(TalkPrompt(r)));
-            b.Append(",\"stream\":false,\"keep_alive\":\"30m\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append(0.6.ToString("0.00", CultureInfo.InvariantCulture))
+            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append(0.6.ToString("0.00", CultureInfo.InvariantCulture))
              .Append(",\"num_predict\":48,\"stop\":[\"\\n\"]}}");
             return b.ToString();
         }

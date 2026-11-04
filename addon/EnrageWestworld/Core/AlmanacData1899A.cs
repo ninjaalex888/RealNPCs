@@ -2,7 +2,8 @@
 // could be in the papers; 0: the month), where it mattered most (null the nation; west, high, south, world), how big
 // (1-3), the kind, the paper's headline, the paper's sentence, and what one person thinks or says of it. The wording is
 // this add-on's own; the facts and the dates are the year's. The lines keep to the harnesses' rules (110 characters,
-// each naming its subject; in 1899 no telephone, no moving pictures, and the governor is "Teddy" in people's mouths).
+// each naming its subject; in 1899 no moving pictures; the governor is Roosevelt or "Teddy" in people's mouths, both of
+// them let into 1899's thoughts on 2026-11-04 with the telephone: Lex, "let all of these real 1899 thoughts in").
 namespace EnrageWestworld.Core
 {
     public static partial class Almanac
@@ -16,7 +17,7 @@ namespace EnrageWestworld.Core
               "We own Cuba now, near enough. A year ago it was Remember the Maine. Things move fast with a navy."),
             E("rooseveltgov", 1899, 1, 2, null, 2, "politics", "ROOSEVELT TAKES THE OATH AT ALBANY",
               "Colonel Roosevelt of the Rough Riders was sworn in as Governor of New York, six months after the hill at Santiago.",
-              "Teddy's governor of New York now. Last summer he was charging up a hill. The man don't sit still.",
+              "Roosevelt's governor of New York now. Last summer he was charging up a hill. The man don't sit still.",
               "They made the Rough Rider a governor. I'd like to see Platt's bosses tell that one what to do."),
             E("manhoe", 1899, 1, 16, null, 2, "life", "A POEM THAT HAS THE COUNTRY ARGUING",
               "A teacher named Markham printed a poem in a San Francisco paper about a man bowed over a hoe, and every paper in the land has copied it.",

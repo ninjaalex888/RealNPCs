@@ -1462,6 +1462,7 @@ namespace EnrageWestworld.InGame
             public uint Model;   // the body's model at the pick: a handle the game reused for someone else is seen
             public int Since, Until, LastOrder, Said, Reorders;
             public bool Spawned; // made for the part (nobody free on the street): let go to the game when they have spoken
+            public bool Named;   // their name written into enRAGE's list for the body (its lock-on prompt), so the prompt says it too
             public int Pending;  // the walk order still to send (the body was let go of a scenario first), 0 none
             public float LastDist, StartDist;
             public bool Test;
@@ -1484,6 +1485,12 @@ namespace EnrageWestworld.InGame
         private int _kinNotBefore, _kinWalks, _kinArrived, _kinGaveUp;
         private string _kinLast, _kinWhyNot;
         private const int KinLookMs = 10000, KinWalkMs = 30000, KinReorderMs = 4000, KinFirstMs = 120000;
+        // A body made for the part is handed to the game this long after they start speaking (Lex, 2026-11-04: "hand them back
+        // to the game after they complete what they were made for, until we can eventually control the NPCs for longer and
+        // better"). While the add-on holds a body it made, the game offers no lock-on for it: Lex couldn't lock on to Anna
+        // Riordan for the eight seconds she was held after speaking (13:13:12-13:13:20), and a lock-on came up the second she was
+        // let go. 2.5 s: turned to him and started; the rest of what they say plays on as the game has them.
+        private const int KinSpokenMs = 2500, KinStandByMs = 8000;
         private const float KinNear = 3.2f, KinFar = 18f;
 
         private void CastTick(int now)
@@ -1802,6 +1809,8 @@ namespace EnrageWestworld.InGame
                 KinEnd(w, now, "the body is gone (the handle is someone else's now)");
                 return;
             }
+            if (w.Spawned && !w.Named && _bridge.Present)
+                w.Named = KinNameToEnrage(w, h);   // enRAGE names a body near you for its prompt: the relative's own name, one name
             if (w.Said == 0 && !_casts.ContainsKey(h))
             {
                 w.Said = now;   // the player greeted them first (GreetedSpecial took them, and they spoke)
@@ -1886,15 +1895,35 @@ namespace EnrageWestworld.InGame
                 }
                 return;
             }
-            if (now - w.Said > 8000)
+            if (now - w.Said > (w.Spawned ? KinSpokenMs : KinStandByMs))
             {
                 if (w.Spawned)
-                    Spawner.Release(w.Ped, false);   // made for the part: handed to the game, which clears them out of sight
+                {
+                    if (!w.Named && _bridge.Present)
+                        KinNameToEnrage(w, h);   // once more, in case enRAGE named the body just now
+                    Spawner.Release(w.Ped, false);   // made for the part: handed to the game (lock-on and all), which clears them out of sight
+                }
                 else if (!_director.Involves(h))
                     TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // said their piece; goes about their day (unless a scene has them now)
                 _casts.Remove(h);
                 _kinWalk = null;
             }
+        }
+
+        /// The relative's name written over the one enRAGE gave the body for its lock-on prompt (Bridge.RenameNamedAt), so the
+        /// prompt, the card and the captions say one name; true when enRAGE had named the body and took ours. Once the body is
+        /// handed back, a resident of ours bound to it takes that name too (SettleName).
+        private bool KinNameToEnrage(KinWalk w, int h)
+        {
+            string theirs = _bridge.EnrageNameAt(h);
+            if (theirs == null)
+                return false;   // not named by enRAGE yet: tried again next step
+            if (theirs == w.R.Name)
+                return true;
+            bool done = _bridge.RenameNamedAt(h, w.R.Name);
+            if (done)
+                Log.Write("NAME " + w.R.Name + " (made for the part): enRAGE's prompt called the body " + theirs + "; it says " + w.R.Name + " now");
+            return done;
         }
 
         /// They reached the player (or he greeted them first): counted, and the town's day and the relative's week noted.

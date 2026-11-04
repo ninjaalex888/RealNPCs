@@ -18,7 +18,7 @@ A mod for Red Dead Redemption 2 that gives the people of the world lives of thei
 
 **How it works.** Each voice is cloned on your own PC, by the open-source Chatterbox model, from the game's own recording of that person's voice, and those recordings come from your own game: someone whose voice has no clip yet says one of the game's own lines once, in a quiet moment as you meet them, and the server records it off your PC's sound and keeps it (`[Mind] VoiceRecord`, on). A clearer recording later replaces a weaker one, another voice too near spoils a clip and it's recorded again another time, and a person whose model has several voice banks is given one for good, by who they are. Nothing of the game's audio ships with RealNPCs, and nothing leaves your PC. One voice plays at a time, louder near and from the side the speaker stands on, within 14 m (`[Mind] VoiceMetres`); `VoiceVolume` (100). The game's own recorded remark, where one plays, still plays.
 
-**What you need:** an NVIDIA graphics card with about 3 GB of memory free beside the game while someone speaks (with the AI model running too, about 8 GB free: a 16 GB card does both; a 12 GB card does one or the other), about 8 GB of disk, and a one-time setup of about ten minutes. Without the voice server nothing changes: the switches are on as they come, and nothing is heard until it answers (the log says so once).
+**What you need:** an NVIDIA graphics card with about 3 GB of memory free beside the game (with the AI model running too, about 5.5 GB free with the model as it comes: a 16 GB card does both with room to spare, a 12 GB card both at medium settings), about 8 GB of disk, and a one-time setup of about ten minutes. Without the voice server nothing changes: the switches are on as they come, and nothing is heard until it answers (the log says so once).
 
 **Set it up once:**
 
@@ -27,7 +27,7 @@ A mod for Red Dead Redemption 2 that gives the people of the world lives of thei
 3. Before you play, double-click `start-voice-server.cmd` and leave its window open. It takes about 15 seconds to load the model, then says it's listening.
 4. Play. People are recorded as you meet them, so the first voices come after a few minutes in a town; F7's `TEST voice:` line and the server's window (and `voice-server.log` beside it) say what it's doing.
 
-**What to expect, honestly:** a line takes a second or two to make, and the words wait for it; the clips are recorded off the street, so a voice can carry a little of the sound around the person it was recorded from (the server cleans it, and re-records a better one when it can); the voice server holds about 2.5 GB of your card while people are speaking and gives it back to the game after a minute with nobody speaking (the next line brings it back in under a second; `--idle-seconds 0` in `start-voice-server.cmd` keeps it on the card, `--full` runs the voice model in full precision, 3.5 GB, if the voices sound off), and 2.5 GB of system memory. To turn it off, `[Mind] VoicedThoughts` and `VoicedDialogue` on the settings panel's Mind page, or close the server's window.
+**What to expect, honestly:** a line takes a second or two to make, and the words wait for it; the clips are recorded off the street, so a voice can carry a little of the sound around the person it was recorded from (the server cleans it, and re-records a better one when it can); the voice server holds about 2.5 GB of your card: on a card of 12 GB or more it keeps it while you play, so a line never waits for the model to come back; on a smaller card it gives it back to the game after a minute with nobody speaking (the next line brings it back in under a second; `--idle-seconds 0` in `start-voice-server.cmd` keeps it on any card, `--idle-seconds 60` gives a big card back too, `--full` runs the voice model in full precision, 3.5 GB, if the voices sound off), and 2.5 GB of system memory. To turn it off, `[Mind] VoicedThoughts` and `VoicedDialogue` on the settings panel's Mind page, or close the server's window.
 
 ## Optional, recommended: the free local AI model
 
@@ -45,21 +45,21 @@ If your card does have room, **install the free local AI model to get the most o
 
 It runs on your own graphics card through [Ollama](https://ollama.com): nothing is sent anywhere, and there's no account and no cost. Everything the model writes is checked first (length, names it wasn't given, modern words). When it's slow or a line fails the checks, the written line is used instead, so the game never waits on it. It's still in testing, so expect the odd strange line.
 
-**What you need, only if you add the model:** a graphics card with about 5 GB of memory free beside RDR2 (a 12 GB card or more; RealNPCs is developed on a 16 GB card), and about 5 GB of disk space.
+**What you need, only if you add the model:** a graphics card with about 2.5 GB of memory free beside RDR2 for the model as it comes, `llama3.2:3b` (a 10 GB card or more; RealNPCs is developed on a 16 GB card), and about 2 GB of disk space. `llama3.1:8b` words a little better and needs about 5.5 GB free and 5 GB of disk.
 
 | Graphics card memory | With the model (RDR2 on medium settings) |
 |---|---|
-| **12 GB or more** (e.g. RTX 3060 12 GB, 4070, RX 6700 XT) | Recommended: the game and the model fit with room to spare. |
-| **10 GB** (e.g. RTX 3080 10 GB) | Workable at medium settings at 1080p; tight at higher settings. |
+| **12 GB or more** (e.g. RTX 3060 12 GB, 4070, RX 6700 XT) | Recommended: the game and the model fit with room to spare, the voice pack too. |
+| **10 GB** (e.g. RTX 3080 10 GB) | Workable with the model as it comes at medium settings at 1080p; tight at higher settings. |
 | **8 GB or less** | Too tight for the model beside the game: play without it. Everything still works. |
 | **No room to spare** | RealNPCs runs fully on its own written lines. |
 
-The model itself takes about 5 GB of graphics memory and 5 GB of disk. A slower card can still run it: answers just come a little later (under half a second on a fast card, about a second or more on a mid-range one), and any answer that comes too late (after two to three seconds) gives way to RealNPCs' own line or choice, so the game never waits for it.
+The model as it comes, `llama3.2:3b`, takes about 2.3 GB of graphics memory and 2 GB of disk (`llama3.1:8b` about 5 GB of each), and Ollama gives the card back after five minutes with nothing asked. A slower card can still run it: answers just come a little later (under half a second on a fast card, about a second or more on a mid-range one), and any answer that comes too late (after two to three seconds) gives way to RealNPCs' own line or choice, so the game never waits for it.
 
 **Set it up once:**
 
 1. Install Ollama from [ollama.com/download](https://ollama.com/download) and leave it running (it sits in the system tray).
-2. Open a Command Prompt and run `ollama pull llama3.1:8b` (a 4.9 GB download).
+2. Open a Command Prompt and run `ollama pull llama3.2:3b` (a 2 GB download). Already have `llama3.1:8b` from an older RealNPCs? It's used until you pull the 3B; to keep the 8B for good, set `LanguageModel = llama3.1:8b` under `[Mind]` in `RealNPCs.ini`.
 3. Start the game. RealNPCs finds Ollama and the model by itself and turns the AI model on, with a one-time notice saying so. Within a few seconds, people near you start thinking in the model's words.
 4. To check it's working, open the settings panel (Alt+F): **AI MODEL (OLLAMA)** at the top of the Essentials page shows whether it's on and answering. Turn it off there whenever you like; once you've turned it off, RealNPCs leaves it off.
 

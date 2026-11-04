@@ -1,7 +1,7 @@
 // The almanac's everyday talk of 1899 (Core/Almanac.cs): what Americans were talking about all that year, with no date
 // to it. The prices and the catalogue, the wheel and the horseless carriage, the phonograph, the songs and the books,
-// the medicines, the trusts, the old names of the West and where they'd got to. Month 0: known all year. (No telephone:
-// this world's 1899 has the wire, not the voice.)
+// the medicines, the trusts, the old names of the West and where they'd got to. Month 0: known all year. The telephone
+// came in on 2026-11-04 (Lex: "let all of these real 1899 thoughts in"): the big towns have it, the small ones hear of it.
 namespace EnrageWestworld.Core
 {
     public static partial class Almanac
@@ -320,7 +320,12 @@ namespace EnrageWestworld.Core
             E("hottime", 1899, 0, 0, null, 1, "life", "THE ROUGH RIDERS' SONG",
               "A Hot Time in the Old Town Tonight, the song the Rough Riders sang going up the hill, is still the tune every band strikes up when the flag goes by.",
               "The band plays Hot Time whenever the flag comes past. The Rough Riders sang it in Cuba. A national anthem now.",
-              "There'll be a hot time in the old town tonight. Three years old, and the boys still sing it like it's new.")
+              "There'll be a hot time in the old town tonight. Three years old, and the boys still sing it like it's new."),
+            E("telephone", 1899, 0, 0, null, 1, "life", "THE TELEPHONE SPREADS",
+              "With the Bell patents run out, new companies are stringing telephone wire into the small towns and along the farm roads, and a girl at the exchange puts the calls through.",
+              "Telephone wire's going up along the farm roads back East. Next they'll be ringing the cows home.",
+              "Saint Denis has telephones in the big houses. A man can be rude to his neighbour without leaving his chair.",
+              "Talked into a telephone once in Saint Denis. A girl at the exchange put me through. Felt a fool, shouting.")
         };
     }
 }

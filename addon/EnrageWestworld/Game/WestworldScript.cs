@@ -288,11 +288,18 @@ namespace EnrageWestworld.InGame
 			SavedLater(gameTime);   // someone you saved whom enRAGE hadn't taken up, tried again (WestworldScript.Saved.cs)
 			Insults(gameTime);
 			StepEnd("greets and events (step)", pt, pd);
-			if (gameTime >= _nextObserve)
+			if (_obsQueue != null)
+			{
+				pt = StepBegin(out pd);
+				ObserveSlices(ObserveSliceMs);   // the round under way: the next slice of enRAGE's people
+				StepEnd("observe enRAGE's people (step)", pt, pd);
+			}
+			else if (gameTime >= _nextObserve)
 			{
 				_nextObserve = gameTime + 5000;
 				pt = StepBegin(out pd);
-				Observe();
+				if (ObserveBegin())
+					ObserveSlices(ObserveSliceMs);   // the first slice in the same frame as the roster
 				StepEnd("observe enRAGE's people (step)", pt, pd);
 			}
 			pt = StepBegin(out pd);
@@ -558,7 +565,28 @@ namespace EnrageWestworld.InGame
 			Log.Write("Stopped.");
 		}
 
+		// Reading enRAGE's people a slice a frame (players, 2026-11-04: stutters; the frame-time meter's peak each minute was
+		// "observe: a snapshot of each", 9-12 ms in one frame every 5 s, the whole roster turned into snapshots at once; Lex: the
+		// fixes "are all great", among them spreading this over several frames). The roster and the ids are read in the first
+		// frame (ObserveBegin), the people are made into snapshots about ObserveSliceMs a frame after it (ObserveSlices), and the
+		// engine sees them all together once the last is read, with the time the roster was read, as it did when all of it ran
+		// in one frame. The first observe after a load still runs whole (Start: Observe), inside the load's long frame.
+		private List<RecordRef> _obsQueue;          // the people still to read this round (null: no round under way)
+		private List<Person> _obsPeople;            // their snapshots so far
+		private int _obsAt;                         // the next to read
+		private long _obsNow;                       // the game's minute when the roster was read
+		private int _obsFrames, _obsRounds;         // frames the last round took; rounds this session (F7)
+		private const double ObserveSliceMs = 1.5;   // a frame's share of the reading (the whole was 9-12 ms)
+
+		/// The whole observe in one go: the first after a load, inside its long frame.
 		private void Observe()
+		{
+			if (ObserveBegin())
+				ObserveSlices(double.MaxValue);
+		}
+
+		/// The round's first part: the character changing, enRAGE's roster, the ids; true when a round has begun.
+		private bool ObserveBegin()
 		{
 			if ((IsJohn() ? "john" : "arthur") != _player)
 			{
@@ -573,7 +601,7 @@ namespace EnrageWestworld.InGame
 			long num = Bridge.Now();
 			if (list == null || num <= 0)
 			{
-				return;
+				return false;
 			}
 			Voice.NowYear = GameDate.FromMinutes(num).Year;
 			Dictionary<string, RecordRef> dictionary = new Dictionary<string, RecordRef>();
@@ -585,13 +613,33 @@ namespace EnrageWestworld.InGame
 				}
 			}
 			_recById = dictionary;
-			List<Person> list2 = new List<Person>(list.Count);
-			ot = StepBegin(out od);
-			foreach (RecordRef value in dictionary.Values)
+			_obsQueue = new List<RecordRef>(dictionary.Values);
+			_obsPeople = new List<Person>(_obsQueue.Count);
+			_obsAt = 0;
+			_obsNow = num;
+			_obsFrames = 0;
+			return true;
+		}
+
+		/// People read into snapshots until this frame's share is spent; the engine and the diaries once the last is read.
+		private void ObserveSlices(double budgetMs)
+		{
+			if (_obsQueue == null)
 			{
+				return;
+			}
+			_obsFrames++;
+			int od;
+			long ot = StepBegin(out od);
+			long t0 = System.Diagnostics.Stopwatch.GetTimestamp();
+			long budget = budgetMs >= double.MaxValue / 2 ? long.MaxValue : (long)(budgetMs * System.Diagnostics.Stopwatch.Frequency / 1000.0);
+			Dictionary<string, RecordRef> byId = _recById;
+			while (_obsAt < _obsQueue.Count)
+			{
+				RecordRef value = _obsQueue[_obsAt++];
 				try
 				{
-					list2.Add(Snapshot.Of(value, _bridge, dictionary, num));
+					_obsPeople.Add(Snapshot.Of(value, _bridge, byId, _obsNow));
 				}
 				catch (Exception ex)
 				{
@@ -601,8 +649,25 @@ namespace EnrageWestworld.InGame
 					}
 					_snapshotFailed = true;
 				}
+				if ((_obsAt & 3) == 0 && System.Diagnostics.Stopwatch.GetTimestamp() - t0 >= budget)
+				{
+					break;   // this frame's share spent: the rest next frame
+				}
 			}
 			StepEnd("observe: a snapshot of each (step)", ot, od);
+			if (_obsAt < _obsQueue.Count)
+			{
+				return;
+			}
+			List<Person> list2 = _obsPeople;
+			long num = _obsNow;
+			_obsQueue = null;
+			_obsPeople = null;
+			_obsRounds++;
+			if (_obsRounds == 2 || _obsRounds % 720 == 0)
+			{
+				Log.Write("OBSERVE enRAGE's people read a slice a frame: " + list2.Count + " people over " + _obsFrames + " frame" + (_obsFrames == 1 ? "" : "s") + " (round " + _obsRounds + "; the first after a load runs whole)");   // in game: how many frames a round takes
+			}
 			Vector3 position = Game.Player.Character.Position;
 			_engine.PlayerX = position.X;
 			_engine.PlayerY = position.Y;

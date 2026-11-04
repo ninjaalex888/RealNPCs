@@ -105,9 +105,10 @@ namespace EnrageWestworld.InGame
                 using (var reader = new StreamReader(resp.GetResponseStream(), Encoding.UTF8))
                 {
                     string body = reader.ReadToEnd();
-                    bool has = body.IndexOf("\"name\":\"" + model + "\"", StringComparison.Ordinal) >= 0 ||
-                               (model.IndexOf(':') < 0 && body.IndexOf("\"name\":\"" + model + ":", StringComparison.Ordinal) >= 0);
-                    _aiFoundWhy = has ? "Ollama at " + url + " holds " + model : "Ollama answers at " + url + " but doesn't hold " + model + " (ollama pull " + model + ")";
+                    string note;
+                    string use = Language.ModelToUse(body, model, out note);   // the 8B counts while the new default isn't pulled
+                    bool has = use != null;
+                    _aiFoundWhy = has ? "Ollama at " + url + " holds " + use + (note != null ? " (" + note + ")" : "") : "Ollama answers at " + url + " but doesn't hold " + model + " (ollama pull " + model + ")";
                     _aiFound = has ? 1 : 2;
                 }
             }

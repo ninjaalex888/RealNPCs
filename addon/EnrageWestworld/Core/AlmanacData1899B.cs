@@ -222,7 +222,7 @@ namespace EnrageWestworld.Core
             E("hobartdead", 1899, 11, 22, null, 3, "death", "VICE PRESIDENT HOBART DEAD",
               "Vice President Hobart died at his home in Paterson after a long illness of the heart, and who runs with McKinley next year is an open question.",
               "The Vice President's dead. Hobart. Heart gave out. Every man in Washington wants his place on the ticket now.",
-              "Hobart died. Nobody knew his name a week ago; now the paper's full of who runs with McKinley. Teddy, some say.",
+              "Hobart died. Nobody knew his name a week ago; now the paper asks who runs with McKinley. Roosevelt, some say.",
               "Vice President Hobart's gone. A heartbeat from the White House, they say of that office. His quit first."),
             E("benhur", 1899, 11, 30, null, 2, "life", "BEN-HUR ON THE STAGE WITH REAL HORSES",
               "The play of Ben-Hur opened at New York with the chariot race run by live horses on treadmills before a painted circus, and the house rose to its feet.",

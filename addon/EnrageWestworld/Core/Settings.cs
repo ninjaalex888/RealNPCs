@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 248;
+        public const int CurrentVersion = 249;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -148,7 +148,7 @@ namespace EnrageWestworld.Core
         public int VoiceVolume = 100;         // [Mind] the voices' loudness, percent (10-200)
         public bool VoiceRecord = true;       // [Mind] with the voice server: the voices recorded from your own game as you meet people (someone whose voice has no clip yet says one of the game's own lines once, in a quiet moment; the server keeps it; nothing of Rockstar's ships)
         public string LanguageUrl = "http://127.0.0.1:11434";   // the local server; nothing leaves the machine
-        public string LanguageModel = "llama3.1:8b";           // the model Ollama holds (ollama pull <name>)
+        public string LanguageModel = EnrageWestworld.Core.Language.DefaultModel;   // the model Ollama holds (ollama pull <name>): llama3.2:3b as it comes since settings version 249 (llama3.1:8b before; Lex, 2026-11-04)
 
         // [Display] - drawn on screen besides the ticker
         public bool FeelingBars = true;
@@ -708,6 +708,14 @@ namespace EnrageWestworld.Core
                 if (!s.SupperInvitation) { s.SupperInvitation = true; raised.Add("SupperInvitation off -> on (violence against Arthur on by default)"); }
                 if (!s.HogtiedMenDraw) { s.HogtiedMenDraw = true; raised.Add("HogtiedMenDraw off -> on (violence against Arthur on by default)"); }
             }
+            if (s.SettingsVersion < 249 && string.Equals((s.LanguageModel ?? "").Trim(), EnrageWestworld.Core.Language.OldDefaultModel, StringComparison.OrdinalIgnoreCase))
+            {
+                // the stock model until version 249 (Lex, 2026-11-04, "Yes for now": a smaller model, about 2 GB of the card in
+                // place of 5, so the game keeps its room); a model of your own is kept, and until the 3B is pulled the 8B goes
+                // on being used (Language.ModelToUse), so nobody's AI goes quiet for it
+                s.LanguageModel = EnrageWestworld.Core.Language.DefaultModel;
+                raised.Add("LanguageModel " + EnrageWestworld.Core.Language.OldDefaultModel + " -> " + EnrageWestworld.Core.Language.DefaultModel + " (a smaller model; until you run ollama pull " + EnrageWestworld.Core.Language.DefaultModel + " the 8B you have goes on being used)");
+            }
             if (raised.Count > 0)
                 log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");
         }
@@ -848,6 +856,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 249)
+                    log?.Invoke("Settings: the AI model now leaves the graphics card after 5 minutes with nothing asked (30 before), and llama3.2:3b (about 2 GB of the card) is the model as it comes; llama3.1:8b (about 5 GB) is still yours to name in [Mind] LanguageModel. The voice pack keeps its model on a card of 12 GB or more.");
                 if (s.SettingsVersion < 248)
                     log?.Invoke("Settings: [World] Bravery at 85 now brings more onlookers into a fistfight than before (50 is how it was), and the fighters no longer stop the crowd from fleeing: some may run, as the game has them.");
                 if (s.SettingsVersion < 247)
@@ -1212,7 +1222,7 @@ namespace EnrageWestworld.Core
             VoiceUrl = VoiceUrl.Trim().TrimEnd('/');
             VoiceMetres = Math.Max(5f, Math.Min(30f, VoiceMetres));
             VoiceVolume = Math.Max(10, Math.Min(200, VoiceVolume));
-            if (string.IsNullOrWhiteSpace(LanguageModel)) LanguageModel = "llama3.1:8b";
+            if (string.IsNullOrWhiteSpace(LanguageModel)) LanguageModel = EnrageWestworld.Core.Language.DefaultModel;
             LanguageUrl = LanguageUrl.Trim().TrimEnd('/');
             LanguageModel = LanguageModel.Trim();
             WillingSingle = Math.Max(0, Math.Min(100, WillingSingle));
@@ -1370,7 +1380,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("VoiceVolume = " + VoiceVolume + "   ; the voices' loudness, percent (10 to 200)");
             b.AppendLine("VoiceRecord = " + B(VoiceRecord) + "   ; the voices recorded from your own game as you meet people: someone whose voice has no clip yet says one of the game's own lines once, in a quiet moment, and the voice server keeps it");
             b.AppendLine("LanguageUrl = " + LanguageUrl + "   ; where Ollama listens");
-            b.AppendLine("LanguageModel = " + LanguageModel + "   ; the model it holds (ollama pull <name>)");
+            b.AppendLine("LanguageModel = " + LanguageModel + "   ; the model it holds (ollama pull <name>). " + EnrageWestworld.Core.Language.DefaultModel + " as it comes: about 2 GB of the graphics card; " + EnrageWestworld.Core.Language.OldDefaultModel + " words a little better and takes about 5 GB. Either leaves the card after 5 minutes with nothing asked. While " + EnrageWestworld.Core.Language.DefaultModel + " isn't pulled but " + EnrageWestworld.Core.Language.OldDefaultModel + " is, the 8B is used");
             b.AppendLine();
             b.AppendLine("[Ticker]");
             b.AppendLine("Ticker = " + B(Ticker) + "   ; a line at the bottom of the screen: what the people near you are thinking, else news");

@@ -67,6 +67,14 @@ namespace EnrageWestworld.InGame
 
         private Resident ResidentOf(Ped ped, bool forCard)
         {
+            Resident r = ResidentOfMade(ped, forCard);
+            if (r != null)
+                SettleName(ped.Handle, r);   // one name for one body: enRAGE's, when it has named the body (WestworldScript.NameCards.cs)
+            return r;
+        }
+
+        private Resident ResidentOfMade(Ped ped, bool forCard)
+        {
             if (ped == null || !ped.Exists())
                 return null;
             int h = ped.Handle;
