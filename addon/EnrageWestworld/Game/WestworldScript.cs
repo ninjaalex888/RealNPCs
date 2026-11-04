@@ -283,6 +283,7 @@ namespace EnrageWestworld.InGame
 			PollWorldEvents(gameTime);
 			PollGreets(gameTime);
 			Greets(gameTime);
+			GreetFondnessLater(gameTime);   // someone enRAGE hadn't taken up at the greeting, tried once more
 			Insults(gameTime);
 			StepEnd("greets and events (step)", pt, pd);
 			if (gameTime >= _nextObserve)
@@ -544,6 +545,7 @@ namespace EnrageWestworld.InGame
 			try { BrawlDownsRelease(); } catch { }   // nobody knocked out in a brawl stays unhurtable after a reload
 			try { BrawlDotClear(); } catch { }   // the starter's red dot goes with us
 			try { EventDotsClearAll(); } catch { }   // the event dots go with us
+			try { AlliesAbort(); } catch { }   // the allies' green dots go with us
 			try { JoinPendingDrop("the script stopped"); RingBreak(); } catch { }   // those on their way to a brawl, and the ring round it, let go to the game
 			try { BraveRestoreAll("the script stopped"); } catch { }   // the braver put back as the game had them
 			Shutdown04();
@@ -657,6 +659,7 @@ namespace EnrageWestworld.InGame
 					{
 						_greetedAt[target] = now;   // greeted before a flirt counts for it (Interest.GreetTilt, Trysts.NightChance)
 						NoteNameAtGreet(target, now);   // the name they had keeps when enRAGE takes them up (WestworldScript.NameCards.cs)
+						GreetFondnessSoon(target, now);   // they like you the more for it, once enRAGE has taken them up (WestworldScript.GreetLiking.cs; Lex, 2026-11-03)
 						if (_greetedAt.Count > 60)
 							_greetedAt.Remove(_greetedAt.OrderBy(kv => kv.Value).First().Key);
 					}
@@ -1191,6 +1194,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST vram: " + VramStatus());
 			Log.Write("TEST mind talks: " + MindTalkStatus());
 			Log.Write("TEST allies: " + AlliesStatus());
+			Log.Write("TEST greet liking: " + GreetLikingStatus());
 			Log.Write("TEST save: " + SaveStatus());
 			Log.Write("TEST wake voices: " + WakeVoiceStatus());
 			Log.Write("TEST wake anim sets: " + _wakeAnimsResult);

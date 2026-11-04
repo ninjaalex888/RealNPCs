@@ -178,7 +178,7 @@ namespace EnrageWestworld.Core
                     reply = Voice.Pick(seed + "nr", manner == "kind" ? NeedKind[need] : manner == "cold" ? NeedCold : NeedSharp);
                     replyVoice = manner == "kind" ? "sorry" : replyVoice;
                     if (manner == "kind" && (need == "hungry" || need == "money"))
-                        kind = "help";   // a plate or a dollar offered: a kindness between them (Ties.Effect, the appraisal)
+                        kind = "charity";   // a plate or a dollar offered: a kindness between them (Ties.Effect, the appraisal: the asking is A's, the answer B's). Not "help": that kind's note waits for a fall's get-up cue, which a talk never plays (the review)
                     break;
                 }
                 default:

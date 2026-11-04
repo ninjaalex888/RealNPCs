@@ -130,7 +130,7 @@ namespace EnrageWestworld.Core
         }
 
         /// The kinds that are only talk, with nothing happening (the no-model run, Lex 2026-11-01): passed over with [Scenes] EventfulOnly.
-        public static readonly string[] JustTalkKinds = { "smalltalk", "gossip", "song", "talltale", "paper", "pitch", "haggle", "news", "posse", "round", "avoid", "cheer", "glad" };
+        public static readonly string[] JustTalkKinds = { "smalltalk", "gossip", "song", "talltale", "paper", "pitch", "haggle", "news", "posse", "round", "avoid", "cheer", "glad" };   // not "mindtalk": EventfulOnly is on as built, and the talks from people's minds are wanted (Lex, 2026-11-03; MindTalkTest holds it)
 
         public static bool JustTalk(string kind)
         {

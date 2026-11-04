@@ -92,6 +92,7 @@ namespace EnrageWestworld.InGame
             if (_started)
                 return;
             _started = true;
+            _stop = false;   // started again after a Stop (the review)
             _form = form;
             _log = log;
             _pid = pid;
@@ -218,14 +219,14 @@ namespace EnrageWestworld.InGame
                         int f = ++_fails;
                         if (f == 1)
                             _log?.Invoke("VRAM gauge: a read failed (" + ex.GetType().Name + ": " + ex.Message + "); trying again");
-                        if (f >= FailsBeforeGivingUp)
-                        {
-                            GiveUp(f + " reads running failed, the last: " + ex.GetType().Name + ": " + ex.Message);
-                            return;
-                        }
+                        // the counters can fail for a while (a driver update, a sleep and wake): after eight failures running the
+                        // gauge tries every 30 s instead of giving up for good (the review)
+                        if (f == FailsBeforeGivingUp)
+                            _log?.Invoke("VRAM gauge: " + f + " reads running failed, the last: " + ex.GetType().Name + ": " + ex.Message + "; trying every 30 s now");
+                        _state = f >= FailsBeforeGivingUp ? "reads failing (trying every 30 s)" : "a read failed, trying again";
                     }
                     _readMs = Ms(r0);
-                    Wake.WaitOne(EveryMs);
+                    Wake.WaitOne(_fails >= FailsBeforeGivingUp ? 30000 : EveryMs);
                 }
                 _state = "stopped";
             }
@@ -342,8 +343,6 @@ namespace EnrageWestworld.InGame
             foreach (Card c in cards)
                 if (c.Luid == luid && c.From == "DXGI")
                     dxgi = c;
-            if (dxgi != null && dxgi.Bytes > 0)
-                return dxgi;
             foreach (Card c in cards)
             {
                 if (c.From == "DXGI")
@@ -353,6 +352,10 @@ namespace EnrageWestworld.InGame
                 if (largest == null || c.Bytes > largest.Bytes)
                     largest = c;
             }
+            // DXGI's dedicated memory can read a little under the card's physical size (a 16 GB card as 15.6): the registry's
+            // entry of the same name says what's on the card, as Task Manager shows it (the review)
+            if (dxgi != null && dxgi.Bytes > 0)
+                return named != null && named.Bytes > dxgi.Bytes ? new Card { Luid = luid, Name = dxgi.Name, From = named.From, Bytes = named.Bytes } : dxgi;
             Card got = named ?? largest;
             if (got != null && dxgi != null && got.Luid == 0)
                 return new Card { Luid = luid, Name = dxgi.Name, From = got.From, Bytes = got.Bytes };

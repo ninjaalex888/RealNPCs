@@ -104,7 +104,8 @@ namespace EnrageWestworld.InGame
             return false;
         }
 
-        /// Why the last Spawn gave nothing (for the log): "a mission or a fade", "the model isn't loaded", "the game made nobody there".
+        /// Why the last Spawn gave nothing (for the log): "a mission or a fade", "their body isn't streamed in yet" (the ped model, which
+        /// Ready asks for; not the AI model, as Lex read it on 2026-11-03), "the game made nobody there".
         public static string LastSpawnWhy;
 
         public static Ped Spawn(uint model, Vector3 pos, float heading)
@@ -117,7 +118,7 @@ namespace EnrageWestworld.InGame
             }
             if (!Ready(model))
             {
-                LastSpawnWhy = "the model isn't loaded (" + model.ToString("x8") + ")";
+                LastSpawnWhy = "their body isn't streamed in yet (ped model " + model.ToString("x8") + ", asked for now)";
                 return null;
             }
             STREAMING.REQUEST_COLLISION_AT_COORD(pos.X, pos.Y, pos.Z);
