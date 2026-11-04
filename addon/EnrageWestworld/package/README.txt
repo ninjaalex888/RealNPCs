@@ -1,4 +1,4 @@
-RealNPCs 0.7.20 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.21 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -124,6 +124,49 @@ Set it up once:
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
 
+
+NEW IN 0.7.21
+-------------
+The six-day roadmap run: fifty-odd things at once, every one behind its own switch and on as it
+comes unless said otherwise. Each has its own bullet further down; in short:
+- More ways to win people over: a round for the house, a gift, a coin for the music, a debt
+  paid for someone being pressed, a message carried; a kindness seen by others counts with them.
+- Allies: the friend from the road rides in on horseback; an ally who dies is grieved by their
+  town, at a cost to you. A full bar makes a friend even when they're afraid of you; a lawman
+  too.
+- The real history behind one strict switch ([World] HistoricalAccuracy, off as it comes) and
+  the year as it was (the holidays, the seasons, 1907's news).
+- Talk in your own words, typed ([Mind] TalkTyped), and in your own voice through the
+  microphone ([Mind] TalkVoice, off: a second download).
+- The living street: the town keeps time (routines by casting), the street reacts to other
+  people's fights and to your reputation; three more verbs in Talk (ask about someone, lend
+  money, introduce two people).
+- Seeing what happened: an Overheard page in the reader and "raised voices behind you";
+  letters answered from the reader and written to anyone you've met; every worry mendable
+  through Talk, and every one turned the wrong way with a word.
+- Town events on one framework: the Saturday dance, election day, the circuit judge and
+  gallows day, the Wild West show; train time, a spot table (K) and the town ledger (towns
+  that grow or shrink).
+- The Awakening spreads: the waking hear their habit as a voice and break the loop, the
+  reload is noticed (ghosts of hours undone), a line that wakes a listener, despair in the
+  river; the waking's strange acts follow their nature.
+- Moods that carry (the weather, a crowd's feeling), vices and kindnesses, the kin who come to
+  town about a wrong of yours.
+- Nights together and the days after (the saloon's price, the morning after, a sweetheart, a
+  husband who hears); the criminal class; the barkeep stepping in and the drunk taking it
+  outside; the dead carried to the undertaker's or the jail with a mourner following.
+- Stalkers on horseback and revenants at your campfire; reactions at gunpoint in stages; group
+  acts (friends closing round a beaten friend, an onlooker taking their own away).
+- Neighbours who come back by train, and the dead who remember what they held against you;
+  the epilogue remembers (Arthur's people into John's world, eight years on).
+- Memory that behaves like memory: the ground where you killed someone pulls a thought from
+  one who knew them, people know you by your horse, and the town notices your habits.
+- A broken wagon wheel on the road: stop and set it with the driver, or ride on and send word.
+- Side by side with other mods: nothing of RealNPCs' on anyone dying; Arthur's own gunfight
+  calls.
+- The town's regard of you in the Around town box, which stays up while you're in a town; the
+  brave stand up instead of cowering beside a body.
+- Not in: night folklore (roadmap 16).
 
 NEW IN 0.7.20
 -------------
