@@ -32,6 +32,7 @@ namespace EnrageWestworld.InGame
             public uint AccusedModel;             // the trial and the hanging: the accused in his own body
             public Ped Accused, Preacher;
             public readonly List<Ped> Deputies = new List<Ped>();
+            public readonly List<Ped> Performers = new List<Ped>();   // the Wild West show's riders
             public int Witnesses;
             public bool Asked;                    // the judge asked the stranger by the door
             public string Told;                   // what he told the court (guilty, innocent, none)
@@ -86,6 +87,8 @@ namespace EnrageWestworld.InGame
                 BeginTrial(e, now);
             else if (e.Kind == "gallows" && _cfg.EventTrials)
                 BeginGallows(e, now);
+            else if (e.Kind == "show" && _cfg.EventShows)
+                BeginShow(e, now);
         }
 
         /// The dance staged: outside the saloon he came out of here, else behind the camera, 20-35 m off.
@@ -157,6 +160,11 @@ namespace EnrageWestworld.InGame
             if (r.E.Kind == "gallows")
             {
                 GallowsStep(r, now);
+                return;
+            }
+            if (r.E.Kind == "show")
+            {
+                ShowStep(r, now);
                 return;
             }
             long g = Bridge.Now();
@@ -508,7 +516,7 @@ namespace EnrageWestworld.InGame
         {
             return _engine.EventsStatus(Bridge.Now()) + "; this session: " + _eventsStaged + " staged, " + _eventsAttended + " attended, " + _eventsBroken + " broken" +
                    (_eventRun != null ? "; on now: " + _eventRun.E.Kind + " in " + _eventRun.E.Town + " (" + _eventRun.Cast.Count + " on the floor)" : "") +
-                   (_saloonDoor.Count > 0 ? "; saloon doors known in " + string.Join(", ", _saloonDoor.Keys) : "") + "; " + TrialsRunStatus();
+                   (_saloonDoor.Count > 0 ? "; saloon doors known in " + string.Join(", ", _saloonDoor.Keys) : "") + "; " + TrialsRunStatus() + "; " + ShowsRunStatus();
         }
     }
 }

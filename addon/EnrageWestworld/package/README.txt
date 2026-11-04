@@ -489,6 +489,11 @@ NEW IN 0.7.11
   J (keyboard): testify when the judge asks, be sworn in as a special deputy before the hour, or
   break him out of the jail at night with no lawman near. Shots stop a hanging. A hogtied man of
   ours carried into a sheriff's office is brought in. Testing row "trial" to see it.
+- The Wild West show (EventShows): once your most-told deed is talked of in four towns, one of them
+  three hops off, a touring show books a large town you've been to, a week after its posters, and
+  acts out the most bent version of it under the name the rumour gave you. Away, the paper reviews
+  it and the legend bends further. There: the ground outside town, a barker, riders, a crowd; J to
+  heckle, stand up as the real one, or rob the takings. Testing row "show" to see it.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
@@ -1585,7 +1590,7 @@ in the file. The new ones:
             tied up off the road, two men by them; HogtiedMenDraw (true; set false to turn it off):
             their leader may draw on you unprovoked as you come near (never bounty hunters)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
-            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), EventTrials (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), EventTrials (true), EventShows (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
             Bravery (85, 0-100): the brave stand their ground where the game would send them running;

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 219;
+        public const int CurrentVersion = 220;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -285,6 +285,7 @@ namespace EnrageWestworld.Core
         public bool EventDances = true;       // [World] the Saturday dance: every second Saturday in a town with a saloon, seven till eleven, posted on Thursday; staged outside the saloon when you're there
         public bool EventElections = true;    // [World] election day: the first Tuesday after the first Monday of November, in every town with five living regulars; two of its men stand for mayor or town marshal; posted a week ahead; the voters lean by temper and ties, and by your word (Core/Elections.cs; SIXDAY item 10b; settings version 218)
         public bool EventTrials = true;       // [World] the circuit judge and gallows day: a resident who kills a man in a fight is held at the jail, tried three to seven days on (the verdict from witnesses, friends, temper, your word and the town's fear), and hanged two days after a guilty verdict; you can testify, be sworn in, break him out or stop it (Core/Trials.cs; SIXDAY item 10c; settings version 219)
+        public bool EventShows = true;        // [World] the Wild West show: once your most-told deed is known in four towns (one three hops off), a touring show comes to a large town you've been to, a week after its posters, and acts out the most bent version; the paper reviews it and the legend bends further; heckle, stand up as the real one, or rob the takings (Core/Shows.cs; SIXDAY item 10d; settings version 220)
         public bool FindDiaries = true;
         public bool Avengers = true;
         public int AvengerChance = 35;
@@ -816,6 +817,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 220)
+                    log?.Invoke("Settings: new in this version: [World] EventShows (on): a Wild West show acts out the most bent version of your legend once it has travelled; heckle, stand up as the real one, or rob the takings.");
                 if (s.SettingsVersion < 219)
                     log?.Invoke("Settings: new in this version: [World] EventTrials (on): a resident who kills a man in a fight is held for the circuit judge; a verdict in days, a hanging two days after a guilty one; testify, be sworn in, break him out or stop it.");
                 if (s.SettingsVersion < 218)
@@ -1431,6 +1434,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("EventDances = " + B(EventDances) + "   ; the Saturday dance: every second Saturday in a town with a saloon you've been to, seven till eleven, posted on Thursday; outside the saloon when you're there (a fiddler, the dancing, the caller's shouts), two to four regulars warmer toward each other after, the odd quarrel between sweethearts; an hour there and the regulars think the better of you");
             b.AppendLine("EventElections = " + B(EventElections) + "   ; election day (the first Tuesday after the first Monday of November) in every town with five living regulars: two of its men stand for mayor or town marshal, posted a week ahead (a notice, the paper, a poster among your papers); the voters lean by temper and ties and by your word (Talk on a candidate: your word for him, whiskey for his voters, or a word to the other to step aside); the result in the paper, and the town takes sides after");
             b.AppendLine("EventTrials = " + B(EventTrials) + "   ; the circuit judge and gallows day: a resident of ours who kills a man in a fight is held at the jail; the judge sits three to seven days on, ten till two, outside the saloon (the verdict weighed from who saw it, the dead man's friends against his, his temper in the dock, your word if you give it, and a frightened town); guilty means a hanging two days on at the jail, eleven o'clock, the drop never shown; not guilty splits the town. J (keyboard) to testify when the judge asks, to be sworn in as a special deputy before the hour, or to break him out of the jail at night with no lawman near; a hogtied man of ours carried into a sheriff's office is brought in");
+            b.AppendLine("EventShows = " + B(EventShows) + "   ; the Wild West show: once your most-told deed (a killing or a robbery) is talked of in four towns, one of them three hops from where it happened, a touring show books a large town you have been to (Saint Denis, Valentine, Rhodes; Blackwater in 1907), one a month at most: posters a week ahead (a notice, the paper, a poster among your papers), the act billed under the name the rumour gave you; away, the paper reviews it and the town's version of the legend bends further and spreads; there (two till four, within 150 m of the town's heart), the ground outside town, a barker, riders in the ring, a crowd; J (keyboard) to heckle, stand up as the real one (a deed), or rob the takings (a robbery)");
             b.AppendLine("FindDiaries = " + B(FindDiaries) + "   ; loot a body and you may find the diary they kept");
             b.AppendLine("Avengers = " + B(Avengers) + "   ; kin you never met may ride in to settle accounts");
             b.AppendLine("AvengerChance = " + AvengerChance + "   ; percent chance a grieving relative comes for you");

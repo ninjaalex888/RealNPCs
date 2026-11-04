@@ -593,6 +593,7 @@ namespace EnrageWestworld.InGame
             {
                 case "testify": menu.Rows = Trials.TestifyRows(); menu.Title = "To the court:"; break;
                 case "swear": menu.Rows = Trials.SwearRows(); menu.Title = "The sheriff's man:"; break;
+                case "show": menu.Rows = Shows.Rows(_eventPromptFor); menu.Title = "At the show:"; break;
                 default: menu.Rows = Trials.BreakoutRows(_eventPromptFor.AName); menu.Title = Person.FirstOf(_eventPromptFor.AName) + " is in the cell:"; break;
             }
             _eventMenu = menu;
@@ -640,6 +641,8 @@ namespace EnrageWestworld.InGame
             }
             if (m.Mode == "breakout" && row.Id == "breakout:yes")
                 BreakoutDo(e, now);
+            if (m.Mode == "show" && row.Id != "show:watch")
+                ShowChoice(r, e, row.Id.Substring("show:".Length), now);   // WestworldScript.Shows.cs
         }
 
         /// Each frame with the reader closed: the menu's box, or the prompt's line.
@@ -654,7 +657,7 @@ namespace EnrageWestworld.InGame
             }
             if (_eventPrompt == null || Game.GameTime > _eventPromptUntil)
                 return;
-            string text = _eventPrompt == "testify" ? "J: speak to the court" : _eventPrompt == "swear" ? "J: be sworn in" : "J: the cell";
+            string text = _eventPrompt == "testify" ? "J: speak to the court" : _eventPrompt == "swear" ? "J: be sworn in" : _eventPrompt == "show" ? "J: the show" : "J: the cell";
             float s = 0.3f;
             Draw.Text(text, 0.5f - Draw.Width(text, s) / 2f, 0.85f, s, 236, 214, 160);
         }

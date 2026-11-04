@@ -266,6 +266,14 @@ namespace EnrageWestworld.InGame
                     return null;
                 case "letter":
                     return TestLetter(out said);
+                case "show":
+                    {
+                        string what = _engine.ShowTest(_placeTown, Bridge.Now());
+                        if (what.StartsWith("off") || what.StartsWith("no town"))
+                            return what;
+                        said = what;
+                        return null;
+                    }
                 case "trial":
                     {
                         string what = _engine.TrialTest(_placeTown, Bridge.Now());

@@ -18,6 +18,8 @@ namespace EnrageWestworld.Core
             long today = now / 1440;
             if (Cfg.EventElections)
                 ElectionsDaily(now, today);
+            if (Cfg.EventShows)
+                ShowsDaily(now, today);
             int weekday = InnerLife.Weekday;
             if (weekday < 0)
                 return;   // the clock's weekday unknown: no scheduling
@@ -183,6 +185,8 @@ namespace EnrageWestworld.Core
                 TrialVerdict(e, now, false);
             else if (e.Kind == "gallows")
                 GallowsDone(e, now, false);
+            else if (e.Kind == "show")
+                ShowOver(e, now, false);
         }
 
         /// What a dance leaves: the regulars' ties and memories (and, attended, their thought of the player who came).
@@ -242,6 +246,8 @@ namespace EnrageWestworld.Core
                 TrialVerdict(e, now, attended);
             else if (e.Kind == "gallows")
                 GallowsDone(e, now, attended);
+            else if (e.Kind == "show")
+                ShowOver(e, now, attended);
         }
 
         /// Shots or a gun pointed broke it up: nothing comes of it, and the town remembers who fired.
@@ -276,6 +282,8 @@ namespace EnrageWestworld.Core
             Log("EVENT " + e.Kind + " " + e.Town + ": broken (" + why + (byYou ? ", by you" : "") + ")");
             if (e.Kind == "trial")
                 TrialVerdict(e, now, false);   // the judge rules once the room is cleared, whoever fired
+            else if (e.Kind == "show")
+                ShowOver(e, now, true);        // the review has the uproar in it
         }
 
         /// For F7: what's coming and what passed.
@@ -290,7 +298,7 @@ namespace EnrageWestworld.Core
             {
                 if (e == null) continue;
                 if (!e.Done)
-                    parts.Add(e.Kind + " in " + e.Town + " " + (now >= e.At ? "on now" : "in " + Math.Max(0, e.At - now) / 60 + " h") + (e.Kind == "election" ? " (" + e.AName + " v " + e.BName + " for " + e.Extra + (e.Endorsed != null ? ", your word given" : "") + ")" : e.Kind == "trial" || e.Kind == "gallows" ? " (" + TrialsStatus(e, now) + ")" : ""));
+                    parts.Add(e.Kind + " in " + e.Town + " " + (now >= e.At ? "on now" : "in " + Math.Max(0, e.At - now) / 60 + " h") + (e.Kind == "election" ? " (" + e.AName + " v " + e.BName + " for " + e.Extra + (e.Endorsed != null ? ", your word given" : "") + ")" : e.Kind == "trial" || e.Kind == "gallows" ? " (" + TrialsStatus(e, now) + ")" : e.Kind == "show" ? " (" + ShowsStatus(e) + ")" : ""));
                 else if (now - e.Until < 3 * 1440)
                     parts.Add(e.Kind + " in " + e.Town + ": " + e.Outcome);
             }
