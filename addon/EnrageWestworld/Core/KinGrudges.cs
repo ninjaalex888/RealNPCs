@@ -93,6 +93,7 @@ namespace EnrageWestworld.Core
                 case "deed:assault": return "put him in the dirt";
                 case "deed:robbery": case "deed:theft": case "deed:looting": return "robbed him";
                 case "deed:horsetheft": return "took his horse";
+                case "tryst": return "took my wife off somewhere quiet";   // a husband who found out (Core/Engine.Trysts.cs; item 15)
                 default: return "wronged him";
             }
         }
@@ -110,16 +111,16 @@ namespace EnrageWestworld.Core
             switch (k.Temper)
             {
                 case "Hothead":
-                    close = Voice.Pick(seed + "|c", "Do it again and it's me you'll answer to, not him.", "Next time you'll have me to deal with, and I don't scare.", "Lay a hand on him again and I'll come back with more than words.");
+                    close = Voice.Pick(seed + "|c", "Do it again and it's me you'll answer to.", "Next time you'll have me to deal with, and I don't scare.", "Try it again and I'll come back with more than words.");
                     break;
                 case "Proud":
-                    close = Voice.Pick(seed + "|c", "I wanted a look at the man who'd do that to him. Now I've had it.", "I came a long way to see your face. It's about what I expected.", "He's my blood. I'd have you remember that's who you were dealing with.");
+                    close = Voice.Pick(seed + "|c", "I wanted a look at the man who'd do that to my own. Now I've had it.", "I came a long way to see your face. It's about what I expected.", "That's my own you were dealing with. I'd have you remember it.");
                     break;
                 case "Cold":
                     close = Voice.Pick(seed + "|c", "That's all I came to say. I'll know your face now.", "I don't make threats. I make a note. This is the note.", "I'll not waste more breath on it. We've met now.");
                     break;
                 default:
-                    close = Voice.Pick(seed + "|c", "He wouldn't have told you himself. So I'm telling you.", "He's not a man to speak up for himself. I am.", "I said I'd say it to your face, and that's done.");
+                    close = Voice.Pick(seed + "|c", "They'd not have told you themselves. So I'm telling you.", "Some don't speak up for themselves. I do.", "I said I'd say it to your face, and that's done.");
                     break;
             }
             return open + " " + who + " " + wrong + " " + close;
@@ -157,6 +158,8 @@ namespace EnrageWestworld.Core
                 }
             foreach (string kind in new[] { "threat", "faced", "harm", "deed:assault", "deed:robbery", "deed:horsetheft", "deed:other" })
                 yield return "You " + WrongWord(kind) + " the other week.";
+            for (int i = 0; i < 4; i++)
+                yield return Opening(new KinGrudge { VictimName = "Edith Teale", Relation = "husband", WrongWord = WrongWord("tryst"), Temper = i == 0 ? "Hothead" : i == 1 ? "Proud" : i == 2 ? "Cold" : null, Name = "Amos Teale" }, "Morgan", "h" + i);
         }
     }
 }

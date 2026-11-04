@@ -52,6 +52,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<TownEvent> Events = new List<TownEvent>();   // (Resident.Held follows these: FixHeld)   // the town's days: dances and the rest (Core/TownEvents.cs; SIXDAY item 10)
         [DataMember(EmitDefaultValue = false)] public List<Ghost> Ghosts = new List<Ghost>();   // what rewinds dropped, kept a week (Core/Ghosts.cs; SIXDAY item 12b); never rewound
         [DataMember(EmitDefaultValue = false)] public List<KinGrudge> KinGrudges = new List<KinGrudge>();   // the kin who come about a wrong of the player's (Core/KinGrudges.cs; SIXDAY item 14)
+        [DataMember(EmitDefaultValue = false)] public List<TrystRecord> Trysts = new List<TrystRecord>();   // the women of the player's nights (Core/Trysts.cs; SIXDAY item 15)
         [DataMember(EmitDefaultValue = false)] public int Rewinds;                                 // how many times the clock turned back
         [IgnoreDataMember] public List<Ghost> LastRewound;                                        // the last rewind's ghosts, for the engine's log
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, TownLedger> TownLedgers = new Dictionary<string, TownLedger>();   // each town's ledger, read off the records (Core/TownLedgers.cs; SIXDAY item 11c)
@@ -346,6 +347,20 @@ namespace EnrageWestworld.Core
                     r.DiedAt = 0;
                     n++;
                 }
+            if (Trysts != null)
+            {
+                n += Trysts.RemoveAll(t => t != null && t.At > cut);   // a first night undone: never happened
+                foreach (TrystRecord t in Trysts)
+                    if (t != null && t.LastAt > cut)
+                    {
+                        t.Count = Math.Max(1, t.Count - 1);   // the last night undone: the one before stands
+                        t.LastAt = t.At;
+                        t.MorningAt = 0;
+                        t.ExpectAt = 0;
+                        t.Cooled = false;
+                        n++;
+                    }
+            }
             if (KinGrudges != null)
             {
                 n += KinGrudges.RemoveAll(k => k != null && k.At > cut);   // a wrong undone: nobody comes about it
@@ -574,6 +589,7 @@ namespace EnrageWestworld.Core
             if (Events == null) Events = new List<TownEvent>();
             if (TownLedgers == null) TownLedgers = new Dictionary<string, TownLedger>();
             if (KinGrudges == null) KinGrudges = new List<KinGrudge>();
+            if (Trysts == null) Trysts = new List<TrystRecord>();
             if (Ghosts == null) Ghosts = new List<Ghost>();
             FixHeld();
             if (Weddings == null) Weddings = new List<Wedding>();

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 230;
+        public const int CurrentVersion = 231;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -45,6 +45,8 @@ namespace EnrageWestworld.Core
         public bool CasualHookupsDecides = true;
         public int WillingSingle = 70;
         public int WillingTaken = 20;
+        public int TrystPrice = 2;           // [Romance] what one of the saloon's women asks for the night, in dollars (0: nothing asked; Core/Trysts.cs; SIXDAY item 15; settings version 231)
+        public bool TrystsAfter = true;      // [Romance] the days after a night: her thought the morning after, a sweetheart's word when you've been gone (and her cooling at a fortnight), a husband who hears of it and comes as the kin do (Core/Engine.Trysts.cs; roadmap 26; SIXDAY item 15)
         public bool NpcRomance = true;
         public bool AmbientFlirting = true;
         public bool SameSexRomance;
@@ -828,6 +830,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 231)
+                    log?.Invoke("Settings: new in this version: [Romance] TrystPrice (2): the saloon's price for the night; TrystsAfter (on): the morning after, a sweetheart who expects you back, a husband who finds out.");
                 if (s.SettingsVersion < 230)
                     log?.Invoke("Settings: new in this version: [Scenes] KinGrudges (on): a wrong of yours on a known person brings a man of their family to town a week on to say it to your face.");
                 if (s.SettingsVersion < 229)
@@ -1158,6 +1162,7 @@ namespace EnrageWestworld.Core
             LanguageModel = LanguageModel.Trim();
             WillingSingle = Math.Max(0, Math.Min(100, WillingSingle));
             WillingTaken = Math.Max(0, Math.Min(100, WillingTaken));
+            TrystPrice = Math.Max(0, Math.Min(20, TrystPrice));
             TickerGapSeconds = Math.Max(0, Math.Min(20, TickerGapSeconds));
             RealVoiceTalkSeconds = Math.Max(30, Math.Min(1800, RealVoiceTalkSeconds));
             // game | ours | both | off (Lex, 2026-10-28: the game's own white subtitle for a recorded line can't be stopped, so
@@ -1214,6 +1219,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("CasualHookupsDecides = " + B(CasualHookupsDecides) + "   ; with the CasualHookups mod installed: its Flirt works only on a woman who has said yes to your flirting here, and RealNPCs leaves the night to it instead of fading to black (false: the two mods stay apart)");
             b.AppendLine("WillingSingle = " + WillingSingle + "   ; percent chance a single woman takes to your flirting, before what she thinks of you tips it (the saloon's women always do)");
             b.AppendLine("WillingTaken = " + WillingTaken + "   ; the same for a woman who's married or spoken for");
+            b.AppendLine("TrystPrice = " + TrystPrice + "   ; what one of the saloon's women asks for the night, in dollars, said before her yes and taken when you have it (0: nothing asked)");
+            b.AppendLine("TrystsAfter = " + B(TrystsAfter) + "   ; the days after a night: her thought the morning after if you're still about; a single woman after two nights expects you back (a word to your face when you've been gone three days, and she cools if it's a fortnight); a married woman's husband hears of it one time in three (two in three when the saloon saw) and comes to town two to five days on to say it to your face, as the kin do (never violent); false: the night alone");
             b.AppendLine("FlirtPrompt = " + B(FlirtPrompt) + "   ; Flirt in the game's lock-on menu, with Greet and Antagonize, on its H key (D-pad down on a pad), as well as FlirtKey; once she has said yes to the night and her answer is said, the same H is Hook up (nothing of RealNPCs' is on G, which enRAGE uses)");
             b.AppendLine("NpcRomance = " + B(NpcRomance) + "   ; enRAGE's people court, marry, quarrel and fight over each other");
             b.AppendLine("AmbientFlirting = " + B(AmbientFlirting) + "   ; strangers in town flirt with each other now and then");

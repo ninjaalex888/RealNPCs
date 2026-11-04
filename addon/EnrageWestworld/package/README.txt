@@ -195,6 +195,12 @@ NEW IN 0.7.19
   you for his marker ($5) as the debtor does; the Devout and the churchgoing don't drink away
   bad news on a Sunday (grief excepted), and a Devout in the room judges a Sunday drinker in a
   thought; a friend of a man drinking away bad news stands the house a round, him first.
+- Nights together, the next steps ([Romance] TrystPrice, 2; TrystsAfter, on): her yes says where
+  (the saloon's stairs, her home, the hotel's back stairs, a quiet place); one of the saloon's
+  women asks her price first (no money, no night); the morning after she thinks of it if you're
+  still about; a single woman after two nights expects you back (a word when you've been gone
+  three days; she cools at a fortnight); a married woman's husband may hear of it and come to
+  town two to five days on to say so, as the kin do. The night itself stays off screen.
 - The kin who take up a wrong ([Scenes] KinGrudges, on): a wrong of yours on a person RealNPCs
   knows (a threat, a beating, a theft, a trouble turned the wrong way) brings a man of their
   family you never met to town five to nine days on; he walks up and says it to your face by

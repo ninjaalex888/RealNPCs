@@ -21,6 +21,8 @@ namespace EnrageWestworld.InGame
             public bool Night;     // her yes to the flirting is a yes to the night too; else asking gets her no (Trysts.NightChance)
             public int Greeted;    // he greeted her first (1) or flirted cold (-1)
             public bool Asked;     // Hook up has been asked (CasualHookups' night): H is Flirt again, and its own Flirt takes it on
+            public string Where;   // upstairs, home, hotel, quiet (Trysts.Where; item 15)
+            public int Cents;      // what the saloon took
         }
 
         private sealed class TrystRun
@@ -32,7 +34,7 @@ namespace EnrageWestworld.InGame
 
         private TrystOffer _trystOffer;
         private TrystRun _tryst;
-        private int _trystDarkSince, _trystCount, _trystHints;
+        private int _trystDarkSince, _trystCount, _trystHints, _nextTrystLook, _trystMornings, _trystExpects, _trystCooled;
         private string _trystLast;
         private Action _aTryst;
 
@@ -73,7 +75,8 @@ namespace EnrageWestworld.InGame
                 return true;   // still taken as the ask, so the flirt doesn't count against her
             }
             string seed = o.Who.Id + "|" + Bridge.Now() / 60;
-            string ask = Trysts.Ask(seed), yes = Trysts.Yes(o.Kind, seed);
+            o.Where = Trysts.Where(o.Kind, _placeKind == "saloon", o.Who.Home != null && o.Who.Home == _placeTown, Trysts.HasHotel(_placeTown), seed);   // where they go (item 15)
+            string ask = Trysts.Ask(seed), yes = Trysts.Yes(o.Kind, o.Where, seed);
             Feed.DropAhead();
             Feed.Say(_engine.Player.FirstName, ask, FlirtVoice(_engine.Player.FirstName, Speech.WhenFirst(me.Handle, FlirtVoices.You(true, seed), her.Handle)), ahead: true);
             if (!o.Night)
@@ -85,6 +88,23 @@ namespace EnrageWestworld.InGame
                 _trystOffer = null;
                 Log.Write("TRYST asked: " + o.Name + " (" + o.Kind + "): " + ask + " -> not tonight" + (o.Greeted < 0 ? " (flirted cold)" : "") + ": " + no);
                 return true;
+            }
+            // the saloon's price (item 15): said before her yes, taken when he has it; without it, no night
+            int price = o.Kind == "saloon" && _cfg.TrystsAfter && _cfg.TrystPrice > 0 ? _cfg.TrystPrice * 100 : 0;
+            if (price > 0 && MONEY._MONEY_GET_CASH_BALANCE() < price)
+            {
+                string broke = Trysts.CantPay(_cfg.TrystPrice, seed);
+                Feed.Say(o.Name, broke, FlirtVoice(o.Name, Speech.WhenFirst(her.Handle, FlirtVoices.Reply(o.Who, "no", "busy", 0, seed), me.Handle)), toYou: true, ahead: true);
+                _flirtSaidUntil = Game.GameTime + 7000;
+                _trystOffer = null;
+                Log.Write("TRYST asked: " + o.Name + " (saloon): " + ask + " -> you can't pay the $" + _cfg.TrystPrice + ": " + broke);
+                return true;
+            }
+            if (price > 0)
+            {
+                MONEY._MONEY_INCREMENT_CASH_BALANCE(-price, 0);
+                o.Cents = price;
+                yes = Trysts.PriceLine(_cfg.TrystPrice, seed) + " " + yes;
             }
             Feed.Say(o.Name, yes, FlirtVoice(o.Name, Speech.WhenFirst(her.Handle, FlirtVoices.Night(o.Kind, seed), me.Handle)), toYou: true, ahead: true);
             _flirtSaidUntil = Game.GameTime + 7000;
@@ -105,7 +125,7 @@ namespace EnrageWestworld.InGame
             }
             _tryst = new TrystRun { Offer = o, Phase = 0, At = Game.GameTime + 4500 };
             _trystOffer = null;
-            Log.Write("TRYST asked: " + o.Name + " (" + o.Kind + "): " + ask + " -> " + yes);
+            Log.Write("TRYST asked: " + o.Name + " (" + o.Kind + ", " + o.Where + (o.Cents > 0 ? ", $" + o.Cents / 100 + " paid" : "") + "): " + ask + " -> " + yes);
             return true;
         }
 
@@ -134,7 +154,7 @@ namespace EnrageWestworld.InGame
             if (tell)
                 Feed.Notice("RealNPCs", "CasualHookups didn't take " + o.Name + ": RealNPCs' own night instead.");
             string seed = o.Who.Id + "|" + Bridge.Now() / 60;
-            string yes = sayYes ? Trysts.Yes(o.Kind, seed) : null;
+            string yes = sayYes ? Trysts.Yes(o.Kind, o.Where, seed) : null;
             if (sayYes)
             {
                 Feed.Say(o.Name, yes, FlirtVoice(o.Name, Speech.WhenFirst(o.Handle, FlirtVoices.Night(o.Kind, seed), me.Handle)), toYou: true, ahead: true);
@@ -155,7 +175,12 @@ namespace EnrageWestworld.InGame
         private void TrystTick(int now)
         {
             TrystRun t = _tryst;
-            if (t == null || now < t.At)
+            if (t == null)
+            {
+                TrystAfterLook(now);   // the days after (item 15)
+                return;
+            }
+            if (now < t.At)
                 return;
             int h = t.Offer.Handle, player = Game.Player.Handle;
             switch (t.Phase)
@@ -182,7 +207,7 @@ namespace EnrageWestworld.InGame
                         return;
                     }
                     CLOCK.ADD_TO_CLOCK_TIME(1, 0, 0);
-                    t.After = _engine.Tryst(t.Offer.Who, t.Offer.Kind, Bridge.Now());
+                    t.After = _engine.Tryst(t.Offer.Who, t.Offer.Kind, Bridge.Now(), _placeTown, _placeKind == "saloon", t.Offer.Cents);   // written down; a husband may hear (item 15)
                     t.Phase = 2;
                     t.At = now + 2500;
                     break;
@@ -201,6 +226,65 @@ namespace EnrageWestworld.InGame
                     Log.Write("TRYST over: " + t.Offer.Name + " (" + t.Offer.Kind + "); she thinks: " + t.After);
                     _tryst = null;
                     break;
+            }
+        }
+
+        /// The days after (item 15; [Romance] TrystsAfter): every twenty seconds with the screen lit and women of past nights
+        /// remembered, the known people near you in view: her thought the morning after (6-36 h on), a sweetheart's word to
+        /// your face when you've been gone three days after two nights (within 8 m), or the thought of one who gave up at a
+        /// fortnight; each once (Core/Engine.Trysts.cs keeps the once). The husband comes by the kin's walk-up.
+        private void TrystAfterLook(int now)
+        {
+            if (_cfg == null || !_cfg.TrystsAfter || now < _nextTrystLook || _store == null || _store.Trysts == null || _store.Trysts.Count == 0 || _placeTown == null || _mindNear.Count == 0)
+                return;
+            _nextTrystLook = now + 20000;
+            Ped me = Game.Player.Character;
+            if (me == null || !me.Exists() || me.IsDead || MISC.GET_MISSION_FLAG())
+                return;
+            long g = Bridge.Now();
+            for (int i = 0; i < _mindNear.Count; i++)
+            {
+                int h = _mindNear[i];
+                MindWho w;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                    continue;
+                bool remembered = false;
+                for (int j = 0; j < _store.Trysts.Count; j++)
+                    if (_store.Trysts[j] != null && _store.Trysts[j].WomanId == w.Id)
+                    {
+                        remembered = true;
+                        break;
+                    }
+                if (!remembered)
+                    continue;
+                Ped her = new Ped(h);
+                float d = her.Position.DistanceTo(me.Position);
+                if (d > 12f || !NodInView(me, her))
+                    continue;
+                string line = _engine.TrystMorning(w.Id, g);
+                if (line != null)
+                {
+                    _ticker.Push(w.Name + ", thinking", line, "near", h);
+                    _trystMornings++;
+                    Log.Write("TRYST the morning after: " + w.Name + " thinks: " + line);
+                    continue;
+                }
+                string word = _engine.TrystExpects(w.Id, g);
+                if (word != null && d <= 8f)
+                {
+                    TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 4000, 0, 51, 0);
+                    Feed.Say(w.Name, word, Speech.When(h, "angry", me.Handle), h, toYou: true);
+                    _trystExpects++;
+                    Log.Write("TRYST a sweetheart: " + w.Name + " to your face: " + word);
+                    continue;
+                }
+                string cooled = _engine.TrystCooled(w.Id, g);
+                if (cooled != null)
+                {
+                    _ticker.Push(w.Name + ", thinking", cooled, "near", h);
+                    _trystCooled++;
+                    Log.Write("TRYST cooled: " + w.Name + " thinks: " + cooled);
+                }
             }
         }
 
@@ -265,7 +349,8 @@ namespace EnrageWestworld.InGame
                 return "off ([Romance] Trysts); women answer by chance: single " + _cfg.WillingSingle + "%, married or spoken for " + _cfg.WillingTaken + "%, the saloon's always";
             string offer = _trystOffer != null && Game.GameTime < _trystOffer.Until ? _trystOffer.Name + " (" + _trystOffer.Kind + ", " + (_trystOffer.Until - Game.GameTime) / 1000 + " s left)" : "none";
             return "on; women answer by chance: single " + _cfg.WillingSingle + "%, married or spoken for " + _cfg.WillingTaken + "%, the saloon's always, what they think of you tipping it; " +
-                   "offer waiting: " + offer + (_tryst != null ? "; one going on (phase " + _tryst.Phase + ")" : "") + "; this session " + _trystCount + (_trystLast != null ? ", last " + _trystLast : "");
+                   "offer waiting: " + offer + (_tryst != null ? "; one going on (phase " + _tryst.Phase + ")" : "") + "; this session " + _trystCount + (_trystLast != null ? ", last " + _trystLast : "") +
+                   "; the saloon's price $" + _cfg.TrystPrice + "; " + (_engine != null ? _engine.TrystsStatus(Bridge.Now()) : "") + " (this session " + _trystMornings + " mornings, " + _trystExpects + " words, " + _trystCooled + " cooled)";
         }
     }
 }
