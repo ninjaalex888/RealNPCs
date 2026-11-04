@@ -1548,6 +1548,39 @@ namespace EnrageWestworld.Core
             return id != null && Store.WorrySettled != null && Store.WorrySettled.TryGetValue(id, out at) ? at : -1;
         }
 
+        private long WorsenedAt(string id)
+        {
+            long at;
+            return id != null && Store.WorryWorsened != null && Store.WorryWorsened.TryGetValue(id, out at) ? at : -1;
+        }
+
+        /// Whether he already mended this person's worry, or turned it the wrong way, in the run they're in today (one or the other, once).
+        public bool WorryMarked(string id)
+        {
+            return id != null && InnerLife.MarkedThisArc(id, Store.LastGameMin / 1440);
+        }
+
+        /// He turned their worry the wrong way and they believed him (Core/Helps.cs): the rest of its run reads as ended badly, and
+        /// they think the less of him.
+        public void WorsenWorry(string id, string name)
+        {
+            if (id == null)
+                return;
+            long now = Store.LastGameMin;
+            if (Store.WorryWorsened == null)
+                Store.WorryWorsened = new Dictionary<string, long>();
+            foreach (string old in Store.WorryWorsened.Where(kv => now - kv.Value > 3L * InnerLife.WorryDays * 1440).Select(kv => kv.Key).ToList())
+                Store.WorryWorsened.Remove(old);
+            Store.WorryWorsened[id] = now;
+            string seed = WorryIdOf(id);
+            if (seed != id)
+                Store.WorryWorsened[seed] = now;
+            PersonState st = MindOf(id, name);
+            if (st != null)
+                st.Affection = Romance.Clamp(st.Affection + Helps.HarmAffection, -100, 100);
+            Log("WORRY worsened by you: " + id + (seed != id ? " (their worry kept from " + seed + ")" : "") + " (the rest of its run reads as ended badly)");
+        }
+
         /// The player settled this person's worry (the interaction menu's debt): kept in the save, so the rest of its
         /// run reads as ended well for them, the one they owed, their needs and the scenes over it. Entries three runs
         /// old go.

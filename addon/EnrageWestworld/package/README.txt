@@ -458,6 +458,14 @@ NEW IN 0.7.11
 - Writing your own ([World] WriteLetters). In the reader, in a town with a post office, L: pick
   someone you've met, then a warning, an apology, a love note, a threat or money ($5); carried
   and taken the same way. A love note or a threat may get shown around the town. Keyboard only.
+- Every trouble mendable, and every one with a dark mirror ([Encounters] TalkWorries). Once
+  someone has told you their trouble, Talk offers its mend (a dollar for the telegraph, the water
+  cart, the fare to the mine, a word put in, a word with the neighbour, the bank note, coffee not
+  whiskey, the marker, a secret kept, the stage out of town; the debt, the doctor, the dentist and
+  the fare as before) and its mirror, a word that turns it the wrong way (the creditor told where
+  to find them, the fever called a chill, the letter given up on, the farm sold up...). The
+  frightened believe the worst at once, the proud and the cold want proof; believed, the trouble
+  ends badly from there, they think the less of you, and it counts as a wrong.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if

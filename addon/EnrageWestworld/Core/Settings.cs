@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 215;
+        public const int CurrentVersion = 216;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -260,6 +260,7 @@ namespace EnrageWestworld.Core
         public int GreetLiking = 34;         // [Encounters] enRAGE's fondness for you (0-100) grows by this on every greeting of someone (three hellos fill the bar and pass AlliesLiking 90: Lex, 2026-11-03, "each greet gives 25% fondness boost for now until we add in more NPC interactions", then "3 greets will get to 100%"); settings version 199 (12), 200 (20), 201 (25), 34 from 203
         public bool FondnessActs = true;     // [Encounters] more ways to win people over through Talk: whiskey for the house in a saloon, a gift, condolences to someone grieving (Core/Fondness.cs; SIXDAY item 1, 2026-11-04; settings version 206)
         public bool TalkVerbs = true;        // [Encounters] three more verbs in Talk: what they know of someone they've had dealings with, a loan of ten dollars (and its collecting three days on), an introduction to someone standing near (Core/Verbs.cs; roadmap 6; SIXDAY item 6; settings version 213)
+        public bool TalkWorries = true;      // [Encounters] every worry mendable through Talk once they've told you of it (the money ones keep their row), and every worry with a dark mirror: a word that turns it the wrong way (Core/Helps.cs; roadmap 9; SIXDAY item 9; settings version 216)
         public bool KindnessSeen = true;     // [Encounters] the named people who see you do a kindness to someone else (a drink stood, money given, a hand up, a bully faced, a mercy) think better of you too (settings version 206)
         public int KindnessSeenLiking = 5;   // ... enRAGE's fondness each of them gains (0-30); our residents' affection moves a little on its own
         public bool AlliesRide = true;       // [Encounters] the friend from the road comes on horseback (45-70 m off, down off the horse near you); off: on foot, 30-45 m off, as before (SIXDAY item 2; settings version 207)
@@ -811,6 +812,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 216)
+                    log?.Invoke("Settings: new in this version: [Encounters] TalkWorries (on): every worry they've told you of can be mended through Talk, and every one turned the wrong way with a word (its dark mirror).");
                 if (s.SettingsVersion < 215)
                     log?.Invoke("Settings: new in this version: [World] LetterReplies (on): answer a letter from the reader (R) and change what its writer does next; WriteLetters (on): write first to anyone you've met (L in the reader, in a post town).");
                 if (s.SettingsVersion < 214)
@@ -1382,6 +1385,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("GreetLiking = " + GreetLiking + "   ; enRAGE's fondness for you (0 to 100: the bar under people with FeelingBars, what AlliesLiking reads) grows by this much on every greeting of someone (34: three hellos fill the bar and make a friend who'll stand with you, AlliesLiking 90); nothing from someone afraid of you or angry with you; 0 off (0 to 50)");
             b.AppendLine("FondnessActs = " + B(FondnessActs) + "   ; more ways to win people over through Talk (Q, locked on): whiskey for the house ($2, in a saloon with two or more others at the bar: the room cheers and everyone treated is fonder of you, the drunk most), a gift (forty cents: a pouch of tobacco for a man, a tin of peaches for a woman; the proud take a gift where they'd refuse money, the poor are fondest of one), and condolences to someone grieving a friend (thrown back by anyone who knows you killed them)");
             b.AppendLine("TalkVerbs = " + B(TalkVerbs) + "   ; three more verbs in Talk: \"What do you know of <X>?\" for someone they've had dealings with (answered by how they stand with X, with a warning when X is known for a thief, a brawler or a killer; the afraid and the hostile carry no tales), \"Could you use a loan? ($10)\" (taken by most, owed three game days, then \"About that ten dollars...\": paid back by those who can, put off by those who can't, denied now and then by the greedy), and \"Have you met <X>?\" for someone standing near they don't know (a word each, a hat tipped, acquainted from then on)");
+            b.AppendLine("TalkWorries = " + B(TalkWorries) + "   ; once they've told you their trouble, Talk offers its mend (a dollar for the telegraph, the water cart, the fare to the mine, a word put in, a word with the neighbour, the bank note, coffee instead of whiskey, the marker, a secret kept, the stage out of town; the debt, the doctor, the dentist and the fare as before) and its dark mirror, a word that turns it the wrong way (the creditor told where to find them, the fever called a chill, the letter given up on...); the frightened believe the worst at once, the proud and the cold half the time, and nobody forgets who made it worse");
             b.AppendLine("KindnessSeen = " + B(KindnessSeen) + "   ; the named people who see you do a kindness to someone else from within 12 m (a drink stood, money or a gift given, a debt paid, a hand up, a bully faced, a mercy shown) think better of you too, and remember seeing you do right");
             b.AppendLine("KindnessSeenLiking = " + KindnessSeenLiking + "   ; enRAGE's fondness for you (the bar under people) that each of them gains for it (0 to 30; 0: only our own people's affection moves)");
             b.AppendLine("AlliesRide = " + B(AlliesRide) + "   ; the friend from a town's ledger who happens by on the road comes on horseback, 45-70 m off, and is down off the horse and in on foot near you (if the horse won't take the order within 8 s they run in as before); off: on foot, 30-45 m off");

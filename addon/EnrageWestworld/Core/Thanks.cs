@@ -35,19 +35,24 @@ namespace EnrageWestworld.Core
         /// The help's outcome, for the worry he paid to mend (the world log keeps it; KindOf reads it back).
         public static string OutcomeOf(string worry)
         {
-            return worry == "fever" ? DoctorOutcome : worry == "tooth" ? ToothOutcome : worry == "savings" ? FareOutcome : DebtOutcome;
+            if (worry == "fever") return DoctorOutcome;
+            if (worry == "tooth") return ToothOutcome;
+            if (worry == "savings") return FareOutcome;
+            if (worry == "debt" || worry == null) return DebtOutcome;
+            Help h = Helps.Mend(worry);   // the other worries' mends (Core/Helps.cs; SIXDAY item 9)
+            return h != null ? h.Outcome : DebtOutcome;
         }
 
         /// The thanks for a worry he paid to mend: debt, doctor, tooth, ticket.
         public static string KindOfFix(string worry)
         {
-            return worry == "fever" ? "doctor" : worry == "tooth" ? "tooth" : worry == "savings" ? "ticket" : "debt";
+            return worry == "fever" ? "doctor" : worry == "tooth" ? "tooth" : worry == "savings" ? "ticket" : worry == "debt" || worry == null || Helps.Mend(worry) == null ? "debt" : "mend";
         }
 
         /// A worry mended: thanked like a settled debt (nine in ten come; first of all he's owed).
         private static bool Mended(string kind)
         {
-            return kind == "debt" || kind == "doctor" || kind == "tooth" || kind == "ticket";
+            return kind == "debt" || kind == "doctor" || kind == "tooth" || kind == "ticket" || kind == "mend";
         }
 
         /// What the kindness was, for the words: drink, money, debt (or the doctor, a tooth, a ticket); null for anything else.
@@ -59,7 +64,7 @@ namespace EnrageWestworld.Core
             {
                 case "round": return "drink";
                 case "charity": return e.Outcome == Fondness.GiftOutcome ? "gift" : e.Outcome == Fondness.TipOutcome ? "tip" : "money";   // a gift, a tip (Core/Fondness.cs): their own kinds
-                case "help": return e.Outcome == DebtOutcome ? "debt" : e.Outcome == DoctorOutcome ? "doctor" : e.Outcome == ToothOutcome ? "tooth" : e.Outcome == FareOutcome ? "ticket" : e.Outcome == Fondness.EscortOutcome ? "escort" : null;
+                case "help": return e.Outcome == DebtOutcome ? "debt" : e.Outcome == DoctorOutcome ? "doctor" : e.Outcome == ToothOutcome ? "tooth" : e.Outcome == FareOutcome ? "ticket" : Helps.IsMendOutcome(e.Outcome) ? "mend" : e.Outcome == Fondness.EscortOutcome ? "escort" : null;
                 default: return null;
             }
         }
@@ -69,7 +74,7 @@ namespace EnrageWestworld.Core
         {
             if (e == null || e.DoerId != "player" || e.Kind == null)
                 return false;
-            if (e.Kind == "threat" || e.Kind == "faced")
+            if (e.Kind == "threat" || e.Kind == "faced" || e.Kind == "harm")   // harm: a worry turned the wrong way on purpose (Core/Helps.cs)
                 return true;
             if (!e.Kind.StartsWith("deed:", StringComparison.Ordinal))
                 return false;
@@ -230,6 +235,10 @@ namespace EnrageWestworld.Core
                 case "tip":
                     return shy ? "The coin you dropped me, for the music. Thank you."
                                : sameDay ? "That coin for the music. Most walk past. Thank you." : "You dropped me a coin, the other night. For the music. I remember a face that pays.";
+                case "mend":
+                    return shy ? "That trouble I was in. You put it right. Thank you."
+                               : sameDay ? Pick(seed + "|tme", "That trouble of mine. You put it right today, and asked nothing. I wanted you told.", "What you did for me today. Not many would. I'll not forget it.")
+                                         : Pick(seed + "|tme", "That trouble I told you of, the other day. It's mended, thanks to you.", "You stood by me when that trouble was on me. I keep it in mind.");
                 case "gift":
                     return shy ? "What you gave me. It was kind. That's all."
                                : sameDay ? Pick(seed + "|tgi", "That gift of yours. Didn't expect it. I wanted you told.", "What you gave me earlier. Folks don't give, mostly. Thank you.")
@@ -249,6 +258,7 @@ namespace EnrageWestworld.Core
                 case "doctor": return "Him that paid the doctor. I owe him more than I can say.";
                 case "tooth": return "Him. Paid the dentist for me. Can't look at him without grinning.";
                 case "ticket": return "Him that made up my fare. I'll write to him, if I ever learn his name.";
+                case "mend": return "Him that put my trouble right. I'd not have managed alone.";
                 case "gift": return "Him. Gave me a gift, asking nothing for it. Decent of him.";
                 case "escort": return "Him that saw me home that night. I'd not have got there alone.";
                 case "tip": return "Him. Dropped me a coin for the music once. Most don't.";
@@ -263,13 +273,13 @@ namespace EnrageWestworld.Core
 
         public static IEnumerable<string> AllLines()
         {
-            foreach (string kind in new[] { "drink", "money", "debt", "doctor", "tooth", "ticket", "other" })
+            foreach (string kind in new[] { "drink", "money", "debt", "doctor", "tooth", "ticket", "mend", "other" })
                 foreach (string temper in new[] { null, "Coward", "Proud", "Hothead" })
                     for (int i = 0; i < 6; i++)
                         foreach (bool w in new[] { false, true })
                             foreach (bool same in new[] { false, true })
                                 yield return Line(kind, temper, w, "all" + i, same, kind == "debt" && temper == "Proud" && i == 0 ? Interact.SettleCents : 0);
-            foreach (string kind in new[] { "drink", "money", "debt", "doctor", "tooth", "ticket" })
+            foreach (string kind in new[] { "drink", "money", "debt", "doctor", "tooth", "ticket", "mend" })
                 for (int i = 0; i < 4; i++)
                     yield return Nod(kind, "all" + i);
         }

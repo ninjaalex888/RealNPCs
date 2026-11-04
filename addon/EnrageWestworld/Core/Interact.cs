@@ -33,6 +33,7 @@ namespace EnrageWestworld.Core
         public bool Settles;     // he paid what their worry needed (a debt, the doctor, a dentist, the fare): it's over (Engine.SettleWorry)
         public bool LearnsName;  // he told them his name: they know it from now on (Engine.LearnName)
         public bool Loan;        // the debt he settled they took as a loan, and said so: they'll bring it back (Thanks)
+        public bool Worsens;     // he turned their worry the wrong way and they believed him: it reads as ended badly from here (Core/Helps.cs; Engine.WorsenWorry)
         public string WrittenLine;   // the menu's own line when the model's words took its place: the voice is chosen by it
         public string Message;       // a word they'd have carried to someone (Fondness.ErrandAsk): what Arthur will say to the other
     }
@@ -92,7 +93,8 @@ namespace EnrageWestworld.Core
         public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool fixKnown = false, string tellName = null, string askAbout = null, bool sorry = false, bool sorryJustNow = false,
                                                    string fixKind = "debt", bool house = false, bool gift = false, bool woman = false, string condoleFor = null, bool escort = false,
                                                    string errandTo = null, string deliverFrom = null, string deliverMessage = null, bool typed = false, bool spoken = false,
-                                                   string about1 = null, string about2 = null, bool lend = false, bool collect = false, string introduce = null)
+                                                   string about1 = null, string about2 = null, bool lend = false, bool collect = false, string introduce = null,
+                                                   Help mend = null, Help mirror = null)
         {
             // house, gift, condoleFor: the fondness interactions (Core/Fondness.cs; SIXDAY item 1): whiskey for the house (a saloon with company at
             // the bar), a gift, condolences to someone grieving a friend (their first name)
@@ -122,6 +124,11 @@ namespace EnrageWestworld.Core
                 list.Add(new InteractOption { Id = "lend", Label = Verbs.LendLabel(), Why = cash < Verbs.LendCents ? "not enough money" : null });   // one loan out at a time
             if (fixKnown && fix > 0)
                 list.Add(new InteractOption { Id = "settle", Label = FixLabel(fixKind), Why = cash < fix ? "not enough money" : null });
+            // every other worry's mend, and every worry's dark mirror (Core/Helps.cs; SIXDAY item 9)
+            if (mend != null)
+                list.Add(new InteractOption { Id = mend.Id, Label = mend.Label, Why = mend.Saloon && !saloon ? "only in a saloon" : cash < mend.Cents ? "not enough money" : null });
+            if (mirror != null)
+                list.Add(new InteractOption { Id = mirror.Id, Label = mirror.Label, Why = mirror.Saloon && !saloon ? "only in a saloon" : cash < mirror.Cents ? "not enough money" : null });
             if (condoleFor != null)
                 list.Add(new InteractOption { Id = "condole", Label = Fondness.CondoleLabel(condoleFor) });
             if (escort)

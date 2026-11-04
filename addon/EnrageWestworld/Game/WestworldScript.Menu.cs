@@ -104,7 +104,7 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<string> _talkConfided = new HashSet<string>();   // who has told him their worry this session (a money worry he knows of: the gift is five dollars)
         private readonly bool[] _talkKeys = new bool[13];
         private readonly bool[] _typeWas = new bool[256];   // the typed line's keys, each once per press
-        private int _talkTyped, _talkTypedModel, _talkSpoken, _talkAbout, _talkLent, _talkCollected, _talkIntroduced;
+        private int _talkTyped, _talkTypedModel, _talkSpoken, _talkAbout, _talkLent, _talkCollected, _talkIntroduced, _talkMended, _talkWorsened;
         private string _talkLast;
         private Action _aTalkPrompt;
 
@@ -433,6 +433,9 @@ namespace EnrageWestworld.InGame
                 return;
             }
             bool told = _talkConfided.Contains(TalkToldKey(_menu));
+            // every worry's mend and its dark mirror (Core/Helps.cs; SIXDAY item 9): once told, while it lasts, and neither done yet in this run
+            bool worryOpen = _cfg.TalkWorries && told && _menu.Worry != null && _menu.WorryStage <= 2 && _menu.Id != null && !_menu.Performer && _menu.CoverDollars == 0 && !_engine.WorryMarked(_menu.Id);
+            Help mend = worryOpen ? Helps.Mend(_menu.Worry) : null, mirror = worryOpen ? Helps.Mirror(_menu.Worry) : null;
             string selId = _menu.Options != null && _menu.Sel < _menu.Options.Count ? _menu.Options[_menu.Sel].Id : null;
             Happening wrong = Interact.LastWrong(_store.WorldLog, _menu.Id, _store.LastGameMin);
             int company = _cfg.FondnessActs && _placeKind == "saloon" ? HouseCompany(_menu.Handle) : 0;   // whiskey for the house wants a house (WestworldScript.Fondness.cs)
@@ -446,7 +449,8 @@ namespace EnrageWestworld.InGame
                                              about1: _menu.About != null && _menu.About.Count > 0 ? Person.FirstOf(_menu.About[0].Other(_menu.Id)) : null,   // the three more verbs (Core/Verbs.cs)
                                              about2: _menu.About != null && _menu.About.Count > 1 ? Person.FirstOf(_menu.About[1].Other(_menu.Id)) : null,
                                              lend: _cfg.TalkVerbs && _menu.Id != null && !_menu.Performer && _menu.CoverDollars == 0, collect: _menu.Loan != null,
-                                             introduce: _menu.IntroduceName != null ? Person.FirstOf(_menu.IntroduceName) : null);
+                                             introduce: _menu.IntroduceName != null ? Person.FirstOf(_menu.IntroduceName) : null,
+                                             mend: mend, mirror: mirror);
             if (_cfg.TalkVoice)
             {
                 InteractOption speak = _menu.Options.Find(x => x.Id == "speak");
@@ -648,6 +652,8 @@ namespace EnrageWestworld.InGame
                   : o.Id == "lend" ? Verbs.Lend(t.Temper, t.Woman, t.Regard, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd)
                   : o.Id == "collect" ? Verbs.Collect(t.Temper, t.Woman, t.Regard, Verbs.LoanDue(t.Loan, _store.LastGameMin), !t.MoneyWorry, t.Loan != null ? t.Loan.Cents : Verbs.LendCents, sd)
                   : o.Id == "introduce" ? Verbs.Introduce(t.Temper, t.Woman, Person.FirstOf(t.IntroduceName), t.IntroduceWoman, t.Regard, sd)
+                  : o.Id.StartsWith("mend:", StringComparison.Ordinal) ? Helps.Answer(Helps.Mend(t.Worry), t.Temper, t.Woman, t.Regard, sd)   // every worry's mend and its mirror (Core/Helps.cs)
+                  : o.Id.StartsWith("mirror:", StringComparison.Ordinal) ? Helps.Answer(Helps.Mirror(t.Worry), t.Temper, t.Woman, t.Regard, sd)
                   : Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd, YourSurname(), t.Self);
             }
             if (_talkLastLine.Count > 400)
@@ -724,7 +730,7 @@ namespace EnrageWestworld.InGame
             {
                 _kindSeenOff = t.PendingId == "tip" || t.PendingId == "house";   // a quarter in a hat is no kindness to be seen; the house's treated are credited by HouseRound, not twice (the review)
                 RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h,
-                            a.Settles ? Thanks.OutcomeOf(t.Worry) : a.Event == "charity" ? (t.PendingId == "gift" ? Fondness.GiftOutcome : t.PendingId == "tip" ? Fondness.TipOutcome : "gave $" + a.Cents / 100) : t.PendingId == "house" ? "whiskey for the house" : t.PendingId == "lend" ? Verbs.LentOutcome : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf); the loan's outcome names its sum (Verbs.LoanCents)
+                            a.Settles ? Thanks.OutcomeOf(t.Worry) : a.Event == "charity" ? (t.PendingId == "gift" ? Fondness.GiftOutcome : t.PendingId == "tip" ? Fondness.TipOutcome : "gave $" + a.Cents / 100) : t.PendingId == "house" ? "whiskey for the house" : t.PendingId == "lend" ? Verbs.LentOutcome : a.Event == "harm" ? Helps.HarmOutcome : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf); the loan's outcome names its sum (Verbs.LoanCents)
                 _kindSeenOff = false;
             }
             if (t.PendingId == "deliver")
@@ -759,6 +765,19 @@ namespace EnrageWestworld.InGame
                 t.Worry = null;
                 t.MoneyWorry = false;
                 _talkSettled++;
+                if (t.PendingId.StartsWith("mend:", StringComparison.Ordinal))
+                {
+                    _talkMended++;
+                    Log.Write("TALK mend: " + t.Name + "'s " + t.PendingId.Substring(5) + " trouble put right" + (a.Cents > 0 ? " ($" + a.Cents / 100 + ")" : ""));
+                }
+            }
+            if (a.Worsens && t.Id != null)
+            {
+                _engine.WorsenWorry(t.Id, t.Name);   // the rest of the worry's run reads as ended badly (Core/Helps.cs)
+                _talkWorsened++;
+                Log.Write("TALK mirror: " + t.Name + "'s " + (t.Worry ?? "?") + " trouble turned the wrong way, and they believed it");
+                t.Worry = null;
+                t.MoneyWorry = false;
             }
             if (!t.Seated)
             {
@@ -1378,6 +1397,7 @@ namespace EnrageWestworld.InGame
             return (_cfg.InteractionMenu ? "on (Talk in the lock-on menu on " + (TalkOnControl() ? "the game's lock-on target-info control: Q unless rebound in its Controls menu, a pad's RB" : TalkKeyName() != null ? TalkKeyName() + ", read directly, or a pad's RB" : "a pad's RB only (TalkKey None)") + ")" : "off ([World] InteractionMenu)") + "; opened " + _talkOpened + " times, " + _talkSaid + " things said" +
                    (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_talkSettled > 0 ? ", " + _talkSettled + " worries mended" : "") + (_talkTyped + _talkSpoken > 0 ? ", " + _talkTyped + " things typed and " + _talkSpoken + " said by microphone (" + _talkTypedModel + " asked of the model)" : "") +
                    (_talkAbout + _talkLent + _talkCollected + _talkIntroduced > 0 ? "; the verbs: asked about " + _talkAbout + ", lent " + _talkLent + ", collected " + _talkCollected + ", introduced " + _talkIntroduced : "") +
+                   (_talkMended + _talkWorsened > 0 ? "; troubles: " + _talkMended + " mended, " + _talkWorsened + " turned the wrong way" : "") +
                    (_talkModelAsked > 0 ? "; the model worded " + _talkModelSaid + " of " + _talkModelAsked + " answers (" + _talkModelHeld + " held by the checks, " + _talkModelLate + " late)" : "") + (_menu != null ? "; open on " + _menu.Name : "");
         }
     }

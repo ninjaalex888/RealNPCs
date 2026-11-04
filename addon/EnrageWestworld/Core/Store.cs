@@ -53,6 +53,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<Plan> Plans = new List<Plan>();   // what people mean to do about each other over the next days (Plans.cs)
         [DataMember(EmitDefaultValue = false)] public List<PlaceSpot> Spots = new List<PlaceSpot>();   // where each town's places are, learned from their keepers (Places.cs)
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, long> WorrySettled;   // id -> the game minute the player settled their worry (InnerLife.SettledAt; roadmap 9); null until one is
+        [DataMember(EmitDefaultValue = false)] public Dictionary<string, long> WorryWorsened;   // id -> the game minute the player turned their worry the wrong way (Core/Helps.cs; SIXDAY item 9); null until one
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, string> WorrySeedOf;   // enRAGE's person id -> the resident id whose worry they live on with (Engine.CarryPerson; NIGHT3 For Lex 9a); null until one is taken up
         [DataMember(EmitDefaultValue = false)] public PaceState Pace = new PaceState();                           // when things may happen again (Pacing.cs)
         public List<string> RewoundShares = new List<string>();   // deaths we told enRAGE of that a reload undid; the game side takes them back
@@ -257,6 +258,12 @@ namespace EnrageWestworld.Core
                     Happening before = WorldLog != null ? WorldLog.LastOrDefault(e => e != null && e.Kind == "help" && e.DoerId == "player" && e.TargetId == id && e.At <= cut && Thanks.KindOf(e) != null) : null;
                     if (before != null)
                         WorrySettled[id] = before.At;   // an earlier mend for them, which the later one overwrote: back from the log (the review)
+                }
+            if (WorryWorsened != null)
+                foreach (string id in WorryWorsened.Where(kv => kv.Value > cut).Select(kv => kv.Key).ToList())
+                {
+                    WorryWorsened.Remove(id);
+                    n++;
                 }
             Pacing.Rewind(Pace, cut);
             if (Deaths != null)

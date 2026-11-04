@@ -52,6 +52,7 @@ namespace EnrageWestworld.Core
 			InnerLife.Counterpart = LinkedName;   // worries name the real person linked to them (Links.cs)
 			InnerLife.CounterpartDead = LinkedDead;
 			InnerLife.SettledAt = SettledAt;      // a worry the player settled for them reads as ended well (roadmap 9)
+			InnerLife.WorsenedAt = WorsenedAt;    // ...and one he turned the wrong way reads as ended badly (Core/Helps.cs; SIXDAY item 9)
 			InnerLife.WorryIdOf = WorryIdOf;      // enRAGE's person keeps the worry of the resident it took up (NIGHT3 For Lex 9a)
 			InnerLife.WorrySelf = WorrySelfOf;
 			HookMindFirst();   // the mind's own thoughts first, with [Mind] MindLive on (Engine.MindLive.cs)

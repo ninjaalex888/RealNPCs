@@ -470,11 +470,15 @@ namespace EnrageWestworld.Core
 
         private static bool EndsWell(Person p, WorryKind k, long arc)
         {
+            if (WorsenedIn(p.Id, arc))
+                return false;   // he turned it the wrong way, and they believed him (Core/Helps.cs), later than any mend
             return SettledIn(p.Id, arc, long.MaxValue) || Voice.Hash(p.Id + "|wg" + arc) % 100 < k.GoodChance;
         }
 
         /// The game minute the player settled this person's worry (the engine's Store.WorrySettled), or -1. Only reads.
         public static Func<string, long> SettledAt;
+        /// The game minute the player turned this person's worry the wrong way (the engine's Store.WorryWorsened), or -1. Only reads.
+        public static Func<string, long> WorsenedAt;
 
         /// The id whose worry this person lives on with (the engine's Store.WorrySeedOf: enRAGE's person keeps the worry of
         /// the resident it took up, NIGHT3 For Lex 9a), or the id itself. Only reads.
@@ -501,6 +505,29 @@ namespace EnrageWestworld.Core
                 return false;
             int dayIn;
             return ArcOf(id, at / 1440, out dayIn) == arc;
+        }
+
+        /// Whether the player turned this person's worry the wrong way in this run, and no mend came after it.
+        private static bool WorsenedIn(string id, long arc)
+        {
+            long at = WorsenedAt != null && id != null ? WorsenedAt(id) : -1;
+            if (at < 0)
+                return false;
+            long mended = SettledAt != null ? SettledAt(id) : -1;
+            if (mended > at)
+                return false;   // mended since
+            int dayIn;
+            return ArcOf(id, at / 1440, out dayIn) == arc;
+        }
+
+        /// Whether the player already mended this person's worry, or turned it the wrong way, in the run they're in today.
+        public static bool MarkedThisArc(string id, long gameDay)
+        {
+            id = Wid(id);
+            if (id == null || gameDay < 0)
+                return false;
+            long arc = ArcFor(id, gameDay);
+            return SettledIn(id, arc, gameDay) || WorsenedIn(id, arc);
         }
 
         /// Whether the player paid to mend this person's worry on this very game day.
