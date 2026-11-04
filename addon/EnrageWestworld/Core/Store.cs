@@ -51,6 +51,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<Reply> Replies = new List<Reply>();   // answers in the post, and letters of his own (Core/Replies.cs; SIXDAY item 8)
         [DataMember(EmitDefaultValue = false)] public List<TownEvent> Events = new List<TownEvent>();   // (Resident.Held follows these: FixHeld)   // the town's days: dances and the rest (Core/TownEvents.cs; SIXDAY item 10)
         [DataMember(EmitDefaultValue = false)] public List<Ghost> Ghosts = new List<Ghost>();   // what rewinds dropped, kept a week (Core/Ghosts.cs; SIXDAY item 12b); never rewound
+        [DataMember(EmitDefaultValue = false)] public List<KinGrudge> KinGrudges = new List<KinGrudge>();   // the kin who come about a wrong of the player's (Core/KinGrudges.cs; SIXDAY item 14)
         [DataMember(EmitDefaultValue = false)] public int Rewinds;                                 // how many times the clock turned back
         [IgnoreDataMember] public List<Ghost> LastRewound;                                        // the last rewind's ghosts, for the engine's log
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, TownLedger> TownLedgers = new Dictionary<string, TownLedger>();   // each town's ledger, read off the records (Core/TownLedgers.cs; SIXDAY item 11c)
@@ -345,6 +346,18 @@ namespace EnrageWestworld.Core
                     r.DiedAt = 0;
                     n++;
                 }
+            if (KinGrudges != null)
+            {
+                n += KinGrudges.RemoveAll(k => k != null && k.At > cut);   // a wrong undone: nobody comes about it
+                foreach (KinGrudge k in KinGrudges)
+                    if (k != null && k.Done && k.DoneAt > cut)
+                    {
+                        k.Done = false;   // said after the cut: not said after all
+                        k.How = null;
+                        k.DoneAt = 0;
+                        n++;
+                    }
+            }
             if (TownLedgers != null)
                 foreach (TownLedger tl in TownLedgers.Values)
                     if (tl != null && tl.LastPaperAt > cut)
@@ -560,6 +573,7 @@ namespace EnrageWestworld.Core
             if (Replies == null) Replies = new List<Reply>();
             if (Events == null) Events = new List<TownEvent>();
             if (TownLedgers == null) TownLedgers = new Dictionary<string, TownLedger>();
+            if (KinGrudges == null) KinGrudges = new List<KinGrudge>();
             if (Ghosts == null) Ghosts = new List<Ghost>();
             FixHeld();
             if (Weddings == null) Weddings = new List<Wedding>();

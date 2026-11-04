@@ -195,6 +195,11 @@ NEW IN 0.7.19
   you for his marker ($5) as the debtor does; the Devout and the churchgoing don't drink away
   bad news on a Sunday (grief excepted), and a Devout in the room judges a Sunday drinker in a
   thought; a friend of a man drinking away bad news stands the house a round, him first.
+- The kin who take up a wrong ([Scenes] KinGrudges, on): a wrong of yours on a person RealNPCs
+  knows (a threat, a beating, a theft, a trouble turned the wrong way) brings a man of their
+  family you never met to town five to nine days on; he walks up and says it to your face by
+  his nature, the street sees it, and he stays a resident of his town. Once for each person;
+  never violent. Testing row "kingrudge"; F7 "TEST kingrudges:".
 - A kindness seen ([Encounters] KindnessSeen, on; KindnessSeenLiking, 5): the named people
   who see you do a kindness to someone else from within 12 m (a drink stood, money or a gift
   given, a debt paid, a hand up, a bully faced, a mercy shown) think better of you too, and

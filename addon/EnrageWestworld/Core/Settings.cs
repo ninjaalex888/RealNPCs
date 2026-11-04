@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 229;
+        public const int CurrentVersion = 230;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -345,6 +345,7 @@ namespace EnrageWestworld.Core
         public bool Kindnesses = true;
         public bool Vices = true;
         public bool Grudges = true;
+        public bool KinGrudges = true;       // a wrong of yours on a known person brings a man of their family, whom you never met, to town five to nine days on to say it to your face (Core/KinGrudges.cs; roadmap 20; SIXDAY item 14; settings version 230)
         public bool ReasonThoughts = true;   // [Scenes] when a street scene starts for a reason between two people, the one whose reason it is thinks why as they go over (settings version 155; NIGHT3)
         public bool CourtFolkAges = true;    // [Scenes] enRAGE's townsfolk, whose ages it doesn't keep, may court each other on the street (an age guessed from who they are; Reasons.CourtGuessAges; settings version 170)
         public bool WarnedYou = true;        // [Scenes] someone who saw Arthur's violence may tell him to his face what they think of it; someone who thinks well of him may warn him of a man with a grudge, or the law asking (words only; with MindLive; settings version 170)
@@ -827,6 +828,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 230)
+                    log?.Invoke("Settings: new in this version: [Scenes] KinGrudges (on): a wrong of yours on a known person brings a man of their family to town a week on to say it to your face.");
                 if (s.SettingsVersion < 229)
                     log?.Invoke("Settings: new in this version: [Mind] MoodsCarry (on): the weather wears on moods, and a feeling shown in a crowd is caught by those near.");
                 if (s.SettingsVersion < 228)
@@ -1505,6 +1508,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("EnragePeopleJoinIn = " + B(EnragePeopleJoinIn) + "   ; enRAGE's own people (its nemeses, gang men and named folk) take part in street scenes, reactions, talk and waking acts like anyone else, unless enRAGE has them busy (a fight, a job, a ride)");
             b.AppendLine("Reactions = " + B(Reactions) + "   ; street scenes: the one spoken to reacts to the words by their nature (bristles, flinches, shakes their head, nods), and a man whose face goes into the bar reels");
             b.AppendLine("Grudges = " + B(Grudges) + "   ; grudges that travel: a friend of someone wronged has it out with the one who did it; and someone whose friend you killed may come up and say so to your face (never violent)");
+            b.AppendLine("KinGrudges = " + B(KinGrudges) + "   ; a wrong of yours on a known person (a threat, a beating, a theft, a trouble turned the wrong way on purpose) brings a man of their family, a brother or a father you never met, to town five to nine days on: he walks up and says it to your face by his nature, and stays a resident of the town; once for each person wronged; never violent; false: never");
             b.AppendLine("ReasonThoughts = " + B(ReasonThoughts) + "   ; when a street scene starts for a reason between two people (a quarrel over money, a friend to comfort, good news to tell), the one whose reason it is thinks why over their head as they go over, so you can follow what led to it");
             b.AppendLine("CourtFolkAges = " + B(CourtFolkAges) + "   ; enRAGE's townsfolk, whose ages it doesn't keep, may court each other (an age guessed from who they are)");
             b.AppendLine("WarnedYou = " + B(WarnedYou) + "   ; (with MindLive) someone who saw what you did may have it out with you in words, and someone who thinks well of you may warn you of a man with a grudge, or the law asking. Words only");

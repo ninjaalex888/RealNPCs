@@ -203,6 +203,7 @@ namespace EnrageWestworld.InGame
             if (w.Ped == null || !w.Ped.Exists() || w.Ped.IsDead || _director.Involves(w.Ped.Handle) || MayDirectWhyNot(w.Ped) != null)
             {
                 _grudgeWalk = null;
+                KinGrudgeGaveUp();   // a kin's walk lost its body (WestworldScript.KinGrudges.cs)
                 return;
             }
             int h = w.Ped.Handle;
@@ -218,12 +219,14 @@ namespace EnrageWestworld.InGame
                     if (w.Id != null)
                         _engine.MarkGrudged(w.Id, w.DeadId);   // said to your face: once for this death
                     Log.Write("GRUDGE " + w.Name + " to your face: " + w.Line);
+                    KinGrudgeSaid(w, me, now);   // a kin's word: done, and the street saw it (WestworldScript.KinGrudges.cs)
                 }
                 else if (now > w.Until)
                 {
                     TASK.TASK_WANDER_STANDARD(h, 10f, 10);
                     _grudgeWalk = null;
                     Log.Write("GRUDGE " + w.Name + " never reached you: gave it up");
+                    KinGrudgeGaveUp();
                 }
                 return;
             }

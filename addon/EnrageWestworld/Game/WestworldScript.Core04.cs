@@ -1294,6 +1294,7 @@ namespace EnrageWestworld.InGame
             TownEventsStep(now);   // the town's day: a dance staged when you're there (WestworldScript.TownEvents.cs)
             SpaceStep(now);     // and mind you standing too close (WestworldScript.Space.cs)
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
+            KinGrudgesStep(now); // the kin who come about a wrong of yours (WestworldScript.KinGrudges.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             LonelyStep(now);    // someone lonely who knows you comes over (WestworldScript.Lonely.cs)
             FavourStep(now);    // someone in trouble comes to ask a favour (WestworldScript.Favours.cs)

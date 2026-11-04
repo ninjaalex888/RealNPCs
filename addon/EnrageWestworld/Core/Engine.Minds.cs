@@ -35,6 +35,14 @@ namespace EnrageWestworld.Core
                 return null;
             e.At = Store.LastGameMin;
             WorldEvents.Note(Store.WorldLog, e);
+            try
+            {
+                KinGrudgeNote(e);   // a wrong of the player's: a man of their family may come about it (Core/Engine.KinGrudges.cs; a fault here never costs the event)
+            }
+            catch (Exception ex)
+            {
+                Log("KIN GRUDGE note failed: " + ex.Message);
+            }
             Detail("EVENT " + WorldEvents.Describe(e));
             if (Cfg.MindLive)
             {

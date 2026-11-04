@@ -368,6 +368,18 @@ namespace EnrageWestworld.InGame
                         skipped = "the rarity and the rests (Pacing \"grudge\")";
                         return GrudgeScene(Game.Player.Character, now, true, out gw) ? null : gw;
                     }
+                case "kingrudge":
+                    {
+                        Ped me0 = Game.Player.Character;
+                        Candidate near = ReasonCandidates(me0, now, true).Where(c => c.Who != null && c.Who.Id != null && Resident.IsResident(c.Who.Id) && c.Ped.Position.DistanceTo(me0.Position) < 20f)
+                                                                         .OrderBy(c => c.Ped.Position.DistanceTo(me0.Position)).FirstOrDefault();
+                        string what = _engine.KinTest(near != null ? near.Who.Id : null, _placeTown, Bridge.Now());
+                        if (what.StartsWith("no "))
+                            return what;
+                        said = what;
+                        _nextKinGrudge = 0;
+                        return null;
+                    }
                 case "grudge:you":
                     {
                         string gy;
