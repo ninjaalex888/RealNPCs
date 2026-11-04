@@ -195,6 +195,10 @@ NEW IN 0.7.19
   you for his marker ($5) as the debtor does; the Devout and the churchgoing don't drink away
   bad news on a Sunday (grief excepted), and a Devout in the room judges a Sunday drinker in a
   thought; a friend of a man drinking away bad news stands the house a round, him first.
+- The epilogue remembers ([World] EpilogueCarries, on): the first time John's save is made with
+  Arthur's beside it, Arthur's people come over eight years older (some married, widowed, moved
+  on or dead), the ties between them with them, and those who met Arthur think of a man called
+  Morgan when they see John. F7 "TEST epilogue:".
 - Neighbours who come back ([World] ReturningNeighbours, on; with TrainTime): someone who left
   the town on the train a week ago or more may step off a later one, one of the town's own
   again, and a friend near does a double take. The dead who remember: a man you kill keeps the

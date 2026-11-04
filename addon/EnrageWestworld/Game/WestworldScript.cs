@@ -466,6 +466,7 @@ namespace EnrageWestworld.InGame
 			_store = Store.Load(StorePath, Log.Write);
 			_saveRefusedTold = false;   // a store that could not be read says so once again (WestworldScript.Saving.cs)
 			_store.Player = _player;
+			EpilogueCarry(flag);   // John's first save takes Arthur's world over, eight years on (WestworldScript.Epilogue.cs)
 			SaveWarm();     // the first save's one-off cost, paid inside the load's long frame
 			if (_recordFates.Count > 0)
 			{
@@ -1225,6 +1226,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST moods: " + MoodsStatus());
 			Log.Write("TEST kingrudges: " + KinGrudgesStatus());
 			Log.Write("TEST criminals: " + CriminalsStatus());
+			Log.Write("TEST epilogue: " + EpilogueStatus());
 			Log.Write("TEST pacing: " + (_store != null ? Pacing.Status(_store.Pace, _store.LastGameMin) : "not loaded"));
 			Log.Write("TEST story: " + StoryStatus());
 			Log.Write("TEST near: " + NearStatus());

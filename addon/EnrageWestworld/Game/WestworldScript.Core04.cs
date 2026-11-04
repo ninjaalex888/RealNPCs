@@ -1297,6 +1297,7 @@ namespace EnrageWestworld.InGame
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
             KinGrudgesStep(now); // the kin who come about a wrong of yours (WestworldScript.KinGrudges.cs)
             CriminalsStep(now);  // the criminal class: a thief gone straight thinks of it (WestworldScript.Criminals.cs)
+            EpilogueStep(now);   // the epilogue: one who remembers a man called Morgan (WestworldScript.Epilogue.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             LonelyStep(now);    // someone lonely who knows you comes over (WestworldScript.Lonely.cs)
             FavourStep(now);    // someone in trouble comes to ask a favour (WestworldScript.Favours.cs)

@@ -53,6 +53,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<Ghost> Ghosts = new List<Ghost>();   // what rewinds dropped, kept a week (Core/Ghosts.cs; SIXDAY item 12b); never rewound
         [DataMember(EmitDefaultValue = false)] public List<KinGrudge> KinGrudges = new List<KinGrudge>();   // the kin who come about a wrong of the player's (Core/KinGrudges.cs; SIXDAY item 14)
         [DataMember(EmitDefaultValue = false)] public List<TrystRecord> Trysts = new List<TrystRecord>();   // the women of the player's nights (Core/Trysts.cs; SIXDAY item 15)
+        [DataMember(EmitDefaultValue = false)] public bool CarriedOver;   // John's store took Arthur's world over once (Core/Epilogue.cs; SIXDAY item 23)
         [DataMember(EmitDefaultValue = false)] public int Rewinds;                                 // how many times the clock turned back
         [IgnoreDataMember] public List<Ghost> LastRewound;                                        // the last rewind's ghosts, for the engine's log
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, TownLedger> TownLedgers = new Dictionary<string, TownLedger>();   // each town's ledger, read off the records (Core/TownLedgers.cs; SIXDAY item 11c)
