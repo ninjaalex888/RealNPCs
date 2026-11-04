@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 236;
+        public const int CurrentVersion = 237;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -113,6 +113,7 @@ namespace EnrageWestworld.Core
         public bool SeatedBrawls = true;   // with MindBrawls' fights: two who are sat or leaning may come to blows, got up first Rockstar's way (Lex, 2026-11-01, Valentine saloon: the brawl test found no pair); off: words only, as before
         public int BrawlOpeningBoost = 20;   // with MindBrawls: added to the pull to join in a fight's first 10 s (percent points; Lex, 2026-11-01: more bystanders join early)
         public bool MindOnlookers = true;    // with MindLive: someone who only watched a quarrel, a fight or something you did acts on what they feel about it (walks off from it, stands rooted at a gun, shakes their head, bristles, turns to watch), two a happening at most (Core/Onlooking.cs; roadmap 39; night 2026-10-29, item 3; settings version 108); off, they only turn their heads
+        public bool GroupActs = true;        // with MindLive: acts for several at once: after a street fight the first friend may fetch another and the two close round the man who went down (the mind's pick, the model's for a known mind); an onlooker who leaves takes their spouse or sweetheart along (Core/GroupActs.cs; roadmap 39; SIXDAY item 21; settings version 237)
         public bool MindWakes = true;        // with MindLive and West World: what someone has lived through (the shadow's doubts about "things are as they seem") leans the Awakening, a buried man seen walking breaks that belief, and the moment it gives way they stir (Core/Engine.Doubt.cs; the mind doc's step 10; night 2026-10-29, item 4; settings version 109); off, the Awakening by its own roll alone
         public bool MindPassing = true;      // with MindLive: a greeting in passing follows what the first one feels about the other lately and their mood (Core/Passing.Mind.cs; roadmap 39; night 2026-10-29, item 6; settings version 111); and how someone shows you what they feel about you from a while back as you pass (Core/Passing.ToYou.cs, item 6f); off, the tie's greeting
         public bool MindPassingLasts = true; // with MindPassing: how someone shows you what they feel about you as you pass reads the feeling by the mood's slower fading (hours for a slight), not its own quick one (minutes), and from 12 m, not 9 (NIGHT4 item 5; settings version 170)
@@ -837,6 +838,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 237)
+                    log?.Invoke("Settings: new in this version: [Mind] GroupActs (on): friends close round a beaten friend after a fight, and an onlooker who leaves takes their spouse or sweetheart along.");
                 if (s.SettingsVersion < 236)
                     log?.Invoke("Settings: new in this version: [World] GunpointStages (on): the gun kept on someone brings a second and a third step by who they are.");
                 if (s.SettingsVersion < 235)
@@ -1292,6 +1295,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("SeatedBrawls = " + B(SeatedBrawls) + "   ; two people who are sat or leaning (at a bar, at a table) may still come to blows: they get up first, the game's own way; false: a quarrel between them stays words (on as it comes)");
             b.AppendLine("BrawlOpeningBoost = " + BrawlOpeningBoost + "   ; with MindBrawls on: how much readier onlookers are to join in a fight's first 10 seconds, on top of BrawlJoinBoost (0 to 60; 20 as it comes): someone may still go down early, but more join before they do");
             b.AppendLine("MindOnlookers = " + B(MindOnlookers) + "   ; with MindLive on: someone who only watched a quarrel, a fight or something you did acts on what they feel about it, by their nature and what 1899 lets them show (the frightened walk off, a man who keeps his fear off his face slips away, a gun or something uncanny roots them to the spot, contempt shakes its head, the pious walk off disapproving, a keen eye turns to watch), at most two each time; false: they only turn their heads");
+            b.AppendLine("GroupActs = " + B(GroupActs) + "   ; with MindLive on: acts for several people at once: after a street fight, when two friends of the man who went down are near, the first friend's mind (the model's, for someone it knows) picks between tending him alone, fetching the other and closing round him (a scene of three: the two see him up and walk him off) and leaving it; and an onlooker whose mind says leave takes their spouse or sweetheart within 6 m along, side by side, with a word; false: one friend tends, onlookers leave alone");
             b.AppendLine("OnlookersRunMetres = " + F(OnlookersRunMetres) + "   ; with MindOnlookers on: how far, in metres, an onlooker badly frightened by real danger runs from it (5-60)");
             b.AppendLine("OnlookersRunning = " + OnlookersRunning + "   ; how many onlookers may run from one happening once one does, the fright spreading (1-8; fewer the braver the town, [World] Bravery)");
             b.AppendLine("MindWakes = " + B(MindWakes) + "   ; with MindLive and West World on: the Awakening follows what people have lived through: the uncanny, a killing or a buried man seen walking shake their sense that things are as they seem, so they wake sooner, a good turn steadies them, and the moment that sense gives way they begin to stir; someone who saw a man die and sees him walk again is frightened by it and begins to wake (with MindOnlookers on, backs away from him, or, struck hard, stands rooted); false: the Awakening by its own roll alone");

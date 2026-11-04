@@ -195,6 +195,10 @@ NEW IN 0.7.19
   you for his marker ($5) as the debtor does; the Devout and the churchgoing don't drink away
   bad news on a Sunday (grief excepted), and a Devout in the room judges a Sunday drinker in a
   thought; a friend of a man drinking away bad news stands the house a round, him first.
+- Group acts ([Mind] GroupActs, on; with MindLive): after a street fight, with two friends of the
+  man who went down near, the first friend's mind (the model's, for someone it knows) picks: tend
+  him alone, fetch the other and close round him (the two see him up and walk him off), or leave
+  it; and an onlooker who leaves takes their spouse or sweetheart along with a word.
 - Reactions at gunpoint, in stages ([World] GunpointStages, on): keep the gun on someone six
   seconds and they take a second step by who they are (beg, defy you, back away, run, or freeze
   with their hands up; the model's pick for someone it knows), and a third at fourteen (most

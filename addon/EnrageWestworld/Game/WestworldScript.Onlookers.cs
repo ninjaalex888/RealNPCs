@@ -139,6 +139,62 @@ namespace EnrageWestworld.InGame
             Safe("mind onlookers", _aOnlook);
         }
 
+        private int _onlookTogether;
+
+        /// The onlooker's spouse or sweetheart within 6 m, known to the mind, free to be sent: their handle, else 0.
+        private int OnlookPartner(OnlookerAct a, Ped p)
+        {
+            if (a.Id == null || _store == null)
+                return 0;
+            Person mine = _engine.KinPerson(a.Id);
+            for (int i = 0; i < _mindNear.Count; i++)
+            {
+                int q = _mindNear[i];
+                MindWho w;
+                if (q == a.Handle || !_mindWho.TryGetValue(q, out w) || w.Id == null || w.Id == a.Id || !ENTITY.DOES_ENTITY_EXIST(q) || ENTITY.IS_ENTITY_DEAD(q))
+                    continue;
+                Ped other = new Ped(q);
+                if (other.Position.DistanceTo(p.Position) > 6f || PED.IS_PED_USING_ANY_SCENARIO(q) || PED.IS_PED_IN_COMBAT(q, 0) || _director.Involves(q) || MayDirectWhyNot(other) != null)
+                    continue;
+                bool theirs = false;
+                for (int j = 0; j < _store.Ties.Count && !theirs; j++)
+                {
+                    SceneTie t = _store.Ties[j];
+                    theirs = t != null && t.Warmth > 0 && Ties.Sweethearts(t) && t.Has(a.Id) && t.Has(w.Id);
+                }
+                if (!theirs && mine != null && mine.SpouseName != null && w.Name != null && !mine.SpouseName.StartsWith("a ", StringComparison.Ordinal) && string.Equals(mine.SpouseName, w.Name, StringComparison.OrdinalIgnoreCase))
+                    theirs = true;
+                if (theirs)
+                    return q;
+            }
+            return 0;
+        }
+
+        /// Both walk off from the trouble side by side, 25 m, with a word from the one who chose it; the game's again after.
+        private void OnlookLeaveTogether(OnlookerAct a, Ped p, int partner, int from)
+        {
+            Vector3 at = p.Position;
+            Vector3 origin = from != 0 ? ENTITY.GET_ENTITY_COORDS(from, true, true) : a.At;
+            Vector3 dir = new Vector3(at.X - origin.X, at.Y - origin.Y, 0f);
+            dir = Math.Abs(dir.X) + Math.Abs(dir.Y) < 0.1f ? new Vector3(1f, 0f, 0f) : dir.Normalized;
+            Vector3 spot = at + dir * 25f, side = new Vector3(-dir.Y, dir.X, 0f) * 0.9f;
+            int now = Game.GameTime;
+            foreach (int h in new[] { a.Handle, partner })
+            {
+                Vector3 goTo = h == a.Handle ? spot + side : spot - side;
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+                TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, goTo.X, goTo.Y, goTo.Z, 1.6f, -1, 1f, 0, 0f);
+                WanderLater(h, now + 22000);
+            }
+            MindWho pw;
+            string partnerName = _mindWho.TryGetValue(partner, out pw) && pw != null ? pw.Name : null;
+            bool partnerWoman = !PED.IS_PED_MALE(partner);
+            string line = GroupActs.TakeAway(partnerName != null ? Person.FirstOf(partnerName) : null, partnerWoman, a.Id + "|" + a.QueuedAt);
+            SpeechCaption(Person.FirstOf(a.Name ?? "Someone"), line, a.Handle, 3500, false, true);
+            _onlookTogether++;
+            Log.Write("ONLOOK " + a.Name + " takes " + (partnerName ?? "their own") + " away from it: " + line);
+        }
+
         private void OnlookPlay(int now)
         {
             OnlookerAct a = _onlookQueue[0];
@@ -183,11 +239,22 @@ namespace EnrageWestworld.InGame
             switch (a.Act)
             {
                 case "leave":
-                    if (from != 0)
-                        TASK.TASK_LOOK_AT_ENTITY(h, from, 1500, 0, 51, 0);
-                    TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // the scenes' walkaway (their flee isn't yet seen working: the catalogue)
-                    did = "walks off from it";
-                    break;
+                    {
+                        if (from != 0)
+                            TASK.TASK_LOOK_AT_ENTITY(h, from, 1500, 0, 51, 0);
+                        int partner = _cfg.GroupActs ? OnlookPartner(a, p) : 0;   // a spouse or sweetheart near and free: they go together (Core/GroupActs.cs; item 21)
+                        if (partner != 0)
+                        {
+                            OnlookLeaveTogether(a, p, partner, from);
+                            did = "takes " + (MindNameOf(partner) ?? "their own") + " away from it";
+                        }
+                        else
+                        {
+                            TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // the scenes' walkaway (their flee isn't yet seen working: the catalogue)
+                            did = "walks off from it";
+                        }
+                        break;
+                    }
                 case "disapprove":
                     {
                         // a shake of the head (the reactions' own clip, upper body) and off about their business
