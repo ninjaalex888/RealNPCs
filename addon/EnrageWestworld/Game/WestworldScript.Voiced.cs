@@ -1066,7 +1066,7 @@ namespace EnrageWestworld.InGame
                 j.Over = true;
                 return;
             }
-            if (j.DoneAsked && !j.DoneSent)
+            if (j.DoneAsked && !j.DoneSent && j.State == "listening")   // only while it listens: later the words are being written down already (the review)
             {
                 j.DoneSent = true;
                 VoiceHttp(url + "/stop", "{\"id\":" + Language.JsonString(j.Id) + ",\"done\":true}", 1500);   // what's heard so far is written down

@@ -35,7 +35,7 @@ namespace EnrageWestworld.InGame
             public Blip Dot;   // the small green dot on the map while they're with you (ours to take away)
         }
 
-        private const int AlliesTickMs = 1500, AlliesOverMs = 6000, AlliesRoadGapMs = 300000, AlliesAskGapMs = 20000, AlliesBodyWaitMs = 15000;
+        private const int AlliesTickMs = 1500, AlliesOverMs = 6000, AlliesRoadGapMs = 300000, AlliesAskGapMs = 20000, AlliesBodyWaitMs = 15000, AlliesHorseWaitMs = 6000;   // the horse's body waited for this long past the rider's, then on foot (the review)
         private readonly List<Ally> _allies = new List<Ally>();
         private readonly List<int> _alliesFoes = new List<int>();
         private readonly Dictionary<int, int> _alliesAskedAt = new Dictionary<int, int>();
@@ -54,6 +54,7 @@ namespace EnrageWestworld.InGame
 
         private AllyRide _alliesRide;
         private uint _alliesPendHorse;
+        private string _alliesPendHorseName;   // the horse's model by name, for the log (the review: the arrival line named another seed's)
         private string _alliesLast, _alliesWhyNot;
         // a body on its way (the Testing row's revolver man, a friend from the road): made when the game has their model
         // streamed in. Spawner.Spawn only asks for a model it hasn't got and makes nobody that call (Lex, 2026-11-03: the
@@ -281,7 +282,8 @@ namespace EnrageWestworld.InGame
             try
             {
                 Feed.Notice("RealNPCs", Allies.FellCaption(a.Name));
-                List<KeyValuePair<string, bool>> mourners = _engine.AllyFell(a.Id, a.Name, _placeTown, _store.LastGameMin, YourFullName());
+                Resident home = a.Road && a.Id != null && Resident.IsResident(a.Id) ? _store.FindResident(a.Id) : null;   // the friend from the road fell out of any town: their own town hears (the review)
+                List<KeyValuePair<string, bool>> mourners = _engine.AllyFell(a.Id, a.Name, _placeTown ?? (home != null ? home.Town : null), _store.LastGameMin, YourFullName());
                 int folk = 0;
                 foreach (KeyValuePair<string, bool> m in mourners)
                 {
@@ -368,7 +370,8 @@ namespace EnrageWestworld.InGame
             _alliesPendHorse = 0;
             if (_cfg.AlliesRide)
             {
-                _alliesPendHorse = Natives.Hash(Allies.HorseModel(friend.Id + "|" + now));
+                _alliesPendHorseName = Allies.HorseModel(friend.Id + "|" + now);
+                _alliesPendHorse = Natives.Hash(_alliesPendHorseName);
                 if (!Spawner.Ready(_alliesPendHorse))   // the horse's model asked for beside the rider's; made only if it's in by then
                     Log.Detail("ALLIES the horse's body is streaming in");
             }
@@ -402,6 +405,18 @@ namespace EnrageWestworld.InGame
                 }
                 if (!Spawner.Ready(_alliesPendModel) || !Spawner.SafeToSpawn())
                     return;
+                if (_alliesPendHorse != 0 && !Spawner.Ready(_alliesPendHorse))
+                {
+                    // the rider's body is in, the horse's not yet: both are waited for (the review: the friend was made on foot 45-70 m off the
+                    // moment the rider's model came), the horse given up after AlliesHorseWaitMs and the walk shortened to a foot arrival's
+                    if (now - _alliesPendSince < AlliesHorseWaitMs)
+                        return;
+                    STREAMING.SET_MODEL_AS_NO_LONGER_NEEDED(_alliesPendHorse);
+                    _alliesPendHorse = 0;
+                    _alliesPendMin = 30f;
+                    _alliesPendMax = 45f;
+                    Log.Write("ALLIES " + (_alliesPendFriend != null ? _alliesPendFriend.Name + "'s" : "the friend's") + " horse (" + _alliesPendHorseName + ") never streamed in within " + AlliesHorseWaitMs / 1000 + " s: on foot");
+                }
                 Ped me = Game.Player.Character;
                 if (me == null || !me.Exists())
                     return;
@@ -457,6 +472,7 @@ namespace EnrageWestworld.InGame
         /// off the horse near you and in on foot (AlliesRideStep). False when no horse could be made: in on foot as before.
         private bool AlliesRideIn(Ped p, Resident friend, int now)
         {
+            Ped horse = null;
             try
             {
                 if (!Spawner.Ready(_alliesPendHorse))
@@ -466,7 +482,7 @@ namespace EnrageWestworld.InGame
                 }
                 Vector3 at = p.Position;
                 float heading = ENTITY.GET_ENTITY_HEADING(p.Handle);
-                Ped horse = Spawner.Spawn(_alliesPendHorse, at, heading);
+                horse = Spawner.Spawn(_alliesPendHorse, at, heading);
                 if (horse == null)
                 {
                     Log.Write("ALLIES no horse for " + friend.Name + " (" + (Spawner.LastSpawnWhy ?? "the game made none") + "): on foot");
@@ -479,13 +495,23 @@ namespace EnrageWestworld.InGame
                 _alliesRide = new AllyRide { Rider = p, Horse = horse, Friend = friend, Since = now, CheckedAt = now, LastD = at.DistanceTo(me.Position) };
                 Speech.SayTag(p.Handle, "fight", me.Handle);
                 SpeechCaption(Person.FirstOf(friend.Name), Allies.Shout(true, true, friend.Id + "|ride|" + now), p.Handle, 2500, true);
-                Log.Write("ALLIES " + friend.Name + " rides in from " + (int)_alliesRide.LastD + " m off (" + Allies.HorseModel(friend.Id + "|" + now) + ")");
+                Log.Write("ALLIES " + friend.Name + " rides in from " + (int)_alliesRide.LastD + " m off (" + (_alliesPendHorseName ?? "a horse") + ")");
                 return true;
             }
             catch (Exception ex)
             {
                 Log.Write("ALLIES the ride failed (" + ex.Message + "): on foot");
                 _alliesRide = null;
+                if (horse != null)
+                {
+                    try
+                    {
+                        if (PED.IS_PED_ON_MOUNT(p.Handle))
+                            Function.Call(TaskDismountAnimal, p.Handle, 0, 0, 0, 0, 0);
+                        Spawner.Release(horse, true);   // a horse already made is given back, not left a mission entity till shutdown (the review)
+                    }
+                    catch { }
+                }
                 return false;
             }
         }

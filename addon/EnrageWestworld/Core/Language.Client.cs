@@ -45,7 +45,7 @@ namespace EnrageWestworld.Core
                 return false;
             lock (_lock)
             {
-                bool talk = ask.Request.Kind == "talk";
+                bool talk = ask.Request.Kind == "talk" || ask.Request.Kind == "free";   // his own words (Kind "free") wait face to face as Talk's do: the talks' own queue, before the picks (the review)
                 if (talk ? _talks.Count >= MostTalksWaiting : _picks.Count >= MostPicksWaiting)
                 {
                     PicksDropped++;

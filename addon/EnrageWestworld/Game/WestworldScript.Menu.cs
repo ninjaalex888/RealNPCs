@@ -1039,6 +1039,17 @@ namespace EnrageWestworld.InGame
             return down && !was;
         }
 
+        /// The list's own key slots brought up to date as the typed line or the ear gives the keys back: the Backspace that left
+        /// them is still down next frame, and the list mustn't take it for a new press and close (the review).
+        private void TalkKeysSync()
+        {
+            _talkKeys[0] = (GetAsyncKeyState(0x26) & 0x8000) != 0;
+            _talkKeys[1] = (GetAsyncKeyState(0x28) & 0x8000) != 0;
+            _talkKeys[2] = (GetAsyncKeyState(0x0D) & 0x8000) != 0;
+            _talkKeys[3] = (GetAsyncKeyState(0x08) & 0x8000) != 0;
+            _talkKeys[4] = (GetAsyncKeyState(0x20) & 0x8000) != 0;
+        }
+
         /// The line being typed (Core/FreeTalk.cs): letters, digits, a space and the plain marks of a sentence, with Shift
         /// for capitals and a question mark; Backspace deletes (on an empty line, leaves); Enter says it; Esc leaves. The
         /// game's own controls are held off while it's open, so the letters don't walk Arthur about.
@@ -1046,6 +1057,7 @@ namespace EnrageWestworld.InGame
         {
             int pad = 0;
             PAD.DISABLE_ALL_CONTROL_ACTIONS(pad);   // the keyboard's letters are the line's, not the game's
+            t.LastAt = now;   // not "nothing chosen" while he thinks over a half-typed line (the review)
             bool shift = (GetAsyncKeyState(0x10) & 0x8000) != 0;
             bool changed = false;
             for (int vk = 0x41; vk <= 0x5A; vk++)
@@ -1071,18 +1083,18 @@ namespace EnrageWestworld.InGame
                 if (t.Typed.Length > 0)
                     t.Typed.Length--;
                 else
-                    t.Typing = false;   // nothing typed: back to the list
+                    t.Typing = false; TalkKeysSync();   // nothing typed: back to the list
                 changed = true;
             }
             if (TypeKey(0x1B))
             {
-                t.Typing = false;
+                t.Typing = false; TalkKeysSync();
                 changed = true;
             }
             if (TypeKey(0x0D))
             {
                 string text = FreeTalk.Tidy(t.Typed.ToString());
-                t.Typing = false;
+                t.Typing = false; TalkKeysSync();
                 changed = true;
                 if (text != null)
                     TalkTypedSend(t, text, now);
@@ -1147,21 +1159,21 @@ namespace EnrageWestworld.InGame
             VoiceJob j = t.Listen;
             if (j == null)
             {
-                t.Listening = false;
+                t.Listening = false; TalkKeysSync();
                 t.Rows = null;
                 return;
             }
             if (drop)
             {
                 j.StopAsked = true;
-                t.Listening = false;
+                t.Listening = false; TalkKeysSync();
                 t.Listen = null;
                 t.Rows = null;
                 Log.Detail("TALK listening dropped on " + t.Name);
                 return;
             }
-            if (done && !j.DoneAsked && !j.Over)
-                j.DoneAsked = true;
+            if (done && !j.DoneAsked && !j.Over && j.State == "listening")
+                j.DoneAsked = true;   // (a Space once the words are being written down changes nothing: the review)
             int shown = j.State == "hearing" || j.State == "finishing" || j.DoneAsked ? -1 : (Environment.TickCount - j.AskedAt) / 1000;
             if (shown != t.ListenShown)
             {
@@ -1170,7 +1182,7 @@ namespace EnrageWestworld.InGame
             }
             if (!j.Over)
                 return;
-            t.Listening = false;
+            t.Listening = false; TalkKeysSync();
             t.Listen = null;
             t.Rows = null;
             string text = j.State == "heard" ? FreeTalk.Heard(j.Text) : null;

@@ -968,9 +968,11 @@ class Handler(BaseHTTPRequestHandler):
                 for k, j in JOBS.items():
                     if jid is not None and k != jid:
                         continue
-                    if j["state"] == "listening" and done:
-                        j["state"] = "finishing"
-                    elif j["state"] in ("queued", "making", "ready", "playing", "recording", "listening", "hearing", "finishing"):
+                    if done:
+                        if j["state"] == "listening":
+                            j["state"] = "finishing"   # what's heard so far is written down
+                        continue   # already being written down, or over: a late "done" changes nothing (the review)
+                    if j["state"] in ("queued", "making", "ready", "playing", "recording", "listening", "hearing", "finishing"):
                         j["state"] = "dropped"
                         j.pop("samples", None)
             self.reply({"ok": True})
