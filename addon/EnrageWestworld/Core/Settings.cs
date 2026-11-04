@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 207;
+        public const int CurrentVersion = 208;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -280,6 +280,7 @@ namespace EnrageWestworld.Core
         public bool CastRelativesSpawn = true;   // when nobody free is on the street (enRAGE has named most walkers in a well-played town), the relative is made out of sight behind you and let go to the game after (Lex, 2026-10-29; settings version 95)
         public int Bravery = EnrageWestworld.Core.Bravery.AsBuilt;   // [World] how brave the townsfolk are, 0-100: the brave hold their ground where the game would send them running (PCF 44, cower instead of flee), and stand back from the mod's own frights; 0 as the game has it (Lex, 2026-10-31; settings version 161)
         public string Storyteller = "lively";   // [World] off | calm | lively | wild: the storyteller shortens the waits on a quiet street or road and lengthens them a little after something big; it never starts anything itself (NIGHT4 item 2; settings version 167)
+        public bool HistoricalAccuracy = true;   // [World] the real history: what people talk of from the papers of 1899 and 1907 (Times.cs), the lines about the year they live in, the real calendar's holidays and the year's work by region (Core/Calendar.cs), the snake-oil man's Food and Drugs Act in 1907, the Panic in the paper; off, none of it, and the timeless texture of the days stays (Lex's brief, 2026-11-03: "bEnableHistoricalAccuracy"; SIXDAY item 3; settings version 208)
         public bool OwnLooks = false;   // [World] standing alone: an ordinary person is known again by the look of the body they were met in (the model and every piece they wear), so the same townsman met again is the same man (roadmap 34, phase A; night 2026-10-29, item 5; settings version 110); off as it comes until seen in game; with enRAGE running, its own knowing by look is used and this never
         public bool Drama = true;
         public int DramaGapSeconds = 30;   // 30 from settings version 185 (Lex, 2026-11-01: "up the frequency"); 150 until 87, 90 until 101, 60 until 185 (Lex, 2026-10-28 and 10-29: the world lively)
@@ -799,6 +800,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 208)
+                    log?.Invoke("Settings: new in this version: [World] HistoricalAccuracy (on): the talk of the times, the lines about the year, the real calendar's holidays and the year's work by region; set it false for a world with no dated history in it.");
                 if (s.SettingsVersion < 207)
                     log?.Invoke("Settings: new in this version: [Encounters] AlliesRide (on): the friend from the road rides in on horseback; AlliesGrieved (on), AlliesGrievedLiking (15): an ally who dies standing with you is grieved by those who knew them, who think the less of you for it.");
                 if (s.SettingsVersion < 206)
@@ -1364,6 +1367,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("[World]");
             b.AppendLine("Bravery = " + Bravery + "   ; how brave the townsfolk are, 0-100: in a fistfight nobody runs, they gather and watch; with guns most hold their ground and the odd coward still runs; the mod's own frights (an onlooker hurrying off, a fright that spreads, a man a gun is drawn on) mostly stand back and watch instead. Someone you aim at or lock on to is left as the game has them, so hold-ups and robbery work as before. Never lawmen, story characters, mission people or enRAGE's. 0: as the game has it");
             b.AppendLine("Storyteller = " + Storyteller + "   ; how lively the world is around you: the storyteller notices how long it has been since something worth stopping for happened near you (a fight, a theft, a standoff, a song, someone coming up to you, an encounter on the road) and, when it has been quiet too long, shortens the waits before the next scene, chance meeting, walk-up and encounter roll; after something big it waits a little longer for half a minute or so. It never starts anything itself and never stops anything. calm (a quieter world than before), lively, wild; off: as before. In a mission, wanted, in a fight or indoors it holds everything as built");
+            b.AppendLine("HistoricalAccuracy = " + B(HistoricalAccuracy) + "   ; the real history in people's heads and mouths: what was in the papers of 1899 and 1907 (the election, the Philippines, the reservations, the trusts, the new machines; in 1907 Roosevelt, the Panic, Oklahoma), the lines about the year they live in, the real calendar (Easter on 2 April 1899, the Fourth, Election Day, Thanksgiving, Christmas, and in Lemoyne Mardi Gras and All Saints', each with its eve and its morning after, and a word of the day on the ticker), the year's work by region (calving and roundup, cane and cotton, the trapping lines), the snake-oil man's Food and Drugs Act in 1907 and the Panic in the paper. false: none of it, and the timeless texture of the days (bath night, Sunday collars, wash day) stays as it was");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");
             b.AppendLine("SelfDefenceNoBounty = " + B(SelfDefenceNoBounty) + "   ; killing or hurting someone who came at you (soldiers too) doesn't raise your bounty or make you wanted: RealNPCs puts it back, unless you also hurt someone who didn't, or did another crime");
             b.AppendLine("TownPosts = " + B(TownPosts) + "   ; the shopkeepers, barkeeps, gunsmiths, doctors and station agents are each one person for good, who knows you; when one dies, a relative or a newcomer takes the counter");

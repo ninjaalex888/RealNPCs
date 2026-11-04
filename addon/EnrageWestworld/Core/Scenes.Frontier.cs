@@ -289,7 +289,10 @@ namespace EnrageWestworld.Core
             string tonic = Voice.Pick(seed + "t", tonics);
             Scene s = new Scene { Kind = "pitch", Cast = c.HasCrowd ? 3 : 2, Summary = "a snake-oil man working the crowd" };
             s.Add(0, "Step right up! " + tonic + "! Cures the rheumatism, the gout, the ague and the common lie!", "greet", "face")
-             .Add(1, "What's in it?", "respond").Add(0, "Science, friend. Pure distilled science.")
+             .Add(1, "What's in it?", "respond");
+            if (InnerLife.ClockYear >= 1907 && InnerLife.Historical)
+                s.Add(0, Calendar.PitchAct[0], "greet").Add(1, Calendar.PitchAct[1], "mock");   // 1907: the Food and Drugs Act of 1906, sworn to on the label (Core/Calendar.cs; roadmap.md P11)
+            s.Add(0, "Science, friend. Pure distilled science.")
              .Add(1, Voice.Pick(seed + "smell", "Smells like turpentine.", "Smells like my uncle's still.", "There's a dead fly in that one."), "mock")
              .Add(0, Voice.Pick(seed + "back", "That's how you know it's working!", "Extra protein, no charge!", "The finest tonics always smell a little."));
             if (c.HasCrowd)

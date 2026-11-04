@@ -1000,6 +1000,9 @@ namespace EnrageWestworld.Core
             // the day, the year, and the old timeless frames: low, taking turns
             c.Add(new Minds.Candidate { Source = "day", Pull = 16 + Minds.Jitter(seed, "day", 8), Make = () => InnerLife.DayLine(p, hour, seed, told) });
             c.Add(new Minds.Candidate { Source = "era", Pull = 10 + Minds.Jitter(seed, "era", 8), Make = () => InnerLife.EraLine(p, seed, told) });
+            int calPull = Calendar.Pull(InnerLife.CalendarYear, InnerLife.ClockMonth, InnerLife.ClockDay, p.Home);   // a holiday today or beside it pulls hard, the season a little (Core/Calendar.cs; nothing with the history off)
+            if (calPull > 0)
+                c.Add(new Minds.Candidate { Source = "calendar", Pull = calPull + Minds.Jitter(seed, "calendar", 6), Make = () => { string cs; return Calendar.Line(p, InnerLife.CalendarYear, InnerLife.ClockMonth, InnerLife.ClockDay, hour, seed, told, out cs); } });
             Minds.Candidate wonder = WonderCandidate(p, st, seed, now);   // the Awakening's written wondering (Engine.Wonder.cs; the no-model run, item 10)
             if (wonder != null)
                 c.Add(wonder);

@@ -183,6 +183,13 @@ NEW IN 0.7.19
   one whose beater you put down in a brawl, the captive you save from the rope, the hogtied
   you cut loose who thank you: fondness to the top, a friend who owes you for a month of game
   days (they come to your aid first), and they remember it. Not yet seen in game.
+- The year as it was ([World] HistoricalAccuracy, on): the real calendar, keyed to the game's
+  own date (Easter 2 April 1899, the Fourth, Election Day, Thanksgiving, Christmas; Mardi Gras
+  and All Saints' in Lemoyne), each with what the day, its eve and its morning after bring to
+  mind and a word of the day on the ticker; the year's work by region (calving and the roundup,
+  cane and cotton, the trapping lines); in 1907 the Food and Drugs Act and the Panic. The talk
+  of the times and the lines about the year now stand behind the same switch: false, and none
+  of it is thought or said. Not yet seen in game.
 - A kindness seen ([Encounters] KindnessSeen, on; KindnessSeenLiking, 5): the named people
   who see you do a kindness to someone else from within 12 m (a drink stood, money or a gift
   given, a debt paid, a hand up, a bully faced, a mercy shown) think better of you too, and
@@ -1502,6 +1509,11 @@ in the file. The new ones:
             SpaceMetres (0.95), SpaceSaloonMetres (0.75), SpaceSeconds (1.8), ArthurSpeaks (true),
             Storyteller (lively | calm | wild | off): quiet streets and roads get the next scene,
             walk-up and encounter roll sooner, something big a short breather; off is as before
+            HistoricalAccuracy (true): the real history: the talk of the times from the papers of
+            1899 and 1907, the lines about the year, the real calendar's holidays on their true dates
+            (each with its eve and morning after, and a word of the day on the ticker), the year's
+            work by region, the snake-oil man's Food and Drugs Act and the Panic in 1907; false:
+            none of it, and the timeless texture of the days stays
 [Features]  KinWordDaysMin (2), KinWordDaysMax (5): game days for word of a killing someone saw to
             reach kin; UnseenKinWordDaysMin (5), UnseenKinWordDaysMax (10): for one nobody saw
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,

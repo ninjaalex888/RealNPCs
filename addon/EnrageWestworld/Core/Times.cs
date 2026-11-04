@@ -523,6 +523,8 @@ namespace EnrageWestworld.Core
         /// The topics of this year that were in the papers by this month (month 0: the whole year).
         public static List<TimesTopic> Of(int year, int month)
         {
+            if (!InnerLife.Historical)
+                return new List<TimesTopic>();   // [World] HistoricalAccuracy off: nobody talks of the times
             int y = year >= 1905 ? 1907 : 1899;
             return All.Where(t => t.Year == y && (month <= 0 || t.From <= month)).ToList();
         }

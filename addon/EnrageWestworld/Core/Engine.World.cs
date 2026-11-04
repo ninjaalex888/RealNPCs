@@ -906,6 +906,7 @@ namespace EnrageWestworld.Core
 
         private void DailyTick(long now)
         {
+            CalendarDaily(now);   // the dated things: the Panic of 1907 in the paper (Engine.Calendar.cs)
             AwarenessTick(now);
             AwakeningTick(now);
             if (Cfg.Diaries)

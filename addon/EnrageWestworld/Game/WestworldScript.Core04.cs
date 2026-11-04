@@ -226,6 +226,7 @@ namespace EnrageWestworld.InGame
         private void ApplySettings()
         {
             Log.Debug = _cfg.DebugLog;
+            InnerLife.Historical = _cfg.HistoricalAccuracy;   // [World] HistoricalAccuracy: the times, the year, the calendar (Core/Calendar.cs)
             Natives.Brisk = _cfg.ErrandPace;
             Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
             Feed.Fallback = (title, text) => NewsPush(title, text, "news");   // when the game won't take top-left updates
@@ -861,7 +862,18 @@ namespace EnrageWestworld.InGame
             InnerLife.Weekday = CLOCK.GET_CLOCK_DAY_OF_WEEK();
             int year = CLOCK.GET_CLOCK_YEAR();
             InnerLife.ClockYear = IsJohn() && year < 1900 ? 1907 : year;
-            try { InnerLife.ClockMonth = GameDate.FromMinutes(Bridge.Now()).Month; } catch { InnerLife.ClockMonth = 0; }   // the month, for what was in the papers by now (Times.cs)
+            InnerLife.CalendarYear = year;   // the clock's own year: the dates and the weekdays follow it (Core/Calendar.cs)
+            try
+            {
+                DateTime d = GameDate.FromMinutes(Bridge.Now());
+                InnerLife.ClockMonth = d.Month;   // the month, for what was in the papers by now (Times.cs)
+                InnerLife.ClockDay = d.Day;       // the day, for the real calendar
+            }
+            catch
+            {
+                InnerLife.ClockMonth = 0;
+                InnerLife.ClockDay = 0;
+            }
         }
 
         /// What the residents near you are living through, for the F7 dump.
@@ -1253,6 +1265,7 @@ namespace EnrageWestworld.InGame
             EscortStep(now);    // someone you're seeing home (WestworldScript.Escort.cs)
             ErrandStep(now);    // a word you're carrying (WestworldScript.Errand.cs)
             BelowStep(now);     // the voice below the saloon floor, late at night (WestworldScript.Below.cs)
+            CalendarStep(now);  // a holiday's word of the day, in the morning (WestworldScript.Calendar.cs)
             MindShadowStep(now);   // the mind in shadow mode: traits, needs, feelings and mood, reported only (WestworldScript.Mind.cs)
             LanguageStep(now);     // the language layer's worker and the engine's hand (WestworldScript.Language.cs; its own try/catch)
             Safe("voice", () => VoiceStep(now));   // voiced thoughts and dialogue: the worker and where each speaker is (WestworldScript.Voiced.cs)

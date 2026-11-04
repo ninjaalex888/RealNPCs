@@ -37,6 +37,9 @@ namespace EnrageWestworld.Core
         public static int Weekday = -1;
         public static int ClockYear = 1899;
         public static int ClockMonth;   // 1 to 12 (0 unknown): what was in the papers by now (Times.cs)
+        public static int ClockDay;     // 1 to 31 (0 unknown): the real calendar (Core/Calendar.cs)
+        public static int CalendarYear; // the clock's own year (John's may still read 1899: dates and weekdays follow it; the era wording ClockYear)
+        public static bool Historical = true;   // [World] HistoricalAccuracy: the times' talk, the year's lines and the real calendar are thought and said; off, none of it (Lex's brief, 2026-11-03: a strict toggle)
 
         // ---- trade ----------------------------------------------------------------------------------
 
@@ -398,8 +401,11 @@ namespace EnrageWestworld.Core
             }
             else if (roll < 49)
             {
-                own = EraLine(p, seed, told);
-                source = "era";
+                string cal;
+                own = Calendar.Line(p, CalendarYear, ClockMonth, ClockDay, hour, seed, told, out cal);   // the date first: a holiday, its eve or morning after, the season's work (Core/Calendar.cs)
+                source = own != null ? cal : "era";
+                if (own == null)
+                    own = EraLine(p, seed, told);
             }
             else if (roll < 58)
             {
@@ -435,7 +441,15 @@ namespace EnrageWestworld.Core
         /// period rule reads Roosevelt and the telephone as 1907's).
         public static string EraLine(Person p, string seed, List<string> told)
         {
+            if (!Historical)
+                return null;   // [World] HistoricalAccuracy off: the year is nobody's business
             return Pick(ClockYear >= 1900 ? Era1907 : Era1899, p, seed, told);
+        }
+
+        /// One of a pool, for this person, not said lately (Pick, for the calendar's pools: Core/Calendar.cs).
+        public static string PickLine(string[] pool, Person p, string seed, List<string> told)
+        {
+            return Pick(pool, p, seed, told ?? new List<string>());
         }
 
         /// One of the timeless frames, by a roll from 58 to 99: trade, hour, body, mirror, bias, age, mask, pleasure,
