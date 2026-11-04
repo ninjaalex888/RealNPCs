@@ -1,9 +1,11 @@
 // Greeting someone makes them fonder of you (Lex, 2026-11-03: "significantly boost the fondness meter for NPCs to really
-// enjoy when the player greets them"). [Encounters] GreetLiking (12) of enRAGE's fondness (0-100: the bar under people
-// with FeelingBars, what AlliesLiking reads, so the people you're civil to are the ones who come to your aid) on the first
-// greeting of someone in a game day, a third of it on later greetings of the same person that day (a string of hellos
-// doesn't buy a friend by noon), nothing from someone afraid of you or angry with you (fear or anger at 40 or more: a
-// greeting from the man they fear is no comfort). enRAGE's own liking for a greeting stays as it is; this is on top,
+// enjoy when the player greets them"; then "the friend/ally status from 4 days to upon 2nd greet, even if it's the same
+// day"). [Encounters] GreetLiking (20) of enRAGE's fondness (0-100: the bar under people with FeelingBars, what
+// AlliesLiking reads, so the people you're civil to are the ones who come to your aid) on each of the first two greetings
+// of someone in a game day (two hellos reach AlliesLiking 40: a friend who'll stand with you, the same day or not), a third
+// of it on later greetings of the same person that day (a string of hellos doesn't fill the bar by noon), nothing from
+// someone afraid of you or angry with you (fear or anger at 40 or more: a greeting from the man they fear is no comfort).
+// More ways to grow the fondness are the roadmap's next item. enRAGE's own liking for a greeting stays as it is; this is on top,
 // through its own method (LikeMore: an audited write). Noted at the greeting itself (PollGreets in WestworldScript.cs:
 // the game's own event, whatever else is going on), counted three and a half seconds later when enRAGE has taken the
 // person up; someone it hasn't yet is tried once more four seconds on. Log "GREET" (detail). F7 "TEST greet liking:".
@@ -16,7 +18,7 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private readonly Dictionary<string, long> _greetLikedOn = new Dictionary<string, long>();   // enRAGE id -> the game day of the last greeting that counted in full
+        private readonly Dictionary<string, long[]> _greetLikedOn = new Dictionary<string, long[]>();   // enRAGE id -> { the game day, greetings counted that day }
         private readonly List<int[]> _greetLikeLater = new List<int[]>();   // { ped, due at, tries }
         private int _greetLiked, _greetLikedAgain, _greetLikeHeld;
         private string _greetLikeLast;
@@ -50,21 +52,25 @@ namespace EnrageWestworld.InGame
                     _greetLikeHeld++;
                     return;
                 }
-                long day = Bridge.Now() / 1440, was;
-                bool first = !_greetLikedOn.TryGetValue(ac.Id, out was) || was != day;
-                int delta = first ? _cfg.GreetLiking : Math.Max(1, _cfg.GreetLiking / 3);
-                if (_greetLikedOn.Count > 500)
-                    _greetLikedOn.Clear();
-                if (first)
-                    _greetLikedOn[ac.Id] = day;
+                long day = Bridge.Now() / 1440;
+                long[] on;
+                if (!_greetLikedOn.TryGetValue(ac.Id, out on) || on[0] != day)
+                {
+                    if (_greetLikedOn.Count > 500)
+                        _greetLikedOn.Clear();
+                    _greetLikedOn[ac.Id] = on = new[] { day, 0L };
+                }
+                on[1]++;
+                bool full = on[1] <= 2;   // the first two of a day in full: two hellos make a friend (Lex)
+                int delta = full ? _cfg.GreetLiking : Math.Max(1, _cfg.GreetLiking / 3);
                 _bridge.LikeMore(ac.Id, delta);
-                if (first)
+                if (full)
                     _greetLiked++;
                 else
                     _greetLikedAgain++;
                 string name = ac.Name ?? ac.Id;
-                _greetLikeLast = name + " +" + delta + (first ? "" : " (again today)");
-                Log.Detail("GREET " + name + " likes you " + delta + " more for the greeting" + (first ? "" : " (again today)") + (like > 0f ? " (was " + (int)like + ")" : ""));
+                _greetLikeLast = name + " +" + delta + (full ? "" : " (the " + on[1] + "th hello today)");
+                Log.Detail("GREET " + name + " likes you " + delta + " more for the greeting" + (full ? "" : " (hello number " + on[1] + " today)") + (like > 0f ? " (was " + (int)like + ")" : ""));
             }
             catch (Exception ex)
             {
@@ -89,7 +95,7 @@ namespace EnrageWestworld.InGame
         private string GreetLikingStatus()
         {
             return _cfg.GreetLiking <= 0 ? "off ([Encounters] GreetLiking)"
-                : "+" + _cfg.GreetLiking + " a first greeting in a day, +" + Math.Max(1, _cfg.GreetLiking / 3) + " again that day; " + _greetLiked + " first greetings counted, " + _greetLikedAgain + " repeats, " +
+                : "+" + _cfg.GreetLiking + " for each of the first two greetings in a day (a friend at " + _cfg.AlliesLiking + "), +" + Math.Max(1, _cfg.GreetLiking / 3) + " from the third; " + _greetLiked + " counted in full, " + _greetLikedAgain + " repeats, " +
                   _greetLikeHeld + " held (afraid or angry)" + (_greetLikeLast != null ? "; last: " + _greetLikeLast : "");
         }
     }

@@ -537,8 +537,26 @@ namespace EnrageWestworld.Core
                 Happening e = log[i];
                 if (e == null || e.DoerId != "player" || e.TargetId != id || e.At > now || now - e.At >= KindMinutes)
                     continue;
-                if (e.Kind == "round" || e.Kind == "charity" || e.Kind == "help" || (e.Kind != null && e.Kind.StartsWith("deed:", StringComparison.Ordinal) && Minds.DeedGroup(e.Kind.Substring(5)) == "deed:kindness"))
+                if (e.Kind == "round" || e.Kind == "charity" || e.Kind == "help" || e.Kind == "defend" || (e.Kind != null && e.Kind.StartsWith("deed:", StringComparison.Ordinal) && Minds.DeedGroup(e.Kind.Substring(5)) == "deed:kindness"))
                     return true;
+            }
+            return false;
+        }
+
+        public const long SavedMinutes = 30 * 1440L;   // someone he saved owes him for a month of game days
+
+        /// Whether he saved them lately (a bully pulled off them, their beater put down, the rope, the hogtied cut loose: a
+        /// "defend" of his in the log within SavedMinutes): someone who owes him (Allies.Warmth 3; Lex, 2026-11-03).
+        public static bool SavedLately(List<Happening> log, string id, long now)
+        {
+            if (log == null || id == null)
+                return false;
+            for (int i = log.Count - 1; i >= 0; i--)
+            {
+                Happening e = log[i];
+                if (e == null || e.Kind != "defend" || e.DoerId != "player" || e.TargetId != id || e.At > now || now - e.At >= SavedMinutes)
+                    continue;
+                return true;
             }
             return false;
         }

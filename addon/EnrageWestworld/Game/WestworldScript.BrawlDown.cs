@@ -59,6 +59,14 @@ namespace EnrageWestworld.InGame
                 Log.Write("BRAWL down: " + name + " lies dead in the fight, by " + (Weapons.Phrase(cause) ?? "a weapon") + ": not a beating (the ledger books it as the game has it)");
                 return;
             }
+            // you put him down: the man he was beating is saved, and yours for good (WestworldScript.Saved.cs; Lex, 2026-11-03)
+            int me = Game.Player.Character.Handle;
+            if (by == me)
+            {
+                int beaten = _director.TargetOf(h);
+                if (beaten != 0 && beaten != me && ENTITY.DOES_ENTITY_EXIST(beaten) && !ENTITY.IS_ENTITY_DEAD(beaten))
+                    SavedByYou(beaten, "you put down the man beating them");
+            }
             MindWho v = MindKnown(h, now), a = by != 0 && ENTITY.DOES_ENTITY_EXIST(by) ? MindKnown(by, now) : null;
             Traits at = a != null && a.Src != null ? (a.Traits ?? (a.Traits = _engine.Shadow.TraitsOf(a.Src))) : null;
             bool drunk = a != null && InHisCups(new Ped(by), a.P);

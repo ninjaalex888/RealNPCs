@@ -224,8 +224,9 @@ namespace EnrageWestworld.InGame
             long g = _store.LastGameMin;
             bool kind = _store.WorldLog != null && Interact.KindLately(_store.WorldLog, w.Id, g);
             bool mended = _store.WorrySettled != null && _store.WorrySettled.ContainsKey(w.Id);
+            bool saved = _store.WorldLog != null && Interact.SavedLately(_store.WorldLog, w.Id, g);   // someone you saved owes you, whatever else they feel (WestworldScript.Saved.cs)
             PersonState st = _store.Find(w.Id);
-            int warmth = Allies.Warmth(like, _cfg.AlliesLiking, kind, mended, st != null ? st.Talks : 0, st != null && st.KnowsName, against);
+            int warmth = Allies.Warmth(like, _cfg.AlliesLiking, kind, mended, st != null ? st.Talks : 0, st != null && st.KnowsName, against, saved);
             if (p.Handle == _alliesTestFriend && !against)
                 warmth = Math.Max(warmth, 2);
             return warmth;
@@ -321,7 +322,8 @@ namespace EnrageWestworld.InGame
                 PersonState st = _store.Find(r.Id);
                 bool kind = _store.WorldLog != null && Interact.KindLately(_store.WorldLog, r.Id, g);
                 bool mended = _store.WorrySettled != null && _store.WorrySettled.ContainsKey(r.Id);
-                if (Allies.Warmth(0f, 0, kind, mended, st != null ? st.Talks : 0, st != null && st.KnowsName, _engine.SawYouViolent(r.Id, 3)) >= 2 && !r.Woman)
+                bool saved = _store.WorldLog != null && Interact.SavedLately(_store.WorldLog, r.Id, g);
+                if (Allies.Warmth(0f, 0, kind, mended, st != null ? st.Talks : 0, st != null && st.KnowsName, _engine.SawYouViolent(r.Id, 3), saved) >= 2 && !r.Woman)
                     fond.Add(r);
             }
             if (fond.Count == 0)

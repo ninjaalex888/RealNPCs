@@ -459,6 +459,7 @@ namespace EnrageWestworld.InGame
             Feed.Say(e.R.Name, Executions.Thanks(e.Plan, e.R.Id), Speech.When(ch, "thanks", me.Handle), ch, toYou: true);
             Vector3 p = e.Captive.Position;
             _engine.Rescued(e.R, e.Plan, e.Region ?? e.Town, ZoneAt(p), p.X, p.Y, p.Z, Bridge.Now());
+            SavedByYou(ch, e.R.Id, e.R.Name, "saved from the rope");   // theirs for good: fondness to the top, a friend who owes you (WestworldScript.Saved.cs; Lex, 2026-11-03)
             if (e.Mark != null && e.Mark.Exists())
                 e.Mark.Delete();
             e.Phase = "saved";

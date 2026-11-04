@@ -284,6 +284,7 @@ namespace EnrageWestworld.InGame
 			PollGreets(gameTime);
 			Greets(gameTime);
 			GreetFondnessLater(gameTime);   // someone enRAGE hadn't taken up at the greeting, tried once more
+			SavedLater(gameTime);   // someone you saved whom enRAGE hadn't taken up, tried again (WestworldScript.Saved.cs)
 			Insults(gameTime);
 			StepEnd("greets and events (step)", pt, pd);
 			if (gameTime >= _nextObserve)
@@ -1196,6 +1197,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST allies: " + AlliesStatus());
 			Log.Write("TEST greet liking: " + GreetLikingStatus());
 			Log.Write("TEST moments: " + MomentsStatus());
+			Log.Write("TEST saved: " + SavedStatus());
 			Log.Write("TEST save: " + SaveStatus());
 			Log.Write("TEST wake voices: " + WakeVoiceStatus());
 			Log.Write("TEST wake anim sets: " + _wakeAnimsResult);

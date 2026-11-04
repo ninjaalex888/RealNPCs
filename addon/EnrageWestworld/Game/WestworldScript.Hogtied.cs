@@ -577,6 +577,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_LOOK_AT_ENTITY(ch, me.Handle, 8000, 0, 51, 0);
                 StagedClip(ch, Hogtied.StruggleDict, Hogtied.ThanksClip, "thanks", h.R.Woman, h.Seed, now);
                 Feed.Say(h.Name, Hogtied.Thanks(h.Captors, h.Seed), Speech.When(ch, "thanks", me.Handle), ch, toYou: true);
+                SavedByYou(ch, h.R != null ? h.R.Id : null, h.Name, "cut loose from the rope");   // theirs for good (WestworldScript.Saved.cs; Lex, 2026-11-03)
             }
             else
             {

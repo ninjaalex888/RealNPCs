@@ -22,9 +22,12 @@ namespace EnrageWestworld.Core
     {
         /// How warm someone is to you, from everything the add-on keeps: 0 nothing, 1 a little, 2 a friend, 3 someone who owes
         /// you. enRAGE's fondness (0-100) counts from `likingFrom` up, a kindness of yours lately or a trouble you mended counts
-        /// as a friend's, talks and your name known a little; fear or a grudge, nothing at all.
-        public static int Warmth(float like, int likingFrom, bool kindLately, bool mended, int talks, bool knowsName, bool afraidOrHostile)
+        /// as a friend's, talks and your name known a little; fear or a grudge, nothing at all. Someone you saved (a bully
+        /// pulled off them, the rope, the hogtied cut loose: Interact.SavedLately) owes you whatever else they feel (Lex, 2026-11-03).
+        public static int Warmth(float like, int likingFrom, bool kindLately, bool mended, int talks, bool knowsName, bool afraidOrHostile, bool saved = false)
         {
+            if (saved)
+                return 3;
             if (afraidOrHostile)
                 return 0;
             int w = 0;

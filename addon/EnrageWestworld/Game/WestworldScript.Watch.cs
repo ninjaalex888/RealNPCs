@@ -398,6 +398,7 @@ namespace EnrageWestworld.InGame
             _rescuedPed = victim;
             _rescuedThankAt = now + 1500;
             _rescuedUntil = now + 12000;
+            SavedByYou(victim, "you pulled the man off them");   // theirs for good: fondness to the top, a friend who owes you (WestworldScript.Saved.cs; Lex, 2026-11-03)
             Log.Write("RESCUED " + NameToShow(victim) + ": you stopped the man laying into him; he stays clear of the shooting and gives his thanks");
         }
 
