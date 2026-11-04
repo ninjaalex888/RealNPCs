@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **More ways to win people over** (`[Encounters] FondnessActs`, on; settings version 206; Lex, 2026-11-03: more NPC interactions that raise fondness). Talk (Q, locked on) gains three rows: **whiskey for the house** ($2, in a saloon with two or more others at the bar): the one you say it to answers for the room by their nature (someone who hates you won't drink it, the devout thank you for the house without a glass), the room looks over and cheers, and everyone treated thinks better of you, the drunk most, each with a drink of yours to remember and maybe thank you for later; **a gift** (forty cents: a pouch of tobacco for a man, a tin of peaches for a woman), which the proud take where they'd refuse money (a gift between equals carries no shame; alms do), the greedy would sooner the price of, and the poor are fondest of; and **condolences** to someone grieving a friend ("I'm sorry about Abner."), the kindness people most notice and least often get, thrown back by anyone who knows you killed them. Each is a happening the mind already understands (a round, charity, a comfort), so the thanks, the greetings, the trust with a worry and the allies' warmth follow as before. Not yet seen in game.
+- **A kindness seen** (`[Encounters] KindnessSeen`, on; `KindnessSeenLiking`, 5): the named people who see you do a kindness to someone else from within 12 m (a drink stood, money or a gift given, a debt paid, a hand up, a bully faced, a mercy shown) think better of you too, and remember seeing you do right ("Saw you do a decent thing. Didn't think he had it in him."). Not yet seen in game.
+
 ## 0.7.20 (2026-11-03)
 
 - The green dot on friends and allies is smaller (`[Encounters] AlliesDotScale`, 0.6; settings version 205): the companion dot in that colour drew large (Lex, seen in game: "looks pretty good, can we make it the smaller version"). 1 is the game's own size; a change shows on the next dot made, and **`Insert`** remakes them all.

@@ -38,6 +38,8 @@ namespace EnrageWestworld.InGame
             public long WorryArc;   // Self: their own whole name, when they have one (the friendly men give it back)
             public int WorryStage;  // how far along the worry is (a fever past its crisis can't be mended)
             public bool Woman, Devout, MoneyWorry, Seated, KeepOrders, KnowsName;
+            public string Condole;     // the first name of a friend they grieve (condolences can be offered: Core/Fondness.cs), or null
+            public bool YouKilledKnown;   // ...and they know he's the one who killed them
             public Person P;           // who they are to the mind, for their worry's words when he asks after it
             public float Reach;
             public List<InteractOption> Options;
@@ -304,6 +306,19 @@ namespace EnrageWestworld.InGame
                 w.Traits = _engine.Shadow.TraitsOf(w.Src);
             FolkRef ac = _bridge != null ? _bridge.AcquaintanceAt(h) : null;
             List<string> pool = _engine.RumourPool(_placeTown, 3);
+            string condole = null;
+            bool youKilledKnown = false;
+            if (_cfg.FondnessActs)
+            {
+                string deadId;
+                condole = _engine.GrievesFor(id, Fondness.CondoleDays, out deadId);   // a friend they grieve: condolences can be offered (Core/Fondness.cs)
+                if (condole != null && deadId != null)
+                {
+                    DeathEntry dead = _store.DeathOf(deadId);
+                    string knownId;
+                    youKilledKnown = dead != null && dead.By == "player" && (_engine.YourKillGrieved(id, Fondness.CondoleDays, out knownId) != null || _engine.Grudged(id, deadId));   // the killing is laid at his door
+                }
+            }
             _menu = new TalkMenu
             {
                 Handle = h, Id = id, Name = name ?? TalkName(p), First = name != null ? Person.FirstOf(name) : TalkName(p), Temper = temper, Worry = worry,
@@ -311,7 +326,8 @@ namespace EnrageWestworld.InGame
                 Trade = w != null && w.P != null ? w.P.Trade : null, FolkId = ac != null ? ac.Id : null, P = w != null ? w.P : null,
                 Seated = PED.IS_PED_USING_ANY_SCENARIO(h) && ENTITY.GET_ENTITY_SPEED(h) < 0.4f,   // sat, leaning or stood at their point: they talk from there; a scenario's walker is stopped like anyone else
                 Regard = SightRegard(p, id), Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
-                Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440), WorryStage = worryStage
+                Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440), WorryStage = worryStage,
+                Condole = condole, YouKilledKnown = youKilledKnown
             };
             TalkRefreshOptions();
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);   // the game's own "you're standing too close" and the like wait till goodbye (Lex, 2026-10-31); undone in TalkClose
@@ -353,8 +369,10 @@ namespace EnrageWestworld.InGame
             bool told = _talkConfided.Contains(TalkToldKey(_menu));
             string selId = _menu.Options != null && _menu.Sel < _menu.Options.Count ? _menu.Options[_menu.Sel].Id : null;
             Happening wrong = Interact.LastWrong(_store.WorldLog, _menu.Id, _store.LastGameMin);
+            int company = _cfg.FondnessActs && _placeKind == "saloon" ? HouseCompany(_menu.Handle) : 0;   // whiskey for the house wants a house (WestworldScript.Fondness.cs)
             _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, told && Interact.Mendable(_menu.Worry, _menu.WorryStage), _menu.KnowsName ? null : YourFullName(),
-                                             told && _menu.P != null ? _menu.AskWorry : null, wrong != null, wrong != null && _store.LastGameMin - wrong.At < 60, _menu.Worry);   // a worry money can mend: the debt, the doctor, a dentist, the fare
+                                             told && _menu.P != null ? _menu.AskWorry : null, wrong != null, wrong != null && _store.LastGameMin - wrong.At < 60, _menu.Worry,   // a worry money can mend: the debt, the doctor, a dentist, the fare
+                                             house: company >= Fondness.HouseLeast, gift: _cfg.FondnessActs, woman: _menu.Woman, condoleFor: _menu.Condole);
             int at = selId != null ? _menu.Options.FindIndex(x => x.Id == selId) : -1;
             _menu.Sel = at >= 0 ? at : 0;   // the same option stays chosen (by index, "Watch yourself." slid under the cursor after an apology)
             _menu.Rows = null;
@@ -502,6 +520,9 @@ namespace EnrageWestworld.InGame
                 string sd = tries == 0 ? seed : seed + "|again" + tries;
                 a = o.Id == "ask" ? Interact.AskedAfter(InnerLife.WorrySaid(t.P, _store.LastGameMin / 1440, sd, pst != null ? pst.Musings : null), t.Temper, sd)   // how it stands today, in their words
                   : o.Id == "sorry" ? Interact.Sorry(t.Temper, t.Regard, sd, wrong != null ? wrong.Kind : null)
+                  : o.Id == "house" ? Fondness.House(t.Temper, t.Woman, t.Devout, t.Regard, sd)   // the fondness interactions (Core/Fondness.cs)
+                  : o.Id == "gift" ? Fondness.Gift(t.Temper, t.Woman, t.Regard, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd)
+                  : o.Id == "condole" ? Fondness.Condole(t.Temper, t.Woman, t.Regard, t.YouKilledKnown, sd)
                   : Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd, YourSurname(), t.Self);
             }
             if (_talkLastLine.Count > 400)
@@ -556,7 +577,10 @@ namespace EnrageWestworld.InGame
             }
             TalkSay(t, a);
             if (a.Event != null)
-                RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h, a.Settles ? Thanks.OutcomeOf(t.Worry) : a.Event == "charity" ? "gave $" + a.Cents / 100 : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf)
+                RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h,
+                            a.Settles ? Thanks.OutcomeOf(t.Worry) : a.Event == "charity" ? (t.PendingId == "gift" ? Fondness.GiftOutcome : "gave $" + a.Cents / 100) : t.PendingId == "house" ? "whiskey for the house" : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf)
+            if (t.PendingId == "house" && a.Cents > 0)
+                HouseRound(t, now);   // the room cheers and everyone treated is fonder (WestworldScript.Fondness.cs)
             if (a.LikeDelta != 0 && t.FolkId != null)
                 _bridge.LikeMore(t.FolkId, a.LikeDelta);   // enRAGE's own method for its own townsfolk
             if (a.Confided)
@@ -622,8 +646,10 @@ namespace EnrageWestworld.InGame
             t.TalkRequest = null;
             if (!_cfg.LanguageTalk || !_cfg.Language || !_cfg.MindLive || _engine == null || a == null || string.IsNullOrEmpty(a.Line))
                 return;
-            if ((o.Id == "drink" || o.Id == "give" || o.Id == "settle") && a.Cents == 0)
+            if ((o.Id == "drink" || o.Id == "give" || o.Id == "settle" || o.Id == "house" || o.Id == "gift") && a.Cents == 0)
                 return;   // a drink or money turned down keeps its written words: the check can't tell a refusal worded as thanks (the review)
+            if (o.Id == "condole" && a.Event == null)
+                return;   // condolences thrown back: the written words
             if (!string.IsNullOrEmpty(t.Self) && a.Line.Contains(t.Self))
                 return;   // their own name given back: the model may not say it (TalkCheck holds it), so the written line (the review)
             MindWho w = MindKnown(t.Handle, now);

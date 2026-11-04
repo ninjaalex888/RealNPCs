@@ -14,7 +14,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class InteractOption
     {
-        public string Id;        // news, name, ask, drink, give, settle, sorry, threaten, bye
+        public string Id;        // news, name, ask, drink, house, give, gift, settle, condole, sorry, threaten, bye
         public string Label;     // what Arthur says, shown in the list
         public string Why;       // why it can't be chosen now (shown greyed), or null
     }
@@ -89,9 +89,11 @@ namespace EnrageWestworld.Core
         /// his whole name when they don't know it yet (he can tell them), the worry they've told him of (he can ask after
         /// it: AskLabel), and a wrong of his lately they're owed an apology for.
         public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool fixKnown = false, string tellName = null, string askAbout = null, bool sorry = false, bool sorryJustNow = false,
-                                                   string fixKind = "debt")
+                                                   string fixKind = "debt", bool house = false, bool gift = false, bool woman = false, string condoleFor = null)
         {
-            int gift = moneyWorry ? 500 : 100;
+            // house, gift, condoleFor: the fondness interactions (Core/Fondness.cs; SIXDAY item 1): whiskey for the house (a saloon with company at
+            // the bar), a gift, condolences to someone grieving a friend (their first name)
+            int giveCents = moneyWorry ? 500 : 100;
             var list = new List<InteractOption> { new InteractOption { Id = "news", Label = "What's the news?" } };
             if (!string.IsNullOrEmpty(tellName))
                 list.Add(new InteractOption { Id = "name", Label = "The name's " + tellName + "." });
@@ -99,11 +101,17 @@ namespace EnrageWestworld.Core
             if (ask != null)
                 list.Add(new InteractOption { Id = "ask", Label = ask });
             list.Add(new InteractOption { Id = "drink", Label = "Let me stand you a drink.", Why = !saloon ? "only in a saloon" : cash < DrinkCents ? "not enough money" : null });
+            if (house)
+                list.Add(new InteractOption { Id = "house", Label = Fondness.HouseLabel(), Why = !saloon ? "only in a saloon" : cash < Fondness.HouseCents ? "not enough money" : null });
             int fix = FixCents(fixKind);
             if (!(fixKnown && fix > 0 && fixKind == "savings"))   // for the fare the five dollars toward it is the gift (not two rows, ten dollars for one fare)
-                list.Add(new InteractOption { Id = "give", Label = "Here, take this ($" + gift / 100 + ")", Why = cash < gift ? "not enough money" : null });
+                list.Add(new InteractOption { Id = "give", Label = "Here, take this ($" + giveCents / 100 + ")", Why = cash < giveCents ? "not enough money" : null });
+            if (gift)
+                list.Add(new InteractOption { Id = "gift", Label = Fondness.GiftLabel(woman), Why = cash < Fondness.GiftCents ? "not enough money" : null });
             if (fixKnown && fix > 0)
                 list.Add(new InteractOption { Id = "settle", Label = FixLabel(fixKind), Why = cash < fix ? "not enough money" : null });
+            if (condoleFor != null)
+                list.Add(new InteractOption { Id = "condole", Label = Fondness.CondoleLabel(condoleFor) });
             if (sorry)
                 list.Add(new InteractOption { Id = "sorry", Label = sorryJustNow ? "I didn't mean that." : "I'm sorry about before." });   // minutes after a warning, a quick word; later, an apology
             list.Add(new InteractOption { Id = "threaten", Label = "Watch yourself." });

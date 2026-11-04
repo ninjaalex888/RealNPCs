@@ -29,6 +29,9 @@ namespace EnrageWestworld.InGame
             string loud = WorldEvents.Loudness(kind);
             float reach = loud == "shot" ? WorldEvents.ShotMetres : WorldEvents.SightMetres;
             Ped me = Game.Player.Character;
+            bool kindSeen = _cfg.KindnessSeen && !_kindSeenOff && doerId == "player" && Fondness.IsKindness(kind);   // a kindness of his: those who saw it from near think better of him (WestworldScript.Fondness.cs)
+            if (kindSeen)
+                _kindSeenHandles.Clear();
             foreach (Ped p in Peds.All())
             {
                 if (e.Witnesses.Count >= 20)
@@ -45,6 +48,8 @@ namespace EnrageWestworld.InGame
                 string how = WorldEvents.How(m, sight, loud);
                 if (how == null)
                     continue;
+                if (kindSeen && how == "saw" && m <= Fondness.SeenMetres)
+                    _kindSeenHandles.Add(h);
                 string id, name;
                 bool known = LastingId(p, out id, out name);
                 e.Witnesses.Add(new EventWitness
@@ -62,6 +67,8 @@ namespace EnrageWestworld.InGame
                 if (how != null)
                     e.Witnesses.Add(new EventWitness { Id = "player", Name = "you", Metres = (float)System.Math.Round(pm, 1), How = how });
             }
+            if (kindSeen && _kindSeenHandles.Count > 0)
+                KindnessSeenBy(e, _kindSeenHandles);
             _eventsNoted++;
             if (!e.Test && !_storyNotingSide)
                 StoryNoticed(kind, StoryMeter.Weight(kind, doerId == "player"), me.Position.DistanceTo(at));   // the storyteller weighs it (WestworldScript.Story.cs; 0 for the everyday kinds)

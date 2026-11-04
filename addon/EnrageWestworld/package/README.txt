@@ -179,6 +179,10 @@ NEW IN 0.7.19
   one whose beater you put down in a brawl, the captive you save from the rope, the hogtied
   you cut loose who thank you: fondness to the top, a friend who owes you for a month of game
   days (they come to your aid first), and they remember it. Not yet seen in game.
+- A kindness seen ([Encounters] KindnessSeen, on; KindnessSeenLiking, 5): the named people
+  who see you do a kindness to someone else from within 12 m (a drink stood, money or a gift
+  given, a debt paid, a hand up, a bully faced, a mercy shown) think better of you too, and
+  remember seeing you do right. Not yet seen in game.
 - Fixed: the allies Testing row said "the model isn't loaded" (the man's body, not the AI
   model) and made nobody; it waits for the body now. Allies keep fists against fists; nobody
   new comes while you're wanted. The VRAM gauge keeps trying after failed readings instead of
@@ -388,7 +392,14 @@ NEW IN 0.7.11
   trouble), "Watch yourself.", "Goodbye.", and when they apply: "The name's Arthur Morgan.",
   asking after a worry they told you of, settling a debt ($11), "Here, for the doctor ($2)",
   "Here, see a proper dentist ($3)", "Here, toward that ticket ($5)" and "I'm sorry about
-  before." Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
+  before." And ([Encounters] FondnessActs, on): "Whiskey for the house, on me ($2)" in a
+  saloon with two or more others at the bar (the one you say it to answers for the room by
+  their nature, the room cheers, and everyone treated thinks better of you, the drunk most,
+  each with a drink of yours to remember); a gift (forty cents: a pouch of tobacco for a
+  man, a tin of peaches for a woman), which the proud take where they'd refuse money and
+  the poor are fondest of; and condolences to someone grieving a friend ("I'm sorry about
+  Abner."), thrown back by anyone who knows you killed them.
+  Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
   it takes longer than 2.8 s). A settled debt or a mended trouble changes their story and is

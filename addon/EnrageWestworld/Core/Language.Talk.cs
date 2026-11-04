@@ -29,6 +29,9 @@ namespace EnrageWestworld.Core
                          : worry == "savings" ? "He gives you five dollars toward the train ticket you are saving for."
                          : "He offers to pay the eleven dollars you owe, so you can be clear of the debt.";
                 case "sorry": return "He says he's sorry for how he treated you before.";
+                case "house": return "He buys whiskey for everyone in the saloon, you among them.";
+                case "gift": return "He hands you a small gift (tobacco, or a tin of peaches), asking nothing for it.";
+                case "condole": return "He says he is sorry about the death of your friend.";
                 case "threaten": return "He tells you to watch yourself, and means it as a threat.";
                 default: return "He says good day.";
             }
