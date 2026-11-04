@@ -56,7 +56,7 @@ namespace EnrageWestworld.InGame
             var m = new Moment();
             m.YouNear = d < 10f;
             m.YouArmed = WEAPON.IS_PED_ARMED(you, 4);
-            m.YouAiming = PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, h);
+            m.YouAiming = m.YouArmed && PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, h);   // the unarmed lock-on (a greeting, Talk, a flirt) is the same input: no gun, no gun on them (the advisor)
             m.YouMounted = PED.IS_PED_ON_MOUNT(you);
             m.YouWanted = PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0;
             m.YouLook = m.YouNear ? _sightState : null;
@@ -103,6 +103,21 @@ namespace EnrageWestworld.InGame
             m.BodyNear = _momentBodies > 0;
             m.ShotsNear = nowMs >= _momentShotAt && nowMs - _momentShotAt < 8000;
             return m;
+        }
+
+        /// Whether this person is in a loud moment, for the ticker's turn (RefreshNear, once a second); a native throwing on an
+        /// odd entity is false, not the ticker down.
+        private bool MomentLoud(Ped ped, Ped me, float d)
+        {
+            try
+            {
+                return Moments.Urgent(MomentOf(ped, me, d));
+            }
+            catch (Exception ex)
+            {
+                Log.Detail("MOMENT " + ped.Handle + " couldn't be read for the turn: " + ex.Message);
+                return false;
+            }
         }
 
         /// What a scenario is to the one in it: a drink, a meal, their work, a smoke, a rest (sat or leaning), or standing about.

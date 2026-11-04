@@ -86,7 +86,7 @@ namespace EnrageWestworld.InGame
             // shoot them: the review); the foes already engaged stay foes, so a fight the law walks into isn't called over
             // with the gunman still up (the advisor)
             _alliesFoes.Clear();
-            bool armedFoe = false;
+            bool armedFoe = false, heldByLaw = false;
             bool wanted = PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0;
             if (!MISC.GET_MISSION_FLAG())
                 foreach (Ped p in Peds.All())
@@ -98,8 +98,11 @@ namespace EnrageWestworld.InGame
                         continue;
                     if (!PED.IS_PED_IN_COMBAT(h, me.Handle) || Natives.IsLaw(p) || _allies.Any(a => a.Handle == h))
                         continue;
-                    if (wanted && !_alliesSeenFoes.Contains(h))
+                    if (wanted && !_alliesSeenFoes.Contains(h) && h != _alliesTestMan)   // the Testing row's man counts whatever the law thinks of you (the advisor)
+                    {
+                        heldByLaw = true;
                         continue;
+                    }
                     _alliesFoes.Add(h);
                     if (WEAPON.IS_PED_ARMED(h, 4))
                         armedFoe = true;
@@ -107,6 +110,8 @@ namespace EnrageWestworld.InGame
             foreach (int f in _alliesSeenFoes)
                 if (ENTITY.DOES_ENTITY_EXIST(f) && ENTITY.IS_ENTITY_DEAD(f))
                     _alliesFoesFell = true;   // one of them fell this fight: the word after says won, not ran
+            if (heldByLaw)
+                _alliesWhyNot = "you're wanted: nobody new comes (the townsfolk answering your crime aren't foes)";
             if (_alliesFoes.Count == 0)
             {
                 if (_alliesFightSince != 0 && now - _alliesFoeAt > AlliesOverMs)

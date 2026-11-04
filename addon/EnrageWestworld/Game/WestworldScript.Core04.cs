@@ -946,14 +946,12 @@ namespace EnrageWestworld.InGame
                     continue;
                 // only people you can see think on the ticker, so it's always clear whose thought it is
                 bool seen = ENTITY.IS_ENTITY_ON_SCREEN(h) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17);
-                if (!seen)
-                    continue;   // only people you can see think on the ticker (the branches below asked each on their own; the counter's visit is noted first)
                 // a loud moment (a fight, a flight, a gun on them: WestworldScript.Moments.cs) gets the first turn and a line every few seconds
-                bool urgent = Moments.Urgent(MomentOf(ped, me, d));
+                bool urgent = seen && MomentLoud(ped, me, d);
                 RecordRef rec = _bridge.RecordAt(h);
                 if (rec != null)
                 {
-                    if (!rec.IsAlive)
+                    if (!rec.IsAlive || !seen)
                         continue;
                     Person p = PersonOf(rec);
                     PersonState ps = _store.Find(p.Id);
@@ -966,6 +964,8 @@ namespace EnrageWestworld.InGame
                 FolkRef a = _bridge.AcquaintanceAt(h);
                 if (a != null && !string.IsNullOrEmpty(a.Name))
                 {
+                    if (!seen)
+                        continue;
                     Folk f = Snapshot.Of(a);
                     Person fp = _engine.PersonOfFolk(f.Key, f.Name, f.Woman, f.Town, now);
                     PersonState st = _store.Get(fp);
@@ -992,27 +992,28 @@ namespace EnrageWestworld.InGame
                     {
                         NotePostVisit(holder, d);   // a visit counts whether or not you're looking at them
                         float near = d;
-                        _near.Add(new NearThought
-                        {
-                            Key = holder.Id,
-                            Handle = h,
-                            Name = holder.Name + ", " + pk.Role,
-                            Distance = d + 2f,
-                            Beside = d < BesideMetres,
-                            Urgent = urgent,
-                            Text = () =>
+                        if (seen)
+                            _near.Add(new NearThought
                             {
-                                PersonState hs = _store.Find(holder.Id);
-                                Person hp = _engine.PersonOfResident(holder);
-                                return ThoughtNow(ped, me, near, hp, hs, holder.Id, Look(me, near), lk => _cfg.WestWorld && hs != null && hs.WakeStage > 0 ? Hosts.Thought(hp, hs, _engine.Player, holder.Id + "|" + now / 180)
-                                    : _engine.PostThought(holder, near < 10f, CLOCK.GET_CLOCK_HOURS(), holder.Id + "|" + now / every, lk));
-                            }
-                        });
+                                Key = holder.Id,
+                                Handle = h,
+                                Name = holder.Name + ", " + pk.Role,
+                                Distance = d + 2f,
+                                Beside = d < BesideMetres,
+                                Urgent = urgent,
+                                Text = () =>
+                                {
+                                    PersonState hs = _store.Find(holder.Id);
+                                    Person hp = _engine.PersonOfResident(holder);
+                                    return ThoughtNow(ped, me, near, hp, hs, holder.Id, Look(me, near), lk => _cfg.WestWorld && hs != null && hs.WakeStage > 0 ? Hosts.Thought(hp, hs, _engine.Player, holder.Id + "|" + now / 180)
+                                        : _engine.PostThought(holder, near < 10f, CLOCK.GET_CLOCK_HOURS(), holder.Id + "|" + now / every, lk));
+                                }
+                            });
                     }
                     continue;
                 }
                 // someone fighting or fleeing is a stranger with a loud moment (a thought of it), not passed over as before
-                if (d < 12f && (urgent || (!PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h))) && ResidentEligible(ped))
+                if (seen && d < 12f && (urgent || (!PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h))) && ResidentEligible(ped))
                     strangers.Add(new KeyValuePair<Ped, float>(ped, d));
             }
             MomentSweepEnd(me, nowMs);
@@ -1023,7 +1024,7 @@ namespace EnrageWestworld.InGame
                 Ped stranger = s.Key;
                 float sd = s.Value;
                 bool woman = !PED.IS_PED_MALE(stranger.Handle);
-                bool loud = Moments.Urgent(MomentOf(stranger, me, sd));
+                bool loud = MomentLoud(stranger, me, sd);
                 Resident res = ResidentOf(stranger);
                 if (res != null)
                 {

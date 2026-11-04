@@ -40,29 +40,31 @@ namespace EnrageWestworld.Core
         /// The loud moments: thought before anything else.
         public static bool Urgent(Moment m)
         {
-            if (m == null)
-                return false;
-            switch (m.Doing)
-            {
-                case "fighting-you": case "fighting": case "fleeing": case "down": case "hurt": case "aimed-at":
-                    return true;
-            }
-            return m.YouAiming || m.ShotsNear || m.BodyNear || m.FightNear > 0 || (m.YouWanted && m.YouNear && m.YouArmed);
+            return Loudest(m) != null;
         }
 
-        /// The loudest thing about the moment, by name (the pool's key), or null when nothing is loud.
+        /// The loudest thing about the moment, by name (the pool's key), or null when nothing is loud. Knocked down and hurt
+        /// are loud only while the trouble is still on (shots or a fight near): health doesn't come back, and a man who took
+        /// a bullet last week isn't "Lord, it hurts" every turn for the rest of his life (the advisor); after, a quiet thought.
         public static string Loudest(Moment m)
         {
             if (m == null)
                 return null;
+            bool troubleOn = m.ShotsNear || m.FightNear > 0;
             switch (m.Doing)
             {
                 case "fighting-you": return m.Melee ? "fightyou:fists" : "fightyou:guns";
-                case "down": return "down";
                 case "fleeing": return "fleeing";
                 case "fighting": return m.Melee ? "fight:fists" : "fight:guns";
                 case "aimed-at": return "aimed";
-                case "hurt": return "hurt";
+                case "down":
+                    if (troubleOn)
+                        return "down";
+                    break;
+                case "hurt":
+                    if (troubleOn)
+                        return "hurt";
+                    break;
             }
             if (m.YouAiming)
                 return "aimed";
@@ -114,6 +116,8 @@ namespace EnrageWestworld.Core
         {
             if (m == null || Urgent(m))
                 return null;
+            if (m.Doing == "hurt" || m.Doing == "down")
+                return m.Doing;   // the trouble over: still hurt, still on the ground, a thought of it among the rest
             if (m.YouNear && m.YouLook != null && Sights.States.Contains(m.YouLook))
                 return "youlook";
             if (m.Drunk)
@@ -138,6 +142,7 @@ namespace EnrageWestworld.Core
         {
             switch (quiet)
             {
+                case "hurt": case "down": return 40;
                 case "youlook": return 38;
                 case "drunk": return 36;
                 case "armed": return 34;

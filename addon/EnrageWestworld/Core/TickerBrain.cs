@@ -160,8 +160,9 @@ namespace EnrageWestworld.Core
             {
                 if (!newcomer && _fresh.Count > 0 && (_prev == null || _prev.Kind == "near"))
                     next = TakeFresh();
-                // someone in a loud moment (fighting, fleeing, a gun on them) comes first, with a new line every few seconds
-                NearThought urgent = close.FirstOrDefault(n => n.Urgent);
+                // someone in a loud moment (fighting, fleeing, a gun on them) comes first, with a new line every few seconds; two
+                // of them take turns (the one just shown waits for the other)
+                NearThought urgent = close.FirstOrDefault(n => n.Urgent && !(_prev != null && _prev.Kind == "near" && _prev.Key == n.Key)) ?? close.FirstOrDefault(n => n.Urgent);
                 if (next == null && urgent != null && !(_prev != null && _prev.Kind == "near" && _prev.Key == urgent.Key && now - _prev.ShownAt < UrgentCacheMs))
                     next = NearLine(urgent, now);
                 // the person right beside the player gets every other turn
@@ -248,16 +249,21 @@ namespace EnrageWestworld.Core
             return n.Urgent ? UrgentCacheMs : n.Beside ? BesideCacheMs : ThoughtCacheMs;
         }
 
+        private readonly HashSet<string> _urgentCached = new HashSet<string>();   // whose cached thought was a loud moment's: dropped when the moment is over, not kept 90 s
+
         private TickerLine NearLineRaw(NearThought n, int now)
         {
             KeyValuePair<int, string> cached;
             string text = null;
-            if (_thoughts.TryGetValue(n.Key, out cached) && now - cached.Key < CacheMs(n) && now >= cached.Key)
+            bool over = !n.Urgent && _urgentCached.Remove(n.Key);   // the fight's line doesn't outlive the fight
+            if (!over && _thoughts.TryGetValue(n.Key, out cached) && now - cached.Key < CacheMs(n) && now >= cached.Key)
             {
                 text = cached.Value;
             }
             else
             {
+                if (n.Urgent)
+                    _urgentCached.Add(n.Key);
                 try
                 {
                     text = n.Text != null ? n.Text() : null;
