@@ -529,7 +529,7 @@ namespace EnrageWestworld.InGame
             if (_hush && by == null && s != unladdered && TownMood.Hushed(s.Kind))
                 s = unladdered;   // hushed: the quarrel stays words (the ladder would take it to blows or a gun)
             AddMeet(s, kind, first, second, pr.Apart);
-            AddBarkeep(s, cast2, cast, seed, saloon);
+            AddBarkeep(s, cast2, cast, seed, saloon, doer != null && doer.Drunk);
             string stood;
             if (s.Ladder == null || s.Cast == 2)   // (the ladder found no friend of its own: a stranger may still step in, the review)
                 StandUpFor(s, cast2, cast, seed, now, false, out stood);   // someone may step in before the blow (WestworldScript.StandUp.cs); the ladder has its own friend
@@ -653,6 +653,7 @@ namespace EnrageWestworld.InGame
                 return kind == "rough" ? Scenes.Rough(cast, seed, bad != null && bad.Warmth < 0, answer)
                      : kind == "lift" ? (done.Drunk && _cfg.CriminalClass ? Scenes.Rolled(cast, seed, Voice.Chance(seed + "late", 25))   // a drunk rolled (item 16): he comes round to it one time in four
                                          : Scenes.Lift(cast, seed, Voice.Chance(seed + "late", Reasons.Alert(done.Temper) ? 60 : 35)))
+                     : answer == "sharp" && _cfg.DrunkOutside && SaloonDoorNear(40f) != null ? DrunkOutsideScene(cast, seed)   // the drunk really taking it outside (item 17)
                      : Scenes.Drunk(cast, seed, answer);
             }
             if (kind.StartsWith("court:") || (kind == "court" && courtAnswer != null))
@@ -715,7 +716,7 @@ namespace EnrageWestworld.InGame
 
         /// In a saloon, the barkeep has his say when it gets rough (a face in the bar, fists, a drunk on the floor): he
         /// joins the scene as its third person with one line, after the trouble itself.
-        private void AddBarkeep(Scene s, List<Ped> people, SceneCast cast, string seed, bool saloon)
+        private void AddBarkeep(Scene s, List<Ped> people, SceneCast cast, string seed, bool saloon, bool aDrunk = false)
         {
             string line = saloon && s.Cast == 2 && people.Count == 2 ? Scenes.Barkeep(s.Kind, seed, cast != null && (cast.AWoman || cast.BWoman)) : null;
             if (line == null)
@@ -730,6 +731,24 @@ namespace EnrageWestworld.InGame
             {
                 Log.Write("BARKEEP left out (" + cant + ") of the " + s.Kind);   // the casting rules: never a story character, adults only, CanDirect
                 return;
+            }
+            if (_cfg.BarkeepSteps && (s.Kind == "brawl" || s.Kind == "rough"))
+            {
+                // the barkeep stepping in (item 17; Core/Scenes.Trouble.cs): round the bar as they square up; heeded, the fight never comes
+                Resident h0 = HolderAt(keep, PostKindOf(keep));
+                string first = h0 != null ? Person.FirstOf(h0.Name) : null;
+                string how = Scenes.BarkeepSteps(s, seed, cast != null && cast.Tempers != null ? cast.Tempers[0] : null, aDrunk, first, cast != null && cast.AWoman);
+                if (how != null)
+                {
+                    s.Cast = 3;
+                    people.Add(keep);
+                    cast.Names[2] = first;
+                    _barkeepSteps++;
+                    if (how == "heeds")
+                        _barkeepHeeded++;
+                    Log.Write("BARKEEP " + (first ?? "the barkeep") + " steps in on the " + s.Kind + ": " + (how == "heeds" ? "they take it outside, no blows" : "shoved off; the fight goes on"));
+                    return;
+                }
             }
             string after = s.Kind == "rough" ? "slam" : s.Kind == "brawl" ? "endfight" : "passout";
             int at = s.Beats.FindIndex(b => b.Act == after);

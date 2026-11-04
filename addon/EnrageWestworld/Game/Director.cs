@@ -103,6 +103,8 @@ namespace EnrageWestworld.InGame
         /// The same, with the scene it played in: its bodies and its cast (the review of items 11-12: a word that must know
         /// who said it, in a side or a second scene as much as the main one).
         public Action<string, Ped[], SceneCast> CustomScene;
+        /// The saloon's door near the player, for the drunk taking it outside ("outside"; WestworldScript.Saloon.cs); null: none known.
+        public Func<Vector3?> OutsideSpot;
 
         /// "slam": the game layer plays the rough move, attacker then victim; false if it can't (then it's a shove).
         public Func<Ped, Ped, bool> Slam;
@@ -1215,6 +1217,26 @@ namespace EnrageWestworld.InGame
                         if (_leaving.Count > 50)
                             _leaving.Clear();   // only ever two at a time; a guard against a session that never checks
                         _leaving[h] = Game.GameTime + LeaveHoldMs;
+                        return 600;
+                    }
+                case "outside":
+                    {
+                        // the drunk taking it outside (SIXDAY item 17): both walk to the saloon's door the game side remembers, side by side,
+                        // and the fight beat after finds them in the street; no door known: they square up where they stand
+                        Vector3? door = OutsideSpot != null ? OutsideSpot() : null;
+                        if (door == null)
+                            return 600;
+                        Vector3 spot = door.Value, dir = spot - me.Position;
+                        dir.Z = 0f;
+                        dir = Math.Abs(dir.X) + Math.Abs(dir.Y) < 0.1f ? new Vector3(1f, 0f, 0f) : dir.Normalized;
+                        Vector3 side = new Vector3(-dir.Y, dir.X, 0f) * 0.9f;
+                        foreach (Ped p in new[] { me, them })
+                        {
+                            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, false);
+                            Vector3 goTo = p == me ? spot + side : spot - side;
+                            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(p.Handle, goTo.X, goTo.Y, goTo.Z, 1f, -1, 1f, 0, 0f);
+                            _leaving[p.Handle] = Game.GameTime + LeaveHoldMs;
+                        }
                         return 600;
                     }
                 case "carry":

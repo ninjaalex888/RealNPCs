@@ -195,6 +195,11 @@ NEW IN 0.7.19
   you for his marker ($5) as the debtor does; the Devout and the churchgoing don't drink away
   bad news on a Sunday (grief excepted), and a Devout in the room judges a Sunday drinker in a
   thought; a friend of a man drinking away bad news stands the house a round, him first.
+- The barkeep steps in ([Scenes] BarkeepSteps, on): in a saloon brawl or rough of two the barkeep
+  comes round the bar as they square up; most heed him and take it outside with no blows, the hot
+  and the drunk shove him off and the fight goes on. The drunk takes it outside ([Scenes]
+  DrunkOutside, on): a challenge taken up is walked to the saloon's door you last came out of and
+  fought in the street. F7 "TEST saloon:".
 - The criminal class ([Scenes] CriminalClass, on): a theft to anyone's name this month (a pocket
   picked, a lift, a mugging) makes them likelier to go for a pocket again whatever their nature,
   and known as a thief over their head the whole month; a drunk at the bar is rolled with words

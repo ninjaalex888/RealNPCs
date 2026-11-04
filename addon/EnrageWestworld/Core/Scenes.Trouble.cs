@@ -5,6 +5,8 @@
 // The moves are the game's own (the Director's "slam", "challenge", "passout" and "cometo"); the words are this
 // add-on's. Afterwards the two are tied by it (Ties.cs, with who did what), and think about it.
 // All lines are original to this add-on.
+using System.Collections.Generic;
+
 namespace EnrageWestworld.Core
 {
     public static partial class Scenes
@@ -182,6 +184,81 @@ namespace EnrageWestworld.Core
                                                                   : Voice.Pick(seed + "bk", "Take it outside! The both of you!", "Not on my floor, gentlemen. Outside!");
                 case "drunk": return Voice.Pick(seed + "bk", "Somebody drag him out before he bleeds on my floor.", "That's the last drink he gets in here.");
                 default: return null;
+            }
+        }
+
+        public const int OutsideWalkMs = 15000;   // the walk to the door before the fight outside (the Director's "outside")
+
+        /// The barkeep stepping in (SIXDAY item 17; roadmap 7): in a saloon brawl or rough of two, the barkeep comes round the bar
+        /// as they square up (before the first fight beat) with his shout; then by the attacker's temper and drink they heed
+        /// (the hot and the drunk three times in ten, the proud half the time, the rest three in four): a last word and both
+        /// walk out, the fight never comes (the beats from the fight on are dropped, Fight off); or the attacker shoves him
+        /// off, he swears to fetch the sheriff and goes, and the fight is as it was. C is the barkeep (cast index 2).
+        /// Returns "heeds", "shoved", or null when there's no fight to step into (then the barkeep has his say after, as before).
+        public static string BarkeepSteps(Scene s, string seed, string aTemper, bool aDrunk, string keepFirst, bool aWoman)
+        {
+            if (s == null || (s.Kind != "brawl" && s.Kind != "rough"))
+                return null;
+            int at = s.Beats.FindIndex(b => b.Act == "fight");
+            if (at < 0)
+                return null;
+            string keep = keepFirst ?? "barkeep";
+            bool heeds = Voice.Chance(seed + "|keep", aTemper == "Hothead" || aDrunk ? 30 : aTemper == "Proud" ? 50 : 75);
+            var add = new List<Beat>();
+            add.Add(new Beat(2, null, null, "approach", 200) { To = 0 });
+            add.Add(new Beat(2, Barkeep(s.Kind, seed, aWoman), "angry") { To = 0 });
+            if (heeds)
+            {
+                add.Add(new Beat(0, Voice.Pick(seed + "|bh", "...This isn't finished.", "Outside, then. After you.", "Another time. Count on it."), "angry"));
+                add.Add(new Beat(0, null, null, "walkaway", 800));
+                add.Add(new Beat(1, Voice.Pick(seed + "|bq", "Any time you like.", "...Yeah. Another time.", "Thank the barkeep, friend."), "mild", "walkaway"));
+                s.Beats.RemoveRange(at, s.Beats.Count - at);
+                s.Beats.AddRange(add);
+                s.Fight = false;
+                s.Summary = "the barkeep stepped in before the blows";
+                return "heeds";
+            }
+            add.Add(new Beat(0, Voice.Pick(seed + "|bs", "Stay behind your bar, " + keep + "!", "This is none of yours, " + keep + "!", "Back off or you're next!"), "threat", "shove") { To = 2 });
+            add.Add(new Beat(2, Voice.Pick(seed + "|br", "Right. The sheriff, then.", "On your own heads!", "I'll remember this, the pair of you."), "angry", "walkaway"));
+            s.Beats.InsertRange(at, add);
+            return "shoved";
+        }
+
+        /// The drunk really taking it outside (SIXDAY item 17): the sharp answer with the saloon's door known: the two walk out
+        /// side by side (the Director's "outside", to the door the game side remembers) and the fight is in the street; the
+        /// drunk goes down as the brawl's own fate has it, comes round and asks who won. Kind "drunk" still (the tie, the word
+        /// of it); a fight (Fight), so the Director arms the fists.
+        public static Scene DrunkOutside(SceneCast c, string seed)
+        {
+            string a = N(c, 0, seed);
+            Scene s = new Scene { Kind = "drunk", Fight = true, Summary = "a drunk called a man out and they took it outside" };
+            s.Add(0, Voice.Pick(seed + "dc", "You. Yeah, you. Outside. You and me.", "I seen you. Lookin' at me. Outside, mister.", "Think you're better'n me? Step outside and say it."), "drunk", "challenge")
+             .Add(1, Voice.Pick(seed + "da", "Fine. Let's go.", "You want it, you've got it."), "threat")
+             .Add(0, null, null, "outside", OutsideWalkMs)
+             .Add(1, Voice.Pick(seed + "do", "Put 'em up, then.", "Well? You wanted it.", "Last chance to walk away, " + a + "."), "angry", "fight", 8000)
+             .Add(0, null, null, "endfight")
+             .Add(1, Voice.Pick(seed + "dm", "Sleep it off in the street.", "So much for the big fight.", "Somebody fetch him a blanket."), "mock")
+             .Add(1, null, null, "walkaway", 3000)
+             .Add(0, null, null, "cometo", 1500)
+             .Add(0, Voice.Pick(seed + "dw", "Where'd he go? I had him...", "Did I win?", "...Street's moving."), "drunk");
+            return s;
+        }
+
+        /// The barkeep's step-in and the drunk outside, every way, for the tests.
+        public static System.Collections.Generic.IEnumerable<Scene> SaloonSamples(SceneCast c)
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                foreach (string temper in new[] { "Hothead", "Proud", null })
+                {
+                    Scene b = Brawl(c, "b" + i);
+                    BarkeepSteps(b, "k" + i + temper, temper, false, "Abe", c.AWoman);
+                    yield return b;
+                    Scene r = Rough(c, "r" + i, false, "sharp");
+                    BarkeepSteps(r, "k" + i + temper, temper, true, null, c.AWoman);
+                    yield return r;
+                }
+                yield return DrunkOutside(c, "d" + i);
             }
         }
 

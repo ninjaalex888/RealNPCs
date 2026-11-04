@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 232;
+        public const int CurrentVersion = 233;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -340,6 +340,8 @@ namespace EnrageWestworld.Core
         public bool NpcThieves = true;
         public bool CriminalClass = true;    // people who take to crime keep to it: a theft to their name this month makes them likelier to go for a pocket again, known as a thief the whole month, a drunk rolled with its own words, and gone straight after thirty clean days (Core/Criminals.cs; roadmap 28; SIXDAY item 16; settings version 232)
         public bool DrunkChallenges = true;
+        public bool BarkeepSteps = true;     // the barkeep steps in on a saloon brawl or rough as they square up: heeded, they take it outside and the blows never come; else he's shoved off and swears to fetch the sheriff (Core/Scenes.Trouble.cs BarkeepSteps; roadmap 7; SIXDAY item 17; settings version 233)
+        public bool DrunkOutside = true;     // a drunk's challenge taken up is really taken outside: the two walk to the saloon's door you last came out of and the fight is in the street (Scenes.DrunkOutside, the Director's "outside"; SIXDAY item 17)
         public bool Reactions = true;
         public bool Acknowledge = true;
         public bool SightReactions = true;
@@ -831,6 +833,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 233)
+                    log?.Invoke("Settings: new in this version: [Scenes] BarkeepSteps (on): the barkeep steps in on a saloon fight as they square up; DrunkOutside (on): a drunk's challenge taken up is taken outside.");
                 if (s.SettingsVersion < 232)
                     log?.Invoke("Settings: new in this version: [Scenes] CriminalClass (on): thieves keep to it for a month, are known for it that long, roll drunks, and go straight after thirty clean days.");
                 if (s.SettingsVersion < 231)
@@ -1570,6 +1574,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("NpcThieves = " + B(NpcThieves) + "   ; street scenes: someone short of money or light-fingered picks a well-off or drunk mark's pocket; mostly the mark never knows who");
             b.AppendLine("CriminalClass = " + B(CriminalClass) + "   ; people who take to crime keep to it: anyone with a pocket picked, a lift or a mugging to their name in the last thirty days is likelier to go for a pocket again whatever their nature or their money, wears the thief's name over their head the whole month, rolls a drunk with words of its own, and after thirty clean days has gone straight and thinks of it once; false: a thief is forgotten in a week, as before");
             b.AppendLine("DrunkChallenges = " + B(DrunkChallenges) + "   ; street scenes: a drunk in a saloon at night calls a man out and falls on his face before a punch is thrown");
+            b.AppendLine("BarkeepSteps = " + B(BarkeepSteps) + "   ; the barkeep steps in on a saloon brawl or rough as they square up: the hot and the drunk heed him three times in ten, the proud half the time, the rest three in four, and take it outside with no blows; the rest shove him off, he swears to fetch the sheriff, and the fight goes on; false: he only has his say after");
+            b.AppendLine("DrunkOutside = " + B(DrunkOutside) + "   ; a drunk's challenge taken up (the other squares up) is really taken outside: the two walk to the saloon's door you last came out of (within 40 m) and the fight is in the street; false: the drunk falls on his face inside, as before");
             b.AppendLine("CrudeTalk = " + B(CrudeTalk) + "   ; in those conversations, the game's own crude remarks: a man to a woman in a saloon of an evening (she tells him off), or between sweethearts at night");
             b.AppendLine("SceneReactions = " + B(SceneReactions) + "   ; greet or antagonize someone in a scene: take a side, break up a fight, or stir it up");
             b.AppendLine("Standoffs = " + B(Standoffs) + "   ; two men square off in the street (guns come out only away from the law)");
