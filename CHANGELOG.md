@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The green dot on friends and allies is smaller (`[Encounters] AlliesDotScale`, 0.6; settings version 205): the companion dot in that colour drew large (Lex, seen in game: "looks pretty good, can we make it the smaller version"). 1 is the game's own size; a change shows on the next dot made, and **`Insert`** remakes them all.
+
 ## 0.7.19 (2026-11-03)
 
 The voices: the people near you speak RealNPCs' words in their own voices, cloned on your PC from your own game as you meet them. People talk to each other from what's on their minds and the times they live in, their thoughts follow the moment they're in, allies come to your aid, the VRAM gauge is back, and from the earlier 0.7.19 build (never released): grudges said to your face, names that fit the person, a rarer and eerier Awakening, and the held ring to try.

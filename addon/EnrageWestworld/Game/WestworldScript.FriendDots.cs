@@ -97,6 +97,7 @@ namespace EnrageWestworld.InGame
                 var dot = new Blip(MAP.BLIP_ADD_FOR_ENTITY(Natives.Hash("BLIP_STYLE_COMPANION"), h));
                 if (!string.IsNullOrEmpty(_cfg.AlliesDotColour))
                     MAP.BLIP_ADD_MODIFIER(dot.Handle, Natives.Hash(_cfg.AlliesDotColour.Trim()));
+                MAP.SET_BLIP_SCALE(dot.Handle, _cfg.AlliesDotScale);   // the companion dot in that colour drew large (Lex, 2026-11-03): [Encounters] AlliesDotScale, 0.6 as built
                 dot.Label = label;
                 return dot;
             }
