@@ -35,6 +35,7 @@ namespace EnrageWestworld.Core
         {
             TownEvent t = Trials.Trial(town, accused, deadId, deadName, now, accused.Id + "|" + deadId);
             t.Posted = true;
+            t.PostedAt = now;
             Store.Events.Add(t);
             accused.Held = t.Id;
             Push(new Toast { Kind = "life", Title = "The law in " + ShortTown(town), Weight = 45, Text = Trials.HeldToast(t) });
@@ -151,6 +152,7 @@ namespace EnrageWestworld.Core
             {
                 TownEvent g = Trials.Gallows(e, now);
                 g.Posted = true;
+                g.PostedAt = now;
                 Store.Events.Add(g);
                 accused.Held = g.Id;
                 Push(new Toast { Kind = "life", Title = "A hanging in " + ShortTown(e.Town), Weight = 45, Text = Trials.GallowsToast(g) });

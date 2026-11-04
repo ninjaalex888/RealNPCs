@@ -208,6 +208,11 @@ namespace EnrageWestworld.Core
             {
                 n += st.Heard.RemoveAll(h => h.At > cut);
                 n += st.Diary.RemoveAll(d => d.At > cut);
+                if (st.Loan != null && st.Loan.At > cut)
+                {
+                    st.Loan = null;   // lent after the cut: not lent (Core/Verbs.cs)
+                    n++;
+                }
                 n += st.Mind.RemoveAll(m => m.At > cut || m.LearnedAt > cut);   // a thing told after the cut wasn't told (night 2026-10-28)
                 foreach (MindMemory m in st.Mind)
                     if (m.LastAt > cut)
@@ -237,14 +242,20 @@ namespace EnrageWestworld.Core
             n += Papers.RemoveAll(p => p.At > cut);
             if (Events != null)
             {
-                n += Events.RemoveAll(e => e.At > cut + 7 * 1440);   // posted after the cut (a dance is posted two days ahead)
+                n += Events.RemoveAll(e => e.PostedAt > cut || (e.PostedAt == 0 && e.At > cut + 7 * 1440));   // posted after the cut (a trial, a hanging, a show as much as a dance)
                 foreach (TownEvent e in Events)
                     if (e.Done && e.Until > cut)
                     {
-                        e.Done = false;   // not over yet, as far as the loaded game knows
+                        e.Done = false;   // not over yet, as far as the loaded game knows: nor his part in it
                         e.Outcome = null;
                         e.Attended = false;
                         e.Broken = false;
+                        e.Part = null;
+                        e.Endorsed = null;
+                        e.WhiskeyFor = null;
+                        e.LeanedOn = null;
+                        e.Count = 0;
+                        e.Count2 = 0;
                         n++;
                     }
             }
@@ -289,6 +300,9 @@ namespace EnrageWestworld.Core
                 {
                     WorryWorsened.Remove(id);
                     n++;
+                    Happening before = WorldLog != null ? WorldLog.LastOrDefault(e => e != null && e.Kind == "harm" && e.DoerId == "player" && e.TargetId == id && e.At <= cut) : null;
+                    if (before != null)
+                        WorryWorsened[id] = before.At;   // an earlier turn for the worse, which the later one overwrote: back from the log (the review)
                 }
             Pacing.Rewind(Pace, cut);
             if (Deaths != null)

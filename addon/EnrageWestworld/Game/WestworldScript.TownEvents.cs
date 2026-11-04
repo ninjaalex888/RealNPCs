@@ -2,7 +2,7 @@
 // with a dance on, it's staged in the street outside the saloon he last came out of there (else a spot behind the camera):
 // a fiddler on a bench, three women dancing (WORLD_HUMAN_DANCING, the game's one dance), a few watching, the caller's
 // shouts as captions, the people near turning to look. The wedding's rails: never in missions, nothing spawned in view,
-// shots or a gun pointed break it up and the town remembers who fired; an hour there counts as having been to it, and the
+// shots or a gun pointed break it up and the town remembers who fired; a minute and a half there counts as having been to it, and the
 // regulars think the better of him for it. [World] TownEvents, EventDances. Log EVENT; F7 "TEST events:".
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,8 @@ namespace EnrageWestworld.InGame
 
         private EventRun _eventRun;
         private readonly Dictionary<string, Vector3> _saloonDoor = new Dictionary<string, Vector3>();   // where he last came out of a saloon, by town
-        private int _eventsNext, _eventsStaged, _eventsAttended, _eventsBroken;
+        private int _eventsNext, _eventsStaged, _eventsAttended, _eventsBroken, _eventStepNext;
+        private readonly HashSet<string> _speechDone = new HashSet<string>();   // election speeches staged this session, by event and half: each once
         private Action _aTownEvents;
 
         /// The saloon door, remembered as he leaves one (WestworldScript.Watch.cs, where the place changes).
@@ -65,10 +66,16 @@ namespace EnrageWestworld.InGame
         {
             if (_cfg == null || !_cfg.TownEvents || _engine == null || _store == null)
                 return;
+            if (_eventPrompt != null && now > _eventPromptUntil)
+                PromptClear();   // a prompt that lapsed (the cell's, the court's) never blocks the next (the review)
             FreedTick(now);
             if (_eventRun != null)
             {
-                EventStep(now);
+                if (now >= _eventStepNext)
+                {
+                    _eventStepNext = now + 250;   // four times a second, not every frame
+                    EventStep(now);
+                }
                 return;
             }
             if (now < _eventsNext)
@@ -97,14 +104,14 @@ namespace EnrageWestworld.InGame
         {
             Ped me = Game.Player.Character;
             Vector3 at;
-            if (_saloonDoor.TryGetValue(e.Town, out at) && at.DistanceTo(me.Position) < 120f)
+            if (_saloonDoor.TryGetValue(e.Town, out at) && at.DistanceTo(me.Position) < 120f && !Natives.Looking(at + new Vector3(0f, 0f, 1f), 50f))
             {
                 Vector3 spot;
                 if (Natives.StandSpot(at + new Vector3(5f, 3f, 0f), at.Z, out spot))
                     at = spot;
             }
             else if (!EncounterSpot(me, 20f, 35f, out at))
-                return;   // nowhere unseen just now: again in two seconds
+                return;   // nowhere unseen just now (the door in his sight counts as nowhere): again in two seconds
             var run = new EventRun { E = e, At = at, Since = now, NextCall = now + 6000 };
             int seed = (e.Id ?? "").GetHashCode();
             run.FiddlerModel = Spawner.ModelFor(e.Town, false, seed);
@@ -132,6 +139,14 @@ namespace EnrageWestworld.InGame
             long g = Bridge.Now();
             bool second = g >= e.At + (Elections.PollsTo - Elections.PollsFrom) * 30;   // the second man speaks the second half
             string id = second ? e.BId : e.AId, name = second ? e.BName : e.AName;
+            string half = e.Id + (second ? "|b" : "|a");
+            if (_speechDone.Contains(half))
+            {
+                _eventsNext = now + 60000;   // this man has spoken: the other's turn comes with the afternoon
+                return;
+            }
+            _speechDone.Add(half);
+            UnbindOthers(id);   // one body with his name (the review)
             Resident who = _store.FindResident(id);
             var run = new EventRun { E = e, At = at, Since = now, NextCall = now + 5000, Speaker = name, SpeakerId = id };
             int seed = (e.Id ?? "").GetHashCode();
@@ -206,6 +221,11 @@ namespace EnrageWestworld.InGame
                 }
                 if (r.Fiddler != null)
                     TASK.TASK_START_SCENARIO_IN_PLACE_HASH(r.Fiddler.Handle, Natives.Hash("PROP_HUMAN_SEAT_BENCH_FIDDLE_UPBEAT"), -1, true, 0u, -1f, false);   // a prop scenario: it may not take without a bench (checked 2 s on)
+                if (r.Cast.Count == 0)
+                {
+                    EventRunLost(r, now, "nobody of the dance appeared");
+                    return;
+                }
                 foreach (Ped p in r.Cast)
                 {
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, true);
@@ -245,7 +265,7 @@ namespace EnrageWestworld.InGame
             float d = me.Position.DistanceTo(r.At);
             if (d > 120f)
             {
-                bool stayed = (g - Math.Max(r.E.At, g - (now - r.Since) / 1000 / 60)) >= 0 && (now - r.Since) >= TownEvents.DanceStayMinutes * 1000 / 2;   // a real minute's worth at the game's pace
+                bool stayed = now - r.Since >= 90000;   // a minute and a half of real time there (an hour and more of the game's), as the other events count it
                 _engine.FinishEvent(r.E, stayed, g);
                 if (stayed) _eventsAttended++;
                 Log.Write("EVENT dance " + r.E.Town + ": you rode off" + (stayed ? " after staying a while" : " before it got going"));
@@ -272,7 +292,7 @@ namespace EnrageWestworld.InGame
                     Speech.SayAny(caller.Handle, Speech.Cheer, 0);
                 }
             }
-            if (now - r.Looked > 15000 && d < 40f)
+            if (now - r.Looked > 15000 && d < 40f && r.Cast.Count > 0)
             {
                 r.Looked = now;
                 int n = 0;
@@ -468,7 +488,9 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             bool screamed = false;
             // a hanging broken by someone else's shots: the sworn men hustle the condemned man inside and finish it there
-            bool inside = r.E.Kind == "gallows" && !byYou;
+            bool inside = r.E.Kind == "gallows" && (!byYou || (why != null && why.StartsWith("a gun pointed", StringComparison.Ordinal)));
+            if (inside)
+                r.Step = Math.Max(r.Step, 8);   // the sentence carried out inside: his body handed back only out of sight (GallowsStep)
             foreach (Ped p in r.Cast)
             {
                 if (!p.Exists() || p.IsDead)
@@ -506,6 +528,11 @@ namespace EnrageWestworld.InGame
             _eventRun = null;
             _eventMenu = null;
             PromptClear();
+            if (_freedPed != null)
+            {
+                Spawner.Release(_freedPed, false);   // the breakout's running body, let go
+                _freedPed = null;
+            }
             if (r == null)
                 return;
             foreach (Ped p in r.Cast)

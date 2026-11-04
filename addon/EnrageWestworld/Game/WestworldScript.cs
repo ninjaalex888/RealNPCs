@@ -475,6 +475,7 @@ namespace EnrageWestworld.InGame
 			PrejitCore();   // Core's first-run compiling, on a pool thread (WestworldScript.Prejit.cs)
 			_perfFrames = 0;   // loading the save is a long frame by nature (400 ms at Ready, 2026-10-27): the meter settles again from here
 			PassingAbort();
+			EventsAbort("a save loaded");   // the dance floor, the court, the gallows, the show ground (WestworldScript.TownEvents.cs)
 			TestCastClear("a save loaded");
 			WanderLaterClear();
 			SightsReset("a save loaded");

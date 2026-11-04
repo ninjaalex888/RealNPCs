@@ -172,6 +172,7 @@ namespace EnrageWestworld.Core
             }
             a.Event = "harm";
             a.Worsens = true;
+            a.Cents = h.Cents;   // the drink bought is paid for (the review: it was free)
             a.LikeDelta = HarmLiking;
             a.VoiceFear = afraid || temper == "Coward" ? 40 : 10;
             a.VoiceHate = temper == "Hothead" ? 30 : 0;

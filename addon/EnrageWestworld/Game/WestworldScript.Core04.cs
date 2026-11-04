@@ -251,7 +251,9 @@ namespace EnrageWestworld.InGame
             _settingsKey2 = KeySpec.Parse(_cfg.SettingsKey2, Keys.None);   // None (or nothing): no second key
             _tickerNextKey = KeySpec.Parse(_cfg.TickerNextKey, Keys.T);
             _spotKey = KeySpec.Parse(_cfg.SpotKey, Keys.K);   // Shift with it cycles the kind (MatchesLoose lets the Shift through)
+            _eventKey = KeySpec.Parse(_cfg.EventKey, Keys.J);   // the trial's, the gallows' and the show's menus (WestworldScript.Trials.cs)
             _talkHotkey = KeySpec.Parse(_cfg.TalkKey, Keys.Q);   // read only when TalkKey isn't Q: Q is the game's own control (WestworldScript.Menu.cs)
+            _reader.KeyHook = LetterKey;   // the pad's keys over the reader reach the letters' menus too (WestworldScript.Letters.cs)
             Speech.ShoutsCarry = _cfg.ShoutsCarry;
             Observed.BoldThiefChance = _cfg.BoldThieves;   // a thief who tries it with the law looking on ([Scenes] BoldThieves)
             ApplyTunedNumbers();
@@ -340,7 +342,7 @@ namespace EnrageWestworld.InGame
         /// press counts once the key has been let go (T tapped through a long ticker line).
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
-            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || IsTestingKey(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e) || _spotKey.MatchesLoose(e) || (!TalkOnControl() && _talkHotkey.Matches(e))))
+            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || IsTestingKey(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e) || _spotKey.MatchesLoose(e) || (_eventKey.Matches(e) && _eventPrompt != null) || (!TalkOnControl() && _talkHotkey.Matches(e))))
                 return false;
             int t = Environment.TickCount;
             bool repeat = e.KeyCode == _lastHotkey && !_hotkeyLetGo && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;

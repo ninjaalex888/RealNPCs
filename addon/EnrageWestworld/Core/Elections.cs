@@ -35,6 +35,20 @@ namespace EnrageWestworld.Core
             return Calendar.ElectionDay(year);
         }
 
+        /// The posting window: from a week before Election Day to the day before it, by the clock's month and day; the days left on success.
+        public static bool PostingOpen(int year, int month, int day, out int daysToElection)
+        {
+            daysToElection = 0;
+            if (year < 1800 || year > 9999 || month < 1 || month > 12 || day < 1 || day > DateTime.DaysInMonth(year, month))
+                return false;
+            DateTime election = new DateTime(year, 11, Day(year)), today = new DateTime(year, month, day);
+            int days = (election - today).Days;
+            if (days < 1 || days > PostDaysAhead)
+                return false;
+            daysToElection = days;
+            return true;
+        }
+
         /// The election on that day: the polls from ten till four.
         public static TownEvent Make(string town, long electionGameDay, Resident a, Resident b)
         {
@@ -121,16 +135,16 @@ namespace EnrageWestworld.Core
             return standing == "peacemaker" ? EndorseSwing : standing == "killer" ? -EndorseSwing : EndorseSwing / 2;
         }
 
-        /// The tally: every living regular votes (the undecided by the seed), the player's doings moving a share of the
-        /// undecided and the whiskey's drinkers; a tie goes to the better-tied man, then the seed. Returns A's and B's votes.
-        public static void Tally(List<Resident> regulars, Resident a, Resident b, List<SceneTie> ties, string endorsed, string standing, string whiskeyFor, string leanedOn, string seed, out int votesA, out int votesB)
+        /// Every living regular's vote (true for A): the undecided by the seed, the player's doings moving a share of the undecided
+        /// and the whiskey's drinkers.
+        public static Dictionary<string, bool> Votes(List<Resident> regulars, Resident a, Resident b, List<SceneTie> ties, string endorsed, string standing, string whiskeyFor, string leanedOn, string seed)
         {
-            votesA = votesB = 0;
+            var votes = new Dictionary<string, bool>();
             if (regulars == null || a == null || b == null)
-                return;
+                return votes;
             foreach (Resident v in regulars)
             {
-                if (v == null || v.Dead || v.Fled)
+                if (v == null || v.Dead || v.Fled || v.Id == null)
                     continue;
                 int lean = Lean(v, a, b, ties, seed);
                 int r = Voice.Hash(seed + "|vote|" + v.Id) % 100;
@@ -145,8 +159,19 @@ namespace EnrageWestworld.Core
                 }
                 else if (whiskeyFor != null && (v.Personality == "Greedy" || v.Personality == "Drifter") && r < 50)
                     lean = whiskeyFor == a.Id ? 1 : -1;   // a free drink buys the thirsty
-                if (lean > 0) votesA++; else votesB++;
+                votes[v.Id] = lean > 0;
             }
+            return votes;
+        }
+
+        /// The tally: the votes counted; a tie goes to the better-tied man, then the seed. Returns A's and B's votes.
+        public static void Tally(List<Resident> regulars, Resident a, Resident b, List<SceneTie> ties, string endorsed, string standing, string whiskeyFor, string leanedOn, string seed, out int votesA, out int votesB)
+        {
+            votesA = votesB = 0;
+            if (regulars == null || a == null || b == null)
+                return;
+            foreach (bool forA in Votes(regulars, a, b, ties, endorsed, standing, whiskeyFor, leanedOn, seed).Values)
+                if (forA) votesA++; else votesB++;
             if (votesA == votesB)
             {
                 int ta = TiesOf(ties, a.Id), tb = TiesOf(ties, b.Id);

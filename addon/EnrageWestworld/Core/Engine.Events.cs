@@ -37,6 +37,7 @@ namespace EnrageWestworld.Core
                     continue;   // a town he has never been to posts nothing he'd hear of
                 TownEvent d = TownEvents.Dance(town, saturday);
                 d.Posted = true;
+                d.PostedAt = now;
                 Store.Events.Add(d);
                 string when = TownEvents.DaysToSaturday(weekday) == 0 ? "tonight" : "on Saturday";
                 Push(new Toast { Kind = "life", Title = "Dance in " + ShortTown(town), Weight = 30, Text = TownEvents.PostedText(d, when) });
@@ -49,17 +50,15 @@ namespace EnrageWestworld.Core
         /// Election Day a week off (the clock's date known): a race in every town with five living regulars, posted.
         private void ElectionsDaily(long now, long today)
         {
-            int year = InnerLife.CalendarYear, month = InnerLife.ClockMonth, day = InnerLife.ClockDay;
-            if (year < 1800 || month != 11 || day <= 0)
-                return;
+            int year = InnerLife.CalendarYear, month = InnerLife.ClockMonth, day = InnerLife.ClockDay, daysTo;
+            if (!Elections.PostingOpen(year, month, day, out daysTo))
+                return;   // from a week before Election Day to its eve (31 October 1899; a skipped day loses nothing)
             int electionDay = Elections.Day(year);
-            if (day != electionDay - Elections.PostDaysAhead)
-                return;
-            long electionGameDay = today + Elections.PostDaysAhead;
+            long electionGameDay = today + daysTo;
             foreach (string town in Rumours.Towns.Keys)
             {
-                if (Store.Events.Any(x => x.Kind == "election" && x.Town == town && x.At / 1440 == electionGameDay))
-                    continue;
+                if (Store.Events.Any(x => x.Kind == "election" && x.Town == town && !x.Done && x.At / 1440 >= today))
+                    continue;   // a race posted already this year
                 List<Resident> regulars = Store.Residents.Where(r => r.Regular && !r.Dead && !r.Fled && r.Held == null && r.Town == town).ToList();
                 if (regulars.Count < Elections.LeastRegulars)
                     continue;
@@ -68,6 +67,7 @@ namespace EnrageWestworld.Core
                     continue;
                 TownEvent e = Elections.Make(town, electionGameDay, c[0], c[1]);
                 e.Posted = true;
+                e.PostedAt = now;
                 Store.Events.Add(e);
                 Push(new Toast { Kind = "life", Title = "Election in " + ShortTown(town), Weight = 35, Text = Elections.PostedText(e) });
                 if (Cfg.Newspaper)
@@ -105,11 +105,14 @@ namespace EnrageWestworld.Core
             Resident winner = aWon ? a : b, loser = aWon ? b : a;
             e.Outcome = winner.Name + " (" + va + "-" + vb + ")";
             // the ties: the winner's voters warm to him, the loser's sour toward him; both think of it
+            Dictionary<string, bool> votes = Elections.Votes(regulars, a, b, Store.Ties, e.Endorsed, standing, e.WhiskeyFor, e.LeanedOn, e.Id);   // the votes as cast, not the leans (the review)
             foreach (Resident v in regulars)
             {
                 if (v.Id == a.Id || v.Id == b.Id)
                     continue;
-                bool forA = Elections.Lean(v, a, b, Store.Ties, e.Id) >= 0;
+                bool forA;
+                if (!votes.TryGetValue(v.Id, out forA))
+                    continue;
                 bool won = forA == aWon;
                 Ties.Note(Store.Ties, v.Id, v.Name, winner.Id, winner.Name, e.Town, won ? "cheer" : "envy", now);
                 if (Cfg.Minds)
@@ -123,7 +126,7 @@ namespace EnrageWestworld.Core
             Push(new Toast { Kind = "life", Title = "The election in " + ShortTown(e.Town), Weight = 45, Text = Elections.ResultToast(e, va, vb) });
             if (Cfg.Newspaper)
                 Requests.Add(new WorldRequest { Kind = "paper", Town = e.Town, Text = Elections.ResultText(e, va, vb) });
-            Log("EVENT election " + e.Town + ": " + a.Name + " " + va + ", " + b.Name + " " + vb + " -> " + winner.Name + (e.Endorsed != null ? " (you endorsed " + (e.Endorsed == a.Id ? a.Name : b.Name) + ")" : "") + (attended ? "; you were there" : ""));
+            Log("EVENT election " + e.Town + ": " + a.Name + " " + va + ", " + b.Name + " " + vb + " -> " + winner.Name + (e.Endorsed != null ? " (you endorsed " + (e.Endorsed == a.Id ? a.Name : b.Name) + ")" : "") + (attended || e.Attended ? "; you were there" : ""));
         }
 
         /// The race this person stands in, posted and not over, if any.
@@ -255,9 +258,9 @@ namespace EnrageWestworld.Core
         {
             if (e == null || e.Done)
                 return;
-            if (e.Kind == "gallows" && byYou)
+            if (e.Kind == "gallows" && byYou && (why == null || !why.StartsWith("a gun pointed", StringComparison.Ordinal)))
             {
-                PrisonerFreed(e, true, now);   // his shots: the condemned man got away in the uproar (Engine.Trials.cs)
+                PrisonerFreed(e, true, now);   // his shots or his violence: the condemned man got away in the uproar (Engine.Trials.cs); a gun merely pointed sends him inside
                 return;
             }
             e.Done = true;

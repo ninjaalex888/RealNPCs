@@ -17,6 +17,7 @@ namespace EnrageWestworld.Core
             st.Sightings = Math.Max(st.Sightings, 1);
             st.Talks++;
             st.Affection = Romance.Clamp(st.Affection + Verbs.LentAffection, -100, 100);
+            st.Loan = new Verbs.Loan { At = now, DueAt = now + Verbs.LoanDays * 1440L, Cents = Verbs.LendCents };   // kept here too: the log forgets
             if (Cfg.Minds)
                 Minds.Note(st.Mind, new MindMemory
                 {
@@ -34,8 +35,22 @@ namespace EnrageWestworld.Core
                 return;
             int delta = outcome == "paid" ? Verbs.RepaidAffection : outcome == "putoff" ? Verbs.PutOffAffection : outcome == "refused" ? Verbs.RefusedAffection : -1;
             st.Affection = Romance.Clamp(st.Affection + delta, -100, 100);
+            if (outcome == "paid" || outcome == "refused")
+                st.Loan = null;
+            else if (outcome == "putoff" && st.Loan != null)
+                st.Loan.DueAt = now + Verbs.LoanDays * 1440L;
             if (outcome == "paid")
                 st.Talks++;
+        }
+
+        /// The loan out to this person: the log's record while it has it, else the one kept on them.
+        public Verbs.Loan LoanOf(string id, long now)
+        {
+            Verbs.Loan fromLog = Verbs.LoanOut(Store.WorldLog, id, now);
+            if (fromLog != null)
+                return fromLog;
+            PersonState st = id != null ? Store.Find(id) : null;
+            return st != null && st.Loan != null && st.Loan.At <= now ? st.Loan : null;
         }
 
         /// Two people made known to each other by him: both a little fonder of him, and each remembers the other's name came

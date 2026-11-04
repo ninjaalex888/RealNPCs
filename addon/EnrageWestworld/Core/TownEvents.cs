@@ -21,6 +21,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public string Title;
         [DataMember(EmitDefaultValue = false)] public long At, Until;   // game minutes: the start, the end
         [DataMember(EmitDefaultValue = false)] public bool Posted, Done, Attended, Broken;
+        [DataMember(EmitDefaultValue = false)] public long PostedAt;    // game minute it was posted (a rewind drops what was posted after the cut)
         [DataMember(EmitDefaultValue = false)] public string Outcome;   // away, attended, broken (why)
         [DataMember(EmitDefaultValue = false)] public string AId, AName, BId, BName;   // the kind's own people (candidates, the accused...)
         [DataMember(EmitDefaultValue = false)] public string Extra;     // the kind's own word (the office, the verdict, the show's bill)

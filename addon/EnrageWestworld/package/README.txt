@@ -486,7 +486,7 @@ NEW IN 0.7.11
   weighed from who saw it, the dead man's friends against the accused's, his temper in the dock,
   your word if you give it (a known killer's word counts half) and a frightened town. Guilty means
   a hanging two days on at the jail at eleven, the drop never shown; not guilty splits the town.
-  J (keyboard): testify when the judge asks, be sworn in as a special deputy before the hour, or
+  J ([Keys] EventKey, keyboard): testify when the judge asks, be sworn in as a special deputy before the hour, or
   break him out of the jail at night with no lawman near. Shots stop a hanging. A hogtied man of
   ours carried into a sheriff's office is brought in. Testing row "trial" to see it.
 - The Wild West show (EventShows): once your most-told deed is talked of in four towns, one of them

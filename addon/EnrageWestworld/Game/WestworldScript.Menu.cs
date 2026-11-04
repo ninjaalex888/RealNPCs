@@ -373,7 +373,7 @@ namespace EnrageWestworld.InGame
             // the three more verbs (Core/Verbs.cs; SIXDAY item 6): the ties he can ask about, a loan out, someone near to be introduced
             bool verbs = _cfg.TalkVerbs && id != null && !performer && coverDollars == 0;
             List<SceneTie> about = verbs ? Verbs.AskAboutOf(_store.Ties, id, _store.LastGameMin, x => _store.DeathOf(x) == null) : null;
-            Verbs.Loan loan = verbs ? Verbs.LoanOut(_store.WorldLog, id, _store.LastGameMin) : null;
+            Verbs.Loan loan = verbs ? _engine.LoanOf(id, _store.LastGameMin) : null;   // the log's record, or the one kept on them
             MindWho introduce = null;
             int introduceHandle = verbs ? IntroduceCandidate(p, id, now, out introduce) : 0;
             TownEvent election = id != null && !performer && coverDollars == 0 ? _engine.ElectionFor(id, _store.LastGameMin) : null;   // a candidate in the town's election
@@ -1275,6 +1275,8 @@ namespace EnrageWestworld.InGame
                             outcome == "paid" ? "paid back $" + (-a.Cents) / 100 : outcome == "putoff" ? "put off" : "denied the loan");
                 if (outcome != "putoff")
                     t.Loan = null;   // the loan is over, paid or denied
+                else if (t.Loan != null)
+                    t.Loan.DueAt = _store.LastGameMin + Verbs.LoanDays * 1440L;   // put off: the open menu knows the new day too (the review)
                 _talkCollected++;
             }
             _engine.Collected(t.Id, t.Name, _store.LastGameMin, outcome);
@@ -1292,6 +1294,10 @@ namespace EnrageWestworld.InGame
             if (b.Position.DistanceTo(ap.Position) > 10f || _director.Involves(bh) || !MayDirect(b))
             {
                 Log.Write("TALK introduce: " + t.IntroduceName + " had moved off: nothing made of it");
+                a.LikeDelta = 0;   // nothing made, nothing owed (the review)
+                t.IntroduceHandle = 0;
+                t.IntroduceName = null;
+                t.IntroduceId = null;
                 return;
             }
             string seed = t.Id + "|intro|" + now / 1000;

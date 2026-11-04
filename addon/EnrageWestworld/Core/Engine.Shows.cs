@@ -32,6 +32,7 @@ namespace EnrageWestworld.Core
         {
             TownEvent e = Shows.Make(town, day, d, furthest, (d != null ? d.Id : "test") + "|" + day);
             e.Posted = true;
+            e.PostedAt = now;
             Store.Events.Add(e);
             Push(new Toast { Kind = "life", Title = "Posters in " + ShortTown(town), Weight = 40, Text = Shows.PostedText(e) });
             if (Cfg.Newspaper)

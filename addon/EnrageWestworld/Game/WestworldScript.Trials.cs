@@ -30,6 +30,7 @@ namespace EnrageWestworld.InGame
         private int _freedRelease;
         private int _trialsStaged, _gallowsStaged, _testified, _sworn, _breakouts, _broughtInCount;
         private static readonly uint Carbine = Natives.Hash("WEAPON_REPEATER_CARBINE");
+        private KeySpec _eventKey;                     // [Keys] EventKey, J as it comes (the game's own J is the journal: change it in the ini if that bites)
         private const uint DeputyGiveReason = 0x2CD419DC;   // the game's default reason for giving a weapon (WakeActs.cs)
         private const int PlayerPad = 0;
 
@@ -53,7 +54,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             Vector3 at;
             bool saloon = false;
-            if (_saloonDoor.TryGetValue(e.Town, out at) && at.DistanceTo(me.Position) < 120f)
+            if (_saloonDoor.TryGetValue(e.Town, out at) && at.DistanceTo(me.Position) < 120f && !Natives.Looking(at + new Vector3(0f, 0f, 1f), 50f))
             {
                 Vector3 spot;
                 if (Natives.StandSpot(at + new Vector3(6f, 4f, 0f), at.Z, out spot))
@@ -61,7 +62,7 @@ namespace EnrageWestworld.InGame
                 saloon = true;
             }
             else if (!EncounterSpot(me, 18f, 30f, out at))
-                return;   // nowhere unseen just now: again in two seconds
+                return;   // nowhere unseen just now (the door in his sight counts as nowhere): again in two seconds
             Resident who = _store.FindResident(e.AId);
             var run = new EventRun { E = e, At = at, Since = now, NextCall = now + 5000, Speaker = e.AName, SpeakerId = e.AId };
             int seed = (e.Id ?? "").GetHashCode();
@@ -85,6 +86,7 @@ namespace EnrageWestworld.InGame
         /// The accused, in his own body, his name card on him and Talk knowing him.
         private Ped SpawnAccused(EventRun r, Vector3 at, float heading)
         {
+            UnbindOthers(r.SpeakerId);   // one body with his name (the review)
             Ped p = Spawner.Spawn(r.AccusedModel, at, heading);
             if (p == null)
                 return null;
@@ -99,6 +101,20 @@ namespace EnrageWestworld.InGame
             if (who != null)
                 _resBind[p.Handle] = new ResBind { R = who, Model = r.AccusedModel };
             return p;
+        }
+
+        /// The resident's other body, if one is walking the town, goes nameless: one body carries the name (the review).
+        private void UnbindOthers(string id)
+        {
+            if (id == null)
+                return;
+            List<int> gone = null;
+            foreach (KeyValuePair<int, ResBind> kv in _resBind)
+                if (kv.Value.R != null && kv.Value.R.Id == id)
+                    (gone ?? (gone = new List<int>())).Add(kv.Key);
+            if (gone != null)
+                foreach (int h in gone)
+                    _resBind.Remove(h);
         }
 
         private Ped SpawnDeputy(EventRun r, Vector3 at, float heading)
@@ -296,7 +312,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             Vector3 at;
             bool jail = false;
-            if (_jailDoor.TryGetValue(e.Town, out at) && at.DistanceTo(me.Position) < 150f)
+            if (_jailDoor.TryGetValue(e.Town, out at) && at.DistanceTo(me.Position) < 150f && !Natives.Looking(at + new Vector3(0f, 0f, 1f), 50f))
             {
                 Vector3 spot;
                 if (Natives.StandSpot(at + new Vector3(0f, 5f, 0f), at.Z, out spot))
@@ -586,7 +602,7 @@ namespace EnrageWestworld.InGame
                 }
                 return true;
             }
-            if (k != Keys.J || _eventPrompt == null || Game.GameTime > _eventPromptUntil || _eventPromptFor == null)
+            if (k == Keys.None || k != _eventKey.Key || _eventPrompt == null || Game.GameTime > _eventPromptUntil || _eventPromptFor == null)
                 return false;
             var menu = new LetterMenu { Mode = _eventPrompt };
             switch (_eventPrompt)
@@ -605,6 +621,11 @@ namespace EnrageWestworld.InGame
             if (m.Rows == null || m.Sel < 0 || m.Sel >= m.Rows.Count)
                 return;
             InteractOption row = m.Rows[m.Sel];
+            if (row.Why != null)
+            {
+                Hint(row.Label + ": " + row.Why + ".", 2500);   // a greyed row does nothing (the review)
+                return;
+            }
             TownEvent e = _eventPromptFor;
             EventRun r = _eventRun;
             int now = Game.GameTime;
@@ -657,7 +678,8 @@ namespace EnrageWestworld.InGame
             }
             if (_eventPrompt == null || Game.GameTime > _eventPromptUntil)
                 return;
-            string text = _eventPrompt == "testify" ? "J: speak to the court" : _eventPrompt == "swear" ? "J: be sworn in" : _eventPrompt == "show" ? "J: the show" : "J: the cell";
+            string key = KeySpec.Name(_eventKey.Key);
+            string text = key + (_eventPrompt == "testify" ? ": speak to the court" : _eventPrompt == "swear" ? ": be sworn in" : _eventPrompt == "show" ? ": the show" : ": the cell");
             float s = 0.3f;
             Draw.Text(text, 0.5f - Draw.Width(text, s) / 2f, 0.85f, s, 236, 214, 160);
         }

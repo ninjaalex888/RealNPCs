@@ -19,16 +19,14 @@ namespace EnrageWestworld.Core
             string letter = Replies.KindOf(p);
             Person who = p.FromId != null ? Find(p.FromId) : null;
             string town = who != null ? who.Home : Replies.TownOf(p);
-            if (letter == "grief")
-            {
-                Avenger a = Store.Avengers.FirstOrDefault(x => x.Name == p.From && x.Stage <= 1);
-                if (a != null && a.Town != null)
-                    town = a.Town;
-            }
+            Avenger kin = letter == "grief" ? Store.Avengers.FirstOrDefault(x => x.Name == p.From) : null;   // any stage: for their sex and town
+            if (kin != null && kin.Town != null && kin.Stage <= 1)
+                town = kin.Town;
+            bool woman = who != null ? who.Woman : kin != null ? kin.Woman : Residents.IsWomansName(Person.FirstOf(p.From ?? ""));
             int days = Replies.Days(metresToWriter);
             var r = new Reply
             {
-                Id = Ids.New(), PaperId = p.Id, ToId = p.FromId, ToName = p.From, ToWoman = who != null && who.Woman, Letter = letter, Tone = tone, Amount = amount,
+                Id = Ids.New(), PaperId = p.Id, ToId = p.FromId, ToName = p.From, ToWoman = woman, Letter = letter, Tone = tone, Amount = amount,
                 From = fromTown, Town = town, SentAt = now, ArrivesAt = now + days * 1440L
             };
             Store.Replies.Add(r);
@@ -58,19 +56,27 @@ namespace EnrageWestworld.Core
             if (Store.Replies == null)
                 return;
             foreach (Reply r in Store.Replies)
-                if (r != null && !r.Done && r.ArrivesAt <= now)
+            {
+                if (r == null)
+                    continue;
+                if (!r.Done && r.ArrivesAt <= now)
                     Land(r, now);
+                if (Replies.MeetPast(r, now))
+                    MeetOver(r, false, now);   // the fortnight gone: the writer gave up waiting
+            }
         }
 
         /// What a letter does at the other end, and the letter back.
         private void Land(Reply r, long now)
         {
             r.Done = true;
+            bool first = !r.Effected;   // a rewind lands the letter again: the words again, the effects once
+            r.Effected = true;
             PersonState st = r.ToId != null ? MindOf(r.ToId, r.ToName) : null;
             bool courted = st != null && (st.Heart >= 2 || st.Flirts > 0);
             bool grudge = r.ToId != null && Interact.LastWrong(Store.WorldLog, r.ToId, now) != null;
             Replies.Effect e = r.Own ? Replies.OwnOutcome(r.Tone, courted, grudge, r.Id) : Replies.Outcome(r.Letter, r.Tone, r.Amount, r.Id);
-            if (st != null)
+            if (st != null && first)
             {
                 st.Affection = Romance.Clamp(st.Affection + e.Affection, -100, 100);
                 if (e.Heart != 0)
@@ -78,7 +84,7 @@ namespace EnrageWestworld.Core
                 if (e.Awareness != 0)
                     st.Awareness = Romance.Clamp(st.Awareness + e.Awareness, 0, 100);
             }
-            if (e.Liking != 0 && r.ToId != null && r.ToId.StartsWith("folk:"))
+            if (first && e.Liking != 0 && r.ToId != null && r.ToId.StartsWith("folk:"))
                 Effect(new EnrageEffect { PersonId = r.ToId, Kind = "like", Amount = e.Liking });   // enRAGE's own townsfolk, through its own method (the game side)
             string kin = null;
             if (r.Letter == "grief")
@@ -86,13 +92,13 @@ namespace EnrageWestworld.Core
                 Avenger a = Store.Avengers.FirstOrDefault(x => x.Name == r.ToName && x.Stage <= 1);
                 if (a != null)
                 {
-                    kin = "my " + KinWord(a.Relation, a.DeadWoman);
-                    if (e.StandDown)
+                    kin = KinWord(a.Relation, a.DeadWoman);   // bare: the letters say "my" themselves
+                    if (e.StandDown && first)
                     {
                         a.Stage = 3;
                         Push(new Toast { Kind = "life", Title = "Word from " + ShortTown(a.Town), Weight = 50, Text = a.Name + " has stayed home after all, they say. Your letter did that." });
                     }
-                    else if (e.RideSooner)
+                    else if (e.RideSooner && first)
                     {
                         a.DueAt = Math.Max(now + 120, a.DueAt - 1440);
                         Push(new Toast { Kind = "life", Title = "Word from " + ShortTown(a.Town), Weight = 55, Text = a.Name + " took the first train after your letter, they say." });
@@ -101,12 +107,18 @@ namespace EnrageWestworld.Core
                 else
                 {
                     // the kin grieve at home, nobody riding: the words alone
-                    kin = "my own";
+                    kin = "kin";
                     e.StandDown = false;
                     e.RideSooner = false;
                     if (e.Note == "stays home" || e.Note == "frightened off" || e.Note == "rides sooner" || e.Note == "burns the money")
                         e.Note = "taken";
                 }
+            }
+            if (e.Meet && (r.Town == null || !Rumours.Towns.ContainsKey(r.Town)))
+            {
+                e.Meet = false;   // nowhere he rides to: the letter says so, nobody waits
+                if (r.Letter != "grief")
+                    e.Note = "too far to meet";
             }
             r.Outcome = e.Note;
             if (e.Meet)

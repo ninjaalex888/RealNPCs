@@ -37,8 +37,10 @@ namespace EnrageWestworld.InGame
 
         // the pad (Lex, 2026-10-28: controllers): the D-pad turns pages and papers, LB and RB too, B or A closes
         private const uint PadUp = 1662638961u, PadDown = 97156178u, PadLeft = 2791226036u, PadRight = 3736290067u, PadLB = 3901091606u, PadRB = 398377320u,
-                           PadAccept = 3350541322u, PadCancel = 359624985u;
-        private static readonly uint[] PadAll = { PadUp, PadDown, PadLeft, PadRight, PadLB, PadRB, PadAccept, PadCancel };
+                           PadAccept = 3350541322u, PadCancel = 359624985u, PadX = 2362248514u, PadY = 1057978975u;   // X and Y: INPUT_FRONTEND_X / _Y (the letters' answer and write)
+        private static readonly uint[] PadAll = { PadUp, PadDown, PadLeft, PadRight, PadLB, PadRB, PadAccept, PadCancel, PadX, PadY };
+        /// A key offered first to whoever draws over the reader (the letters' menus): true when they took it.
+        public Func<Keys, bool> KeyHook;
         private bool _padArmed;
 
         private void PadInput()
@@ -48,11 +50,22 @@ namespace EnrageWestworld.InGame
                 _padArmed = !PadAll.Any(c => PAD.IS_DISABLED_CONTROL_PRESSED(0, c));
                 return;
             }
-            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadCancel) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadAccept)) Key(Keys.Escape);
-            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadRight) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadRB)) Key(Keys.Right);
-            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadLeft) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadLB)) Key(Keys.Left);
-            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadDown)) Key(Keys.Down);
-            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadUp)) Key(Keys.Up);
+            Keys k = Keys.None;
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadCancel)) k = Keys.Escape;
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadAccept)) k = Keys.Enter;
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadRight) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadRB)) k = Keys.Right;
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadLeft) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadLB)) k = Keys.Left;
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadDown)) k = Keys.Down;
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadUp)) k = Keys.Up;
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadX)) k = Keys.R;
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadY)) k = Keys.L;
+            if (k == Keys.None)
+                return;
+            if (KeyHook != null && KeyHook(k))
+                return;   // the letters' menus took it (the pad's A chooses, B backs out, X answers, Y writes)
+            if (k == Keys.R || k == Keys.L)
+                return;   // nothing of the reader's
+            Key(k == Keys.Enter ? Keys.Escape : k);   // A closes the reader, as before
         }
 
         public void Close()

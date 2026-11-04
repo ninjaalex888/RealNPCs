@@ -32,6 +32,8 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public string Outcome;    // how it was taken, in a word (Effect.Note)
         [DataMember(EmitDefaultValue = false)] public long MeetAt;       // the game minute the writer starts waiting (10:00 of the day), 0 none
         [DataMember(EmitDefaultValue = false)] public bool Met;          // the meeting happened, or its day passed
+        [DataMember(EmitDefaultValue = false)] public bool Effected;     // its effects at the writer's end applied once (a rewind re-lands the letter, never the effects)
+        [DataMember(EmitDefaultValue = false)] public string CastId;     // the resident made to stand for a writer who is no person of ours, so a second cast finds the same one
     }
 
     public static class Replies
@@ -42,6 +44,7 @@ namespace EnrageWestworld.Core
         public const int Money5 = 500, Money20 = 2000, OwnMoney = 500;
         public const int MeetFrom = 10, MeetTo = 16;       // the hours they wait
         public const int MeetDaysOn = 2;                   // the meet is this many days after the answer lands
+        public const int MeetWaitDays = 14;                // ...and the writer comes to the station every day for this long (the letter may be read late)
         public const float NearMetres = 2500f;             // towns this near are a two-day post; farther, three
         public const int MostWriteTo = 8;                  // the people offered when he writes first
 
@@ -70,7 +73,9 @@ namespace EnrageWestworld.Core
         /// The writer's town, from the grief letter's title ("A letter from <kin>, <town>"), else null.
         public static string TownOf(Paper p)
         {
-            string t = p != null ? p.Title : null;
+            if (p == null || KindOf(p) != "grief")
+                return null;   // only a grief letter's title names the writer's town
+            string t = p.Title;
             int i = t != null ? t.IndexOf(", ", StringComparison.Ordinal) : -1;
             return i > 0 && i + 2 < t.Length ? t.Substring(i + 2).Trim() : null;
         }
@@ -137,10 +142,19 @@ namespace EnrageWestworld.Core
             return (landed / 1440 + MeetDaysOn) * 1440 + MeetFrom * 60;
         }
 
-        /// Whether the writer is waiting now.
+        /// Whether the writer is waiting now: from the meet's day for a fortnight, in the hours.
         public static bool MeetOpen(Reply r, long now)
         {
-            return r != null && r.MeetAt > 0 && !r.Met && now >= r.MeetAt && now < r.MeetAt + (MeetTo - MeetFrom) * 60L;
+            if (r == null || r.MeetAt <= 0 || r.Met || now < r.MeetAt || now >= r.MeetAt + MeetWaitDays * 1440L)
+                return false;
+            int hour = (int)(now % 1440 / 60);
+            return hour >= MeetFrom && hour < MeetTo;
+        }
+
+        /// The fortnight gone with no meeting.
+        public static bool MeetPast(Reply r, long now)
+        {
+            return r != null && r.MeetAt > 0 && !r.Met && now >= r.MeetAt + MeetWaitDays * 1440L;
         }
 
         /// The day's name for the letter: the weekday MeetDaysOn days on, or "the day after tomorrow".
@@ -250,7 +264,7 @@ namespace EnrageWestworld.Core
         }
 
         /// The letter back, or null when they don't write (a warning or a threat of his own gets none). `dayWord` names the
-        /// meet's day; `kin` the dead's relation to a grieving writer ("my brother").
+        /// meet's day; `kin` the dead's relation to a grieving writer ("brother").
         public static Paper Answer(Reply r, Effect e, PlayerRef you, bool knowsName, string dayWord, string kin, long now)
         {
             if (r == null || e == null || e.Silence)
@@ -266,12 +280,14 @@ namespace EnrageWestworld.Core
 
         private static string MeetLine(string town, string dayWord)
         {
-            return "The station in " + (town ?? "town") + ", " + dayWord + ", from ten o'clock till four.";
+            return "The station in " + (town ?? "town") + ", from " + dayWord + ", ten o'clock till four. I'll come every day for a fortnight, in case the post is slow.";
         }
 
         public static string Body(string letter, string tone, Effect e, string town, string dayWord, string kin, string seed)
         {
             string k = kin ?? "kin";
+            if (tone == "meet" && !e.Meet && letter != "grief" && letter != "scorned")
+                return Pick(seed, "Meet? I can't come so far, and you'd not come to me. Let the letters do what they can.", "There'll be no meeting. Not from here. Write, if you must; I'll answer.");   // too far for a station (the writer's town is nowhere he rides)
             switch (letter)
             {
                 case "grief":
@@ -384,7 +400,7 @@ namespace EnrageWestworld.Core
                     for (int s = 0; s < 3; s++)
                     {
                         Effect e = Outcome(letter, tone, s == 0 ? Money5 : Money20, "s" + s);
-                        string body = Body(letter, tone, e, "Valentine", "Thursday", "my brother", "b" + s);
+                        string body = Body(letter, tone, e, "Valentine", "Thursday", "brother", "b" + s);
                         if (body != null) yield return body;
                     }
             foreach (string kind in OwnKinds)
@@ -397,7 +413,7 @@ namespace EnrageWestworld.Core
                             if (body != null) yield return body;
                         }
             foreach (string letter in LetterKinds)
-                foreach (string line in MeetLines(letter, "my brother", "m"))
+                foreach (string line in MeetLines(letter, "brother", "m"))
                     yield return line;
             yield return ShownAround("love", "Clara Bell", "Arthur Morgan");
             yield return ShownAround("threat", "Hiram Cobb", "Arthur Morgan");

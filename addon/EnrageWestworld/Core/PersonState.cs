@@ -10,6 +10,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public string Id;
         [DataMember(EmitDefaultValue = false)] public string Name;
         [DataMember(EmitDefaultValue = false)] public bool KnowsName;
+        [DataMember(EmitDefaultValue = false)] public Verbs.Loan Loan;   // money he lent them, until paid or denied (Core/Verbs.cs; the world log is capped, this isn't)
         [DataMember(EmitDefaultValue = false)] public long NameAt;
         [DataMember(EmitDefaultValue = false)] public int Talks;
         [DataMember(EmitDefaultValue = false)] public long LastTalkAt;

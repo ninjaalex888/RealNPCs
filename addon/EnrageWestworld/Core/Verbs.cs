@@ -231,11 +231,13 @@ namespace EnrageWestworld.Core
             return a;
         }
 
+        [System.Runtime.Serialization.DataContract]
         public sealed class Loan
         {
-            public Happening Lent;
-            public long DueAt;
-            public int Cents;
+            public Happening Lent;                                                         // the log's record, when it still has it
+            [System.Runtime.Serialization.DataMember(EmitDefaultValue = false)] public long At;      // lent then (saved on the person: the log is capped)
+            [System.Runtime.Serialization.DataMember(EmitDefaultValue = false)] public long DueAt;
+            [System.Runtime.Serialization.DataMember(EmitDefaultValue = false)] public int Cents;
         }
 
         /// The loan to them still out, if any: the latest "loan" by the player with no "repaid" or "refused" since; a "putoff"
@@ -258,7 +260,7 @@ namespace EnrageWestworld.Core
                         putOff = e.At;
                 }
                 else if (e.DoerId == "player" && e.TargetId == id && e.Kind == "loan")
-                    return new Loan { Lent = e, DueAt = Math.Max(e.At, putOff) + LoanDays * 1440L, Cents = LoanCents(e) };
+                    return new Loan { Lent = e, At = e.At, DueAt = Math.Max(e.At, putOff) + LoanDays * 1440L, Cents = LoanCents(e) };
             }
             return null;
         }

@@ -36,6 +36,8 @@ namespace EnrageWestworld.InGame
             public Reply Reply;
             public int Handle, Since, NearSince, SecondAt;
             public Blip Dot;
+            public Ped Body;                     // kept, not made each frame
+            public bool Fresh;                   // a body bound for the meet alone: unbound when it ends
             public string Name, Second;
         }
 
@@ -230,7 +232,9 @@ namespace EnrageWestworld.InGame
                 Paper p = _reader.Current;
                 bool canReply = _cfg.LetterReplies && p != null && _store != null && Replies.Answerable(p) && !Replies.Answered(_store.Replies, p.Id);
                 bool canWrite = _cfg.WriteLetters && InPostTown();
-                _reader.Extra = canReply && canWrite ? "R: answer     L: write" : canReply ? "R: answer" : canWrite ? "L: write" : null;
+                bool pad = !PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
+                string ans = pad ? "X: answer" : "R: answer", wr = pad ? "Y: write" : "L: write";
+                _reader.Extra = canReply && canWrite ? ans + "     " + wr : canReply ? ans : canWrite ? wr : null;
                 return;
             }
             MenuBoxDraw(m);
@@ -251,7 +255,7 @@ namespace EnrageWestworld.InGame
                     m.Lines[i] = (i == m.Sel ? "> " : "  ") + row;
                     m.Wide = Math.Max(m.Wide, Draw.Width(m.Lines[i], s));
                 }
-                m.Wide = Math.Max(m.Wide, Draw.Width("Enter: choose   Backspace: back", fs));
+                m.Wide = Math.Max(m.Wide, Draw.Width(MenuFoot(), fs));
                 m.LinesSel = m.Sel;
             }
             int n = m.Rows.Count;
@@ -264,7 +268,12 @@ namespace EnrageWestworld.InGame
                 int c = closed ? 130 : sel ? 255 : 210;
                 Draw.Text(m.Lines[i], x, y + (i + 1) * lh + 0.004f, s, c, c, closed ? 130 : sel ? 200 : 210);
             }
-            Draw.Text("Enter: choose   Backspace: back", x, y + (n + 1) * lh + 0.006f, fs, 165, 155, 135);
+            Draw.Text(MenuFoot(), x, y + (n + 1) * lh + 0.006f, fs, 165, 155, 135);
+        }
+
+        private static string MenuFoot()
+        {
+            return PAD.IS_USING_KEYBOARD_AND_MOUSE(0) ? "Enter: choose   Backspace: back" : "A: choose   B: back";
         }
 
         // ---- the meet ----
@@ -278,6 +287,8 @@ namespace EnrageWestworld.InGame
 
         private void LettersTick(int now)
         {
+            if (_letterMenu != null && !_reader.Open)
+                _letterMenu = null;   // the reader closed under the menu (a pad's B): nothing left over for the next paper
             if (_cfg == null || !_cfg.LetterReplies || _engine == null || _store == null)
                 return;
             if (_meet != null)
@@ -299,6 +310,26 @@ namespace EnrageWestworld.InGame
         private void MeetCast(Reply r, int now)
         {
             Ped me = Game.Player.Character;
+            // one of ours already walking the town in a body of their own: that body, never a second one with the same name
+            Resident known = r.ToId != null && Resident.IsResident(r.ToId) ? _store.FindResident(r.ToId) : (r.CastId != null ? _store.FindResident(r.CastId) : null);
+            if (known != null)
+            {
+                int bound = 0;
+                foreach (KeyValuePair<int, ResBind> kv in _resBind)
+                    if (kv.Value.R == known && ENTITY.DOES_ENTITY_EXIST(kv.Key) && !ENTITY.IS_ENTITY_DEAD(kv.Key))
+                    {
+                        bound = kv.Key;
+                        break;
+                    }
+                if (bound != 0)
+                {
+                    Ped body = new Ped(bound);
+                    float bd = body.Position.DistanceTo(me.Position);
+                    if (bd < 150f)
+                        MeetBind(r, body, known, false, now, bd);
+                    return;   // theirs is the body that waits; farther off, again in five seconds
+                }
+            }
             Ped best = null;
             float bestD = 120f;
             foreach (Ped p in Peds.All())
@@ -320,32 +351,40 @@ namespace EnrageWestworld.InGame
             int bh = best.Handle;
             uint model = ENTITY.GET_ENTITY_MODEL(bh);
             long gameNow = _store.LastGameMin;
-            Resident res = r.ToId != null && Resident.IsResident(r.ToId) ? _store.FindResident(r.ToId) : null;
+            Resident res = known;
             if (res == null)
             {
                 res = _engine.MeetResident(model, r.ToWoman, r.Town, "come to meet you", bh + "|meet|" + Game.GameTime, gameNow, false);
                 res.Name = r.ToName;
                 _engine.ForgetPerson(res.Id);
+                r.CastId = res.Id;   // the same one next time, never another with the name
             }
-            else if (res.Regular || res.Outfit > 0)
+            else if ((res.Regular || res.Outfit > 0) && res.Model == model)
             {
-                PED._EQUIP_META_PED_OUTFIT_PRESET(bh, res.Outfit, false);   // themselves, as the town knows them
+                PED._EQUIP_META_PED_OUTFIT_PRESET(bh, res.Outfit, false);   // themselves, as the town knows them (a preset of their own build only)
                 PED._UPDATE_PED_VARIATION(bh, false, true, true, true, false);
             }
             _engine.KeepResident(res, gameNow);
             _resBind[bh] = new ResBind { R = res, Model = model };
+            MeetBind(r, best, res, true, now, bestD);
+        }
+
+        /// The writer's body, waiting where it stands, the grey mark on it.
+        private void MeetBind(Reply r, Ped body, Resident res, bool fresh, int now, float d)
+        {
+            int bh = body.Handle;
             PED.SET_PED_KEEP_TASK(bh, true);
             TASK.TASK_STAND_STILL(bh, 300000);   // they wait where they stand
             Blip dot = null;
             try
             {
-                dot = best.AddBlip(BlipType.CompanionGray);
+                dot = body.AddBlip(BlipType.CompanionGray);
                 dot.Label = r.ToName;
             }
             catch { }
-            _meet = new MeetRun { Reply = r, Handle = bh, Since = now, Dot = dot, Name = r.ToName };
+            _meet = new MeetRun { Reply = r, Handle = bh, Body = body, Fresh = fresh && res != null && res.Id == r.CastId, Since = now, Dot = dot, Name = r.ToName };
             _meetsCast++;
-            Log.Write("MEET " + r.ToName + " waits in " + _placeTown + ", " + (int)bestD + " m off (the grey mark on the map says where; " + r.Letter + ", " + r.Tone + ")");
+            Log.Write("MEET " + r.ToName + " waits in " + _placeTown + ", " + (int)d + " m off (" + (fresh ? "a body cast" : "their own body") + "; the grey mark on the map says where; " + r.Letter + ", " + r.Tone + ")");
             Hint(r.ToName + " is waiting somewhere in " + _placeTown + "; the grey mark on the map says where.", 7000);
         }
 
@@ -373,7 +412,7 @@ namespace EnrageWestworld.InGame
                 }
                 return;
             }
-            float d = new Ped(h).Position.DistanceTo(me.Position);
+            float d = (m.Body ?? (m.Body = new Ped(h))).Position.DistanceTo(me.Position);
             if (d > 3f)
             {
                 m.NearSince = 0;
@@ -393,7 +432,7 @@ namespace EnrageWestworld.InGame
             {
                 Avenger a = _store.Avengers.FirstOrDefault(x => x.Name == m.Reply.ToName);
                 if (a != null)
-                    kin = "my " + Engine.KinWord(a.Relation, a.DeadWoman);
+                    kin = Engine.KinWord(a.Relation, a.DeadWoman);   // bare: the lines say "my" themselves
             }
             string[] lines = Replies.MeetLines(m.Reply.Letter, kin, m.Reply.Id);
             TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 4000, 0f, 0f, 0f);
@@ -422,6 +461,8 @@ namespace EnrageWestworld.InGame
                 PED.SET_PED_KEEP_TASK(m.Handle, false);
                 WanderLater(m.Handle, Game.GameTime + (met ? 7000 : 500));
             }
+            if (m.Fresh)
+                _resBind.Remove(m.Handle);   // a body borrowed for the meet alone goes back to being nobody
             if (over)
                 _engine.MeetOver(m.Reply, met, _store.LastGameMin);
             if (met)
