@@ -58,7 +58,7 @@ namespace EnrageWestworld.Core
             switch (e.Kind)
             {
                 case "round": return "drink";
-                case "charity": return e.Outcome == Fondness.GiftOutcome ? "gift" : "money";   // a gift (Core/Fondness.cs) is thanked for as its own kind
+                case "charity": return e.Outcome == Fondness.GiftOutcome ? "gift" : e.Outcome == Fondness.TipOutcome ? "tip" : "money";   // a gift, a tip (Core/Fondness.cs): their own kinds
                 case "help": return e.Outcome == DebtOutcome ? "debt" : e.Outcome == DoctorOutcome ? "doctor" : e.Outcome == ToothOutcome ? "tooth" : e.Outcome == FareOutcome ? "ticket" : e.Outcome == Fondness.EscortOutcome ? "escort" : null;
                 default: return null;
             }
@@ -80,7 +80,7 @@ namespace EnrageWestworld.Core
         /// The cents a charity happening was for (the menu writes "gave $5"), else 0.
         public static int CentsOf(Happening e)
         {
-            return e != null && e.Kind == "charity" ? (e.Outcome == Fondness.GiftOutcome ? Fondness.GiftCents : e.Outcome == "gave $5" ? 500 : 100) : 0;
+            return e != null && e.Kind == "charity" ? (e.Outcome == Fondness.GiftOutcome ? Fondness.GiftCents : e.Outcome == Fondness.TipOutcome ? Fondness.TipCents : e.Outcome == "gave $5" ? 500 : 100) : 0;
         }
 
         /// Whether they come at all for this kindness: once per kindness, by its key (drink 15%, a dollar 35%, five 60%,
@@ -227,6 +227,9 @@ namespace EnrageWestworld.Core
                     return shy ? "You saw me home, that night. I was afraid, and you saw me home."
                                : sameDay ? Pick(seed + "|tes", "You saw me to my door tonight. I wanted you told it was kind.", "That walk home. Not many would have. Thank you.")
                                          : Pick(seed + "|tes", "You walked me home the other night. I think of it when the street's dark.", "That night you saw me home. I've told folk it was you.");
+                case "tip":
+                    return shy ? "The coin you dropped me, for the music. Thank you."
+                               : sameDay ? "That coin for the music. Most walk past. Thank you." : "You dropped me a coin, the other night. For the music. I remember a face that pays.";
                 case "gift":
                     return shy ? "What you gave me. It was kind. That's all."
                                : sameDay ? Pick(seed + "|tgi", "That gift of yours. Didn't expect it. I wanted you told.", "What you gave me earlier. Folks don't give, mostly. Thank you.")
@@ -248,6 +251,7 @@ namespace EnrageWestworld.Core
                 case "ticket": return "Him that made up my fare. I'll write to him, if I ever learn his name.";
                 case "gift": return "Him. Gave me a gift, asking nothing for it. Decent of him.";
                 case "escort": return "Him that saw me home that night. I'd not have got there alone.";
+                case "tip": return "Him. Dropped me a coin for the music once. Most don't.";
                 default: return "Him. Gave me money when he didn't have to. I keep a tally.";
             }
         }

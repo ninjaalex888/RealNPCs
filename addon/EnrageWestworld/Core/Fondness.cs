@@ -461,6 +461,205 @@ namespace EnrageWestworld.Core
                          : Pick(seed + "|emt", "Walked me home like I was somebody. Decent of him.", "Safe in, thanks to him. The street was black as pitch.");
         }
 
+        // ---- carrying a word ----------------------------------------------------------------------------------
+
+        public const long ErrandDays = 2;            // the word lapses after two game days
+        public const int ErrandLiking = 12, ErrandAffection = 6, ErrandSentBackAffection = 3;   // each of the two, once it's carried (less for the one who sent it back)
+        public const string ErrandOutcome = "carried a word";   // the help happening's outcome, for the sender
+
+        /// Whom they'd send a word to: the latest sore tie of theirs (a quarrel, not a theft) with a named person of the
+        /// same town who's alive, or sweethearts fallen out, within the week. Null when nobody.
+        public static SceneTie ErrandTie(List<SceneTie> ties, string id, string town, long now, Func<string, bool> alive)
+        {
+            if (ties == null || id == null)
+                return null;
+            SceneTie best = null;
+            foreach (SceneTie t in ties)
+            {
+                if (t == null || !t.Has(id) || t.Kind == "lift" || t.Kind == "pickpocket" || t.Kind == "mugging" || now - t.At < 0 || now - t.At >= 7 * 1440L)
+                    continue;
+                if (!(t.Warmth < 0 || (t.Courted && t.Warmth <= 0 && t.Kind != "makeup")))
+                    continue;
+                string other = t.A == id ? t.B : t.A;
+                if (other == null || other == "player" || string.IsNullOrEmpty(t.Other(id)) || (town != null && t.Town != null && t.Town != town) || (alive != null && !alive(other)))
+                    continue;
+                if (best == null || t.At > best.At)
+                    best = t;
+            }
+            return best;
+        }
+
+        public static string ErrandLabel(string otherFirst)
+        {
+            return "Any word you'd have carried to " + otherFirst + "?";
+        }
+
+        /// Their answer: a word to carry (Then "errand", the Message in your mouth: "He says he's sorry for what he said."),
+        /// or none from the cold, the afraid or the hostile. Pride can't say sorry to a face; a go-between carries it.
+        public static InteractAnswer ErrandAsk(string temper, bool woman, string regard, string otherFirst, bool otherWoman, bool sweethearts, string seed)
+        {
+            var a = new InteractAnswer { Then = "stay", Friendly = true };
+            string he = woman ? "She" : "He", him = otherWoman ? "her" : "him";
+            if (regard == "hostile")
+            {
+                a.Line = Pick(seed + "|erh", "Nothing I'd trust to you.", "My business is my own. Keep out of it.");
+                a.VoiceHate = 30;
+                a.Thought = "Carry my word? He'd carry it to the whole street.";
+                return a;
+            }
+            if (regard == "afraid")
+            {
+                a.Line = "N-no. Nothing, mister. Nothing at all.";
+                a.VoiceFear = 40;
+                a.Friendly = false;
+                a.Thought = "Say nothing. Give him nothing to carry.";
+                return a;
+            }
+            if (temper == "Cold")
+            {
+                a.Line = Pick(seed + "|erc", "Nothing I'd trust to a stranger.", "What's between " + him + " and me stays there.");
+                a.Friendly = false;
+                a.Thought = "A stranger offering to carry my quarrels. No.";
+                return a;
+            }
+            a.Then = "errand";
+            if (sweethearts)
+            {
+                a.Line = woman ? Pick(seed + "|ersw", "Tell him I'm sorry. Tell him I didn't mean a word of it.", "Would you? Tell him... tell him I miss him. There.")
+                               : Pick(seed + "|ersm", "Tell her I was a fool, and I'm sorry.", "Tell her I'd take it all back if I could. Every word.");
+                a.Message = woman ? he + " says she's sorry, and didn't mean a word of it." : he + " says he was a fool, and he's sorry.";
+                a.Thought = "A stranger carrying my heart across town. Better than it sitting here.";
+                return a;
+            }
+            switch (temper)
+            {
+                case "Proud":
+                    a.Line = Pick(seed + "|erp", "Tell " + him + " I was in the wrong. I'll not say it to " + (otherWoman ? "her" : "his") + " face. ...Tell " + him + ".", "You may tell " + him + " the fault was mine. From you, not from me.");
+                    a.Message = he + " says the fault was " + (woman ? "hers" : "his") + ".";
+                    a.Thought = "Said it to a stranger. Couldn't say it to " + him + ". Well.";
+                    break;
+                case "Hothead":
+                    a.Line = Pick(seed + "|erho", "Tell " + him + " " + (otherWoman ? "she's" : "he's") + " a fool. And that I'll stand " + him + " a drink Saturday.", "Tell " + him + " I'm still sore. And that it's done with. Both.");
+                    a.Message = he + " says you're a fool, and " + (woman ? "she'll" : "he'll") + " stand you a drink Saturday.";
+                    a.Thought = "Couldn't say it myself. Would've ended in fists.";
+                    break;
+                case "Coward":
+                    a.Line = Pick(seed + "|erco", "Would you? Tell " + him + " I'm sorry. I can't... I can't go myself.", "Oh, would you? Tell " + him + " I never meant it. Please.");
+                    a.Message = he + " says " + (woman ? "she's" : "he's") + " sorry, and never meant it.";
+                    a.Thought = "He'll carry it. Thank the Lord. I'd never have dared.";
+                    break;
+                default:
+                    a.Line = Pick(seed + "|er", "Tell " + him + " I'm sorry for what I said. There. Said it.", "If you see " + him + ", say I'd sooner be friends. I can't seem to say it myself.");
+                    a.Message = Voice.Hash(seed + "|erm") % 2 == 0 ? he + " says " + (woman ? "she's" : "he's") + " sorry for what " + (woman ? "she" : "he") + " said." : he + " says " + (woman ? "she'd" : "he'd") + " sooner be friends.";
+                    a.Thought = "A stranger carrying my word. Better than carrying it myself.";
+                    break;
+            }
+            return a;
+        }
+
+        public static string DeliverLabel(string fromFirst, string message)
+        {
+            return fromFirst + " sent word. " + message;
+        }
+
+        /// The one it's for answers: the quarrel mended (Then "makeup") or the word sent back; either way a kindness to
+        /// them (Event comfort: a word carried in peace), and they think better of you for carrying it.
+        public static InteractAnswer Deliver(string temper, bool woman, string fromFirst, bool fromWoman, bool sweethearts, string seed)
+        {
+            var a = new InteractAnswer { Then = "stay", Event = "comfort", LikeDelta = 10, Friendly = true };
+            string him = fromWoman ? "her" : "him", he = fromWoman ? "she" : "he";
+            if (sweethearts)
+            {
+                a.Line = Pick(seed + "|dsw", (fromWoman ? "She" : "He") + " said that? ...Tell " + him + " I'm sorry too.", "Did " + he + "? ...Then tell " + him + " to come and say it. I'll be waiting.");
+                a.Then = "makeup";
+                a.LikeDelta = 12;
+                a.Thought = "Sent word by a stranger. Couldn't come " + (fromWoman ? "herself" : "himself") + ". That's " + fromFirst + " all over. I'll forgive it.";
+                return a;
+            }
+            switch (temper)
+            {
+                case "Proud":
+                    a.Line = Pick(seed + "|dpr", "Then let " + him + " come and say it " + (fromWoman ? "herself" : "himself") + ".", "A word by a stranger. " + (fromWoman ? "She" : "He") + " knows where I live.");
+                    a.LikeDelta = 4;
+                    a.Thought = "Sorry by proxy. It's something. It's not enough.";
+                    break;
+                case "Hothead":
+                    a.Line = Pick(seed + "|dho", "Ha! Took " + him + " long enough. ...Tell " + him + " it's forgotten.", "Did " + he + " now? Well. Tell " + him + " I'll hold " + him + " to that drink.");
+                    a.Then = "makeup";
+                    a.Thought = "Forgotten. Mostly. Fair enough.";
+                    break;
+                case "Cold":
+                    a.Line = Pick(seed + "|dco", "...I'll think on it.", "Noted. Thank you for carrying it.");
+                    a.Friendly = false;
+                    a.LikeDelta = 4;
+                    a.Thought = "Words carried by a stranger. We'll see.";
+                    break;
+                case "Coward":
+                    a.Line = Pick(seed + "|dcw", (fromWoman ? "She" : "He") + " said that? Oh. Oh, heaven be praised.", "I feared " + he + " hated me. Tell " + him + " it's all right. Tell " + him + "!");
+                    a.Then = "makeup";
+                    a.Thought = "It's mended. I could weep. I won't. I might.";
+                    break;
+                default:
+                    a.Line = Pick(seed + "|d", "Well. That's handsome of " + him + ". Tell " + him + " we're square.", "Did " + he + " say so? Then it's done with. Obliged to you for carrying it.");
+                    a.Then = "makeup";
+                    a.Thought = Pick(seed + "|dt", "Mended, and by a stranger's going between. Odd. Good.", "Square with " + fromFirst + " again. Sleep easier for it.");
+                    break;
+            }
+            return a;
+        }
+
+        public static string ErrandLapsedThought(string seed)
+        {
+            return Pick(seed + "|erl", "Gave the stranger my word to carry. He never did.", "Trusted a stranger with my sorry. Should have gone myself.");
+        }
+
+        // ---- tipping the performer -----------------------------------------------------------------------------
+
+        public const int TipCents = 25;
+        public const string TipOutcome = "a coin for the music";   // the charity happening's outcome (Thanks reads it back as "tip")
+
+        /// Whether this scenario makes its user a performer worth a coin: the piano, the guitar, the banjo (the game's own
+        /// scenario names, lower-case).
+        public static bool Performer(string scenario)
+        {
+            if (string.IsNullOrEmpty(scenario))
+                return false;
+            string s = scenario.ToLowerInvariant();
+            return s.StartsWith("prop_human_piano") || s.StartsWith("world_human_guitar") || s.StartsWith("prop_human_seat_chair_banjo") || s.StartsWith("world_human_banjo") || s.StartsWith("prop_human_seat_bench_fiddle");
+        }
+
+        public static string PerformerName(string scenario)
+        {
+            string s = (scenario ?? "").ToLowerInvariant();
+            return s.Contains("piano") ? "The piano player" : s.Contains("banjo") ? "The banjo player" : s.Contains("fiddle") ? "The fiddler" : "The guitar player";
+        }
+
+        public static string TipLabel()
+        {
+            return "For the music ($0.25)";
+        }
+
+        /// The list for a performer: a coin for the music, and nothing else.
+        public static List<InteractOption> TipOptions(int cash)
+        {
+            return new List<InteractOption>
+            {
+                new InteractOption { Id = "tip", Label = TipLabel(), Why = cash < TipCents ? "not enough money" : null },
+                new InteractOption { Id = "bye", Label = "Never mind." }
+            };
+        }
+
+        /// Small, but they remember the face.
+        public static InteractAnswer Tip(string seed)
+        {
+            return new InteractAnswer
+            {
+                Then = "stay", Event = "charity", Cents = TipCents, LikeDelta = 6, Friendly = true,
+                Line = Pick(seed + "|tip", "Obliged, mister.", "Much obliged. Any requests?", "Kind of you. I'll play one for you."),
+                Thought = Pick(seed + "|tipt", "A coin in the hat. Remember that face. He pays.", "Somebody listening after all.")
+            };
+        }
+
         // ---- a fire shared ----------------------------------------------------------------------------------
 
         public const int CampfireAffection = 10;   // the men at a fire you sat at: fonder of you, and a memory (Engine.CampfireShared)
@@ -489,6 +688,33 @@ namespace EnrageWestworld.Core
             yield return EscortGaveUp("y");
             yield return EscortGaveUpThought("x");
             yield return EscortGaveUpThought("y");
+            yield return ErrandLabel("Abner");
+            yield return TipLabel();
+            foreach (InteractOption o in TipOptions(100))
+                yield return o.Label;
+            foreach (string temper in new[] { null, "Hothead", "Coward", "Proud", "Cold", "Greedy" })
+                foreach (string regard in new[] { null, "afraid", "hostile" })
+                    for (int i = 0; i < 4; i++)
+                    {
+                        InteractAnswer er = ErrandAsk(temper, i % 2 == 1, regard, "Abner", i == 2, i == 3, "er" + i);
+                        yield return er.Line;
+                        yield return er.Thought;
+                        if (er.Message != null)
+                        {
+                            yield return er.Message;
+                            yield return DeliverLabel("Hiram", er.Message);
+                        }
+                        InteractAnswer de = Deliver(temper, i % 2 == 1, "Hiram", i == 2, i == 3, "de" + i);
+                        yield return de.Line;
+                        yield return de.Thought;
+                    }
+            for (int i = 0; i < 4; i++)
+            {
+                yield return ErrandLapsedThought("l" + i);
+                InteractAnswer tp = Tip("t" + i);
+                yield return tp.Line;
+                yield return tp.Thought;
+            }
             foreach (string temper in new[] { null, "Hothead", "Coward", "Proud", "Cold", "Greedy" })
                 for (int i = 0; i < 3; i++)
                 {

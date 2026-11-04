@@ -20,7 +20,7 @@ namespace EnrageWestworld.InGame
         private readonly List<int> _kindSeenHandles = new List<int>();   // the witnesses of the happening being written, from near (RecordEvent)
         private bool _kindSeenOff;   // the house's own per-person happenings are no fresh kindness to be seen (one sighting for the round, not eight)
         private bool _kindSeenFailed;
-        private int _kindSeenTimes, _kindSeenPeople, _houseRounds, _houseCheered, _houseTreated, _coverDebts, _campfireRemembered;
+        private int _kindSeenTimes, _kindSeenPeople, _houseRounds, _houseCheered, _houseTreated, _coverDebts, _campfireRemembered, _tips;
         private string _fondLast;
 
         /// From RecordEvent, once the witnesses are known: a kindness of the player's, seen from near by named people.
@@ -224,11 +224,47 @@ namespace EnrageWestworld.InGame
                       (settled ? "; their debt worry is settled" : "") + (rewritten ? "" : "; the scene had already turned"));
         }
 
+        /// The scenario this person is using, by name (null for none, or one the add-on has no name for).
+        private static string PerformerScenario(int h)
+        {
+            try
+            {
+                if (!PED.IS_PED_USING_ANY_SCENARIO(h))
+                    return null;
+                return MindScenarios.NameOf((uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// At the piano, the guitar or the banjo.
+        private static bool PerformerAt(int h)
+        {
+            return Fondness.Performer(PerformerScenario(h));
+        }
+
+        /// A performer's identity, made if need be (a resident of this town, so they remember the face): false for one of
+        /// the game's own unique people, who get the coin and remember nothing.
+        private bool PerformerIdentity(Ped p, out string id, out string name, out string temper)
+        {
+            id = name = temper = null;
+            Resident r = ResidentOf(p);
+            if (r == null || r.Dead)
+                return false;
+            _engine.KeepResident(r, _store.LastGameMin);
+            id = r.Id;
+            name = r.Name;
+            temper = r.Personality;
+            return true;
+        }
+
         private string FondnessStatus()
         {
             return (_cfg.FondnessActs ? "Talk's extra acts on (whiskey for the house, a gift, condolences)" : "Talk's extra acts off ([Encounters] FondnessActs)") +
                    "; kindness seen " + (_cfg.KindnessSeen ? "on (+" + _cfg.KindnessSeenLiking + " fondness, within " + (int)Fondness.SeenMetres + " m)" : "off") +
-                   "; this session: " + _kindSeenTimes + " kindnesses seen by " + _kindSeenPeople + " people, " + _houseRounds + " rounds for the house (" + _houseCheered + " cheered, " + _houseTreated + " treated), " + _coverDebts + " debts covered, " + _campfireRemembered + " fires remembered; " + EscortStatus() +
+                   "; this session: " + _kindSeenTimes + " kindnesses seen by " + _kindSeenPeople + " people, " + _houseRounds + " rounds for the house (" + _houseCheered + " cheered, " + _houseTreated + " treated), " + _coverDebts + " debts covered, " + _campfireRemembered + " fires remembered, " + _tips + " coins for the music; " + EscortStatus() + "; errands: " + ErrandStatus() +
                    (_fondLast != null ? "; last: " + _fondLast : "");
         }
     }

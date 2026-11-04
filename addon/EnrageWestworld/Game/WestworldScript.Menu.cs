@@ -44,6 +44,10 @@ namespace EnrageWestworld.InGame
             public int Debtor;            // ...the one pressed (a handle)
             public bool Drunk;            // in drink (InHisCups)
             public bool EscortOffer;      // "Let me see you home." is on the list (after dark in a town: a woman, the drunk, the timid; or the Testing row)
+            public SceneTie ErrandTie;    // a quarrel of theirs a word could mend (Fondness.ErrandTie): the errand's row shows
+            public bool ErrandOtherWoman;
+            public bool Deliver;          // they're the one a carried word is for: the deliver row shows first
+            public bool Performer;        // at the piano, the guitar, the banjo: the list is a coin for the music
             public Person P;           // who they are to the mind, for their worry's words when he asks after it
             public float Reach;
             public List<InteractOption> Options;
@@ -231,7 +235,8 @@ namespace EnrageWestworld.InGame
             if (!ENTITY.DOES_ENTITY_EXIST(target) || !ENTITY.IS_ENTITY_A_PED(target) || !PED.IS_PED_HUMAN(target) || PED.IS_PED_A_PLAYER(target) || ENTITY.IS_ENTITY_DEAD(target))
                 return "not someone to talk to";
             Ped p = new Ped(target);
-            if (!IsGrownUp(p) || Natives.StoryModel(p))
+            bool performer = _cfg.FondnessActs && PerformerAt(target);   // at the piano, the guitar, the banjo: a coin for the music, whoever runs them (WestworldScript.Fondness.cs)
+            if (!IsGrownUp(p) || (!performer && Natives.StoryModel(p)))
                 return "a child, or one of the story's own";
             if (p.Position.DistanceTo(me.Position) > reach)
                 return "too far";
@@ -239,11 +244,11 @@ namespace EnrageWestworld.InGame
             int dollars, debtor;
             bool cover = DebtCoverable(target, out dollars, out debtor);   // the creditor of a debt scene: the one word with him (WestworldScript.Fondness.cs)
             if (MISC.GET_MISSION_FLAG() || PED.IS_PED_IN_COMBAT(target, 0) || PED.IS_PED_FLEEING(target) || PED.IS_PED_RAGDOLL(target) || PED.IS_PED_ON_MOUNT(target) ||
-                PED.IS_PED_IN_ANY_VEHICLE(target, false) || (!cover && (_director.Involves(target) || (NotFree(target) && !LonelyWaiting(target) && !FavourWaiting(target)) || Spawner.IsOurs(target))) ||   // the lonely one waits for exactly this
-                (record ? _bridge.EnrageFighter(target) || _bridge.Interrogating : Natives.OtherScripts(target)))
+                PED.IS_PED_IN_ANY_VEHICLE(target, false) || (!cover && !performer && (_director.Involves(target) || (NotFree(target) && !LonelyWaiting(target) && !FavourWaiting(target)) || Spawner.IsOurs(target))) ||   // the lonely one waits for exactly this
+                (record ? _bridge.EnrageFighter(target) || _bridge.Interrogating : !performer && Natives.OtherScripts(target)))
                 return "busy";
             string id, name, temper;
-            if (!LastingId(p, out id, out name, out temper) || id == null)
+            if ((!LastingId(p, out id, out name, out temper) || id == null) && !performer)
                 return "nobody RealNPCs knows";
             return null;
         }
@@ -288,8 +293,23 @@ namespace EnrageWestworld.InGame
         private string TalkOpen(Ped p, string how, float reach)
         {
             string id, name, temper;
-            if (p == null || !p.Exists() || !LastingId(p, out id, out name, out temper) || id == null)
+            if (p == null || !p.Exists())
                 return "nobody RealNPCs knows";
+            bool performer = _cfg.FondnessActs && PerformerAt(p.Handle);
+            if ((!LastingId(p, out id, out name, out temper) || id == null) && !(performer && PerformerIdentity(p, out id, out name, out temper)))
+            {
+                if (!performer)
+                    return "nobody RealNPCs knows";
+                // a performer the game keeps as its own (a unique model): a coin for the music, nothing remembered; the list alone
+                int ph = p.Handle, pnow = Game.GameTime;
+                string pname = Fondness.PerformerName(PerformerScenario(ph));
+                _menu = new TalkMenu { Handle = ph, Id = null, Name = pname, First = pname, Performer = true, Seated = true, Reach = reach, OpenedAt = pnow, LastAt = pnow, From = Game.Player.Character.Position, Woman = !PED.IS_PED_MALE(ph) };
+                TalkRefreshOptions();
+                TASK.TASK_LOOK_AT_ENTITY(ph, Game.Player.Character.Handle, 8000, 0, 51, 0);
+                _talkOpened++;
+                Log.Write("TALK menu opened on " + pname + " (a performer the game keeps for itself, at the music; " + how + ")");
+                return null;
+            }
             int h = p.Handle, now = Game.GameTime;
             Ped me = Game.Player.Character;
             MindWho w = MindKnown(h, now);
@@ -331,12 +351,16 @@ namespace EnrageWestworld.InGame
             bool woman = !PED.IS_PED_MALE(h), seated = PED.IS_PED_USING_ANY_SCENARIO(h) && ENTITY.GET_ENTITY_SPEED(h) < 0.4f;
             bool drunk = InHisCups(p, w != null ? w.P : null);
             string regard = SightRegard(p, id);
-            bool escortOffer = _cfg.FondnessActs && _escort == null && coverDollars == 0 && (_escortTest ? !seated : Fondness.EscortOffered(Natives.Night(), _placeTown != null, woman, drunk, temper, regard, seated));
+            bool escortOffer = _cfg.FondnessActs && _escort == null && coverDollars == 0 && !performer && (_escortTest ? !seated : Fondness.EscortOffered(Natives.Night(), _placeTown != null, woman, drunk, temper, regard, seated));
+            Errand carrying;
+            bool deliver = _cfg.FondnessActs && id != null && ErrandFor(id, out carrying);   // the one a carried word is for (WestworldScript.Errand.cs)
+            SceneTie errandTie = _cfg.FondnessActs && !performer && coverDollars == 0 && _errand == null && id != null ? Fondness.ErrandTie(_store.Ties, id, _placeTown, _store.LastGameMin, x => _store.DeathOf(x) == null) : null;
+            bool errandOtherWoman = errandTie != null && Residents.IsWomansName(Person.FirstOf(errandTie.Other(id)));
             _menu = new TalkMenu
             {
                 Handle = h, Id = id, Name = name ?? TalkName(p), First = name != null ? Person.FirstOf(name) : TalkName(p), Temper = temper, Worry = worry,
                 Woman = woman, Devout = w != null && w.Traits != null && w.Traits[Traits.Piety] > 1.2f, MoneyWorry = worry == "debt" || worry == "savings" || worry == "bank",
-                Drunk = drunk, EscortOffer = escortOffer,
+                Drunk = drunk, EscortOffer = escortOffer, ErrandTie = errandTie, ErrandOtherWoman = errandOtherWoman, Deliver = deliver, Performer = performer,
                 Trade = w != null && w.P != null ? w.P.Trade : null, FolkId = ac != null ? ac.Id : null, P = w != null ? w.P : null,
                 Seated = seated,   // sat, leaning or stood at their point: they talk from there; a scenario's walker is stopped like anyone else
                 Regard = regard, Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
@@ -380,9 +404,9 @@ namespace EnrageWestworld.InGame
             {
                 cash = 0;   // no reading: the money options stay greyed
             }
-            if (_menu.CoverDollars > 0)
+            if (_menu.CoverDollars > 0 || _menu.Performer)
             {
-                _menu.Options = Fondness.CoverOptions(cash, _menu.CoverDollars);   // a creditor mid-scene: cover the debt, or never mind
+                _menu.Options = _menu.Performer ? Fondness.TipOptions(cash) : Fondness.CoverOptions(cash, _menu.CoverDollars);   // a creditor mid-scene: cover the debt, or never mind; a performer: a coin for the music
                 _menu.Sel = Math.Min(_menu.Sel, _menu.Options.Count - 1);
                 _menu.Rows = null;
                 return;
@@ -393,7 +417,9 @@ namespace EnrageWestworld.InGame
             int company = _cfg.FondnessActs && _placeKind == "saloon" ? HouseCompany(_menu.Handle) : 0;   // whiskey for the house wants a house (WestworldScript.Fondness.cs)
             _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, told && Interact.Mendable(_menu.Worry, _menu.WorryStage), _menu.KnowsName ? null : YourFullName(),
                                              told && _menu.P != null ? _menu.AskWorry : null, wrong != null, wrong != null && _store.LastGameMin - wrong.At < 60, _menu.Worry,   // a worry money can mend: the debt, the doctor, a dentist, the fare
-                                             house: company >= Fondness.HouseLeast, gift: _cfg.FondnessActs, woman: _menu.Woman, condoleFor: _menu.Condole, escort: _menu.EscortOffer);
+                                             house: company >= Fondness.HouseLeast, gift: _cfg.FondnessActs, woman: _menu.Woman, condoleFor: _menu.Condole, escort: _menu.EscortOffer,
+                                             errandTo: _menu.ErrandTie != null ? Person.FirstOf(_menu.ErrandTie.Other(_menu.Id)) : null,
+                                             deliverFrom: _menu.Deliver && _errand != null ? Person.FirstOf(_errand.FromName) : null, deliverMessage: _menu.Deliver && _errand != null ? _errand.Message : null);
             int at = selId != null ? _menu.Options.FindIndex(x => x.Id == selId) : -1;
             _menu.Sel = at >= 0 ? at : 0;   // the same option stays chosen (by index, "Watch yourself." slid under the cursor after an apology)
             _menu.Rows = null;
@@ -532,7 +558,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             bool confides = Interact.Confides(t.Regard, Interact.KindLately(_store.WorldLog, t.Id, _store.LastGameMin), t.Worry, t.Temper);
-            PersonState pst = _store.Find(t.Id);
+            PersonState pst = t.Id != null ? _store.Find(t.Id) : null;   // (null: a performer the game keeps for itself)
             Happening wrong = o.Id == "sorry" ? Interact.LastWrong(_store.WorldLog, t.Id, _store.LastGameMin) : null;
             // asked the same thing again, they don't give the very same words (the no-model run, item 7: the last answer to each person
             // for each option kept in memory; a few other seeds tried; only the words vary, never what the answer does)
@@ -549,6 +575,9 @@ namespace EnrageWestworld.InGame
                   : o.Id == "condole" ? Fondness.Condole(t.Temper, t.Woman, t.Regard, t.YouKilledKnown, sd)
                   : o.Id == "cover" ? Fondness.Cover(t.Temper, t.CoverDollars, sd)
                   : o.Id == "escort" ? Fondness.Escort(t.Temper, t.Woman, t.Drunk, t.Regard, t.KnowsName, Interact.KindLately(_store.WorldLog, t.Id, _store.LastGameMin), sd)
+                  : o.Id == "errand" ? Fondness.ErrandAsk(t.Temper, t.Woman, t.Regard, Person.FirstOf(t.ErrandTie.Other(t.Id)), t.ErrandOtherWoman, t.ErrandTie.Courted, sd)
+                  : o.Id == "deliver" ? Fondness.Deliver(t.Temper, t.Woman, Person.FirstOf(_errand.FromName), Residents.IsWomansName(Person.FirstOf(_errand.FromName)), _errand.Sweethearts, sd)
+                  : o.Id == "tip" ? Fondness.Tip(sd)
                   : Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd, YourSurname(), t.Self);
             }
             if (_talkLastLine.Count > 400)
@@ -595,16 +624,31 @@ namespace EnrageWestworld.InGame
                 }
                 MONEY._MONEY_DECREMENT_CASH_BALANCE(a.Cents);
             }
-            bool again = a.Event != null && Interact.Again(_store.WorldLog, t.Id, a.Event, _store.LastGameMin);
+            bool again = a.Event != null && t.Id != null && Interact.Again(_store.WorldLog, t.Id, a.Event, _store.LastGameMin);
             if (again)
             {
                 a.Event = null;   // the same thing within the hour: said, not counted again
                 a.LikeDelta = 0;
             }
             TalkSay(t, a);
-            if (a.Event != null)
+            if (t.PendingId == "tip")
+            {
+                TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 2500, 0, 51, 0);   // a look up from the keys, and the thanks in their voice (TalkSay)
+                if (t.Id != null)
+                    _engine.Tipped(t.Id, t.Name, _store.LastGameMin);
+                _tips++;
+                _fondLast = "a coin for " + t.Name;
+                Log.Write("FOND tip: a coin for the music to " + t.Name + (t.Id == null ? " (a performer the game keeps for itself: nothing remembered)" : ""));
+            }
+            if (a.Event != null && t.Id != null)
+            {
+                _kindSeenOff = t.PendingId == "tip";   // a quarter in a hat is no kindness to be seen
                 RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h,
-                            a.Settles ? Thanks.OutcomeOf(t.Worry) : a.Event == "charity" ? (t.PendingId == "gift" ? Fondness.GiftOutcome : "gave $" + a.Cents / 100) : t.PendingId == "house" ? "whiskey for the house" : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf)
+                            a.Settles ? Thanks.OutcomeOf(t.Worry) : a.Event == "charity" ? (t.PendingId == "gift" ? Fondness.GiftOutcome : t.PendingId == "tip" ? Fondness.TipOutcome : "gave $" + a.Cents / 100) : t.PendingId == "house" ? "whiskey for the house" : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf)
+                _kindSeenOff = false;
+            }
+            if (t.PendingId == "deliver")
+                ErrandDelivered(t, a, now);   // the word's home (WestworldScript.Errand.cs)
             if (t.PendingId == "house" && a.Cents > 0)
                 HouseRound(t, now);   // the room cheers and everyone treated is fonder (WestworldScript.Fondness.cs)
             if (t.PendingId == "cover" && a.Cents > 0)
@@ -655,12 +699,20 @@ namespace EnrageWestworld.InGame
                         t.KeepOrders = true;
                         t.CloseAt = now + 1200;
                         break;
+                    case "errand":
+                        ErrandStart(t, a, now);   // a word to carry (WestworldScript.Errand.cs); they stay
+                        TalkFace(t, me, false);
+                        break;
+                    case "makeup":
+                        TalkFace(t, me, false);
+                        break;
                     default:
                         TalkFace(t, me, false);
                         break;
                 }
             }
-            t.Regard = SightRegard(new Ped(h), t.Id);   // a drink or a warning can change how they stand with him
+            if (t.Id != null)
+                t.Regard = SightRegard(new Ped(h), t.Id);   // a drink or a warning can change how they stand with him
             _talkLast = a.Thought;
             t.ThoughtAt = now + 2600;
             TalkRefreshOptions();
@@ -685,6 +737,8 @@ namespace EnrageWestworld.InGame
                 return;   // condolences thrown back: the written words
             if (o.Id == "escort" && a.Then != "escort")
                 return;   // the walk declined: the check can't tell a no worded kindly
+            if (o.Id == "errand" || o.Id == "deliver" || o.Id == "tip")
+                return;   // the errand's words carry a message of their own, and the answer to a carried word is yes or no: the written lines
             if (!string.IsNullOrEmpty(t.Self) && a.Line.Contains(t.Self))
                 return;   // their own name given back: the model may not say it (TalkCheck holds it), so the written line (the review)
             MindWho w = MindKnown(t.Handle, now);

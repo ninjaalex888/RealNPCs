@@ -34,6 +34,9 @@ namespace EnrageWestworld.Core
                 case "condole": return "He says he is sorry about the death of your friend.";
                 case "cover": return "He offers to pay you, in full and here and now, the money the man you are pressing owes you.";
                 case "escort": return "He offers to walk you home through the dark streets.";
+                case "errand": return "He asks whether there is any word you'd have him carry to the person you quarrelled with.";
+                case "deliver": return "He brings you a word of peace from the person you quarrelled with, who sent him.";
+                case "tip": return "He drops you a coin for the music you are playing.";
                 case "threaten": return "He tells you to watch yourself, and means it as a threat.";
                 default: return "He says good day.";
             }

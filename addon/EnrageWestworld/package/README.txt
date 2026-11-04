@@ -405,7 +405,11 @@ NEW IN 0.7.11
   the night in its street. After dark in a town, Talk on a woman, someone in drink or a timid
   man offers "Let me see you home.": say yes and walk them to their door, 60-100 m off (fall
   behind and they wait, then go on alone); at the door they thank you, and are fonder of you by
-  a lot. Testing row "Walk someone home".
+  a lot. Testing row "Walk someone home". Someone with a quarrel still sore may give you a
+  word to carry ("Any word you'd have carried to Hiram?"): for two days the other wears a small
+  dot on the map while near, and Talk on them opens with the word; taken, the quarrel is
+  mended, and either way both think better of you. Lock on to the piano player, the guitar or
+  the banjo and Talk offers a coin for the music ($0.25): they thank you, and remember the face.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if

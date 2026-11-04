@@ -113,6 +113,50 @@ namespace EnrageWestworld.Core
                 }, now);
         }
 
+        /// The player carried one person's word to another: both fonder of him (the sender less when the word was sent
+        /// back), each with a memory of it (the "errand|did" and "errandto|did" pools).
+        public void ErrandCarried(string fromId, string fromName, string toId, string toName, long now, bool madeUp)
+        {
+            PersonState from = MindOf(fromId, fromName), to = MindOf(toId, toName);
+            if (from != null)
+            {
+                from.Talks++;
+                from.Affection = Romance.Clamp(from.Affection + (madeUp ? Fondness.ErrandAffection : Fondness.ErrandSentBackAffection), -100, 100);
+                if (Cfg.Minds)
+                    Minds.Note(from.Mind, new MindMemory
+                    {
+                        Kind = "deed:kindness", Sub = madeUp ? "errand" : "errandback", How = "did", Who = new List<string> { "player", toId }, Names = new List<string> { toName != null ? Person.FirstOf(toName) : "somebody" },
+                        Town = CurrentTown, At = now, Feel = madeUp ? 3 : 1, Strength = madeUp ? 60 : 35, Key = "errand:" + fromId + ":" + toId + ":" + now / 60
+                    }, now);
+            }
+            if (to != null)
+            {
+                to.Affection = Romance.Clamp(to.Affection + Fondness.ErrandAffection, -100, 100);
+                if (Cfg.Minds)
+                    Minds.Note(to.Mind, new MindMemory
+                    {
+                        Kind = "deed:kindness", Sub = "errandto", How = "did", Who = new List<string> { "player", fromId }, Names = new List<string> { fromName != null ? Person.FirstOf(fromName) : "somebody" },
+                        Town = CurrentTown, At = now, Feel = madeUp ? 2 : 1, Strength = madeUp ? 50 : 30, Key = "errandto:" + fromId + ":" + toId + ":" + now / 60
+                    }, now);
+            }
+        }
+
+        /// A coin for the music: a little fonder, and they remember the face.
+        public void Tipped(string id, string name, long now)
+        {
+            PersonState st = MindOf(id, name);
+            if (st == null)
+                return;
+            st.Sightings = Math.Max(st.Sightings, 1);
+            st.Affection = Romance.Clamp(st.Affection + 6, -100, 100);
+            if (Cfg.Minds)
+                Minds.Note(st.Mind, new MindMemory
+                {
+                    Kind = "deed:kindness", Sub = "tip", How = "did", Who = new List<string> { "player" },
+                    Town = CurrentTown, At = now, Feel = 1, Strength = 30, Key = "tip:" + now / 60
+                }, now);
+        }
+
         /// The first name of a friend this person grieves (word of the death reached them within `days`), with the dead
         /// one's id; null when nobody. For condolences (Fondness.Condole).
         public string GrievesFor(string id, int days, out string deadId)

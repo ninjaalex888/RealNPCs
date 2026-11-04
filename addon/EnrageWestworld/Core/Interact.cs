@@ -34,6 +34,7 @@ namespace EnrageWestworld.Core
         public bool LearnsName;  // he told them his name: they know it from now on (Engine.LearnName)
         public bool Loan;        // the debt he settled they took as a loan, and said so: they'll bring it back (Thanks)
         public string WrittenLine;   // the menu's own line when the model's words took its place: the voice is chosen by it
+        public string Message;       // a word they'd have carried to someone (Fondness.ErrandAsk): what Arthur will say to the other
     }
 
     public static class Interact
@@ -89,7 +90,8 @@ namespace EnrageWestworld.Core
         /// his whole name when they don't know it yet (he can tell them), the worry they've told him of (he can ask after
         /// it: AskLabel), and a wrong of his lately they're owed an apology for.
         public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool fixKnown = false, string tellName = null, string askAbout = null, bool sorry = false, bool sorryJustNow = false,
-                                                   string fixKind = "debt", bool house = false, bool gift = false, bool woman = false, string condoleFor = null, bool escort = false)
+                                                   string fixKind = "debt", bool house = false, bool gift = false, bool woman = false, string condoleFor = null, bool escort = false,
+                                                   string errandTo = null, string deliverFrom = null, string deliverMessage = null)
         {
             // house, gift, condoleFor: the fondness interactions (Core/Fondness.cs; SIXDAY item 1): whiskey for the house (a saloon with company at
             // the bar), a gift, condolences to someone grieving a friend (their first name)
@@ -114,6 +116,10 @@ namespace EnrageWestworld.Core
                 list.Add(new InteractOption { Id = "condole", Label = Fondness.CondoleLabel(condoleFor) });
             if (escort)
                 list.Add(new InteractOption { Id = "escort", Label = Fondness.EscortLabel() });
+            if (deliverFrom != null && deliverMessage != null)
+                list.Insert(1, new InteractOption { Id = "deliver", Label = Fondness.DeliverLabel(deliverFrom, deliverMessage) });   // the word you carry, first after the news
+            else if (errandTo != null)
+                list.Add(new InteractOption { Id = "errand", Label = Fondness.ErrandLabel(errandTo) });
             if (sorry)
                 list.Add(new InteractOption { Id = "sorry", Label = sorryJustNow ? "I didn't mean that." : "I'm sorry about before." });   // minutes after a warning, a quick word; later, an apology
             list.Add(new InteractOption { Id = "threaten", Label = "Watch yourself." });
