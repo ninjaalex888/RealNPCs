@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 235;
+        public const int CurrentVersion = 236;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -401,6 +401,7 @@ namespace EnrageWestworld.Core
         public bool PosseTalk = true;
         public bool Mourners = true;
         public bool Pleading = true;
+        public bool GunpointStages = true;   // with Pleading: the gun still on them, the second step six seconds on by who they are (beg, defy, back away, run, freeze; the model's pick when it's on) and the third at fourteen (Core/Gunpoint.cs; roadmap 38; SIXDAY item 20; settings version 236)
         public bool ArrivalTalk = true;
 
         // [Pacing]
@@ -836,6 +837,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 236)
+                    log?.Invoke("Settings: new in this version: [World] GunpointStages (on): the gun kept on someone brings a second and a third step by who they are.");
                 if (s.SettingsVersion < 235)
                     log?.Invoke("Settings: new in this version: [Stalkers] StalkerHorse (35): some stalkers appear on horseback; RevenantsAtCamp (on): someone you killed comes to the edge of your firelight.");
                 if (s.SettingsVersion < 234)
@@ -1600,6 +1603,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("PosseTalk = " + B(PosseTalk) + "   ; after a bad crime in town, men talk about getting up a posse");
             b.AppendLine("Mourners = " + B(Mourners) + "   ; the widow (or brother) of a stranger you killed grieves in town");
             b.AppendLine("Pleading = " + B(Pleading) + "   ; hold a gun on a stranger and they beg; lower it or don't");
+            b.AppendLine("GunpointStages = " + B(GunpointStages) + "   ; with Pleading: keep the gun on someone six seconds and they take a second step by who they are (beg, defy you, back away a step at a time, break and run, or freeze with their hands up; the model picks when it's on and the mind knows them), and a third at fourteen (most who begged or froze break and run; the steady hold, the defiant stand); false: the plea and the game's own answer alone");
             b.AppendLine("ArrivalTalk = " + B(ArrivalTalk) + "   ; when you ride into town, the locals say what they've heard of you");
             b.AppendLine();
             b.AppendLine("[Pacing]");

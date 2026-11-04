@@ -52,6 +52,10 @@ namespace EnrageWestworld.InGame
             public bool Woman;
             public int At, LastAimedAt;
             public int Health;
+            public int Stage;           // the stages at gunpoint (Core/Gunpoint.cs; item 20): 0 the plea, 1 the second step asked, 2 taken, 3 the third taken
+            public string Second, Temper;
+            public StagedAsk Ask;       // the mind's (and the model's) pick for the second step
+            public bool Ran;            // they broke and ran: no mercy to speak of when the gun comes off them
         }
 
         private sealed class PendingArrival
@@ -458,6 +462,12 @@ namespace EnrageWestworld.InGame
                 if (target == p.Ped.Handle)
                 {
                     p.LastAimedAt = now;
+                    if (_cfg.GunpointStages)
+                        GunpointStep(p, me, now);   // the gun still on them: the second and third steps (Core/Gunpoint.cs; item 20)
+                }
+                else if (p.Ran && now - p.LastAimedAt > 2500)
+                {
+                    _plea = null;   // they ran: the gun came off them by their own doing, no mercy in it
                 }
                 else if (now - p.LastAimedAt > 2500 && now - p.At > 3000)
                 {
@@ -532,6 +542,79 @@ namespace EnrageWestworld.InGame
             for (int i = 0; i < plea.Lines.Count; i++)
                 SayLater(150 + i * 2600, label, plea.Lines[i], target, i == 0 ? (plea.Defiant ? "threat" : "plead") : null, plea.Uncanny, woman);
             Log.Write("PLEA " + plea.Name + (plea.Uncanny ? " (a host)" : "") + ": " + string.Join(" | ", plea.Lines));
+        }
+
+        private int _gunpointSteps;
+        private string _gunpointLast;
+
+        /// The gun still on them (Core/Gunpoint.cs; item 20): six seconds on, the second step is asked of the mind (the table by who
+        /// they are; the model's pick when it's on and the mind knows them) and taken once settled; fourteen seconds on, the third.
+        private void GunpointStep(Pleading p, Ped me, int now)
+        {
+            int h = p.Ped.Handle;
+            if (p.Stage == 0 && now - p.At >= Gunpoint.SecondStageMs)
+            {
+                Someone who = SomeoneOf(p.Ped);
+                StagedMind sm = who != null ? StagedMindOf(who, null) : new StagedMind { Temper = Gunpoint.StrangerTemper(p.Plea.Name), Woman = p.Woman };
+                p.Temper = sm.Temper;
+                Staged.Weights wt = Gunpoint.Weights(sm, p.Plea.Defiant, _cfg.Bravery);
+                p.Ask = StagedChoose(h, "gunpoint", wt, h + "|gunpoint|" + p.At, Gunpoint.Words, Gunpoint.Now(Grammar.LowerFirst(p.Label)), null, now);
+                p.Stage = 1;
+                return;
+            }
+            if (p.Stage == 1 && StagedSettle(p.Ask, "gunpoint", p.Plea.Name, now))
+            {
+                p.Second = p.Ask != null && p.Ask.Picked != null ? p.Ask.Picked : "freeze";
+                GunpointAct(p, p.Second, 2, me, now);
+                p.Stage = 2;
+                return;
+            }
+            if (p.Stage == 2 && now - p.At >= Gunpoint.ThirdStageMs)
+            {
+                string third = Gunpoint.Third(p.Second, p.Temper, h + "|third|" + p.At);
+                if (third != p.Second)
+                    GunpointAct(p, third, 3, me, now);
+                p.Stage = 3;
+            }
+        }
+
+        /// One step taken: the words in a fitting voice, and the act the game is proven to play: the hands up again (plead,
+        /// freeze), the hands down and a stare (defy), a slow walk away with the eyes on him (back), or the flight (run).
+        private void GunpointAct(Pleading p, string stance, int stage, Ped me, int now)
+        {
+            int h = p.Ped.Handle;
+            string line = Gunpoint.Line(stance, p.Woman, h + "|" + stance + "|" + p.At);
+            if (line != null)
+                SayLater(100, p.Label, line, h, Gunpoint.VoiceFor(stance), p.Plea.Uncanny, p.Woman);
+            switch (stance)
+            {
+                case "defy":
+                    TASK.CLEAR_PED_TASKS(h, true, false);   // the hands come down
+                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 8000, 0f, 0f, 0f);
+                    break;
+                case "back":
+                    {
+                        Vector3 at = p.Ped.Position, mp = me.Position;
+                        Vector3 away = new Vector3(at.X - mp.X, at.Y - mp.Y, 0f);
+                        away = Math.Abs(away.X) + Math.Abs(away.Y) < 0.1f ? new Vector3(1f, 0f, 0f) : away.Normalized;
+                        Vector3 to = at + away * 4f;
+                        TASK.CLEAR_PED_TASKS(h, true, false);
+                        TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 8000, 0, 51, 0);
+                        TASK.TASK_GO_STRAIGHT_TO_COORD(h, to.X, to.Y, to.Z, 1.0f, 7000, ENTITY.GET_ENTITY_HEADING(h), 0.5f, 0);
+                        break;
+                    }
+                case "run":
+                    TASK.CLEAR_PED_TASKS(h, true, false);
+                    TASK.TASK_SMART_FLEE_PED(h, me.Handle, 60f, -1, 0, 2f, 0);
+                    p.Ran = true;
+                    break;
+                default:   // plead, freeze: the hands stay up
+                    TASK.TASK_HANDS_UP(h, 12000, me.Handle, -1, false);
+                    break;
+            }
+            _gunpointSteps++;
+            _gunpointLast = p.Plea.Name + ": " + stance + " (step " + stage + ")";
+            Log.Write("GUNPOINT " + p.Plea.Name + " (" + (p.Temper ?? "plain") + "), step " + stage + ": " + stance + (p.Ask != null && p.Ask.Asked && stage == 2 ? " (the model's pick)" : "") + (line != null ? ": " + line : ""));
         }
 
         /// Was this ped begging when he died? (shot within half a minute of pleading)
