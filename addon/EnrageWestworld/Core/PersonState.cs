@@ -33,6 +33,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public long ContactAt;
         [DataMember(EmitDefaultValue = false)] public string JealousOf;
         [DataMember(EmitDefaultValue = false)] public bool KnowsWife;
+        [DataMember(EmitDefaultValue = false)] public uint Horse;          // the horse they've seen the player on (its model; Core/PlaceMemory.cs; SIXDAY item 24)
 
         // 0.4
         [DataMember(EmitDefaultValue = false)] public int Awareness;                         // how much they suspect their world isn't real (0-100)

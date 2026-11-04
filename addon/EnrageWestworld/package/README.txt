@@ -195,6 +195,11 @@ NEW IN 0.7.19
   you for his marker ($5) as the debtor does; the Devout and the churchgoing don't drink away
   bad news on a Sunday (grief excepted), and a Devout in the room judges a Sunday drinker in a
   thought; a friend of a man drinking away bad news stands the house a round, him first.
+- Memory that behaves like memory ([Mind] PlacesRemember, on): someone who knew one you killed
+  thinks of it near the spot (a friend's ground for good, an acquaintance's for a month);
+  people who have seen you on your horse know it before your face as you ride up; a place you
+  keep at the same hour on three different days is a habit the town notices. F7 "TEST places
+  remember:".
 - The epilogue remembers ([World] EpilogueCarries, on): the first time John's save is made with
   Arthur's beside it, Arthur's people come over eight years older (some married, widowed, moved
   on or dead), the ties between them with them, and those who met Arthur think of a man called

@@ -54,6 +54,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<KinGrudge> KinGrudges = new List<KinGrudge>();   // the kin who come about a wrong of the player's (Core/KinGrudges.cs; SIXDAY item 14)
         [DataMember(EmitDefaultValue = false)] public List<TrystRecord> Trysts = new List<TrystRecord>();   // the women of the player's nights (Core/Trysts.cs; SIXDAY item 15)
         [DataMember(EmitDefaultValue = false)] public bool CarriedOver;   // John's store took Arthur's world over once (Core/Epilogue.cs; SIXDAY item 23)
+        [DataMember(EmitDefaultValue = false)] public List<Habit> Habits = new List<Habit>();   // the player's routines the town has noticed (Core/PlaceMemory.cs; SIXDAY item 24)
         [DataMember(EmitDefaultValue = false)] public int Rewinds;                                 // how many times the clock turned back
         [IgnoreDataMember] public List<Ghost> LastRewound;                                        // the last rewind's ghosts, for the engine's log
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, TownLedger> TownLedgers = new Dictionary<string, TownLedger>();   // each town's ledger, read off the records (Core/TownLedgers.cs; SIXDAY item 11c)
@@ -362,6 +363,18 @@ namespace EnrageWestworld.Core
                         n++;
                     }
             }
+            if (Habits != null)
+            {
+                long cutDay = cut / 1440;
+                n += Habits.RemoveAll(h => h != null && h.FirstDay > cutDay);   // a routine begun after the cut: never noticed
+                foreach (Habit h in Habits)
+                    if (h != null && h.LastDay > cutDay)
+                    {
+                        h.Days = Math.Max(1, h.Days - 1);   // the day after the cut uncounted (the days aren't kept one by one: one off, said plainly)
+                        h.LastDay = cutDay;
+                        n++;
+                    }
+            }
             if (KinGrudges != null)
             {
                 foreach (KinGrudge k in KinGrudges)
@@ -605,6 +618,8 @@ namespace EnrageWestworld.Core
                         r.ByTrain = true;   // saves from before ByTrain: kin or a far town with no counter of their own came by train (a post's successor keeps the counter)
             if (Trysts == null) Trysts = new List<TrystRecord>();
             if (Ghosts == null) Ghosts = new List<Ghost>();
+            if (Habits == null) Habits = new List<Habit>();
+            Habits.RemoveAll(h => h == null || h.Town == null || h.Place == null);
             FixHeld();
             if (Weddings == null) Weddings = new List<Wedding>();
             if (Transfers == null) Transfers = new List<Transfer>();
