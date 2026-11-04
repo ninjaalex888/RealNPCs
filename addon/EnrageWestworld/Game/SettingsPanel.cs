@@ -1598,7 +1598,8 @@ namespace EnrageWestworld.InGame
                 return rows;
             rows.Add(new Row { E = ai, Big = true, Label = "AI MODEL (OLLAMA)",
                                Help = "Recommended. People near you think, choose and answer in their own words, from a free model on your own PC (Ollama with " + ModelName() + "; nothing leaves the machine). Left or Right turns it on or off; once you have chosen, RealNPCs leaves it as you set it." });
-            rows.Add(new Row { Filler = true });
+            rows.Add(new Row { Filler = true });   // the second row of the switch: what it does
+            rows.Add(new Row { Filler = true });   // the third: the voice server's status (Lex, 2026-11-03: "just under it")
             rows.Add(new Row { Filler = true });   // a gap: the switch stands apart
             return rows;
         }
@@ -1631,6 +1632,9 @@ namespace EnrageWestworld.InGame
 
         /// The script's word on the AI model: "off", "on, answering", "on, checking...", or "on, NOT ANSWERING (...)".
         public Func<string> AiStatus;
+        /// The script's word on the voice server, shown under the AI model's (Lex, 2026-11-03): "off", "on, ready (...)",
+        /// "on, checking...", "on, loading its model", or "on, NOT REACHABLE (...)".
+        public Func<string> VoiceStatus;
 
         private string ModelName()
         {
@@ -1638,11 +1642,11 @@ namespace EnrageWestworld.InGame
             return m != null && m.Value.Trim().Length > 0 ? m.Value.Trim() : "llama3.1:8b";
         }
 
-        /// The AI MODEL (OLLAMA) switch: two rows high, gold, ON or OFF large on the right, the status beside the name and
-        /// a line on what it does below.
+        /// The AI MODEL (OLLAMA) switch: three rows high, gold, ON or OFF large on the right, the status beside the name, a
+        /// line on what it does below, and the voice server's status under that (Lex, 2026-11-03).
         private void DrawBig(Row r, bool sel, float left, float right, float y, float rowH)
         {
-            float h = rowH * 2f - 0.004f, bigScale = RowScale * 1.25f;
+            float h = rowH * 3f - 0.004f, bigScale = RowScale * 1.25f;
             Draw.Rect(left - 0.006f, y - 0.002f, W - 0.032f, h, sel ? 86 : 52, sel ? 64 : 40, sel ? 22 : 16, 235);
             Draw.Rect(left - 0.006f, y - 0.002f, W - 0.032f, 0.002f, 222, 182, 96, 255);
             Draw.Rect(left - 0.006f, y - 0.002f + h - 0.002f, W - 0.032f, 0.002f, 222, 182, 96, 255);
@@ -1661,6 +1665,17 @@ namespace EnrageWestworld.InGame
             Draw.Text(Draw.Fit(status, SmallScale, Math.Max(0.05f, room)), sx, y + 0.006f, SmallScale, sr, sg, sb);
             Draw.Text(Draw.Fit("People near you think, choose and answer in their own words (a free local model; recommended).", SmallScale, W - 0.06f),
                       left + 0.008f, y + rowH * 1.02f, SmallScale, 214, 196, 160);
+            // the voice server, the same way: green ready, gold on its way, red not reachable, grey off
+            string vs = VoiceStatus != null ? VoiceStatus() : "off";
+            int vr = 196, vg = 184, vb = 162;
+            if (vs.StartsWith("on, NOT", StringComparison.Ordinal)) { vr = 236; vg = 84; vb = 70; }
+            else if (vs.StartsWith("on, ready", StringComparison.Ordinal)) { vr = 150; vg = 222; vb = 116; }
+            else if (vs.StartsWith("on", StringComparison.Ordinal)) { vr = 230; vg = 194; vb = 112; }
+            string vl = "VOICE SERVER";
+            float vScale = SmallScale * 1.1f, vy = y + rowH * 2.02f;
+            Draw.Text(vl, left + 0.008f, vy, vScale, 246, 204, 92);
+            float vx = left + 0.016f + Draw.Width(vl, vScale);
+            Draw.Text(Draw.Fit(vs, SmallScale, Math.Max(0.05f, right - 0.012f - vx)), vx, vy + 0.002f, SmallScale, vr, vg, vb);
         }
 
         /// F: every setting, or the essentials again; kept in the ini.
@@ -1737,8 +1752,8 @@ namespace EnrageWestworld.InGame
                 _scroll = _row - 1;
             if (_row >= _scroll + VisibleRows)
                 _scroll = _row - VisibleRows + 1;
-            if (page.Rows[_row].Big && _row + 1 >= _scroll + VisibleRows)
-                _scroll = _row + 2 - VisibleRows;   // the AI model's switch is drawn whole
+            if (page.Rows[_row].Big && _row + 2 >= _scroll + VisibleRows)
+                _scroll = _row + 3 - VisibleRows;   // the AI model's switch (three rows, the voice server's status the third) is drawn whole
             for (int i = _scroll; i < page.Rows.Count && i < _scroll + VisibleRows; i++)
             {
                 Row r = page.Rows[i];

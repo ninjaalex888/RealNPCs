@@ -965,6 +965,22 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// The settings panel's word on the voice server, under the AI model's (Lex, 2026-11-03): "off", "on, ready (...)",
+        /// "on, checking...", "on, loading its model (...)", or "on, NOT REACHABLE (...)".
+        private string VoiceStatusText()
+        {
+            if (!VoiceWanted)
+                return "off ([Mind] VoicedThoughts and VoicedDialogue, on the Mind page)";
+            string s = _voiceServer ?? "not checked";
+            if (_voiceReady)
+                return "on, " + s;
+            if (s == "not checked")
+                return "on, checking...";
+            if (s.StartsWith("not reachable", StringComparison.Ordinal))
+                return "on, NOT REACHABLE (start voice\\start-voice-server.cmd and leave its window open)";
+            return "on, " + s;
+        }
+
         private string VoiceStatus()
         {
             if (!VoiceWanted)
