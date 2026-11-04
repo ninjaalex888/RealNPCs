@@ -1,4 +1,4 @@
-RealNPCs 0.7.22 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.23 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -124,6 +124,16 @@ Set it up once:
 Optional: to have the model answer two people at once, set the Windows environment variable
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
 
+
+NEW IN 0.7.23
+-------------
+Bravery is only about brawls now ([World] Bravery, 85). It no longer sets the game's
+cower-instead-of-flee flag, which left townsfolk frozen in place after a killing, and
+BraveStand is gone with it. Instead it changes how readily onlookers join a fistfight: 85,
+where it comes, joins exactly as before; higher, more step in; lower, fewer; at 0 only a
+fighter's friend or foe. The game's own fleeing and cowering are the game's again. A
+fistfight still doesn't send the crowd running, and the mod's own frights still let brave
+onlookers stand and watch instead of being sent running.
 
 NEW IN 0.7.22
 -------------
@@ -699,16 +709,12 @@ NEW IN 0.7.11
   and whenever that changes, an item says the town's mood, how many of the people you know here
   are afraid or fond of you, how many you've met there, and the latest talk about you that has
   reached it. The box stays up with the whole of it the whole time you're in a town.
-- The brave stand up ([World] BraveStand, on): a brave townsperson the game has cowering (a
-  killing seen, a gun drawn) is stood up, holds their ground on their feet for twenty seconds,
-  then walks off; the game's cower beside a body looked like freezing with fear.
-- A braver town ([World] Bravery, 85, on the Essentials page). Brave townsfolk stand their
-  ground where the game would send them running (the odd coward still runs), fistfighters
-  don't scatter the street, and the mod's own frights send fewer running. Whoever you aim at or
-  lock on to gets the game's own reaction back for 20 s, so hold-ups and robberies work as
-  before. Never children, story characters, lawmen, enRAGE's people or other scripts' people;
-  everyone is put back when a story mission starts. 0 is everything as before. Not yet seen in
-  game: whether witnesses still run for the law, and how a brave robbery victim answers.
+- A braver town ([World] Bravery, 85, on the Essentials page). Since 0.7.23 it changes only how
+  readily onlookers join a fistfight (higher, more step in; lower, fewer; 0, only a fighter's
+  friend or foe), fistfighters don't scatter the street, and the mod's own frights send fewer
+  running. It never changes the game's own fleeing or cowering: until 0.7.23 it set the game's
+  cower-instead-of-flee flag, and people froze in place after a killing (BraveStand, which
+  was to stand them up, is gone with it).
 - The stalker in black, and more often ([Stalkers], on the Essentials page). StalkerBlack (on):
   the stalker is a stranger who turns up out of sight behind you, in StalkerBlackOutfit of
   StalkerBlackModel. StalkerEveryMinutes 15 (was 34) and StalkerChance 35 (was 20): about once
@@ -1783,8 +1789,8 @@ in the file. The new ones:
             Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), EventTrials (true), EventShows (true), TrainTime (true), TownLedger (true), ThinStreets (false), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
-            Bravery (85, 0-100): the brave stand their ground where the game would send them running;
-            0 is the game's own way. InteractionMenu (true): Talk in the lock-on menu, TalkKey (Q:
+            Bravery (85, 0-100): how readily onlookers join a fistfight; never the game's own
+            fleeing or cowering. InteractionMenu (true): Talk in the lock-on menu, TalkKey (Q:
             the game's lock-on target-info control; another key, e.g. T, is read directly while the
             prompt is up; None: a pad's RB only). LawClearsBodies (true), PersonalSpace (true) with
             SpaceMetres (0.95), SpaceSaloonMetres (0.75), SpaceSeconds (1.8), ArthurSpeaks (true),

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.7.23 (2026-11-04)
 
 - **Bravery is only about brawls now** (`[World] Bravery`; settings version 247; Lex, 2026-11-04: "Can we have it so bravery only effects their chance to join a brawl - and not the flee or cower flag?"). Bravery no longer sets the game's cower-instead-of-flee flag on anyone, which is what left townsfolk frozen in place after a killing (the Valentine saloon, then Strawberry), and `BraveStand`, meant to stand them up, is gone with it: it never once fired, since it refused anyone the game counts as fleeing, and a cowering person is. Instead Bravery pulls on an onlooker's choice to join a fistfight: 85, where it comes, joins exactly as before; higher, more step in (at 100 several times as many); lower, fewer; at 0 only a fighter's friend or foe. The game's own fleeing and cowering are the game's again. Two things stay: a fistfight still doesn't send the crowd running (the game's own street-fight setting on the fighters, now at any Bravery), and the mod's own frights still let brave onlookers stand back and watch instead of being sent running.
 
