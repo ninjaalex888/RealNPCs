@@ -1230,6 +1230,7 @@ namespace EnrageWestworld.InGame
         private void Tick04(int now)
         {
             _now = now;
+            Natives.YieldToDying = Speech.YieldToDying = _cfg != null && _cfg.YieldToDying;   // the rule for the dying, read each tick ([World] YieldToDying; item 27)
             Safe("settings reload", _aIni);
             Safe("places", _aPlaces);
             TestingStep(now);   // a test asked for by its key or the panel (refused in a mission, with why)

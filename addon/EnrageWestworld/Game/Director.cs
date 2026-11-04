@@ -610,8 +610,8 @@ namespace EnrageWestworld.InGame
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, false);
                     if (l.Out.Contains(p.Handle))
                         continue;   // knocked out or killed in the brawl, or gone for his gun: what he's doing is the game layer's (a clear would stand a knocked-out man up)
-                    if (((l.Fighting || l.WasFighting) && i < 2) || (i < l.Aimed.Length && l.Aimed[i]))
-                        TASK.CLEAR_PED_TASKS(p.Handle, true, false);   // the two who fought (never the barkeep or a bystander)
+                    if ((((l.Fighting || l.WasFighting) && i < 2) || (i < l.Aimed.Length && l.Aimed[i])) && !Natives.Dying(p.Handle))
+                        TASK.CLEAR_PED_TASKS(p.Handle, true, false);   // the two who fought (never the barkeep or a bystander; never a dying man: his death plays as it is, item 27)
                     if (i < l.Aimed.Length && l.Aimed[i])
                         WEAPON.SET_CURRENT_PED_WEAPON(p.Handle, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
                 }
@@ -1028,6 +1028,8 @@ namespace EnrageWestworld.InGame
         {
             Ped me = l.Cast[who], them = l.Cast[other];
             int h = me.Handle, t = them.Handle;
+            if (Natives.Dying(h))
+                return 600;   // nothing of ours on a dying man (no move, no fall, no clip): his death plays as it is ([World] YieldToDying; item 27)
             switch (act)
             {
                 case "face":
@@ -1090,7 +1092,7 @@ namespace EnrageWestworld.InGame
                     return 300;
                 case "shove":
                     Ped victim = who == 2 ? l.Cast[0] : them;
-                    PED.SET_PED_TO_RAGDOLL(victim.Handle, 900, 1600, 0, false, false, "");
+                    Natives.Ragdoll(victim.Handle, 900, 1600);
                     l.Shover = h;
                     l.Shoved = victim.Handle;
                     l.ShoveUntil = Game.GameTime + 4000;   // a man who shoves another: fair game a moment (the review: the bully turning on the one who stepped in)
@@ -1109,7 +1111,7 @@ namespace EnrageWestworld.InGame
                         l.Slamming = true;   // reported once it's over (SlamResult)
                         return 300;
                     }
-                    PED.SET_PED_TO_RAGDOLL(t, 1500, 2500, 0, false, false, "");
+                    Natives.Ragdoll(t, 1500, 2500);
                     Speech.SayAny(h, Speech.Angry, t);
                     Report(l, "shove");
                     return 2200;
@@ -1136,7 +1138,7 @@ namespace EnrageWestworld.InGame
                         TASK.TASK_PLAY_ANIM(h, DrunkDict, "pass_out_fwd_v1_drunk", 4f, -4f, -1, 2, 0f, false, 0, false, "", false);
                         return Math.Max(1500, (int)(ENTITY.GET_ANIM_DURATION(DrunkDict, "pass_out_fwd_v1_drunk") * 1000));
                     }
-                    PED.SET_PED_TO_RAGDOLL(h, 6000, 9000, 0, false, false, "");
+                    Natives.Ragdoll(h, 6000, 9000);
                     return 2500;
                 case "cometo":
                     if (STREAMING.HAS_ANIM_DICT_LOADED(DrunkDict) && ENTITY.IS_ENTITY_PLAYING_ANIM(h, DrunkDict, "pass_out_fwd_v1_drunk", 3))
@@ -1266,7 +1268,7 @@ namespace EnrageWestworld.InGame
                     // do, since the game carries only the limp (Lex, 2026-10-30: "the in game pickup person animation"); Tick waits
                     // 5 s to see it took, else he's brought round and the two walk home
                     TASK.CLEAR_PED_TASKS(t, true, false);
-                    PED.SET_PED_TO_RAGDOLL(t, 15000, 20000, 0, false, false, "");
+                    Natives.Ragdoll(t, 15000, 20000);
                     TASK.TASK_PICKUP_CARRIABLE_ENTITY(h, t);
                     l.CarryBy = h;
                     l.CarryWho = t;
@@ -1304,7 +1306,7 @@ namespace EnrageWestworld.InGame
                 case "fall":
                     // a trip: down on the ground for a moment (the old sit down hard instead: their scene leaves this out);
                     // short, so they're done tumbling when they sit up
-                    PED.SET_PED_TO_RAGDOLL(h, 900, 1300, 0, false, false, "");
+                    Natives.Ragdoll(h, 900, 1300);
                     return 2300;
                 case "faceone":
                     // only this one turns to the one the beat names (the rest carry on: one walking off stays walking)

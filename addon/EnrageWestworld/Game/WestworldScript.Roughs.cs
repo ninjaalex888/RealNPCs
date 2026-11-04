@@ -156,7 +156,7 @@ namespace EnrageWestworld.InGame
                     if (!RoughChoose(r))
                     {
                         // a scene's victim has moved off the surface since the reason was found: a hard shove instead
-                        PED.SET_PED_TO_RAGDOLL(r.Vic.Handle, 1500, 2500, 0, false, false, "");
+                        Natives.Ragdoll(r.Vic.Handle, 1500, 2500);
                         RoughEnd(r, "stopped: no angle fits where he stands now, so a shove", now, true);
                         return;
                     }
@@ -191,7 +191,7 @@ namespace EnrageWestworld.InGame
                             // without the attacker's half the victim would smash his own face: stop it, and a shove instead
                             if (vic)
                                 TASK.CLEAR_PED_TASKS(r.Vic.Handle, true, false);
-                            PED.SET_PED_TO_RAGDOLL(r.Vic.Handle, 1500, 2500, 0, false, false, "");
+                            Natives.Ragdoll(r.Vic.Handle, 1500, 2500);
                             RoughEnd(r, "stopped: the attacker's half didn't start" + (vic ? " (the victim's did)" : "") + ", so a shove", now, true);
                             return;
                         }

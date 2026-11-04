@@ -140,7 +140,7 @@ namespace EnrageWestworld.InGame
             ENTITY.SET_ENTITY_INVINCIBLE(h, true);   // nobody finishes a knocked-out man; undone when he comes to, and on a reload
             if (!PED.IS_PED_INCAPACITATED(h))
                 TASK.CLEAR_PED_TASKS(h, true, false);   // one the game has down already is left down its own way
-            PED.SET_PED_TO_RAGDOLL(h, 20000, 30000, 0, false, false, "");
+            Natives.Ragdoll(h, 20000, 30000);
             int ms = Brawl.KnockoutMs(seed);
             _brawlOut[h] = new BrawlKo { Until = now + ms, Model = ENTITY.GET_ENTITY_MODEL(h), Name = name };
             Log.Write("BRAWL down: " + name + " is knocked out cold by " + byName + " (" + why + ", " + on + " on him); down for " + ms / 1000 + " s");
@@ -167,7 +167,7 @@ namespace EnrageWestworld.InGame
                     if (now < ko.Until)
                     {
                         if (!PED.IS_PED_RAGDOLL(h))
-                            PED.SET_PED_TO_RAGDOLL(h, 6000, 9000, 0, false, false, "");   // still out: down again
+                            Natives.Ragdoll(h, 6000, 9000);   // still out: down again
                         continue;
                     }
                     _brawlOut.Remove(h);

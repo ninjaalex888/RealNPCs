@@ -183,6 +183,25 @@ namespace EnrageWestworld.InGame
             return Childlike.IsMatch(Models.Name(p));
         }
 
+        /// [World] YieldToDying (SIXDAY item 27; roadmap 29): nothing of ours on anyone dying, so a death-animations mod's death
+        /// plays as it is. Read from the settings each tick (WestworldScript.Core04.cs).
+        public static bool YieldToDying = true;
+
+        /// Gone, dead, or dying (the game's own dying state: the fall, the last breath): nothing of ours is put on them then.
+        public static bool Dying(int h)
+        {
+            return h == 0 || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || (YieldToDying && PED.IS_PED_DEAD_OR_DYING(h, true));
+        }
+
+        /// A ragdoll of ours (a shove, a fall, a knock-down): never on someone dying (their death plays as it is). True when it went.
+        public static bool Ragdoll(int h, int minMs, int maxMs)
+        {
+            if (Dying(h))
+                return false;
+            PED.SET_PED_TO_RAGDOLL(h, minMs, maxMs, 0, false, false, "");
+            return true;
+        }
+
         public static bool IsLaw(Ped p)
         {
             string name = Models.Name(p);

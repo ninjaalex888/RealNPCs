@@ -2,7 +2,8 @@
 // rarely plays (the Cut Dialogue Restoration and Enhancement mod is built on them: his taunts in a fight, at the law, at
 // one man or several, near or far). They're the game's own recordings, played by name, so RealNPCs uses them too, with
 // nothing taken from that mod: when someone comes at Arthur (the self-defence watch first sees it: a waking man lashing
-// out, a joiner, a mugger) and when he catches the pickpocket himself. Never over a line already playing on him (that
+// out, a joiner, a mugger), his gunfight calls when they come at him with a gun (SIXDAY item 27: GUNFIGHT_SINGLE_ENEMY,
+// MISSED_TARGET_URGENT), and when he catches the pickpocket himself. Never over a line already playing on him (that
 // mod's, the game's, ours), and 20 s between. [World] ArthurSpeaks. Log ARTHUR says; Testing row "Arthur's own line".
 using System;
 using EnrageWestworld.Core;
@@ -14,12 +15,14 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private static readonly string[] ArthurAttacked = { "PLAYER_TAUNT_SINGLE_ENEMY_NEG_NEAR", "PLAYER_TAUNT_SINGLE_ENEMY_POS_NEAR", "GENERIC_CURSE_HIGH" };
-        private static readonly string[] ArthurCaught = { "PLAYER_TAUNT_SINGLE_ENEMY_POS_NEAR", "PLAYER_TAUNT_SINGLE_ENEMY_POS_FAR", "GENERIC_CURSE_MED" };
+        private const string TauntPosFar = "PLAYER_TAUNT_SINGLE_ENEMY_POS_FAR";   // (one literal, shared by two sets: the originality scan counts each)
+        private static readonly string[] ArthurCaught = { "PLAYER_TAUNT_SINGLE_ENEMY_POS_NEAR", TauntPosFar, "GENERIC_CURSE_MED" };
+        private static readonly string[] ArthurGunfight = { "GUNFIGHT_SINGLE_ENEMY", "MISSED_TARGET_URGENT", TauntPosFar };   // the game's own recordings, by name (item 27)
         private const int ArthurGapMs = 20000;
         private int _arthurNextAt, _arthurSaid, _arthurBusy, _arthurNone, _arthurTest;
         private string _arthurLast;
 
-        /// A line of Arthur's own for this moment ("attacked", "caught"), at someone (0: nobody); true when one played.
+        /// A line of Arthur's own for this moment ("attacked", "gunfight", "caught"), at someone (0: nobody); true when one played.
         private bool ArthurSays(string moment, int at, bool test = false)
         {
             if (!test && (!_cfg.ArthurSpeaks || Game.GameTime < _arthurNextAt))
@@ -33,7 +36,7 @@ namespace EnrageWestworld.InGame
             }
             string line, words;
             int take;
-            bool played = Speech.PlayFirst(me, moment == "caught" ? ArthurCaught : ArthurAttacked, at, out line, out take, out words);
+            bool played = Speech.PlayFirst(me, moment == "caught" ? ArthurCaught : moment == "gunfight" ? ArthurGunfight : ArthurAttacked, at, out line, out take, out words);
             _arthurNextAt = Game.GameTime + ArthurGapMs;
             if (played)
             {
@@ -48,7 +51,8 @@ namespace EnrageWestworld.InGame
 
         private string ArthurTest(int now)
         {
-            string moment = _arthurTest++ % 2 == 0 ? "attacked" : "caught";
+            int turn = _arthurTest++ % 3;
+            string moment = turn == 0 ? "attacked" : turn == 1 ? "caught" : "gunfight";
             return ArthurSays(moment, 0, true) ? null : "no line played for " + moment + " (the log says why)";
         }
 

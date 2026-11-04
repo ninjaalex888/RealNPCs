@@ -76,7 +76,7 @@ namespace EnrageWestworld.Core
             new Entry("warnyou", "People", "Someone warns you, or tells you to your face what they saw", "TestWarnYouKey", needs: "MindLive; someone the mind knows within 18 m, in view"),
             new Entry("thanks", "People", "Someone you helped thanks you", "TestThanksKey", needs: "someone within 20 m who can see you, whom you stood a drink, gave money or settled a debt for this week (the Talk menu; Greedy people don't come, Cold ones nod)"),
             new Entry("lawbody", "People", "A lawman clears a body", "TestLawBodyKey", needs: "a body within 40 m and a lawman on foot within 80 m of it, no fight near"),
-            new Entry("arthur", "People", "Arthur's own line", "TestArthurKey", needs: "nothing: each press tries the next moment's lines (someone came at him, the pickpocket caught)"),
+            new Entry("arthur", "People", "Arthur's own line", "TestArthurKey", needs: "nothing: each press tries the next moment's lines (someone came at him, the pickpocket caught, a gunfight)"),
             new Entry("wagon", "People", "A wagon's wheel off (the probe: breaks, watches, mends)", "TestWagonKey", needs: "an ambient wagon with a driver within 150 m and out of view; best on a road out of town, standing still yourself; sixty seconds, the answers in the log and F7"),
             new Entry("gunshot", "People", "Gunshots at the ground, six ways (which can you hear?)", "TestGunshotKey", needs: "someone free 2-12 m off; best out of town (people near may run, and the law may come)"),
             new Entry("fall", "People", "Someone takes a fall (and is helped up, or not)", "TestFallKey", needs: "two named people outdoors, one of them within 14 m and in view"),

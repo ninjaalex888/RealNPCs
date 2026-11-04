@@ -195,6 +195,11 @@ NEW IN 0.7.19
   you for his marker ($5) as the debtor does; the Devout and the churchgoing don't drink away
   bad news on a Sunday (grief excepted), and a Devout in the room judges a Sunday drinker in a
   thought; a friend of a man drinking away bad news stands the house a round, him first.
+- Side by side with other mods ([World] YieldToDying, on): nothing of RealNPCs' on anyone the
+  game has dying (no line, fall, move or clip of ours), so a death animations and sounds mod's
+  deaths play as they are; RealNPCs never puts a line in Arthur's mouth over one already playing,
+  so a cut-dialogue mod's lines aren't talked over; Arthur's own gunfight calls when someone comes
+  at him with a gun.
 - A wagon's wheel off, the probe (the Testing row "A wagon's wheel off"): breaks one wheel on an
   ambient wagon out of view, watches what the game does for a minute, mends it, and says what it
   found in the log and F7 "TEST wagon:". The scene waits on those answers.

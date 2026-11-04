@@ -300,7 +300,7 @@ namespace EnrageWestworld.InGame
                                 }
                                 break;
                             }
-                            PED.SET_PED_TO_RAGDOLL(t, 1500, 2500, 0, false, false, "");
+                            Natives.Ragdoll(t, 1500, 2500);
                             TASK.CLEAR_PED_TASKS(lh.Law, true, false);
                             TASK.TASK_HOGTIE_TARGET_PED(lh.Law, t);
                             lh.Tied = true;

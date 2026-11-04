@@ -391,7 +391,7 @@ namespace EnrageWestworld.InGame
                     // a blow that knocks her down, once: no worse (the quarrel ladder's rule for a man against a woman)
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(hm, hw, 800, 0f, 0f, 0f);
                     Feed.Say(c.WM.Name, Domestic.Raise(sa), Speech.When(hm, "angry", hw), hm);
-                    PED.SET_PED_TO_RAGDOLL(hw, 1200, 2200, 0, false, false, "");
+                    Natives.Ragdoll(hw, 1200, 2200);
                     Speech.SayAny(hw, Speech.Scared, hm);
                     c.Struck = true;
                     c.StruckAt = now;

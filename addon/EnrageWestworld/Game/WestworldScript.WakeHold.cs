@@ -833,7 +833,7 @@ namespace EnrageWestworld.InGame
             int now = Game.GameTime;
             if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h))
             {
-                PED.SET_PED_TO_RAGDOLL(h, 1500, 2500, 0, false, false, "");
+                Natives.Ragdoll(h, 1500, 2500);
                 TASK.CLEAR_PED_TASKS(l, true, false);
                 TASK.TASK_HOGTIE_TARGET_PED(l, h);
                 act.LeaveOrders = true;   // theirs now: clearing their orders would undo the rope

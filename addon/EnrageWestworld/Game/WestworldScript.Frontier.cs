@@ -322,7 +322,7 @@ namespace EnrageWestworld.InGame
                 if (d < 1.8f)
                 {
                     // the tackle: down he goes, and the lawman stands over him
-                    PED.SET_PED_TO_RAGDOLL(h, 4000, 6000, 0, false, false, "");
+                    Natives.Ragdoll(h, 4000, 6000);
                     TASK.CLEAR_PED_TASKS(l.Handle, true, false);
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(l.Handle, h, 6000, 0f, 0f, 0f);
                     t.LawHeld = true;
@@ -355,7 +355,7 @@ namespace EnrageWestworld.InGame
                 {
                     // caught: the lawman hogties him, the game's own way (Lex, 2026-10-30: "lawmen hogtying"); looked at again in 6 s,
                     // and hands up if it didn't take
-                    PED.SET_PED_TO_RAGDOLL(h, 1500, 2500, 0, false, false, "");
+                    Natives.Ragdoll(h, 1500, 2500);
                     TASK.TASK_HOGTIE_TARGET_PED(l.Handle, h);
                     _hogtieBy = l;
                     _hogtieWho = t.Thief;

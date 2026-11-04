@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 241;
+        public const int CurrentVersion = 242;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -41,6 +41,7 @@ namespace EnrageWestworld.Core
         public bool BodyToUndertaker = true;  // ...and to the undertaker's door or the jail door when one is within 80 m, with someone who knew the dead walking behind and standing over them after (Core/Undertaker.cs; SIXDAY item 18; settings version 234)
         public bool PersonalSpace = true;   // someone he stands right up against for a couple of seconds minds it: steps back, asks for room, or stands their ground (NIGHT3; settings version 154; plays through SightReactions)
         public bool ArthurSpeaks = true;   // Arthur says a recorded line of his own when someone comes at him or he catches the pickpocket (roadmap 34; settings version 151; NIGHT3 item 7)
+        public bool YieldToDying = true;   // nothing of RealNPCs' on anyone dying: no line, no fall, no move or clip of ours on someone the game has dying, so a death-animations mod's deaths play as they are (Game/Natives.cs Dying/Ragdoll, Speech.Gone, the Director; roadmap 29; SIXDAY item 27; settings version 242)
         public bool NpcFlirting = true;
         public bool Trysts = true;
         public bool CasualHookupsDecides = true;
@@ -842,6 +843,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 242)
+                    log?.Invoke("Settings: new in this version: [World] YieldToDying (on): nothing of RealNPCs' (no line, no fall, no move) on anyone dying, so a death-animations mod's deaths play as they are.");
                 if (s.SettingsVersion < 241)
                     log?.Invoke("Settings: new in this version: [WestWorld] WakeByNature (on): the waking's strange acts follow their nature and whoever they feel most about, not a roll.");
                 if (s.SettingsVersion < 240)
@@ -1540,6 +1543,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("SpaceSaloonMetres = " + F(SpaceSaloonMetres) + "   ; the same at a saloon's bar, shoulder to shoulder (0.4-2)");
             b.AppendLine("SpaceSeconds = " + F(SpaceSeconds) + "   ; how long, in seconds, you both stand still that close before they mind it (0.5-10)");
             b.AppendLine("ArthurSpeaks = " + B(ArthurSpeaks) + "   ; Arthur says one of his own recorded fighting lines when someone comes at him or when he catches the pickpocket himself; never over a line already playing on him, 20 s between");
+            b.AppendLine("YieldToDying = " + B(YieldToDying) + "   ; nothing of RealNPCs' on anyone dying: no line, no fall (a shove, a knock-down), no move or clip of ours on someone the game has dying, so a death animations and sounds mod's deaths play as they are; RealNPCs still reads every death (the ledger, the grudges, the kin); false: as before");
             b.AppendLine("Drama = " + B(Drama) + "   ; strangers argue, flirt, brawl, propose and gossip around you");
             b.AppendLine("DramaGapSeconds = " + DramaGapSeconds + "   ; at most one street scene this often (seconds); a chance meeting between two people with no reason of their own waits one and a half times this. Lower for a livelier street");
             b.AppendLine("SaloonGossip = " + B(SaloonGossip) + "   ; in saloons, strangers trade rumours, some about you");

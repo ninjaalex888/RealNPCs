@@ -23,6 +23,7 @@ namespace EnrageWestworld.InGame
         /// line through here (the street's talks, the crowd's calls, the brawl's words all come this way), so the clip
         /// carries their voice alone. 0: nobody held. The game's own remarks aren't ours to hold.
         public static int RecordingPed;
+        public static bool YieldToDying = true;   // [World] YieldToDying: no line of ours over the dying (item 27; read each tick with Natives.YieldToDying)
         private static HashSet<string> _shouts;
         private static readonly HashSet<string> Worked = new HashSet<string>();
         private static readonly Dictionary<string, int> Failed = new Dictionary<string, int>();
@@ -246,7 +247,7 @@ namespace EnrageWestworld.InGame
         /// ped's own. For the voice probe.
         public static unsafe bool Play(int ped, string line, int take, uint paramHash, string voice, int listener)
         {
-            if (ped == 0 || Held(ped) || !ENTITY.DOES_ENTITY_EXIST(ped))
+            if (ped == 0 || Held(ped) || !ENTITY.DOES_ENTITY_EXIST(ped) || Gone(ped))
                 return false;
             ulong* p = stackalloc ulong[8];
             for (int i = 0; i < 8; i++)
@@ -261,6 +262,12 @@ namespace EnrageWestworld.InGame
             return Function.Call<bool>(PlayAmbientSpeech, ped, p);
         }
 
+        /// Dead, or dying with YieldToDying: no line of ours over the game's (or a death-animations mod's) dying sounds (item 27).
+        private static bool Gone(int ped)
+        {
+            return ENTITY.IS_ENTITY_DEAD(ped) || (YieldToDying && PED.IS_PED_DEAD_OR_DYING(ped, true));
+        }
+
         /// Whether a recording under way holds this ped's game lines (RecordingPed).
         private static bool Held(int ped)
         {
@@ -271,7 +278,7 @@ namespace EnrageWestworld.InGame
         /// for the waking (Core/WakeVoice.cs), so what they said is known. Take 1 exists whenever the voice has the line.
         public static bool PlayTake(int ped, string line, int take, int listener)
         {
-            if (ped == 0 || string.IsNullOrEmpty(line) || take < 1 || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
+            if (ped == 0 || string.IsNullOrEmpty(line) || take < 1 || !ENTITY.DOES_ENTITY_EXIST(ped) || Gone(ped))
                 return false;
             foreach (string prm in ParamsFor(line))
                 if (Play(ped, line, take, Natives.Hash(prm), null, listener))
@@ -283,7 +290,7 @@ namespace EnrageWestworld.InGame
         /// (WestworldScript.Voiced.cs, the recording row), and a bank tried on another body.
         public static bool PlayAs(int ped, string voice, string line, int take, int listener)
         {
-            if (ped == 0 || string.IsNullOrEmpty(line) || take < 1 || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
+            if (ped == 0 || string.IsNullOrEmpty(line) || take < 1 || !ENTITY.DOES_ENTITY_EXIST(ped) || Gone(ped))
                 return false;
             foreach (string prm in ParamsFor(line))
                 if (Play(ped, line, take, Natives.Hash(prm), voice, listener))
@@ -293,7 +300,7 @@ namespace EnrageWestworld.InGame
 
         public static unsafe bool Say(int ped, string line, int listener)
         {
-            if (ped == 0 || Held(ped) || string.IsNullOrEmpty(line) || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
+            if (ped == 0 || Held(ped) || string.IsNullOrEmpty(line) || !ENTITY.DOES_ENTITY_EXIST(ped) || Gone(ped))
                 return false;
             ulong* p = stackalloc ulong[8];
             foreach (string prm in ParamsFor(line))
@@ -319,7 +326,7 @@ namespace EnrageWestworld.InGame
         /// person doesn't answer everything with the same words.
         public static bool SayAny(int ped, string[] set, int listener = 0)
         {
-            if (set == null || set.Length == 0 || ped == 0 || Held(ped) || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
+            if (set == null || set.Length == 0 || ped == 0 || Held(ped) || !ENTITY.DOES_ENTITY_EXIST(ped) || Gone(ped))
                 return false;   // held: before the loop, so no line is noted as failed for this voice
             string[] teased = WithTease(ped, set);
             if (!ReferenceEquals(teased, set) && Say(ped, Tease, listener))
@@ -401,7 +408,7 @@ namespace EnrageWestworld.InGame
             line = null;
             take = 0;
             words = null;
-            if (lines == null || ped == 0 || Held(ped) || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
+            if (lines == null || ped == 0 || Held(ped) || !ENTITY.DOES_ENTITY_EXIST(ped) || Gone(ped))
                 return false;
             lines = WithTease(ped, lines);
             string bank = BankOf(ped);
