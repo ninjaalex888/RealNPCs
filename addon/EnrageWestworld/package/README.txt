@@ -165,8 +165,8 @@ NEW IN 0.7.19
   real. Not yet seen in game.
 - A green dot on each ally on the map while they're with you ([Encounters] AlliesDot, on;
   AlliesDotColour: a blip modifier's name, BLIP_MODIFIER_DEBUG_GREEN as built). Greeting
-  someone makes them fonder of you ([Encounters] GreetLiking, 25): enRAGE's fondness rises
-  by a quarter of the bar on every greeting of someone, so four hellos fill the bar and make
+  someone makes them fonder of you ([Encounters] GreetLiking, 34): enRAGE's fondness rises
+  by a third of the bar on every greeting of someone, so three hellos fill the bar and make
   a friend who'll stand with you (from 90 on the bar); nothing from the afraid or the
   angry. Someone you save is yours for good: the man you pull a bully off, the
   one whose beater you put down in a brawl, the captive you save from the rope, the hogtied
