@@ -15,6 +15,33 @@ namespace EnrageWestworld.Core
     {
         private bool _mindSayFailed;
 
+        /// The feeling this person still feels most (Mood.Lasting, at least moderate) and whom it's about (an id, "player", or
+        /// null): for the waking's strange acts by nature (SIXDAY item 25). Null when nothing is felt that much, or the shadow is off.
+        public string MostFeltAbout(string id, long now, out string aboutId)
+        {
+            aboutId = null;
+            if (id == null || Cfg == null || !Cfg.MindShadow)
+                return null;
+            List<FeltAt> felt = Shadow.Felt(id);
+            if (felt == null || felt.Count == 0)
+                return null;
+            FeltAt best = felt[0];
+            float most = 0f;
+            foreach (FeltAt f in felt)
+            {
+                float l = Mood.Lasting(f, now);
+                if (l > most)
+                {
+                    most = l;
+                    best = f;
+                }
+            }
+            if (most < Appraisal.Moderate)
+                return null;
+            aboutId = best.AboutId;
+            return Feeling.Kinds[best.Kind];
+        }
+
         /// Hooks the old roll to the mind (InnerLife.MindFirst); it says nothing unless MindLive is on. A thought it gives
         /// is noted as said today; a feeling kept drops that person's cached thought, so it can come at once.
         private void HookMindFirst()

@@ -18,6 +18,44 @@ namespace EnrageWestworld.Core
     {
         public static readonly string[] HoldKinds = { "dazed", "drift" };
         public static readonly string[] StrangeKinds = { "closeup", "wave", "mimic", "notreal", "preach" };
+        // by nature (SIXDAY item 25): the two strange things each temper runs to (the roll breaks the tie)
+        private static readonly string[] HotheadActs = { "notreal", "closeup" }, ProudActs = { "preach", "notreal" }, CowardActs = { "mimic", "wave" },
+                                         ColdActs = { "closeup", "mimic" }, GreedyActs = { "closeup", "wave" }, LoyalActs = { "preach", "wave" };
+
+        public static bool IsStrange(string kind)
+        {
+            return kind != null && Array.IndexOf(StrangeKinds, kind) >= 0;
+        }
+
+        /// Which strange thing this one does, by their nature and what they feel (roadmap 41: "follow their nature and whoever
+        /// they feel most about, not a roll of the dice"; SIXDAY item 25). A hothead gets in a face (notreal, closeup); the proud
+        /// preach, or tell the others what they are; a coward keeps behind, or tests from arm's length (mimic, wave); the cold
+        /// stare and shadow (closeup, mimic); the greedy stare and wave, as if to ask what it's worth (closeup, wave); the loyal
+        /// preach and wave: they want the others to see it too (preach, wave); the plain do any of the five. What they feel most
+        /// tips it: fear keeps its distance (mimic, wave), anger and contempt confront (notreal, closeup), grief, pity and joy go
+        /// out to others (preach), shame hides behind someone (mimic): the feeling has its way when the nature allows it, and one
+        /// time in three regardless. The roll only breaks the tie between the two. Why it reads true: a breakdown doesn't erase
+        /// temperament, it strips the manners off it, so what's left is the person, louder.
+        public static string StrangeByNature(string temper, string feeling, int r)
+        {
+            string[] by = temper == "Hothead" ? HotheadActs : temper == "Proud" ? ProudActs : temper == "Coward" ? CowardActs : temper == "Cold" ? ColdActs
+                        : temper == "Greedy" ? GreedyActs : temper == "Loyal" ? LoyalActs : StrangeKinds;
+            string tip = feeling == "fear" ? (r % 2 == 0 ? "mimic" : "wave")
+                       : feeling == "anger" || feeling == "contempt" ? (r % 2 == 0 ? "notreal" : "closeup")
+                       : feeling == "grief" || feeling == "pity" || feeling == "joy" ? "preach"
+                       : feeling == "shame" ? "mimic" : null;
+            if (tip != null && (by == StrangeKinds || Array.IndexOf(by, tip) >= 0 || r % 3 == 0))
+                return tip;
+            return by[r % by.Length];
+        }
+
+        /// The next link of a hold with the strange act chosen by nature (StrangeByNature) instead of the roll: everything else
+        /// as NextKind has it.
+        public static string NextKind(int stage, bool sitting, bool strange, string temper, string feeling, int r, int s)
+        {
+            string kind = NextKind(stage, sitting, strange, r, s);
+            return IsStrange(kind) ? StrangeByNature(temper, feeling, r) : kind;
+        }
 
         /// The next link of a hold: r and s are 0-99 rolls. Stage 2 keeps to the quiet acts; from stage 3 a strange
         /// act with someone near now and then (strange: allowed and someone is near), more often at stage 4.
@@ -335,6 +373,19 @@ namespace EnrageWestworld.Core
                 case "Proud": return r < 50 ? "curse" : "walk";
                 default: return woman ? (r < 45 ? "fright" : r < 80 ? "walk" : "laugh") : (r < 35 ? "walk" : r < 60 ? "laugh" : r < 80 ? "curse" : "fright");
             }
+        }
+
+        /// The same, with what's between them (SIXDAY item 25): a friend of the one waking laughs it off or walks, never curses or
+        /// takes fright (they know him); someone who holds something against him curses, or is frightened of what he's become.
+        /// tie: "friend", "foe", or null for nothing between them.
+        public static string Answer(string temper, bool woman, string tie, string seed)
+        {
+            string a = Answer(temper, woman, seed);
+            if (tie == "friend")
+                return a == "curse" || a == "fright" ? (Voice.Hash(seed + "|tie") % 2 == 0 ? "laugh" : "walk") : a;
+            if (tie == "foe")
+                return a == "laugh" || a == "walk" ? (Voice.Hash(seed + "|tie") % 3 == 0 ? "fright" : "curse") : a;
+            return a;
         }
 
         /// The game's own lines for the answer, in the order to try them (from the wake voice probe: these play out of

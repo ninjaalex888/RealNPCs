@@ -65,6 +65,7 @@ namespace EnrageWestworld.InGame
             public int Links, HoldStart, HoldUntil, NextMutter, AnswerAt;
             public bool Stripped;
             public string HoldWhy;   // why the hold let them go, for the log
+            public string OtherWhy;  // how the one they bother was chosen: felt about, a tie, the nearest (WestworldScript.WakeHold.cs OtherFor; SIXDAY item 25)
             public bool LashRolled;   // the hold's lash-out roll is taken (once a hold)
             public int LashAt, Target;   // the link it comes at (0: none); whom they go for
             public int LawHandle, LawLookAt, LawAt;   // a lawman who saw the lash-out and stepped in (WestworldScript.WakeHold.cs)

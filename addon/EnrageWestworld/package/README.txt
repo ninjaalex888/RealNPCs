@@ -195,6 +195,10 @@ NEW IN 0.7.19
   you for his marker ($5) as the debtor does; the Devout and the churchgoing don't drink away
   bad news on a Sunday (grief excepted), and a Devout in the room judges a Sunday drinker in a
   thought; a friend of a man drinking away bad news stands the house a round, him first.
+- The waking's strange acts by nature ([WestWorld] WakeByNature, on): which strange thing someone
+  waking does follows their temper and what they feel most, and they bother whoever they feel
+  most about if near, else the person they have the strongest tie with; friends laugh it off,
+  enemies curse.
 - Memory that behaves like memory ([Mind] PlacesRemember, on): someone who knew one you killed
   thinks of it near the spot (a friend's ground for good, an acquaintance's for a month);
   people who have seen you on your horse know it before your face as you ride up; a place you

@@ -37,7 +37,7 @@ namespace EnrageWestworld.InGame
         private const ulong UpdatePedVariation = 0xCC8CA3E88256E58F;     // _UPDATE_PED_VARIATION(ped, false, true, true, true, false)
         private readonly HashSet<string> _gestBad = new HashSet<string>();
         private readonly HashSet<string> _gestDicts = new HashSet<string>();
-        private int _holds, _holdLinks, _gestPlayed, _gestFailed, _strangeActs, _strips, _strangeTest;
+        private int _holds, _holdLinks, _gestPlayed, _gestFailed, _strangeActs, _strips, _strangeTest, _byNatureActs, _othersByFeeling, _othersByTie;
         private readonly Dictionary<string, int> _answers = new Dictionary<string, int>();
         private string _holdLast, _strangeLast, _stripLast;
 
@@ -103,6 +103,17 @@ namespace EnrageWestworld.InGame
                 else if (act.Stage >= Awakening.Awake && !act.Stripped && !act.St.Has(StripMark) && _bridge.RecordAt(h) == null && !sitting && s < 30 &&
                          !StripHeldBack && WakeOdd.Strips(_cfg.WakeStripChance, act.P.Id))
                     kind = "strip";
+                else if (_cfg.WakeByNature && act.P != null)
+                {
+                    // by nature (roadmap 41; SIXDAY item 25): the strange act from their temper and what they feel most, not the roll
+                    string aboutId, feeling = _engine.MostFeltAbout(act.P.Id, Bridge.Now(), out aboutId);
+                    kind = WakeOdd.NextKind(act.Stage, sitting, _cfg.WakeStrange && OtherFor(act, me) != null, act.P.Personality, feeling, r, s);
+                    if (WakeOdd.IsStrange(kind))
+                    {
+                        _byNatureActs++;
+                        Log.Detail("WAKE by nature: " + act.Name + " (" + (act.P.Personality ?? "plain") + (feeling != null ? ", feels " + feeling : ", feels nothing much") + ") -> " + kind);
+                    }
+                }
                 else
                     kind = WakeOdd.NextKind(act.Stage, sitting, _cfg.WakeStrange && OtherFor(act, me) != null, r, s);
                 if (kind == act.Kind && kind != "dazed")
@@ -378,7 +389,7 @@ namespace EnrageWestworld.InGame
                 act.Until = now + 9000;
                 _strangeActs++;
                 _strangeLast = act.Name + " " + act.Kind;
-                Log.Write("WAKE strange: " + act.Name + " (" + Awakening.StageName(act.Stage) + ") " + StrangeWhat(act.Kind) + " " + OtherName(other) + (said != null ? ": " + said : ""));
+                Log.Write("WAKE strange: " + act.Name + " (" + Awakening.StageName(act.Stage) + ") " + StrangeWhat(act.Kind) + " " + OtherName(other) + (act.OtherWhy != null ? " (" + act.OtherWhy + ")" : "") + (said != null ? ": " + said : ""));
                 return;
             }
             if (act.Phase == 1 && act.AnswerAt > 0 && now >= act.AnswerAt)
@@ -419,7 +430,8 @@ namespace EnrageWestworld.InGame
             if (!known)
                 temper = Sights.StrangerTemper(seed);
             bool woman = !PED.IS_PED_MALE(o);
-            string answer = WakeOdd.Answer(temper, woman, seed);
+            int warmth = _cfg.WakeByNature && known ? TieWarmthBetween(act.P.Id, id) : 0;
+            string answer = WakeOdd.Answer(temper, woman, warmth > 0 ? "friend" : warmth < 0 ? "foe" : null, seed);   // what's between them tells (item 25)
             TASK.TASK_LOOK_AT_ENTITY(o, act.Handle, 3000, 0, 51, 0);
             string line = null, take2, words;
             int take;
@@ -462,9 +474,19 @@ namespace EnrageWestworld.InGame
         }
 
         /// Someone near enough to bother: grown, free, not the law, not a counter's keeper, not in anything of ours.
+        /// Someone near to be bothered. With [WestWorld] WakeByNature (roadmap 41; SIXDAY item 25): whoever they feel most about,
+        /// if they're here (the shadow's strongest lasting feeling and whom it's about), else the one they have the strongest tie
+        /// with (warm or hostile), else the nearest, as before; act.OtherWhy says which. Why it reads true: a mind coming apart
+        /// doesn't pick a stranger at random when someone it loves or hates is in reach.
         private Ped OtherFor(WakeAct act, Ped me)
         {
             Vector3 at = new Ped(act.Handle).Position;
+            bool byNature = _cfg.WakeByNature && act.P != null && act.P.Id != null;
+            string aboutId = null;
+            if (byNature)
+                _engine.MostFeltAbout(act.P.Id, Bridge.Now(), out aboutId);
+            Ped nearest = null, tied = null;
+            int tiedWarmth = 0;
             foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != act.Handle && x.Handle != me.Handle && x.Position.DistanceTo(at) < 14f)
                                                 .OrderBy(x => x.Position.DistanceTo(at)))
             {
@@ -472,9 +494,50 @@ namespace EnrageWestworld.InGame
                 if (!PED.IS_PED_HUMAN(h) || !IsGrownUp(p) || Natives.IsLaw(p) || Natives.StoryModel(p) || PostKindOf(p) != null || PED.IS_PED_ON_MOUNT(h) ||
                     PED.IS_PED_IN_ANY_VEHICLE(h, false) || MayDirectWhyNot(p) != null || NotFree(h) || Speech.Busy(h))
                     continue;
-                return p;
+                if (!byNature)
+                    return p;   // the nearest, as before
+                if (nearest == null)
+                    nearest = p;
+                string id, name;
+                if (LastingId(p, out id, out name) && id != null)
+                {
+                    if (aboutId != null && id == aboutId)
+                    {
+                        act.OtherWhy = "the one they feel most about";
+                        _othersByFeeling++;
+                        return p;
+                    }
+                    int w = TieWarmthBetween(act.P.Id, id);
+                    if (w != 0 && Math.Abs(w) > Math.Abs(tiedWarmth))
+                    {
+                        tied = p;
+                        tiedWarmth = w;
+                    }
+                }
             }
-            return null;
+            if (tied != null)
+            {
+                act.OtherWhy = tiedWarmth > 0 ? "their friend" : "someone they hold something against";
+                _othersByTie++;
+                return tied;
+            }
+            act.OtherWhy = nearest != null ? "the nearest" : null;
+            return nearest;
+        }
+
+        /// The warmth of the tie between two people (0: none), for the waking's choice of whom to bother and the other's answer.
+        private int TieWarmthBetween(string a, string b)
+        {
+            if (a == null || b == null || a == b || _store == null)
+                return 0;
+            List<SceneTie> ties = _store.Ties;
+            for (int i = 0; i < ties.Count; i++)
+            {
+                SceneTie t = ties[i];
+                if (t != null && t.Has(a) && t.Has(b))
+                    return t.Warmth;
+            }
+            return 0;
         }
 
         private Vector3 DazedPoint(WakeAct act, Vector3 pos)
@@ -1071,6 +1134,7 @@ namespace EnrageWestworld.InGame
             return (_cfg.WakeHold ? "on, " + _cfg.WakeHoldMinutes + " min" : "off ([WestWorld] WakeHold)") + "; this session " + _holds + " held (" + _holdLinks + " links), last " + (_holdLast ?? "none") +
                    "; gestures " + (_cfg.WakeGestures ? _gestPlayed + " played, " + _gestFailed + " didn't" + (_gestBad.Count > 0 ? ", dropped: " + string.Join(", ", _gestBad) : "") : "off") +
                    "; strange acts " + (_cfg.WakeStrange ? _strangeActs + " (answers: " + ans + "), last " + (_strangeLast ?? "none") : "off") +
+                   "; by nature " + (_cfg.WakeByNature ? _byNatureActs + " acts from their temper and feelings, the other by feeling " + _othersByFeeling + ", by a tie " + _othersByTie : "off ([WestWorld] WakeByNature)") +
                    "; stripped " + _strips + " (" + _cfg.WakeStripChance + "% of the awake)" + (_stripLast != null ? ", last " + _stripLast : "") +
                    "; lash-outs " + _lashOuts + " (" + _lashAtYou + " at you; the law stepped in " + _lashLawSteps + ", hogtied " + _lashLawHeld + "; " + _cfg.WakeLashOut + "% of holds at stages 3-4)" + (_lashLast != null ? ", last " + _lashLast : "") +
                    "; the model's picks: " + WakePicksStatus() +

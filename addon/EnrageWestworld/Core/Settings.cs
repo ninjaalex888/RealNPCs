@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 240;
+        public const int CurrentVersion = 241;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -181,6 +181,7 @@ namespace EnrageWestworld.Core
         public int WakeHoldMinutes = 3;
         public bool WakeGestures = true;
         public bool WakeStrange = true;
+        public bool WakeByNature = true;   // with WakeStrange: which strange thing they do follows their temper and what they feel most, and the one they bother is whoever they feel most about, else the strongest tie, else the nearest (Core/WakeOdd.cs StrangeByNature; roadmap 41; SIXDAY item 25; settings version 241)
         public int WakeStripChance = 5;
         public int WakeLashOut = 25;   // settings version 145 (Lex, 2026-10-31: the awake should turn on Arthur and on others)
         public bool HostsQuestionReality = true;
@@ -841,6 +842,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 241)
+                    log?.Invoke("Settings: new in this version: [WestWorld] WakeByNature (on): the waking's strange acts follow their nature and whoever they feel most about, not a roll.");
                 if (s.SettingsVersion < 240)
                     log?.Invoke("Settings: new in this version: [Mind] PlacesRemember (on): places hold memories (someone who knew one you killed thinks of it at the spot), people know you by your horse, and the town notices your habits.");
                 if (s.SettingsVersion < 239)
@@ -1398,6 +1401,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("WakeHoldMinutes = " + WakeHoldMinutes + "   ; how long one hold lasts before they are let go for a minute (1 to 15)");
             b.AppendLine("WakeGestures = " + B(WakeGestures) + "   ; the waking use their hands and bodies as they act: rubbing their eyes, pointing at the sky, a hand to the head, pleading; a clip that won't play or carries them off is dropped for the session (the log says which)");
             b.AppendLine("WakeStrange = " + B(WakeStrange) + "   ; from the third stage, the waking do strange things to the people around them: right up close and staring, a hand waved before a face, following someone step for step, telling them they aren't real, preaching to whoever is about; the other walks off, curses, laughs or takes fright");
+            b.AppendLine("WakeByNature = " + B(WakeByNature) + "   ; with WakeStrange on: the strange thing each of them does comes from their temper (hotheads get in a face, the proud preach, cowards keep behind or test from arm's length) and from what they feel most (fear keeps its distance, anger confronts, grief turns outward), and they bother whoever they feel most about when near, else the person they have the strongest tie with, else whoever is nearest; their friends laugh it off and their enemies curse them; false: the roll and the nearest, as before");
             b.AppendLine("WakeStripChance = " + WakeStripChance + "   ; percent of the fully awake who, once, take every stitch off where they stand (never enRAGE's people: it knows them by their clothes); 0 for never; held back since 0.7.9, whatever this says: the first strip froze the game");
             b.AppendLine("WakeLashOut = " + WakeLashOut + "   ; percent of holds at the third and fourth stages that end with them turning on you or on someone near: fists while unravelling, their own gun when awake and carrying one; hotheads and the proud more often, cowards less. Coming at you or at someone else is fair game to stop; 0 for never");
             b.AppendLine("HostsQuestionReality = " + B(HostsQuestionReality) + "   ; people sometimes wonder whether their world is real");
