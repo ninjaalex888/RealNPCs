@@ -460,16 +460,20 @@ namespace EnrageWestworld.InGame
         // said our resident's: a brawl and the Nearby line called a man Malachi Kidd (enRAGE's prompt) whose card and thoughts
         // said Per Nilsson (ours), 2026-11-04 13:35. ReconcileName settles a body only once enRAGE has taken someone up there,
         // so his never was. Now our resident takes enRAGE's name the moment any part of the add-on looks them up (ResidentOf)
-        // or names them (ShownName), everywhere we keep it (Store.Rename). The one exception: someone you have already met
-        // under our name (talked, greeted, flirted) keeps it, and ours is written into enRAGE's list instead
-        // (Bridge.RenameNamedAt, as for someone enRAGE takes up), so a name you've learned never changes in front of you.
-        // Each body is looked at once in NameSettleGapMs at most (a reflection read of enRAGE's list).
+        // or names them (ShownName), everywhere we keep it (Store.Rename), someone you have already met under ours included
+        // (Lex, 2026-11-04, the second answer: "we should try to have enrage name win there"). Why that stays rare and steady:
+        // enRAGE names every grown-up within 40 m of you (NamingRadius) about once a second, up to twelve new a scan, by their
+        // look (NameByLook: a face it has fingerprinted before gets the same name back, even after a reload), and keeps the
+        // name while they're about (an unmet stranger forgotten 15 s after leaving 45 m, the met after 30 min). So our name
+        // gives way before you ever meet most people, and a name you've learned changes once at most: for someone we named
+        // before enRAGE's scan reached them. Each body is looked at once in NameSettleGapMs at most (a reflection read of
+        // enRAGE's list).
         private readonly Dictionary<int, int> _nameSettleAt = new Dictionary<int, int>();   // body -> when it may be looked at again
         private const int NameSettleGapMs = 2000;
-        private int _namesTaken, _namesGiven;
+        private int _namesTaken, _namesMetChanged;   // ours renamed to enRAGE's; of them, people you'd met under ours
 
-        /// The name this resident goes by now that enRAGE has named the body: enRAGE's (ours renamed to it), or ours (written
-        /// into enRAGE's list: someone you've met). Null: nothing settled (no enRAGE name, the same name, looked at just now).
+        /// The name this resident goes by now that enRAGE has named the body: enRAGE's (ours renamed to it, everywhere). Null:
+        /// nothing settled (no enRAGE name, the same name, or looked at just now).
         private string SettleName(int h, Resident r)
         {
             if (r == null || h == 0 || string.IsNullOrEmpty(r.Name) || _bridge == null || !_bridge.Present || _store == null)
@@ -486,14 +490,7 @@ namespace EnrageWestworld.InGame
             string ours = r.Name;
             try
             {
-                if (MetUnderOurs(h, r))
-                {
-                    if (!_bridge.RenameNamedAt(h, ours))
-                        return null;
-                    _namesGiven++;
-                    Log.Write("NAME " + ours + " (you know this name) was " + theirs + " on enRAGE's prompt: the prompt says " + ours + " now");
-                    return ours;
-                }
+                bool met = MetUnderOurs(h, r);   // only for the log: enRAGE's name wins either way
                 r.Name = theirs;
                 int changed = 1 + _store.Rename(r.Id, theirs);
                 MindWho w;
@@ -503,7 +500,9 @@ namespace EnrageWestworld.InGame
                 if (_nameAtGreet.TryGetValue(h, out noted) && noted.Key == ours)
                     _nameAtGreet[h] = new KeyValuePair<string, int>(theirs, noted.Value);   // the greet's own settling (KeepNameAtGreet) keeps this name, not the old one
                 _namesTaken++;
-                Log.Write("NAME " + ours + " goes by " + theirs + ", enRAGE's name for the body, everywhere (" + changed + " records)");
+                if (met)
+                    _namesMetChanged++;
+                Log.Write("NAME " + ours + " goes by " + theirs + ", enRAGE's name for the body, everywhere (" + changed + " records" + (met ? "; you'd met them as " + ours : "") + ")");
                 return theirs;
             }
             catch (Exception ex)
@@ -514,7 +513,7 @@ namespace EnrageWestworld.InGame
         }
 
         /// Whether you know this resident by our name: talked, told their name, flirted, any contact, they spoke up to you,
-        /// or you greeted them lately (the card's "met").
+        /// or you greeted them lately (the card's "met"). Only the log says so now; enRAGE's name wins either way.
         private bool MetUnderOurs(int h, Resident r)
         {
             PersonState st = _store.Find(r.Id);
