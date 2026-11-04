@@ -379,7 +379,12 @@ namespace EnrageWestworld.InGame
 			}
 			try
 			{
-				return (_acqOf.GetValue(Mod) is IDictionary dictionary && dictionary.Contains(handle)) ? WrapFolk(dictionary[handle]) : null;
+				FolkRef f = (_acqOf.GetValue(Mod) is IDictionary dictionary && dictionary.Contains(handle)) ? WrapFolk(dictionary[handle]) : null;
+				if (f != null)
+				{
+					f.LastHandle = handle;   // where the name enRAGE shows for them is read (ShownNameOf)
+				}
+				return f;
 			}
 			catch (Exception ex)
 			{

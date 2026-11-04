@@ -842,7 +842,7 @@ namespace EnrageWestworld.InGame
                 return ShownName(p.Handle, rec.Name);
             FolkRef ac = _bridge.AcquaintanceAt(p.Handle);
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
-                return ac.Name;
+                return FolkShown(ac);   // the name enRAGE's card shows (Run 3, item 1)
             Resident r = ResidentEligible(p) ? ResidentOf(p) : null;
             return r != null ? ShownName(p.Handle, r.Name) : null;
         }
@@ -1902,7 +1902,7 @@ namespace EnrageWestworld.InGame
                     if (!w.Named && _bridge.Present)
                         KinNameToEnrage(w, h);   // once more, in case enRAGE named the body just now
                     Spawner.Release(w.Ped, false);   // made for the part: handed to the game (lock-on, greet and all), which clears them out of sight
-                    Log.Write("CAST " + w.R.Name + " handed back to the game " + (now - w.Said) / 100 / 10.0 + " s after speaking: lock-on, greet, antagonize and rob are the game's (" + Spawner.LastSociable + ")");
+                    Log.Write("CAST " + w.R.Name + " is the game's again " + (now - w.Said) / 100 / 10.0 + " s after speaking, its lock-on prompts and all (" + Spawner.LastSociable + ")");
                 }
                 else if (!_director.Involves(h))
                     TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // said their piece; goes about their day (unless a scene has them now)

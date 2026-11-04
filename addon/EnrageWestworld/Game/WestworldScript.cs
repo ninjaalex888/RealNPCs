@@ -385,6 +385,10 @@ namespace EnrageWestworld.InGame
 			if (_bridge == null)
 			{
 				_bridge = Bridge.Find();
+				if (_bridge != null)
+				{
+					Snapshot.ShownOf = _bridge.ShownNameOf;   // enRAGE's people go by the name its card shows (Run 3, item 1)
+				}
 			}
 			if (_bridge == null)
 			{
@@ -1895,7 +1899,7 @@ namespace EnrageWestworld.InGame
 			FolkRef acquaintance = _bridge.AcquaintanceAt(p.Handle);
 			if (acquaintance != null && !string.IsNullOrEmpty(acquaintance.Name))
 			{
-				return acquaintance.FullName;
+				return FolkShown(acquaintance);   // the name enRAGE's card shows (Run 3, item 1)
 			}
 			if (second)
 			{

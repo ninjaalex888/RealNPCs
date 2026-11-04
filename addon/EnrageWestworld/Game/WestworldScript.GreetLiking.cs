@@ -67,7 +67,7 @@ namespace EnrageWestworld.InGame
                     _greetLiked++;
                 else
                     _greetLikedAgain++;
-                string name = ac.Name ?? ac.Id;
+                string name = FolkShown(ac) ?? ac.Id;
                 _greetLikeLast = name + " +" + delta + (on[1] > 1 ? " (hello " + on[1] + " today)" : "");
                 Log.Detail("GREET " + name + " likes you " + delta + " more for the greeting" + (on[1] > 1 ? " (hello " + on[1] + " today)" : "") + (like > 0f ? " (was " + (int)like + ")" : ""));
             }

@@ -134,8 +134,14 @@ namespace EnrageWestworld.InGame
             {
                 IDictionary named = _namedField != null ? _namedField.GetValue(Mod) as IDictionary : null;
                 object n = named != null && named.Contains(handle) ? named[handle] : null;
-                FieldInfo name = n != null ? n.GetType().GetField("Name", Any) : null;
-                return name != null ? name.GetValue(n) as string : null;
+                if (n == null)
+                    return null;
+                if (n.GetType() != _namedType)
+                {
+                    _namedType = n.GetType();   // the field looked up once, not on every read (the names are read often since 0.7.24)
+                    _namedName = _namedType.GetField("Name", Any);
+                }
+                return _namedName != null ? _namedName.GetValue(n) as string : null;
             }
             catch
             {
@@ -143,11 +149,39 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// Our name kept on someone enRAGE has just taken up (WestworldScript.NameCards.cs KeepNameAtGreet): its record is
-        /// renamed through the record's own SetName, but enRAGE re-labels the lock-on prompt from its _named list every scan,
-        /// so the old name came back (Lex, 2026-10-31: "Jacob Shelby" over his head, "Austin Colby" on the prompt and in the
-        /// greeting's subtitle). A direct write of that entry's Name (CLAUDE.md, "Writing to enRAGE"), then enRAGE's own
-        /// SetPromptName. True when the entry was there to rename.
+        private Type _namedType;
+        private FieldInfo _namedName;
+
+        /// The name enRAGE shows for one of its acquaintances (Run 3, item 1; Lex's /goal: "enRAGE's visible name (its card and
+        /// prompt) everywhere, its acquaintances included"): its card and its lock-on prompt both read its _named list for the
+        /// body, and that can differ from the acquaintance record's Name (a record renamed by this add-on before 0.7.25, whose
+        /// look's print brought enRAGE's own name back after a reload: Friedrich Keller, Walter Odell, Tip Pierce in 22 s in
+        /// Lex's first session with 0.7.24's fixes). Read for the body they were last found in (FolkRef.LastHandle), only while
+        /// that body is still theirs; null otherwise (their record's name then stands).
+        public string ShownNameOf(FolkRef f)
+        {
+            if (f == null || f.LastHandle == 0 || _acqOf == null || Mod == null)
+                return null;
+            try
+            {
+                IDictionary acq = _acqOf.GetValue(Mod) as IDictionary;
+                if (acq == null || !acq.Contains(f.LastHandle) || !ReferenceEquals(acq[f.LastHandle], f.Raw))
+                    return null;   // the game gave that handle to someone else, or enRAGE let them go
+            }
+            catch
+            {
+                return null;
+            }
+            string shown = EnrageNameAt(f.LastHandle, true);
+            return string.IsNullOrWhiteSpace(shown) ? null : shown;
+        }
+
+        /// The prompt label enRAGE gives a body, set to a name of ours: since 0.7.25 (Run 3, item 1: "nothing of ours written
+        /// into enRAGE's records") used only for a body this add-on made for a part (the relative walking up,
+        /// KinNameToEnrage), whose identity is ours: the label lives in enRAGE's _named list for the session, never in its
+        /// records or its looks' prints. Until 0.7.25 it also kept our name on someone enRAGE had just taken up (Lex,
+        /// 2026-10-31: "Jacob Shelby" over his head, "Austin Colby" on the prompt). A direct write of that entry's Name, then
+        /// enRAGE's own SetPromptName. True when the entry was there to rename.
         public bool RenameNamedAt(int handle, string name)
         {
             if (Mod == null || string.IsNullOrEmpty(name))

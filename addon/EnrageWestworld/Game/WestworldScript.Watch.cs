@@ -142,7 +142,7 @@ namespace EnrageWestworld.InGame
                                     RecordRef who = _bridge.RecordAt(victim);
                                     h.RecordId = who != null ? who.Id : null;
                                     FolkRef acq = who == null ? _bridge.AcquaintanceAt(victim) : null;
-                                    h.AcqName = acq != null && !string.IsNullOrEmpty(acq.Name) ? acq.FullName : null;
+                                    h.AcqName = acq != null && !string.IsNullOrEmpty(acq.Name) ? FolkShown(acq) : null;
                                 }
                                 _hits[victim] = h;
                             }
@@ -1038,7 +1038,7 @@ namespace EnrageWestworld.InGame
             bool woman = !PED.IS_PED_MALE(h);
             bool law = Natives.IsLaw(victim);
             FolkRef a = _bridge.AcquaintanceAt(h);
-            string known = a != null && !string.IsNullOrEmpty(a.Name) ? a.FullName : hit.AcqName;
+            string known = a != null && !string.IsNullOrEmpty(a.Name) ? FolkShown(a) : hit.AcqName;
             string label = law ? "a lawman" : Director.Kind(victim, woman);
             bool thief = _thieves.Remove(h);
             string beggarName = null;

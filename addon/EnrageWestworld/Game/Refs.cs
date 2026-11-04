@@ -36,6 +36,9 @@ namespace EnrageWestworld.InGame
     {
         public readonly object Raw;
         public FolkRef(object raw) { Raw = raw; }
+        /// The body enRAGE last had them in, as Bridge.AcquaintanceAt found it: where to read the name enRAGE shows for them
+        /// (its card and its prompt: Bridge.ShownNameOf), which can differ from their record's Name (Run 3, item 1).
+        public int LastHandle;
 
         public string Id { get { return Typed.AcqId(Raw); } }
         public string Name { get { return Typed.AcqName(Raw); } }           // as enRAGE names them to the player (its Name)

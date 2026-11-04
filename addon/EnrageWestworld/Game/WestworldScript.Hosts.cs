@@ -483,7 +483,7 @@ namespace EnrageWestworld.InGame
             string label = null;
             FolkRef a = _bridge.AcquaintanceAt(h);
             if (a != null && !string.IsNullOrEmpty(a.Name))
-                label = a.FullName ?? a.Name;
+                label = FolkShown(a);   // the name enRAGE's card shows (Run 3, item 1)
             else
             {
                 Resident res = ResidentOf(who);   // a passer-by gets a name now; being followed by them is worth keeping

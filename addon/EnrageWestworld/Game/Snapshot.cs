@@ -234,14 +234,18 @@ namespace EnrageWestworld.InGame
 			return num;
 		}
 
+		/// The name enRAGE shows for an acquaintance (Bridge.ShownNameOf), set when the bridge is found; null standing alone.
+		internal static Func<FolkRef, string> ShownOf;
+
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		public static Folk Of(FolkRef f)
 		{
 			Acquaintance a = (Acquaintance)f.Raw;
+			string shown = ShownOf != null ? ShownOf(f) : null;   // its card's and prompt's name, where it differs from the record's (Run 3, item 1)
 			return new Folk
 			{
 				Id = a.Id,
-				Name = a.FullName,
+				Name = shown ?? a.FullName,
 				Town = a.Town,
 				Temper = a.Temper,
 				Woman = Models.Female(a.Model),

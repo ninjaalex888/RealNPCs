@@ -367,10 +367,10 @@ namespace EnrageWestworld.InGame
 
         // A stranger greeted keeps the name over their head (Lex, 2026-10-30: "when I greet them, they get a different name than
         // they had before the greet"): one of our townsfolk, named on the card, whom enRAGE takes up as one of its own (at the
-        // greet, or a moment after) under a name of its making. The name we showed is noted each time the card shows it (enRAGE
-        // had no one in that body then) and at the greet; when enRAGE has someone there within the minute, and its someone is
-        // new (seen once, or first seen these few minutes), they're given ours. Someone enRAGE knew before, met again in a new
-        // body, keeps the name enRAGE gave them.
+        // greet, or a moment after). The name we showed is noted each time the card shows it and at the greet; when enRAGE has
+        // someone there within the minute, ReconcileName settles the body on enRAGE's shown name. Since 0.7.25 (Run 3, item 1)
+        // that is always enRAGE's, and nothing of ours is written into enRAGE: SettleName has given ours enRAGE's name before
+        // the greet (enRAGE names everyone within 40 m about once a second), so the card says the same name before and after.
         private readonly Dictionary<int, KeyValuePair<string, int>> _nameAtGreet = new Dictionary<int, KeyValuePair<string, int>>();
 
         private void NoteNameAtGreet(int h, int now)
@@ -412,40 +412,42 @@ namespace EnrageWestworld.InGame
         // the game reuses for another model is looked at again.
         private readonly Dictionary<int, uint> _nameReconciled = new Dictionary<int, uint>();
 
-        /// The name a body we had someone in goes by now that enRAGE has someone there too: ours when enRAGE's is new to it
-        /// (enRAGE's record and its prompt take ours), else enRAGE's (ours goes by it from now on). Null: nothing settled.
+        /// The name a body we had someone in goes by now that enRAGE has someone there too: always enRAGE's, the one its card
+        /// and prompt show (Run 3, item 1; Lex's /goal: "enRAGE's visible name (its card and prompt) everywhere, its
+        /// acquaintances included, and nothing of ours written into enRAGE's records"). Ours goes by it from now on, everywhere
+        /// we keep it. Until 0.7.25 someone enRAGE took up new was given OUR name instead (its record by SetName, its prompt by
+        /// RenameNamedAt), so the card wouldn't change at the greet (Lex, 2026-10-30); but enRAGE gives a face it has seen
+        /// the same name again by its look's print, so after a reload its card said its own name and its record ours (Friedrich
+        /// Keller, Walter Odell, Tip Pierce). Nothing is written into enRAGE now: SettleName gives ours enRAGE's name before
+        /// the greet (it names everyone within 40 m about once a second), so the card doesn't change at the greet either.
         private string ReconcileName(int h, FolkRef ac, string ours)
         {
             if (ac == null || string.IsNullOrEmpty(ours))
                 return null;
             CarryWakeToEnrage(h, ac);
-            string theirs = ac.Name;
-            if (theirs == ours)
+            string theirs = _bridge.EnrageNameAt(h);   // what enRAGE shows for the body, else its record's name
+            if (string.IsNullOrWhiteSpace(theirs))
+                theirs = ac.Name;
+            if (string.IsNullOrWhiteSpace(theirs) || theirs == ours)
                 return ours;
             try
             {
-                if (!ac.IsNew)
+                ResBind rb;
+                int changed = 0;
+                if (_resBind.TryGetValue(h, out rb) && rb != null && rb.R != null && rb.R.Name == ours)
                 {
-                    // someone enRAGE knew before: ours goes by enRAGE's name from now on, everywhere we keep it (Lex, 2026-10-30:
-                    // "our regulars could keep enrage names if enrage installed"), so the next time they're ours alone it's the same
-                    ResBind rb;
-                    int changed = 0;
-                    if (!string.IsNullOrEmpty(theirs) && _resBind.TryGetValue(h, out rb) && rb != null && rb.R != null && rb.R.Name == ours)
-                    {
-                        rb.R.Name = theirs;
-                        changed = 1 + _store.Rename(rb.R.Id, theirs);
-                        MindWho w;
-                        if (_mindWho.TryGetValue(h, out w) && w.Name == ours)
-                            w.Name = theirs;   // the mind's note of them too, until it looks them up again
-                    }
-                    Log.Write("NAME " + ours + " is someone enRAGE knew before, " + (theirs ?? "nobody") + " (seen " + ac.TimesSeen + " times): " +
-                              (changed > 0 ? "ours goes by " + theirs + " now (" + changed + " records)" : "its name kept"));
-                    return changed > 0 ? theirs : null;
+                    rb.R.Name = theirs;
+                    changed = 1 + _store.Rename(rb.R.Id, theirs);
+                    MindWho w;
+                    if (_mindWho.TryGetValue(h, out w) && w.Name == ours)
+                        w.Name = theirs;   // the mind's note of them too, until it looks them up again
+                    KeyValuePair<string, int> noted;
+                    if (_nameAtGreet.TryGetValue(h, out noted) && noted.Key == ours)
+                        _nameAtGreet[h] = new KeyValuePair<string, int>(theirs, noted.Value);
                 }
-                ac.SetName(ours);
-                bool prompt = _bridge.RenameNamedAt(h, ours);   // and the lock-on prompt, which enRAGE labels from its own list
-                Log.Write("NAME enRAGE took up " + ours + " as " + (theirs ?? "nobody") + ": kept as " + ours + (prompt ? " (the prompt too)" : ""));
-                return ours;
+                Log.Write("NAME " + ours + (ac.IsNew ? " was taken up by enRAGE just now" : " is someone enRAGE knew before") + ", " + theirs + " (seen " + ac.TimesSeen + " times): " +
+                          (changed > 0 ? "ours goes by " + theirs + " now (" + changed + " records)" : "enRAGE's name shown") + "; nothing written into enRAGE");
+                return theirs;
             }
             catch (Exception ex)
             {
@@ -521,6 +523,19 @@ namespace EnrageWestworld.InGame
             return (st != null && (st.Talks > 0 || st.KnowsName || st.Flirts > 0 || st.ContactAt > 0 || st.LastRemarkAt > 0)) || _greetedAt.TryGetValue(h, out greetedAt);
         }
 
+        /// The name enRAGE shows for one of its acquaintances (its card and prompt: Bridge.ShownNameOf), else their record's
+        /// full name (Run 3, item 1).
+        private string FolkShown(FolkRef ac)
+        {
+            if (ac == null)
+                return null;
+            string shown = _bridge != null ? _bridge.ShownNameOf(ac) : null;
+            if (shown != null)
+                return shown;
+            string full = ac.FullName;
+            return string.IsNullOrEmpty(full) ? ac.Name : full;
+        }
+
         private bool NameCardFillInner(Ped p, NameCard c, bool everyone)
         {
             int h = p.Handle;
@@ -545,10 +560,11 @@ namespace EnrageWestworld.InGame
                 string temper = ac.Temper != null && ac.Temper.Length > 0 ? Grammar.UpperFirst(ac.Temper) : null;
                 // no name until you've met: "Stranger" alone (Lex, 2026-10-30: "have their name show as Stranger until they are
                 // greeted or interacted with")
+                string shown = FolkShown(ac);   // the name enRAGE's own card and prompt show (Run 3, item 1)
                 if (met)
-                    Set(c, ac.Name, temper ?? "", ColourTitle, ColourDim, true);
+                    Set(c, shown, temper ?? "", ColourTitle, ColourDim, true);
                 else if (_cfg.NameCardsStrangerNames)
-                    Set(c, ac.Name, "Stranger", ColourStranger, ColourDim, true);   // the name with Stranger under it, if asked for
+                    Set(c, shown, "Stranger", ColourStranger, ColourDim, true);   // the name with Stranger under it, if asked for
                 else
                     Set(c, "Stranger", "", ColourStranger, ColourDim, true);
                 return true;

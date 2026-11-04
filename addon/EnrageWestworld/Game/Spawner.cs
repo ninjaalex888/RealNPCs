@@ -207,7 +207,7 @@ namespace EnrageWestworld.InGame
         // Made people handed back are the game's in full (Lex, 2026-11-04, testing the relative who walks up: "I can now lock on
         // to the person walking up but no option to greet them"). A ped a script makes has no interaction personality (0), and
         // the game offers its Greet, Antagonize and Rob only to a ped that has one. enRAGE's MakeSociable does this for its own
-        // made people, and its log calls the result "handed to the game (greet / antagonize / rob)": the personality of a
+        // made people, and the game's prompts come up on them after: the personality of a
         // townsperson about is copied onto them, and config flag 297 is set on, 301 and 130 off (the lock-on interaction
         // flags, as enRAGE sets them; this add-on had never set them). Only on the way back to the game (Release, ReleaseCast),
         // never while one of our scenes holds them, and only for the living and the human.
