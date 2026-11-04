@@ -483,6 +483,9 @@ namespace EnrageWestworld.InGame
                 case "mindtalk":
                     skipped = "the street's own timing, the reasons' turn-taking and the roll a pair and a day";
                     return MindTalkTest(now, out said);   // WestworldScript.MindTalk.cs
+                case "timestalk":
+                    skipped = "the street's own timing, the reasons' turn-taking and the roll a pair and a day";
+                    return TimesTalkTest(now, out said);   // WestworldScript.MindTalk.cs (Run 3, item 2)
                 case "allies":
                     skipped = "the fondness (the nearest named person counts as your friend) and the ally's own nerve";
                     return AlliesTest(now, out said);   // WestworldScript.Allies.cs

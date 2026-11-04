@@ -257,6 +257,17 @@ NEW IN 0.7.19
   San Francisco, the Thaw trial, Monongah, The Jungle, Taft and Bryan, the Cubs, Johnson and
   Cobb, Ellis Island, the old West gone, the suffrage women, Geronimo's book), each from the
   month it was in the papers. In the talks above, and when you ask someone the news.
+- People talk over the times ([Mind] TimesTalk, on; TimesTalkShare 100; with MindTalks and
+  [World] HistoricalAccuracy): any two who stop near you, friends or strangers, may talk over the
+  news of the day: the almanac's story of the fortnight, or a topic of the year, among them who
+  holds office (McKinley and Mark Hanna, Vice President Hobart until his death in November, Root
+  at the War Department after Alger, Henderson of Iowa in the Speaker's chair from December;
+  Roosevelt's men in 1907), and how the heartland lives (the wheat and the bank, the railroad's
+  rates, the catalogue and the mail route, the dry vote, the old soldiers, the telephone, the
+  bicycle, the camp meeting). About one street scene in five, where before it was one in fifty;
+  often a second round, more of the same news and another answer. By day in the street, any hour
+  in the saloon; said in their own voices with the voice server. The Testing row "Two people
+  talk over the times" (TestTimesTalkKey) starts one between the nearest two.
 - Allies who come to your aid ([Encounters] AlliesHelp, on; AlliesMetres 40, AlliesMost 3,
   AlliesLiking 90, AlliesRoadChance 30): attacked by anyone, the law too, within sight of people who
   think well of you (enRAGE's fondness, a kindness of yours they remember, a trouble you

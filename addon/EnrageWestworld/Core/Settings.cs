@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 249;
+        public const int CurrentVersion = 250;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -125,6 +125,8 @@ namespace EnrageWestworld.Core
         public bool MindMeetings = true;     // with MindLive: the street's chance meetings lean by the two's moods today and how much they want company (Core/Reasons.Mood.cs; roadmaps 18 and 30; night 2026-10-29, item 6e; settings version 115); off, by the reasons alone
         public bool MoodsCarry = true;       // with MindLive: the weather wears on everyone's mood out in it (a quarter under a roof), and a feeling shown in a crowd is caught by those near who felt less of it (Core/MoodsCarry.cs; roadmap 18; SIXDAY item 14; settings version 229)
         public bool MindTalks = true;        // people talk to each other from what's on their minds: the worry they're living through, the times (the election, the war, the reservations, the new machines), the stranger, a plan, the town's talk, a need, the day; the other answers from their own nature, and with the AI model in its own words (Core/MindTalk.cs, Core/Times.cs; Lex, 2026-11-03; settings version 196)
+        public bool TimesTalk = true;        // with MindTalks and [World] HistoricalAccuracy: any two people near you may talk over the times (1899's news, who holds office, the crops, the railroad...; Core/Reasons.cs TimesReason; Run 3, item 2, settings version 250)
+        public int TimesTalkShare = 100;     // with TimesTalk: how often, percent of as built (0-300)
         public bool MindChanceMeetings = true; // with MindLive: what a chance meeting near you is (a song, an argument, a trade, a tall tale ...) is chosen by the two people's minds: their tie, their day, their worry, drink and nature lean what the place allows, and with LanguagePicks the model may pick among the three likeliest (Core/Scenes.Minds.cs; NIGHT4 item 5's plan E; settings version 171); off, the roll by place, sex and age alone
         public bool ThoughtsAloud = true;   // with Language: a thought over someone near is said aloud in their own recorded voice when one of their remarks fits it (settings version 143)
         public bool LanguageVariety = true;   // with Language: each thought the model words gets one thing their mind goes to and a shape, their thoughts lately to steer clear of, and no doubting the world without cause (Core/Language.Variety.cs; settings version 159)
@@ -856,6 +858,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 250)
+                    log?.Invoke("Settings: new in this version: [Mind] TimesTalk (on), TimesTalkShare (100): people near you talk over the times far more often: 1899's news, who holds office, the wheat and the bank, the railroad, the catalogue, the dry vote, the old soldiers; by day in the street, any hour in the saloon.");
                 if (s.SettingsVersion < 249)
                     log?.Invoke("Settings: the AI model now leaves the graphics card after 5 minutes with nothing asked (30 before), and llama3.2:3b (about 2 GB of the card) is the model as it comes; llama3.1:8b (about 5 GB) is still yours to name in [Mind] LanguageModel. The voice pack keeps its model on a card of 12 GB or more.");
                 if (s.SettingsVersion < 248)
@@ -1143,6 +1147,7 @@ namespace EnrageWestworld.Core
             TravellerChance = Math.Max(0, Math.Min(100, TravellerChance));
             WagonWheelChance = Math.Max(0, Math.Min(100, WagonWheelChance));
             AlmanacShare = Math.Max(0, Math.Min(200, AlmanacShare));
+            TimesTalkShare = Math.Max(0, Math.Min(300, TimesTalkShare));
             CampfireChance = Math.Max(0, Math.Min(100, CampfireChance));
             SupperChance = Math.Max(0, Math.Min(100, SupperChance));
             ExecutionChance = Math.Max(0, Math.Min(100, ExecutionChance));
@@ -1352,6 +1357,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("MindMeetings = " + B(MindMeetings) + "   ; with MindLive on: what passes between two people who meet near you leans by the day they are having: two sore people come to words sooner than small talk, two glad ones the other way, and someone lonely stops for a word; false: by their reasons alone");
             b.AppendLine("MoodsCarry = " + B(MoodsCarry) + "   ; with MindLive on: rain, snow, a storm, fog and dust wear on the mood of everyone out in them (a quarter of it under a roof; the unsteady feel it more), and a feeling shown on one face in a crowd is caught by those near who felt less of it themselves (the agreeable and the open catch more); false: moods from their own feelings alone");
             b.AppendLine("MindTalks = " + B(MindTalks) + "   ; people near you talk to each other from what's on their minds: the worry they're living through, the times they live in (the election, the war, the reservations, the new machines...), the stranger, a plan they carry, the town's talk, what they're short of, the day; the other answers from their own nature (kindly, coldly, sharply, and on the times from their own side of it), and with the AI model on, in its own words. No AI model needed");
+            b.AppendLine("TimesTalk = " + B(TimesTalk) + "   ; with MindTalks and [World] HistoricalAccuracy on: any two people who stop near you may talk over the times: 1899's news, who holds office (McKinley, Hobart, Roosevelt, Bryan, Dewey), the wheat and the bank, the railroad, the catalogue, the dry vote, the old soldiers; by day in the street, any hour in the saloon; voiced with VoicedDialogue. False: only now and then, among the other things on their minds");
+            b.AppendLine("TimesTalkShare = " + TimesTalkShare + "   ; with TimesTalk: how often, percent (100 as it comes: about one street scene in five is talk of the times; 0 to 300)");
             b.AppendLine("MindChanceMeetings = " + B(MindChanceMeetings) + "   ; with MindLive on: a chance meeting near you comes from the two people's minds (friends talk and sing, foes quarrel or turn their backs, the sore snap, money worries trade or ask a loan, drink tells tall tales); false: rolled by the place alone");
             b.AppendLine("Language = " + B(Language) + "   ; the AI MODEL (OLLAMA) switch at the top of the settings panel's Essentials page. With MindLive on, the mind's own thoughts, choices and answers are worded by a local language model running on your own PC (Ollama; nothing leaves the machine); every answer is checked for the period, the names and the length, and the written line shows whenever the model's won't do. RealNPCs turns it on by itself when it finds Ollama with the model at a start, unless you have chosen (LanguageChosen)");
             b.AppendLine("LanguageChosen = " + B(LanguageChosen) + "   ; set true by itself whenever you change Language (in the settings panel or in this file), or when Language is on at a start, so a Language you turned off stays off. While false and Language is off, each start asks Ollama at LanguageUrl in the background (a few seconds at most) whether it runs and holds LanguageModel, and if it does, turns Language on, once, with a notice");

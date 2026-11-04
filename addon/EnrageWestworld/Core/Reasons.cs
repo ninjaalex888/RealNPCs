@@ -64,6 +64,8 @@ namespace EnrageWestworld.Core
             public bool MindDecides;   // the quarrel ladder plays the quarrel (MindLive, QuarrelLadder): MayFight leaves blows to it (Lex, 2026-10-30)
             public bool Strain;        // [Mind] MindTempers: what weighs on someone at once adds up (Strains; NIGHT3)
             public bool Variety = true;   // [Scenes] ReasonVariety: x:snap starts at 42, not 45, so gossip, a lift, a drunk and courting win turns (NIGHT4 fix 5; the old harnesses: on, as the game comes)
+            public bool TimesTalk;       // [Mind] TimesTalk (with MindTalks and HistoricalAccuracy): any two may talk over the times (Run 3, item 2)
+            public int TimesShare = 100; // [Mind] TimesTalkShare: its chance, percent of as built
             public bool MindTalks;       // [Mind] MindTalks: people talk to each other from what's on their minds (MindTalk.cs); the reason of last resort among people who know each other, ahead of small talk
         }
 
@@ -176,6 +178,9 @@ namespace EnrageWestworld.Core
                     return new Reason { Kind = ask ? "propose" : tie.Stage == 0 ? "flirt" : "x:sweet", Strength = 60 + 10 * tie.Warmth, BFirst = ask && a.Woman && !b.Woman,   // the man asks (Scenes.Propose kneels the man)
                                         Why = ask ? "they've been courting long enough for one to ask" : "they're sweet on each other" };
                 }
+                Reason timesTie = tie.Warmth >= 0 ? TimesReason(a, b, gameDay, where) : null;
+                if (timesTie != null)
+                    return timesTie;   // people who know each other talk over the times too, before the plain catching up (Run 3, item 2)
                 if (tie.Warmth > 0)
                     return new Reason { Kind = where.MindTalks ? "mindtalk" : "smalltalk", Strength = 35, Why = "they're on good terms" + (where.MindTalks ? ", and " + a.Name + " has something on their mind" : "") };
                 return new Reason { Kind = where.MindTalks ? "mindtalk" : where.Rumours ? "gossip" : "smalltalk", Strength = 30, Why = "they know each other" };
@@ -361,11 +366,38 @@ namespace EnrageWestworld.Core
             // the solitary bring it up half as often; a roll a pair and a day keeps the same two from talking it over every hour
             if (where.MindTalks && x.Id != y.Id && Voice.Chance(PairKey(x, y) + gameDay + "mindtalk", x.Temper == "Cold" || x.Temper == "Greedy" ? 35 : 70))
                 all.Add(new Reason { Kind = "mindtalk", Strength = worry && stage <= 1 ? 39 : 37, Why = x.Name + " has something on their mind, and " + y.Name + " is there" });
+            Reason times = TimesReason(x, y, gameDay, where);
+            if (times != null)
+                all.Add(times);
             Reason best = null;
             foreach (Reason r in all)
                 if (best == null || r.Strength > best.Strength)
                     best = r;
             return best;
+        }
+
+        // ---- the times talked over (Run 3, item 2; Lex, 2026-11-04: "Ideally the player will just hear lots of talk relating to
+        // the time of living in America midwest 1899", who holds office among it, through the talks between people and the
+        // street's scenes, not Talk). Any two who stop together may talk over the news of the day: an almanac story of the
+        // fortnight, or a topic of the year (Core/Times.cs: the election, McKinley and Hobart, the war, the wheat and the bank,
+        // the railroad, the catalogue, the dry vote, the old soldiers...). Before it, talk of the times was one scene in fifty
+        // (mindtest TimesTalkRateTest: 2%, about half a talk an hour; Lex's logs: 1.3 an hour). Its strength sits above gossip
+        // (40), the worry said aloud (42) and a lift (43), below a fight (47 and up): people talk the news over more than they
+        // quarrel, and the street's variety penalty (6 a time among its last four) keeps it from every scene in a row. Why it
+        // fits the period: the paper came weekly, and the store, the saloon and the depot were where it was read aloud and argued
+        // over; strangers talked news as readily as friends, and it was the safest talk there was between people who didn't
+        // know each other's business.
+        public const int TimesStrength = 44, TimesChance = 55, TimesNightChance = 20;
+
+        /// Two who may talk over the times today (a roll a pair and a day; by night in the street, less), or null.
+        private static Reason TimesReason(Someone x, Someone y, long gameDay, Place where)
+        {
+            if (!where.TimesTalk || where.TimesShare <= 0 || x == null || y == null || x.Id == y.Id)
+                return null;
+            int pct = (where.Night && !where.Saloon ? TimesNightChance : TimesChance) * where.TimesShare / 100;
+            if (!Voice.Chance(PairKey(x, y) + gameDay + "times", Math.Min(100, pct)))
+                return null;
+            return new Reason { Kind = MindTalk.TimesKind, Strength = TimesStrength, Why = x.Name + " and " + y.Name + " talk over the times" };
         }
 
         /// Percent of days a free person, taken with someone beside them, tries their luck (from both ids and the day).

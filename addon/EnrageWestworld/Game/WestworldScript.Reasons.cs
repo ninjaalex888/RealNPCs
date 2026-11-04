@@ -243,6 +243,8 @@ namespace EnrageWestworld.InGame
                 Strain = _cfg.MindLive && _cfg.MindTempers,
                 Variety = _cfg.ReasonVariety,
                 MindTalks = _cfg.MindTalks,   // people talk of what's on their minds (WestworldScript.MindTalk.cs)
+                TimesTalk = _cfg.MindTalks && _cfg.TimesTalk && InnerLife.Historical,   // and talk over the times (Run 3, item 2); never with HistoricalAccuracy off
+                TimesShare = _cfg.TimesTalkShare,
                 Rumours = (!saloon || _cfg.SaloonGossip) && _engine.RumourPool(_placeTown, 1).Count > 0,
                 DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0
             };
@@ -668,8 +670,8 @@ namespace EnrageWestworld.InGame
                 }
                 return c;
             }
-            if (kind == MindTalk.Kind)
-                return MindTalkScene(first, second, doer, done, cast, seed, note);   // what's on the first one's mind, said to the second (WestworldScript.MindTalk.cs)
+            if (MindTalk.IsTalkKind(kind))
+                return MindTalkScene(first, second, doer, done, cast, seed, note, MindTalk.TopicOf(kind));   // what's on the first one's mind (or the times), said to the second (WestworldScript.MindTalk.cs)
             if (kind.StartsWith("x:"))
             {
                 // an exchange written for the reason (Exchanges.cs): the second one's answer comes from their own state

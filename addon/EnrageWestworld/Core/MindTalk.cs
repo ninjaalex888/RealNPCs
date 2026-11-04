@@ -35,12 +35,42 @@ namespace EnrageWestworld.Core
         public MindTalkMind A, B;            // the one who speaks first, and the other
         public string AMemory;               // what A remembers of the player, in A's own words (a thought), or null
         public string APlan, APlanKind;      // a plan A carries, as A's thought, and its kind (geteven, repay, paydebt, court), or null
+        public string Topic;                 // the topic set by the reason (MindTalk.TopicOf: "times" for a talk of the times), or null to choose
         public bool BAtWorst;                // B at the worst of their own trouble (the answer comes sharp)
     }
 
     public static class MindTalk
     {
         public const string Kind = "mindtalk";
+        public const string TimesKind = "timestalk";   // the reason for a talk of the times (Reasons.TimesReason; Run 3, item 2); the scene is a mindtalk
+        public const int TimesMoreChance = 60;          // a talk of the times goes a second round (another word on it, another answer) this often
+
+        /// The reasons that play as a talk between two people: what's on a mind, and the times talked over.
+        public static bool IsTalkKind(string kind)
+        {
+            return kind == Kind || kind == TimesKind;
+        }
+
+        /// The topic a reason sets ("times" for a talk of the times), or null for the talk to choose.
+        public static string TopicOf(string kind)
+        {
+            return kind == TimesKind ? "times" : null;
+        }
+
+        /// Another line of the pool than this one, by the seed (the second round of a talk of the times), or null.
+        private static string Other(string[] pool, string seed, string notThis)
+        {
+            if (pool == null || pool.Length < 2)
+                return null;
+            for (int i = 0; i < 4; i++)
+            {
+                string l = Voice.Pick(seed + "|o" + i, pool);
+                if (l != notThis)
+                    return l;
+            }
+            int at = Array.IndexOf(pool, notThis);
+            return pool[(at + 1) % pool.Length];
+        }
 
         // ---- what one brings up ----------------------------------------------------------------------------------
 
@@ -126,11 +156,12 @@ namespace EnrageWestworld.Core
         /// A talk between A (who brings it up) and B, from what's on A's mind: 2 or 3 beats. `topic` and `manner` for the log.
         public static Scene Make(Someone a, Someone b, string aName, string bName, MindTalkContext c, string seed, out string topic, out string manner)
         {
-            topic = ChooseTopic(a, c, seed);
+            topic = c.Topic ?? ChooseTopic(a, c, seed);
             manner = Exchanges.Manner(b, c.BAtWorst);
             string town = c.Town;
             Func<string, string> fill = line => line == null ? null : Times.Fill(line.Replace("{a}", aName).Replace("{b}", bName), town);
             string open = null, reply = null, openVoice = "chat", replyVoice = manner == "kind" ? "reply" : manner == "cold" ? "mild" : "replybad";
+            string open2 = null, reply2 = null;   // a talk of the times: the second round (another word on it, another answer)
             string kind = Kind;
             TimesTopic times = null;
             AlmanacEvent news = null;
@@ -159,14 +190,21 @@ namespace EnrageWestworld.Core
                     {
                         open = Voice.Pick(seed + "ao", news.Lines);
                         reply = Almanac.Reply(news, manner, seed);
+                        open2 = Other(news.Lines, seed + "ao2", open);
+                        string r2 = Almanac.Reply(news, manner, seed + "|2");
+                        reply2 = r2 != reply ? r2 : null;
                         break;
                     }
                     news = null;
                     times = Times.Pick(c.Year, c.Month, seed);
                     if (times != null)
                     {
+                        string stance = Stance(times, c.B, manner, seed);
                         open = Voice.Pick(seed + "to", times.Openers);
-                        reply = Times.Reply(times, Stance(times, c.B, manner, seed), seed, town);
+                        reply = Times.Reply(times, stance, seed, town);
+                        open2 = Other(times.Openers, seed + "to2", open);
+                        string[] pool = stance == "for" ? times.For : stance == "against" ? times.Against : times.Shrug;
+                        reply2 = Other(pool, seed + "tr2", Voice.Pick(seed + "reply" + stance, pool));
                     }
                     break;
                 case "stranger":
@@ -206,6 +244,11 @@ namespace EnrageWestworld.Core
             Scene s = new Scene { Kind = kind, Summary = aName + " and " + bName + ", talking of " + TopicWords(topic, times, news), Doer = kind == "brushoff" ? 1 : -1 };
             s.Add(0, fill(open), openVoice, "face");
             s.Add(1, fill(reply), replyVoice, manner == "cold" && (topic == "worry" || topic == "need") ? "walkaway" : null);
+            if (topic == "times" && open2 != null && reply2 != null && Voice.Chance(seed + "more", TimesMoreChance))
+            {
+                s.Add(0, fill(open2), "chat", null);   // the second round: more of the same news, and the other's word on it again
+                s.Add(1, fill(reply2), replyVoice, null);
+            }
             if (manner != "cold" || topic == "times")
             {
                 if (Voice.Chance(seed + "close", manner == "sharp" ? 70 : 45))

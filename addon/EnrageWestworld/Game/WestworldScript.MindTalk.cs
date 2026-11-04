@@ -19,12 +19,13 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
+        private int _timesTalks;   // talks of the times this session (Run 3, item 2)
         private int _mindTalks, _mindTalkModelAsked, _mindTalkModelSaid, _mindTalkModelHeld, _mindTalkModelLate, _mindTalkAskAt;
         private readonly Dictionary<string, int> _mindTalkTopics = new Dictionary<string, int>();
         private string _mindTalkLast, _mindTalkAskKey;
 
         /// The scene for a mindtalk reason: what's on the first one's mind, said to the second, who answers from their own nature.
-        private Scene MindTalkScene(Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, bool note)
+        private Scene MindTalkScene(Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, bool note, string topicSet = null)
         {
             long g = Bridge.Now(), day = g > 0 ? g / 1440 : -1;
             int now = _now;
@@ -37,7 +38,8 @@ namespace EnrageWestworld.InGame
                 Year = InnerLife.ClockYear, Month = InnerLife.ClockMonth, DayOfMonth = InnerLife.ClockDay, Day = day, Town = _placeTown,
                 Rumours = cast.Rumours != null && cast.Rumours.Count > 0 ? cast.Rumours : null,   // the cast's own (Life.cs); a fresh RumourPool here marked rumours heard at every talk (the review)
                 A = MindTalkMindOf(first, doer, wa), B = MindTalkMindOf(second, done, wb),
-                BAtWorst = (InnerLife.WorryNow(done.P, day, out wk, out wst, out wg) && wst == 2) || done.Hurt != null
+                BAtWorst = (InnerLife.WorryNow(done.P, day, out wk, out wst, out wg) && wst == 2) || done.Hurt != null,
+                Topic = topicSet   // "times" for a talk of the times (Reasons.TimesReason), else the talk chooses
             };
             // what the first remembers of the player, as their thoughts put it, and a plan they carry (Core/Plans.cs)
             try
@@ -71,6 +73,8 @@ namespace EnrageWestworld.InGame
             if (note)
             {
                 _mindTalks++;
+                if (topic == "times")
+                    _timesTalks++;
                 int n;
                 _mindTalkTopics.TryGetValue(topic, out n);
                 _mindTalkTopics[topic] = n + 1;
@@ -202,9 +206,33 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
+        /// The Testing row "timestalk": the nearest two talk over the times now (Run 3, item 2).
+        private string TimesTalkTest(int now, out string said)
+        {
+            said = null;
+            if (!_cfg.MindTalks || !_cfg.TimesTalk || !InnerLife.Historical)
+                return "off ([Mind] MindTalks, TimesTalk and [World] HistoricalAccuracy must all be on)";
+            string why = MindSceneWhyNot(true);
+            if (why != null)
+                return why;
+            Ped me = Game.Player.Character;
+            List<Candidate> people = ReasonCandidates(me, now, true).OrderBy(c => c.Ped.Position.DistanceTo(me.Position)).ToList();
+            if (people.Count < 2)
+                return "fewer than two named people free within " + ReasonRange + " m (" + ReasonRejects(me, now) + ")";
+            Candidate a = people[0], b = people.Skip(1).OrderBy(c => c.Ped.Position.DistanceTo(a.Ped.Position)).First();
+            float apart = a.Ped.Position.DistanceTo(b.Ped.Position);
+            if (apart > ReasonApart)
+                return a.Who.Name + " and " + b.Who.Name + " are " + (int)apart + " m apart (" + ReasonApart + " at most)";
+            var pr = new PairReason { A = a, B = b, Apart = apart, Why = new Reason { Kind = MindTalk.TimesKind, Strength = 99, Why = "the Testing row" } };
+            if (!PlayPairReason(pr, me, _placeKind == "saloon", now, false, "the Testing row"))
+                return "the talk couldn't start (the log says why)";
+            said = a.Who.Name + " talks over the times with " + b.Who.Name + (_mindTalkLast != null ? " (" + _mindTalkLast + ")" : "");
+            return null;
+        }
+
         private string MindTalkStatus()
         {
-            return (_cfg.MindTalks ? "on" : "off ([Mind] MindTalks)") + "; " + _mindTalks + " talks this session" +
+            return (_cfg.MindTalks ? "on" : "off ([Mind] MindTalks)") + "; " + _mindTalks + " talks this session, " + _timesTalks + " of the times (TimesTalk " + (_cfg.TimesTalk ? "on, " + _cfg.TimesTalkShare + "%" : "off") + ")" +
                    (_mindTalkTopics.Count > 0 ? " (" + string.Join(", ", _mindTalkTopics.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value)) + ")" : "") +
                    "; the model asked " + _mindTalkModelAsked + ", said " + _mindTalkModelSaid + ", held " + _mindTalkModelHeld + ", late " + _mindTalkModelLate +
                    (_mindTalkLast != null ? "; last: " + _mindTalkLast : "");
