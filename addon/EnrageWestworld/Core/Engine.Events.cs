@@ -58,7 +58,7 @@ namespace EnrageWestworld.Core
             {
                 if (Store.Events.Any(x => x.Kind == "election" && x.Town == town && x.At / 1440 == electionGameDay))
                     continue;
-                List<Resident> regulars = Store.Residents.Where(r => r.Regular && !r.Dead && !r.Fled && r.Town == town).ToList();
+                List<Resident> regulars = Store.Residents.Where(r => r.Regular && !r.Dead && !r.Fled && r.Held == null && r.Town == town).ToList();
                 if (regulars.Count < Elections.LeastRegulars)
                     continue;
                 Resident[] c = Elections.Candidates(regulars, Store.Ties, Voice.NowYear, town + "|" + year);
@@ -78,7 +78,7 @@ namespace EnrageWestworld.Core
         /// The polls closed: the tally, the paper, and what the town thinks of the two after.
         private void ElectionClose(TownEvent e, long now, bool attended)
         {
-            List<Resident> regulars = Store.Residents.Where(r => r.Regular && !r.Dead && !r.Fled && r.Town == e.Town).ToList();
+            List<Resident> regulars = Store.Residents.Where(r => r.Regular && !r.Dead && !r.Fled && r.Held == null && r.Town == e.Town).ToList();
             Resident a = Store.FindResident(e.AId), b = Store.FindResident(e.BId);
             if (a == null || b == null)
             {
@@ -145,7 +145,7 @@ namespace EnrageWestworld.Core
             else if (what == "whiskey")
             {
                 e.WhiskeyFor = candidateId;
-                foreach (Resident r in Store.Residents.Where(x => x.Regular && !x.Dead && x.Town == e.Town))
+                foreach (Resident r in Store.Residents.Where(x => x.Regular && !x.Dead && x.Held == null && x.Town == e.Town))
                 {
                     PersonState st = MindOf(r.Id, r.Name);
                     if (st != null)
@@ -179,12 +179,16 @@ namespace EnrageWestworld.Core
             }
             else if (e.Kind == "election")
                 ElectionClose(e, now, false);
+            else if (e.Kind == "trial")
+                TrialVerdict(e, now, false);
+            else if (e.Kind == "gallows")
+                GallowsDone(e, now, false);
         }
 
         /// What a dance leaves: the regulars' ties and memories (and, attended, their thought of the player who came).
         private void DanceLeaves(TownEvent e, long now, bool attended)
         {
-            List<Resident> regulars = Store.Residents.Where(r => r.Regular && !r.Dead && !r.Fled && r.Town == e.Town).ToList();
+            List<Resident> regulars = Store.Residents.Where(r => r.Regular && !r.Dead && !r.Fled && r.Held == null && r.Town == e.Town).ToList();
             List<string[]> pairs = TownEvents.DanceAway(regulars, Store.Ties, e.Id);
             e.Count = pairs.Count;
             foreach (string[] p in pairs)
@@ -234,6 +238,10 @@ namespace EnrageWestworld.Core
             }
             else if (e.Kind == "election")
                 ElectionClose(e, now, attended);
+            else if (e.Kind == "trial")
+                TrialVerdict(e, now, attended);
+            else if (e.Kind == "gallows")
+                GallowsDone(e, now, attended);
         }
 
         /// Shots or a gun pointed broke it up: nothing comes of it, and the town remembers who fired.
@@ -241,9 +249,20 @@ namespace EnrageWestworld.Core
         {
             if (e == null || e.Done)
                 return;
+            if (e.Kind == "gallows" && byYou)
+            {
+                PrisonerFreed(e, true, now);   // his shots: the condemned man got away in the uproar (Engine.Trials.cs)
+                return;
+            }
             e.Done = true;
             e.Broken = true;
             e.Outcome = "broken: " + why;
+            if (e.Kind == "gallows")
+            {
+                GallowsFinishedInside(e, now);   // someone else's shots: the crowd scattered and the deputies finished it inside
+                Log("EVENT gallows " + e.Town + ": broken (" + why + "), finished inside");
+                return;
+            }
             if (byYou)
             {
                 foreach (Resident r in Store.Residents.Where(x => x.Regular && !x.Dead && x.Town == e.Town).Take(6))
@@ -255,6 +274,8 @@ namespace EnrageWestworld.Core
                 Push(new Toast { Kind = "life", Title = e.Title, Weight = 40, Text = "The " + (e.Kind == "dance" ? "dance" : e.Kind) + " in " + e.Town + " broke up in panic. They know who to blame." });
             }
             Log("EVENT " + e.Kind + " " + e.Town + ": broken (" + why + (byYou ? ", by you" : "") + ")");
+            if (e.Kind == "trial")
+                TrialVerdict(e, now, false);   // the judge rules once the room is cleared, whoever fired
         }
 
         /// For F7: what's coming and what passed.
@@ -269,7 +290,7 @@ namespace EnrageWestworld.Core
             {
                 if (e == null) continue;
                 if (!e.Done)
-                    parts.Add(e.Kind + " in " + e.Town + " " + (now >= e.At ? "on now" : "in " + Math.Max(0, e.At - now) / 60 + " h") + (e.Kind == "election" ? " (" + e.AName + " v " + e.BName + " for " + e.Extra + (e.Endorsed != null ? ", your word given" : "") + ")" : ""));
+                    parts.Add(e.Kind + " in " + e.Town + " " + (now >= e.At ? "on now" : "in " + Math.Max(0, e.At - now) / 60 + " h") + (e.Kind == "election" ? " (" + e.AName + " v " + e.BName + " for " + e.Extra + (e.Endorsed != null ? ", your word given" : "") + ")" : e.Kind == "trial" || e.Kind == "gallows" ? " (" + TrialsStatus(e, now) + ")" : ""));
                 else if (now - e.Until < 3 * 1440)
                     parts.Add(e.Kind + " in " + e.Town + ": " + e.Outcome);
             }

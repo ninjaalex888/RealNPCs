@@ -29,6 +29,12 @@ namespace EnrageWestworld.InGame
             public int SpeakerOutfit = -1, Step;
             public string[] Lines;
             public bool Grumbled, Ticketed, Argued;
+            public uint AccusedModel;             // the trial and the hanging: the accused in his own body
+            public Ped Accused, Preacher;
+            public readonly List<Ped> Deputies = new List<Ped>();
+            public int Witnesses;
+            public bool Asked;                    // the judge asked the stranger by the door
+            public string Told;                   // what he told the court (guilty, innocent, none)
             public readonly Dictionary<int, int> Health = new Dictionary<int, int>();
         }
 
@@ -42,6 +48,8 @@ namespace EnrageWestworld.InGame
         {
             if (wasKind == "saloon" && _placeTown != null)
                 _saloonDoor[_placeTown] = at;
+            if (wasKind == "sheriff" && _placeTown != null)
+                _jailDoor[_placeTown] = at;   // the hanging is staged at the jail he came out of (WestworldScript.Trials.cs)
         }
 
         private void TownEventsStep(int now)
@@ -55,6 +63,7 @@ namespace EnrageWestworld.InGame
         {
             if (_cfg == null || !_cfg.TownEvents || _engine == null || _store == null)
                 return;
+            FreedTick(now);
             if (_eventRun != null)
             {
                 EventStep(now);
@@ -65,6 +74,7 @@ namespace EnrageWestworld.InGame
             _eventsNext = now + 2000;
             if (_placeTown == null || MISC.GET_MISSION_FLAG() || _wedding != null)
                 return;
+            JailTick(now);   // the breakout's prompt at night, a hogtied man brought in (WestworldScript.Trials.cs)
             TownEvent e = _engine.EventNear(_placeTown, Bridge.Now());
             if (e == null)
                 return;
@@ -72,6 +82,10 @@ namespace EnrageWestworld.InGame
                 BeginDance(e, now);
             else if (e.Kind == "election" && _cfg.EventElections)
                 BeginElection(e, now);
+            else if (e.Kind == "trial" && _cfg.EventTrials)
+                BeginTrial(e, now);
+            else if (e.Kind == "gallows" && _cfg.EventTrials)
+                BeginGallows(e, now);
         }
 
         /// The dance staged: outside the saloon he came out of here, else behind the camera, 20-35 m off.
@@ -133,6 +147,16 @@ namespace EnrageWestworld.InGame
             if (r.E.Kind == "election")
             {
                 ElectionStep(r, now);
+                return;
+            }
+            if (r.E.Kind == "trial")
+            {
+                TrialStep(r, now);
+                return;
+            }
+            if (r.E.Kind == "gallows")
+            {
+                GallowsStep(r, now);
                 return;
             }
             long g = Bridge.Now();
@@ -434,10 +458,18 @@ namespace EnrageWestworld.InGame
         {
             Ped me = Game.Player.Character;
             bool screamed = false;
+            // a hanging broken by someone else's shots: the sworn men hustle the condemned man inside and finish it there
+            bool inside = r.E.Kind == "gallows" && !byYou;
             foreach (Ped p in r.Cast)
             {
                 if (!p.Exists() || p.IsDead)
                     continue;
+                if (inside && (p == r.Accused || r.Deputies.Contains(p)))
+                {
+                    Vector3 back = r.At + new Vector3(0f, -12f, 0f);
+                    TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(p.Handle, back.X, back.Y, back.Z, 2f, -1, 1f, 0, 0f);
+                    continue;
+                }
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, false);
                 TASK.CLEAR_PED_TASKS(p.Handle, true, false);
                 if (why == "a mission began")
@@ -463,6 +495,8 @@ namespace EnrageWestworld.InGame
         {
             EventRun r = _eventRun;
             _eventRun = null;
+            _eventMenu = null;
+            PromptClear();
             if (r == null)
                 return;
             foreach (Ped p in r.Cast)
@@ -474,7 +508,7 @@ namespace EnrageWestworld.InGame
         {
             return _engine.EventsStatus(Bridge.Now()) + "; this session: " + _eventsStaged + " staged, " + _eventsAttended + " attended, " + _eventsBroken + " broken" +
                    (_eventRun != null ? "; on now: " + _eventRun.E.Kind + " in " + _eventRun.E.Town + " (" + _eventRun.Cast.Count + " on the floor)" : "") +
-                   (_saloonDoor.Count > 0 ? "; saloon doors known in " + string.Join(", ", _saloonDoor.Keys) : "");
+                   (_saloonDoor.Count > 0 ? "; saloon doors known in " + string.Join(", ", _saloonDoor.Keys) : "") + "; " + TrialsRunStatus();
         }
     }
 }

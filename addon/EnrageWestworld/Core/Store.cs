@@ -49,7 +49,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<DeathEntry> Deaths = new List<DeathEntry>();   // our own record of who has died (see Deaths.cs)
         [DataMember(EmitDefaultValue = false)] public List<LaterAct> Later = new List<LaterAct>();   // diary entries and word of mouth waiting their time (see Knowing.cs)
         [DataMember(EmitDefaultValue = false)] public List<Reply> Replies = new List<Reply>();   // answers in the post, and letters of his own (Core/Replies.cs; SIXDAY item 8)
-        [DataMember(EmitDefaultValue = false)] public List<TownEvent> Events = new List<TownEvent>();   // the town's days: dances and the rest (Core/TownEvents.cs; SIXDAY item 10)
+        [DataMember(EmitDefaultValue = false)] public List<TownEvent> Events = new List<TownEvent>();   // (Resident.Held follows these: FixHeld)   // the town's days: dances and the rest (Core/TownEvents.cs; SIXDAY item 10)
         [DataMember(EmitDefaultValue = false)] public List<Happening> WorldLog = new List<Happening>();   // what happened and who saw it (WorldEvents.cs), capped
         [DataMember(EmitDefaultValue = false)] public List<Plan> Plans = new List<Plan>();   // what people mean to do about each other over the next days (Plans.cs)
         [DataMember(EmitDefaultValue = false)] public List<PlaceSpot> Spots = new List<PlaceSpot>();   // where each town's places are, learned from their keepers (Places.cs)
@@ -238,6 +238,7 @@ namespace EnrageWestworld.Core
                         n++;
                     }
             }
+            FixHeld();   // who the law holds follows the trials and hangings left open
             if (Replies != null)
             {
                 n += Replies.RemoveAll(r => r.SentAt > cut);
@@ -423,6 +424,28 @@ namespace EnrageWestworld.Core
             Serializer().WriteObject(stream, this);
         }
 
+        /// Held is derived state (Core/Trials.cs): the open trial or hanging that names a resident, else nothing. A load or a
+        /// rewind never strands a man at the jail, nor frees one the law still has.
+        private void FixHeld()
+        {
+            if (Residents == null)
+                return;
+            foreach (Resident r in Residents)
+            {
+                if (r == null || r.Id == null)
+                    continue;
+                string held = null;
+                if (Events != null)
+                    foreach (TownEvent e in Events)
+                        if (e != null && !e.Done && (e.Kind == "trial" || e.Kind == "gallows") && e.AId == r.Id)
+                        {
+                            held = e.Id;
+                            break;
+                        }
+                r.Held = held;
+            }
+        }
+
         /// ...and the bytes put in place, which touches nothing of the store, so it can run on another thread. The same
         /// file as Save: a .tmp first, then swapped in, so a crash part way never leaves half a save.
         public static void WriteFile(string path, byte[] bytes, int count)
@@ -478,6 +501,7 @@ namespace EnrageWestworld.Core
             if (Avengers == null) Avengers = new List<Avenger>();
             if (Replies == null) Replies = new List<Reply>();
             if (Events == null) Events = new List<TownEvent>();
+            FixHeld();
             if (Weddings == null) Weddings = new List<Wedding>();
             if (Transfers == null) Transfers = new List<Transfer>();
             if (Debts == null) Debts = new List<Debt>();

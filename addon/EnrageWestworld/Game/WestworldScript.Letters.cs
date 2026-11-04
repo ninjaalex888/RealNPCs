@@ -233,6 +233,12 @@ namespace EnrageWestworld.InGame
                 _reader.Extra = canReply && canWrite ? "R: answer     L: write" : canReply ? "R: answer" : canWrite ? "L: write" : null;
                 return;
             }
+            MenuBoxDraw(m);
+        }
+
+        /// A small keyboard menu in the middle of the screen: the letters', the trial's, the gallows' (WestworldScript.Trials.cs).
+        private void MenuBoxDraw(LetterMenu m)
+        {
             float s = 0.32f, lh = Draw.LineHeight(s), x = 0.42f, fs = s * 0.85f, flh = Draw.LineHeight(fs);
             if (m.Lines == null || m.LinesSel != m.Sel)
             {

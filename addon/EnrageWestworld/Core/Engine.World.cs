@@ -1486,6 +1486,7 @@ namespace EnrageWestworld.Core
             if (!Store.NoteDeath(e))
                 return false;
             RememberDeathHeard(e);   // their friends and foes hear of it (Minds)
+            TrialsOnDeath(e);        // one of ours killed them: the law takes him, and the circuit judge comes (Engine.Trials.cs)
             return true;
         }
 

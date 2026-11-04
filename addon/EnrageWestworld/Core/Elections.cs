@@ -54,7 +54,7 @@ namespace EnrageWestworld.Core
             var ranked = new List<KeyValuePair<int, Resident>>();
             foreach (Resident r in regulars)
             {
-                if (r == null || r.Dead || r.Fled || r.Woman || r.Id == null || r.Name == null)
+                if (r == null || r.Dead || r.Fled || r.Held != null || r.Woman || r.Id == null || r.Name == null)
                     continue;
                 int age = r.BornYear > 0 ? nowYear - r.BornYear : 40;
                 if (age < 25 || age > 70)

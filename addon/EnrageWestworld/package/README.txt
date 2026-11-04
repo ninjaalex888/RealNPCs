@@ -481,6 +481,14 @@ NEW IN 0.7.11
   to step aside (a threat). The tally at four whether you're there or not; the result in the paper;
   the town takes sides after. There in the hours: a speech from the porch, hecklers, a party man
   with a ticket for you.
+- The circuit judge and gallows day (EventTrials): a resident who kills a man in a fight is held at
+  the jail; the judge sits three to seven days on, ten till two, outside the saloon. The verdict is
+  weighed from who saw it, the dead man's friends against the accused's, his temper in the dock,
+  your word if you give it (a known killer's word counts half) and a frightened town. Guilty means
+  a hanging two days on at the jail at eleven, the drop never shown; not guilty splits the town.
+  J (keyboard): testify when the judge asks, be sworn in as a special deputy before the hour, or
+  break him out of the jail at night with no lawman near. Shots stop a hanging. A hogtied man of
+  ours carried into a sheriff's office is brought in. Testing row "trial" to see it.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
@@ -1577,7 +1585,7 @@ in the file. The new ones:
             tied up off the road, two men by them; HogtiedMenDraw (true; set false to turn it off):
             their leader may draw on you unprovoked as you come near (never bounty hunters)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
-            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), EventTrials (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
             Bravery (85, 0-100): the brave stand their ground where the game would send them running;

@@ -55,6 +55,7 @@ namespace EnrageWestworld.Core
             new Entry("plea", "People", "A plea at gunpoint (then aim at someone)", "TestPleaKey", needs: "aim at someone within 30 m in the next minute; lowering your gun counts as real mercy"),
             new Entry("arrival", "People", "A word as you ride into town", "TestArrivalKey", needs: "in a town"),
             new Entry("letter", "People", "A letter (the waiting ones, else a test one)", "TestLetterKey"),
+            new Entry("trial", "People", "The circuit judge (a regular held; again: starts in 2 min)", "TestTrialKey", needs: "[World] TownEvents, EventTrials; a town with a living man among its regulars (the dead man is made up); the row again moves the trial, then the hanging, to two minutes from now"),
             new Entry("musing", "People", "A stranger says something strange", "TestMusingKey", needs: "someone 3-14 m off"),
             new Entry("glitch", "People", "A stranger glitches", "TestGlitchKey", needs: "someone 3-16 m off"),
             new Entry("disbelief", "People", "Disbelief, voiced, over someone's head", "TestDisbeliefKey", needs: "a named person within 15 m"),

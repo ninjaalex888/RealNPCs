@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public int Count;        // the kind's own number (votes for A, the crowd)
         [DataMember(EmitDefaultValue = false)] public int Count2;       // (votes for B)
         [DataMember(EmitDefaultValue = false)] public string Endorsed, WhiskeyFor, LeanedOn;   // the player's part in an election, by candidate id (Core/Elections.cs)
+        [DataMember(EmitDefaultValue = false)] public string Part;      // the player's part in a trial or a hanging: testify:guilty|innocent|none, deputy (Core/Trials.cs)
     }
 
     public static class TownEvents

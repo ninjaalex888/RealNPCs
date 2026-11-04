@@ -386,6 +386,8 @@ namespace EnrageWestworld.InGame
                 _readerRequested = true;
                 return true;
             }
+            if (EventKey(e.KeyCode))   // the trial's and the gallows' menus: J while a prompt shows, the menu's keys while one is up (WestworldScript.Trials.cs)
+                return true;
             // the Testing page's keys (the stalker, waking someone, the encounters, the talk and rough tests...): each asks
             // for its fire, which the tick does (WestworldScript.Testing.cs)
             if (TestKeyHit(e))
@@ -635,6 +637,7 @@ namespace EnrageWestworld.InGame
                 LetterMenuDraw();   // the letters' hint or menu over the paper (WestworldScript.Letters.cs)
                 return;
             }
+            EventMenuDraw();   // the trial's and the gallows' prompt or menu (WestworldScript.Trials.cs)
             Draw.Part = Draw.PartTalk;
             TalkMenuFrame(now);   // the interaction menu, ticker or no ticker (WestworldScript.Menu.cs)
             Draw.Part = Draw.PartOther;

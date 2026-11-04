@@ -18,7 +18,7 @@ namespace EnrageWestworld.Core
         /// right now (busy). The one met longest ago, so they take turns. Null if none.
         public static Resident Back(IEnumerable<Resident> all, string town, uint model, bool woman, Func<Resident, bool> busy)
         {
-            return all.Where(r => r.Regular && !r.Dead && !r.Fled && r.Town == town && r.Model == model && r.Woman == woman && !busy(r))
+            return all.Where(r => r.Regular && !r.Dead && !r.Fled && r.Held == null && r.Town == town && r.Model == model && r.Woman == woman && !busy(r))
                       .OrderBy(r => r.TouchedAt).FirstOrDefault();
         }
 
@@ -30,7 +30,7 @@ namespace EnrageWestworld.Core
             bestFit = -1;
             foreach (Resident r in all)
             {
-                if (!r.Regular || r.Dead || r.Fled || r.Town != town || r.Model != model || r.Woman != woman || busy(r))
+                if (!r.Regular || r.Dead || r.Fled || r.Held != null || r.Town != town || r.Model != model || r.Woman != woman || busy(r))
                     continue;
                 int f = fit(r);
                 if (best == null || f > bestFit || (f == bestFit && r.TouchedAt < best.TouchedAt))
