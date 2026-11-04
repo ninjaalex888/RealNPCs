@@ -618,6 +618,9 @@ NEW IN 0.7.11
   Every man beaten down is knocked out (down 20-40 s, then up and on his way) or killed
   (BrawlFistsFatal, 50, moved by who is in the fight; booked as "a beating"). One of enRAGE's
   people is only ever knocked out. Not yet seen in game: fists that kill or knock out.
+- The brave stand up ([World] BraveStand, on): a brave townsperson the game has cowering (a
+  killing seen, a gun drawn) is stood up, holds their ground on their feet for twenty seconds,
+  then walks off; the game's cower beside a body looked like freezing with fear.
 - A braver town ([World] Bravery, 85, on the Essentials page). Brave townsfolk stand their
   ground where the game would send them running (the odd coward still runs), fistfighters
   don't scatter the street, and the mod's own frights send fewer running. Whoever you aim at or

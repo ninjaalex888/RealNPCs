@@ -9,7 +9,16 @@
 // Never a child, a story model, a lawman, another script's person, one of enRAGE's people or one of the mod's own; and
 // whoever Arthur aims at or locks on to is put back that frame, so a hold-up or a robbery gets the game's own answer.
 // Nothing that blocks events (they still gather to watch a fight, report a killing, put their hands up). The fighters
-// themselves get CA 77 and 78 in the Director. Not yet seen in game.
+// themselves get CA 77 and 78 in the Director.
+// Seen in game (Lex, 2026-11-04, the Valentine saloon, a man beaten to death in a brawl): the brave didn't run, they cowered,
+// crouched with their hands over their heads, and stayed so while the body lay there: "several NPCs freeze up or get stuck
+// because they seem to be too scared". PCF 44 trades the game's flight for the game's cower, and the cower is the game's
+// fear made visible. So, with [World] BraveStand: a brave one the sweep finds cowering (_IS_PED_COWERING; never one sat or at
+// a spot, never one another feature has) is stood up by the mod: their events held, a stand-still for BraveStandMs (they
+// hold their ground on their feet), then a walk off with the events held BraveWalkMs more (the body would have dropped them
+// straight back into the cower), then the game's own again, and not stood up again for a minute (the odd one who cowers
+// again is the game's). Said plainly: a brave one stood up doesn't report the killing while their events are held; the
+// others near do.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +33,7 @@ namespace EnrageWestworld.InGame
         private const int BraveEveryMs = 2000;
         private const float BraveMetres = 60f;
         private const int PcfCowerInsteadOfFlee = 44;
+        private const int BraveStandMs = 20000, BraveWalkMs = 30000, BraveStandRestMs = 60000;   // [World] BraveStand: on their feet, then off with the events still held, then a minute's rest
 
         private sealed class BraveRec
         {
@@ -32,10 +42,12 @@ namespace EnrageWestworld.InGame
             public bool Set;       // ours set now
             public int Seen;       // the last sweep that saw them
             public int HeldUntil;  // aimed at: left as the game has them until then
+            public bool Standing;  // stood up out of the game's cower (BraveStand): their events are ours until the walk is done
+            public int StoodAt, WalkAt, StandRestUntil;   // when they were stood up; when the walk off began (0: not yet); no second stand-up before this
         }
 
         private readonly Dictionary<int, BraveRec> _brave = new Dictionary<int, BraveRec>();
-        private int _braveNextAt, _braveSweepAt, _braveRestored, _braveAimed, _braveReused, _braveLooked;
+        private int _braveNextAt, _braveSweepAt, _braveRestored, _braveAimed, _braveReused, _braveLooked, _braveStood, _braveWalked;
         private bool _braveDue, _braveFailed;
         private int _braveAimLast;
         private Action _aBraveAim;   // made once: the frame step allocates nothing
@@ -100,6 +112,8 @@ namespace EnrageWestworld.InGame
                         PED.SET_PED_CONFIG_FLAG(h, PcfCowerInsteadOfFlee, true);
                         r.Set = true;
                     }
+                    if (_cfg.BraveStand)
+                        BraveStandStep(p, h, r);   // the game's cower on a brave one: stood up, walked off, let go (Lex, 2026-11-04: "freeze up or get stuck")
                     return;
                 }
                 if (known)
@@ -189,12 +203,59 @@ namespace EnrageWestworld.InGame
 
         private void BraveRestore(int h, BraveRec r)
         {
+            if (r.Standing)
+                BraveLetGo(h, r, "no longer ours");   // the events back to the game first, whatever else is put back
             if (!r.Set)
                 return;
             if (ENTITY.DOES_ENTITY_EXIST(h))
                 PED.SET_PED_CONFIG_FLAG(h, PcfCowerInsteadOfFlee, r.Orig);
             r.Set = false;
             _braveRestored++;
+        }
+
+        /// [World] BraveStand, in the 2 s sweep for a brave one: cowering (the game's fear on their feet or their knees) and free, they're
+        /// stood up with their events held; BraveStandMs on, a walk off with the events held BraveWalkMs more; then the game's own again
+        /// and a minute before the next stand-up. Never one sat or at a spot (their cower-in-place is a flinch, and a clear would pull
+        /// them out of the scenario the wrong way), never one another feature has.
+        private void BraveStandStep(Ped p, int h, BraveRec r)
+        {
+            int now = _braveSweepAt;
+            if (!r.Standing)
+            {
+                if (r.StandRestUntil - now > 0 || !PED._IS_PED_COWERING(h) || PED.IS_PED_USING_ANY_SCENARIO(h) || NotFree(h) || !CanDirect(p))
+                    return;
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
+                TASK.CLEAR_PED_TASKS(h, true, false);
+                TASK.TASK_STAND_STILL(h, BraveStandMs + 2000);
+                r.Standing = true;
+                r.StoodAt = now;
+                r.WalkAt = 0;
+                _braveStood++;
+                Log.Write("BRAVERY " + OtherFirst(p) + " was cowering: stood up (events held " + BraveStandMs / 1000 + " s, then a walk off)");
+                return;
+            }
+            if (r.WalkAt == 0)
+            {
+                if (now - r.StoodAt < BraveStandMs)
+                    return;
+                TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // on their way, the events still held so the body doesn't drop them back into the cower
+                r.WalkAt = now;
+                _braveWalked++;
+                return;
+            }
+            if (now - r.WalkAt >= BraveWalkMs)
+                BraveLetGo(h, r, "walked off");
+        }
+
+        /// The events back to the game, the stand-up over; a minute before another.
+        private void BraveLetGo(int h, BraveRec r, string why)
+        {
+            r.Standing = false;
+            r.WalkAt = 0;
+            r.StandRestUntil = Game.GameTime + BraveStandRestMs;
+            if (ENTITY.DOES_ENTITY_EXIST(h))
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            Log.Detail("BRAVERY stood up and let go (" + why + ")");
         }
 
         /// Everyone put back as the game had them (Bravery 0, a failure, the script stopping).
@@ -220,7 +281,7 @@ namespace EnrageWestworld.InGame
             if (_cfg.Bravery <= 0)
                 return "off ([World] Bravery 0: as the game has it)";
             int set = _brave.Values.Count(x => x.Set);
-            return set + " braver near you now (Bravery " + _cfg.Bravery + "; " + _braveLooked + " made braver this session, " + _braveRestored + " put back, " + _braveAimed + " of them for your aim, " + _braveReused + " handles the game gave someone else)";
+            return set + " braver near you now (Bravery " + _cfg.Bravery + "; stood up out of the cower " + _braveStood + ", walked off " + _braveWalked + (_cfg.BraveStand ? "" : " (BraveStand off)") + "; " + _braveLooked + " made braver this session, " + _braveRestored + " put back, " + _braveAimed + " of them for your aim, " + _braveReused + " handles the game gave someone else)";
         }
     }
 }
