@@ -82,6 +82,7 @@ namespace EnrageWestworld.InGame
 
         internal static readonly uint SmokeHash = Natives.Hash("WORLD_HUMAN_SMOKE");   // a smoke in place (the scenes' "smoke" step, the mind's showoff)
         internal static readonly uint Crouch = Natives.Hash("WORLD_HUMAN_CROUCH_INSPECT");   // the crouch over something on the ground (also the night visitor's)
+        internal static readonly uint GraveMourning = Natives.Hash("WORLD_HUMAN_GRAVE_MOURNING");   // standing over a grave (the mourn act; the lawman's mourner in WestworldScript.Bodies.cs)
         private Live _live;
         // a second full scene at once ([Scenes] MainScenesAtOnce 2; NIGHT4 item 3), at least SecondApart from the first's people and
         // never the same people; only what SecondOk allows (words, the walk-over, someone walking up), so the one-owner machinery
@@ -1321,7 +1322,7 @@ namespace EnrageWestworld.InGame
                     }
                     return 0;
                 case "mourn":
-                    TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_GRAVE_MOURNING"), 20000, true, 0u, -1f, false);
+                    TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, GraveMourning, 20000, true, 0u, -1f, false);
                     return 1200;
                 case "shoot":
                     {

@@ -58,6 +58,8 @@ namespace EnrageWestworld.InGame
             public Vector3 LiftedAt;       // where he stood as the carry settled
             public Vector3 BodyStart;      // where it lay (its Z the street's, for the settle-time spots: the review)
             public bool GaveUp;            // set down where he stood (BodyGiveUp): a failure, not a clearing
+            public int Mourner, MournerOrderAt;   // someone who knew the dead, walking behind (item 18; Core/Undertaker.cs); the last go-to order
+            public string MournerName, MournerId, DeadFirst;
         }
 
         private sealed class BodySpot
@@ -418,9 +420,57 @@ namespace EnrageWestworld.InGame
                 }
             }
             spots = spots.Where(s => s.How.EndsWith(", by a wall")).Concat(spots.Where(s => !s.How.EndsWith(", by a wall"))).Take(4).ToList();
-            why = spots.Count + " spot" + (spots.Count == 1 ? "" : "s") + " " + (int)lo + "-" + (int)hi + " m from you (the body lies " + (int)lies + " m off; aiming at " + (int)r + " m), " +
+            // the undertaker's or the jail first when one is within reach (item 18); the short spots stay behind it as the fallbacks
+            BodySpot dest = _cfg.BodyToUndertaker ? BodyDestination(bodyAt) : null;
+            if (dest != null)
+                spots.Insert(0, dest);
+            why = (dest != null ? "carried to " + dest.How + " " + (int)dest.At.DistanceTo(bodyAt) + " m off, then " : "") +
+                  (spots.Count - (dest != null ? 1 : 0)) + " spot" + (spots.Count - (dest != null ? 1 : 0) == 1 ? "" : "s") + " " + (int)lo + "-" + (int)hi + " m from you (the body lies " + (int)lies + " m off; aiming at " + (int)r + " m), " +
                   walled + " by a wall; the first " + (int)FlatFrom(spots[0].At, player) + " m from you, " + (int)spots[0].At.DistanceTo(bodyAt) + " m from the body, by " + spots[0].How;
             return true;
+        }
+
+        /// Where the dead go when a place is known within reach (Core/Undertaker.cs; item 18): the undertaker's door (his post's
+        /// body at its counter, the spot two metres toward the body, on the ground), else the sheriff's door you last came out
+        /// of in this town (the trials' _jailDoor); null for neither.
+        private BodySpot BodyDestination(Vector3 bodyAt)
+        {
+            float und = -1f, jail = -1f;
+            Vector3 undAt = bodyAt, jailAt;
+            foreach (Ped p in Peds.All())
+            {
+                if (p == null || p.IsDead || !p.Exists())
+                    continue;
+                float d = p.Position.DistanceTo(bodyAt);
+                if (d > Undertaker.ReachMetres)
+                    continue;
+                PostKind pk = PostKindOf(p);
+                if (pk == null || pk.Kind != "undertaker")
+                    continue;
+                if (und < 0f || d < und)
+                {
+                    und = d;
+                    undAt = p.Position;
+                }
+            }
+            if (_placeTown != null && _jailDoor.TryGetValue(_placeTown, out jailAt))
+                jail = jailAt.DistanceTo(bodyAt);
+            else
+                jailAt = bodyAt;
+            string choice = Undertaker.Choose(und, jail);
+            if (choice == null)
+                return null;
+            Vector3 at = choice == "undertaker" ? undAt : jailAt;
+            if (choice == "undertaker")
+            {
+                Vector3 toward = new Vector3(bodyAt.X - at.X, bodyAt.Y - at.Y, 0f);
+                if (toward.Length() > 0.5f)
+                    at += toward.Normalized * 2f;   // laid at his door, not on his boots
+            }
+            Vector3 ground;
+            if (BodyGround(at, at.Z, out ground) && Math.Abs(ground.Z - at.Z) < 3f)
+                at = ground;
+            return new BodySpot { At = at, How = Undertaker.Where(choice) };
         }
 
         private static float FlatFrom(Vector3 a, Vector3 b)
@@ -449,6 +499,7 @@ namespace EnrageWestworld.InGame
             }
             bool his = PED._GET_CARRIER_AS_PED(c.Body) == c.Law;
             c.Gone = his || c.Stage <= BcLift ? 0 : c.Gone + 1;   // two steps in a row (half a second) before it counts as dropped
+            BodyMournerStep(c, lawAt, now);
             switch (c.Stage)
             {
                 case BcWalk:   // walking over by the nav mesh (the undertaker's state 1: its walk stops 15 m short)
@@ -501,6 +552,7 @@ namespace EnrageWestworld.InGame
                             c.LiftedAt = lawAt;
                             Log.Write("LAW clears: the lawman lifts " + c.Who + " (" + CarryWords(c.Law, c.Body) + ", settled after " + (now - c.StageAt) / 1000 +
                                       " s) and carries it " + (int)lawAt.DistanceTo(c.Goal) + " m, to a spot " + (int)FlatFrom(c.Goal, you) + " m from you (" + goalWhy + ")");
+                            BodyMournerStart(c, c.BodyStart, now);   // someone who knew the dead follows (item 18)
                             TASK.CLEAR_PED_TASKS(c.Law, true, false);   // the undertaker's state 3 to 4, then its walk helper (func_43 cases 0-2)
                             TASK.CLEAR_PED_SECONDARY_TASK(c.Law);
                             WEAPON.SET_CURRENT_PED_WEAPON(c.Law, Unarmed, false, 0, false, false);
@@ -771,6 +823,7 @@ namespace EnrageWestworld.InGame
         {
             _bodyClear = null;
             _bodyNextStart = Game.GameTime + 60000;
+            BodyMournerEnd(c, done);
             if (ENTITY.DOES_ENTITY_EXIST(c.Law) && !ENTITY.IS_ENTITY_DEAD(c.Law))
             {
                 if (PED.IS_PED_CARRYING_SOMETHING(c.Law))
@@ -791,9 +844,94 @@ namespace EnrageWestworld.InGame
             Log.Write("LAW clears: " + c.Who + " - " + why + " (" + (Game.GameTime - c.Since) / 1000 + " s)");
         }
 
+        private int _bodyMourners;
+
+        /// As the carry settles: the nearest person within 25 m who knew the dead (a warm tie: Trials.FriendsOf), free to be sent,
+        /// walks behind the lawman, a thought over their head (Core/Undertaker.cs; item 18).
+        private void BodyMournerStart(BodyClear c, Vector3 bodyAt, int now)
+        {
+            if (!_cfg.BodyToUndertaker || c.Mourner != 0 || _store == null)
+                return;
+            string deadId, deadName;
+            if (!LastingId(new Ped(c.Body), out deadId, out deadName) || deadId == null)
+                return;
+            List<string> friends = Trials.FriendsOf(deadId, _store.Ties);
+            if (friends == null || friends.Count == 0)
+                return;
+            Ped me = Game.Player.Character;
+            Ped best = null;
+            float bestD = Undertaker.MournerMetres;
+            foreach (Ped p in Peds.All())
+            {
+                if (p == null || !p.Exists() || p.IsDead || p.Handle == c.Law || p.Handle == c.Body || p.Handle == me.Handle)
+                    continue;
+                float d = p.Position.DistanceTo(bodyAt);
+                if (d >= bestD || !PED.IS_PED_HUMAN(p.Handle) || NotFree(p.Handle) || MayDirectWhyNot(p) != null)
+                    continue;
+                string id, name;
+                if (!LastingId(p, out id, out name) || id == null || !friends.Contains(id))
+                    continue;
+                best = p;
+                bestD = d;
+                c.MournerName = name ?? "someone";
+                c.MournerId = id;
+            }
+            if (best == null)
+                return;
+            c.Mourner = best.Handle;
+            c.MournerOrderAt = now;
+            c.DeadFirst = deadName != null ? Person.FirstOf(deadName) : null;
+            TASK.CLEAR_PED_TASKS(best.Handle, true, false);
+            TASK.TASK_GO_TO_ENTITY(best.Handle, c.Law, 120000, 2.5f, 1.4f, 0f, 0);
+            string thought = Undertaker.Following(c.DeadFirst, !PED.IS_PED_MALE(c.Body), c.MournerId + "|" + now / 60000);
+            _ticker.Push(c.MournerName + ", thinking", thought, "near", best.Handle);
+            _bodyMourners++;
+            Log.Write("LAW clears: " + c.MournerName + ", who knew " + c.Who + ", follows the lawman (" + (int)bestD + " m off); thinks: " + thought);
+        }
+
+        /// Every three seconds while the carry goes: the mourner sent after the lawman again when they've fallen more than 4 m behind.
+        private void BodyMournerStep(BodyClear c, Vector3 lawAt, int now)
+        {
+            if (c.Mourner == 0 || now - c.MournerOrderAt < 3000)
+                return;
+            c.MournerOrderAt = now;
+            if (!ENTITY.DOES_ENTITY_EXIST(c.Mourner) || ENTITY.IS_ENTITY_DEAD(c.Mourner) || PED.IS_PED_IN_COMBAT(c.Mourner, 0))
+            {
+                c.Mourner = 0;
+                return;
+            }
+            if (ENTITY.GET_ENTITY_COORDS(c.Mourner, true, true).DistanceTo(lawAt) > 4f)
+                TASK.TASK_GO_TO_ENTITY(c.Mourner, c.Law, 120000, 2.5f, 1.4f, 0f, 0);
+        }
+
+        /// The carry over: the mourner turns to the body, and where it was set down stands over it a while (the game's own graveside
+        /// mourning), a thought with it; then the game's again.
+        private void BodyMournerEnd(BodyClear c, bool done)
+        {
+            if (c.Mourner == 0)
+                return;
+            int h = c.Mourner;
+            c.Mourner = 0;
+            if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                return;
+            TASK.CLEAR_PED_TASKS(h, true, false);
+            if (!done)
+            {
+                WanderLater(h, Game.GameTime + 2000);
+                return;
+            }
+            string where = c.Spots != null && c.SpotIx >= 0 && c.SpotIx < c.Spots.Count && (c.Spots[c.SpotIx].How.StartsWith("the undertaker", StringComparison.Ordinal) || c.Spots[c.SpotIx].How.StartsWith("the jail", StringComparison.Ordinal)) ? c.Spots[c.SpotIx].How : null;
+            TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Director.GraveMourning, 15000, true, 0u, -1f, false);
+            string thought = Undertaker.AtRest(c.DeadFirst, where, c.MournerId + "|rest");
+            _ticker.Push(c.MournerName + ", thinking", thought, "near", h);
+            Log.Write("LAW clears: " + c.MournerName + " stands over " + c.Who + " at " + (where ?? "the spot") + "; thinks: " + thought);
+            WanderLater(h, Game.GameTime + 16000);
+        }
+
         private string BodiesStatus()
         {
-            return (_cfg.LawClearsBodies ? "on" : "off ([World] LawClearsBodies)") + "; this session " + _bodyClears + " cleared, " + _bodyFails + " not" +
+            return (_cfg.LawClearsBodies ? "on" : "off ([World] LawClearsBodies)") + "; to the undertaker's or the jail: " + (_cfg.BodyToUndertaker ? "on" : "off") + " (" + _bodyMourners + " followed this session)" +
+                   (_placeTown != null && _jailDoor.ContainsKey(_placeTown) ? "; the jail door here known" : "") + "; this session " + _bodyClears + " cleared, " + _bodyFails + " not" +
                    (_bodyClear != null ? "; one under way (" + _bodyClear.Who + ", stage " + _bodyClear.Stage + ")" : "") + (_bodyLast != null ? "; last: " + _bodyLast : "");
         }
     }

@@ -195,6 +195,10 @@ NEW IN 0.7.19
   you for his marker ($5) as the debtor does; the Devout and the churchgoing don't drink away
   bad news on a Sunday (grief excepted), and a Devout in the room judges a Sunday drinker in a
   thought; a friend of a man drinking away bad news stands the house a round, him first.
+- The dead to the undertaker's or the jail ([World] BodyToUndertaker, on): when the lawman lifts a
+  body and the undertaker's counter or the sheriff's door you last came out of is within 80 m, that
+  is where he carries it; someone who knew the dead and is near walks behind him and stands over
+  them where they're set down.
 - The barkeep steps in ([Scenes] BarkeepSteps, on): in a saloon brawl or rough of two the barkeep
   comes round the bar as they square up; most heed him and take it outside with no blows, the hot
   and the drunk shove him off and the fight goes on. The drunk takes it outside ([Scenes]

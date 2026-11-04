@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 233;
+        public const int CurrentVersion = 234;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -38,6 +38,7 @@ namespace EnrageWestworld.Core
         public string TalkKey = "Q";   // Talk while locked on to someone you know: Q is the game's own lock-on target-info control (rebindable in its Controls menu, its icon follows); any other key is read directly (settings version 164)
         public bool InteractionMenu = true;   // Talk (Q; a pad's RB) in the lock-on menu opens a short list: the news, your name, their worry asked after, a drink, money, a debt to settle, an apology, a warning (settings version 148; NIGHT3 item 4)
         public bool LawClearsBodies = true;   // a lawman carries a body off the town street (roadmap 33; settings version 150; NIGHT3 item 6)
+        public bool BodyToUndertaker = true;  // ...and to the undertaker's door or the jail door when one is within 80 m, with someone who knew the dead walking behind and standing over them after (Core/Undertaker.cs; SIXDAY item 18; settings version 234)
         public bool PersonalSpace = true;   // someone he stands right up against for a couple of seconds minds it: steps back, asks for room, or stands their ground (NIGHT3; settings version 154; plays through SightReactions)
         public bool ArthurSpeaks = true;   // Arthur says a recorded line of his own when someone comes at him or he catches the pickpocket (roadmap 34; settings version 151; NIGHT3 item 7)
         public bool NpcFlirting = true;
@@ -833,6 +834,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 234)
+                    log?.Invoke("Settings: new in this version: [World] BodyToUndertaker (on): the lawman carries the dead to the undertaker's or the jail when one is near, and someone who knew them follows.");
                 if (s.SettingsVersion < 233)
                     log?.Invoke("Settings: new in this version: [Scenes] BarkeepSteps (on): the barkeep steps in on a saloon fight as they square up; DrunkOutside (on): a drunk's challenge taken up is taken outside.");
                 if (s.SettingsVersion < 232)
@@ -1501,6 +1504,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("InteractionMenu = " + B(InteractionMenu) + "   ; Talk (TalkKey, Q; a pad's RB) in the lock-on menu of someone RealNPCs knows: a short list to ask the news, tell them your name, ask after a worry they've told you of, stand a drink in a saloon, give money, pay toward a trouble they've told you of (their debt, the doctor for a fever at home, a proper dentist, the fare they're saving), say you're sorry for a wrong of yours lately, or warn them; they answer in their own voice and by how they feel about you, and the mind remembers it (gratitude, fear, how they greet you after)");
             b.AppendLine("TalkKey = " + TalkKey + "   ; with InteractionMenu: locked on to someone you know, this key opens Talk. Q (the default) is the game's own lock-on \"target info\" control, with its own icon (a pad's RB): to use another key (e.g. T), rebind that control in the game's Settings > Controls and the icon follows. Any other key here (e.g. T) is read by RealNPCs itself while the Talk prompt is up: the prompt then reads \"Talk (T)\" beside the control's own icon, which does nothing for it, and on the keyboard Talk stands aside next to a station or telegraph clerk (T is enRAGE's telegraph key there). None: no keyboard key, a pad's RB only");
             b.AppendLine("LawClearsBodies = " + B(LawClearsBodies) + "   ; a body left lying in a town street for a while: the nearest lawman on foot carries it off the street, sets it down out of the way and goes back to his rounds (never while there's a fight or a pursuit, never the story's own)");
+            b.AppendLine("BodyToUndertaker = " + B(BodyToUndertaker) + "   ; with LawClearsBodies: the body goes to the undertaker's door (his counter within 80 m) or the sheriff's door you last came out of in that town, the short spots off the street as the fallback; someone who knew the dead and is within 25 m as it's lifted walks behind the lawman and stands over them where they're set down; false: off the street as before, nobody following");
             b.AppendLine("PersonalSpace = " + B(PersonalSpace) + "   ; stand right up against someone (under a metre, closer in a saloon) for a couple of seconds and they mind it as their nature says: a step back and a word, a look, or, from the hot-tempered, a word to back off; never the law, anyone sitting or at the bar, or anyone busy (needs [Scenes] SightReactions)");
             b.AppendLine("SpaceMetres = " + F(SpaceMetres) + "   ; with PersonalSpace on: standing nearer than this to someone, in metres, is too close (0.5-2)");
             b.AppendLine("SpaceSaloonMetres = " + F(SpaceSaloonMetres) + "   ; the same at a saloon's bar, shoulder to shoulder (0.4-2)");
