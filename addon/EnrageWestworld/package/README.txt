@@ -151,6 +151,24 @@ NEW IN 0.7.19
   revolver. They shout as they come, go for your attackers, and have a word with you after;
   they remember standing with you, and enRAGE's townsfolk think better of you for it. Out of
   the towns a friend from a town's ledger may happen by. Not yet seen in game.
+- Thoughts follow the moment they're in: someone fighting you (fists or guns), fighting
+  someone else, running for their life, knocked down, hurt, or looking down your barrel
+  thinks of that before anything, awake or not, with or without the AI model (the line is
+  written and turns over every few seconds); so does anyone with shots, a dead body or a
+  fight close by. The quieter moments join their thoughts too: the saddle, a wagon, a drink,
+  a meal, a smoke, their work, a seat, walking in the dark, drunk, a gun in hand, how you look
+  beside them. About 430 new lines by temper. The AI model is told what's happening to them.
+  Only the waking doubt the world: someone still asleep never wonders whether any of it is
+  real. Not yet seen in game.
+- A green dot on each ally on the map while they're with you ([Encounters] AlliesDot, on;
+  AlliesDotColour: a blip modifier's name, BLIP_MODIFIER_DEBUG_GREEN as built). Greeting
+  someone makes them fonder of you ([Encounters] GreetLiking, 12): enRAGE's fondness rises
+  on the first greeting of someone in a day, less on later ones that day; nothing from the
+  afraid or the angry. Not yet seen in game.
+- Fixed: the allies Testing row said "the model isn't loaded" (the man's body, not the AI
+  model) and made nobody; it waits for the body now. Allies keep fists against fists; nobody
+  new comes while you're wanted. The VRAM gauge keeps trying after failed readings instead of
+  giving up, and takes the card's size from the registry when DXGI reads it smaller.
 - The VRAM gauge ([Display] VramGauge, model): "VRAM 11.3 / 15.6 GB" at the top left while the
   AI model is on; amber over 85%, red over 95%.
 - The voices are heard within 14 m (VoiceMetres, from 15).

@@ -4,7 +4,26 @@ Oct 26, 2026 · lexthestoic
 
 ## Built 2026-11-03 (unreleased): allies who come to your aid (a player's request, 2026-11-03)
 
-Built as `[Encounters] AlliesHelp` (Core/Allies.cs, Game/WestworldScript.Allies.cs; see the CHANGELOG): in-town allies against anyone in combat with you (never the law), a revolver given against guns, a friend from the ledger happening by on the road (on foot, 30 to 45 m off; riding in waits on a horse spawn), the word after, the "defend" memory, enRAGE's fondness up. Still to do from the sketch below: an ally who dies grieved by their town with a cost to you; a friend arriving on horseback. The sketch, as it was:
+Built as `[Encounters] AlliesHelp` (Core/Allies.cs, Game/WestworldScript.Allies.cs; see the CHANGELOG): in-town allies against anyone in combat with you (never the law), a revolver given against guns, a friend from the ledger happening by on the road (on foot, 30 to 45 m off; riding in waits on a horse spawn), the word after, the "defend" memory, enRAGE's fondness up. Later the same day: a green dot on each ally (`AlliesDot`), the body wait for the test's man and the road friend, fists against fists, nobody new while wanted. Still to do from the sketch below: an ally who dies grieved by their town with a cost to you; a friend arriving on horseback. The sketch, as it was:
+
+## Built 2026-11-03 (unreleased): the moment they're in, and greeting fondness (Lex, 2026-11-03)
+
+Inner thoughts follow the moment (`Core/Moments.cs`, `Game/WestworldScript.Moments.cs`; see the CHANGELOG): a fight, a flight, a knock-down, a hurt, a gun on them, shots or a body or a fight near come first for everyone, awake or not, with or without the model; the quiet moments (the saddle, a drink, their work, how you look beside them) join the mind's candidates; the model is told; only the waking doubt the world. Greeting someone raises enRAGE's fondness (`[Encounters] GreetLiking` 12 on the first greeting in a day, 4 on repeats). Still to do: more moments (a horse spooked, a hat lost, a purse lifted off them, rain on them in the saddle, a storm), women's own lines where a fight's are a man's, "how you look" pools of their own rather than the sight reactions', a moment for the people at a scene of ours (the brawl's ring, the execution's onlookers), and the radius cut Lex allowed if the ticker gets crowded.
+
+## Next: more NPC interactions that raise fondness (Lex, 2026-11-03)
+
+What raises enRAGE's fondness now: greeting (`GreetLiking`), the Talk menu's kind answers (comfort +4, an apology +6, charity, a drink), a hand up after a fall, standing with someone in a fight (+10 to the ally's own fondness of you), the late thanks. Candidates, cheapest first; each a `RecordEvent` with a `LikeDelta` and a memory, so the thoughts and the talks say it, the bar shows it at once, and the allies' warmth reads it (`Allies.Warmth` takes enRAGE's fondness and the kindness log):
+
+- **Buying a round** at the bar for the people near you (the money menu, $1-3): the room thinks better of you, the drunk fondest.
+- **A gift**: tobacco, a bottle, a tin from your satchel, offered through Talk; the poor and the hungry fondest; refused by the proud when you've wronged them.
+- **Tipping the performer** (the piano man, the singer) and the shoeshine: small, but they remember the face.
+- **Walking someone home** at night when they're afraid (a drunk, a woman alone after a brawl): an escort over 60-100 m, fondness and a tie.
+- **Returning a lost thing**: a hat blown off, a dropped purse, a horse that ran; the owner's fondness up by a lot, and the town's talk.
+- **Defending someone from a bully** (the kindness scene has the stepping in): count it for the one defended and the onlookers.
+- **Paying a debt for someone** who's being pressed (the debt scenes: hand the creditor the money); the debtor fondest of anyone, for days.
+- **Visiting the sick or the grieving** (the doctor's patient, the funeral): a word at the bedside or the grave through Talk; the family fonder.
+- **Sharing a campfire** on the road: a traveller who shares your fire by night (the campfire encounter) remembers it in town.
+- **Carrying a message** between two people who know each other (a Talk errand: "tell X I'm sorry"): both fonder; the first errand an NPC gives you.
 
 A player wrote in after trying RealNPCs with enRAGE: the people are much more responsive now, and the one thing missing from both mods is an **allied** side to all the hostility. Spend time earning a town's liking, then be able to rely on it. Attacked in town by bandits, or by someone with a grudge, in view of people who like you, those people come to your aid; out on a road, fighting gang members, a couple of strangers you know and get along with happen to ride by and save the day. "It would feel so rewarding to have a town or location full of people that have your back when you need them."
 
