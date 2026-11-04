@@ -42,6 +42,7 @@ namespace EnrageWestworld.Core
         public string Head;      // the paper's headline
         public string Body;      // the paper's sentence (read aloud, on the ticker, the town paper's item)
         public string[] Lines;   // what one person thinks or says of it, in their own words (each 110 characters at most)
+        public int Since;        // the everyday talk only: known from this month's first (and all of the next year); 0 all year
 
         /// The day it was known from, as a date; null for the everyday talk.
         public DateTime? From
@@ -79,8 +80,27 @@ namespace EnrageWestworld.Core
         /// Every event, the data files' lists joined once.
         public static AlmanacEvent[] All
         {
-            get { return _all ?? (_all = Events1899A.Concat(Events1899B).Concat(Everyday1899).Concat(Events1907).Concat(Everyday1907).ToArray()); }
+            get
+            {
+                if (_all == null)
+                {
+                    var all = Events1899A.Concat(Events1899B).Concat(Everyday1899).Concat(Events1907).Concat(Everyday1907).ToArray();
+                    int since;
+                    foreach (AlmanacEvent e in all)
+                        if (e.Month < 1 && SinceMonth.TryGetValue(e.Key, out since))
+                            e.Since = since;
+                    _all = all;
+                }
+                return _all;
+            }
         }
+
+        /// The everyday talk that only makes sense from a month on: a song or a book not out in January, the islands' fighting
+        /// before the war began in February. Known from that month's first, and all the next year.
+        public static readonly Dictionary<string, int> SinceMonth = new Dictionary<string, int>
+        {
+            { "thirtyeight", 4 }, { "leisureclass", 3 }, { "hellomababy", 3 }, { "schooldays", 7 }
+        };
 
         private static AlmanacEvent E(string key, int year, int month, int day, string where, int big, string kind, string head, string body, params string[] lines)
         {
@@ -139,7 +159,8 @@ namespace EnrageWestworld.Core
                     continue;
                 if (e.Month < 1)
                 {
-                    list.Add(e);
+                    if (e.Since <= 1 || today == null || today.Value.Year > e.Year || today.Value.Month >= e.Since)
+                        list.Add(e);
                     continue;
                 }
                 int age = Age(e, today);
