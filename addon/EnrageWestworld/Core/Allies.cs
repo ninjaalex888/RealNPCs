@@ -32,7 +32,7 @@ namespace EnrageWestworld.Core
                 return 0;
             int w = 0;
             if (likingFrom > 0 && like >= likingFrom)
-                w = like >= likingFrom + 30 ? 3 : 2;
+                w = like >= Math.Min(100, likingFrom + 30) ? 3 : 2;   // the bar full: someone who owes you (the line is 90 since settings 202)
             if (mended)
                 w = Math.Max(w, 3);
             else if (kindLately)

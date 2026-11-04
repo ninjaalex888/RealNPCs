@@ -147,7 +147,7 @@ NEW IN 0.7.19
   Cobb, Ellis Island, the old West gone, the suffrage women, Geronimo's book), each from the
   month it was in the papers. In the talks above, and when you ask someone the news.
 - Allies who come to your aid ([Encounters] AlliesHelp, on; AlliesMetres 40, AlliesMost 3,
-  AlliesLiking 40, AlliesRoadChance 30): attacked (not by the law) within sight of people who
+  AlliesLiking 90, AlliesRoadChance 30): attacked (not by the law) within sight of people who
   think well of you (enRAGE's fondness, a kindness of yours they remember, a trouble you
   mended, talks and your name known), some of them come: the brave and the hot first, the loyal
   for a friend, cowards never, a woman only against fists; against guns they're given a
@@ -166,8 +166,8 @@ NEW IN 0.7.19
 - A green dot on each ally on the map while they're with you ([Encounters] AlliesDot, on;
   AlliesDotColour: a blip modifier's name, BLIP_MODIFIER_DEBUG_GREEN as built). Greeting
   someone makes them fonder of you ([Encounters] GreetLiking, 25): enRAGE's fondness rises
-  by a quarter of the bar on every greeting of someone, so two hellos make a friend who'll
-  stand with you (the same day or not) and four fill the bar; nothing from the afraid or the
+  by a quarter of the bar on every greeting of someone, so four hellos fill the bar and make
+  a friend who'll stand with you (from 90 on the bar); nothing from the afraid or the
   angry. Someone you save is yours for good: the man you pull a bully off, the
   one whose beater you put down in a brawl, the captive you save from the rope, the hogtied
   you cut loose who thank you: fondness to the top, a friend who owes you for a month of game

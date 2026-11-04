@@ -2,8 +2,8 @@
 // enjoy when the player greets them"; then "the friend/ally status from 4 days to upon 2nd greet, even if it's the same
 // day", then, two hellos having filled only half the bar, "each greet gives 25% fondness boost for now until we add in more
 // NPC interactions"). [Encounters] GreetLiking (25) of enRAGE's fondness (0-100: the bar under people with FeelingBars, what
-// AlliesLiking reads, so the people you're civil to are the ones who come to your aid) on every greeting of someone (two
-// hellos pass AlliesLiking 40: a friend who'll stand with you; four fill the bar), nothing from someone afraid of you or
+// AlliesLiking reads, so the people you're civil to are the ones who come to your aid) on every greeting of someone (four
+// hellos fill the bar and pass AlliesLiking 90: a friend who'll stand with you), nothing from someone afraid of you or
 // angry with you (fear or anger at 40 or more: a greeting from the man they fear is no comfort). More ways to grow the
 // fondness are the roadmap's next item. enRAGE's own liking for a greeting stays as it is; this is on top,
 // through its own method (LikeMore: an audited write). Noted at the greeting itself (PollGreets in WestworldScript.cs:
