@@ -107,7 +107,7 @@ namespace EnrageWestworld.InGame
                     r = Regulars.Back(_store.Residents, town, model, woman, x => _resBind.Values.Any(v => v.R == x) || RegularGone(x, now));
                 bool fresh = r == null;
                 if (!fresh && routines && fit < Routines.Least &&
-                    Regulars.NewOutfit(_store.Residents, town, model, dress ? OutfitsOf(h, model) : Regulars.PerModel, _cfg.RegularsPerTown, h + "|" + gameNow) >= 0)
+                    Regulars.NewOutfit(_store.Residents, town, model, dress ? OutfitsOf(h, model) : Regulars.PerModel, RegularsCap(town), h + "|" + gameNow) >= 0)
                 {
                     fresh = true;   // nobody free whose routine puts them here, and the town has room: a new regular made to fit the spot
                     r = null;
@@ -115,7 +115,7 @@ namespace EnrageWestworld.InGame
                 if (fresh)
                 {
                     int outfits = dress ? OutfitsOf(h, model) : Regulars.PerModel;
-                    int outfit = Regulars.NewOutfit(_store.Residents, town, model, outfits, _cfg.RegularsPerTown, h + "|" + gameNow);
+                    int outfit = Regulars.NewOutfit(_store.Residents, town, model, outfits, RegularsCap(town), h + "|" + gameNow);
                     if (outfit < 0)
                         continue;   // the town is full, or this build has its share: a passer-by, as before
                     r = _engine.MeetResident(model, woman, town, ResidentTrade(p, woman), h + "|" + Game.GameTime, gameNow);

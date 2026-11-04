@@ -548,6 +548,15 @@ namespace EnrageWestworld.Core
                     names.Add(day.RoutineOdd ? "routine-odd" : "routine");
                 }
             }
+            if (day.TownMood != null)
+            {
+                string[] townMood = TownLedgers.Pool(day.TownMood);   // the town's month (Core/TownLedgers.cs; SIXDAY 11c): mourning, barred doors, or prices and new faces
+                if (townMood != null)
+                {
+                    options.Add(() => Pick(townMood, p, seed + "tm", told));
+                    names.Add("townmood");
+                }
+            }
             for (int i = 0; i < options.Count; i++)
                 parts.Add(new KeyValuePair<string, Func<string>>(names[i], options[i]));
             return parts;

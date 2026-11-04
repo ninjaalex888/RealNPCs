@@ -28,6 +28,7 @@ namespace EnrageWestworld.Core
             public long Now = -1;                       // the game minute (for how long ago today's ties were); -1 unknown
             public string Routine;                      // a regular's routine here, now (Routines.Key: "saloon|evening"...), for a thought of it; null for anyone else
             public bool RoutineOdd;                     // ...and they're somewhere their routine wouldn't put them (Routines.Odd)
+            public string TownMood;                     // the town's month (TownLedgers): grieving, fearful, prospering; null steady or unknown
 
             public bool IsDead(string id)
             {

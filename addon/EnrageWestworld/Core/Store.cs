@@ -50,6 +50,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<LaterAct> Later = new List<LaterAct>();   // diary entries and word of mouth waiting their time (see Knowing.cs)
         [DataMember(EmitDefaultValue = false)] public List<Reply> Replies = new List<Reply>();   // answers in the post, and letters of his own (Core/Replies.cs; SIXDAY item 8)
         [DataMember(EmitDefaultValue = false)] public List<TownEvent> Events = new List<TownEvent>();   // (Resident.Held follows these: FixHeld)   // the town's days: dances and the rest (Core/TownEvents.cs; SIXDAY item 10)
+        [DataMember(EmitDefaultValue = false)] public Dictionary<string, TownLedger> TownLedgers = new Dictionary<string, TownLedger>();   // each town's ledger, read off the records (Core/TownLedgers.cs; SIXDAY item 11c)
         [DataMember(EmitDefaultValue = false)] public List<Happening> WorldLog = new List<Happening>();   // what happened and who saw it (WorldEvents.cs), capped
         [DataMember(EmitDefaultValue = false)] public List<Plan> Plans = new List<Plan>();   // what people mean to do about each other over the next days (Plans.cs)
         [DataMember(EmitDefaultValue = false)] public List<PlaceSpot> Spots = new List<PlaceSpot>();   // where each town's places are, learned from their keepers (Places.cs)
@@ -510,6 +511,7 @@ namespace EnrageWestworld.Core
             if (Avengers == null) Avengers = new List<Avenger>();
             if (Replies == null) Replies = new List<Reply>();
             if (Events == null) Events = new List<TownEvent>();
+            if (TownLedgers == null) TownLedgers = new Dictionary<string, TownLedger>();
             FixHeld();
             if (Weddings == null) Weddings = new List<Wedding>();
             if (Transfers == null) Transfers = new List<Transfer>();

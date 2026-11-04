@@ -221,7 +221,7 @@ namespace EnrageWestworld.InGame
                     _engine.ForgetPerson(r.Id);   // MeetResident cached their Person under the old name
                 }
             }
-            int outfit = Regulars.NewOutfit(_store.Residents, town, model, _cfg.RegularsDress && _bridge.CanTellLooked ? OutfitsOf(h, model) : Regulars.PerModel, _cfg.RegularsPerTown, seed);
+            int outfit = Regulars.NewOutfit(_store.Residents, town, model, _cfg.RegularsDress && _bridge.CanTellLooked ? OutfitsOf(h, model) : Regulars.PerModel, RegularsCap(town), seed);
             if (outfit >= 0)
             {
                 r.Regular = true;   // the town has room: one of its regulars from today

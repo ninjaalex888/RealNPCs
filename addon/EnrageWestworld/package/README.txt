@@ -505,6 +505,12 @@ NEW IN 0.7.11
   a far city), letters waiting for the town come off it, and a resident whose trouble just ended in
   leaving (the ticket bought, the house gone to the bank, a son gone) says goodbye to a friend, walks
   to the train and is gone for good. Away, they go all the same. F7 "TEST trains:".
+- The town ledger (TownLedger): each town's index, 50 to start, moves with what happens there: your
+  killings, other deaths and hangings take it down; arrivals by train, your good turns, the show and
+  a dance you went to take it up. The last month sets its mood: a grieving town thinks in mourning,
+  a fearful one bars its doors early, a prospering one complains of prices and new faces. The
+  regulars a town keeps scale with the index (never below 10). A monthly mention in the paper for
+  towns you've been to. ThinStreets (off): thinner streets in a town under 30. F7 "TEST towns:".
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
@@ -1601,7 +1607,7 @@ in the file. The new ones:
             tied up off the road, two men by them; HogtiedMenDraw (true; set false to turn it off):
             their leader may draw on you unprovoked as you come near (never bounty hunters)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
-            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), EventTrials (true), EventShows (true), TrainTime (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), EventTrials (true), EventShows (true), TrainTime (true), TownLedger (true), ThinStreets (false), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
             Bravery (85, 0-100): the brave stand their ground where the game would send them running;

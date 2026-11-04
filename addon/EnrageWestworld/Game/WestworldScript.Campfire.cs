@@ -361,7 +361,7 @@ namespace EnrageWestworld.InGame
             foreach (Resident other in c.Residents)
                 if (other != null)
                     taken.Add(other);
-            int outfit = Regulars.NewOutfit(taken, town, model, outfits, _cfg.RegularsPerTown, seed);
+            int outfit = Regulars.NewOutfit(taken, town, model, outfits, RegularsCap(town), seed);   // the town's ledger sets how many it keeps (Core/TownLedgers.cs)
             Resident r = _engine.MeetResident(model, false, town, "a drifter", seed, g, false);
             r.Outfit = outfit;   // -1: the town has no room for another regular (CampfireKeep reads it); Regular only once kept (an unkept Regular read as known everywhere: the review)
             if (outfit >= 0 && dress)

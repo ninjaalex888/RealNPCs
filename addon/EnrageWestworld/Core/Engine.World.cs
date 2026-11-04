@@ -922,6 +922,7 @@ namespace EnrageWestworld.Core
             GoalTick(now);
             EventsDaily(now);   // the dances posted on Thursdays (Engine.Events.cs)
             DeparturesDaily(now);   // who leaves on the train today, and yesterday's leavers gone (Engine.Trains.cs)
+            LedgersDaily(now);   // the towns' ledgers read, the month's mention (Engine.Ledgers.cs)
         }
 
         private void AwarenessTick(long now)
@@ -1411,6 +1412,7 @@ namespace EnrageWestworld.Core
                 c.TownDeeds = Store.Deeds.Where(d => d.Known && d.Town == town && InnerLife.TalkedAbout.Contains(d.Kind) && now - d.At >= 120 && now - d.At < 3 * 1440)
                                          .OrderByDescending(d => d.At).Take(3).ToList();
                 c.TownTies = Ties.TalkOf(Store.Ties, town, id, now);
+                c.TownMood = Cfg.TownLedger ? TownMoodOf(town) : null;   // the town's month: grieving, fearful, prospering (Core/TownLedgers.cs; SIXDAY 11c)
             }
             if (id != null)
             {
