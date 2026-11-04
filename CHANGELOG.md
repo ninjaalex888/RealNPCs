@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.7.20 (2026-11-03)
 
 - The green dot on friends and allies is smaller (`[Encounters] AlliesDotScale`, 0.6; settings version 205): the companion dot in that colour drew large (Lex, seen in game: "looks pretty good, can we make it the smaller version"). 1 is the game's own size; a change shows on the next dot made, and **`Insert`** remakes them all.
 
