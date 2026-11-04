@@ -185,6 +185,7 @@ namespace EnrageWestworld.InGame
                         {
                             r.Called = true;
                             r.CallAt = now;
+                            Hint("Stand by the wagon on foot for three seconds to set the wheel with him, or ride on.", 9000);   // the bar's hint, where the Nearby line shows (Lex, 2026-11-04)
                             TASK.TASK_LOOK_AT_ENTITY(r.Driver, me.Handle, 6000, 0, 51, 0);
                             string call = WagonWheel.DriverCall(r.Passengers > 0, r.Seed);
                             SpeechCaption(WagonDriverLabel(r), call, r.Driver, 5000, true, true);
@@ -218,6 +219,7 @@ namespace EnrageWestworld.InGame
                             string word = WagonWheel.DriverSendWord(r.Town, r.Seed);
                             SpeechCaption(WagonDriverLabel(r), word, r.Driver, 5000, true, true);
                             _wagonPassed++;
+                            Hint("He asks you to send word: reach any town within half an hour.", 8000);
                             Log.Write("WAGON scene: you rode on; he calls after you: " + word);
                         }
                         break;
