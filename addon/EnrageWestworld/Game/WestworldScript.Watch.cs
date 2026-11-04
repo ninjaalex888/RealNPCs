@@ -1445,6 +1445,7 @@ namespace EnrageWestworld.InGame
             if (interior != _interiorType)
             {
                 _interiorType = interior;
+                NoteSaloonDoor(_placeKind, pos);   // where he came out of a saloon: the dance is staged there (WestworldScript.TownEvents.cs)
                 _placeKind = interior != 0 ? InteriorKind(interior) : null;
                 if (_placeKind != null && _cfg.Deeds)
                 {

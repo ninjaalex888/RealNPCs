@@ -299,6 +299,7 @@ namespace EnrageWestworld.InGame
                 LonelyAbort();       // and someone lonely hoping for a word
                 EscortAbort();       // and someone you were seeing home
                 MeetAbort();         // and a letter's writer waiting to meet you (WestworldScript.Letters.cs)
+                EventsAbort("the add-on stopped");   // and the dance floor (WestworldScript.TownEvents.cs)
                 ErrandAbort();       // and a word you were carrying (memory only)
                 FavourAbort();       // and someone coming to ask a favour, or to warn you (NIGHT4 item 6)
                 ChanceWaitAbort("the add-on stopped");   // and a chance meeting waiting on the model's pick
@@ -1180,6 +1181,7 @@ namespace EnrageWestworld.InGame
             LonelyAbort();
             EscortAbort();
             MeetAbort();
+            EventsAbort("a mission began");
             FavourAbort();
             ChanceWaitAbort("a mission started");
             WarnAbort();
@@ -1271,6 +1273,7 @@ namespace EnrageWestworld.InGame
             SightsStep(now);    // people notice how you look (WestworldScript.Sights.cs)
             StreetStep(now);    // the street reacts to other people's fights, and to who walks among them (WestworldScript.Street.cs)
             LettersStep(now);   // a letter's writer waiting to meet you (WestworldScript.Letters.cs)
+            TownEventsStep(now);   // the town's day: a dance staged when you're there (WestworldScript.TownEvents.cs)
             SpaceStep(now);     // and mind you standing too close (WestworldScript.Space.cs)
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)

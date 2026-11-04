@@ -512,6 +512,7 @@ namespace EnrageWestworld.Core
             DeedTalkTick(now);
             AvengerTick(now);
             ReplyTick(now);   // letters answered and written, landing (Engine.Letters.cs)
+            EventsTick(now);  // a town's event that passed with nobody there (Engine.Events.cs)
             if (Cfg.RumoursTravel)
                 RumourTick(now);
             if (Cfg.Weddings)
@@ -919,6 +920,7 @@ namespace EnrageWestworld.Core
             if (Cfg.Debts)
                 DebtTick(now);
             GoalTick(now);
+            EventsDaily(now);   // the dances posted on Thursdays (Engine.Events.cs)
         }
 
         private void AwarenessTick(long now)

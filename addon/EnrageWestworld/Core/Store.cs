@@ -49,6 +49,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<DeathEntry> Deaths = new List<DeathEntry>();   // our own record of who has died (see Deaths.cs)
         [DataMember(EmitDefaultValue = false)] public List<LaterAct> Later = new List<LaterAct>();   // diary entries and word of mouth waiting their time (see Knowing.cs)
         [DataMember(EmitDefaultValue = false)] public List<Reply> Replies = new List<Reply>();   // answers in the post, and letters of his own (Core/Replies.cs; SIXDAY item 8)
+        [DataMember(EmitDefaultValue = false)] public List<TownEvent> Events = new List<TownEvent>();   // the town's days: dances and the rest (Core/TownEvents.cs; SIXDAY item 10)
         [DataMember(EmitDefaultValue = false)] public List<Happening> WorldLog = new List<Happening>();   // what happened and who saw it (WorldEvents.cs), capped
         [DataMember(EmitDefaultValue = false)] public List<Plan> Plans = new List<Plan>();   // what people mean to do about each other over the next days (Plans.cs)
         [DataMember(EmitDefaultValue = false)] public List<PlaceSpot> Spots = new List<PlaceSpot>();   // where each town's places are, learned from their keepers (Places.cs)
@@ -224,6 +225,19 @@ namespace EnrageWestworld.Core
             n += Links.RemoveAll(l => l.At > cut);
             n += TownRumours.RemoveAll(r => r.At > cut);
             n += Papers.RemoveAll(p => p.At > cut);
+            if (Events != null)
+            {
+                n += Events.RemoveAll(e => e.At > cut + 7 * 1440);   // posted after the cut (a dance is posted two days ahead)
+                foreach (TownEvent e in Events)
+                    if (e.Done && e.Until > cut)
+                    {
+                        e.Done = false;   // not over yet, as far as the loaded game knows
+                        e.Outcome = null;
+                        e.Attended = false;
+                        e.Broken = false;
+                        n++;
+                    }
+            }
             if (Replies != null)
             {
                 n += Replies.RemoveAll(r => r.SentAt > cut);
@@ -434,6 +448,8 @@ namespace EnrageWestworld.Core
             Avengers.RemoveAll(a => a.Stage == 3 && LastGameMin - a.DueAt > 43200);
             if (Replies != null)
                 Replies.RemoveAll(r => r.Done && (r.MeetAt == 0 || r.Met) && LastGameMin - r.ArrivesAt > 43200);
+            if (Events != null)
+                Events.RemoveAll(e => e.Done && LastGameMin - e.Until > 43200);
             List<Paper> kept = Papers.Where(p => p.Delivered).ToList();
             if (kept.Count > 120)
                 Papers.RemoveAll(p => p.Delivered && kept.IndexOf(p) < kept.Count - 120);
@@ -461,6 +477,7 @@ namespace EnrageWestworld.Core
             if (Reveries == null) Reveries = new Dictionary<string, Reverie>();
             if (Avengers == null) Avengers = new List<Avenger>();
             if (Replies == null) Replies = new List<Reply>();
+            if (Events == null) Events = new List<TownEvent>();
             if (Weddings == null) Weddings = new List<Wedding>();
             if (Transfers == null) Transfers = new List<Transfer>();
             if (Debts == null) Debts = new List<Debt>();

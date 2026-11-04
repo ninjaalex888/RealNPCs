@@ -466,6 +466,13 @@ NEW IN 0.7.11
   to find them, the fever called a chill, the letter given up on, the farm sold up...). The
   frightened believe the worst at once, the proud and the cold want proof; believed, the trouble
   ends badly from there, they think the less of you, and it counts as a wrong.
+- Town events ([World] TownEvents): things a town does on a day, posted ahead (a notice and the
+  paper), that happen whether you're there or not. The Saturday dance (EventDances): every second
+  Saturday at the saloon of a town you've been to, seven till eleven, posted on Thursday. Away, two
+  to four of the town's regulars come away warmer toward each other (sweethearts fall out now and
+  then); there, it's staged outside the saloon you last came out of: a fiddler, the dancing, the
+  caller's shouts. Shots break it up and the town remembers who fired. Stay a while and the
+  regulars think the better of you.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
@@ -1562,7 +1569,7 @@ in the file. The new ones:
             tied up off the road, two men by them; HogtiedMenDraw (true; set false to turn it off):
             their leader may draw on you unprovoked as you come near (never bounty hunters)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
-            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
             Bravery (85, 0-100): the brave stand their ground where the game would send them running;
