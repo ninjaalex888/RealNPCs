@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 211;
+        public const int CurrentVersion = 212;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -319,6 +319,8 @@ namespace EnrageWestworld.Core
         public bool Reactions = true;
         public bool Acknowledge = true;
         public bool SightReactions = true;
+        public bool StreetReacts = true;      // [Scenes] the street reacts to other people's fights: the moments of a scene between others (blows, squaring up, a gun out, a man killed or knocked out) are raised as the game's own shocking events, so its crowd does what it does for yours; held in a town for 30 game minutes when one brings the law into combat, a gun out of someone else's holster or people fleeing beside you (Core/Street.cs; roadmap 17; SIXDAY item 5b; settings version 212)
+        public bool StreetReputation = true;  // [Scenes] reputation in the street: an outlaw walking among people (enRAGE's gunmen, a resident wanted by the law) is looked after, stepped around, turned from or stared down by their natures; the doctor, a preacher, the law and a keeper out of doors are greeted; one witness mutters it; a known killer or peacemaker gets a thought from a witness, never a task (Core/Reputation.cs; SIXDAY item 5c; settings version 212)
         public bool Kindnesses = true;
         public bool Vices = true;
         public bool Grudges = true;
@@ -804,6 +806,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 212)
+                    log?.Invoke("Settings: new in this version: [Scenes] StreetReacts (on): the street reacts to other people's fights through the game's own crowd; StreetReputation (on): outlaws stared at and stepped around, the doctor, the preacher, the law and the keepers greeted, and a witness's thought of your own standing in a town.");
                 if (s.SettingsVersion < 211)
                     log?.Invoke("Settings: new in this version: [World] RegularsRoutines (on): the town keeps time; who a passer-by becomes follows the hour and the spot (the saloon of an evening, church on Sunday morning, the early up at dawn, the owls at night).");
                 if (s.SettingsVersion < 210)
@@ -1457,6 +1461,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("Kindnesses = " + B(Kindnesses) + "   ; small kindnesses between people: someone who trips in the street is helped up by a friend or a kind passer-by, or left lying by the cold and their enemies (and you can give them a hand up yourself); someone may step in on a bully, who backs off, goes on, or shoves the one who stepped in and storms off; remembered either way");
             b.AppendLine("SightReactions = " + B(SightReactions) + "   ; people near you notice how you look (bloodied, drunk, filthy, soaked) and take it by their nature: the timid afraid, the hard sizing you up, the kind concerned; and a man walking off bloodied from a street fight gets looked at");
             b.AppendLine("Acknowledge = " + B(Acknowledge) + "   ; two people who know each other nod, tip a hat or wave as they pass (enemies give a hard look, sweethearts a long one), and each thinks something of it; a pair once in 45 game minutes");
+            b.AppendLine("StreetReacts = " + B(StreetReacts) + "   ; the street reacts to other people's fights the way it does to yours: blows, two men squaring up, a gun out, a man killed or knocked out are raised as the game's own shocking events for its crowd (looking, backing off, running, calling the law by its own rules); held in a town for 30 game minutes when one brings the law into combat, a gun out of someone else's holster or people fleeing beside you; never on a mission, with the law after you or beside enRAGE's own fighters");
+            b.AppendLine("StreetReputation = " + B(StreetReputation) + "   ; people react to who walks among them: an outlaw (enRAGE's gunmen, a resident the law wants) is looked after, stepped around, turned from by the old and the timid, stared down by the proud; the doctor, a preacher, the sheriff and a keeper out of doors get a hat tipped, a nod and a word; one witness mutters it on the ticker; a known killer or peacemaker in a town gets a thought from a witness (never a task)");
             b.AppendLine("TroubleWeight = " + F(TroubleWeight) + "   ; how often people come to blows or quarrel: 1 as built, 2 twice as often, 0.5 half, 0 never by chance (0-5); it scales the brawl's and the argument's share of a chance meeting, hot blood between strangers, drink and temper, and a snap that comes to blows; over 1 it also shortens everyone's rest between scenes (2 min, 15 after blows), by half at most");
             b.AppendLine("ReasonVariety = " + B(ReasonVariety) + "   ; the street's scenes take turns: someone at the worst of a worry says so once while you're about, not to everyone they meet, the same kind of scene three times running is less likely, and gossip, theft, drunks and courting get their turns over a sharp word");
             b.AppendLine("ChanceFirst = " + B(ChanceFirst) + "   ; chance meetings (a song, a tall tale, haggling, a standoff, a card cheat) get their turn when nobody has a strong reason, nearer you; a high TroubleWeight brings more fights, not more arguments; two people sat far apart are not picked for a scene they would never walk to");

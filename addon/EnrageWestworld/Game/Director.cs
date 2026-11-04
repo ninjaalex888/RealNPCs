@@ -114,6 +114,9 @@ namespace EnrageWestworld.InGame
         public Action<string> Happened;
         /// The one spoken to reacts (WestworldScript.Reactions.cs); null: nobody reacts.
         public Action<Reaction> React;
+        /// A moment of the scene the street would notice (SIXDAY 5b, WestworldScript.Street.cs): "blows" as the fists fly, "square"
+        /// as two men square up unarmed, "aim" as a gun comes out; (the moment, who it's on, the scene's kind, its seed).
+        public Action<string, int, string, string> Shock;
         /// A fight between the scene's two is over, blows having been traded: the one left standing (the better off), then the
         /// other (WestworldScript.Aftermath.cs).
         public Action<int, int> FightOver;
@@ -768,6 +771,7 @@ namespace EnrageWestworld.InGame
                         l.FightOnAt = now;
                         l.FightUntil = now + l.FightMs;
                         Log.Write("SCENE fight: at it " + ((now - l.FightAskedAt) / 1000.0).ToString("0.0") + " s after the word");
+                        try { Shock?.Invoke("blows", l.FightA, l.Scene.Kind, l.Seed); } catch (Exception ex) { Log.Write("STREET: the blows weren't raised: " + ex.Message); }   // the street reacts (SIXDAY 5b)
                     }
                     else if (now >= l.FightUntil)
                     {
@@ -1338,10 +1342,12 @@ namespace EnrageWestworld.InGame
                             WEAPON.SET_CURRENT_PED_WEAPON(h, best, true, 0, false, false);
                         TASK.TASK_AIM_GUN_AT_ENTITY(h, t, 25000, false, 0);
                         l.Aimed[who] = true;
+                        try { Shock?.Invoke("aim", h, l.Scene.Kind, l.Seed); } catch (Exception ex) { Log.Write("STREET: the gun out wasn't raised: " + ex.Message); }   // the street reacts (SIXDAY 5b)
                         return 900;
                     }
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, t, 3000, 0f, 0f, 0f);
                     TASK.TASK_LOOK_AT_ENTITY(h, t, 20000, 0, 51, 0);
+                    try { Shock?.Invoke("square", h, l.Scene.Kind, l.Seed); } catch (Exception ex) { Log.Write("STREET: the squaring up wasn't raised: " + ex.Message); }
                     return 700;
                 case "holster":
                     if (who < l.Aimed.Length)

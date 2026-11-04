@@ -909,6 +909,19 @@ NEW IN 0.6.1
   spot: the drinkers are the ones at the bar of an evening, the churchgoers the ones in church on
   Sunday. Nobody walks across town for it, and a regular caught out of their hour thinks so.
   [World] Regulars, RegularsPerTown (30), RegularsDress, RegularsRoutines.
+- The street reacts to other people's fights ([Scenes] StreetReacts). The moments of a scene
+  between other people (the fists flying, two men squaring up, a gun out, a man killed or
+  knocked out) are raised as the game's own shocking events, so its crowd does what it does for
+  your fights: looking, backing off, running, calling the law, by its own rules. Held in a town
+  for thirty game minutes when one brings the law into combat, a gun out of someone else's
+  holster or people fleeing beside you; never on a mission, with the law after you, or beside
+  enRAGE's own fighters.
+- Reputation in the street ([Scenes] StreetReputation). An outlaw walking in a town (enRAGE's
+  gunmen, or a resident the law wants) is looked after by the people near, by their natures: a
+  look that follows, a step off his line, the old and the timid turning away, the proud staring
+  him down; the doctor, a preacher, the sheriff and a keeper out of doors get a hat tipped, a nod
+  and a word ("Morning, Doc."). One witness mutters it on the ticker. A known killer or
+  peacemaker in a town gets a thought from a witness, never a task.
 - Ordinary people have lives of their own. Each one is going through something that fits their
   trade and age: a debt, a sick child, a letter that doesn't come, a feud over a fence, a
   courtship, the drink, a secret. It runs about eight game days in their thoughts (it begins,

@@ -45,6 +45,7 @@ namespace EnrageWestworld.InGame
             if (!ENTITY.DOES_ENTITY_EXIST(h))
                 return;
             int now = Game.GameTime;
+            StreetShock(dead ? "killed" : "knockedout", h, "brawl", "down|" + h);   // the street reacts as the game's own crowd would (WestworldScript.Street.cs; once per man)
             Ped p = new Ped(h);
             _known.Remove(h);   // the ledger may have him as nobody from before the brawl gave him a name (its 10 s cache)
             Known k = KnownAt(p, now);
