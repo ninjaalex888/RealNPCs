@@ -539,6 +539,15 @@ namespace EnrageWestworld.Core
                 options.Add(() => Pick(ByPlace[day.Place], p, seed, told));
                 names.Add("place");
             }
+            if (day.Routine != null)
+            {
+                string[] routine = Routines.Pool(day.Routine, day.RoutineOdd);   // a regular's routine here, now (SIXDAY 5a): the same stool at seven, or a face out of its hour
+                if (routine != null)
+                {
+                    options.Add(() => Pick(routine, p, seed + "rt", told));
+                    names.Add(day.RoutineOdd ? "routine-odd" : "routine");
+                }
+            }
             for (int i = 0; i < options.Count; i++)
                 parts.Add(new KeyValuePair<string, Func<string>>(names[i], options[i]));
             return parts;

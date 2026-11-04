@@ -22,6 +22,26 @@ namespace EnrageWestworld.Core
                       .OrderBy(r => r.TouchedAt).FirstOrDefault();
         }
 
+        /// The same, by routine (Routines.cs; SIXDAY 5a): of the free regulars of this town and build, the one whose habits
+        /// put them at this spot now (the best fit; ties to the one met longest ago). `fit` is the best fit found (-1: none).
+        public static Resident BackFit(IEnumerable<Resident> all, string town, uint model, bool woman, Func<Resident, bool> busy, Func<Resident, int> fit, out int bestFit)
+        {
+            Resident best = null;
+            bestFit = -1;
+            foreach (Resident r in all)
+            {
+                if (!r.Regular || r.Dead || r.Fled || r.Town != town || r.Model != model || r.Woman != woman || busy(r))
+                    continue;
+                int f = fit(r);
+                if (best == null || f > bestFit || (f == bestFit && r.TouchedAt < best.TouchedAt))
+                {
+                    best = r;
+                    bestFit = f;
+                }
+            }
+            return best;
+        }
+
         /// The outfit a new regular of this build in this town would wear: one that no other regular of the build here
         /// wears. -1 when the town has its RegularsPerTown, the build has its share, or there are no outfits left.
         public static int NewOutfit(IEnumerable<Resident> all, string town, uint model, int outfits, int perTown, string seed)

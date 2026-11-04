@@ -26,6 +26,8 @@ namespace EnrageWestworld.Core
             public Witnessed JustSaw;                        // a scene that just played out in front of them, if any (InnerLife.Now.cs)
             public List<Nearby> Nearby;                 // the other people in sight, as this one sees them
             public long Now = -1;                       // the game minute (for how long ago today's ties were); -1 unknown
+            public string Routine;                      // a regular's routine here, now (Routines.Key: "saloon|evening"...), for a thought of it; null for anyone else
+            public bool RoutineOdd;                     // ...and they're somewhere their routine wouldn't put them (Routines.Odd)
 
             public bool IsDead(string id)
             {

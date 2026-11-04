@@ -85,8 +85,33 @@ namespace EnrageWestworld.InGame
                     continue;
                 uint model = ENTITY.GET_ENTITY_MODEL(h);
                 bool woman = !PED.IS_PED_MALE(h);
-                Resident r = Regulars.Back(_store.Residents, town, model, woman, x => _resBind.Values.Any(v => v.R == x) || RegularGone(x, now));
+                bool routines = _cfg.RegularsRoutines;
+                if (routines && PlanNear(p.Position, now))
+                    continue;   // one of enRAGE's habits or funerals due or running near: its own people are left to it
+                string spot = null;
+                int hour = 0, fit = -1;
+                Resident r;
+                if (routines)
+                {
+                    // the town keeps time (Core/Routines.cs; SIXDAY 5a): of the free regulars of this build, the one whose habits put them at
+                    // this kind of spot at this hour; nobody walks across town for it, since the game already put a body here
+                    uint it = Natives.InteriorType(h);
+                    spot = Routines.SpotOf(it != 0 ? InteriorKind(it) : null);
+                    hour = CLOCK.GET_CLOCK_HOURS();
+                    int wd = InnerLife.Weekday, year = Voice.NowYear;
+                    string sp = spot;
+                    r = Regulars.BackFit(_store.Residents, town, model, woman, x => _resBind.Values.Any(v => v.R == x) || RegularGone(x, now),
+                                         x => Routines.Fit(Routines.ProfileOf(x, year), sp, hour, wd), out fit);
+                }
+                else
+                    r = Regulars.Back(_store.Residents, town, model, woman, x => _resBind.Values.Any(v => v.R == x) || RegularGone(x, now));
                 bool fresh = r == null;
+                if (!fresh && routines && fit < Routines.Least &&
+                    Regulars.NewOutfit(_store.Residents, town, model, dress ? OutfitsOf(h, model) : Regulars.PerModel, _cfg.RegularsPerTown, h + "|" + gameNow) >= 0)
+                {
+                    fresh = true;   // nobody free whose routine puts them here, and the town has room: a new regular made to fit the spot
+                    r = null;
+                }
                 if (fresh)
                 {
                     int outfits = dress ? OutfitsOf(h, model) : Regulars.PerModel;
@@ -96,6 +121,8 @@ namespace EnrageWestworld.InGame
                     r = _engine.MeetResident(model, woman, town, ResidentTrade(p, woman), h + "|" + Game.GameTime, gameNow);
                     r.Regular = true;
                     r.Outfit = outfit;
+                    if (routines)
+                        Routines.FitNew(r, spot, hour, InnerLife.Weekday, h + "|" + gameNow, Voice.NowYear);   // no devout churchgoer born at the bar at midnight
                 }
                 _engine.KeepResident(r, gameNow);
                 _resBind[h] = new ResBind { R = r, Model = model };
@@ -107,8 +134,31 @@ namespace EnrageWestworld.InGame
                 cast++;
                 PersonState st = _store.Find(r.Id);
                 Log.Write("REGULAR " + (fresh ? "new" : "back") + ": " + r.Name + " (" + r.Trade + ") in " + town + (dress ? ", outfit " + r.Outfit : "") +
-                          ", " + (int)d + " m off, unseen" + (st != null && st.Sightings > 0 ? ", met " + st.Sightings + " time" + (st.Sightings == 1 ? "" : "s") + " before" : ""));
+                          ", " + (int)d + " m off, unseen" + (st != null && st.Sightings > 0 ? ", met " + st.Sightings + " time" + (st.Sightings == 1 ? "" : "s") + " before" : "") +
+                          (routines ? " (routine: " + spot + ", " + Routines.Daypart(hour) + (fresh ? ", made to fit" : fit < Routines.Odd ? ", odd for them, fit " + fit : ", fit " + fit) + ")" : ""));
             }
+        }
+
+        private readonly List<Vector3> _planSpots = new List<Vector3>();   // where enRAGE's habits and funerals are due or running (looked up every 2 s)
+        private int _nextPlanSpots;
+
+        /// One of enRAGE's habits or funerals due or running within 30 m: the game's own people there are left to it (the routines'
+        /// rule; the plan's own person can't be read, so the distance stands for them).
+        private bool PlanNear(Vector3 pos, int now)
+        {
+            if (now >= _nextPlanSpots)
+            {
+                _nextPlanSpots = now + 2000;
+                _planSpots.Clear();
+                long g = Bridge.Now();
+                foreach (PlanInfo x in _bridge.Plans())
+                    if ((x.Kind == "funeral" || x.Kind == "habit") && !x.Done && g >= x.DueAt - 5 && g <= x.DueAt + Math.Max(60, x.WindowMin))
+                        _planSpots.Add(x.Pos);
+            }
+            foreach (Vector3 s in _planSpots)
+                if (s.DistanceTo2D(pos) < 30f)
+                    return true;
+            return false;
         }
 
         /// A regular whose last body streamed out within RegularGoneMs: left alone for now, so they don't hop from body to body.
@@ -251,9 +301,10 @@ namespace EnrageWestworld.InGame
                 {
                     PersonState st = _store.Find(kv.Value.R.Id);
                     return kv.Value.R.Name + " (" + kv.Value.R.Trade + ", outfit " + kv.Value.R.Outfit + ", met " + (st != null ? st.Sightings : 0) + ", " +
-                           (int)new Ped(kv.Key).Position.DistanceTo(me.Position) + " m)";
+                           (int)new Ped(kv.Key).Position.DistanceTo(me.Position) + " m" +
+                           (_cfg.RegularsRoutines ? "; routine says " + Routines.Expected(Routines.ProfileOf(kv.Value.R, Voice.NowYear), CLOCK.GET_CLOCK_HOURS(), InnerLife.Weekday) : "") + ")";
                 }).ToList();
-            return "kept: " + all + "; around you in " + town + ": " + (here.Count == 0 ? "none yet" : string.Join("; ", here));
+            return "kept: " + all + (_cfg.RegularsRoutines ? "; routines on (" + Routines.Daypart(CLOCK.GET_CLOCK_HOURS()) + (InnerLife.Weekday == 0 ? ", Sunday" : "") + ")" : "; routines off") + "; around you in " + town + ": " + (here.Count == 0 ? "none yet" : string.Join("; ", here));
         }
     }
 }

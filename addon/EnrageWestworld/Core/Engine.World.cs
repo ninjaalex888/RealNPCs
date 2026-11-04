@@ -1413,6 +1413,18 @@ namespace EnrageWestworld.Core
                 c.Ties = Ties.Of(Store.Ties, id, now, 4);
                 if (c.GameDay >= 0)
                     c.Linked = Links.Against(Store.Links, id, c.GameDay).Where(l => !HasDied(LiveIdOf(l.Id))).ToList();   // a worrier who has died worries nobody now (under the resident's id, the one living on with it)
+                if (Cfg.RegularsRoutines && now > 0 && Resident.IsResident(id))
+                {
+                    // a regular's routine (Routines.cs; SIXDAY 5a): where they stand now against where their habits would have them
+                    Resident r = Store.FindResident(id);
+                    if (r != null && r.Regular)
+                    {
+                        int hour = (int)(now % 1440 / 60);
+                        string spot = NowIndoors ? Routines.SpotOf(NowPlace) : "street";
+                        c.Routine = Routines.Key(spot, hour, InnerLife.Weekday);
+                        c.RoutineOdd = Routines.Fit(Routines.ProfileOf(r, Voice.NowYear), spot, hour, InnerLife.Weekday) < Routines.Odd;
+                    }
+                }
             }
             return c;
         }

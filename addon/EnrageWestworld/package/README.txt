@@ -902,8 +902,13 @@ NEW IN 0.6.1
   sight, they become one of that town's regulars: someone met there before, back in their own
   clothes, or, while the town has room, someone new with an outfit of their own. Their names,
   worries and lives go on between visits, and the ones you've met know you again. Nobody changes
-  clothes in front of you, and nobody enRAGE has already named is touched. [World] Regulars,
-  RegularsPerTown (30), RegularsDress.
+  clothes in front of you, and nobody enRAGE has already named is touched. The town keeps time
+  ([World] RegularsRoutines): each regular has a routine read off who they are (the early up at
+  dawn, work and errands by day, the saloon of an evening, church on Sunday morning for those
+  who go, home at night but for the owls), and who a passer-by becomes follows the hour and the
+  spot: the drinkers are the ones at the bar of an evening, the churchgoers the ones in church on
+  Sunday. Nobody walks across town for it, and a regular caught out of their hour thinks so.
+  [World] Regulars, RegularsPerTown (30), RegularsDress, RegularsRoutines.
 - Ordinary people have lives of their own. Each one is going through something that fits their
   trade and age: a debt, a sick child, a letter that doesn't come, a feud over a fence, a
   courtship, the drink, a secret. It runs about eight game days in their thoughts (it begins,
@@ -1513,7 +1518,7 @@ in the file. The new ones:
             tied up off the road, two men by them; HogtiedMenDraw (true; set false to turn it off):
             their leader may draw on you unprovoked as you come near (never bounty hunters)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
-            Regulars (true), RegularsPerTown (30), RegularsDress (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
             Bravery (85, 0-100): the brave stand their ground where the game would send them running;
