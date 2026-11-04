@@ -2,7 +2,8 @@
 setlocal
 rem RealNPCs' voice server: start it before the game and leave this window open. It runs on the Python that
 rem install-voice.cmd put beside it (tts-venv, the model in tools\hf), or, on the development PC, the one in
-rem C:\mods\voice-test with its export. Extra arguments pass through (--turbo, --min-free-gb 1.0, --prefer-captured ...).
+rem C:\mods\voice-test with its export. Extra arguments pass through (--idle-seconds 0 to keep the voices on the card, --full
+rem for the voice model in full precision, --turbo, --min-free-gb 1.0, --prefer-captured ...).
 set VOICE_HOME=%~dp0
 set VOICE_HOME=%VOICE_HOME:~0,-1%
 if exist "%VOICE_HOME%\tts-venv\Scripts\python.exe" (

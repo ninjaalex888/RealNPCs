@@ -514,8 +514,11 @@ namespace EnrageWestworld.InGame
             bool ready = r != null && r.IndexOf("\"ready\":true", StringComparison.Ordinal) >= 0;
             string model = Language.JsonField(r, "model") ?? "?";
             string free = VoiceRaw(r, "free_gb") ?? "?";
+            string card = VoiceRaw(r, "card_gb");   // what the voices hold of the card, from the server that gives it back after a quiet spell (2026-11-03)
+            bool onCard = r != null && r.IndexOf("\"on_card\":true", StringComparison.Ordinal) >= 0;
+            string holds = card == null ? "" : onCard ? ", the voices hold " + card + " GB" : ", the voices off the card until the next line";
             _voiceReady = ready;
-            _voiceServer = ready ? "ready (" + model + ", " + free + " GB free on the card)" : "loading its model (" + (Language.JsonField(r, "error") ?? "a few seconds") + ")";
+            _voiceServer = ready ? "ready (" + model + ", " + free + " GB free on the card" + holds + ")" : "loading its model (" + (Language.JsonField(r, "error") ?? "a few seconds") + ")";
             if (ready != was)
                 Log.Write(ready ? "VOICE server ready at " + url + ": " + model + ", " + free + " GB free on the card" : "VOICE server at " + url + " isn't ready: " + _voiceServer);
         }

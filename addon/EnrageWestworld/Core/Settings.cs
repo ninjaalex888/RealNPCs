@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 200;
+        public const int CurrentVersion = 201;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -251,7 +251,7 @@ namespace EnrageWestworld.Core
         public int AlliesRoadChance = 30;    // ... percent: out of the towns, with nobody you know in sight and two or more armed against you, a friend from a town's ledger happens by
         public bool AlliesDot = true;        // ... a small green dot on the map on each ally while they're with you (Lex, 2026-11-03; settings version 199)
         public string AlliesDotColour = "BLIP_MODIFIER_DEBUG_GREEN";   // ... the dot's colour: one of the game's blip modifiers by name; empty keeps the companion dot's own colour
-        public int GreetLiking = 20;         // [Encounters] enRAGE's fondness for you (0-100) grows by this when you greet someone, the first two greetings of a game day in full (so two hellos reach AlliesLiking 40: a friend on the second greeting, the same day or not; Lex, 2026-11-03), later ones that day a third; settings version 199, 20 from 200
+        public int GreetLiking = 25;         // [Encounters] enRAGE's fondness for you (0-100) grows by this on every greeting of someone (two hellos pass AlliesLiking 40, four fill the bar: Lex, 2026-11-03, "each greet gives 25% fondness boost for now until we add in more NPC interactions"); settings version 199 (12), 200 (20), 25 from 201
 
         // [World]
         public bool Deeds = true;
@@ -792,13 +792,14 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
-                if (s.SettingsVersion < 200)
+                if (s.SettingsVersion < 201)
                 {
-                    // 2026-11-03, Lex: "update the friend/ally status from 4 days to upon 2nd greet, even if it's the same day": 20 a greeting, the
-                    // first two of a day in full, so two hellos reach AlliesLiking 40; an ini on the 12 of version 199 moves, a value of your own is kept
-                    if (s.SettingsVersion == 199 && s.GreetLiking == 12)
-                        s.GreetLiking = 20;
-                    log?.Invoke("Settings: [Encounters] GreetLiking is 20 now (from 12): the first two greetings of someone in a game day count in full, so two hellos make a friend who'll stand with you (AlliesLiking 40), the same day or not; later greetings that day give a third.");
+                    // 2026-11-03, Lex: "the friend/ally status from 4 days to upon 2nd greet, even if it's the same day", then "each greet gives
+                    // 25% fondness boost for now": 25 on every greeting; an ini on the 12 of version 199 or the 20 of version 200 moves, a value
+                    // of your own is kept
+                    if ((s.SettingsVersion == 199 && s.GreetLiking == 12) || (s.SettingsVersion == 200 && s.GreetLiking == 20))
+                        s.GreetLiking = 25;
+                    log?.Invoke("Settings: [Encounters] GreetLiking is 25 now: every greeting of someone adds 25 to their fondness for you, so two hellos make a friend who'll stand with you (AlliesLiking 40) and four fill the bar.");
                 }
                 if (s.SettingsVersion < 199)
                     log?.Invoke("Settings: new in this version: [Encounters] AlliesDot (on) and AlliesDotColour: a small green dot on the map on each ally with you; GreetLiking: greeting someone makes them fonder of you (enRAGE's fondness, the bar under them).");
@@ -1309,7 +1310,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("AlliesRoadChance = " + AlliesRoadChance + "   ; percent: out of the towns, with nobody you know in sight and two or more armed against you, a friend from a town's ledger happens by and runs in (once in five minutes at most; 0 never)");
             b.AppendLine("AlliesDot = " + B(AlliesDot) + "   ; a small green dot on the map on each ally while they're with you (the game's own small companion dot, recoloured); someone who already has a dot keeps their own");
             b.AppendLine("AlliesDotColour = " + AlliesDotColour + "   ; the dot's colour: one of the game's blip modifiers by name (BLIP_MODIFIER_DEBUG_GREEN as built; BLIP_MODIFIER_FRIENDLY the companions' blue); empty: the companion dot's own colour");
-            b.AppendLine("GreetLiking = " + GreetLiking + "   ; enRAGE's fondness for you (0 to 100: the bar under people with FeelingBars, what AlliesLiking reads) grows by this much when you greet someone, for the first two greetings of them in a game day (so two hellos make a friend who'll stand with you, AlliesLiking 40, the same day or not); later greetings of the same person that day give a third; nothing from someone afraid of you or angry with you; 0 off (0 to 50)");
+            b.AppendLine("GreetLiking = " + GreetLiking + "   ; enRAGE's fondness for you (0 to 100: the bar under people with FeelingBars, what AlliesLiking reads) grows by this much on every greeting of someone (25: two hellos make a friend who'll stand with you, AlliesLiking 40, and four fill the bar); nothing from someone afraid of you or angry with you; 0 off (0 to 50)");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: the awake stand in a silent circle, facing in: from midnight to half past three out in the wilds (once a night), and with GatheringHours any by day too, in an open field or just outside a town's edge");

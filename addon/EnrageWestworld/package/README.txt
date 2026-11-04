@@ -37,9 +37,9 @@ your PC. One voice plays at a time, louder near and from the side the speaker st
 14 m ([Mind] VoiceMetres); VoiceVolume (100). The game's own recorded remark, where one plays,
 still plays.
 
-What you need: an NVIDIA graphics card with about 4 GB of memory free beside the game (with the
-AI model running too, about 9 GB free: a 16 GB card does both, a 12 GB card one or the other),
-about 8 GB of disk, and a one-time setup of about ten minutes. Without the voice server nothing
+What you need: an NVIDIA graphics card with about 3 GB of memory free beside the game while
+someone speaks (with the AI model running too, about 8 GB free: a 16 GB card does both, a 12 GB
+card one or the other), about 8 GB of disk, and a one-time setup of about ten minutes. Without the voice server nothing
 changes: the switches are on as they come, and nothing is heard until it answers (the log says
 so once).
 
@@ -60,9 +60,12 @@ Set it up once:
 What to expect, honestly: a line takes a second or two to make, and the words wait for it; the
 clips are recorded off the street, so a voice can carry a little of the sound around the person
 it was recorded from (the server cleans it, and re-records a better one when it can); the voice
-server takes about 3.5 GB of your card and 2.5 GB of memory while it runs. To turn it off:
-[Mind] VoicedThoughts and VoicedDialogue on the settings panel's Mind page, or close the
-server's window.
+server holds about 2.5 GB of your card while people are speaking and gives it back to the game
+after a minute with nobody speaking (the next line brings it back in under a second;
+"--idle-seconds 0" in start-voice-server.cmd keeps it on the card, "--full" runs the voice
+model in full precision, 3.5 GB, if the voices sound off), and 2.5 GB of system memory. To
+turn it off: [Mind] VoicedThoughts and VoicedDialogue on the settings panel's Mind page, or
+close the server's window.
 
 
 OPTIONAL, RECOMMENDED: THE FREE LOCAL AI MODEL
@@ -162,10 +165,10 @@ NEW IN 0.7.19
   real. Not yet seen in game.
 - A green dot on each ally on the map while they're with you ([Encounters] AlliesDot, on;
   AlliesDotColour: a blip modifier's name, BLIP_MODIFIER_DEBUG_GREEN as built). Greeting
-  someone makes them fonder of you ([Encounters] GreetLiking, 20): enRAGE's fondness rises
-  on each of the first two greetings of someone in a day, so two hellos make a friend who'll
-  stand with you (the same day or not); later greetings that day give less; nothing from the
-  afraid or the angry. Someone you save is yours for good: the man you pull a bully off, the
+  someone makes them fonder of you ([Encounters] GreetLiking, 25): enRAGE's fondness rises
+  by a quarter of the bar on every greeting of someone, so two hellos make a friend who'll
+  stand with you (the same day or not) and four fill the bar; nothing from the afraid or the
+  angry. Someone you save is yours for good: the man you pull a bully off, the
   one whose beater you put down in a brawl, the captive you save from the rope, the hogtied
   you cut loose who thank you: fondness to the top, a friend who owes you for a month of game
   days (they come to your aid first), and they remember it. Not yet seen in game.

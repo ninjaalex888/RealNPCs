@@ -3,10 +3,13 @@
 # recordings for that person's model (the player's own OpenIV export of the voice banks; nothing of Rockstar's ships),
 # and played here, mixed, with the volume and pan the mod keeps sending as the speaker moves.
 #
-#   tts-venv\Scripts\python.exe -I voice_server.py --root C:\mods\voice-test [--port 5005] [--min-free-gb 1.0]
+#   tts-venv\Scripts\python.exe -I voice_server.py --root C:\mods\voice-test [--port 5005] [--min-free-gb 1.0] [--idle-seconds 60] [--half|--full]
 #
-# --root holds refs.json (pick_refs.py) and the banks\ folder it points into. Plain HTTP on 127.0.0.1 only:
-#   GET  /health                -> {"ready":..,"model":..,"free_gb":..,"queued":..,"playing":..,"made":..,"held":..}
+# --root holds refs.json (pick_refs.py) and the banks\ folder it points into. The card: after --idle-seconds with nobody
+# speaking the model moves to system memory (about 3 GB back to the game) and returns for the next line in under a second
+# (0 keeps it on the card); --half runs the Llama backbone in half precision, a gigabyte less while it's there; the
+# allocator's cache is given back after every line. Plain HTTP on 127.0.0.1 only:
+#   GET  /health                -> {"ready":..,"model":..,"free_gb":..,"card_gb":..,"on_card":..,"queued":..,"playing":..,"made":..,"held":..}
 #   POST /say    {"id","model","sex","age","person","origin","text","kind":"thought"|"said","volume","pan","wait"}
 #                               -> {"ok":true,"bank":..,"voice":"own|model|borrowed","need":..} or {"held":"why","need":..}
 #                               (never waits for the voice: the mod asks /status). "need" names the person's own bank
@@ -41,12 +44,23 @@ from urllib.parse import parse_qs, urlparse
 
 import numpy as np
 
+# the card (Lex, 2026-11-03: "the VRAM gets maxed out... lagged frames; help the voices program to not take up so much
+# VRAM"): PyTorch's allocator grows in small pieces rather than holding big ones (set before torch is first imported),
+# the cache is given back after every line (card_tidy), and after --idle-seconds of nobody speaking the whole model moves
+# to system memory (offload: about 3 GB back to the game in half a second) and returns the moment a line is asked
+# (onload: under a second). With --half the Llama backbone runs in half precision, a gigabyte less while it's on the card.
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+
 ARGS = None
 MODEL = None
 MODEL_NAME = "chatterbox"
 SR = 24000
 READY = False
 LOAD_ERROR = None
+HALF_DEFAULT = True            # --half as built (the timing test, 2026-11-03: lines 1.7-3.1 s as in full precision, a gigabyte less; --full turns it off)
+ON_CARD = False                # the model on the card now (False: moved to system memory after a quiet spell, or no card)
+LAST_USED = time.time()        # the last line asked or made: the idle clock
+NEED_GB = 3.6                  # what the model takes on the card, measured after the warm-up (for the hold before a return)
 LOCK = threading.Lock()
 JOBS = {}                      # id -> job dict (state, times)
 WORK = queue.Queue()
@@ -224,7 +238,7 @@ def pick_ref(model, sex, age, person, origin=None):
 # ---- making the voice ----
 
 def load_model():
-    global MODEL, SR, READY, LOAD_ERROR, MODEL_NAME
+    global MODEL, SR, READY, LOAD_ERROR, MODEL_NAME, ON_CARD, NEED_GB
     try:
         import torch
         t = time.time()
@@ -235,25 +249,112 @@ def load_model():
         else:
             from chatterbox.tts import ChatterboxTTS
             MODEL = ChatterboxTTS.from_pretrained(device=ARGS.device)
+            if ARGS.half and ARGS.device == "cuda":
+                MODEL.t3.half()   # the Llama backbone, the biggest part, in half precision; the voice encoder (an LSTM) and the vocoder don't take it
+        ON_CARD = ARGS.device == "cuda"
         SR = MODEL.sr
         if SR != 24000:
             log("note: the model speaks at %d Hz, the mixer plays at 24000" % SR)
-        log("model %s loaded in %.1f s on %s%s" % (MODEL_NAME, time.time() - t, ARGS.device,
-            (", %.2f GB" % (torch.cuda.memory_allocated() / 1e9)) if ARGS.device == "cuda" else ""))
+        log("model %s loaded in %.1f s on %s%s%s" % (MODEL_NAME, time.time() - t, ARGS.device,
+            (", %.2f GB" % (torch.cuda.memory_allocated() / 1e9)) if ARGS.device == "cuda" else "", " (half)" if ARGS.half and not ARGS.turbo else ""))
         warm = next(iter(REFS_BY_MODEL.values()), None)
         try:   # the first line said is slow (kernels, caches): say one nobody hears, in a clip's voice or the model's own
             t = time.time()
             if warm:
                 conds_for(warm[0][1], 0.5)
+            ex = set_exaggeration(0.5)
             with torch.inference_mode():
-                MODEL.generate("Warming up.") if ARGS.turbo else MODEL.generate("Warming up.", exaggeration=0.5, cfg_weight=0.5)
+                MODEL.generate("Warming up.") if ARGS.turbo else MODEL.generate("Warming up.", exaggeration=ex, cfg_weight=0.5)
             log("warmed up in %.1f s" % (time.time() - t))
         except Exception as e:
             log("warm-up failed:", repr(e)[:200])
+        if ARGS.device == "cuda":
+            NEED_GB = round(torch.cuda.memory_reserved() / 1e9 + 0.3, 2)   # what a return to the card needs free
+            card_tidy()
+            log("the voices hold %.2f GB of the card%s" % (card_gb(), (", given back after %.0f s of quiet" % ARGS.idle_seconds) if ARGS.idle_seconds > 0 and not ARGS.turbo else ""))
+        global LAST_USED
+        LAST_USED = time.time()   # the idle clock from here, not from the start (a load longer than the quiet spell gave the card back at once)
         READY = True
     except Exception as e:  # the mod sees "not ready" and stays with its own voices
         LOAD_ERROR = repr(e)
         log("model failed to load:", LOAD_ERROR)
+
+
+def card_gb():
+    """What the voices hold of the card now (PyTorch's reserved memory), in GB."""
+    if ARGS.device != "cuda":
+        return 0.0
+    try:
+        import torch
+        return round(torch.cuda.memory_reserved() / 1e9, 2)
+    except Exception:
+        return 0.0
+
+
+def card_tidy():
+    """The allocator's unused cache given back to the card (the game's to use until the next line)."""
+    if ARGS.device != "cuda":
+        return
+    try:
+        import torch
+        torch.cuda.empty_cache()
+    except Exception:
+        pass
+
+
+def set_exaggeration(ex):
+    """The conditionals' exaggeration set to the line's, in the T3's own precision, so generate() finds them equal and
+    doesn't rebuild them in full precision (with --half, a full-precision rebuild fails on the half weights). Returns
+    the value to pass to generate (the half-rounded one, which compares equal)."""
+    import torch
+    if ARGS.turbo or MODEL is None or MODEL.conds is None:
+        return ex
+    c = MODEL.conds.t3
+    dtype = torch.float16 if ARGS.half and ARGS.device == "cuda" else torch.float32
+    cur = float(c.emotion_adv[0, 0, 0]) if torch.is_tensor(c.emotion_adv) else float(c.emotion_adv)
+    want = float(torch.tensor(ex, dtype=dtype))
+    needs = abs(cur - want) > 1e-6 or (torch.is_tensor(c.speaker_emb) and c.speaker_emb.dtype != dtype)
+    if needs:
+        d = {k: (v.to(dtype) if torch.is_tensor(v) and v.is_floating_point() else v) for k, v in c.__dict__.items()}
+        d["emotion_adv"] = (ex * torch.ones(1, 1, 1)).to(dtype)
+        MODEL.conds.t3 = type(c)(**d).to(device=ARGS.device)
+    return want
+
+
+def offload():
+    """Nobody has spoken for a while: the model to system memory, the card given back to the game."""
+    global ON_CARD
+    if not ON_CARD or MODEL is None or ARGS.turbo or not hasattr(MODEL, "t3"):
+        return
+    import torch
+    t = time.time()
+    for part in ("t3", "s3gen", "ve"):
+        getattr(MODEL, part).cpu()
+    if MODEL.conds is not None:
+        MODEL.conds = MODEL.conds.to("cpu")
+    for k in list(CONDS):
+        CONDS[k] = CONDS[k].to("cpu")
+    torch.cuda.empty_cache()
+    ON_CARD = False
+    COUNTS["givenback"] += 1
+    log("the card given back after %.0f s of quiet (%.2f s; %.1f GB free on it now)" % (ARGS.idle_seconds, time.time() - t, free_gb()))
+
+
+def onload():
+    """A line asked: the model back on the card (under a second)."""
+    global ON_CARD
+    if ON_CARD or MODEL is None or ARGS.device != "cuda" or ARGS.turbo or not hasattr(MODEL, "t3"):
+        return
+    t = time.time()
+    for part in ("t3", "s3gen", "ve"):
+        getattr(MODEL, part).to(ARGS.device)
+    if MODEL.conds is not None:
+        MODEL.conds = MODEL.conds.to(ARGS.device)
+    for k in list(CONDS):
+        CONDS[k] = CONDS[k].to(ARGS.device)
+    ON_CARD = True
+    COUNTS["backon"] += 1
+    log("back on the card in %.2f s" % (time.time() - t))
 
 
 def free_gb():
@@ -303,12 +404,14 @@ def make(job):
     import torch
     ex = float(job.get("exaggeration") or 0.5)
     conds_for(job["clip"], ex)
+    ex = set_exaggeration(ex)
     with torch.inference_mode():
         if ARGS.turbo:
             wav = MODEL.generate(job["text"])
         else:
             wav = MODEL.generate(job["text"], exaggeration=ex, cfg_weight=0.5)
-    w = wav.detach().cpu().squeeze(0).numpy().astype(np.float32)
+    w = wav.detach().float().cpu().squeeze(0).numpy().astype(np.float32)
+    card_tidy()   # the line's working memory back to the card at once
     peak = float(np.max(np.abs(w))) if len(w) else 0.0
     if peak > 0.98:
         w = w * (0.98 / peak)
@@ -321,8 +424,18 @@ def make(job):
 
 
 def worker():
+    global LAST_USED
     while True:
-        job = WORK.get()
+        try:
+            job = WORK.get(timeout=2.0)
+        except queue.Empty:
+            # a quiet spell: the card given back to the game until the next line
+            if READY and ON_CARD and ARGS.idle_seconds > 0 and time.time() - LAST_USED > ARGS.idle_seconds and WORK.empty():
+                try:
+                    offload()
+                except Exception as e:
+                    log("giving the card back failed:", repr(e)[:200])
+            continue
         if job is None:
             return
         with LOCK:
@@ -334,14 +447,17 @@ def worker():
                 COUNTS["dropped"] += 1
                 continue
             f = free_gb()
-            if f < ARGS.min_free_gb:
+            need = ARGS.min_free_gb if ON_CARD else max(ARGS.min_free_gb, NEED_GB)   # off the card, the return needs its room
+            if f < need:
                 job["state"] = "held"
-                job["why"] = "vram %.2f GB free" % f
+                job["why"] = "vram %.2f GB free" % f + ("" if ON_CARD else " (the voices need %.1f to come back)" % NEED_GB)
                 COUNTS["held"] += 1
                 continue
             job["state"] = "making"
+        LAST_USED = time.time()
         t = time.time()
         try:
+            onload()
             w = make(job)
         except Exception as e:
             with LOCK:
@@ -578,7 +694,9 @@ class Handler(BaseHTTPRequestHandler):
                 pl = sum(1 for j in JOBS.values() if j["state"] == "playing")
             self.reply({"ready": READY, "model": MODEL_NAME, "error": LOAD_ERROR, "free_gb": round(free_gb(), 2), "queued": q, "playing": pl,
                         "made": COUNTS["made"], "held": COUNTS["held"], "dropped": COUNTS["dropped"], "failed": COUNTS["failed"], "again": COUNTS["again"],
-                        "captured": COUNTS["captured"], "poor": COUNTS["poor"]})
+                        "captured": COUNTS["captured"], "poor": COUNTS["poor"],
+                        "card_gb": card_gb(), "on_card": ON_CARD, "half": bool(ARGS.half and not ARGS.turbo), "idle_s": int(time.time() - LAST_USED),
+                        "givenback": COUNTS["givenback"], "backon": COUNTS["backon"]})
         elif u.path == "/needed":   # the banks still worth recording, those without a clip first (the batch row)
             most = int((parse_qs(u.query).get("most") or ["600"])[0])
             none = [b for b in sorted(LINES) if b not in CLIPS or (ARGS.prefer_captured and CLIPS[b][2] == "export")]
@@ -618,6 +736,8 @@ class Handler(BaseHTTPRequestHandler):
                 JOBS[jid] = {"id": jid, "text": text[:400], "kind": "thought" if b.get("kind") == "thought" else "said", "clip": clip, "bank": bank,
                              "volume": float(b.get("volume", 1.0)), "pan": float(b.get("pan", 0.0)), "wait": float(b.get("wait", 8.0)),
                              "exaggeration": b.get("exaggeration"), "asked": time.time(), "state": "queued"}
+            global LAST_USED
+            LAST_USED = time.time()   # the idle clock runs from the last line asked (the card isn't given back under a queue)
             WORK.put(JOBS[jid])
             self.reply({"ok": True, "bank": bank, "voice": how, "need": need})
         elif u.path == "/taint":   # the mod heard another voice in the recording's window: near, the clip goes under poor; far, it's kept as the weaker sort
@@ -676,6 +796,9 @@ def main():
     ap.add_argument("--thought-gain", type=float, default=0.6, help="a thought's loudness against a said line")
     ap.add_argument("--grace", type=float, default=4.0, help="seconds past its wait a made line may still start")
     ap.add_argument("--turbo", action="store_true", help="Chatterbox Turbo (faster; its own download)")
+    ap.add_argument("--idle-seconds", type=float, default=60.0, help="after this long with nobody speaking the model leaves the card (about 3 GB back to the game) and returns for the next line in under a second; 0 keeps it on the card")
+    ap.add_argument("--half", dest="half", action="store_true", default=HALF_DEFAULT, help="the Llama backbone in half precision: a gigabyte less of the card while the voices are on it")
+    ap.add_argument("--full", dest="half", action="store_false", help="the backbone in full precision (as 0.7.18's test builds)")
     ap.add_argument("--capture-snr", type=float, default=12.0, help="a clip recorded in game is kept when it stands this many dB over the sound around it")
     ap.add_argument("--good-snr", type=float, default=25.0, help="a recorded clip this clear isn't recorded again")
     ap.add_argument("--retry-minutes", type=float, default=10.0, help="a bank isn't recorded again sooner than this")
