@@ -251,9 +251,11 @@ namespace EnrageWestworld.Core
             }
         };
 
-        public static string Thought(Person p, PersonState st, PlayerRef you, string seed)
+        /// commit: the thought will be shown (the ticker); false from a letter or the news digest, which must not spend the
+        /// centre's three thoughts (the review of items 11-12).
+        public static string Thought(Person p, PersonState st, PlayerRef you, string seed, bool commit = true)
         {
-            if (st != null && st.WakeStage >= Awake && !st.Has("centre"))
+            if (commit && LoopVoice.On && st != null && st.WakeStage >= Awake && !st.Has("centre"))
             {
                 // the centre (Core/LoopVoice.cs; SIXDAY 12a): three thoughts, in order, that end with them knowing the voice as their own
                 int n = st.Has("centre2") ? 3 : st.Has("centre1") ? 2 : 1;

@@ -419,7 +419,7 @@ namespace EnrageWestworld.InGame
                 return "off";
             Vector3 pos = Game.Player.Character.Position;
             List<Resident> camps = _engine.Camps();
-            int waiting = _store.Residents.Count(x => x.Fled && !x.Dead && !x.HasCamp);
+            int waiting = _store.Residents.Count(x => x.Fled && !x.Left && !x.Dead && !x.HasCamp);   // the fled, not those gone on the train
             string nearest = camps.Count == 0 ? "" : ", nearest " + (int)camps.Min(c => CampPos(c).DistanceTo(pos)) + " m";
             return _cfg.HermitChance + "% per roll, " + camps.Count + " camp(s)" + nearest + ", " + waiting + " fled and waiting for one" +
                    (_hermit != null ? ", out: " + _hermit.R.Name + " (" + _hermit.Phase + ")" : "") + (DoneToday("hermit") ? ", a camp turned up today" : "");

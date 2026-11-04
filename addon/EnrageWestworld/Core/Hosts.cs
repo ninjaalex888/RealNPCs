@@ -179,13 +179,14 @@ namespace EnrageWestworld.Core
             return Choose(AloudLines, tier, st, seed, line => Fill(line, p, you, seed));
         }
 
-        public static string Thought(Person p, PersonState st, PlayerRef you, string seed)
+        /// commit: the thought will be shown; false from a letter or the digest (Awakening.Thought's centre is spent only when shown).
+        public static string Thought(Person p, PersonState st, PlayerRef you, string seed, bool commit = true)
         {
             if (st == null || st.WakeStage <= 0)
                 return null;   // the world feeling unreal is for the awake only (Lex, 2026-10-29)
             if (st != null && st.WakeStage > 0 && Voice.Chance(seed + "wk", 80))
             {
-                string w = Awakening.Thought(p, st, you, seed);
+                string w = Awakening.Thought(p, st, you, seed, commit);
                 if (w != null)
                     return w;
             }

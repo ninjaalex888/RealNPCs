@@ -31,7 +31,19 @@ namespace EnrageWestworld.InGame
         }
 
         /// The key pressed (KeyDown04): with Shift, the next kind; alone, this place under the kind.
+        private Action _aSpots;
+
+        /// Tick04: the key's request, under its own Safe like the other steps (the review of items 11-12); nothing when none.
         private void SpotsStep(int now)
+        {
+            if (_spotRequested == 0)
+                return;
+            if (_aSpots == null)
+                _aSpots = () => SpotsRun();
+            Safe("spots", _aSpots);
+        }
+
+        private void SpotsRun()
         {
             int ask = _spotRequested;
             if (ask == 0)

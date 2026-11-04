@@ -167,7 +167,7 @@ namespace EnrageWestworld.Core
             {
                 // a line that wakes (Core/WakeLines.cs; SIXDAY 12c): said as the talk closes, and taken in
                 s.Add(c.WakeLineBy, c.WakeLine, null, null, 500);
-                s.Add(1 - c.WakeLineBy, WakeLines.Heard(seed + "|wl"), null, null, 500);
+                s.Add(1 - c.WakeLineBy, WakeLines.Heard(seed + "|wl"), null, "cb:wakeline", 500);   // the hearing is booked as this plays (the game side's CustomScene), not at the open
             }
             return s;
         }

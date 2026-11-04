@@ -1011,7 +1011,7 @@ namespace EnrageWestworld.Core
             if (Cfg.HostsQuestionReality && Hosts.Tier(Hosts.Awareness(p, st)) >= 1)
             {
                 if (Voice.Chance(seed + "h", 40))
-                    news.Add(Hosts.Thought(p, st, you, seed));
+                    news.Add(Hosts.Thought(p, st, you, seed, false));   // the digest: never the centre's own thoughts
                 else if (Voice.Chance(seed + "dream", 35))
                     news.Add(Hosts.Dream(p, st, seed));
                 else if (Voice.Chance(seed + "corner", 25))

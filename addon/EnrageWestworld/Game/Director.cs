@@ -100,6 +100,9 @@ namespace EnrageWestworld.InGame
 
         /// Called for actions the director doesn't know ("cb:reveal"), with the part after "cb:".
         public Action<string> Custom;
+        /// The same, with the scene it played in: its bodies and its cast (the review of items 11-12: a word that must know
+        /// who said it, in a side or a second scene as much as the main one).
+        public Action<string, Ped[], SceneCast> CustomScene;
 
         /// "slam": the game layer plays the rough move, attacker then victim; false if it can't (then it's a shove).
         public Func<Ped, Ped, bool> Slam;
@@ -426,10 +429,10 @@ namespace EnrageWestworld.InGame
 
         // what a quiet talk may do: words, turning to each other, a smoke or a flask, walking off; nothing that needs the
         // scene's one-owner machinery (blows, the rough move, a walk-over, a drunk on the floor, a callback)
-        private static readonly HashSet<string> QuietActs = new HashSet<string> { "face", "faceone", "lookplayer", "smoke", "flask", "whittle", "stoic", "stand", "walkaway" };
+        private static readonly HashSet<string> QuietActs = new HashSet<string> { "face", "faceone", "lookplayer", "smoke", "flask", "whittle", "stoic", "stand", "walkaway", "cb:wakeline" };   // cb:wakeline: a word to the game side only (the hearing booked), no task
 
         // what a second full scene may do besides a quiet talk's: the walk-over and someone walking up (their state is the scene's own)
-        private static readonly HashSet<string> SecondActs = new HashSet<string> { "face", "faceone", "lookplayer", "smoke", "flask", "whittle", "stoic", "stand", "walkaway", "meet", "approach" };
+        private static readonly HashSet<string> SecondActs = new HashSet<string> { "face", "faceone", "lookplayer", "smoke", "flask", "whittle", "stoic", "stand", "walkaway", "meet", "approach", "cb:wakeline" };
         private static readonly HashSet<string> SecondNot = new HashSet<string> { "pickpocket", "lift", "rough", "drunk", "help", "passby", "hosts", "carry" };
 
         private static float[] XY(IEnumerable<Ped> ps)
@@ -1287,6 +1290,7 @@ namespace EnrageWestworld.InGame
                         try
                         {
                             Custom?.Invoke(act.Substring(3));
+                            CustomScene?.Invoke(act.Substring(3), l.Cast, l.Info);
                         }
                         catch (Exception ex)
                         {

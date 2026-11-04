@@ -50,12 +50,7 @@ namespace EnrageWestworld.InGame
             _thinNext = now + 60000;
             _thinTown = _placeTown;
             _thinMult = mult;
-            Ped me = Game.Player.Character;
-            int near = 0;
-            foreach (Ped p in Peds.All())
-                if (p.Handle != me.Handle && !p.IsDead && p.Position.DistanceTo(me.Position) < 60f)
-                    near++;
-            Log.Write("THIN STREETS " + _placeTown + ": multiplier " + mult.ToString("0.00") + " (index " + l.Index + "); " + near + " people within 60 m");
+            Log.Write("THIN STREETS " + _placeTown + ": multiplier " + mult.ToString("0.00") + " (index " + l.Index + ")");   // no scan of the peds from the frame (the review of items 11-12)
         }
 
         private string TownsStatus()

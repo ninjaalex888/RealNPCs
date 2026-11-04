@@ -228,6 +228,7 @@ namespace EnrageWestworld.InGame
         {
             Log.Debug = _cfg.DebugLog;
             InnerLife.Historical = _cfg.HistoricalAccuracy;   // [World] HistoricalAccuracy: the times, the year, the calendar (Core/Calendar.cs)
+            LoopVoice.On = _cfg.WestWorld && _cfg.LoopVoice;   // the centre's thoughts only with the voice on (Core/LoopVoice.cs)
             Natives.Brisk = _cfg.ErrandPace;
             Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
             Feed.Fallback = (title, text) => NewsPush(title, text, "news");   // when the game won't take top-left updates

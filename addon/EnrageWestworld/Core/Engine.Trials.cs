@@ -317,7 +317,7 @@ namespace EnrageWestworld.Core
             if (Cfg.Newspaper)
                 Requests.Add(new WorldRequest { Kind = "paper", Town = e.Town, Text = Trials.FinishedInsidePaper(e) });
             GallowsDone(e, now, false);
-            e.Outcome = "finished inside after shots";
+            e.Outcome = "hanged inside after shots";   // "hanged...": the ledger counts it as the hanging it was (the review of items 11-12)
         }
 
         /// A Testing row: no trial open in this town, a living regular is taken for the death of a made-up man, the judge due

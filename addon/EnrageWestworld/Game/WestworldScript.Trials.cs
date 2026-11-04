@@ -25,6 +25,7 @@ namespace EnrageWestworld.InGame
         private string _eventPrompt;                   // testify, swear, breakout: J opens the menu while it shows
         private TownEvent _eventPromptFor;
         private int _eventPromptUntil;
+        private string _eventPromptText;            // the prompt's line, made once when it's set (no string work each frame)
         private readonly HashSet<string> _broughtIn = new HashSet<string>();   // resident id | game day: once a day each
         private Ped _freedPed;
         private int _freedRelease;
@@ -39,6 +40,7 @@ namespace EnrageWestworld.InGame
             _eventPrompt = kind;
             _eventPromptFor = e;
             _eventPromptUntil = Game.GameTime + ms;
+            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : ": the cell");
         }
 
         private void PromptClear()
@@ -676,10 +678,9 @@ namespace EnrageWestworld.InGame
                 MenuBoxDraw(m);
                 return;
             }
-            if (_eventPrompt == null || Game.GameTime > _eventPromptUntil)
+            if (_eventPrompt == null || _eventPromptText == null || Game.GameTime > _eventPromptUntil)
                 return;
-            string key = KeySpec.Name(_eventKey.Key);
-            string text = key + (_eventPrompt == "testify" ? ": speak to the court" : _eventPrompt == "swear" ? ": be sworn in" : _eventPrompt == "show" ? ": the show" : ": the cell");
+            string text = _eventPromptText;
             float s = 0.3f;
             Draw.Text(text, 0.5f - Draw.Width(text, s) / 2f, 0.85f, s, 236, 214, 160);
         }

@@ -35,6 +35,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public string Kin;            // how they're related to the one who kept it before ("son"), null for a newcomer
         [DataMember(EmitDefaultValue = false)] public string KinOf;          // the one who kept it before, by name
         [DataMember(EmitDefaultValue = false)] public string From;           // a newcomer's old town
+        [DataMember(EmitDefaultValue = false)] public bool ByTrain;          // stepped down from a train (Core/Engine.Trains.cs): the ledger's arrivals; a post's successor has Kin too, but came no such way
         [DataMember(EmitDefaultValue = false)] public long TookOverAt;       // game minute they took the post over, 0 for the first
         [DataMember(EmitDefaultValue = false)] public int Wounds;            // times they were shot down at their counter and the game brought them back
         [DataMember(EmitDefaultValue = false)] public long WoundedAt;

@@ -1332,8 +1332,12 @@ namespace EnrageWestworld.InGame
                 float a = i * 22.5f * (float)Math.PI / 180f, dx = -(float)Math.Sin(a), dy = (float)Math.Cos(a);
                 for (float d = 5f; d <= 14f; d += 3f)
                 {
-                    float wx = pos.X + dx * d, wy = pos.Y + dy * d, wh = 0f;
-                    if (!WATER.GET_WATER_HEIGHT(wx, wy, pos.Z, &wh) || wh < pos.Z - 2.5f || wh > pos.Z + 0.5f)
+                    float wx = pos.X + dx * d, wy = pos.Y + dy * d;
+                    long slot = 0;   // an 8-byte slot for the out-parameter (the natives write eight; the rule in CLAUDE.md)
+                    if (!WATER.GET_WATER_HEIGHT(wx, wy, pos.Z, (float*)&slot))
+                        continue;
+                    float wh = *(float*)&slot;
+                    if (wh < pos.Z - 2.5f || wh > pos.Z + 0.5f)
                         continue;   // no water there, or water far below (a cliff) or above (a wall of it: a bridge's pier)
                     float t = Math.Max(0f, Math.Min(d, (mp.X - pos.X) * dx + (mp.Y - pos.Y) * dy));
                     if (Flat(mp, new Vector3(pos.X + dx * t, pos.Y + dy * t, mp.Z)) < 2f)

@@ -78,6 +78,7 @@ namespace EnrageWestworld.InGame
             _fallWatch = null;
             if (_director.Custom == null)
                 _director.Custom = SceneAction;
+                _director.CustomScene = SceneActionIn;   // the words that must know their scene (a line that wakes)
             if (_director.Slam == null)
             {
                 // the rough move for the Director's "slam" (WestworldScript.Roughs.cs)
@@ -1063,6 +1064,22 @@ namespace EnrageWestworld.InGame
             s.Add(0, "Lean in. Heard " + gang + " mean to " + what.Replace(gang + " ", "") + (string.IsNullOrEmpty(when) ? "" : ", " + when) + ".", null, "cb:reveal", 600)
              .Add(1, Voice.Pick(seed + "j", "Keep your voice down, fool.", "You'll get us both killed talking like that.", "...Who told you that?"), "mild")
              .Add(0, Voice.Pick(seed + "k", "Fella who rides with them. Drunk as a lord.", "I hear things. That's all.", "Just saying. Stay off the roads."));
+        }
+
+        /// A scene's word to the game side with the scene it played in: "wakeline", as the listener's answer plays (the
+        /// hearing booked on the right pair, in a side or second scene as much as the main one; nothing if the talk broke off
+        /// before the line).
+        private void SceneActionIn(string what, Ped[] cast, SceneCast info)
+        {
+            if (what != "wakeline" || info == null || info.WakeLine == null || info.WakeLineBy < 0 || info.WakeLineBy > 1 || cast == null || cast.Length < 2)
+                return;
+            Ped a = cast[info.WakeLineBy], b = cast[1 - info.WakeLineBy];
+            if (a == null || b == null || !a.Exists() || !b.Exists())
+                return;
+            string aId, aName, bId, bName;
+            LastingId(a, out aId, out aName);
+            LastingId(b, out bId, out bName);
+            _engine.LineSaid(aId, aName, bId, bName, _placeTown, Bridge.Now());
         }
 
         private void SceneAction(string what)

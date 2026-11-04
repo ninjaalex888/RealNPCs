@@ -15,6 +15,9 @@ namespace EnrageWestworld.Core
     {
         public const int HearsFrom = Awakening.Questioning, AnswersFrom = Awakening.Unravelling, BreaksFrom = Awakening.Awake;
         public const int CentreCount = 3;
+        /// [WestWorld] LoopVoice, set by the game side at load (Core can't see the settings; the review of items 11-12): off,
+        /// the centre's thoughts don't come (the reset ending has its own gate).
+        public static bool On = true;
         public const int ResetChance = 30;        // percent, at a stage-4 ending once the centre is passed
         public const float HearMetres = 30f;      // the player this near: the voice shows on the ticker
         public const int AnswerDelayMs = 3200;

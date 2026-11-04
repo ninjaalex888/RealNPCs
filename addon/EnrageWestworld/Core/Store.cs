@@ -340,11 +340,15 @@ namespace EnrageWestworld.Core
             foreach (Resident r in Residents)
                 if (r != null && r.Dead && r.DiedAt > cut && r.PostId == null && !r.Fled)
                 {
+                    kept.Add(EnrageWestworld.Core.Ghosts.Death(r, now));   // the ghost first: it keeps the hour they died
                     r.Dead = false;   // died after the cut with no ledger entry of ours: alive again all the same (Core/Ghosts.cs)
                     r.DiedAt = 0;
-                    kept.Add(EnrageWestworld.Core.Ghosts.Death(r, now));
                     n++;
                 }
+            if (TownLedgers != null)
+                foreach (TownLedger tl in TownLedgers.Values)
+                    if (tl != null && tl.LastPaperAt > cut)
+                        tl.LastPaperAt = 0;   // the month's mention undone with the rest: due again at the next first of the month
             if (Ghosts == null) Ghosts = new List<Ghost>();
             Ghosts.AddRange(kept);
             EnrageWestworld.Core.Ghosts.Trim(Ghosts, now);

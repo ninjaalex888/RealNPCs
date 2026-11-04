@@ -56,6 +56,8 @@ namespace EnrageWestworld.Core
 			InnerLife.WorryIdOf = WorryIdOf;      // enRAGE's person keeps the worry of the resident it took up (NIGHT3 For Lex 9a)
 			InnerLife.WorrySelf = WorrySelfOf;
 			HookMindFirst();   // the mind's own thoughts first, with [Mind] MindLive on (Engine.MindLive.cs)
+			// a rewind in the last two days, read off the ghosts kept, so the waking open with it after a restart too (the review of items 11-12)
+			Scenes.WentBackLately = cfg != null && cfg.WestWorld && cfg.Ghosts && store != null && store.Ghosts != null && Ghosts.WentBackLately(store.Ghosts, store.LastGameMin);
 		}
 
 		public Person Find(string id)

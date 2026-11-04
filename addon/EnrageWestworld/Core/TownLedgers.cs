@@ -32,7 +32,7 @@ namespace EnrageWestworld.Core
         public const int FearfulKills = 2, GrievingDeaths = 3, ProsperingGain = 3;   // the last month's counts that set a mood
         public const float ThinnestStreets = 0.6f;                                // the density multiplier's floor
         public const int ThinBelow = 30;                                          // the index under which streets thin
-        public static readonly string[] GoodKinds = { "peace", "mercy", "rescue", "spared", "charity" };
+        public static readonly string[] GoodKinds = { "peace", "mercy", "rescue", "spared", "thiefcaught" };   // the deeds' own good kinds (Core/Deeds.cs; charity is a fondness act, not a deed: the review of items 11-12)
 
         /// The regulars a town keeps at this index: the setting's number scaled, never below min(10, the setting).
         public static int Cap(int index, int perTown)
@@ -85,7 +85,7 @@ namespace EnrageWestworld.Core
                         if (r.LeftAt >= month) recentLoss++;
                         if (r.LeftAt > lastAt) { lastAt = r.LeftAt; why = "someone took the train"; }
                     }
-                    if (r.Kin != null || r.From != null)
+                    if (r.ByTrain)
                     {
                         l.Arrivals++;
                         index += Arrival;

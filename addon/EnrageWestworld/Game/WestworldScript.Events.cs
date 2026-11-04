@@ -86,9 +86,7 @@ namespace EnrageWestworld.InGame
             bool aw = !PED.IS_PED_MALE(people[0].Handle), bw = people[1] != null && people[1].Exists() && !PED.IS_PED_MALE(people[1].Handle);
             RecordEvent("scene:" + kind, aId, aName ?? Director.Kind(people[0], aw), bId, bName ?? (people[1] != null && people[1].Exists() ? Director.Kind(people[1], bw) : null),
                         people[0].Position, people[0].Handle, people[0].Handle, people[1] != null ? people[1].Handle : 0, kind);
-            SceneCast info = _director.CurrentInfo;
-            if (info != null && info.WakeLine != null && info.WakeLineBy >= 0 && (kind == "hosts" || kind == "smalltalk" || kind == "gossip"))
-                _engine.LineSaid(info.WakeLineBy == 0 ? aId : bId, info.WakeLineBy == 0 ? aName : bName, info.WakeLineBy == 0 ? bId : aId, info.WakeLineBy == 0 ? bName : aName, _placeTown, Bridge.Now());   // the line that wakes, said (Core/WakeLines.cs)
+            // (a line that wakes is booked by the scene's own "cb:wakeline" beat as it plays: SceneActionIn in WestworldScript.Life.cs; the review of items 11-12)
         }
 
         /// For the F7 dump: the last five events.

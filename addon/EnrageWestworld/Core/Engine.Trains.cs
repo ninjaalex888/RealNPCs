@@ -113,6 +113,7 @@ namespace EnrageWestworld.Core
             }
             else
                 r.From = Trains.NewcomerFrom(r.Id);
+            r.ByTrain = true;   // the ledger counts these alone (a post's successor has Kin too; the review of items 11-12)
             _trainArrivals++;
             Push(new Toast { Kind = "life", Title = "Off the train in " + ShortTown(town), Weight = 25, Text = Trains.ArrivedNotice(town, r.Name, r.Kin, r.KinOf, r.From) });
             Log("TRAIN " + town + ": arrival " + r.Name + (r.Kin != null ? " (" + r.KinOf + "'s " + r.Kin + ")" : " (from " + r.From + ")"));

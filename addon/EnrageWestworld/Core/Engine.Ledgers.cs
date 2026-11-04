@@ -45,7 +45,11 @@ namespace EnrageWestworld.Core
                 if (l == null || l.Town == null || !Store.TownVisits.ContainsKey(l.Town))
                     continue;
                 bool firstOfMonth = day == 1, clockUnknown = day <= 0;
-                bool due = (firstOfMonth || clockUnknown) && now - l.LastPaperAt >= 20 * 1440L && l.LastPaperAt > 0 || (l.LastPaperAt == 0 && (firstOfMonth || clockUnknown));
+                // the first of the month (twenty days at least since the last), every thirty days with the clock's day unknown, and a
+                // month that was never played on its first caught up at forty-five days (the review of items 11-12)
+                bool due = l.LastPaperAt == 0 ? (firstOfMonth || clockUnknown)
+                         : clockUnknown ? now - l.LastPaperAt >= 30 * 1440L
+                         : (firstOfMonth && now - l.LastPaperAt >= 20 * 1440L) || now - l.LastPaperAt >= 45 * 1440L;
                 if (!due)
                     continue;
                 l.LastPaperAt = now;

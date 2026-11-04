@@ -41,12 +41,18 @@ namespace EnrageWestworld.InGame
 
         private void TrainsTick(int now)
         {
-            if (_cfg == null || !_cfg.TrainTime || _engine == null || _store == null)
+            if (_cfg == null || _engine == null || _store == null)
                 return;
-            LeaverStep(now);
+            if (!_cfg.TrainTime)
+            {
+                if (_leaver != null)
+                    LeaverAbort();   // switched off mid-walk: the body is the game's again, the resident stays (the review of items 11-12)
+                return;
+            }
             if (now < _trainNext)
                 return;
             _trainNext = now + 1000;
+            LeaverStep(now);   // once a second, like the rest of this
             if (MISC.GET_MISSION_FLAG())
                 return;
             Ped me = Game.Player.Character;
@@ -148,6 +154,22 @@ namespace EnrageWestworld.InGame
             Ped leaverBody = null;
             List<Resident> due = _engine.DeparturesDue(town, gameNow);
             Resident leaver = due.Count > 0 && _leaver == null ? due[0] : null;
+            // the leaver already walking the town in a body of their own: that body if it's near the platform, else the name card
+            // comes off it before another is cast (one body with their name; the review of items 11-12)
+            Ped ownBody = null;
+            if (leaver != null)
+            {
+                foreach (KeyValuePair<int, ResBind> kv in _resBind)
+                    if (kv.Value.R != null && kv.Value.R.Id == leaver.Id && ENTITY.DOES_ENTITY_EXIST(kv.Key) && !ENTITY.IS_ENTITY_DEAD(kv.Key))
+                    {
+                        Ped own = new Ped(kv.Key);
+                        if (own.Position.DistanceTo(at) <= 60f && !_director.Involves(kv.Key) && MayDirectWhyNot(own) == null)
+                            ownBody = own;
+                        break;
+                    }
+                if (ownBody == null)
+                    UnbindOthers(leaver.Id);
+            }
             foreach (Ped p in Peds.All())
             {
                 int h = p.Handle;
@@ -173,7 +195,7 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_LOOK_AT_ENTITY(h, train, 8000, 0, 51, 0);   // a look, never a task cleared
                     looking++;
                 }
-                bool free = !_resBind.ContainsKey(h) && !ENTITY.IS_ENTITY_ON_SCREEN(h) && !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17) && ResidentWhy(p) == null && !_bridge.Looked(h) && d <= Trains.StepDownMetres;
+                bool free = ownBody == null && !_resBind.ContainsKey(h) && !ENTITY.IS_ENTITY_ON_SCREEN(h) && !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17) && ResidentWhy(p) == null && !_bridge.Looked(h) && d <= Trains.StepDownMetres;
                 if (!free)
                     continue;
                 bool woman = !PED.IS_PED_MALE(h);
@@ -192,8 +214,8 @@ namespace EnrageWestworld.InGame
             if (stepDown != null)
                 arrival = StepDown(stepDown, town, gameNow);
             DeliverLetters(town, gameNow, "train");
-            if (leaver != null && leaverBody != null)
-                LeaverCast(leaver, leaverBody, train, now, gameNow);
+            if (leaver != null && (ownBody ?? leaverBody) != null)
+                LeaverCast(leaver, ownBody ?? leaverBody, train, at, now, gameNow, ownBody != null);
             Log.Write("TRAIN " + town + ": arrived (" + looking + " looking" + (keeper != null ? ", the keeper called it" : "") + (arrival != null ? ", arrival: " + arrival : ", nobody got off") + (leaver != null ? (leaverBody != null ? ", leaving: " + leaver.Name : ", " + leaver.Name + " leaving but no free body for them") : "") + ")");
         }
 
@@ -235,13 +257,14 @@ namespace EnrageWestworld.InGame
         }
 
         /// The leaver, on a free body by the platform: a goodbye to a friend if one is bound near, then the walk to the train.
-        private void LeaverCast(Resident r, Ped body, int train, int now, long gameNow)
+        private void LeaverCast(Resident r, Ped body, int train, Vector3 platform, int now, long gameNow, bool own)
         {
             int h = body.Handle;
             uint model = ENTITY.GET_ENTITY_MODEL(h);
-            _resBind[h] = new ResBind { R = r, Model = model };
-            if (r.Regular && r.Outfit > 0 && _cfg.RegularsDress && _bridge.CanTellLooked)
-            {
+            if (!own)
+                _resBind[h] = new ResBind { R = r, Model = model };
+            if (!own && r.Regular && r.Outfit > 0 && r.Model == model && _cfg.RegularsDress && _bridge.CanTellLooked)
+            {   // a preset of their own build only, as the regulars' casting dresses them (the review of items 11-12)
                 PED._EQUIP_META_PED_OUTFIT_PRESET(h, r.Outfit, false);
                 PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
             }
@@ -273,8 +296,32 @@ namespace EnrageWestworld.InGame
                 _leaverUntil = now + 32000;
             }
             Vector3 tp = ENTITY.GET_ENTITY_COORDS(train, true, true);
+            // a point beside the rails, 3.5 m from the engine's own coordinates toward the platform: never onto the track itself
+            float ox = platform.X - tp.X, oy = platform.Y - tp.Y, ol = (float)Math.Sqrt(ox * ox + oy * oy);
+            if (ol > 0.5f)
+            {
+                tp.X += ox / ol * 3.5f;
+                tp.Y += oy / ol * 3.5f;
+            }
+            if (own)
+                TASK.CLEAR_PED_TASKS(h, true, false);
             TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, tp.X, tp.Y, tp.Z, 1f, -1, 2f, 0, 0f);
             Log.Write("TRAIN " + r.Town + ": " + r.Name + " on the platform to leave (" + _leaverWhy + ")" + (friend != null ? ", a goodbye to " + _resBind[friend.Handle].R.Name : ", nobody to say goodbye to"));
+        }
+
+        /// The walk given up (TrainTime switched off mid-walk): the body is the game's again and the resident stays in town.
+        private void LeaverAbort()
+        {
+            int h = _leaverHandle;
+            _resBind.Remove(h);
+            if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h))
+            {
+                TASK.CLEAR_PED_TASKS(h, true, false);
+                WanderLater(h, Game.GameTime + 500);
+            }
+            Log.Write("TRAIN " + _leaver.Town + ": " + _leaver.Name + "'s walk to the train given up (TrainTime off); they stay");
+            _leaver = null;
+            _leaverHandle = 0;
         }
 
         /// The leaver walks to the train; at it, or when the time's up, they're gone for good and the body is the game's again.

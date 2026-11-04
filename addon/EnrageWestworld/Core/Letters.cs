@@ -104,7 +104,7 @@ namespace EnrageWestworld.Core
             string seed = p.Id + "conf" + now / 10080;
             string body = Salute(you, knowsName, "To the rider who comes back,") + "\n\n" +
                 "I have to tell someone and you are the only one who seems to be outside of it. " +
-                Hosts.Thought(p, st, you, seed) + " " +
+                Hosts.Thought(p, st, you, seed, false) + " " +
                 Voice.Pick(seed + "2", "I've started marking the days on the wall. Somebody keeps washing the marks off.",
                     "Yesterday the man at the store asked me the same question four times. Same words. He didn't know.",
                     "If you know what we are, please. Just tell me. I can bear it. I think.") +
