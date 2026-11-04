@@ -5,8 +5,10 @@
 // answer here stands: what the words seem to be about (the news, their name, how they are, their trouble, the weather,
 // the way, a drink, money, God, guns, the law, thanks, sorry, goodbye) answered by their nature and how they stand with
 // him, and anything else met with a plain non-answer. Why they answer as they do: a stranger's question is a test of how
-// guarded they are. The afraid give nothing, the hostile refuse, the fond answer, the cold shrug. The microphone comes in
-// the next step (the voice server's ear). Plain C#, no game; all words original to this add-on.
+// guarded they are. The afraid give nothing, the hostile refuse, the fond answer, the cold shrug. The second step is the
+// microphone (SIXDAY item 4b): the voice server's ear (voice_server.py, /listen) writes down what the player says, and
+// Heard tidies it into the same line as if typed (the transcriber's notes in brackets dropped, the words it makes out of
+// silence refused), so both roads meet in one answer. Plain C#, no game; all words original to this add-on.
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,11 +17,18 @@ namespace EnrageWestworld.Core
 {
     public static class FreeTalk
     {
-        public const int MostChars = 90;   // the line's length (the subtitle's width)
+        public const int MostChars = 90;   // the typed line's length (the subtitle's width)
+        public const int MostHeard = 160;  // a spoken line may run longer (a sentence said in six seconds), cut there
 
         public static string Label()
         {
             return "Say something else...";
+        }
+
+        /// The spoken row (the voice server's ear): on a keyboard or a pad.
+        public static string SpeakLabel()
+        {
+            return "Say it out loud...";
         }
 
         /// What may be typed: letters, digits, a space and the plain punctuation of a sentence.
@@ -29,7 +38,7 @@ namespace EnrageWestworld.Core
         }
 
         /// The text as said: trimmed, one space between words, the first letter up, a full stop if no mark ends it.
-        public static string Tidy(string text)
+        public static string Tidy(string text, int most = MostChars)
         {
             if (text == null || text.Length == 0)
                 return null;
@@ -54,12 +63,42 @@ namespace EnrageWestworld.Core
             string s = b.ToString().Trim();
             if (s.Length == 0)
                 return null;
-            if (s.Length > MostChars)
-                s = s.Substring(0, MostChars).TrimEnd();
+            if (s.Length > most)
+                s = s.Substring(0, most).TrimEnd();
             s = s.Substring(0, 1).ToUpperInvariant() + s.Substring(1);
             char last = s[s.Length - 1];
             if (last != '.' && last != '?' && last != '!')
                 s += s.IndexOf('?') < 0 && Asks(s.ToLowerInvariant()) ? "?" : ".";
+            return s;
+        }
+
+        /// What the transcriber wrote down, as said: its notes in brackets dropped ("[BLANK_AUDIO]", "(laughs)"), the stock
+        /// words it makes out of silence refused ("you" alone, a watcher's thanks, a subtitler's credit), anything without
+        /// a letter in it too, and the rest tidied as a typed line is, to MostHeard. Null when nothing worth answering was heard.
+        public static string Heard(string raw)
+        {
+            if (raw == null || raw.Length == 0)
+                return null;
+            var b = new StringBuilder(raw.Length);
+            int depth = 0;
+            foreach (char c in raw)
+            {
+                if (c == '[' || c == '(' || c == '{') { depth++; continue; }
+                if (c == ']' || c == ')' || c == '}') { if (depth > 0) depth--; continue; }
+                if (depth == 0)
+                    b.Append(c);
+            }
+            string s = Tidy(b.ToString(), MostHeard);
+            if (s == null)
+                return null;
+            bool letters = false;
+            foreach (char c in s)
+                if (char.IsLetterOrDigit(c)) { letters = true; break; }
+            if (!letters)
+                return null;
+            string lower = s.ToLowerInvariant().TrimEnd('.', '!', '?', ' ');
+            if (lower == "you" || lower == "thanks for watching" || lower == "thank you for watching" || lower.Contains("subtitles by") || lower.Contains("amara.org"))
+                return null;
             return s;
         }
 
@@ -226,6 +265,7 @@ namespace EnrageWestworld.Core
         public static IEnumerable<string> AllLines()
         {
             yield return Label();
+            yield return SpeakLabel();
             string[] texts = { "Goodbye.", "Thank you kindly.", "I'm sorry about that.", "What's your name?", "How are you faring?", "What's troubling you?", "Any news?", "Think it'll rain?", "Which way to Valentine?", "Fancy a drink?", "Could you lend me a dollar?", "Do you believe in God?", "Ever shot a man?", "Where's the sheriff?", "Is this your town?", "The horse is tired." };
             foreach (string temper in new[] { null, "Hothead", "Coward", "Proud", "Cold", "Greedy" })
                 foreach (string regard in new[] { null, "afraid", "hostile", "fond" })

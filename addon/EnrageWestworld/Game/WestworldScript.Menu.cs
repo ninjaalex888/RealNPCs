@@ -51,6 +51,9 @@ namespace EnrageWestworld.InGame
             public bool Typing;           // the line is being typed (Core/FreeTalk.cs): every key is its
             public readonly System.Text.StringBuilder Typed = new System.Text.StringBuilder();
             public string Free;           // what he typed and said, as said
+            public bool Listening;        // the voice server's ear is open (SIXDAY 4b): the row says so, the keys end it or drop it
+            public VoiceJob Listen;       // the listen under way (WestworldScript.Voiced.cs), read here each frame
+            public int ListenShown;       // the second the listening row shows (-1: writing it down); the row is rebuilt only when it changes
             public Person P;           // who they are to the mind, for their worry's words when he asks after it
             public float Reach;
             public List<InteractOption> Options;
@@ -96,7 +99,7 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<string> _talkConfided = new HashSet<string>();   // who has told him their worry this session (a money worry he knows of: the gift is five dollars)
         private readonly bool[] _talkKeys = new bool[13];
         private readonly bool[] _typeWas = new bool[256];   // the typed line's keys, each once per press
-        private int _talkTyped, _talkTypedModel;
+        private int _talkTyped, _talkTypedModel, _talkSpoken;
         private string _talkLast;
         private Action _aTalkPrompt;
 
@@ -425,7 +428,14 @@ namespace EnrageWestworld.InGame
                                              house: company >= Fondness.HouseLeast, gift: _cfg.FondnessActs, woman: _menu.Woman, condoleFor: _menu.Condole, escort: _menu.EscortOffer,
                                              errandTo: _menu.ErrandTie != null ? Person.FirstOf(_menu.ErrandTie.Other(_menu.Id)) : null,
                                              deliverFrom: _menu.Deliver && _errand != null ? Person.FirstOf(_errand.FromName) : null, deliverMessage: _menu.Deliver && _errand != null ? _errand.Message : null,
-                                             typed: _cfg.TalkTyped && PAD.IS_USING_KEYBOARD_AND_MOUSE(0));   // his own words, typed: a keyboard in use
+                                             typed: _cfg.TalkTyped && PAD.IS_USING_KEYBOARD_AND_MOUSE(0),   // his own words, typed: a keyboard in use
+                                             spoken: _cfg.TalkVoice);   // ...or by microphone (keyboard or pad; greyed below when the server has no ear)
+            if (_cfg.TalkVoice)
+            {
+                InteractOption speak = _menu.Options.Find(x => x.Id == "speak");
+                if (speak != null)
+                    speak.Why = VoiceEarWhy();   // null when the voice server is up with its transcriber and a microphone
+            }
             int at = selId != null ? _menu.Options.FindIndex(x => x.Id == selId) : -1;
             _menu.Sel = at >= 0 ? at : 0;   // the same option stays chosen (by index, "Watch yourself." slid under the cursor after an apology)
             _menu.Rows = null;
@@ -502,6 +512,13 @@ namespace EnrageWestworld.InGame
                     TalkDraw(t);
                 return;
             }
+            if (t.Listening)
+            {
+                TalkListenFrame(t, now);   // the voice server's ear: the keys end it or drop it, the words land as if typed
+                if (_menu == t)
+                    TalkDraw(t);
+                return;
+            }
             // the keys: the pad's buttons kept from the game while the list is open; the keyboard read directly while
             // it's the one in use, the pad's buttons while a pad is (both at once moved the choice twice for one press)
             foreach (uint c in MenuButtons)
@@ -568,6 +585,12 @@ namespace EnrageWestworld.InGame
                 t.Typed.Length = 0;
                 t.Rows = null;
                 Array.Clear(_typeWas, 0, _typeWas.Length);
+                _typeWas[0x0D] = _typeWas[0x20] = true;   // the Enter or Space that chose the row is still down next frame: not the line's (found building 4b)
+                return;
+            }
+            if (o.Id == "speak")
+            {
+                TalkListenStart(t, now);   // the voice server's ear (SIXDAY 4b)
                 return;
             }
             string seed = t.Id + "|" + o.Id + "|" + now / 1000;
@@ -901,6 +924,11 @@ namespace EnrageWestworld.InGame
                 _youNodAt[t.Id] = _now;   // just spoke with him: no passing look and greeting straight after goodbye (ToYou's rest)
             if (t.ThoughtAt > 0 && _talkLast != null)
                 TalkThink(t);
+            if (t.Listen != null)
+            {
+                t.Listen.StopAsked = true;   // the ear closes with the list
+                t.Listen = null;
+            }
             _escortTest = false;   // the Testing row's offer was for this list only
             _spaceAgain[t.Handle] = Game.GameTime + 60000;   // stood close to talk: no "a little room" from them straight after
             if (ENTITY.DOES_ENTITY_EXIST(t.Handle) && !ENTITY.IS_ENTITY_DEAD(t.Handle) && !_director.Involves(t.Handle))
@@ -924,7 +952,7 @@ namespace EnrageWestworld.InGame
         private void TalkDraw(TalkMenu t)
         {
             float s = 0.3f, lh = Draw.LineHeight(s), x = 0.035f, fs = s * 0.85f, flh = Draw.LineHeight(fs);
-            int n = t.Typing ? 1 : t.Options.Count;
+            int n = t.Typing || t.Listening ? 1 : t.Options.Count;
             bool pending = t.Pending != null;
             if (t.Rows == null || t.RowsSel != t.Sel || t.RowsPending != pending || t.RowsPad != t.Pad)
             {
@@ -935,6 +963,12 @@ namespace EnrageWestworld.InGame
                     t.Rows = new[] { "> " + t.Typed + "_" };   // the line as typed (Core/FreeTalk.cs)
                     t.Wide = Math.Max(t.Wide, Draw.Width(t.Rows[0], s));
                     t.Foot = "Enter: say it   Backspace: delete   Esc: back";
+                }
+                else if (t.Listening)
+                {
+                    t.Rows = new[] { t.ListenShown < 0 ? "(writing it down...)" : "(listening... " + t.ListenShown + " s)" };   // the ear (rebuilt once a second)
+                    t.Wide = Math.Max(t.Wide, Draw.Width(t.Rows[0], s));
+                    t.Foot = t.Pad ? "A: that's all   B: never mind" : "Space: that's all   Backspace: never mind";
                 }
                 else
                 {
@@ -958,7 +992,7 @@ namespace EnrageWestworld.InGame
             Draw.Text(t.Title, x, y, s * 1.05f, 236, 214, 160);
             for (int i = 0; i < n; i++)
             {
-                bool sel = !t.Typing && i == t.Sel && !pending, closed = !t.Typing && t.Options[i].Why != null;
+                bool sel = !t.Typing && !t.Listening && i == t.Sel && !pending, closed = !t.Typing && !t.Listening && t.Options[i].Why != null;
                 int c = closed ? 130 : sel ? 255 : 210;
                 Draw.Text(t.Rows[i], x, y + (i + 1) * lh + 0.004f, s, c, c, closed ? 130 : sel ? 200 : 210);
             }
@@ -1029,6 +1063,95 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// The spoken row chosen: the voice server's ear opens for TalkVoiceSeconds at most (WestworldScript.Voiced.cs,
+        /// VoiceListen); the list shows it listening until the words land or nothing was heard.
+        private void TalkListenStart(TalkMenu t, int now)
+        {
+            string why = VoiceEarWhy();
+            if (why != null)
+            {
+                Hint(FreeTalk.SpeakLabel() + ": " + why + ".", 2500);
+                return;
+            }
+            VoiceJob j = VoiceListen(_cfg.TalkVoiceSeconds, false);
+            if (j == null)
+            {
+                Hint("The voice server is listening already.", 2500);
+                return;
+            }
+            t.Listen = j;
+            t.Listening = true;
+            t.ListenShown = 0;
+            t.Rows = null;
+            t.LastAt = now;
+            Array.Clear(_typeWas, 0, _typeWas.Length);
+            _typeWas[0x0D] = _typeWas[0x20] = true;   // the key that chose the row is still down next frame: not "done"
+            Log.Detail("TALK listening for " + t.Name + " (" + _cfg.TalkVoiceSeconds + " s at most)");
+        }
+
+        /// Each frame while the ear is open: Space, Enter or a pad's A say he's done (what's heard so far is written down),
+        /// Backspace, Esc or B drop it; the words land through TalkTypedSend as if typed, a hint when nothing was made out.
+        private void TalkListenFrame(TalkMenu t, int now)
+        {
+            foreach (uint c in MenuButtons)
+                PAD.DISABLE_CONTROL_ACTION(0, c, true);
+            t.LastAt = now;   // not "nothing chosen" while he talks
+            bool keyboard = PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
+            if (t.Pad == keyboard)
+            {
+                t.Pad = !keyboard;   // the foot follows what's in use
+                t.Rows = null;
+            }
+            bool done, drop;
+            if (keyboard)
+            {
+                done = TypeKey(0x20) | TypeKey(0x0D);
+                drop = TypeKey(0x08) | TypeKey(0x1B);
+            }
+            else
+            {
+                done = PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, MenuAccept);
+                drop = PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, MenuCancel);
+            }
+            VoiceJob j = t.Listen;
+            if (j == null)
+            {
+                t.Listening = false;
+                t.Rows = null;
+                return;
+            }
+            if (drop)
+            {
+                j.StopAsked = true;
+                t.Listening = false;
+                t.Listen = null;
+                t.Rows = null;
+                Log.Detail("TALK listening dropped on " + t.Name);
+                return;
+            }
+            if (done && !j.DoneAsked && !j.Over)
+                j.DoneAsked = true;
+            int shown = j.State == "hearing" || j.State == "finishing" || j.DoneAsked ? -1 : (Environment.TickCount - j.AskedAt) / 1000;
+            if (shown != t.ListenShown)
+            {
+                t.ListenShown = shown;
+                t.Rows = null;
+            }
+            if (!j.Over)
+                return;
+            t.Listening = false;
+            t.Listen = null;
+            t.Rows = null;
+            string text = j.State == "heard" ? FreeTalk.Heard(j.Text) : null;
+            if (text == null)
+            {
+                Hint(j.State == "heard" ? "Nothing worth answering was made out." : "Nothing heard" + (j.Why != null ? ": " + j.Why : " (" + j.State + ")") + ".", 3000);
+                Log.Write("TALK heard nothing from you for " + t.Name + ": " + j.State + (j.Why != null ? " (" + j.Why + ")" : "") + (j.Text != null ? " \"" + j.Text + "\"" : ""));
+                return;
+            }
+            TalkTypedSend(t, text, now, true);
+        }
+
         private static void TypeAppend(TalkMenu t, char c)
         {
             if (t.Typed.Length < FreeTalk.MostChars && FreeTalk.Allowed(c))
@@ -1037,7 +1160,7 @@ namespace EnrageWestworld.InGame
 
         /// His own words said: the caption, the written answer by what they seem to be about (the fallback), and the model
         /// asked for theirs in their own words (Kind "free") when it's on.
-        private void TalkTypedSend(TalkMenu t, string text, int now)
+        private void TalkTypedSend(TalkMenu t, string text, int now, bool spoken = false)
         {
             t.Free = text;
             string seed = t.Id + "|free|" + now / 1000;
@@ -1051,8 +1174,11 @@ namespace EnrageWestworld.InGame
             TalkAskModelFree(t, text, a, confides, now);
             t.AnswerAt = now + 1400;
             _talkSaid++;
-            _talkTyped++;
-            Log.Write("TALK typed to " + t.Name + ": \"" + text + "\" (" + topic + ")");
+            if (spoken)
+                _talkSpoken++;
+            else
+                _talkTyped++;
+            Log.Write("TALK " + (spoken ? "said by microphone to " : "typed to ") + t.Name + ": \"" + text + "\" (" + topic + ")");
         }
 
         /// With [Mind] LanguageTalk: the model answers his own words from who they are (no meaning given: Language.FreeBody);
@@ -1119,7 +1245,7 @@ namespace EnrageWestworld.InGame
         private string TalkStatus()
         {
             return (_cfg.InteractionMenu ? "on (Talk in the lock-on menu on " + (TalkOnControl() ? "the game's lock-on target-info control: Q unless rebound in its Controls menu, a pad's RB" : TalkKeyName() != null ? TalkKeyName() + ", read directly, or a pad's RB" : "a pad's RB only (TalkKey None)") + ")" : "off ([World] InteractionMenu)") + "; opened " + _talkOpened + " times, " + _talkSaid + " things said" +
-                   (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_talkSettled > 0 ? ", " + _talkSettled + " worries mended" : "") + (_talkTyped > 0 ? ", " + _talkTyped + " things typed (" + _talkTypedModel + " asked of the model)" : "") +
+                   (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_talkSettled > 0 ? ", " + _talkSettled + " worries mended" : "") + (_talkTyped + _talkSpoken > 0 ? ", " + _talkTyped + " things typed and " + _talkSpoken + " said by microphone (" + _talkTypedModel + " asked of the model)" : "") +
                    (_talkModelAsked > 0 ? "; the model worded " + _talkModelSaid + " of " + _talkModelAsked + " answers (" + _talkModelHeld + " held by the checks, " + _talkModelLate + " late)" : "") + (_menu != null ? "; open on " + _menu.Name : "");
         }
     }

@@ -15,6 +15,11 @@
 // their voice is cloned from, by the bank's name, in a quiet moment, and the server records it off this PC's output, so nothing
 // of Rockstar's ships. While it records, our own game lines are held (Speech.RecordingPed) and another voice near spoils the
 // clip. The Testing rows "voicerec" (the nearest person now) and "voicerec:all" (every bank still wanted, on whoever is nearest).
+// The ear (SIXDAY item 4b; Lex's brief, pillar 3: the player's microphone through the Talk prompt): with [Mind] TalkVoice,
+// Talk's row "Say it out loud..." opens a job of Kind "listen": the server records the default microphone until the player
+// has said something and fallen quiet (or Space/Enter/A: "done"; Backspace/Esc/B: dropped), writes it down with
+// faster-whisper on the CPU, and the words land in Talk as if typed (TalkTypedSend; Core/FreeTalk.cs Heard). Nothing is
+// kept and nothing leaves the PC. The Testing row "listen" opens the ear without Talk (the log line HEARD).
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -38,6 +43,9 @@ namespace EnrageWestworld.InGame
             public bool Male;
             public int Handle, AskedAt, WaitSeconds, NextPoll;
             public volatile bool Sent, Over, StopAsked, Played;
+            // the ear (Kind "listen"): the seconds asked for, "done" from the keys (passed on once), the Testing row's
+            public volatile bool DoneAsked, DoneSent, Test;
+            public int Seconds;
             public volatile string State = "waiting", Why, Bank;
             public volatile float Vol = 1f, Pan;
             public volatile int MakeMs;
@@ -83,10 +91,12 @@ namespace EnrageWestworld.InGame
         private readonly List<int> _voiceMakeMs = new List<int>();
         private readonly Dictionary<string, int> _voiceThoughtAt = new Dictionary<string, int>();
         private string _voiceLast, _voiceRecentKey, _voiceHeldWhy;
+        private volatile string _voiceStt, _voiceSttError, _voiceMic;   // the server's ear from /health: its transcriber (null while loading or without one), why not, the microphone
+        private int _voiceHeard, _voiceUnheard;
         private int _voiceRecentAt;
         private string _voiceLineKey, _voiceLineText;   // the thought voiced just now: ThoughtsAloud stays quiet for it
 
-        private bool VoiceWanted { get { return _cfg != null && (_cfg.VoicedThoughts || _cfg.VoicedDialogue); } }
+        private bool VoiceWanted { get { return _cfg != null && (_cfg.VoicedThoughts || _cfg.VoicedDialogue || _cfg.TalkVoice); } }   // the server is wanted for its ear alone too (SIXDAY 4b)
 
         /// Each tick: the worker started or stopped with the switches, and each voice under way told where its speaker is.
         private void VoiceStep(int now)
@@ -116,6 +126,12 @@ namespace EnrageWestworld.InGame
             {
                 if (j.CapText != null && (j.Played || j.Over || Environment.TickCount - j.CapAskedAt > VoiceCaptionWaitMs))
                     VoiceCaptionShow(j);   // the voice started (or isn't coming, or took too long): its words now
+                if (j.Kind == "listen")
+                {
+                    if (j.Over)
+                        VoiceListenSettle(j);
+                    continue;   // the player's own microphone: no speaker to follow, no earshot (Talk reads the job itself)
+                }
                 if (j.Over)
                 {
                     VoiceSettle(j);
@@ -346,7 +362,7 @@ namespace EnrageWestworld.InGame
             _voiceStop = false;
             _voiceThread = new Thread(VoiceWork) { IsBackground = true, Name = "RealNPCs voice", Priority = ThreadPriority.BelowNormal };
             _voiceThread.Start();
-            Log.Write("VOICE worker started: " + _cfg.VoiceUrl + " (thoughts " + (_cfg.VoicedThoughts ? "on" : "off") + ", dialogue " + (_cfg.VoicedDialogue ? "on" : "off") + ", within " + _cfg.VoiceMetres + " m)");
+            Log.Write("VOICE worker started: " + _cfg.VoiceUrl + " (thoughts " + (_cfg.VoicedThoughts ? "on" : "off") + ", dialogue " + (_cfg.VoicedDialogue ? "on" : "off") + ", within " + _cfg.VoiceMetres + " m; the ear " + (_cfg.TalkVoice ? "on" : "off") + ")");
         }
 
         private void VoiceStop()
@@ -408,6 +424,11 @@ namespace EnrageWestworld.InGame
                         if (j.Kind == "capture")
                         {
                             VoiceRecordWork(url, j);
+                            continue;
+                        }
+                        if (j.Kind == "listen")
+                        {
+                            VoiceListenWork(url, j);
                             continue;
                         }
                         if (!j.Sent)
@@ -516,6 +537,9 @@ namespace EnrageWestworld.InGame
             string free = VoiceRaw(r, "free_gb") ?? "?";
             string card = VoiceRaw(r, "card_gb");   // what the voices hold of the card, from the server that gives it back after a quiet spell (2026-11-03)
             bool onCard = r != null && r.IndexOf("\"on_card\":true", StringComparison.Ordinal) >= 0;
+            _voiceStt = Language.JsonField(r, "stt");   // the ear: null while its transcriber loads, or for good with stt_error
+            _voiceSttError = Language.JsonField(r, "stt_error");
+            _voiceMic = Language.JsonField(r, "mic");
             string holds = card == null ? "" : onCard ? ", the voices hold " + card + " GB" : ", the voices off the card until the next line";
             _voiceReady = ready;
             _voiceServer = ready ? "ready (" + model + ", " + free + " GB free on the card" + holds + ")" : "loading its model (" + (Language.JsonField(r, "error") ?? "a few seconds") + ")";
@@ -965,12 +989,153 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        // ---- the ear (SIXDAY item 4b) ----
+
+        /// Why the spoken row can't be used now (null when it can): the switch, the server, its transcriber, a microphone.
+        private string VoiceEarWhy()
+        {
+            if (_cfg == null || !_cfg.TalkVoice)
+                return "[Mind] TalkVoice is off";
+            if (!_voiceReady)
+                return "the voice server isn't running";
+            if (_voiceStt == null)
+                return _voiceSttError != null ? "the voice server has no transcriber (run install-voice.cmd again)" : "the transcriber is still loading";
+            if (_voiceMic == null)
+                return "no microphone";
+            return null;
+        }
+
+        /// The ear opened, for Talk's spoken row or the Testing row: a job of Kind "listen" the worker drives (VoiceListenWork);
+        /// null when the server isn't ready or one is open already. Talk keeps the job and reads it itself.
+        private VoiceJob VoiceListen(int seconds, bool test)
+        {
+            if (!_voiceReady)
+                return null;
+            var j = new VoiceJob
+            {
+                Id = "l" + (++_voiceSeq) + "-" + (Environment.TickCount & 0xFFFFFF).ToString("x"),
+                Kind = "listen",
+                Name = "you",
+                Seconds = seconds,
+                AskedAt = Environment.TickCount,
+                WaitSeconds = seconds + 20,   // the words take a moment to write down (the transcriber's first use longer)
+                Test = test,
+            };
+            lock (_voiceLock)
+            {
+                foreach (VoiceJob o in _voiceJobs)
+                    if (o.Kind == "listen" && !o.Over)
+                        return null;
+                _voiceJobs.Add(j);
+            }
+            return j;
+        }
+
+        /// The worker's side of a listen: /listen asked, then /status watched until the words are written down (State "heard",
+        /// Text, the milliseconds in MakeMs) or nothing was; "done" from the keys passed on as /stop with done, a drop as /stop.
+        private void VoiceListenWork(string url, VoiceJob j)
+        {
+            if (Environment.TickCount - j.NextPoll < 0)
+                return;
+            j.NextPoll = Environment.TickCount + 200;
+            if (!j.Sent)
+            {
+                if (j.StopAsked)
+                {
+                    j.State = "dropped";
+                    j.Over = true;
+                    return;
+                }
+                string r = VoiceHttp(url + "/listen", "{\"id\":" + Language.JsonString(j.Id) + ",\"seconds\":" + j.Seconds + "}", 3000);
+                j.Sent = true;
+                string held = Language.JsonField(r, "held");
+                if (held != null)
+                {
+                    j.State = "held";
+                    j.Why = held;
+                    j.Over = true;
+                    return;
+                }
+                j.State = "listening";
+                return;
+            }
+            if (j.StopAsked)
+            {
+                VoiceHttp(url + "/stop", "{\"id\":" + Language.JsonString(j.Id) + "}", 1500);
+                j.State = "dropped";
+                j.Over = true;
+                return;
+            }
+            if (j.DoneAsked && !j.DoneSent)
+            {
+                j.DoneSent = true;
+                VoiceHttp(url + "/stop", "{\"id\":" + Language.JsonString(j.Id) + ",\"done\":true}", 1500);   // what's heard so far is written down
+            }
+            if (Environment.TickCount - j.AskedAt > j.WaitSeconds * 1000)
+            {
+                VoiceHttp(url + "/stop", "{\"id\":" + Language.JsonString(j.Id) + "}", 1500);
+                j.State = "timed out";
+                j.Why = "the server took too long";
+                j.Over = true;
+                return;
+            }
+            string s = VoiceHttp(url + "/status?id=" + Uri.EscapeDataString(j.Id), null, 1500);
+            string state = Language.JsonField(s, "state") ?? "unknown";
+            if (state == "heard")
+            {
+                j.Text = Language.JsonField(s, "text");
+                j.MakeMs = VoiceNum(s, "make_ms");
+                j.State = "heard";
+                j.Over = true;
+            }
+            else if (state == "failed" || state == "dropped" || state == "unknown")
+            {
+                j.State = state;
+                j.Why = Language.JsonField(s, "why");
+                j.Over = true;
+            }
+            else
+                j.State = state;   // listening, finishing, hearing
+        }
+
+        /// A listen over: off the list and counted (the log line HEARD); the Testing row's shown above the ticker too.
+        private void VoiceListenSettle(VoiceJob j)
+        {
+            lock (_voiceLock)
+                if (!_voiceJobs.Remove(j))
+                    return;
+            bool heard = j.State == "heard" && j.Text != null;
+            if (heard)
+                _voiceHeard++;
+            else
+                _voiceUnheard++;
+            string why = j.Why != null ? " (" + j.Why + ")" : "";
+            _voiceLast = heard ? "you (heard, " + j.MakeMs + " ms): " + j.Text : "you (listened): " + j.State + why;
+            Log.Write(heard ? "HEARD: \"" + j.Text + "\" (" + j.MakeMs + " ms to write down)" : "HEARD nothing: " + j.State + why);
+            if (j.Test)
+                Hint(heard ? "Heard: \"" + j.Text + "\"" : "Nothing heard: " + j.State + why + ".", 5000);
+        }
+
+        /// The Testing row: the ear opened now, without Talk; what it hears shows above the ticker and in the log as HEARD.
+        private string VoiceListenTest(int now, out string said)
+        {
+            said = null;
+            string why = VoiceEarWhy();
+            if (why != null)
+                return why;
+            VoiceJob j = VoiceListen(_cfg.TalkVoiceSeconds, true);
+            if (j == null)
+                return "the ear is open already";
+            said = "Say something now: " + _cfg.TalkVoiceSeconds + " s at most, or a moment's quiet after it";
+            return "listening through " + (_voiceMic ?? "the microphone") + " with " + _voiceStt + "; what it hears shows here and in the log as HEARD";
+        }
+
         /// The settings panel's word on the voice server, under the AI model's (Lex, 2026-11-03): "off", "on, ready (...)",
         /// "on, checking...", "on, loading its model (...)", or "on, NOT REACHABLE (...)".
         private string VoiceStatusText()
         {
             if (!VoiceWanted)
-                return "off ([Mind] VoicedThoughts and VoicedDialogue, on the Mind page)";
+                return "off ([Mind] VoicedThoughts, VoicedDialogue and TalkVoice, on the Mind page)";
             string s = _voiceServer ?? "not checked";
             if (_voiceReady)
                 return "on, " + s;
@@ -984,7 +1149,7 @@ namespace EnrageWestworld.InGame
         private string VoiceStatus()
         {
             if (!VoiceWanted)
-                return "off ([Mind] VoicedThoughts and VoicedDialogue)";
+                return "off ([Mind] VoicedThoughts, VoicedDialogue and TalkVoice)";
             int med = 0;
             if (_voiceMakeMs.Count > 0)
             {
@@ -996,6 +1161,7 @@ namespace EnrageWestworld.InGame
                    (_voiceHeldWhy != null ? " (last: " + _voiceHeldWhy + ")" : "") + ", " + _voiceDropped + " dropped, " + _voiceFailed + " failed, " + _voiceSkipped + " passed over while busy" +
                    (_voiceRecorded + _voiceRecordPoor > 0 ? "; " + _voiceRecorded + " clips recorded in game (" + _voiceRecordPoor + " not kept; " + _voiceRecAuto + " by itself, " + _voiceRecBatch + " in the batch)" : "") +
                    (_voiceRecAll ? "; the batch running, " + _voiceRecQueue.Count + " of " + _voiceRecQueueTotal + " to go" : "") +
+                   "; the ear " + (_cfg.TalkVoice ? "on (" + (_voiceStt ?? (_voiceSttError != null ? "no transcriber: " + _voiceSttError : "transcriber loading")) + ", " + (_voiceMic ?? "no microphone") + "; heard you " + _voiceHeard + " times, nothing " + _voiceUnheard + ")" : "off") +
                    (_voiceLast != null ? "; last: " + _voiceLast : "");
         }
     }

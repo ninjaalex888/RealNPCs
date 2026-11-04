@@ -19,7 +19,12 @@
 #                               far (true), it's kept as the weaker sort and recorded again when a clean moment comes
 #   GET  /needed?most=600       -> {"banks":"a,b,c","none":..,"weak":..,"clips":..}: the banks still worth recording
 #   POST /place  {"id","volume","pan"}   the speaker moved
-#   POST /stop   {"id"} or {}            one voice, or every voice
+#   POST /stop   {"id"} or {}            one voice, or every voice; with "done":true a listening job is written down instead
+#   POST /listen {"id","seconds"}  -> {"ok":true,"for":..,"stt":..} or {"held":"why"}: the player's own microphone (Talk's
+#                               spoken row, SIXDAY 4b): recorded until he has said something and fallen quiet (or the
+#                               seconds are up, or /stop with "done"), then written down by the transcriber (faster-whisper,
+#                               --stt-model, on the CPU as built); /status says listening|hearing|heard (with "text")|failed
+#                               (with "why"). Nothing is kept and nothing leaves this PC.
 #   GET  /status?id=..          -> {"state":"queued|making|ready|playing|done|dropped|failed|held|unknown","make_ms":..,"seconds":..}
 #   POST /capture {"id","bank"}  -> {"ok":true,"line":..,"take":..,"seconds":..} or {"held":"why"}: the server records what this
 #                               PC plays for the line's length and a margin (the mod has the person say that line, the game's
@@ -50,6 +55,7 @@ import numpy as np
 # to system memory (offload: about 3 GB back to the game in half a second) and returns the moment a line is asked
 # (onload: under a second). With --half the Llama backbone runs in half precision, a gigabyte less while it's on the card.
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")   # the transcriber's files under tools/stt without the symlink lecture (start-voice-server.cmd on this PC sets no HF_HOME)
 
 ARGS = None
 MODEL = None
@@ -75,6 +81,12 @@ CLIPS = {}                     # bank -> (clip, tier, "export"|"recorded"): the 
 BANKS_BY_MODEL = {}            # model -> every bank the game has for it, clip or no clip
 INDEX = {}                     # bank -> {"snr","seconds","when","tries","last","faint"}: the recordings so far (captured\index.json)
 CAPTURING = False              # the mixer starts no voice while the output tap records
+LISTENING = False              # ...nor while the microphone listens (the player's words shouldn't have to talk over ours)
+STT = None                     # the transcriber (faster-whisper), loaded once in the background; None until then, or for good with STT_ERROR
+STT_NAME = None
+STT_ERROR = None
+STT_LOCK = threading.Lock()
+MIC_NAME = None                # the default microphone's name, found at the start (for /health)
 LOG_PATH = None                # <root>\voice-server.log once the root is known (what a player's report can carry); 2 MB, then the old one is kept once
 TAG = re.compile(r"_(WHITE|BLACK|HISPANIC|ASIAN|NATIVE|IRISH)(?:_|$)")   # mid-name too: A_M_M_CIV_POOR_WHITE_AVOID_14
 ORIGIN_TAG = {"white": "WHITE", "french": "WHITE", "italian": "WHITE", "german": "WHITE", "scandinavian": "WHITE", "black": "BLACK",
@@ -612,13 +624,171 @@ def capture(job):
     log("capture %s: %.1f s, %.0f dB over the sound around it (floor %s dB)%s -> %s" % (bank, length, snr, job["floor"], ", " + job["why"] if faint else "", path))
 
 
+# ---- the player's own microphone (SIXDAY item 4b): Talk's spoken row ----
+
+def stt_load():
+    """The transcriber (faster-whisper; --stt-model on --stt-device), loaded once: in the background at the start, and at
+    --check so the model files (about 150 MB for base.en) land under <root>/tools/stt at install, not mid-game. None, with
+    STT_ERROR set, when it can't (not installed, no model files and no network): the mod then greys the spoken row."""
+    global STT, STT_NAME, STT_ERROR
+    with STT_LOCK:
+        if STT is not None or STT_ERROR is not None:
+            return STT
+        try:
+            from faster_whisper import WhisperModel
+            t = time.time()
+            compute = ARGS.stt_compute if ARGS.stt_compute != "auto" else ("float16" if ARGS.stt_device == "cuda" else "int8")
+            STT = WhisperModel(ARGS.stt_model, device=ARGS.stt_device, compute_type=compute, download_root=os.path.join(ARGS.root, "tools", "stt"))
+            STT_NAME = "%s on the %s" % (ARGS.stt_model, "card" if ARGS.stt_device == "cuda" else "CPU")
+            log("the transcriber (%s, %s) loaded in %.1f s" % (STT_NAME, compute, time.time() - t))
+        except Exception as e:
+            STT_ERROR = repr(e)[:160]
+            log("no transcriber (the microphone can't be written down):", STT_ERROR)
+        return STT
+
+
+def mic_name():
+    """The default microphone's name (WASAPI), for /health; None without one."""
+    try:
+        import pyaudiowpatch as pa
+        p = pa.PyAudio()
+        try:
+            idx = p.get_host_api_info_by_type(pa.paWASAPI).get("defaultInputDevice")
+            return p.get_device_info_by_index(idx)["name"] if idx is not None and idx >= 0 else None
+        finally:
+            p.terminate()
+    except Exception:
+        return None
+
+
+def write_down(model, x, sr):
+    """What was said in x (mono float32 at sr), as text, and the milliseconds it took: brought to 16 kHz, made as loud as a
+    voice, and given to the transcriber with its own silence filter on; a passage the model itself doubts was speech is
+    left out (it makes words out of silence otherwise)."""
+    import math
+    from scipy.signal import resample_poly
+    if sr != 16000:
+        g = math.gcd(16000, sr)
+        x = resample_poly(x, 16000 // g, sr // g).astype(np.float32)
+    peak = float(np.max(np.abs(x))) if len(x) else 0.0
+    if peak > 0:
+        x = (x * (0.9 / peak)).astype(np.float32)
+    t = time.time()
+    segments, _info = model.transcribe(x, language="en", beam_size=1, vad_filter=True, condition_on_previous_text=False, without_timestamps=True)
+    parts = []
+    for seg in segments:
+        if seg.no_speech_prob is not None and seg.no_speech_prob > 0.6 and seg.avg_logprob < -1.0:
+            continue
+        parts.append(seg.text.strip())
+    return " ".join(w for w in parts if w).strip(), int((time.time() - t) * 1000)
+
+
+def listen_fail(job, why):
+    job["state"] = "failed"
+    job["why"] = why
+    COUNTS["unheard"] += 1
+    log("listen: nothing written down, %s" % why)
+
+
+def listen(job):
+    """The player's own microphone: recorded until he has said something and fallen quiet for --listen-quiet seconds (or the
+    job's seconds are up, or the mod says he's done), then written down by the transcriber. The room's quiet is measured as
+    it goes (it falls at once, rises slowly), a voice is what stands 12 dB over it and isn't a whisper; nothing said before
+    a voice is heard is transcribed (whisper makes words out of silence). Nothing is kept: the sound lives in memory for
+    the seconds it takes and goes with the job."""
+    global LISTENING
+    secs = job["for"]
+    try:
+        import pyaudiowpatch as pa
+    except Exception as e:
+        return listen_fail(job, "no recorder (pip install pyaudiowpatch): " + repr(e)[:80])
+    chunks = []
+    spoke = False
+    sr = 16000
+    p = pa.PyAudio()
+    try:
+        idx = p.get_host_api_info_by_type(pa.paWASAPI).get("defaultInputDevice")
+        if idx is None or idx < 0:
+            return listen_fail(job, "no microphone (no default input device)")
+        mic = p.get_device_info_by_index(idx)
+        sr, ch = int(mic["defaultSampleRate"]), max(1, int(mic["maxInputChannels"]))
+        job["mic"] = mic["name"]
+
+        def heard(data, _frames, _t, _status):
+            chunks.append(np.frombuffer(data, dtype=np.float32).reshape(-1, ch).mean(axis=1))
+            return (None, pa.paContinue)
+
+        s = p.open(format=pa.paFloat32, channels=ch, rate=sr, input=True, input_device_index=idx, frames_per_buffer=1024, stream_callback=heard)
+        LISTENING = True
+        started = time.time()
+        blk = max(1, sr // 20)   # 50 ms blocks
+        judged = 0
+        floor = None
+        quiet_since = None
+        while job["state"] == "listening":
+            time.sleep(0.05)
+            now = time.time()
+            if now - started > secs:
+                break
+            got = list(chunks)
+            x = np.concatenate(got) if got else np.zeros(0, dtype=np.float32)
+            n = (len(x) - judged) // blk
+            if n <= 0:
+                continue
+            db = np.maximum(20 * np.log10(np.sqrt(np.mean(x[judged:judged + n * blk].reshape(n, blk) ** 2, axis=1)) + 1e-9), -90.0)
+            judged += n * blk
+            for v in db:
+                floor = v if floor is None or v < floor else floor + 0.02 * (v - floor)
+                if v > max(floor + 12.0, -45.0):
+                    spoke = True
+                    quiet_since = None
+                elif spoke and quiet_since is None:
+                    quiet_since = now
+            if spoke and quiet_since is not None and now - quiet_since > ARGS.listen_quiet:
+                break
+        s.stop_stream()
+        s.close()
+    except Exception as e:
+        return listen_fail(job, "the microphone failed: " + repr(e)[:120])
+    finally:
+        LISTENING = False
+        p.terminate()
+    if job["state"] == "dropped":
+        return
+    got = list(chunks)
+    x = np.concatenate(got) if got else np.zeros(0, dtype=np.float32)
+    if not spoke or len(x) < sr // 2:
+        return listen_fail(job, "nothing heard")
+    with LOCK:
+        if job["state"] == "dropped":
+            return
+        job["state"] = "hearing"
+    job["seconds"] = round(len(x) / sr, 2)
+    model = stt_load()
+    if model is None:
+        return listen_fail(job, "no transcriber (" + (STT_ERROR or "not loaded") + ")")
+    try:
+        text, job["make_ms"] = write_down(model, x, sr)
+    except Exception as e:
+        return listen_fail(job, "the transcriber failed: " + repr(e)[:120])
+    if not text:
+        return listen_fail(job, "nothing made out")
+    with LOCK:
+        if job["state"] != "hearing":
+            return
+        job["text"] = text[:300]
+        job["state"] = "heard"
+    COUNTS["heard"] += 1
+    log("listen: heard %.1f s, written down in %d ms: \"%s\"" % (job["seconds"], job["make_ms"], text[:120]))
+
+
 # ---- playing: every voice at once, each at its own volume and pan, eased so a move doesn't click ----
 
 def mix(outdata, frames, _time, _status):
     out = np.zeros((frames, 2), dtype=np.float32)
     with LOCK:
         now = time.time()
-        if not CAPTURING and not any(j["state"] == "playing" for j in JOBS.values()):
+        if not CAPTURING and not LISTENING and not any(j["state"] == "playing" for j in JOBS.values()):
             ready = sorted((j for j in JOBS.values() if j["state"] == "ready"), key=lambda j: j["asked"])
             for j in ready:
                 if now - j["asked"] > j["wait"] + ARGS.grace:   # its moment passed while another spoke
@@ -661,7 +831,7 @@ def tidy():
         time.sleep(10)
         now = time.time()
         with LOCK:
-            for k in [k for k, j in JOBS.items() if j["state"] not in ("queued", "making", "ready", "playing", "recording") and now - j["asked"] > 60]:
+            for k in [k for k, j in JOBS.items() if j["state"] not in ("queued", "making", "ready", "playing", "recording", "listening", "hearing", "finishing") and now - j["asked"] > 60]:
                 del JOBS[k]
 
 
@@ -696,7 +866,8 @@ class Handler(BaseHTTPRequestHandler):
                         "made": COUNTS["made"], "held": COUNTS["held"], "dropped": COUNTS["dropped"], "failed": COUNTS["failed"], "again": COUNTS["again"],
                         "captured": COUNTS["captured"], "poor": COUNTS["poor"],
                         "card_gb": card_gb(), "on_card": ON_CARD, "half": bool(ARGS.half and not ARGS.turbo), "idle_s": int(time.time() - LAST_USED),
-                        "givenback": COUNTS["givenback"], "backon": COUNTS["backon"]})
+                        "givenback": COUNTS["givenback"], "backon": COUNTS["backon"],
+                        "stt": STT_NAME, "stt_error": STT_ERROR, "mic": MIC_NAME, "heard": COUNTS["heard"], "unheard": COUNTS["unheard"]})
         elif u.path == "/needed":   # the banks still worth recording, those without a clip first (the batch row)
             most = int((parse_qs(u.query).get("most") or ["600"])[0])
             none = [b for b in sorted(LINES) if b not in CLIPS or (ARGS.prefer_captured and CLIPS[b][2] == "export")]
@@ -711,7 +882,7 @@ class Handler(BaseHTTPRequestHandler):
                 else:
                     left = (len(j["samples"]) - j["pos"]) / SR if j["state"] == "playing" and "samples" in j else 0
                     self.reply({"state": j["state"], "make_ms": j.get("make_ms", 0), "seconds": j.get("seconds", 0), "left": round(left, 2), "why": j.get("why"), "bank": j.get("bank"),
-                                "snr": j.get("snr"), "path": j.get("path")})
+                                "snr": j.get("snr"), "path": j.get("path"), "text": j.get("text") or None, "mic": j.get("mic")})
         else:
             self.reply({"error": "no such path"}, 404)
 
@@ -766,18 +937,40 @@ class Handler(BaseHTTPRequestHandler):
             if l is None:
                 return self.reply({"held": "no line known for " + bank})
             with LOCK:
-                if CAPTURING or any(j["state"] in ("recording", "playing") for j in JOBS.values()):
+                if CAPTURING or LISTENING or any(j["state"] in ("recording", "playing") for j in JOBS.values()):
                     return self.reply({"held": "a voice is playing or recording"})
                 secs = min(16.0, (l[2] or 6.0) + 3.0)
                 JOBS[jid] = {"id": jid, "bank": bank, "kind": "capture", "line": l[0], "take": l[1], "for": secs, "text": "",
                              "asked": time.time(), "state": "recording", "volume": 0.0, "pan": 0.0, "wait": secs}
             threading.Thread(target=capture, args=(JOBS[jid],), daemon=True).start()
             self.reply({"ok": True, "line": l[0], "take": l[1], "seconds": l[2], "for": secs})
+        elif u.path == "/listen":   # the player's own microphone (Talk's spoken row): listened to, then written down
+            jid = str(b.get("id") or "")
+            if not jid:
+                return self.reply({"held": "no id"})
+            if STT_ERROR is not None:
+                return self.reply({"held": "no transcriber (" + STT_ERROR[:80] + ")"})
+            try:
+                secs = float(b.get("seconds") or 6.0)
+            except (TypeError, ValueError):
+                secs = 6.0
+            secs = max(2.0, min(float(ARGS.listen_most), secs))
+            with LOCK:
+                if LISTENING or any(j["state"] in ("listening", "hearing", "finishing") for j in JOBS.values()):
+                    return self.reply({"held": "already listening"})
+                JOBS[jid] = {"id": jid, "kind": "listen", "for": secs, "text": "", "asked": time.time(), "state": "listening", "volume": 0.0, "pan": 0.0, "wait": secs + 20}
+            threading.Thread(target=listen, args=(JOBS[jid],), daemon=True).start()
+            self.reply({"ok": True, "for": secs, "stt": STT_NAME or "loading", "mic": MIC_NAME})
         elif u.path == "/stop":
             jid = b.get("id")
+            done = bool(b.get("done"))   # a listening job: he's done talking, write down what was heard
             with LOCK:
                 for k, j in JOBS.items():
-                    if (jid is None or k == jid) and j["state"] in ("queued", "making", "ready", "playing", "recording"):
+                    if jid is not None and k != jid:
+                        continue
+                    if j["state"] == "listening" and done:
+                        j["state"] = "finishing"
+                    elif j["state"] in ("queued", "making", "ready", "playing", "recording", "listening", "hearing", "finishing"):
                         j["state"] = "dropped"
                         j.pop("samples", None)
             self.reply({"ok": True})
@@ -804,10 +997,21 @@ def main():
     ap.add_argument("--retry-minutes", type=float, default=10.0, help="a bank isn't recorded again sooner than this")
     ap.add_argument("--prefer-captured", action="store_true", help="the clips recorded in game before the export's, where both exist")
     ap.add_argument("--check", action="store_true", help="load the model (its first download), say one line to nobody, report and exit (install-voice.cmd)")
+    ap.add_argument("--stt-model", default="base.en", help="the microphone's transcriber (faster-whisper): base.en as built (about 150 MB, quick on a CPU); small.en hears better and takes longer")
+    ap.add_argument("--stt-device", default="cpu", help="where the transcriber runs: cpu as built (none of the card), or cuda")
+    ap.add_argument("--stt-compute", default="auto", help="its precision: auto (int8 on the CPU, float16 on the card), int8, float16, float32")
+    ap.add_argument("--no-stt", action="store_true", help="no transcriber: the microphone is never listened to")
+    ap.add_argument("--listen-quiet", type=float, default=0.9, help="seconds of quiet after the player's words that end a listen")
+    ap.add_argument("--listen-most", type=float, default=12.0, help="the most seconds a listen may take")
     ARGS = ap.parse_args()
     LOG_PATH = os.path.join(ARGS.root, "voice-server.log")
     log("---- the voice server starts (%s): %s" % (time.strftime("%Y-%m-%d"), " ".join(sys.argv[1:]) or "no options"))
     load_refs(ARGS.root)
+    global MIC_NAME, STT_ERROR
+    MIC_NAME = mic_name()
+    if ARGS.no_stt:
+        STT_ERROR = "off (--no-stt)"
+    log("the microphone: %s" % (MIC_NAME or "none found (the spoken row in Talk stays grey)"))
     if ARGS.check:
         load_model()
         if LOAD_ERROR is not None:
@@ -821,10 +1025,15 @@ def main():
         except Exception as e:
             log("the voice model loaded but couldn't speak:", repr(e)[:200])
             sys.exit(1)
+        if not ARGS.no_stt:   # the transcriber's files fetched now, not the first time someone speaks in game
+            stt_load()
+            log("the microphone's transcriber: %s" % (STT_NAME or "couldn't start (" + (STT_ERROR or "?") + "); the spoken row in Talk stays grey"))
         sys.exit(0)
     import sounddevice as sd
     stream = sd.OutputStream(samplerate=24000, channels=2, dtype="float32", callback=mix, blocksize=1024)
     threading.Thread(target=load_model, daemon=True).start()
+    if not ARGS.no_stt:
+        threading.Thread(target=stt_load, daemon=True).start()
     threading.Thread(target=worker, daemon=True).start()
     threading.Thread(target=tidy, daemon=True).start()
     srv = ThreadingHTTPServer(("127.0.0.1", ARGS.port), Handler)

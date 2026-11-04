@@ -47,7 +47,8 @@ Set it up once:
 1. Keep the zip's "voice" folder somewhere permanent, for instance Documents\RealNPCs\voice. It
    holds install-voice.cmd, start-voice-server.cmd, voice_server.py and voices.json.
 2. Double-click install-voice.cmd once. It fetches uv, a Python of its own, PyTorch for NVIDIA
-   cards, Chatterbox and its model files into that folder (about 8 GB, once), and ends by saying
+   cards, Chatterbox and its model files, and the microphone's transcriber (faster-whisper,
+   about 150 MB) into that folder (about 8 GB, once), and ends by saying
    "The voices are ready." through your speakers. Nothing else on your PC changes; delete the
    folder to remove it all. If it fails part way (a download dropped), run it again: it carries
    on where it stopped.
@@ -427,6 +428,13 @@ NEW IN 0.7.11
   by what your words seem to be about (the news, their name, how they are, their trouble, the
   weather, the way, a drink, money, God, guns, the law, thanks, sorry, goodbye). Nothing is paid
   or promised by typing.
+  With the voice server running and a microphone, the row "Say it out loud..." ([Mind] TalkVoice,
+  off as it comes; keyboard or pad) listens to you instead: say it and fall quiet (or Space, Enter
+  or a pad's A: that's all; Backspace, Esc or B: never mind; TalkVoiceSeconds, 6, at most), the
+  server writes it down (faster-whisper on the CPU, none of your card), and your words are said
+  to them as if typed, the same answers either way. Nothing you say is kept or leaves the PC. The
+  row is greyed, with the reason, when the server isn't running, has no transcriber (run
+  install-voice.cmd again if the voices were set up before this version) or finds no microphone.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
@@ -435,8 +443,8 @@ NEW IN 0.7.11
   come and thank you hours or days later (the proud pay the $11 back); someone lonely who knows
   you may come over hoping for a word. While you talk, nothing else of RealNPCs' takes them.
   [World] InteractionMenu, TalkKey.
-  Talk is a list first, with your own typed words at its foot. The aim is real-time talk by
-  microphone as well, with the model, where your hardware allows.
+  Talk is a list first, with your own words, typed or spoken, at its foot. The aim is real-time
+  talk in your own voice with the model throughout, where your hardware allows.
 - Brawls that grow. A fistfight draws people in a wave at a time, up to [Mind] BrawlMost (12)
   fighting: friends and grudges first, from up to BrawlJoinMetres (30) away, most of all in a
   saloon with drink in it. Those sitting or leaning get up to join. The sides balance, a man

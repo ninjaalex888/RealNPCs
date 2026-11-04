@@ -207,6 +207,9 @@ namespace EnrageWestworld.InGame
                 case "voicerec:all":
                     skipped = "nothing: they say the game's own lines one after another and the server records them; press again to stop";
                     return VoiceRecordAll(now, out said);
+                case "listen":
+                    skipped = "nothing: the voice server's ear opens now, without Talk";
+                    return VoiceListenTest(now, out said);   // WestworldScript.Voiced.cs
                 case "subtitle":
                     // the box RealNPCs draws what people say near you in (Lex, 2026-10-30: "I'm still not able to see our mods
                     // drawn on subtitles"): one for six seconds, and the log says where it was drawn

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 209;
+        public const int CurrentVersion = 210;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -121,6 +121,8 @@ namespace EnrageWestworld.Core
         public bool ModelWakes = true;        // with Language, MindWakes and LanguageVariety: someone with cause who wonders at the world in a thought of their own chips "things are as they seem", so the model's wondering can start them stirring (settings version 159)
         public bool LanguageTalk = true;   // with Language: what people answer in Talk is said in the model's words (the meaning stays the menu's; the written line if it's slow or fails the checks) (settings version 156; NIGHT3)
         public bool TalkTyped = true;      // [Mind] Talk's last row, "Say something else...", opens a line to type your own words on (a keyboard in use); they answer from who they are: in the model's own words with LanguageTalk, else a written answer by what the words seem to be about (Core/FreeTalk.cs; roadmap 37; SIXDAY item 4; settings version 209)
+        public bool TalkVoice = false;     // [Mind] Talk's row "Say it out loud...": the voice server listens to your microphone and writes down what you say, and it's said to them as if typed (the same answers). Off as it comes: it needs the voice server with its transcriber (faster-whisper, install-voice.cmd), and a microphone. Nothing is kept, nothing leaves the PC (SIXDAY item 4b; settings version 210)
+        public int TalkVoiceSeconds = 6;   // [Mind] with TalkVoice: it listens for at most this many seconds (3-12); a moment's quiet after your words ends it sooner, Space or Enter too
         public bool LanguagePicks = true;   // with Language: the model picks what people near you do, from the few things the mind allows (settings version 142)
         public bool MindStartsScenes = true;   // with LanguagePicks: a person's own reasons with someone near (a quarrel, a friend to comfort, a debt) join the model's list, and a pick starts the scene (settings version 146; NIGHT3 item 1)
         public int PickMetres = 25;    // how far from the player the model picks for people (15 until settings version 147; NIGHT3 item 2); past 15 m it's asked half as often
@@ -801,6 +803,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 210)
+                    log?.Invoke("Settings: new in this version: [Mind] TalkVoice (off): with the voice server and a microphone, Talk's row \"Say it out loud...\" listens to you and says your words to them; TalkVoiceSeconds (6) is the most it listens for.");
                 if (s.SettingsVersion < 209)
                     log?.Invoke("Settings: new in this version: [Mind] TalkTyped (on): Talk's last row opens a line to type your own words on; they answer from who they are, in the AI model's words when it's on, else a written answer.");
                 if (s.SettingsVersion < 208)
@@ -1047,6 +1051,7 @@ namespace EnrageWestworld.Core
             OnlookersRunMetres = Math.Max(5f, Math.Min(60f, OnlookersRunMetres));
             OnlookersRunning = Math.Max(1, Math.Min(8, OnlookersRunning));   // the onlookers' queue holds 8 (WestworldScript.Onlookers.cs, OnlookQueueMost)
             TalkModelWaitSeconds = Math.Max(1f, Math.Min(7f, TalkModelWaitSeconds));   // a model request gives up at 8 s (WestworldScript.Language.cs, LanguageTimeoutMs)
+            TalkVoiceSeconds = Math.Max(3, Math.Min(12, TalkVoiceSeconds));   // the voice server's --listen-most is 12
             HushHours = Math.Max(0f, Math.Min(12f, HushHours));
             HushHoursSaintDenis = Math.Max(0f, Math.Min(12f, HushHoursSaintDenis));
             StrainChance = Math.Max(0, Math.Min(100, StrainChance));
@@ -1216,6 +1221,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("LanguageTalk = " + B(LanguageTalk) + "   ; (in testing) with Language on: when you Talk to someone, the model words their answer by their nature, mood and what's on their mind (what it means stays the same: the drink taken, the money refused); if it's slow or says something it shouldn't, the written line");
             b.AppendLine("TalkModelWaitSeconds = " + F(TalkModelWaitSeconds) + "   ; with LanguageTalk on: how long, in seconds, the model may take to word a Talk answer before the written line is said instead (1-7; a request to the model gives up at 8)");
             b.AppendLine("TalkTyped = " + B(TalkTyped) + "   ; Talk's last row, \"Say something else...\", opens a line to type your own words on (keyboard only): Enter says it, Backspace deletes, Esc leaves. They answer from who they are and how they stand with you: with the AI model and LanguageTalk on, in their own words (what they'd not tell a stranger they keep to themselves); without it, a written answer by what your words seem to be about (the news, their name, how they are, their trouble, the weather, the way, a drink, money, God, guns, the law, thanks, sorry, goodbye), and anything else met with a plain non-answer. Nothing is paid or promised by typing");
+            b.AppendLine("TalkVoice = " + B(TalkVoice) + "   ; (off as it comes) Talk's row \"Say it out loud...\" (keyboard or pad): the voice server listens to your microphone until you've said something and fallen quiet (or Space, Enter or a pad's A; Backspace, Esc or B never mind), writes it down, and it's said to them as if typed, with the same answers. Needs the voice server running with its transcriber (voice\\install-voice.cmd puts it in; about 150 MB more, once; it runs on the CPU and takes none of the card) and a microphone. The sound is never kept and never leaves this PC");
+            b.AppendLine("TalkVoiceSeconds = " + TalkVoiceSeconds + "   ; with TalkVoice: it listens for at most this many seconds (3 to 12)");
             b.AppendLine("LanguagePicks = " + B(LanguagePicks) + "   ; (in testing) with Language on: for people near you, the model picks what they do next from the few things their mind allows (the best three, and a plan's step), by their nature and how they feel; if it's slow or says nothing sensible, their mind's own choice stands");
             b.AppendLine("MindStartsScenes = " + B(MindStartsScenes) + "   ; people near you start scenes from their own reasons with someone else near (a quarrel to pick up, a friend to comfort, a debt to call in), on top of the street's own scenes (at most one a minute, never past MainScenesAtOnce), with the written why. No AI model needed; with the model's picks on, the model chooses among those reasons as well; false: scenes start only from the street's own timing");
             b.AppendLine("PickMetres = " + PickMetres + "   ; how far from you (metres, 5 to 60) the model picks what people do; past 15 m each person is asked half as often; the mind itself looks 25 m out, so more than 25 changes nothing yet");
