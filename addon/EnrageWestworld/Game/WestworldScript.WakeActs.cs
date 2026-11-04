@@ -1345,6 +1345,7 @@ namespace EnrageWestworld.InGame
             if (act.Res != null)
             {
                 act.Res.Dead = true;
+                act.Res.DiedAt = Bridge.Now();
                 _engine.KeepResident(act.Res, Bridge.Now());
             }
             RecordRef rec = act.Rec ?? _bridge.RecordAt(act.Handle);

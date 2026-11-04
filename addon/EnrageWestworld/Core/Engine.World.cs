@@ -923,6 +923,7 @@ namespace EnrageWestworld.Core
             EventsDaily(now);   // the dances posted on Thursdays (Engine.Events.cs)
             DeparturesDaily(now);   // who leaves on the train today, and yesterday's leavers gone (Engine.Trains.cs)
             LedgersDaily(now);   // the towns' ledgers read, the month's mention (Engine.Ledgers.cs)
+            GhostsDaily(now);   // the ghosts of a week ago gone; the waking's talk of the reload ends (Engine.Ghosts.cs)
         }
 
         private void AwarenessTick(long now)
@@ -1485,7 +1486,10 @@ namespace EnrageWestworld.Core
                 return false;
             Resident r = Resident.IsResident(e.Id) ? Store.FindResident(e.Id) : null;
             if (r != null)
+            {
                 r.Dead = true;
+                r.DiedAt = e.At > 0 ? e.At : Store.LastGameMin;   // a save loaded from before it brings them back (Core/Ghosts.cs)
+            }
             if (!Store.NoteDeath(e))
                 return false;
             RememberDeathHeard(e);   // their friends and foes hear of it (Minds)

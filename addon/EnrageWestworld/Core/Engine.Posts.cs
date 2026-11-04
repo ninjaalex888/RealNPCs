@@ -64,6 +64,7 @@ namespace EnrageWestworld.Core
             if (holder == null)
                 holder = HolderOf(kind, modelHash, now);   // killed before anyone knew their name: they had one all the same
             holder.Dead = true;
+            holder.DiedAt = now;
             holder.TouchedAt = now;
             NoteDied(new DeathEntry { Id = holder.Id, Name = holder.Name, Kind = "resident", At = now, Town = post.Town, By = byPlayer ? "player" : "unknown" });
             post.LastName = holder.Name;

@@ -50,6 +50,9 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<LaterAct> Later = new List<LaterAct>();   // diary entries and word of mouth waiting their time (see Knowing.cs)
         [DataMember(EmitDefaultValue = false)] public List<Reply> Replies = new List<Reply>();   // answers in the post, and letters of his own (Core/Replies.cs; SIXDAY item 8)
         [DataMember(EmitDefaultValue = false)] public List<TownEvent> Events = new List<TownEvent>();   // (Resident.Held follows these: FixHeld)   // the town's days: dances and the rest (Core/TownEvents.cs; SIXDAY item 10)
+        [DataMember(EmitDefaultValue = false)] public List<Ghost> Ghosts = new List<Ghost>();   // what rewinds dropped, kept a week (Core/Ghosts.cs; SIXDAY item 12b); never rewound
+        [DataMember(EmitDefaultValue = false)] public int Rewinds;                                 // how many times the clock turned back
+        [IgnoreDataMember] public List<Ghost> LastRewound;                                        // the last rewind's ghosts, for the engine's log
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, TownLedger> TownLedgers = new Dictionary<string, TownLedger>();   // each town's ledger, read off the records (Core/TownLedgers.cs; SIXDAY item 11c)
         [DataMember(EmitDefaultValue = false)] public List<Happening> WorldLog = new List<Happening>();   // what happened and who saw it (WorldEvents.cs), capped
         [DataMember(EmitDefaultValue = false)] public List<Plan> Plans = new List<Plan>();   // what people mean to do about each other over the next days (Plans.cs)
@@ -200,6 +203,9 @@ namespace EnrageWestworld.Core
         {
             WasAt = LastGameMin;
             long cut = now + 30;
+            var kept = new List<Ghost>();   // what the rewind drops, kept as ghosts (Core/Ghosts.cs)
+            LastRewound = kept;
+            Rewinds++;
             int n = Rumors.RemoveAll(r => r.SentAt > cut);
             n += Affairs.RemoveAll(a => a.Since > cut);
             if (RomanceAt > now)
@@ -226,6 +232,9 @@ namespace EnrageWestworld.Core
                 foreach (Relative r in st.Family ?? new List<Relative>())
                     n += r.Heard.RemoveAll(h => h.At > cut);
             }
+            foreach (Deed d in Deeds)
+                if (d != null && d.At > cut)
+                    kept.Add(EnrageWestworld.Core.Ghosts.OfDeed(d, now));
             n += Deeds.RemoveAll(d => d.At > cut);
             foreach (Resident r in Residents)
                 if (r != null && r.Left && r.LeftAt > cut)
@@ -236,6 +245,12 @@ namespace EnrageWestworld.Core
                     r.FledAt = 0;
                     n++;
                 }
+            foreach (SceneTie t in Ties)
+                if (t != null && t.At > cut)
+                    kept.Add(EnrageWestworld.Core.Ghosts.OfTie(t, now));
+            foreach (WorryLink l in Links)
+                if (l != null && l.At > cut)
+                    kept.Add(EnrageWestworld.Core.Ghosts.OfLink(l, now));
             n += Ties.RemoveAll(t => t.At > cut);
             n += Links.RemoveAll(l => l.At > cut);
             n += TownRumours.RemoveAll(r => r.At > cut);
@@ -309,15 +324,30 @@ namespace EnrageWestworld.Core
             {
                 foreach (DeathEntry d in Deaths.Where(d => d.At > cut).ToList())
                 {
+                    kept.Add(EnrageWestworld.Core.Ghosts.Killing(d, now));
                     Resident r = Resident.IsResident(d.Id) ? FindResident(d.Id) : null;
                     if (r != null && r.Dead && r.PostId == null && !r.Fled)
+                    {
                         r.Dead = false;   // it hadn't happened yet (a post's keeper and a hermit are their own code's)
+                        r.DiedAt = 0;
+                    }
                     if (d.SharedWithEnrage)
                         (RewoundShares ?? (RewoundShares = new List<string>())).Add(d.Id);
                 }
                 n += Deaths.RemoveAll(d => d.At > cut);
                 _deathIndex = null;
             }
+            foreach (Resident r in Residents)
+                if (r != null && r.Dead && r.DiedAt > cut && r.PostId == null && !r.Fled)
+                {
+                    r.Dead = false;   // died after the cut with no ledger entry of ours: alive again all the same (Core/Ghosts.cs)
+                    r.DiedAt = 0;
+                    kept.Add(EnrageWestworld.Core.Ghosts.Death(r, now));
+                    n++;
+                }
+            if (Ghosts == null) Ghosts = new List<Ghost>();
+            Ghosts.AddRange(kept);
+            EnrageWestworld.Core.Ghosts.Trim(Ghosts, now);
             if (LastWorldTickAt > now)
                 LastWorldTickAt = now;
             LastGameMin = now;
@@ -526,6 +556,7 @@ namespace EnrageWestworld.Core
             if (Replies == null) Replies = new List<Reply>();
             if (Events == null) Events = new List<TownEvent>();
             if (TownLedgers == null) TownLedgers = new Dictionary<string, TownLedger>();
+            if (Ghosts == null) Ghosts = new List<Ghost>();
             FixHeld();
             if (Weddings == null) Weddings = new List<Wedding>();
             if (Transfers == null) Transfers = new List<Transfer>();

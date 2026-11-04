@@ -203,7 +203,10 @@ namespace EnrageWestworld.InGame
                 return;
             ResBind rb;
             if (_resBind.TryGetValue(h, out rb) && rb.R.Id == id)
+            {
                 rb.R.Dead = true;   // the bound one, saved or not (Engine.NoteDied finds only the saved)
+                rb.R.DiedAt = Bridge.Now();
+            }
             Ped me = Game.Player.Character;
             bool there = ENTITY.DOES_ENTITY_EXIST(h);
             Vector3 pos = there ? new Ped(h).Position : me.Position;

@@ -389,10 +389,20 @@ namespace EnrageWestworld.Core
             return s;
         }
 
+        /// The clock turned back lately (a save loaded from before; Core/Ghosts.cs): the waking open with the morning that happened twice.
+        public static bool WentBackLately;
+
         public static Scene HostTalk(SceneCast c, string seed)
         {
             Scene s = new Scene { Kind = "hosts", Summary = "two people talking strangely about the world" };
             bool first = true;
+            if (WentBackLately)
+            {
+                string[] twice = Ghosts.TwiceLines(seed);
+                s.Add(0, twice[0], null, "face", 500);
+                s.Add(1, twice[1], null, null, 500);
+                first = false;
+            }
             foreach (KeyValuePair<int, string> l in Hosts.Conversation(seed))
             {
                 s.Add(l.Key, l.Value, null, first ? "face" : null, 500);

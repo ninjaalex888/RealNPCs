@@ -1219,6 +1219,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST trains: " + TrainsStatus());
 			Log.Write("TEST towns: " + TownsStatus());
 			Log.Write("TEST loop: " + LoopStatus());
+			Log.Write("TEST ghosts: " + GhostsStatus());
 			Log.Write("TEST pacing: " + (_store != null ? Pacing.Status(_store.Pace, _store.LastGameMin) : "not loaded"));
 			Log.Write("TEST story: " + StoryStatus());
 			Log.Write("TEST near: " + NearStatus());

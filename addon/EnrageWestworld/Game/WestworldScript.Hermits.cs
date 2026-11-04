@@ -225,6 +225,7 @@ namespace EnrageWestworld.InGame
             {
                 LedgerNote(h, o.R.Id, o.R.Name, "resident", null, null);   // marks them dead too (Engine.NoteDied)
                 o.R.Dead = true;
+                o.R.DiedAt = Bridge.Now();
                 _engine.KeepResident(o.R, Bridge.Now());
                 EndHermit("is dead");
                 return;

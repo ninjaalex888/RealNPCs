@@ -91,6 +91,7 @@ namespace EnrageWestworld.Core
 			{
 				int num = Store.Rewind(now);
 				ForgetThinking();   // what the minds thought after the cut hasn't happened either (Engine.Minds.cs)
+				GhostsNoted(now);   // what the rewind kept as ghosts, logged; the rewound ties remembered by both sides (Engine.Ghosts.cs)
 				Log("Game time went back (" + Store.WasAt + " -> " + now + "): an older save was loaded. Rolled back " + num + " things that hadn't happened yet.");
 			}
 			Store.LastGameMin = now;

@@ -30,6 +30,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public long MetAt;            // game minute they were made
         [DataMember(EmitDefaultValue = false)] public long TouchedAt;        // game minute something last happened to them
         [DataMember(EmitDefaultValue = false)] public bool Dead;
+        [DataMember(EmitDefaultValue = false)] public long DiedAt;          // game minute they died (Core/Ghosts.cs: a save loaded from before it brings them back); 0 on old saves means leave them dead
         [DataMember(EmitDefaultValue = false)] public string PostId;         // the counter they keep (see Posts.cs), if any
         [DataMember(EmitDefaultValue = false)] public string Kin;            // how they're related to the one who kept it before ("son"), null for a newcomer
         [DataMember(EmitDefaultValue = false)] public string KinOf;          // the one who kept it before, by name

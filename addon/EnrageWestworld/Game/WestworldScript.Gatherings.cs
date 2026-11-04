@@ -248,6 +248,7 @@ namespace EnrageWestworld.InGame
                 {
                     LedgerNote(m.Ped.Handle, m.R.Id, m.R.Name, "resident", null, null);   // marks them dead too (Engine.NoteDied)
                     m.R.Dead = true;
+                    m.R.DiedAt = Bridge.Now();
                     _engine.KeepResident(m.R, Bridge.Now());
                 }
             List<Gatherer> live = g.Ring.Where(m => m.Ped.Exists() && !m.Ped.IsDead).ToList();

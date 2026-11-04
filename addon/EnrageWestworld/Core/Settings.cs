@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 225;
+        public const int CurrentVersion = 226;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -167,6 +167,7 @@ namespace EnrageWestworld.Core
         public int AwakeningDespair = 50;   // 75 until settings version 191 (Lex, 2026-11-02: the waking rarer, so a despair death lands harder)
         public bool WakeVoices = true;   // the waking speak the game's own lines, oddly, more each stage (Core/WakeVoice.cs; settings version 78)
         public bool LoopVoice = true;    // with West World: from the second stage a waking regular hears their habit as a voice giving orders at the hour (on the ticker, once a day), from the third answers it, at the fourth breaks the loop now and then (a broom on an empty street at night, the church wall at noon, the river's edge: one a town a day) and, once, comes to the centre (three thoughts that end with the voice known as their own); after it an ending may be a reset to stage 0 (Core/LoopVoice.cs; SIXDAY item 12a; settings version 225)
+        public bool Ghosts = true;       // with West World: the reload noticed. What a save loaded from before drops is kept a week as ghosts (always); with this on, a victim of a rewound killing who walks again gets one deja vu when you come within 12 m, both sides of a rewound tie think of the quarrel or the kiss that didn't happen, the waking talk of the morning that happened twice for two days, and the ticker says how many times the clock turned back (Core/Ghosts.cs; SIXDAY item 12b; settings version 226)
         // the waking held and stranger (settings version 144; Lex, 2026-10-31: they swapped back to the game between acts; Game/WestworldScript.WakeHold.cs)
         public bool WakeHold = true;
         public int WakeHoldMinutes = 3;
@@ -823,6 +824,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 226)
+                    log?.Invoke("Settings: new in this version: [WestWorld] Ghosts (on): the people who lived through hours a loaded save undid feel it: a deja vu, a quarrel or a kiss that didn't happen, the morning that happened twice.");
                 if (s.SettingsVersion < 225)
                     log?.Invoke("Settings: new in this version: [WestWorld] LoopVoice (on): the waking hear their habit as a voice at the hour, answer it, break the loop now and then, and may be reset to the start.");
                 if (s.SettingsVersion < 224)
@@ -1336,6 +1339,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("AwakeningDespair = " + AwakeningDespair + "   ; percent chance that a fully awake ordinary person, alone, can't bear it and ends their own life, with a gun that fits them, poison, a knife, or by running at a wall (0-100, 0 turns this off; a content note is in the readme)");
             b.AppendLine("WakeVoices = " + B(WakeVoices) + "   ; the waking say the game's own recorded lines in the wrong places: to nobody, the same words again, to the sky, at you; a little at the first stage, a great deal by the fourth, with a thought over the head for what they make of it");
             b.AppendLine("LoopVoice = " + B(LoopVoice) + "   ; the waking regulars of a town hear their habit as a voice giving orders at the hour (the ticker, once a day each, from the second stage: Seven o'clock. The saloon. You'll be at the saloon.), answer it back from the third, and at the fourth break the loop now and then where the habit forbids (a broom on an empty street before dawn, the church wall at noon, the river's edge to the knee; one a town a day; the church steps and the wharf from the spot table); once, three thoughts end with the voice known as their own (the centre), after which an ending may be a reset: back to the start, cheerful and blank, their friends noticing for two days. F7 TEST loop");
+            b.AppendLine("Ghosts = " + B(Ghosts) + "   ; the reload noticed: a save loaded from before keeps what it undid as ghosts for a week (a killing, a death, a deed, a tie, a link; always kept, never rewound themselves); with this on, a victim of a rewound killing who walks the town again gets one sharp deja vu the first time you come within 12 m (a thought and an uneasy line; awareness +10), both sides of a rewound tie think of the quarrel or the kiss that didn't happen, the waking open their talk with the morning that happened twice for two days, and the ticker says how many times the clock turned back. F7 TEST ghosts");
             b.AppendLine("WakeHold = " + B(WakeHold) + "   ; from the second stage, a waking person near you goes from one strange act into the next instead of going back to their day: stood dazed, drifting a few steps, pacing, freezing; let go for a fight, gunfire, the law after you, or a scene");
             b.AppendLine("WakeHoldMinutes = " + WakeHoldMinutes + "   ; how long one hold lasts before they are let go for a minute (1 to 15)");
             b.AppendLine("WakeGestures = " + B(WakeGestures) + "   ; the waking use their hands and bodies as they act: rubbing their eyes, pointing at the sky, a hand to the head, pleading; a clip that won't play or carries them off is dropped for the session (the log says which)");

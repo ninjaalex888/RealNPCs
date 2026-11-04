@@ -517,6 +517,11 @@ NEW IN 0.7.11
   (a broom on an empty street at night, the church wall at noon, the river's edge), and once come to
   the centre: three thoughts that end with the voice known as their own. After it an ending may be a
   reset: back to the start, cheerful and blank, and their friends notice. F7 "TEST loop:".
+- The reload noticed (Ghosts, with WestWorld): load a save from before, and what it undoes is kept a week
+  as ghosts. A resident you killed in the lost hours walks again and, the first time you come within
+  12 m, has a sharp deja vu; two people whose quarrel or kiss was undone both think of it; the waking
+  open their talk with the morning that happened twice; the ticker says how many times the world
+  went back. F7 "TEST ghosts:".
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
