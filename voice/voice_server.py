@@ -287,7 +287,7 @@ def load_model():
             total = card_total_gib()
             ARGS.idle_seconds = 0.0 if total >= KEEP_ON_CARD_GIB else 60.0
             if ARGS.device == "cuda":
-                log("the card has %.1f GB: the voices %s" % (total * 1.073741824, "stay on it while you play (12 GB or more)" if ARGS.idle_seconds == 0 else "leave it after a quiet minute and come back for the next line (under 12 GB)"))
+                log("the card has %.1f GB: the voices %s" % (total, "stay on it while you play (12 GB or more)" if ARGS.idle_seconds == 0 else "leave it after a quiet minute and come back for the next line (under 12 GB)"))
         if ARGS.device == "cuda":
             NEED_GB = round(torch.cuda.memory_reserved() / 1e9 + 0.3, 2)   # what a return to the card needs free
             card_tidy()
