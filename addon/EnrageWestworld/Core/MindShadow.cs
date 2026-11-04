@@ -147,10 +147,14 @@ namespace EnrageWestworld.Core
             return id != null && _felt.TryGetValue(id, out list) ? list : null;
         }
 
-        /// Their mood now, from their traits and what they felt lately.
+        /// The weather's push on everyone out in it now (Core/MoodsCarry.cs; SIXDAY item 14): set by the game side each world
+        /// tick with [Mind] MoodsCarry on; zero offline and under fair skies, so the mood is as it was.
+        public PadMood WeatherPush;
+
+        /// Their mood now, from their traits and what they felt lately, with the weather on it.
         public PadMood MoodOf(string id, Traits t, long now)
         {
-            return Mood.Now(Mood.Baseline(t), Felt(id), now);
+            return MoodsCarry.Worn(Mood.Now(Mood.Baseline(t), Felt(id), now), WeatherPush, t);
         }
 
         public int PeopleFeeling

@@ -636,6 +636,9 @@ namespace EnrageWestworld.InGame
         private string _mindEvDoer;           // who really did it (the pair's tie), or null
         private int _mindEvSaw;               // how many saw it (not those who only heard, not the player)
         private readonly List<KeyValuePair<string, bool>> _mindEvPeople = new List<KeyValuePair<string, bool>>();   // id, only heard it
+        private readonly List<KeyValuePair<string, Feeling>> _mindEvFelt = new List<KeyValuePair<string, Feeling>>();   // who present felt what of the happening in hand, for the catching (Core/MoodsCarry.cs; item 14)
+        private int _mindCaught;
+        private string _mindLastCaught;
 
         /// Step 4: each person in a happening, or who saw or heard it, whom the mind knows near the player now, appraises
         /// it (Core's Appraisal): a feeling, its strength and its urge, kept for their mood (in memory), stamped with the
@@ -648,6 +651,8 @@ namespace EnrageWestworld.InGame
             long g = _store.LastGameMin;
             if (_mindEv == null || _mindEvCursor >= _mindEvPeople.Count)
             {
+                if (_mindEv != null)
+                    MindCatchRound(now);   // the last happening's witnesses are all taken: those who felt little catch what a face showed (item 14)
                 OnlookFlush(_now);   // the last happening's witnesses are all taken: its strongest two may act
                 _mindEv = _engine.Shadow.Next();
                 if (_mindEv == null)
@@ -668,6 +673,7 @@ namespace EnrageWestworld.InGame
         private void MindAppraiseStart(Happening ev)
         {
             _mindEvPeople.Clear();
+            _mindEvFelt.Clear();
             _mindEvCursor = 0;
             _mindEvSaw = 0;
             _mindEvDoer = _engine.DoerOf(ev);   // who did it to whom: the pair's tie (Core/Engine.Appraise.cs, the one road the tests take too)
@@ -702,6 +708,8 @@ namespace EnrageWestworld.InGame
                 return;
             f.Shows = Display.Shows(f, ae, w.Traits);   // kept with the feeling, so a masked one's thought can say the mask too
             _engine.Shadow.Feel(id, f, ev.At);
+            if (!heardOnly)
+                _mindEvFelt.Add(new KeyValuePair<string, Feeling>(id, f));   // present, with a face to read (the catching)
             OnlookNote(ev, id, w, f, ae);   // someone who only watched it may act on it (MindOnlookers; queued, capped)
             LanguageAskAhead(w, id, now);   // the language layer asks the model now, so the line is ready when the thought comes (WestworldScript.Language.cs)
             _mindFelt++;
@@ -720,6 +728,72 @@ namespace EnrageWestworld.InGame
                          " <- " + ev.Kind + " (" + ae.Role + (heardOnly ? ", only heard it" : "") + ", " + ae.Witnesses + " saw); mood " + Mood.Words(m, b) +
                          (!_cfg.MindLive && old != mind ? "; the old mood says " + (old ?? "nothing") + ", the mind's " + (mind ?? "nothing") : ""));
             MindBelieve(w, id, f, ae, now);   // and what they believe moves a little (step 10, shadow), after the feeling's own line
+        }
+
+        /// The catching (Core/MoodsCarry.cs; roadmap 18; SIXDAY item 14; with [Mind] MoodsCarry): the happening's witnesses all
+        /// appraised, those present who felt little of it catch the strongest feeling shown on another's face, at a share set
+        /// by who they are, once per happening each (a "caught" feeling stamped with the happening's own time). Nobody is
+        /// tasked; the feeling is kept for their mood and their thoughts like any other. Only those who were there, never the
+        /// ones who only heard of it.
+        private void MindCatchRound(int now)
+        {
+            if (_mindEv == null || _cfg == null || !_cfg.MoodsCarry || _mindEvFelt.Count == 0 || _mindEvPeople.Count < 2)
+                return;
+            int src = -1;
+            for (int i = 0; i < _mindEvFelt.Count; i++)
+                if (MoodsCarry.Catchable(_mindEvFelt[i].Value) && (src < 0 || _mindEvFelt[i].Value.Intensity > _mindEvFelt[src].Value.Intensity))
+                    src = i;
+            if (src < 0)
+                return;
+            string sourceId = _mindEvFelt[src].Key;
+            Feeling source = _mindEvFelt[src].Value;
+            MindWho sw = MindWhoById(sourceId);
+            long g = _mindEv.At;
+            for (int i = 0; i < _mindEvPeople.Count; i++)
+            {
+                string id = _mindEvPeople[i].Key;
+                if (id == sourceId || _mindEvPeople[i].Value)
+                    continue;   // the source, or someone who only heard of it
+                MindWho w = MindWhoById(id);
+                if (w == null || w.Traits == null)
+                    continue;
+                float own = 0f;
+                for (int j = 0; j < _mindEvFelt.Count; j++)
+                    if (_mindEvFelt[j].Key == id)
+                    {
+                        own = _mindEvFelt[j].Value.Intensity;
+                        break;
+                    }
+                List<FeltAt> felt = _engine.Shadow.Felt(id);
+                bool had = false;
+                if (felt != null)
+                    for (int j = 0; j < felt.Count; j++)
+                        if (felt[j].Why == "caught" && felt[j].At == g)
+                        {
+                            had = true;
+                            break;
+                        }
+                if (had)
+                    continue;
+                Feeling caught = MoodsCarry.Catch(source, sourceId, own, w.Traits);
+                if (caught == null)
+                    continue;
+                _engine.Shadow.Feel(id, caught, g);
+                _mindCaught++;
+                _mindLastCaught = w.Name + " caught " + caught.Kind + " from " + (sw != null ? sw.Name : "someone");
+                MindLog(now, "MIND " + w.Name + " catches " + caught.Kind + " (" + caught.Strength + ") off " + (sw != null ? sw.Name : sourceId) + "'s face <- " + _mindEv.Kind);
+            }
+        }
+
+        /// For the F7 dump: the weather's push and the catching.
+        private string MoodsStatus()
+        {
+            if (_cfg == null || !_cfg.MindLive || !_cfg.MoodsCarry)
+                return "off";
+            if (_engine == null)
+                return "not loaded";
+            return "weather push " + _engine.Shadow.WeatherPush.Numbers() + " (" + (_engine.NowWeather ?? "no weather known") + (_engine.NowIndoors ? ", indoors" : ", out of doors") + "); " +
+                   _mindCaught + " caught this session" + (_mindLastCaught != null ? "; last: " + _mindLastCaught : "");
         }
 
         /// What the game is proven able to show of it (Core/Catalogue.cs), its first entry by name, or "the thought alone".
@@ -763,6 +837,7 @@ namespace EnrageWestworld.InGame
             _mindCursor = 0;
             _mindEv = null;
             _mindEvPeople.Clear();
+            _mindEvFelt.Clear();
             OnlookForget();
             DoubtForget();
             YouNodForget();

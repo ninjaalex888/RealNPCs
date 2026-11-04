@@ -1430,6 +1430,7 @@ namespace EnrageWestworld.InGame
             // what it's like around him, for the thoughts of the people near (InnerLife.Now.cs)
             _engine.NowWeather = InnerLife.WeatherOf(MISC._GET_PREV_WEATHER_TYPE_HASH_NAME());
             _engine.NowIndoors = _interiorType != 0;
+            _engine.Shadow.WeatherPush = _cfg != null && _cfg.MindLive && _cfg.MoodsCarry ? MoodsCarry.Weather(_engine.NowWeather, _engine.NowIndoors) : default(PadMood);   // the weather on everyone's mood near you (Core/MoodsCarry.cs; item 14)
             _engine.NowPlace = _placeKind;
             string town = _bridge.TownAt(pos);
             if (town != _placeTown)

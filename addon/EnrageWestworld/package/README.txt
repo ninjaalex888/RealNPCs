@@ -776,6 +776,10 @@ NEW IN 0.7.2
 - With [Mind] MindLive on: what passes between people who meet near you leans by the day
   they're having: sore people come to words sooner, glad and lonely ones stop to talk.
   [Mind] MindMeetings.
+- With [Mind] MindLive on: the weather wears on the mood of everyone out in it (rain, snow, fog
+  and dust toward sore and flat, a storm keyed up, a quarter of it under a roof), and a feeling
+  shown on one face in a crowd is caught by those near who felt less of it themselves. F7
+  "TEST moods:". [Mind] MoodsCarry.
 - With [Mind] MindLive on (West World): despair isn't only an ending. When someone awake begins
   their last words, a friend or a kind stranger near them may walk over and try to talk them
   down; a friend is heeded more often. [Mind] MindRescue, RescueChance.
