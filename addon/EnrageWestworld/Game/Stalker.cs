@@ -27,6 +27,16 @@ namespace EnrageWestworld.InGame
         private Blip _dot;           // his red dot on the map (Lex, 2026-10-31), ours to take away
         private bool _crouchSaid, _dotSaid;
         private int _crouchAt, _crouchTries, _dotMadeAt;
+        /// On horseback (SIXDAY item 19; [Stalkers] StalkerHorse): he appears mounted and sits the horse watching; anything but
+        /// sitting and watching is done on foot (the modes' orders are a walker's), so he gets down the first time he moves.
+        /// AtCamp: a revenant come to the edge of your firelight (just past the light, standing and staring; never mounted).
+        public bool Mounted, AtCamp;
+        private Ped _horse;
+        private uint _horseModel;
+        private int _horseTries, _dismountAt;
+        private bool _fireSpoke;
+        private const ulong SetPedOntoMount = 0x028F76B6E78246EB, TaskDismountAnimal = 0x48E92D3DDE23C23A;   // by hash, as the allies' ride (WestworldScript.Allies.cs)
+        private const float FireEdgeMin = 13f, FireEdgeMax = 18f;   // the revenant at camp: just past the firelight
 
         /// The game's own small red enemy dot on him, as the pickpocket has (BLIP_STYLE_ENEMY). With StalkerBlack on he is
         /// always a stranger we made, with no dot of his own.
@@ -131,8 +141,18 @@ namespace EnrageWestworld.InGame
                 _failModel++;
                 return false;
             }
+            if (Mounted && _horseModel == 0)
+                _horseModel = Natives.Hash(Allies.HorseModel(Label + "|" + now));
+            if (Mounted && !Spawner.Ready(_horseModel))
+            {
+                if (++_horseTries < 8)
+                    return false;   // the horse's model still streaming in: a moment more
+                Mounted = false;
+                Log.Write("STALKER " + Label + ": his horse never streamed in; on foot");
+            }
             Vector3 at;
-            if (!HiddenSpotBehind(player, _cfg.StalkerAppearMin, _cfg.StalkerAppearMax, out at))
+            float appearMin = AtCamp ? FireEdgeMin : _cfg.StalkerAppearMin, appearMax = AtCamp ? FireEdgeMax : _cfg.StalkerAppearMax;
+            if (!HiddenSpotBehind(player, appearMin, appearMax, out at))
                 return false;
             Ped p = Spawner.Spawn(model, at, 0f);
             if (p == null)
@@ -162,11 +182,22 @@ namespace EnrageWestworld.InGame
             MarkDot(h);
             PED.SET_PED_CONFIG_FLAG(h, 6, true);   // PCF_DontInfluenceWantedLevel, as the game does its own pickpocket: dealing with him is no crime (Lex, 2026-10-31: witnessed assault)
             _nextMutter = Game.GameTime + 25000 + _rng.Next(20000);
+            if (Mounted)
+                MountUp(h, at);
+            if (Mounted || AtCamp)
+            {
+                // on horseback he sits and watches from where he appeared; at the fire's edge he stands in the dark and stares
+                _mode = Mode.Stare;
+                _modeUntil = Game.GameTime + 20000 + _rng.Next(25000);
+                Face(player, true);
+            }
+            if (AtCamp)
+                _nextMutter = Game.GameTime + 4000 + _rng.Next(4000);   // his first word comes soon, from the dark
             _nextRelocate = Game.GameTime + 20000;
             _stillSince = Game.GameTime;
             _stillAt = player.Position;
             Log.Write("STALKER " + Label + " appears " + (int)at.DistanceTo(player.Position) + " m behind you" + (Revenant != null ? " (someone you killed, returned)" : "") +
-                      (Outfit >= 0 ? " (dressed in preset " + Outfit + " of " + Outfits + ")" : ""));
+                      (Outfit >= 0 ? " (dressed in preset " + Outfit + " of " + Outfits + ")" : "") + (Mounted ? ", on horseback" : AtCamp ? ", just outside your firelight" : ""));
             return true;
         }
 
@@ -224,6 +255,10 @@ namespace EnrageWestworld.InGame
             if (active)
                 _stillSince = now;
             bool close = _mode == Mode.Circle || _mode == Mode.Retreat || _mode == Mode.Rush || _mode == Mode.Act;   // he chose to be near: no "caught" flight
+            if (Mounted && _mode != Mode.Stare && _mode != Mode.Lurk && _mode != Mode.Watched)
+                Dismount(now);   // anything but sitting and watching is done on foot
+            if (_horse != null && !Mounted && now - _dismountAt > 6000 && _horse.Exists() && !ENTITY.IS_ENTITY_ON_SCREEN(_horse.Handle))
+                HorseAway(true);   // the horse given back once it's out of view
 
             if (_mode != Mode.Flee && (threatened || (dist < 7f && !close) || now > _endsAt))
             {
@@ -232,7 +267,7 @@ namespace EnrageWestworld.InGame
                     _spoke = true;
                     say(Label, Revenant != null && Revenant.Returned == 0 ? Hosts.RevenantAloud(Revenant, you, Revenant.Id) : Hosts.StalkerCaught(Revenant != null, you, Label + now), Revenant != null);
                 }
-                StartFlee(player);
+                StartFleeMounted(player);
                 return;
             }
 
@@ -244,7 +279,7 @@ namespace EnrageWestworld.InGame
             // Spawner.StandUp undo it
             // at most every 3 s, and given up after three asks the game never takes: asked four times a second, a crouch that
             // didn't take seemed to hold him in place (Lex, 2026-10-31: "he might've been frozen")
-            if (_crouchTries < 3 && now >= _crouchAt && _mode != Mode.Flee && (_mode != Mode.Act || _step == ActStep.Go || _step == ActStep.Creep || _step == ActStep.Shift))
+            if (!Mounted && _crouchTries < 3 && now >= _crouchAt && _mode != Mode.Flee && (_mode != Mode.Act || _step == ActStep.Go || _step == ActStep.Creep || _step == ActStep.Shift))
             {
                 _crouchAt = now + 3000;
                 if (PED.GET_PED_CROUCH_MOVEMENT(h))
@@ -412,7 +447,9 @@ namespace EnrageWestworld.InGame
             if (_cfg.StalkerMutters && _mode != Mode.Flee && (!watched || _mode == Mode.Circle || _mode == Mode.Rush || _mode == Mode.Act) && dist < 50f && now >= _nextMutter)
             {
                 _nextMutter = now + 40000 + _rng.Next(30000);
-                say(Label, Hosts.StalkerMutter(Revenant, you, Revenant != null, Label + now / 1000), Revenant != null);
+                string mutter = AtCamp && !_fireSpoke && Revenant != null ? Hosts.RevenantAtFire(Revenant, you, Label + now / 1000) : Hosts.StalkerMutter(Revenant, you, Revenant != null, Label + now / 1000);
+                _fireSpoke = true;
+                say(Label, mutter, Revenant != null);
             }
         }
 
@@ -602,6 +639,13 @@ namespace EnrageWestworld.InGame
             return best;
         }
 
+        private void StartFleeMounted(Ped player)
+        {
+            if (Mounted)
+                Dismount(Game.GameTime);   // he runs on foot: the horse is left
+            StartFlee(player);
+        }
+
         private void StartFlee(Ped player)
         {
             _mode = Mode.Flee;
@@ -626,7 +670,63 @@ namespace EnrageWestworld.InGame
                 bool seen = _ped.Exists() && ENTITY.IS_ENTITY_ON_SCREEN(_ped.Handle);
                 Spawner.Release(_ped, vanish || !seen);
             }
+            HorseAway(vanish);
             Log.Write("STALKER " + Label + " is gone");
+        }
+
+        /// The horse: made where he stands and he's put onto it (the allies' way, by hash); if the game makes none he goes on foot.
+        private void MountUp(int h, Vector3 at)
+        {
+            try
+            {
+                _horse = Spawner.Spawn(_horseModel, at, 0f);
+                if (_horse == null)
+                {
+                    Mounted = false;
+                    Log.Write("STALKER " + Label + ": no horse could be made (" + (Spawner.LastSpawnWhy ?? "the game made none") + "); on foot");
+                    return;
+                }
+                Function.Call(SetPedOntoMount, h, _horse.Handle, -1, true);
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(_horse.Handle, true);
+            }
+            catch (Exception ex)
+            {
+                Mounted = false;
+                Log.Write("STALKER " + Label + ": the horse failed (" + ex.Message + "); on foot");
+                HorseAway(true);
+            }
+        }
+
+        /// Down off the horse (the game's dismount by hash), once; the horse is given back once it's out of view (Tick).
+        private void Dismount(int now)
+        {
+            Mounted = false;
+            _dismountAt = now;
+            try
+            {
+                if (_ped != null && _ped.Exists() && PED.IS_PED_ON_MOUNT(_ped.Handle))
+                    Function.Call(TaskDismountAnimal, _ped.Handle, 0, 0, 0, 0, 0);
+                Log.Write("STALKER " + Label + " gets down off his horse");
+            }
+            catch (Exception ex)
+            {
+                Log.Write("STALKER " + Label + ": the dismount failed (" + ex.Message + ")");
+            }
+        }
+
+        private void HorseAway(bool delete)
+        {
+            if (_horse == null)
+                return;
+            try
+            {
+                if (_horse.Exists())
+                    Spawner.Release(_horse, delete);
+            }
+            catch
+            {
+            }
+            _horse = null;
         }
 
         private bool HiddenSpotBehind(Ped player, float min, float max, out Vector3 at)

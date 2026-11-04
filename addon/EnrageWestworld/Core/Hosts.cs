@@ -421,6 +421,19 @@ namespace EnrageWestworld.Core
                 "Keep walking.", "I see you, " + name + ".", "Don't mind me.");
         }
 
+        /// A revenant at the edge of the firelight (SIXDAY item 19; roadmap 13): his first word from the dark when he comes to
+        /// your camp of a night; the ordinary mutters after. Nothing of how he died: the fire, the dark and the cold.
+        public static string RevenantAtFire(Fallen f, PlayerRef you, string seed)
+        {
+            string first = you != null ? you.FirstName : "mister";
+            return Voice.Pick(seed + "|fire",
+                "Don't get up, " + first + ". I only came for the warmth. I don't feel it. I came anyway.",
+                "There was a fire like this one that night. The smoke is what stayed with me.",
+                "Every fire you light, I'll be standing just past the light of it.",
+                "Cold out here past the fire. You'd know that if you ever sat where I'm sitting.",
+                "Keep your eyes on the coals, " + first + ". It's easier for us both.");
+        }
+
         public static string StalkerCaught(bool revenant, PlayerRef you, string seed)
         {
             return revenant

@@ -273,6 +273,19 @@ namespace EnrageWestworld.InGame
             string blocked = StalkBlocker();
             if (_cfg.Stalkers && _cfg.WestWorld && blocked == null)
             {
+                if (_cfg.RevenantsAtCamp && AtFireNow())
+                {
+                    // a revenant at camp (SIXDAY item 19): one due, or due within two days, comes to the edge of the firelight
+                    Fallen soon = _store.Fallen.FirstOrDefault(f => !f.Done && f.ReturnAt > 0 && gameMin >= f.ReturnAt - 2 * 1440L);
+                    if (soon != null)
+                    {
+                        soon.ReturnAt = 0;
+                        _campRevenants++;
+                        Log.Write("STALKER revenant at camp: " + (soon.Name ?? "someone you killed") + " comes to the edge of your firelight");
+                        BeginStalker(soon, soon.Model, soon.Woman, soon.Name ?? "A familiar " + (soon.Woman ? "woman" : "man"), now, false, -1, true);
+                        return;
+                    }
+                }
                 // someone you killed, back as a stalker: a West World thing
                 Fallen due = _store.Fallen.FirstOrDefault(f => !f.Done && f.ReturnAt > 0 && gameMin >= f.ReturnAt);
                 if (due != null)
@@ -514,7 +527,7 @@ namespace EnrageWestworld.InGame
             return m;
         }
 
-        private void BeginStalker(Fallen f, uint model, bool woman, string label, int now, bool test, int outfit = -1)
+        private void BeginStalker(Fallen f, uint model, bool woman, string label, int now, bool test, int outfit = -1, bool atCamp = false)
         {
             _stalkerOutfit = outfit;   // only the stranger in black is dressed; a revenant comes back as he was
             _stalkerFallen = f;
@@ -524,11 +537,34 @@ namespace EnrageWestworld.InGame
             _stalkerLabel = label;
             _stalkerIsTest = test;
             _stalker = new Stalker(f, label, woman, _cfg);
+            _stalker.AtCamp = atCamp;
+            _stalker.Mounted = !atCamp && _cfg.StalkerHorse > 0 && _rng.Next(100) < _cfg.StalkerHorse;   // on horseback now and then (SIXDAY item 19)
             _stalkerPendingUntil = now + 25000;
             Log.Write("STALKER begins: " + label + (f != null ? " (killed " + (f.Town ?? f.Zone ?? "somewhere") + ")" : " (a stranger)") + (test ? " (key)" : "") +
-                      ", game time " + Clock(Bridge.Now()));
+                      (atCamp ? ", at your camp" : _stalker.Mounted ? ", on horseback" : "") + ", game time " + Clock(Bridge.Now()));
             if (!test)
                 StoryNoticed("you:stalker", 2, 0f);   // someone after him: the storyteller (WestworldScript.Story.cs)
+        }
+
+        private int _campRevenants;
+
+        /// At a fire of a night, out of the towns, on foot and still: a campfire (the game's own models, the hermits' list) within
+        /// 6 m between nine and four.
+        private bool AtFireNow()
+        {
+            if (_placeTown != null)
+                return false;
+            int clockHour = CLOCK.GET_CLOCK_HOURS();
+            if (clockHour < 21 && clockHour >= 4)
+                return false;
+            Ped me = Game.Player.Character;
+            if (me == null || !me.Exists() || PED.IS_PED_ON_MOUNT(me.Handle) || ENTITY.GET_ENTITY_SPEED(me.Handle) > 0.3f)
+                return false;
+            Vector3 pos = me.Position;
+            foreach (string m in FireModels)
+                if (OBJECT.GET_CLOSEST_OBJECT_OF_TYPE(pos.X, pos.Y, pos.Z, 6f, Natives.Hash(m), false, false, false) != 0)
+                    return true;
+            return false;
         }
 
         /// One line for the F7 test dump.
@@ -546,7 +582,8 @@ namespace EnrageWestworld.InGame
             return (_cfg.Stalkers ? _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min, " +
                                     (_cfg.StalkerBlack ? "a stranger in black (" + _cfg.StalkerBlackModel + " preset " + _cfg.StalkerBlackOutfit + ")"
                                                        : "black off: someone within " + _cfg.StalkerNearbyMetres + " m" + (_cfg.StalkerStrangers ? " (else a stranger)" : "")) : "off") +
-                   ", " + due + ", game time " + Clock(Bridge.Now()) + ", in the way now: " + (blocked ?? "nothing") + ", failed spawns " + _stalkFails + ", key " + _stalkerKey;
+                   ", " + due + ", game time " + Clock(Bridge.Now()) + ", in the way now: " + (blocked ?? "nothing") + ", failed spawns " + _stalkFails + ", key " + _stalkerKey +
+                   "; on horseback " + _cfg.StalkerHorse + "%; revenants at camp " + (_cfg.RevenantsAtCamp ? "on" : "off") + " (" + _campRevenants + " this session; at a fire now: " + (AtFireNow() ? "yes" : "no") + ")";
         }
 
         private void EndStalker(int now)

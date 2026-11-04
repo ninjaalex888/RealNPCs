@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 234;
+        public const int CurrentVersion = 235;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -195,6 +195,8 @@ namespace EnrageWestworld.Core
         public int StalkerChance = 35;         // 20 until settings version 161: about once in 45 minutes of play, was about once in three hours
         public int StalkerNearbyMetres = 60;
         public bool StalkerStrangers = true;
+        public int StalkerHorse = 35;          // percent of stalkers who appear on horseback and sit the horse watching; they get down to move (SIXDAY item 19; settings version 235)
+        public bool RevenantsAtCamp = true;    // with West World: someone you killed, due back (or due within two days), comes to the edge of your firelight when you sit at a fire of a night out of the towns (SIXDAY item 19)
         public bool StalkerRecords = true;
         public bool StalkerBlack = true;       // the stalker is always a stranger dressed in black, spawned out of sight (Lex, 2026-10-31); never someone near turned or one of enRAGE's people, whose clothes enRAGE knows them by; false: as before (settings version 161)
         public string StalkerBlackModel = "a_m_o_sdupperclass_01";   // his model, from the Testing row "Stalker outfit: show the next candidate"
@@ -834,6 +836,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 235)
+                    log?.Invoke("Settings: new in this version: [Stalkers] StalkerHorse (35): some stalkers appear on horseback; RevenantsAtCamp (on): someone you killed comes to the edge of your firelight.");
                 if (s.SettingsVersion < 234)
                     log?.Invoke("Settings: new in this version: [World] BodyToUndertaker (on): the lawman carries the dead to the undertaker's or the jail when one is near, and someone who knew them follows.");
                 if (s.SettingsVersion < 233)
@@ -1136,6 +1140,7 @@ namespace EnrageWestworld.Core
             StrainChance = Math.Max(0, Math.Min(100, StrainChance));
             TownPostsAfterDeath = (TownPostsAfterDeath ?? "").Trim().ToLowerInvariant() == "successor" ? "successor" : "survive";
             RegularsPerTown = Math.Max(5, Math.Min(80, RegularsPerTown));            StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
+            StalkerHorse = Math.Max(0, Math.Min(100, StalkerHorse));
             StalkerMinutes = Math.Max(1, Math.Min(240, StalkerMinutes));
             AvengerChance = Math.Max(0, Math.Min(100, AvengerChance));
             AvengersAtOnce = Math.Max(1, Math.Min(10, AvengersAtOnce));
@@ -1395,6 +1400,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("StalkerRecords = " + B(StalkerRecords) + "   ; with StalkerBlack off: one of enRAGE's people may be the stalker (one who hates you most likely), while enRAGE has no use for them; handed back the moment it has, and after 20 minutes at most");
             b.AppendLine("StalkerNearbyMetres = " + StalkerNearbyMetres + "   ; with StalkerBlack off: on a hit, someone within this distance starts following you, someone with a history with you first (20-150)");
             b.AppendLine("StalkerStrangers = " + B(StalkerStrangers) + "   ; with StalkerBlack off: if nobody near can be turned for a few minutes, a stranger turns up behind you instead");
+            b.AppendLine("StalkerHorse = " + StalkerHorse + "   ; percent of stalkers who appear on horseback: he sits the horse watching from where he appeared and gets down the first time he moves (the horse is given back out of view); 0: always on foot");
+            b.AppendLine("RevenantsAtCamp = " + B(RevenantsAtCamp) + "   ; with WestWorld and Stalkers: sit at a fire of a night out of the towns and someone you killed who is due back (or due within two days) comes to the edge of the firelight, 13-18 m off, and stares; a word from the dark; the stalker's ways after; false: they come behind you on the road as before");
             b.AppendLine("StalkerMinutes = " + StalkerMinutes + "   ; how long a stalker keeps it up (real minutes, up to 240)");
             b.AppendLine("StalkerAppearMin = " + StalkerAppearMin + "   ; he first turns up this many metres behind you, at least...");
             b.AppendLine("StalkerAppearMax = " + StalkerAppearMax + "   ; ... and at most");

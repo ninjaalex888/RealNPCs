@@ -195,6 +195,10 @@ NEW IN 0.7.19
   you for his marker ($5) as the debtor does; the Devout and the churchgoing don't drink away
   bad news on a Sunday (grief excepted), and a Devout in the room judges a Sunday drinker in a
   thought; a friend of a man drinking away bad news stands the house a round, him first.
+- Stalkers on horseback ([Stalkers] StalkerHorse, 35): some stalkers appear mounted and sit the
+  horse watching from where they turned up; they get down the first time they move. Revenants at
+  camp (RevenantsAtCamp, on; with WestWorld): sit at a fire of a night out of the towns and someone
+  you killed who is due back comes to the edge of the firelight with a word from the dark.
 - The dead to the undertaker's or the jail ([World] BodyToUndertaker, on): when the lawman lifts a
   body and the undertaker's counter or the sheriff's door you last came out of is within 80 m, that
   is where he carries it; someone who knew the dead and is near walks behind him and stands over

@@ -155,7 +155,7 @@ namespace EnrageWestworld.InGame
             { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMin", "He does odd things at least (metres)" }, { "StalkerActMax", "... and at most (metres)" },
             { "StalkerKey", "Make a stalker now" }, { "ExecutionKey", "Stage an execution nearby" }, { "CryingWomanKey", "Bring out the crying woman" }, { "HermitKey", "Make a hermit's camp nearby" }, { "GatheringKey", "Stand a gathering nearby" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
             { "StalkerChance", "Chance on each roll (percent)" }, { "StalkerNearbyMetres", "Turn someone within (metres; with black off)" },
-            { "StalkerStrangers", "A stranger if nobody near (with black off)" },
+            { "StalkerStrangers", "A stranger if nobody near (with black off)" }, { "StalkerHorse", "On horseback (percent)" }, { "RevenantsAtCamp", "Revenants come to your campfire" },
             { "QuietWhenStill", "Hold enRAGE while you stand still" }, { "QuietStillSeconds", "Standing still for (seconds)" },
             { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" },
             { "Regulars", "Each town keeps its own people" }, { "RegularsPerTown", "Regulars in each town" }, { "RegularsDress", "Regulars wear their own clothes" }, { "RegularsRoutines", "Regulars keep a routine (the saloon of an evening, church on Sunday)" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
