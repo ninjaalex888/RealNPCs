@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 227;
+        public const int CurrentVersion = 228;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -169,6 +169,7 @@ namespace EnrageWestworld.Core
         public bool LoopVoice = true;    // with West World: from the second stage a waking regular hears their habit as a voice giving orders at the hour (on the ticker, once a day), from the third answers it, at the fourth breaks the loop now and then (a broom on an empty street at night, the church wall at noon, the river's edge: one a town a day) and, once, comes to the centre (three thoughts that end with the voice known as their own); after it an ending may be a reset to stage 0 (Core/LoopVoice.cs; SIXDAY item 12a; settings version 225)
         public bool Ghosts = true;       // with West World: the reload noticed. What a save loaded from before drops is kept a week as ghosts (always); with this on, a victim of a rewound killing who walks again gets one deja vu when you come within 12 m, both sides of a rewound tie think of the quarrel or the kiss that didn't happen, the waking talk of the morning that happened twice for two days, and the ticker says how many times the clock turned back (Core/Ghosts.cs; SIXDAY item 12b; settings version 226)
         public bool WakeLines = true;    // with West World: each person at the fourth stage holds one line out of the public domain and says it when they talk with someone tied to them or waking; a listener who suspects enough (awareness 40+) and hears the same line from two different people within three days wakes a stage, one a town a day; and someone tied to a dead man who sees him alive again (a save loaded from before) reacts once (Core/WakeLines.cs; SIXDAY item 12c; settings version 227)
+        public bool DespairWater = true;  // with West World: a fully awake person who can't bear it, with the river near and no gun or poison in them, may walk into the water and keep walking (Core/Despair.cs; SIXDAY item 12d; settings version 228)
         // the waking held and stranger (settings version 144; Lex, 2026-10-31: they swapped back to the game between acts; Game/WestworldScript.WakeHold.cs)
         public bool WakeHold = true;
         public int WakeHoldMinutes = 3;
@@ -825,6 +826,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 228)
+                    log?.Invoke("Settings: new in this version: [WestWorld] DespairWater (on): despair may end in the river.");
                 if (s.SettingsVersion < 227)
                     log?.Invoke("Settings: new in this version: [WestWorld] WakeLines (on): the fully awake pass on a line that wakes a listener who hears it twice; the revived dead are seen for what they are.");
                 if (s.SettingsVersion < 226)
@@ -1344,6 +1347,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("LoopVoice = " + B(LoopVoice) + "   ; the waking regulars of a town hear their habit as a voice giving orders at the hour (the ticker, once a day each, from the second stage: Seven o'clock. The saloon. You'll be at the saloon.), answer it back from the third, and at the fourth break the loop now and then where the habit forbids (a broom on an empty street before dawn, the church wall at noon, the river's edge to the knee; one a town a day; the church steps and the wharf from the spot table); once, three thoughts end with the voice known as their own (the centre), after which an ending may be a reset: back to the start, cheerful and blank, their friends noticing for two days. F7 TEST loop");
             b.AppendLine("Ghosts = " + B(Ghosts) + "   ; the reload noticed: a save loaded from before keeps what it undid as ghosts for a week (a killing, a death, a deed, a tie, a link; always kept, never rewound themselves); with this on, a victim of a rewound killing who walks the town again gets one sharp deja vu the first time you come within 12 m (a thought and an uneasy line; awareness +10), both sides of a rewound tie think of the quarrel or the kiss that didn't happen, the waking open their talk with the morning that happened twice for two days, and the ticker says how many times the clock turned back. F7 TEST ghosts");
             b.AppendLine("WakeLines = " + B(WakeLines) + "   ; two ways the Awakening spreads: each person at the fourth stage holds one line (The Tempest, Poe, Dickinson, Ecclesiastes) and says it as a talk closes with someone tied to them or waking too; a listener who already suspects (awareness 40 and over) and hears the same line from two different people within three days wakes a stage, at most one a town a day; and someone tied to a man they knew for dead who sees him alive again (a save loaded from before) looks, steps back, thinks of it once, awareness +10 and a stage at 60, the town chewing on it for a day. F7 TEST wakelines");
+            b.AppendLine("DespairWater = " + B(DespairWater) + "   ; one more way despair ends: with the river's edge within 14 m (the game's own water height, about at their feet) and neither a gun nor poison chosen, 45% walk into the water and keep walking; six seconds in, they go under. The fall from a height is not built (no safe drop is known)");
             b.AppendLine("WakeHold = " + B(WakeHold) + "   ; from the second stage, a waking person near you goes from one strange act into the next instead of going back to their day: stood dazed, drifting a few steps, pacing, freezing; let go for a fight, gunfire, the law after you, or a scene");
             b.AppendLine("WakeHoldMinutes = " + WakeHoldMinutes + "   ; how long one hold lasts before they are let go for a minute (1 to 15)");
             b.AppendLine("WakeGestures = " + B(WakeGestures) + "   ; the waking use their hands and bodies as they act: rubbing their eyes, pointing at the sky, a hand to the head, pleading; a clip that won't play or carries them off is dropped for the session (the log says which)");

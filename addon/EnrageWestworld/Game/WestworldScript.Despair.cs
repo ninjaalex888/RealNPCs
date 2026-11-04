@@ -113,11 +113,19 @@ namespace EnrageWestworld.InGame
             PED.SET_PED_CONFIG_FLAG(h, PcfDontInfluenceWantedLevel, true);
             Ped ped = new Ped(h);
             bool armed = WEAPON.IS_PED_ARMED(h, 4);
-            Vector3 wall, dir;
+            Vector3 wall, dir, water = Vector3.Zero, waterDir = Vector3.Zero;
             bool hasWall = DespairWall(ped, me, out wall, out dir);
-            string method = forced != null ? forced.Split(':')[0] : Despair.Method(act.P, armed, hasWall, act.P.Id);
+            bool hasWater = _cfg.DespairWater && DespairWater(ped, me, out water, out waterDir);
+            string method = forced != null ? forced.Split(':')[0] : Despair.Method(act.P, armed, hasWall, hasWater, act.P.Id);
+            if (method == "water" && !hasWater)
+                method = hasWall ? "wall" : "knife";
             if (method == "wall" && !hasWall)
-                method = "knife";
+                method = hasWater ? "water" : "knife";
+            if (method == "water")
+            {
+                wall = water;   // the water's edge, and the way in, carried where the wall's point and direction go
+                dir = waterDir;
+            }
             act.Method = method;
             act.Variant = forced != null && forced.Contains(":") ? forced.Split(':')[1]
                 : method == "gun" ? Despair.GunArc(act.P, act.P.Id) : method == "poison" ? Despair.PoisonWay(act.P, act.P.Id) : null;

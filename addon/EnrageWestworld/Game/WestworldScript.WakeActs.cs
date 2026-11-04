@@ -1038,7 +1038,7 @@ namespace EnrageWestworld.InGame
                 }
                 act.Phase = 4;
                 act.Sub = 0;
-                act.Until = now + (act.Method == "wall" ? 20000 : 9000);
+                act.Until = now + (act.Method == "wall" ? 20000 : act.Method == "water" ? 40000 : 9000);
                 _selfHarmed.Add(h);   // theirs alone: never booked as the player's doing
                 if (!Spawner.IsOurs(h))
                 {
@@ -1053,6 +1053,8 @@ namespace EnrageWestworld.InGame
                 }
                 if (act.Method == "wall")
                     DespairRunStart(act, now);
+                else if (act.Method == "water")
+                    DespairWadeStart(act, now);   // into the river and on (SIXDAY 12d)
                 else if (act.Seq != null)
                     DespairSeqStart(act, now);   // the gun arcs and the poisoning, with the game's clips
                 else
@@ -1065,6 +1067,8 @@ namespace EnrageWestworld.InGame
                     act.NextStep = now + 50;   // the clips watched closely, set here ahead of the PhaseUntil gate: the tick re-arms each act 400 ms on before stepping it, which left the shot ~0.45 s late (44% and 51% for 30 and 35) and 0.4 s between clips
                 if (act.Method == "wall")
                     DespairRun(act, now);
+                else if (act.Method == "water")
+                    DespairWade(act, now);
                 else if (now >= act.PhaseUntil)
                 {
                     if (act.Sub >= 10 && act.Seq != null)
@@ -1274,6 +1278,80 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// The water: a walk to the edge and on in, no hurry, until they're in it; six seconds in, and under. Never reached, they
+        /// go limp where they stand, as at the wall.
+        private void DespairWadeStart(WakeAct act, int now)
+        {
+            int h = act.Handle;
+            DespairBeatsStep(act, now);   // the calm, as they turn to the water
+            Vector3 past = act.WallAt + act.WallDir * 7f;
+            TASK.TASK_GO_STRAIGHT_TO_COORD(h, past.X, past.Y, past.Z, 1.2f, 32000, 40000f, 0f, 0);
+            act.Sub = 0;
+            act.RunFrom = now;
+            act.PhaseUntil = now + 32000;
+        }
+
+        private void DespairWade(WakeAct act, int now)
+        {
+            int h = act.Handle;
+            act.NextStep = now + 200;
+            bool wet = ENTITY.IS_ENTITY_IN_WATER(h);
+            if (wet && act.Sub == 0)
+            {
+                act.Sub = 1;
+                act.RunFrom = now;
+                Log.Write("WAKE despair: " + act.Name + " walked into the water");
+                return;
+            }
+            if (act.Sub == 1 && now - act.RunFrom >= Despair.DrownMs)
+            {
+                ENTITY.SET_ENTITY_HEALTH(h, 0, h);   // under, and gone: theirs alone (the ledger books it by its own scan)
+                Log.Write("WAKE despair: " + act.Name + " went under");
+                act.Phase = 5;
+                act.PhaseUntil = now + 1200;
+                return;
+            }
+            if (act.Sub == 0 && now >= act.PhaseUntil)
+            {
+                Log.Write("WAKE despair: " + act.Name + " never reached the water (" + Flat(new Ped(h).Position, act.WallAt).ToString("0.0") + " m short); went limp where they stood");
+                PED.SET_PED_TO_RAGDOLL(h, 6000, 9000, 0, false, false, "");
+                act.Phase = 5;
+                act.PhaseUntil = now + 1200;
+            }
+        }
+
+        /// Water to walk into: the game's own water height 5-14 m off in one of sixteen directions, about at their feet (a bank,
+        /// not a cliff over the river), the player not on the line. The point is the water's edge, the direction the way in.
+        private unsafe bool DespairWater(Ped p, Ped me, out Vector3 at, out Vector3 dir)
+        {
+            at = dir = Vector3.Zero;
+            Vector3 pos = p.Position, mp = me.Position;
+            float best = float.MaxValue;
+            for (int i = 0; i < 16; i++)
+            {
+                float a = i * 22.5f * (float)Math.PI / 180f, dx = -(float)Math.Sin(a), dy = (float)Math.Cos(a);
+                for (float d = 5f; d <= 14f; d += 3f)
+                {
+                    float wx = pos.X + dx * d, wy = pos.Y + dy * d, wh = 0f;
+                    if (!WATER.GET_WATER_HEIGHT(wx, wy, pos.Z, &wh) || wh < pos.Z - 2.5f || wh > pos.Z + 0.5f)
+                        continue;   // no water there, or water far below (a cliff) or above (a wall of it: a bridge's pier)
+                    float t = Math.Max(0f, Math.Min(d, (mp.X - pos.X) * dx + (mp.Y - pos.Y) * dy));
+                    if (Flat(mp, new Vector3(pos.X + dx * t, pos.Y + dy * t, mp.Z)) < 2f)
+                        break;   // the player is on the line
+                    float score = Math.Abs(d - 8f);
+                    if (score < best)
+                    {
+                        best = score;
+                        at = new Vector3(wx, wy, wh);
+                        dir = new Vector3(dx, dy, 0f);
+                    }
+                    break;   // the nearest water along this line is the edge
+                }
+            }
+            return best < float.MaxValue;
+        }
+
+        /// A wall to run at: 2.5-10 m off at chest height, met square on, nothing low in the way, and the player not
         /// A wall to run at: 2.5-10 m off at chest height, met square on, nothing low in the way, and the player not
         /// on the line to it.
         private bool DespairWall(Ped p, Ped me, out Vector3 at, out Vector3 dir)

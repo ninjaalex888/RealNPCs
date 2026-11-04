@@ -528,6 +528,8 @@ NEW IN 0.7.11
   days wakes a stage, one a town a day. And someone who knew a man for dead and sees him alive again
   (a save loaded from before) looks, steps back and thinks of it once; the town chews on it for a day.
   F7 "TEST wakelines:".
+- Despair in the river (DespairWater, with WestWorld): a fully awake person who can't bear it, with the
+  water's edge near and neither a gun nor poison in them, may walk into the river and keep walking.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if

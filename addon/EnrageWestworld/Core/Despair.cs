@@ -11,8 +11,17 @@ namespace EnrageWestworld.Core
     {
         public const string Knife = "WEAPON_MELEE_KNIFE";
 
+        public const int WaterChance = 45;        // percent, with water near, after the gun and the poison have passed
+        public const int DrownMs = 6000;           // in the water this long, and under
+
         /// "gun", "poison", "wall" or "knife". armed: they have a gun on them already; wallNear: a wall to run at.
         public static string Method(Person p, bool armed, bool wallNear, string seed)
+        {
+            return Method(p, armed, wallNear, false, seed);
+        }
+
+        /// ...or "water" (SIXDAY item 12d): the river's edge near, they walk into it and keep walking.
+        public static string Method(Person p, bool armed, bool wallNear, bool waterNear, string seed)
         {
             if (armed)
                 return "gun";
@@ -20,6 +29,8 @@ namespace EnrageWestworld.Core
                 return "gun";
             if (Voice.Chance(seed + "dp", p != null && p.Woman ? 50 : 30))
                 return "poison";
+            if (waterNear && Voice.Chance(seed + "dr", WaterChance))
+                return "water";
             return wallNear && Voice.Chance(seed + "dw", 60) ? "wall" : "knife";
         }
 
