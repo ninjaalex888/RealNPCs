@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 251;
+        public const int CurrentVersion = 252;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -170,14 +170,15 @@ namespace EnrageWestworld.Core
 
         // [WestWorld] - the master switch and everything under it
         public bool WestWorld = true;
-        public float AwakeningShare = 2.25f;   // a share of a percent too (0.6); 5 until settings version 138 (Lex, 2026-10-30: fewer waking), 3 until 159 (Lex, 2026-10-31: fewer stirring, a little)
-        public int AwakeningDays = 5;   // 1 until settings version 138 (Lex, 2026-10-30: "very slow how fast they progress the stages")
+        public float AwakeningShare = 3f;   // a share of a percent too (0.6); 5 until settings version 138 (Lex, 2026-10-30: fewer waking), 3 until 159 (Lex, 2026-10-31: fewer stirring, a little), 2.25 until 252 (Run 3, item 4; Lex, 2026-11-04: "we can tune up the amount of awake people, and frequency")
+        public int AwakeningDays = 3;   // 1 until settings version 138 (Lex, 2026-10-30: "very slow how fast they progress the stages"), 5 until 252 (Run 3, item 4: the first awake after about 10 hours of play, not 14)
         public int AwakeningBreakdown = 90;
-        public int AwakeningDespair = 50;   // 75 until settings version 191 (Lex, 2026-11-02: the waking rarer, so a despair death lands harder)
+        public int AwakeningDespair = 65;   // 75 until settings version 191 (Lex, 2026-11-02: the waking rarer, so a despair death lands harder), 50 until 252 (Run 3, item 4: Lex hadn't seen many)
         public bool WakeVoices = true;   // the waking speak the game's own lines, oddly, more each stage (Core/WakeVoice.cs; settings version 78)
         public bool LoopVoice = true;    // with West World: from the second stage a waking regular hears their habit as a voice giving orders at the hour (on the ticker, once a day), from the third answers it, at the fourth breaks the loop now and then (a broom on an empty street at night, the church wall at noon, the river's edge: one a town a day) and, once, comes to the centre (three thoughts that end with the voice known as their own); after it an ending may be a reset to stage 0 (Core/LoopVoice.cs; SIXDAY item 12a; settings version 225)
         public bool Ghosts = true;       // with West World: the reload noticed. What a save loaded from before drops is kept a week as ghosts (always); with this on, a victim of a rewound killing who walks again gets one deja vu when you come within 12 m, both sides of a rewound tie think of the quarrel or the kiss that didn't happen, the waking talk of the morning that happened twice for two days, and the ticker says how many times the clock turned back (Core/Ghosts.cs; SIXDAY item 12b; settings version 226)
         public bool WakeLines = true;    // with West World: each person at the fourth stage holds one line out of the public domain and says it when they talk with someone tied to them or waking; a listener who suspects enough (awareness 40+) and hears the same line from two different people within three days wakes a stage, one a town a day; and someone tied to a dead man who sees him alive again (a save loaded from before) reacts once (Core/WakeLines.cs; SIXDAY item 12c; settings version 227)
+        public bool DespairFall = true;   // with West World: despair may end at the edge of a sheer drop of 7 m or more near (Core/Despair.cs; Run 3, item 4; settings version 252)
         public bool DespairWater = true;  // with West World: a fully awake person who can't bear it, with the river near and no gun or poison in them, may walk into the water and keep walking (Core/Despair.cs; SIXDAY item 12d; settings version 228)
         // the waking held and stranger (settings version 144; Lex, 2026-10-31: they swapped back to the game between acts; Game/WestworldScript.WakeHold.cs)
         public bool WakeHold = true;
@@ -719,6 +720,14 @@ namespace EnrageWestworld.Core
                 s.LanguageModel = EnrageWestworld.Core.Language.DefaultModel;
                 raised.Add("LanguageModel " + EnrageWestworld.Core.Language.OldDefaultModel + " -> " + EnrageWestworld.Core.Language.DefaultModel + " (a smaller model; until you run ollama pull " + EnrageWestworld.Core.Language.DefaultModel + " the 8B you have goes on being used)");
             }
+            if (s.SettingsVersion < 252)
+            {
+                // the waking tuned up (Run 3, item 4; Lex, 2026-11-04: "I haven't seen many despair ending recently, we can tune up
+                // the amount of awake people, and frequency"); values of your own are kept
+                if (Math.Abs(s.AwakeningShare - 2.25f) < 0.01f) { s.AwakeningShare = 3f; raised.Add("AwakeningShare 2.25 -> 3"); }
+                if (s.AwakeningDays == 5) { s.AwakeningDays = 3; raised.Add("AwakeningDays 5 -> 3"); }
+                if (s.AwakeningDespair == 50) { s.AwakeningDespair = 65; raised.Add("AwakeningDespair 50 -> 65"); }
+            }
             if (raised.Count > 0)
                 log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");
         }
@@ -859,6 +868,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 252)
+                    log?.Invoke("Settings: West World's waking is tuned up where it was as it came (more people wake, a stage every 3 days, despair 65%), and new in this version: [WestWorld] DespairFall (on): despair may end at the edge of a drop.");
                 if (s.SettingsVersion < 251)
                     log?.Invoke("Settings: new in this version: [Scenes] NightTales (on): at night people tell the old tales, in the saloon, in the street after dark and at a campfire: the bell on the grave, the tommyknockers, the feu follet, the Bell Witch, Tailypo, the white stallion.");
                 if (s.SettingsVersion < 250)
@@ -1438,6 +1449,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("LoopVoice = " + B(LoopVoice) + "   ; the waking regulars of a town hear their habit as a voice giving orders at the hour (the ticker, once a day each, from the second stage: Seven o'clock. The saloon. You'll be at the saloon.), answer it back from the third, and at the fourth break the loop now and then where the habit forbids (a broom on an empty street before dawn, the church wall at noon, the river's edge to the knee; one a town a day; the church steps and the wharf from the spot table); once, three thoughts end with the voice known as their own (the centre), after which an ending may be a reset: back to the start, cheerful and blank, their friends noticing for two days. F7 TEST loop");
             b.AppendLine("Ghosts = " + B(Ghosts) + "   ; the reload noticed: a save loaded from before keeps what it undid as ghosts for a week (a killing, a death, a deed, a tie, a link; always kept, never rewound themselves); with this on, a victim of a rewound killing who walks the town again gets one sharp deja vu the first time you come within 12 m (a thought and an uneasy line; awareness +10), both sides of a rewound tie think of the quarrel or the kiss that didn't happen, the waking open their talk with the morning that happened twice for two days, and the ticker says how many times the clock turned back. F7 TEST ghosts");
             b.AppendLine("WakeLines = " + B(WakeLines) + "   ; two ways the Awakening spreads: each person at the fourth stage holds one line (The Tempest, Poe, Dickinson, Ecclesiastes) and says it as a talk closes with someone tied to them or waking too; a listener who already suspects (awareness 40 and over) and hears the same line from two different people within three days wakes a stage, at most one a town a day; and someone tied to a man they knew for dead who sees him alive again (a save loaded from before) looks, steps back, thinks of it once, awareness +10 and a stage at 60, the town chewing on it for a day. F7 TEST wakelines");
+            b.AppendLine("DespairFall = " + B(DespairFall) + "   ; one more way despair ends: with a sheer drop of 7 m or more near (a bluff, a ledge, a high bank) and no gun or poison in them, they walk to the edge, stand and look out, and step off");
             b.AppendLine("DespairWater = " + B(DespairWater) + "   ; one more way despair ends: with the river's edge within 14 m (the game's own water height, about at their feet) and neither a gun nor poison chosen, 45% walk into the water and keep walking; six seconds in, they go under. The fall from a height is not built (no safe drop is known)");
             b.AppendLine("WakeHold = " + B(WakeHold) + "   ; from the second stage, a waking person near you goes from one strange act into the next instead of going back to their day: stood dazed, drifting a few steps, pacing, freezing; let go for a fight, gunfire, the law after you, or a scene");
             b.AppendLine("WakeHoldMinutes = " + WakeHoldMinutes + "   ; how long one hold lasts before they are let go for a minute (1 to 15)");

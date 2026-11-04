@@ -13,6 +13,13 @@ namespace EnrageWestworld.Core
 
         public const int WaterChance = 45;        // percent, with water near, after the gun and the poison have passed
         public const int DrownMs = 6000;           // in the water this long, and under
+        // The fall (Run 3, item 4; roadmap 3's other way, not built in the first six-day run for want of a safe way to know a
+        // drop): with a sheer drop near (WestworldScript.Despair.cs DespairDrop reads the game's own ground height), they walk to
+        // the edge, stand and look out, and step off. It takes the place of the wall or the knife half the time; the gun, the
+        // poison and the water keep their own chances, so those ways come as often as before.
+        public const int FallChance = 50;          // percent, with a drop near, of the wall or the knife
+        public const float FallDropMetres = 7f;    // the least drop that counts
+        public const int FallPauseMs = 2500, FallOverMs = 6000, FallLandMs = 2500;   // stood at the edge; held there by the game before a tip; the landing
 
         /// "gun", "poison", "wall" or "knife". armed: they have a gun on them already; wallNear: a wall to run at.
         public static string Method(Person p, bool armed, bool wallNear, string seed)
@@ -32,6 +39,15 @@ namespace EnrageWestworld.Core
             if (waterNear && Voice.Chance(seed + "dr", WaterChance))
                 return "water";
             return wallNear && Voice.Chance(seed + "dw", 60) ? "wall" : "knife";
+        }
+
+        /// ...or "fall" (Run 3, item 4): a drop near, half the time in place of the wall or the knife.
+        public static string Method(Person p, bool armed, bool wallNear, bool waterNear, bool dropNear, string seed)
+        {
+            string m = Method(p, armed, wallNear, waterNear, seed);
+            if (dropNear && (m == "wall" || m == "knife") && Voice.Chance(seed + "df", FallChance))
+                return "fall";
+            return m;
         }
 
         /// The gun's arc: "jamie" (the despair, the gun to the head, the shaking, the shot). A hideout leader's arc was the

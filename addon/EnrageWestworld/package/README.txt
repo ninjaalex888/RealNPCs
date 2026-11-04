@@ -737,6 +737,13 @@ NEW IN 0.7.11
   F7 "TEST wakelines:".
 - Despair in the river (DespairWater, with WestWorld): a fully awake person who can't bear it, with the
   water's edge near and neither a gun nor poison in them, may walk into the river and keep walking.
+- Despair from a height (DespairFall, on, with WestWorld): with a sheer drop of 7 m or more near (a
+  bluff, a ledge, a high bank) and neither a gun nor poison in them, half of those who would run at a
+  wall or take a knife walk to the edge instead, stand and look out, and step off. The waking is
+  tuned up as it comes: AwakeningShare 3 (was 2.25), AwakeningDays 3 (was 5), AwakeningDespair 65
+  (was 50), and an awake person's act comes every 75 s, not 120: offline that is about one despair
+  ending every two hours of play once the first are awake (about seven hours in), where it was one
+  in four and a half. An ini on the old values is moved; values of your own are kept.
 - Brawls that grow. A fistfight draws people in a wave at a time, up to [Mind] BrawlMost (12)
   fighting: friends and grudges first, from up to BrawlJoinMetres (30) away, most of all in a
   saloon with drink in it. Those sitting or leaning get up to join. The sides balance, a man
@@ -1779,8 +1786,9 @@ in the file. The new ones:
             NameCardsAlways (true): a name over everyone in range, hidden only by walls,
             NameCardsBesideEnrage (false): ours even while enRAGE draws its own
 [WestWorld] WestWorld (true): the master switch. false turns off everything below it.
-            AwakeningShare (2.25), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
-            or awake person falls apart), AwakeningDespair (50, 0-100, see the content note above),
+            AwakeningShare (3), AwakeningDays (3), AwakeningBreakdown (90, how often an unravelling
+            or awake person falls apart), AwakeningDespair (65, 0-100, see the content note above),
+            DespairFall (true) and DespairWater (true): the height and the river among despair's ways,
             WakeVoices (true): the waking say the game's own lines in the wrong places, more each stage,
             WakeHold (true): from the second stage they stay strange between acts instead of going
             back to their day, for WakeHoldMinutes (3); WakeGestures (true): their hands and bodies

@@ -116,7 +116,11 @@ namespace EnrageWestworld.InGame
             Vector3 wall, dir, water = Vector3.Zero, waterDir = Vector3.Zero;
             bool hasWall = DespairWall(ped, me, out wall, out dir);
             bool hasWater = _cfg.DespairWater && DespairWater(ped, me, out water, out waterDir);
-            string method = forced != null ? forced.Split(':')[0] : Despair.Method(act.P, armed, hasWall, hasWater, act.P.Id);
+            Vector3 drop = Vector3.Zero, dropDir = Vector3.Zero;
+            bool hasDrop = _cfg.DespairFall && DespairDrop(ped, me, out drop, out dropDir);   // a sheer drop near (Run 3, item 4)
+            string method = forced != null ? forced.Split(':')[0] : Despair.Method(act.P, armed, hasWall, hasWater, hasDrop, act.P.Id);
+            if (method == "fall" && !hasDrop)
+                method = hasWall ? "wall" : hasWater ? "water" : "knife";
             if (method == "water" && !hasWater)
                 method = hasWall ? "wall" : "knife";
             if (method == "wall" && !hasWall)
@@ -125,6 +129,11 @@ namespace EnrageWestworld.InGame
             {
                 wall = water;   // the water's edge, and the way in, carried where the wall's point and direction go
                 dir = waterDir;
+            }
+            if (method == "fall")
+            {
+                wall = drop;   // the edge, and the way off it, likewise
+                dir = dropDir;
             }
             act.Method = method;
             act.Variant = forced != null && forced.Contains(":") ? forced.Split(':')[1]
@@ -163,7 +172,7 @@ namespace EnrageWestworld.InGame
             DespairLastWords(act, me);
             act.PhaseUntil = now + (sob ? 4500 : 3400);
             Log.Write("WAKE despair: " + act.Name + " can't bear it: " + DespairHow(act) + (act.Seq != null ? " (" + act.Seq.Length + " clips)" : "") +
-                      (hasWall ? " (a wall " + Flat(wall, ped.Position).ToString("0.0") + " m off)" : " (no wall to run at)") + (armed ? ", armed" : "") + (sob ? ", sobbing" : "") +
+                      (hasWall ? " (a wall " + Flat(wall, ped.Position).ToString("0.0") + " m off)" : " (no wall to run at)") + (hasDrop ? " (a drop " + Flat(drop, ped.Position).ToString("0.0") + " m off)" : "") + (armed ? ", armed" : "") + (sob ? ", sobbing" : "") +
                       (forced != null ? " (a test)" : ""));
         }
 
@@ -413,7 +422,7 @@ namespace EnrageWestworld.InGame
 
         // ---- the Testing page: despair now, each way in turn --------------------------------------------------------
 
-        private static readonly string[] DespairTestWays = { "gun:jamie", "poison:drink", "poison:slow", "knife", "wall" };
+        private static readonly string[] DespairTestWays = { "gun:jamie", "poison:drink", "poison:slow", "knife", "wall", "water", "fall" };   // the water and the fall fall back to the wall or the knife where there's none (Run 3, item 4)
         private int _despairTestTurn;
 
         /// The nearest free person RealNPCs knows (a resident or one of enRAGE's townsfolk; never a record, a story
