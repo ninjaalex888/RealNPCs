@@ -1901,7 +1901,8 @@ namespace EnrageWestworld.InGame
                 {
                     if (!w.Named && _bridge.Present)
                         KinNameToEnrage(w, h);   // once more, in case enRAGE named the body just now
-                    Spawner.Release(w.Ped, false);   // made for the part: handed to the game (lock-on and all), which clears them out of sight
+                    Spawner.Release(w.Ped, false);   // made for the part: handed to the game (lock-on, greet and all), which clears them out of sight
+                    Log.Write("CAST " + w.R.Name + " handed back to the game " + (now - w.Said) / 100 / 10.0 + " s after speaking: lock-on, greet, antagonize and rob are the game's (" + Spawner.LastSociable + ")");
                 }
                 else if (!_director.Involves(h))
                     TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // said their piece; goes about their day (unless a scene has them now)

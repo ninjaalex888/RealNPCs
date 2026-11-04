@@ -172,6 +172,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            Sociable(h);   // the game's greet, antagonize and rob, as for anyone it made itself
             ENTITY.SET_PED_AS_NO_LONGER_NEEDED(&h);
         }
 
@@ -198,8 +199,52 @@ namespace EnrageWestworld.InGame
             {
                 StandUp(h);
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+                Sociable(h);   // the game's greet, antagonize and rob, as for anyone it made itself (before the handle is let go)
                 ENTITY.SET_PED_AS_NO_LONGER_NEEDED(&h);
             }
+        }
+
+        // Made people handed back are the game's in full (Lex, 2026-11-04, testing the relative who walks up: "I can now lock on
+        // to the person walking up but no option to greet them"). A ped a script makes has no interaction personality (0), and
+        // the game offers its Greet, Antagonize and Rob only to a ped that has one. enRAGE's MakeSociable does this for its own
+        // made people, and its log calls the result "handed to the game (greet / antagonize / rob)": the personality of a
+        // townsperson about is copied onto them, and config flag 297 is set on, 301 and 130 off (the lock-on interaction
+        // flags, as enRAGE sets them; this add-on had never set them). Only on the way back to the game (Release, ReleaseCast),
+        // never while one of our scenes holds them, and only for the living and the human.
+        private static uint _donorPersonality;   // the last townsperson's personality copied, kept for a road with nobody about to copy
+
+        /// The last hand-back's note for the log: the personality before and after.
+        public static string LastSociable;
+
+        /// The game's own greet, antagonize and rob for one of ours handed back alive (enRAGE's MakeSociable, as above).
+        public static void Sociable(int h)
+        {
+            if (h == 0 || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h))
+                return;
+            uint was = PED._GET_PED_INTERACTION_PERSONALITY(h), donor = _donorPersonality;
+            string from = donor != 0 ? "remembered" : "nobody about to copy";
+            Ped me = Game.Player.Character;
+            Vector3 at = me != null && me.Exists() ? me.Position : ENTITY.GET_ENTITY_COORDS(h, true, true);
+            foreach (Ped p in Peds.All())
+            {
+                if (p == null || !p.Exists() || p.Handle == h || p.IsDead || PED.IS_PED_A_PLAYER(p.Handle) || !PED.IS_PED_HUMAN(p.Handle) ||
+                    Ours.Contains(p.Handle) || Cast.Contains(p.Handle) || ENTITY.IS_ENTITY_A_MISSION_ENTITY(p.Handle) || Natives.IsChild(p) ||
+                    p.Position.DistanceTo(at) > 80f)
+                    continue;
+                uint pers = PED._GET_PED_INTERACTION_PERSONALITY(p.Handle);
+                if (pers == 0)
+                    continue;
+                donor = pers;
+                _donorPersonality = pers;
+                from = "a townsperson about";
+                break;
+            }
+            if (donor != 0 && donor != was)
+                PED._SET_PED_INTERACTION_PERSONALITY(h, donor);
+            PED.SET_PED_CONFIG_FLAG(h, 297, true);
+            PED.SET_PED_CONFIG_FLAG(h, 301, false);
+            PED.SET_PED_CONFIG_FLAG(h, 130, false);
+            LastSociable = "interaction personality 0x" + was.ToString("X8") + " -> 0x" + (donor != 0 ? donor : was).ToString("X8") + " (" + from + ")";
         }
 
         /// Out of a crouch or a stealth walk (the stalker's creep), so nobody goes back to the world still crouching.
