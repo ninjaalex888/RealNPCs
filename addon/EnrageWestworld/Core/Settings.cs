@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 214;
+        public const int CurrentVersion = 215;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -278,6 +278,8 @@ namespace EnrageWestworld.Core
         public bool RumoursTravel = true;
         public bool Newspaper = true;
         public bool Letters = true;
+        public bool LetterReplies = true;     // [World] answer a letter from the reader (R): kindly, coldly, with a threat, with money, or asking to meet; it lands one to three game days on and changes what the writer does next, and most write back (Core/Replies.cs; roadmap 8; SIXDAY item 8; settings version 215)
+        public bool WriteLetters = true;      // [World] write first, from the reader in a post town (L), to anyone you've met: a warning, an apology, a love note, a threat or money (settings version 215)
         public bool FindDiaries = true;
         public bool Avengers = true;
         public int AvengerChance = 35;
@@ -809,6 +811,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 215)
+                    log?.Invoke("Settings: new in this version: [World] LetterReplies (on): answer a letter from the reader (R) and change what its writer does next; WriteLetters (on): write first to anyone you've met (L in the reader, in a post town).");
                 if (s.SettingsVersion < 214)
                     log?.Invoke("Settings: new in this version: [Display] Overheard (on): the papers end with what went on near you this last day; [Ticker] SceneCues (on): a cue on the ticker when voices are raised behind you.");
                 if (s.SettingsVersion < 213)
@@ -1407,6 +1411,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("RumoursTravel = " + B(RumoursTravel) + "   ; word of your deeds travels town to town and grows in the telling");
             b.AppendLine("Newspaper = " + B(Newspaper) + "   ; your deeds and the town talk turn up in enRAGE's newspapers");
             b.AppendLine("Letters = " + B(Letters) + "   ; letters wait for you at post offices (read them with ReaderKey)");
+            b.AppendLine("LetterReplies = " + B(LetterReplies) + "   ; answer a letter from the reader (R on it): kindly, coldly, with a threat, with money ($5 or $20), or asking to meet; the answer lands one to three game days on and changes what the writer does next (a grieving relative riding west may stand down or ride sooner, a sweetheart warms or cools, a frightened host feels believed or mocked), most write back, and some wait at their town's station on a set day from ten till four");
+            b.AppendLine("WriteLetters = " + B(WriteLetters) + "   ; write first, from the reader in a post town (L): to anyone you've met, a warning, an apology, a love note, a threat or money ($5); carried and taken the same way (a love note or a threat may be shown around the town)");
             b.AppendLine("FindDiaries = " + B(FindDiaries) + "   ; loot a body and you may find the diary they kept");
             b.AppendLine("Avengers = " + B(Avengers) + "   ; kin you never met may ride in to settle accounts");
             b.AppendLine("AvengerChance = " + AvengerChance + "   ; percent chance a grieving relative comes for you");

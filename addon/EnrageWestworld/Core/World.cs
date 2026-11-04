@@ -59,6 +59,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public string Town;      // letters: the post office holding it
         [DataMember(EmitDefaultValue = false)] public bool Delivered;
         [DataMember(EmitDefaultValue = false)] public bool Read;
+        [DataMember(EmitDefaultValue = false)] public string Letter;    // a letter's kind: grief, thanks, love, scorned, confession, invitation, tip, answer (Core/Replies.cs; null for letters from before it, read off the title)
     }
 
     [DataContract]

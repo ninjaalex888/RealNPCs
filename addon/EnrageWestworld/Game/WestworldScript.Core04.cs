@@ -298,6 +298,7 @@ namespace EnrageWestworld.InGame
                 ThanksAbort();       // and someone walking over to thank you
                 LonelyAbort();       // and someone lonely hoping for a word
                 EscortAbort();       // and someone you were seeing home
+                MeetAbort();         // and a letter's writer waiting to meet you (WestworldScript.Letters.cs)
                 ErrandAbort();       // and a word you were carrying (memory only)
                 FavourAbort();       // and someone coming to ask a favour, or to warn you (NIGHT4 item 6)
                 ChanceWaitAbort("the add-on stopped");   // and a chance meeting waiting on the model's pick
@@ -424,7 +425,12 @@ namespace EnrageWestworld.InGame
         private void ReaderInputImpl()
         {
             while (_readerKeys.Count > 0)
-                _reader.Key(_readerKeys.Dequeue());
+            {
+                Keys k = _readerKeys.Dequeue();
+                if (LetterKey(k))   // the answers and the letters of his own, over the reader (WestworldScript.Letters.cs)
+                    continue;
+                _reader.Key(k);
+            }
             if (!_readerRequested)
                 return;
             _readerRequested = false;
@@ -625,6 +631,7 @@ namespace EnrageWestworld.InGame
             if (_reader.Open)
             {
                 _reader.Render();
+                LetterMenuDraw();   // the letters' hint or menu over the paper (WestworldScript.Letters.cs)
                 return;
             }
             Draw.Part = Draw.PartTalk;
@@ -1172,6 +1179,7 @@ namespace EnrageWestworld.InGame
             ThanksAbort();
             LonelyAbort();
             EscortAbort();
+            MeetAbort();
             FavourAbort();
             ChanceWaitAbort("a mission started");
             WarnAbort();
@@ -1262,6 +1270,7 @@ namespace EnrageWestworld.InGame
             PassingStep(now);   // people who know each other acknowledge it as they pass (WestworldScript.Passing.cs)
             SightsStep(now);    // people notice how you look (WestworldScript.Sights.cs)
             StreetStep(now);    // the street reacts to other people's fights, and to who walks among them (WestworldScript.Street.cs)
+            LettersStep(now);   // a letter's writer waiting to meet you (WestworldScript.Letters.cs)
             SpaceStep(now);     // and mind you standing too close (WestworldScript.Space.cs)
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)

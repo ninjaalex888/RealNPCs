@@ -20,6 +20,10 @@ namespace EnrageWestworld.InGame
         private float _laidOutAspect;
 
         public bool Open { get; private set; }
+        /// The paper shown now (the letters' menus act on it; WestworldScript.Letters.cs).
+        public Paper Current { get { return _docs.Count > 0 && _doc >= 0 && _doc < _docs.Count ? _docs[_doc] : null; } }
+        /// A word for the foot from outside ("R: answer"), or null.
+        public string Extra;
 
         public void Show(List<Paper> docs, int index)
         {
@@ -168,7 +172,7 @@ namespace EnrageWestworld.InGame
                 Draw.Text(line, X + 0.035f, y, BodyScale, 40, 30, 22);
                 y += lineH;
             }
-            string foot = (_docs.Count > 1 ? "Paper " + (_doc + 1) + " of " + _docs.Count + "     " : "") +
+            string foot = (Extra != null ? Extra + "     " : "") + (_docs.Count > 1 ? "Paper " + (_doc + 1) + " of " + _docs.Count + "     " : "") +
                           (_pages.Count > 1 ? "Page " + (_page + 1) + " of " + _pages.Count + "     " : "") +
                           (pad ? "D-pad left/right: turn     up/down: next paper     B: close" : "Left/Right: turn     Up/Down: next paper     Backspace: close");
             Draw.Text(foot, X + 0.03f, Y + H - 0.04f, SmallScale, 110, 84, 56);

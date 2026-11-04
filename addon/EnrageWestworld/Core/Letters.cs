@@ -13,9 +13,9 @@ namespace EnrageWestworld.Core
             return knows ? "Mr. " + you.Surname + "," : fallback;
         }
 
-        private static Paper Make(string title, string from, string fromId, string body, long now)
+        private static Paper Make(string title, string from, string fromId, string body, long now, string kind = null)
         {
-            return new Paper { Id = Ids.New(), Kind = "letter", Title = title, From = from, FromId = fromId, Body = body, At = now };
+            return new Paper { Id = Ids.New(), Kind = "letter", Title = title, From = from, FromId = fromId, Body = body, At = now, Letter = kind };   // the kind, for an answer (Core/Replies.cs)
         }
 
         /// From the kin of someone the player killed.
@@ -49,7 +49,7 @@ namespace EnrageWestworld.Core
             }
             body.Add(string.Empty);
             body.Add(r.Name + ", " + r.Town);
-            return Make("A letter from " + r.Name + ", " + r.Town, r.Name, null, string.Join("\n", body), now);
+            return Make("A letter from " + r.Name + ", " + r.Town, r.Name, null, string.Join("\n", body), now, "grief");
         }
 
         /// From someone (or their kin) the player was good to.
@@ -63,7 +63,7 @@ namespace EnrageWestworld.Core
                 : Voice.Pick(seed, "My " + about + " wrote to tell me you " + what + ". I pray for you every night now, whoever you are.",
                     "I have never met you and I owe you everything. My " + about + " is alive because of you.");
             string body = salute + "\n\n" + line + "\n\n" + Voice.Pick(seed + "e", "If you are ever in " + writerTown + ", there is a hot meal and a bed for you.", "God keep you.", "With gratitude,") + "\n\n" + writer;
-            return Make("A letter from " + writer, writer, null, body, now);
+            return Make("A letter from " + writer, writer, null, body, now, "thanks");
         }
 
         private static string Bare(string what)
@@ -85,7 +85,7 @@ namespace EnrageWestworld.Core
                     "The town is dull as ditchwater without you. Even the drunks are behaving.") + " " +
                 Voice.Pick(seed + "2", "Come back to " + (p.Home ?? "town") + " soon.", "Don't you dare get yourself killed.", heart >= 4 ? "You have my heart. Mind you don't break it." : "Maybe next time you'll stay for supper.") +
                 "\n\n" + Voice.Pick(seed + "3", "Yours,", "Fondly,", "Always,") + "\n" + p.FirstName;
-            return Make("A letter from " + p.Name, p.Name, p.Id, body, now);
+            return Make("A letter from " + p.Name, p.Name, p.Id, body, now, "love");
         }
 
         public static Paper Scorned(Person p, PlayerRef you, bool knowsName, long now)
@@ -95,7 +95,7 @@ namespace EnrageWestworld.Core
                     "I hear you've been sweet-talking half the territory. I hope they see you for what you are quicker than I did.",
                     "I burned your letters. Then I realised you never sent me any.") +
                 "\n\n" + Voice.Pick(p.Id + "sc2", "Don't come back to " + (p.Home ?? "town") + ".", "Go to hell.", "Goodbye.") + "\n" + p.FirstName;
-            return Make("A letter from " + p.Name, p.Name, p.Id, body, now);
+            return Make("A letter from " + p.Name, p.Name, p.Id, body, now, "scorned");
         }
 
         /// A host who suspects the truth writes to the one man who seems to come from outside.
@@ -109,7 +109,7 @@ namespace EnrageWestworld.Core
                     "Yesterday the man at the store asked me the same question four times. Same words. He didn't know.",
                     "If you know what we are, please. Just tell me. I can bear it. I think.") +
                 "\n\nBurn this.\n" + p.FirstName;
-            return Make("An unsigned letter, smudged", p.Name, p.Id, body, now);
+            return Make("An unsigned letter, smudged", p.Name, p.Id, body, now, "confession");
         }
 
         public static Paper RevenantNote(Fallen f, PlayerRef you, long now)
@@ -123,7 +123,7 @@ namespace EnrageWestworld.Core
                 w.AName + " and " + w.BName + " are to be married at the church in " + w.Town + ", " + when + ". " +
                 Voice.Pick(w.Id, "It would mean a great deal if you came.", "Come as you are. Leave the guns at the door.", "There'll be cake, and a fiddler, and not much else.") +
                 "\n\n" + Person.FirstOf(w.AName) + " & " + Person.FirstOf(w.BName);
-            return Make("A wedding invitation", w.AName, w.AId, body, now);
+            return Make("A wedding invitation", w.AName, w.AId, body, now, "invitation");
         }
 
         /// A tip from someone who owes the player.
@@ -132,7 +132,7 @@ namespace EnrageWestworld.Core
             string body = Salute(you, knowsName, "Friend,") + "\n\n" +
                 Voice.Pick(p.Id + plan, "I owe you, so here it is and then we're square. ", "Figured you should hear this before anybody else does. ") +
                 Grammar.Sentence(plan) + "\n\n" + Voice.Pick(p.Id + "t", "Burn this.", "We never spoke.", "Good luck.") + "\n" + p.FirstName;
-            return Make("A letter from " + p.Name, p.Name, p.Id, body, now);
+            return Make("A letter from " + p.Name, p.Name, p.Id, body, now, "tip");
         }
     }
 }

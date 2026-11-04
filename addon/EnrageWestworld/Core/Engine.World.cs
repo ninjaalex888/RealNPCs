@@ -511,6 +511,7 @@ namespace EnrageWestworld.Core
             WakeTick(now);
             DeedTalkTick(now);
             AvengerTick(now);
+            ReplyTick(now);   // letters answered and written, landing (Engine.Letters.cs)
             if (Cfg.RumoursTravel)
                 RumourTick(now);
             if (Cfg.Weddings)

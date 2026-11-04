@@ -448,6 +448,16 @@ NEW IN 0.7.11
   blows in the saloon, two hours ago."), then Who's who. And a cue on the ticker when a scene starts
   out of your view within 22 m ([Ticker] SceneCues: "Raised voices behind you.", "A scuffle behind
   you.", "Laughter behind you."), at most once a minute.
+- Answering letters ([World] LetterReplies). In the reader (N), R on a letter answers it: kindly,
+  coldly, with a threat, with money ($5 or $20), or asking to meet; one answer each, none to the
+  dead. It travels one to three game days by the post and changes what the writer does next: a
+  grieving relative riding west may stand down (a kind word, money, or frightened off) or ride
+  sooner (a threat); a sweetheart warms or cools; a frightened host feels believed or mocked.
+  Most write back. Asked to meet, some wait at their town's station two days on, from ten till
+  four (a grey mark on your map with their name): come up to them and they say their piece.
+- Writing your own ([World] WriteLetters). In the reader, in a town with a post office, L: pick
+  someone you've met, then a warning, an apology, a love note, a threat or money ($5); carried
+  and taken the same way. A love note or a threat may get shown around the town. Keyboard only.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
@@ -1544,7 +1554,7 @@ in the file. The new ones:
             tied up off the road, two men by them; HogtiedMenDraw (true; set false to turn it off):
             their leader may draw on you unprovoked as you come near (never bounty hunters)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
-            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
             Bravery (85, 0-100): the brave stand their ground where the game would send them running;
