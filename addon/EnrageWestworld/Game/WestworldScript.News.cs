@@ -90,11 +90,17 @@ namespace EnrageWestworld.InGame
                     _newsLines = _newsLines.Take(4).Concat(new[] { Draw.Fit(string.Join(" ", _newsLines.Skip(4)), body, room) }).ToList();
             }
             bool label = !string.IsNullOrEmpty(_newsShown.Label);
-            float height = pad * 2f + Draw.LineHeight(title) + 0.003f + (label ? Draw.LineHeight(body) : 0f) + _newsLines.Count * Draw.LineHeight(body);
+            string regard = _cfg != null && _cfg.TownRegard ? _regardLine : null;   // the town's regard of you, under the title while you're in a town (WestworldScript.Regard.cs)
+            float height = pad * 2f + Draw.LineHeight(title) + 0.003f + (regard != null ? Draw.LineHeight(body) : 0f) + (label ? Draw.LineHeight(body) : 0f) + _newsLines.Count * Draw.LineHeight(body);
             int a = Math.Max(0, Math.Min(255, Math.Min(now - _newsShownAt, _newsUntil - now) * 255 / 300));   // fades in and out
             Draw.Rect(x, y, w, height, 12, 10, 8, 150 * a / 255);
             Draw.Text(NewsTitle, x + pad, y + pad, title, 236, 214, 160, a);
             float ty = y + pad + Draw.LineHeight(title) + 0.003f;
+            if (regard != null)
+            {
+                Draw.Text(Draw.Fit(regard, body, room), x + pad, ty, body, 212, 184, 124, a);
+                ty += Draw.LineHeight(body);
+            }
             if (label)
             {
                 Draw.Text(Draw.Fit(_newsShown.Label, body, room), x + pad, ty, body, 205, 150, 92, a);

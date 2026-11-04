@@ -86,6 +86,13 @@ namespace EnrageWestworld.Core
             return Reputation.Standing(killsKnown, kindnesses);
         }
 
+        /// The same with its counts, for the "Around town" box's regard line (WestworldScript.Regard.cs; Lex, 2026-11-04).
+        public string StandingOf(string town, long now, out int killsKnown, out int kindnesses)
+        {
+            StandingCounts(town, now, out killsKnown, out kindnesses);
+            return Reputation.Standing(killsKnown, kindnesses);
+        }
+
         private void StandingCounts(string town, long now, out int killsKnown, out int kindnesses)
         {
             killsKnown = kindnesses = 0;

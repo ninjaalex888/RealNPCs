@@ -619,6 +619,11 @@ NEW IN 0.7.11
   Every man beaten down is knocked out (down 20-40 s, then up and on his way) or killed
   (BrawlFistsFatal, 50, moved by who is in the fight; booked as "a beating"). One of enRAGE's
   people is only ever knocked out. Not yet seen in game: fists that kill or knock out.
+- The town's regard of you ([Display] TownRegard, on): in a town, a line under the Around town
+  box's title says what it makes of you (a killer here, a peacemaker, or nothing held against
+  you, with the killings of yours known this week and your kindnesses); on coming into a town,
+  and whenever that changes, an item says the town's mood, how many of the people you know here
+  are afraid or fond of you, and the latest talk about you that has reached it.
 - The brave stand up ([World] BraveStand, on): a brave townsperson the game has cowering (a
   killing seen, a gun drawn) is stood up, holds their ground on their feet for twenty seconds,
   then walks off; the game's cower beside a body looked like freezing with fear.
