@@ -268,6 +268,15 @@ namespace EnrageWestworld.InGame
                     return null;
                 case "letter":
                     return TestLetter(out said);
+                case "almanac":
+                    {
+                        string what = _engine.AlmanacTest(Bridge.Now());
+                        if (what.StartsWith("off") || what.StartsWith("no "))
+                            return what;
+                        AlmanacWord(true);
+                        said = what;
+                        return null;
+                    }
                 case "show":
                     {
                         string what = _engine.ShowTest(_placeTown, Bridge.Now());

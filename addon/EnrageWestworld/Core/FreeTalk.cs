@@ -209,6 +209,8 @@ namespace EnrageWestworld.Core
                     if (afraid) { a.Line = "I hear nothing, mister. Nothing at all."; a.VoiceFear = 50; return a; }
                     if (hostile) { a.Line = "Not a word. Not to you."; a.VoiceHate = 30; return a; }
                     if (worry != null && confides) { a.Line = Interact.WorryLine(worry, seed); a.Confided = true; return a; }
+                    string almanac = Almanac.Takes(InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay, seed + "|falm", 75) ? Almanac.Said(InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay, null, seed + "|fal") : null;   // the year's dated news, three times in four (Core/Almanac.cs)
+                    if (almanac != null) { a.Line = almanac; a.Thought = "Asked for the news like he'd been away. Maybe he has."; return a; }
                     a.Line = Pick(seed + "|fnw", "Quiet enough. Somebody owes somebody, somebody's sweet on somebody.", "Nothing worth the telling. Ask at the saloon.", "Same as ever, mister.");
                     return a;
                 case "weather":

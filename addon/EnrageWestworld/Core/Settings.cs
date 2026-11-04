@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 245;
+        public const int CurrentVersion = 246;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -320,6 +320,8 @@ namespace EnrageWestworld.Core
         public bool BraveStand = true;   // [World] with Bravery: a brave one the game has cowering (a killing seen, a gun drawn) is stood up by the mod, holds their ground on their feet 20 s, then walks off; the game's cower read as frozen fear (Lex, 2026-11-04; Game/WestworldScript.Bravery.cs BraveStandStep; settings version 243)
         public string Storyteller = "lively";   // [World] off | calm | lively | wild: the storyteller shortens the waits on a quiet street or road and lengthens them a little after something big; it never starts anything itself (NIGHT4 item 2; settings version 167)
         public bool HistoricalAccuracy = true;   // [World] the real history: what people talk of from the papers of 1899 and 1907 (Times.cs), the lines about the year they live in, the real calendar's holidays and the year's work by region (Core/Calendar.cs), the snake-oil man's Food and Drugs Act in 1907, the Panic in the paper; off, none of it, and the timeless texture of the days stays (Lex's brief, 2026-11-03: "bEnableHistoricalAccuracy"; SIXDAY item 3; settings version 208)
+        public bool Almanac = true;   // [World] with HistoricalAccuracy: the almanac, a few hundred dated things of 1899 (and of 1907) known from the day they were in the papers, and the year's everyday talk, in the thoughts, Talk's news, the talks between two people, the paper read aloud on the street, the week's paper in the reader and a word on the ticker (Core/Almanac.cs; the second six-day run, item 1; settings version 246)
+        public int AlmanacShare = 100;   // [World] percent: how much of it gets through (the pull of the thoughts, the share of the news answers and the talks); 0 none, 200 twice
         public bool OwnLooks = false;   // [World] standing alone: an ordinary person is known again by the look of the body they were met in (the model and every piece they wear), so the same townsman met again is the same man (roadmap 34, phase A; night 2026-10-29, item 5; settings version 110); off as it comes until seen in game; with enRAGE running, its own knowing by look is used and this never
         public bool Drama = true;
         public int DramaGapSeconds = 30;   // 30 from settings version 185 (Lex, 2026-11-01: "up the frequency"); 150 until 87, 90 until 101, 60 until 185 (Lex, 2026-10-28 and 10-29: the world lively)
@@ -847,6 +849,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 246)
+                    log?.Invoke("Settings: new in this version: [World] Almanac (on), AlmanacShare (100): a few hundred dated things of 1899 and 1907, known from the day they were in the papers, in people's thoughts, Talk's news, the talks between two people, the paper read aloud, the week's paper in the reader and a word on the ticker.");
                 if (s.SettingsVersion < 245)
                     log?.Invoke("Settings: new in this version: [Encounters] WagonWheel (on): by day on the roads, a wagon ahead of you loses a wheel; stop and set it, or ride on and send word from the next town.");
                 if (s.SettingsVersion < 244)
@@ -1125,6 +1129,7 @@ namespace EnrageWestworld.Core
             NightVisitorChance = Math.Max(0, Math.Min(100, NightVisitorChance));
             TravellerChance = Math.Max(0, Math.Min(100, TravellerChance));
             WagonWheelChance = Math.Max(0, Math.Min(100, WagonWheelChance));
+            AlmanacShare = Math.Max(0, Math.Min(200, AlmanacShare));
             CampfireChance = Math.Max(0, Math.Min(100, CampfireChance));
             SupperChance = Math.Max(0, Math.Min(100, SupperChance));
             ExecutionChance = Math.Max(0, Math.Min(100, ExecutionChance));
@@ -1517,6 +1522,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("BraveStand = " + B(BraveStand) + "   ; with Bravery: a brave townsperson the game has cowering (a killing seen, a gun drawn) is stood up, holds their ground on their feet for twenty seconds, then walks off; false: the brave cower where they stand, as the game has it (it looked like freezing with fear)");
             b.AppendLine("Storyteller = " + Storyteller + "   ; how lively the world is around you: the storyteller notices how long it has been since something worth stopping for happened near you (a fight, a theft, a standoff, a song, someone coming up to you, an encounter on the road) and, when it has been quiet too long, shortens the waits before the next scene, chance meeting, walk-up and encounter roll; after something big it waits a little longer for half a minute or so. It never starts anything itself and never stops anything. calm (a quieter world than before), lively, wild; off: as before. In a mission, wanted, in a fight or indoors it holds everything as built");
             b.AppendLine("HistoricalAccuracy = " + B(HistoricalAccuracy) + "   ; the real history in people's heads and mouths: what was in the papers of 1899 and 1907 (the election, the Philippines, the reservations, the trusts, the new machines; in 1907 Roosevelt, the Panic, Oklahoma), the lines about the year they live in, the real calendar (Easter on 2 April 1899, the Fourth, Election Day, Thanksgiving, Christmas, and in Lemoyne Mardi Gras and All Saints', each with its eve and its morning after, and a word of the day on the ticker), the year's work by region (calving and roundup, cane and cotton, the trapping lines), the snake-oil man's Food and Drugs Act in 1907 and the Panic in the paper. false: none of it, and the timeless texture of the days (bath night, Sunday collars, wash day) stays as it was");
+            b.AppendLine("Almanac = " + B(Almanac) + "   ; with HistoricalAccuracy: the almanac, a few hundred dated things of 1899 (and of 1907 in the epilogue) known from the day they were in the papers (the war at Manila, the great cold of February, the train robbed at Wilcox, Jeffries, Dewey's homecoming, the Boers, Hobart's death, Lawton, Moody; in 1907 the Thaw trial, the midnight forests, Haywood, the Panic, Oklahoma, Monongah, the fleet) and the year's everyday talk (the catalogue, the wheel, the phonograph, the new rag, the medicines, the trusts, where the old names of the West got to): in people's thoughts, in Talk's What's the news and the typed question, in the talks between two people, read aloud from the paper on the street, the week's paper in the reader, and a word on the ticker the day a big thing breaks");
+            b.AppendLine("AlmanacShare = " + AlmanacShare + "   ; percent: how much of the almanac gets through: the pull of its thoughts and its share of the news answers and the talks (0 none, 100 as written, 200 twice)");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");
             b.AppendLine("SelfDefenceNoBounty = " + B(SelfDefenceNoBounty) + "   ; killing or hurting someone who came at you (soldiers too) doesn't raise your bounty or make you wanted: RealNPCs puts it back, unless you also hurt someone who didn't, or did another crime");
             b.AppendLine("TownPosts = " + B(TownPosts) + "   ; the shopkeepers, barkeeps, gunsmiths, doctors and station agents are each one person for good, who knows you; when one dies, a relative or a newcomer takes the counter");

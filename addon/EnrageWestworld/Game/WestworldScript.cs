@@ -1204,6 +1204,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST saved: " + SavedStatus());
 			Log.Write("TEST fondness: " + FondnessStatus());
 			Log.Write("TEST calendar: " + CalendarStatus());
+			Log.Write("TEST almanac: " + AlmanacStatus());
 			Log.Write("TEST friends: " + FriendDotsStatus());
 			Log.Write("TEST save: " + SaveStatus());
 			Log.Write("TEST wake voices: " + WakeVoiceStatus());

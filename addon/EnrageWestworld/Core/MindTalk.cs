@@ -28,6 +28,7 @@ namespace EnrageWestworld.Core
     public sealed class MindTalkContext
     {
         public int Year = 1899, Month;       // the game's year and month (the times are by both)
+        public int DayOfMonth;               // the day of the month (the almanac's dated news, Core/Almanac.cs; 0 unknown)
         public long Day;                     // the game day (the worry's stage)
         public string Town;
         public List<string> Rumours;         // the town's talk, or null
@@ -132,6 +133,7 @@ namespace EnrageWestworld.Core
             string open = null, reply = null, openVoice = "chat", replyVoice = manner == "kind" ? "reply" : manner == "cold" ? "mild" : "replybad";
             string kind = Kind;
             TimesTopic times = null;
+            AlmanacEvent news = null;
             switch (topic)
             {
                 case "worry":
@@ -151,9 +153,21 @@ namespace EnrageWestworld.Core
                     break;
                 }
                 case "times":
+                    // the year's dated news first, two times in three while there is any (Core/Almanac.cs); the standing topics else
+                    news = Almanac.ForTalk(c.Year, c.Month, c.DayOfMonth, town, seed);
+                    if (news != null && Voice.Chance(seed + "an", Math.Min(100, 65 * Almanac.Share / 100)))
+                    {
+                        open = Voice.Pick(seed + "ao", news.Lines);
+                        reply = Almanac.Reply(news, manner, seed);
+                        break;
+                    }
+                    news = null;
                     times = Times.Pick(c.Year, c.Month, seed);
-                    open = Voice.Pick(seed + "to", times.Openers);
-                    reply = Times.Reply(times, Stance(times, c.B, manner, seed), seed, town);
+                    if (times != null)
+                    {
+                        open = Voice.Pick(seed + "to", times.Openers);
+                        reply = Times.Reply(times, Stance(times, c.B, manner, seed), seed, town);
+                    }
                     break;
                 case "stranger":
                     open = c.AMemory;
@@ -189,7 +203,7 @@ namespace EnrageWestworld.Core
             }
             if (open == null || reply == null)
                 return null;
-            Scene s = new Scene { Kind = kind, Summary = aName + " and " + bName + ", talking of " + TopicWords(topic, times), Doer = kind == "brushoff" ? 1 : -1 };
+            Scene s = new Scene { Kind = kind, Summary = aName + " and " + bName + ", talking of " + TopicWords(topic, times, news), Doer = kind == "brushoff" ? 1 : -1 };
             s.Add(0, fill(open), openVoice, "face");
             s.Add(1, fill(reply), replyVoice, manner == "cold" && (topic == "worry" || topic == "need") ? "walkaway" : null);
             if (manner != "cold" || topic == "times")
@@ -214,8 +228,8 @@ namespace EnrageWestworld.Core
             bool good;
             if (a.P != null && InnerLife.WorryNow(a.P, c.Day, out worry, out stage, out good) && stage <= 1 && InnerLife.WorrySaid(a.P, c.Day, seed + "ws") != null)
                 w.Add(new KeyValuePair<string, int>("worry", 40 + 8 * stage));
-            if (Times.Of(c.Year, c.Month).Count > 0)
-                w.Add(new KeyValuePair<string, int>("times", 24 + (c.A != null && c.A.Curious ? 12 : 0)));
+            if (Times.Of(c.Year, c.Month).Count > 0 || Almanac.Known(c.Year, c.Month, c.DayOfMonth).Count > 0)
+                w.Add(new KeyValuePair<string, int>("times", 24 + (c.A != null && c.A.Curious ? 12 : 0) + Almanac.TalkBonus(c.Year, c.Month, c.DayOfMonth)));   // the dated news of the fortnight adds to it (Core/Almanac.cs)
             if (!string.IsNullOrEmpty(c.AMemory))
                 w.Add(new KeyValuePair<string, int>("stranger", 30));
             if (!string.IsNullOrEmpty(c.APlan))
@@ -268,12 +282,12 @@ namespace EnrageWestworld.Core
             return r < 40 ? "shrug" : r < 70 ? "for" : "against";
         }
 
-        public static string TopicWords(string topic, TimesTopic times)
+        public static string TopicWords(string topic, TimesTopic times, AlmanacEvent news = null)
         {
             switch (topic)
             {
                 case "worry": return "a trouble";
-                case "times": return "the times" + (times != null ? " (" + times.Key + ")" : "");
+                case "times": return news != null ? Almanac.Words(news) : "the times" + (times != null ? " (" + times.Key + ")" : "");
                 case "stranger": return "the stranger";
                 case "plan": return "what they mean to do";
                 case "rumour": return "the town's talk";

@@ -295,6 +295,9 @@ namespace EnrageWestworld.Core
             switch (option)
             {
                 case "news":
+                    // the almanac (Core/Almanac.cs): something big broke in the last few days and it's all anybody speaks of: before its own talk of him, from anyone who'd tell a stranger anything
+                    string breaking = !afraid && !hostile && temper != "Cold" && temper != "Greedy" && Almanac.Breaking(InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay) != null && Voice.Chance(seed + "|albig", Math.Min(100, 60 * Almanac.Share / 100))
+                                      ? Almanac.Said(InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay, null, seed + "|al") : null;
                     if (afraid)
                     {
                         a.Line = Pick(seed + "|naf", "Me? I hear nothing, mister. Never have.", "Nothing. Nothing at all, I swear it.", "I keep to myself, mister. Hear nothing.", "News? I... no. Nothing.");
@@ -312,6 +315,11 @@ namespace EnrageWestworld.Core
                         a.Confided = true;
                         a.Thought = Pick(seed + "|wt", "Didn't mean to say so much.", "Feels better, saying it out loud.", "Why'd I tell a stranger that?");
                     }
+                    else if (breaking != null)
+                    {
+                        a.Line = breaking;
+                        a.Thought = Pick(seed + "|alt", "He asked for the news, so that's the news.", "Everybody's talking of it. Now he is too.", "That's what the paper says, anyhow.");
+                    }
                     else if (!string.IsNullOrEmpty(rumour))
                     {
                         string r = rumour.Trim().TrimEnd('.');
@@ -320,8 +328,10 @@ namespace EnrageWestworld.Core
                     }
                     else
                     {
-                        // the times (Times.cs): what was in the papers, half the time, from anyone who'd tell a stranger anything
-                        string times = temper != "Cold" && temper != "Greedy" && Voice.Chance(seed + "|times", 50) ? Times.Opener(InnerLife.ClockYear, InnerLife.ClockMonth, seed + "|tm", null) : null;
+                        // the almanac's dated news seven times in ten (Core/Almanac.cs), else the times (Times.cs) half the time: what was in the papers, from anyone who'd tell a stranger anything
+                        string times = temper != "Cold" && temper != "Greedy" && Almanac.Takes(InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay, seed + "|alm", 70) ? Almanac.Said(InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay, null, seed + "|al") : null;
+                        if (times == null)
+                            times = temper != "Cold" && temper != "Greedy" && Voice.Chance(seed + "|times", 50) ? Times.Opener(InnerLife.ClockYear, InnerLife.ClockMonth, seed + "|tm", null) : null;
                         a.Line = times != null ? times
                                : temper == "Cold" || temper == "Greedy" ? Pick(seed + "|cold", "Nothing I'd tell a stranger.", "News costs, mister.", "And why would you be wanting to know?", "Ask the paper. It's cheaper than me.")
                                : Pick(seed + "|none", "Quiet enough. Nothing worth the telling.", "Same as ever, mister.", "Not much happens here that you'd care about.", "Quiet as a church on Monday.", "The usual. Somebody owes somebody, somebody's sweet on somebody.");

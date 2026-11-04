@@ -1011,6 +1011,12 @@ namespace EnrageWestworld.Core
             int calPull = Calendar.Pull(InnerLife.CalendarYear, InnerLife.ClockMonth, InnerLife.ClockDay, p.Home);   // a holiday today or beside it pulls hard, the season a little (Core/Calendar.cs; nothing with the history off)
             if (calPull > 0)
                 c.Add(new Minds.Candidate { Source = "calendar", Pull = calPull + Minds.Jitter(seed, "calendar", 6), Make = () => { string cs; return Calendar.Line(p, InnerLife.CalendarYear, InnerLife.ClockMonth, InnerLife.ClockDay, hour, seed, told, out cs); } });
+            // the year's dated news and its everyday talk (Core/Almanac.cs): the one thing this person would think of, pulling by
+            // its own freshness and size (fresh big news like the player close by, the everyday beside the day's lines); a story
+            // they've said all they have to say about is passed over; nothing with the history or the almanac off
+            AlmanacEvent alm = Almanac.ThoughtEvent(p, InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay, seed, told);
+            if (alm != null && Almanac.Comes(alm, InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay, seed))
+                c.Add(new Minds.Candidate { Source = "almanac", Pull = Almanac.PullOf(alm, InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay) + Minds.Jitter(seed, "almanac", 6), Make = () => Almanac.ThoughtOf(alm, p, seed, told) });
             Minds.Candidate wonder = WonderCandidate(p, st, seed, now);   // the Awakening's written wondering (Engine.Wonder.cs; the no-model run, item 10)
             if (wonder != null)
                 c.Add(wonder);

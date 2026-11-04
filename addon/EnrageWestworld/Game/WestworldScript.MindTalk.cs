@@ -34,7 +34,7 @@ namespace EnrageWestworld.InGame
             bool wg;
             var ctx = new MindTalkContext
             {
-                Year = InnerLife.ClockYear, Month = InnerLife.ClockMonth, Day = day, Town = _placeTown,
+                Year = InnerLife.ClockYear, Month = InnerLife.ClockMonth, DayOfMonth = InnerLife.ClockDay, Day = day, Town = _placeTown,
                 Rumours = cast.Rumours != null && cast.Rumours.Count > 0 ? cast.Rumours : null,   // the cast's own (Life.cs); a fresh RumourPool here marked rumours heard at every talk (the review)
                 A = MindTalkMindOf(first, doer, wa), B = MindTalkMindOf(second, done, wb),
                 BAtWorst = (InnerLife.WorryNow(done.P, day, out wk, out wst, out wg) && wst == 2) || done.Hurt != null

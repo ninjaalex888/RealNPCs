@@ -94,6 +94,10 @@ namespace EnrageWestworld.Core
                 if (p != null && !items.Contains(p))
                     items.Add(p);
             }
+            // the almanac's dated news of the fortnight beside the town's own (Core/Almanac.cs): one of them keeps a place when there is any
+            List<string> dated = Almanac.PaperItems(InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay, n);
+            if (dated.Count > 0)
+                items = items.Take(Math.Max(0, n - 1)).Concat(dated).ToList();
             return items.Take(n).ToList();
         }
 

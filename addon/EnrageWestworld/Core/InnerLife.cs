@@ -404,8 +404,10 @@ namespace EnrageWestworld.Core
             }
             else if (roll < 49)
             {
-                string cal;
-                own = Calendar.Line(p, CalendarYear, ClockMonth, ClockDay, hour, seed, told, out cal);   // the date first: a holiday, its eve or morning after, the season's work (Core/Calendar.cs)
+                string cal = null;
+                own = Voice.Chance(seed + "|alm", 55) ? Almanac.Thought(p, ClockYear, ClockMonth, ClockDay, seed, told, out cal) : null;   // the year's dated news first, half the time (Core/Almanac.cs)
+                if (own == null)
+                    own = Calendar.Line(p, CalendarYear, ClockMonth, ClockDay, hour, seed, told, out cal);   // then the date: a holiday, its eve or morning after, the season's work (Core/Calendar.cs)
                 source = own != null ? cal : "era";
                 if (own == null)
                     own = EraLine(p, seed, told);
@@ -453,6 +455,17 @@ namespace EnrageWestworld.Core
         public static string PickLine(string[] pool, Person p, string seed, List<string> told)
         {
             return Pick(pool, p, seed, told ?? new List<string>());
+        }
+
+        /// Whether this person has thought every line of the pool lately (the told list's keys, Pick's own); false with no list.
+        public static bool AllTold(string[] pool, List<string> told)
+        {
+            if (told == null || pool == null || pool.Length == 0)
+                return false;
+            foreach (string raw in pool)
+                if (!told.Contains("il" + Voice.Hash(raw)))
+                    return false;
+            return true;
         }
 
         /// One of the timeless frames, by a roll from 58 to 99: trade, hour, body, mirror, bias, age, mask, pleasure,
