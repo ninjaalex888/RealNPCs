@@ -221,7 +221,7 @@ namespace EnrageWestworld.InGame
                         Thread.Sleep(60);
                         continue;
                     }
-                    bool pick = ask.Request.Kind == "pick" || ask.Request.Kind == "say" || ask.Request.Kind == "talk";   // read on the game thread (a talk answer too)
+                    bool pick = ask.Request.Kind == "pick" || ask.Request.Kind == "say" || ask.Request.Kind == "talk" || ask.Request.Kind == "free";   // read on the game thread (a talk answer too; "free": his own words)
                     if (!_langReady)
                     {
                         if (pick)
@@ -231,7 +231,7 @@ namespace EnrageWestworld.InGame
                         continue;
                     }
                     var sw = Stopwatch.StartNew();
-                    string json = LanguagePost(_cfg.LanguageUrl + "/api/generate", ask.Request.Kind == "say" ? ThoughtVoice.Body(_cfg.LanguageModel, ask.Request) : ask.Request.Kind == "talk" ? Language.TalkBody(_cfg.LanguageModel, ask.Request) : pick ? Language.PickBody(_cfg.LanguageModel, ask.Request) : Language.RequestBody(_cfg.LanguageModel, ask.Request));
+                    string json = LanguagePost(_cfg.LanguageUrl + "/api/generate", ask.Request.Kind == "say" ? ThoughtVoice.Body(_cfg.LanguageModel, ask.Request) : ask.Request.Kind == "talk" ? Language.TalkBody(_cfg.LanguageModel, ask.Request) : ask.Request.Kind == "free" ? Language.FreeBody(_cfg.LanguageModel, ask.Request) : pick ? Language.PickBody(_cfg.LanguageModel, ask.Request) : Language.RequestBody(_cfg.LanguageModel, ask.Request));
                     sw.Stop();
                     string answer = Language.ParseResponse(json);
                     if (pick)

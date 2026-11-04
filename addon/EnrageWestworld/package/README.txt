@@ -421,6 +421,12 @@ NEW IN 0.7.11
   dot on the map while near, and Talk on them opens with the word; taken, the quarrel is
   mended, and either way both think better of you. Lock on to the piano player, the guitar or
   the banjo and Talk offers a coin for the music ($0.25): they thank you, and remember the face.
+  The last row, "Say something else..." ([Mind] TalkTyped, on; keyboard only), opens a line to
+  type your own words on: Enter says it, Backspace deletes, Esc leaves. They answer from who they
+  are and how they stand with you: in the AI model's own words with it on, else a written answer
+  by what your words seem to be about (the news, their name, how they are, their trouble, the
+  weather, the way, a drink, money, God, guns, the law, thanks, sorry, goodbye). Nothing is paid
+  or promised by typing.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
@@ -429,8 +435,8 @@ NEW IN 0.7.11
   come and thank you hours or days later (the proud pay the $11 back); someone lonely who knows
   you may come over hoping for a word. While you talk, nothing else of RealNPCs' takes them.
   [World] InteractionMenu, TalkKey.
-  Talk is basic for now: a fixed list of lines. The aim is real-time talk by microphone, and
-  typed text, with the model, where your hardware allows.
+  Talk is a list first, with your own typed words at its foot. The aim is real-time talk by
+  microphone as well, with the model, where your hardware allows.
 - Brawls that grow. A fistfight draws people in a wave at a time, up to [Mind] BrawlMost (12)
   fighting: friends and grudges first, from up to BrawlJoinMetres (30) away, most of all in a
   saloon with drink in it. Those sitting or leaning get up to join. The sides balance, a man

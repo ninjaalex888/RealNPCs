@@ -137,6 +137,48 @@ namespace EnrageWestworld.Core
             return null;
         }
 
+        /// The brief for an answer to the player's own words (Kind "free"; Core/FreeTalk.cs): no meaning is given; they
+        /// answer from who they are and how they feel about him, and keep to themselves what they'd not tell a stranger.
+        public static string FreeBrief(LanguageRequest r)
+        {
+            int year = r != null && r.Year > 0 ? r.Year : 1899;
+            return "You write what one person says aloud, in " + year + ", in the American West and South, answering a man who has just spoken to them. " +
+                   "One or two short sentences, " + MaxWords + " words at most, the way people of the time talked: plain words, no modern words or phrases, no poetry. " +
+                   "Answer what he said from who you are and how you feel about him, plainly; if you don't know a thing, say so; what you'd not tell a stranger, keep to yourself. " +
+                   "Use no names at all unless you are told his: not his, not your own, not your family's; call him mister, or nothing. Never mention video games, being in a story, or being written. " +
+                   "Answer with the spoken words alone: no quotation marks, no name before them, nothing else.";
+        }
+
+        /// The ask for his own words: who they are, where, how they feel about him (Mean carries it), the trouble they'd
+        /// tell him of if asked (Worry), and what he said (Said).
+        public static string FreePrompt(LanguageRequest r)
+        {
+            var b = new StringBuilder();
+            b.Append("You are ").Append(r.Woman ? "a woman" : "a man");
+            if (r.Age > 0) b.Append(" of ").Append(r.Age);
+            if (!string.IsNullOrEmpty(r.Trade)) b.Append(", ").Append(r.Trade);
+            b.Append(".\n");
+            if (!string.IsNullOrEmpty(r.TraitWords)) b.Append("Your nature: ").Append(r.TraitWords).Append(".\n");
+            if (!string.IsNullOrEmpty(r.Mood)) b.Append("Your mood: ").Append(r.Mood).Append(".\n");
+            if (!string.IsNullOrEmpty(r.Town)) b.Append("Where you are: ").Append(r.Town).Append(!string.IsNullOrEmpty(r.Place) ? ", at the " + r.Place : ", in the street").Append(".\n");
+            b.Append("The man speaking to you ").Append(string.IsNullOrEmpty(r.YouAs) ? "is a stranger: you don't know his name" : "is " + r.YouAs + "; you know his name").Append(".\n");
+            if (!string.IsNullOrEmpty(r.Mean)) b.Append("How you feel about him: ").Append(r.Mean).Append(".\n");
+            if (!string.IsNullOrEmpty(r.Worry)) b.Append("Your trouble, which you'd tell him of if he asked: ").Append(r.Worry).Append("\n");
+            b.Append(r.Said ?? "He says good day.").Append("\n");
+            b.Append("Answer him, in your own words.");
+            return b.ToString();
+        }
+
+        /// The request body for an answer to his own words (a little warmer than a menu's answer: there's no meaning to keep to).
+        public static string FreeBody(string model, LanguageRequest r)
+        {
+            var b = new StringBuilder(1024);
+            b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(FreeBrief(r))).Append(",\"prompt\":").Append(JsonString(FreePrompt(r)));
+            b.Append(",\"stream\":false,\"keep_alive\":\"30m\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append(0.7.ToString("0.00", CultureInfo.InvariantCulture))
+             .Append(",\"num_predict\":60,\"stop\":[\"\\n\"]}}");
+            return b.ToString();
+        }
+
         /// The request body for a spoken answer (one line; cooler than a thought, to keep to its meaning).
         public static string TalkBody(string model, LanguageRequest r)
         {

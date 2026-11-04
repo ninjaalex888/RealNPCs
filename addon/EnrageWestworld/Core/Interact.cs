@@ -91,7 +91,7 @@ namespace EnrageWestworld.Core
         /// it: AskLabel), and a wrong of his lately they're owed an apology for.
         public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool fixKnown = false, string tellName = null, string askAbout = null, bool sorry = false, bool sorryJustNow = false,
                                                    string fixKind = "debt", bool house = false, bool gift = false, bool woman = false, string condoleFor = null, bool escort = false,
-                                                   string errandTo = null, string deliverFrom = null, string deliverMessage = null)
+                                                   string errandTo = null, string deliverFrom = null, string deliverMessage = null, bool typed = false)
         {
             // house, gift, condoleFor: the fondness interactions (Core/Fondness.cs; SIXDAY item 1): whiskey for the house (a saloon with company at
             // the bar), a gift, condolences to someone grieving a friend (their first name)
@@ -123,6 +123,8 @@ namespace EnrageWestworld.Core
             if (sorry)
                 list.Add(new InteractOption { Id = "sorry", Label = sorryJustNow ? "I didn't mean that." : "I'm sorry about before." });   // minutes after a warning, a quick word; later, an apology
             list.Add(new InteractOption { Id = "threaten", Label = "Watch yourself." });
+            if (typed)
+                list.Add(new InteractOption { Id = "type", Label = FreeTalk.Label() });   // his own words, typed (Core/FreeTalk.cs; a keyboard in use)
             list.Add(new InteractOption { Id = "bye", Label = "Goodbye." });
             return list;
         }

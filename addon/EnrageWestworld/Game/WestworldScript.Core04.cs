@@ -354,6 +354,8 @@ namespace EnrageWestworld.InGame
 
         private bool KeyDown04(KeyEventArgs e)
         {
+            if (_menu != null && _menu.Typing)
+                return true;   // a line being typed in Talk: no hotkey fires (WestworldScript.Menu.cs reads the keys itself)
             if (PanelOpen)
             {
                 _panelKeys.Enqueue(e);   // while the settings are open, every key is theirs
