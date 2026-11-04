@@ -2,7 +2,9 @@
 
 Oct 26, 2026 · lexthestoic
 
-## Front of the queue: allies who come to your aid (a player's request, 2026-11-03)
+## Built 2026-11-03 (unreleased): allies who come to your aid (a player's request, 2026-11-03)
+
+Built as `[Encounters] AlliesHelp` (Core/Allies.cs, Game/WestworldScript.Allies.cs; see the CHANGELOG): in-town allies against anyone in combat with you (never the law), a revolver given against guns, a friend from the ledger happening by on the road (on foot, 30 to 45 m off; riding in waits on a horse spawn), the word after, the "defend" memory, enRAGE's fondness up. Still to do from the sketch below: an ally who dies grieved by their town with a cost to you; a friend arriving on horseback. The sketch, as it was:
 
 A player wrote in after trying RealNPCs with enRAGE: the people are much more responsive now, and the one thing missing from both mods is an **allied** side to all the hostility. Spend time earning a town's liking, then be able to rely on it. Attacked in town by bandits, or by someone with a grudge, in view of people who like you, those people come to your aid; out on a road, fighting gang members, a couple of strangers you know and get along with happen to ride by and save the day. "It would feel so rewarding to have a town or location full of people that have your back when you need them."
 
