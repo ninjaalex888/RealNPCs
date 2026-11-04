@@ -4,7 +4,7 @@
 // bravery only effects their chance to join a brawl - and not the flee or cower flag?") it never touches the game's own
 // flight: the config flag the game layer used to set on the brave (PCF 44, cower instead of flee) froze people where they
 // stood, twice in Lex's sessions, and BraveStand, meant to stand them up, never fired. What it does now: how readily an
-// onlooker joins a fistfight (JoinPull, into JoinIn.BraveryPull: 85 as tuned on 2026-11-01, higher more, lower fewer),
+// onlooker joins a fistfight (JoinPull, into JoinIn.BraveryPull: 85 a tenth more than the 2026-11-01 tuning, now at 50),
 // and the mod's own fear-driven running (Onlooking's hurry and contagion, the scattered gatherings, the flight from a
 // drawn gun), which brave ones answer by standing back and watching (no flag: the mod simply doesn't send them). Brave,
 // LeftAlone and Decide are kept for the tests. Seeded per person, so the same man answers the same way. Plain C#.
@@ -68,13 +68,16 @@ namespace EnrageWestworld.Core
 
         // ---- joining a fight (Core/JoinIn.cs) ----
 
-        /// What bravery adds to an onlooker's pull to join a fistfight (JoinIn.BraveryPull, set by the game side): nothing at 85
-        /// as built (the joining as tuned on 2026-11-01), up to a fifth more pull at 100, down to a quarter less at 0 (then only
-        /// a fighter's friend or foe steps in).
+        /// Where the pull on joining is nothing: the joining as tuned on 2026-11-01.
+        public const int JoinAsTuned = 50;
+
+        /// What bravery adds to an onlooker's pull to join a fistfight (JoinIn.BraveryPull, set by the game side). Lex,
+        /// 2026-11-04: "have the brawls escalate easier": at 85 as built a tenth more pull than the joining as tuned (which is
+        /// 50 now), up to about a sixth at 100, down to a quarter less at 0 (then only a fighter's friend or foe steps in).
         public static float JoinPull(int bravery)
         {
             int b = Math.Max(0, Math.Min(100, bravery));
-            return b >= AsBuilt ? 0.20f * (b - AsBuilt) / (100 - AsBuilt) : -0.25f * (AsBuilt - b) / AsBuilt;
+            return b >= JoinAsTuned ? 0.16f * (b - JoinAsTuned) / (100 - JoinAsTuned) : -0.25f * (JoinAsTuned - b) / JoinAsTuned;
         }
 
         // ---- the mod's own running, scaled (Core/Onlooking.cs) ----

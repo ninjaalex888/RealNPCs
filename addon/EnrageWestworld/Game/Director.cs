@@ -1502,13 +1502,13 @@ namespace EnrageWestworld.InGame
         // 5 and 46 together make them fight with fists (femga and Halen84 name them CA_ALWAYS_FIGHT and
         // CA_CAN_FIGHT_ARMED_PEDS_WHEN_NOT_ARMED), 58 CA_DISABLE_FLEE_FROM_COMBAT; since 2026-10-31 (Bravery's until 2026-11-04,
         // every fight's since) 77 CA_DISABLE_RESPONDED_TO_THREAT_BROADCAST, as the game's own street fight sets on its fighters
-        // (beat_street_fight.c), so the fight doesn't send the crowd running, and 78 CA_DISABLE_ALL_RANDOMS_FLEE (named in both
-        // lists, no script seen setting it); every one of them put back when the scene ends
-        private static readonly int[] FightAttrIds = { 5, 46, 58, 77, 78 };
+        // (beat_street_fight.c), so the fight doesn't send the whole street running; every one of them put back when the scene
+        // ends. 78 CA_DISABLE_ALL_RANDOMS_FLEE went on 2026-11-04 (Lex: "if some NPCs want to flee, that is okay"): with nobody
+        // allowed to flee from a fighter, a frightened onlooker's answer was to cower where they stood
+        private static readonly int[] FightAttrIds = { 5, 46, 58, 77 };
 
-        /// Whether the fight sets this one of FightAttrIds: all five, always (77 and 78 went with [World] Bravery until
-        /// 2026-11-04; Bravery no longer touches anyone's flight, and a fistfight shouldn't send the crowd running at any
-        /// setting, as the game's own street fight doesn't); all five are read and put back.
+        /// Whether the fight sets this one of FightAttrIds: all four, always (77 went with [World] Bravery until 2026-11-04;
+        /// Bravery no longer touches anyone's flight); all four are read and put back.
         private bool FightAttrMine(int id)
         {
             return true;
