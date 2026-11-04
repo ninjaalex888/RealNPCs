@@ -434,6 +434,12 @@ namespace EnrageWestworld.InGame
             {
                 ResBind rb;
                 int changed = 0;
+                if (_resBind.TryGetValue(h, out rb) && rb != null && rb.R != null && rb.R.Name == ours && OursToKeep(rb.R))
+                {
+                    bool labelled = _bridge.RenameNamedAt(h, ours);   // the session's label only, never enRAGE's records
+                    Log.Write("NAME " + ours + " (" + (rb.R.Regular ? "a town regular" : "one of the test cast") + ") keeps their name; enRAGE's " + (labelled ? "label for the body says it now" : "card says " + theirs));
+                    return ours;
+                }
                 if (_resBind.TryGetValue(h, out rb) && rb != null && rb.R != null && rb.R.Name == ours)
                 {
                     rb.R.Name = theirs;
@@ -492,6 +498,15 @@ namespace EnrageWestworld.InGame
             string ours = r.Name;
             try
             {
+                if (OursToKeep(r))
+                {
+                    // a town regular or one of the test cast: their identity is written onto each body they're cast into, so it is
+                    // theirs wherever they go; enRAGE's label for this body (its card and prompt, the session only) takes it
+                    if (!_bridge.RenameNamedAt(h, ours))
+                        return null;
+                    Log.Write("NAME " + ours + " (" + (r.Regular ? "a town regular" : "one of the test cast") + ") keeps their name; enRAGE's label for the body was " + theirs);
+                    return ours;
+                }
                 bool met = MetUnderOurs(h, r);   // only for the log: enRAGE's name wins either way
                 r.Name = theirs;
                 int changed = 1 + _store.Rename(r.Id, theirs);
@@ -512,6 +527,14 @@ namespace EnrageWestworld.InGame
                 Log.Write("NAME couldn't settle " + ours + "'s name: " + ex.Message);
                 return null;
             }
+        }
+
+        /// People whose identity the add-on writes onto a body: a town regular (dressed in their own outfit wherever they're cast)
+        /// and the test cast. Their name is theirs and wins over the one enRAGE gives the body by its look, which would be a new
+        /// one in every body they're cast into (Run 3, item 1's follow-up: enRAGE's name everywhere else).
+        private static bool OursToKeep(Resident r)
+        {
+            return r != null && (r.Regular || r.Cast != null);
         }
 
         /// Whether you know this resident by our name: talked, told their name, flirted, any contact, they spoke up to you,
