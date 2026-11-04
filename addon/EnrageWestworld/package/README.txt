@@ -1,4 +1,4 @@
-RealNPCs 0.7.21 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.22 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -125,6 +125,30 @@ Optional: to have the model answer two people at once, set the Windows environme
 OLLAMA_NUM_PARALLEL to 2, then quit and reopen Ollama.
 
 
+NEW IN 0.7.22
+-------------
+The almanac ([World] Almanac, on; AlmanacShare 100): the year's real news in people's heads
+and mouths, behind [World] HistoricalAccuracy as well. 285 events and talking points: 206 of
+1899 (the war at Manila, the great cold of February, the Bunker Hill mill blown up, Pearl Hart
+and the Globe stage, the Overland Flyer robbed at Wilcox, Jeffries, Dewey's homecoming, the Boer
+war, Lawton and Moody in December; and the year's everyday talk: prices and wages, the trusts,
+the Sears book, the wheel, ragtime, the patent medicines, where Frank James and Wyatt Earp got
+to) and 79 of 1907 for the epilogue (the Thaw trial, Haywood at Boise, the Panic, Oklahoma, the
+white fleet). Each is known from the day it could be in a Western paper and is talked of while
+it's fresh. You meet it:
+- In thoughts over heads: about one in ten, one in five on a quiet day. A big story is the
+  first thing on people's minds for three days, until they've said their piece, and their own
+  country's news counts double (a ranch hand thinks of Wyoming, a Saint Denis man of the
+  Brazos flood).
+- In Talk: "What's the news?" and the typed question answer with the news most of the time,
+  nearly always just after something big breaks.
+- When two people talk it over, and when somebody reads the paper aloud on the street.
+- In your reader: a clipping of the week's paper every seven days (the last four kept). On the
+  ticker: "In the paper" the morning a big story breaks.
+AlmanacShare (percent) turns it up or down; Almanac = false turns it off. Testing page: "The
+almanac: the day's news and a paper to read" (People); F7 writes TEST almanac: with the clock's
+date and what's known that day. Not yet seen in game.
+
 NEW IN 0.7.21
 -------------
 The six-day roadmap run: fifty-odd things at once, every one behind its own switch and on as it
@@ -134,7 +158,7 @@ comes unless said otherwise. Each has its own bullet further down; in short:
 - Allies: the friend from the road rides in on horseback; an ally who dies is grieved by their
   town, at a cost to you. A full bar makes a friend even when they're afraid of you; a lawman
   too.
-- The real history behind one strict switch ([World] HistoricalAccuracy, off as it comes) and
+- The real history behind one strict switch ([World] HistoricalAccuracy, on as it comes) and
   the year as it was (the holidays, the seasons, 1907's news).
 - Talk in your own words, typed ([Mind] TalkTyped), and in your own voice through the
   microphone ([Mind] TalkVoice, off: a second download).
@@ -1771,6 +1795,10 @@ in the file. The new ones:
             (each with its eve and morning after, and a word of the day on the ticker), the year's
             work by region, the snake-oil man's Food and Drugs Act and the Panic in 1907; false:
             none of it, and the timeless texture of the days stays
+            Almanac (true): with HistoricalAccuracy, the year's dated news and everyday talk
+            (285 events of 1899 and 1907) in thoughts, Talk's news, the talks, the paper read
+            aloud, a weekly clipping in the reader and "In the paper" on the ticker;
+            AlmanacShare (100): percent, how much of it gets through (0 none, 200 twice)
 [Features]  KinWordDaysMin (2), KinWordDaysMax (5): game days for word of a killing someone saw to
             reach kin; UnseenKinWordDaysMin (5), UnseenKinWordDaysMax (10): for one nobody saw
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
