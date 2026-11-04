@@ -1,10 +1,13 @@
 // A broken wagon wheel, the probe (SIXDAY item 26; roadmap 32; Core/WagonWheel.cs). The Testing row "wagon" takes an
-// ambient wagon off screen with a driver on it (never the player's, never a mission's, never a train), breaks one wheel
-// with the game's own draft-wheel native, reads the game's answers every two seconds for forty (does the wheel read
-// broken, does the wagon stop, does the driver get down or run, do the vehicles behind it stand), mends it
-// (SET_VEHICLE_FIXED) and reads twenty seconds more (does the wheel read whole, does it move on), then says what it
-// found in the log and F7 "TEST wagon:" and hands the wagon back as it was. Nothing is spawned; the scene itself waits on
-// what this says (roadmap 32: "first to work out in game").
+// ambient wagon off screen with a driver on it (never the player's, never a mission's, never a train) and tries to
+// break one wheel, one way a press, round WagonWheel.Ways (the first run, 2026-11-04 09:36, showed the draft-wheel
+// native alone does nothing): the draft-wheel native with a heavy force after the can-break flags, the plain
+// break-off-wheel native, the wagon taken as a mission entity first, damage at the wheel's own bone, the body health as
+// a check that natives take at all. The game's answers are read every two seconds: does the wheel read broken, does the
+// wagon stop, does the driver get down or run, do the vehicles behind it stand; a way that reads nothing broken in
+// twelve seconds ends there and the next press tries the next way; a break is watched forty seconds, mended
+// (SET_VEHICLE_FIXED) and watched twenty more. The report and verdict go to the log, a notice and F7 "TEST wagon:"; the
+// wagon is handed back as it was. Nothing is spawned; the scene itself waits on what this says.
 using System;
 using EnrageWestworld.Core;
 using RDR2;
@@ -19,16 +22,19 @@ namespace EnrageWestworld.InGame
         {
             public int Vehicle, Driver, StartedAt, BrokeAt, MendedAt, NextRead;
             public Vector3 At;
-            public bool Mended, FixedRead;   // FixedRead: the first reading after the mend has said whether the wheel is whole
+            public bool Mended, FixedRead, Mission;   // FixedRead: the first reading after the mend has said whether the wheel is whole; Mission: taken as a mission entity (given back at the end)
             public WagonProbe Probe;
         }
 
+        private static readonly string[] WheelBones = { "wheel_lf", "wheel_rf", "wheel_lr", "wheel_rr" };   // the wheels' bones by index, as the vehicle models name them
+
         private WagonRun _wagon;
         private WagonProbe _wagonLast;
-        private int _wagonProbes;
+        private int _wagonProbes, _wagonWayIx;
         private Action _aWagon;
 
-        /// The Testing row: the nearest ambient wagon off screen within 150 m, moving or standing, with a driver; null when it began.
+        /// The Testing row: the nearest ambient wagon off screen within 150 m, moving or standing, with a driver; the next way tried on
+        /// it; null when the probe began.
         private string WagonProbeStart(int now)
         {
             if (_wagon != null)
@@ -72,7 +78,9 @@ namespace EnrageWestworld.InGame
             if (best == null)
                 return why;
             int veh = best.Handle;
-            WagonProbe probe = new WagonProbe { Model = "model 0x" + ENTITY.GET_ENTITY_MODEL(veh).ToString("X8") };
+            string way = WagonWheel.Ways[_wagonWayIx % WagonWheel.Ways.Length];
+            _wagonWayIx++;
+            WagonProbe probe = new WagonProbe { Model = "model 0x" + ENTITY.GET_ENTITY_MODEL(veh).ToString("X8"), Way = way };
             for (int w = 0; w < WagonWheel.WheelsToTry; w++)
                 if (!VEHICLE._IS_VEHICLE_WHEEL_DESTROYED(veh, w))
                 {
@@ -81,18 +89,79 @@ namespace EnrageWestworld.InGame
                 }
             if (probe.Wheel < 0)
                 return "every wheel of the nearest wagon reads broken already";
-            VEHICLE.SET_VEHICLE_WHEELS_CAN_BREAK(veh, true);
-            VEHICLE._BREAK_OFF_DRAFT_WHEEL(veh, probe.Wheel, 1f);
+            bool mission = false;
+            string did;
+            switch (way)
+            {
+                case "draft":
+                    WagonBreakFlags(veh);
+                    VEHICLE._BREAK_OFF_DRAFT_WHEEL(veh, probe.Wheel, 1000f);
+                    did = "the can-break flags, then the draft-wheel native with force 1000";
+                    break;
+                case "wheel":
+                    {
+                        WagonBreakFlags(veh);
+                        int got = VEHICLE._BREAK_OFF_VEHICLE_WHEEL(veh, probe.Wheel);
+                        did = "the can-break flags, then the break-off-wheel native (it returned " + got + ")";
+                        break;
+                    }
+                case "mission":
+                    ENTITY.SET_ENTITY_AS_MISSION_ENTITY(veh, true, true);
+                    mission = true;
+                    WagonBreakFlags(veh);
+                    VEHICLE._BREAK_OFF_DRAFT_WHEEL(veh, probe.Wheel, 1000f);
+                    did = "taken as a mission entity (" + (ENTITY.IS_ENTITY_A_MISSION_ENTITY(veh) ? "it took" : "it didn't take") + "), the can-break flags, then the draft-wheel native with force 1000";
+                    break;
+                case "damage":
+                    {
+                        WagonBreakFlags(veh);
+                        string bone;
+                        Vector3 off = WagonWheelOffset(veh, probe.Wheel, out bone);
+                        VEHICLE.SET_VEHICLE_DAMAGE(veh, off.X, off.Y, off.Z, 1000f, 1.5f, true);
+                        did = "the can-break flags, then damage 1000 within 1.5 m of " + bone + " (offset " + off.X.ToString("0.0") + ", " + off.Y.ToString("0.0") + ", " + off.Z.ToString("0.0") + ")";
+                        break;
+                    }
+                default:
+                    {
+                        float before = VEHICLE.GET_VEHICLE_BODY_HEALTH(veh);
+                        VEHICLE.SET_VEHICLE_BODY_HEALTH(veh, 500f);
+                        did = "the body health set to 500: it read " + before.ToString("0") + " before and reads " + VEHICLE.GET_VEHICLE_BODY_HEALTH(veh).ToString("0") + " now (the check that natives take on this wagon)";
+                        break;
+                    }
+            }
             probe.Broke = VEHICLE._IS_VEHICLE_WHEEL_DESTROYED(veh, probe.Wheel);
-            _wagon = new WagonRun { Vehicle = veh, Driver = VEHICLE.GET_PED_IN_VEHICLE_SEAT(veh, -1), StartedAt = now, BrokeAt = now, NextRead = now + 500, At = best.Position, Probe = probe };
+            _wagon = new WagonRun { Vehicle = veh, Driver = VEHICLE.GET_PED_IN_VEHICLE_SEAT(veh, -1), StartedAt = now, BrokeAt = now, NextRead = now + 500, At = best.Position, Probe = probe, Mission = mission };
             _wagonProbes++;
-            Log.Write("WAGON probe: " + probe.Model + " " + (int)bestD + " m off, off screen, " + (ENTITY.GET_ENTITY_SPEED(veh) > 0.5f ? "moving" : "standing") + ": wheel " + probe.Wheel +
-                      " broken off (" + (probe.Broke ? "the game says destroyed" : "the game says still whole") + "); watching " + WagonProbe.WatchMs / 1000 + " s");
+            Log.Write("WAGON probe (way \"" + way + "\"): " + probe.Model + " " + (int)bestD + " m off, off screen, " + (ENTITY.GET_ENTITY_SPEED(veh) > 0.5f ? "moving" : "standing") + ": wheel " + probe.Wheel +
+                      ", " + did + " (this frame the game says " + (probe.Broke ? "destroyed" : "still whole") + "); watching up to " + WagonProbe.WatchMs / 1000 + " s");
             return null;
         }
 
-        /// Tick04: the readings, the mend at forty seconds, the end at sixty; nothing when no probe is going. Under its own Safe (the
-        /// review of items 20-27: the API's raw World.GetAllVehicles has the same silent failure mode as GetAllPeds).
+        /// The flags that let the game break this wagon at all, before any way is tried.
+        private static void WagonBreakFlags(int veh)
+        {
+            VEHICLE.SET_VEHICLE_CAN_BREAK(veh, true);
+            VEHICLE.SET_VEHICLE_WHEELS_CAN_BREAK(veh, true);
+            VEHICLE.SET_VEHICLE_CAN_BE_VISIBLY_DAMAGED(veh, true);
+        }
+
+        /// Where the wheel is on the wagon, as an offset from its centre: the wheel's bone if the model names it, else a guess.
+        private static Vector3 WagonWheelOffset(int veh, int wheel, out string bone)
+        {
+            string name = WheelBones[Math.Max(0, Math.Min(WheelBones.Length - 1, wheel))];
+            int bi = ENTITY.GET_ENTITY_BONE_INDEX_BY_NAME(veh, name);
+            if (bi >= 0)
+            {
+                bone = "the bone " + name;
+                Vector3 world = ENTITY.GET_WORLD_POSITION_OF_ENTITY_BONE(veh, bi);
+                return ENTITY.GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(veh, world.X, world.Y, world.Z);
+            }
+            bone = "a guessed spot (no bone " + name + ")";
+            return new Vector3(wheel % 2 == 0 ? -0.9f : 0.9f, wheel < 2 ? 1.4f : -1.4f, 0f);
+        }
+
+        /// Tick04: the readings, the early end when nothing broke, the mend at forty seconds, the end at sixty; nothing when no probe
+        /// is going. Under its own Safe (the API's raw World.GetAllVehicles has the same silent failure mode as GetAllPeds).
         private void WagonProbeStep(int now)
         {
             if (_wagon == null || now < _wagon.NextRead)
@@ -164,7 +233,12 @@ namespace EnrageWestworld.InGame
             Log.Detail("WAGON probe " + (r.Mended ? "after the mend " : "") + since / 1000 + " s: speed " + speed.ToString("0.0") + ", " + (stopped ? "standing" : "rolling") + ", wheel " +
                        (wheelBroken ? "broken" : "whole") + ", the driver " + (driverIn ? "on the box" : "off it") + (driverFleeing ? " and running" : "") +
                        ", " + standing + " standing within 30 m, " + (int)at.DistanceTo(r.At) + " m from the break");
-            if (!r.Mended && since >= WagonProbe.WatchMs)
+            if (!r.Mended && !r.Probe.Broke && since >= WagonProbe.NothingMs)
+            {
+                r.Probe.EndedWhy = "this way did nothing in " + WagonProbe.NothingMs / 1000 + " s";
+                WagonProbeEnd(r);
+            }
+            else if (!r.Mended && since >= WagonProbe.WatchMs)
             {
                 VEHICLE.SET_VEHICLE_FIXED(veh);
                 r.Mended = true;
@@ -179,28 +253,40 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// The probe over: the wagon left as the game had it (mended if it wasn't yet), the report in the log.
-        private void WagonProbeEnd(WagonRun r)
+        /// The probe over: the wagon left as the game had it (mended if it wasn't yet, the game's own again if it was taken), the
+        /// report and the verdict in the log and a notice, and which way the next press tries.
+        private unsafe void WagonProbeEnd(WagonRun r)
         {
             _wagon = null;
             try
             {
-                if (!r.Mended && ENTITY.DOES_ENTITY_EXIST(r.Vehicle))
-                    VEHICLE.SET_VEHICLE_FIXED(r.Vehicle);
+                if (ENTITY.DOES_ENTITY_EXIST(r.Vehicle))
+                {
+                    if (!r.Mended)
+                        VEHICLE.SET_VEHICLE_FIXED(r.Vehicle);
+                    if (r.Mission)
+                    {
+                        int v = r.Vehicle;
+                        ENTITY.SET_VEHICLE_AS_NO_LONGER_NEEDED(&v);   // the game's own again
+                    }
+                }
             }
             catch
             {
             }
             _wagonLast = r.Probe;
+            string next = WagonWheel.NextWay(r.Probe.Way);
             Log.Write("WAGON probe over: " + r.Probe.Report());
-            Log.Write("WAGON probe verdict: " + r.Probe.Verdict());
-            Feed.Notice("RealNPCs", "Wagon probe: " + r.Probe.Verdict());
+            Log.Write("WAGON probe verdict: " + r.Probe.Verdict() + (r.Probe.Broke ? "" : "; the next press tries way \"" + next + "\": " + WagonWheel.WayWords(next)));
+            Feed.Notice("RealNPCs", "Wagon probe, way \"" + r.Probe.Way + "\": " + r.Probe.Verdict() + (r.Probe.Broke ? "" : ". Press again for way \"" + next + "\"."));
         }
 
         private string WagonStatus()
         {
-            return _wagonProbes + " probes this session" + (_wagon != null ? "; one going (" + (Game.GameTime - _wagon.StartedAt) / 1000 + " s)" : "") +
-                   (_wagonLast != null ? "; last: " + _wagonLast.Report() + "; verdict: " + _wagonLast.Verdict() : "; none run yet (the Testing row \"A wagon's wheel off\")");
+            string next = WagonWheel.Ways[_wagonWayIx % WagonWheel.Ways.Length];
+            return _wagonProbes + " probes this session" + (_wagon != null ? "; one going (way \"" + _wagon.Probe.Way + "\", " + (Game.GameTime - _wagon.StartedAt) / 1000 + " s)" : "") +
+                   (_wagonLast != null ? "; last: " + _wagonLast.Report() + "; verdict: " + _wagonLast.Verdict() : "; none run yet (the Testing row \"A wagon's wheel off\")") +
+                   "; the next press tries way \"" + next + "\": " + WagonWheel.WayWords(next);
         }
     }
 }

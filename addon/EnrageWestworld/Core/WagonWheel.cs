@@ -5,6 +5,11 @@
 // more; this file is the readings' bookkeeping and the report, pure, so the shape of the probe can be read and checked
 // offline, and the scene's words for when the probe has answered (the driver down beside the wheel calling a passer-by,
 // his thanks, his asking the next man along to send word to town). All words original to this add-on.
+// The first run (Lex, 2026-11-04 09:36, a wagon moving 10 m off): the draft-wheel native alone did nothing in sixty
+// seconds (the wheel read whole throughout, the wagon rolled on at 2.5 m/s). So the row now tries one way a press, round
+// the list (Ways): the draft-wheel native with a heavy force after the can-break flags, the plain break-off-wheel native,
+// the wagon taken as a mission entity first, damage applied at the wheel's own bone, and the body health set as a check
+// that natives take on this wagon at all; a way that reads nothing broken in twelve seconds ends there.
 using System;
 using System.Collections.Generic;
 
@@ -14,6 +19,8 @@ namespace EnrageWestworld.Core
     public sealed class WagonProbe
     {
         public const int WatchMs = 40000, AfterMs = 20000, ReadEveryMs = 2000;   // the broken wheel watched 40 s, then mended and watched 20 s
+        public const int NothingMs = 12000;   // nothing read broken this long after the call: this way did nothing, the probe ends
+        public string Way;                  // which way was tried (WagonWheel.Ways)
         public int Wheel = -1;              // the wheel broken (0-3), -1 for none found whole
         public bool Broke;                  // the game says the wheel is destroyed after the call
         public int StoppedAfterMs = -1;     // when the wagon first stood still after the break (-1: never)
@@ -25,7 +32,7 @@ namespace EnrageWestworld.Core
         public float FarthestM;             // how far it got from where the wheel broke
         public int Reads;                   // readings taken
         public string Model;                // the wagon's model name
-        public string EndedWhy;             // how the probe ended (done, the wagon gone, the player too far)
+        public string EndedWhy;             // how the probe ended (done, the wagon gone, the player too far, nothing in 12 s)
 
         /// A reading of the game's answers, taken every ReadEveryMs: speed, standing, the driver's state, the jam behind.
         public void Read(int sinceMs, bool afterMend, float speed, bool stopped, bool driverIn, bool driverFleeing, int standingBehind, float fromStart)
@@ -53,7 +60,10 @@ namespace EnrageWestworld.Core
         {
             if (Wheel < 0)
                 return "no whole wheel to break";
-            return "wheel " + Wheel + (Broke ? " broke" : " didn't break (the call did nothing)") +
+            string way = Way != null ? "way \"" + Way + "\": " : "";
+            if (!Broke)
+                return way + "wheel " + Wheel + " didn't break (nothing read broken in " + NothingMs / 1000 + " s); " + Reads + " readings" + (EndedWhy != null ? " (" + EndedWhy + ")" : "");
+            return way + "wheel " + Wheel + " broke" +
                    "; " + (StoppedAfterMs < 0 ? "never stood still in " + WatchMs / 1000 + " s" : "stood still after " + StoppedAfterMs / 1000 + " s") +
                    "; the driver " + (DriverFled ? "ran" : DriverDown ? "got down" : "stayed on the box") +
                    "; " + (JamMost == 0 ? "nothing stood behind it" : JamMost + " behind it at a standstill at most") +
@@ -65,14 +75,16 @@ namespace EnrageWestworld.Core
         /// What the readings say the scene can be built on, for the roadmap's question.
         public string Verdict()
         {
-            if (Wheel < 0 || !Broke)
-                return "the wheel can't be broken this way: another native, or a prop wheel beside a stopped wagon";
+            if (Wheel < 0)
+                return "no whole wheel to break: nothing learned";
+            if (!Broke)
+                return "this way can't break the wheel";
             if (StoppedAfterMs < 0)
-                return "the wagon rolls on with a wheel off: the scene needs the driver halted on purpose";
+                return "the wheel breaks but the wagon rolls on: the scene needs the driver halted on purpose";
             if (JamMost >= 2)
-                return "a stopped wagon jams the road: the scene must be off the road, or short";
+                return "the wheel breaks and the wagon stops, but it jams the road: the scene must be off the road, or short";
             if (!Fixed)
-                return "the mend doesn't take: the wagon would have to be let go rather than sent on";
+                return "the wheel breaks and the wagon stops, but the mend doesn't take: the wagon would have to be let go rather than sent on";
             return "the scene can be built as the roadmap has it: a wheel off, a halt, a mend, the wagon on its way";
         }
     }
@@ -80,6 +92,28 @@ namespace EnrageWestworld.Core
     public static class WagonWheel
     {
         public const int WheelsToTry = 4;
+
+        /// The ways the row tries, one a press, round the list.
+        public static readonly string[] Ways = { "draft", "wheel", "mission", "damage", "health" };
+
+        public static string NextWay(string way)
+        {
+            int i = Array.IndexOf(Ways, way);
+            return Ways[(i + 1 + Ways.Length) % Ways.Length];
+        }
+
+        public static string WayWords(string way)
+        {
+            switch (way)
+            {
+                case "draft": return "the draft-wheel native with a heavy force, after the can-break flags";
+                case "wheel": return "the plain break-off-wheel native, its return logged";
+                case "mission": return "the wagon taken as a mission entity first, then the draft-wheel native";
+                case "damage": return "damage applied at the wheel's own bone";
+                case "health": return "the body health set, as a check that natives take on this wagon at all";
+                default: return null;
+            }
+        }
 
         /// What the driver calls to a passer-by from beside the wheel (the scene to come; roadmap 32).
         public static string DriverCall(bool family, string seed)
