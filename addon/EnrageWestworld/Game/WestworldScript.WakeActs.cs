@@ -41,6 +41,7 @@ namespace EnrageWestworld.InGame
             public RecordRef Rec;       // despair: one of enRAGE's records (its death is written into its record)
             public int Sub, RunFrom;
             public float TopSpeed;
+            public float Face;              // a loop broken: the heading to take at the wall (Core/LoopVoice.cs)
             public Vector3 WallAt, WallDir;
             public string Variant;          // despair: the gun arc (jamie, leader) or the poisoning (drink, slow)
             public DespairClip[] Seq;       // despair: its clips (WestworldScript.Despair.cs), null for the wall and the knife
@@ -218,9 +219,16 @@ namespace EnrageWestworld.InGame
             return _rng.Next(100) < _cfg.AwakeningBreakdown;
         }
 
-        private string ChooseWakeAct(int stage, bool sitting, bool passive)
+        private string ChooseWakeAct(int stage, bool sitting, bool passive, Resident res = null, Ped ped = null)
         {
             int r = _rng.Next(100);
+            string loopKind;
+            Spot loopGoal;
+            if (!passive && res != null && ped != null && LoopVoice.Breaks(stage) && LoopBreakKind(res, ped, out loopKind, out loopGoal))
+            {
+                _loopGoal = loopGoal;   // the loop broken where the habit forbids (Core/LoopVoice.cs; SIXDAY 12a): one a town a day
+                return loopKind;
+            }
             if (passive)
             {
                 switch (stage)
@@ -311,7 +319,7 @@ namespace EnrageWestworld.InGame
                         bound++;
                     continue;
                 }
-                string kind = ChooseWakeAct(st.WakeStage, !passive && PED.IS_PED_USING_ANY_SCENARIO(h), passive);
+                string kind = ChooseWakeAct(st.WakeStage, !passive && PED.IS_PED_USING_ANY_SCENARIO(h), passive, res, ped);
                 _wakeCool[h] = now + (kind == "awake" ? 120000 : 15000 + _rng.Next(20000));
                 if (_wakeCool.Count > 200)
                     _wakeCool.Clear();
@@ -385,6 +393,34 @@ namespace EnrageWestworld.InGame
             int h = act.Handle;
             switch (act.Kind)
             {
+                case "broom":
+                {
+                    // a loop broken (Core/LoopVoice.cs): a broom on an empty street before dawn
+                    Take(act);
+                    TASK.CLEAR_PED_TASKS(h, true, false);
+                    TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_BROOM"), 60000, true, 0u, -1f, false);
+                    act.Until = now + 60000;
+                    act.NextThought = now + 4000;
+                    LoopBroke(act);
+                    return true;
+                }
+                case "wall":
+                case "water":
+                {
+                    // a loop broken: the church wall at noon, the river's edge no deeper than the knee
+                    Spot sp = _loopGoal;
+                    _loopGoal = null;
+                    if (sp == null)
+                        return false;
+                    Take(act);
+                    act.Goal = new Vector3(sp.X, sp.Y, sp.Z);
+                    act.Face = sp.Heading;
+                    TASK.CLEAR_PED_TASKS(h, true, false);
+                    TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, sp.X, sp.Y, sp.Z, 1.2f, 40000, 1.5f, 0, 0f);
+                    act.Until = now + 70000;
+                    LoopBroke(act);
+                    return true;
+                }
                 case "glance":
                     TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 4500, 0, 51, 0);
                     act.Until = now + 4500;
@@ -566,6 +602,37 @@ namespace EnrageWestworld.InGame
             float dist = pos.DistanceTo(me.Position);
             switch (act.Kind)
             {
+                case "broom":
+                    if (act.NextThought > 0 && now >= act.NextThought)
+                    {
+                        act.NextThought = 0;
+                        Think(act, LoopVoice.BreakThought("broom", CLOCK.GET_CLOCK_HOURS(), act.P.Id + "|broom|" + now / 1000));
+                    }
+                    break;
+                case "wall":
+                case "water":
+                    if (act.Phase == 0)
+                    {
+                        bool wet = act.Kind == "water" && ENTITY.IS_ENTITY_IN_WATER(h);
+                        if (wet || pos.DistanceTo(act.Goal) < 2.5f)
+                        {
+                            act.Phase = 1;
+                            TASK.CLEAR_PED_TASKS(h, true, false);
+                            if (act.Kind == "wall")
+                                TASK.TASK_ACHIEVE_HEADING(h, act.Face, 2500);
+                            TASK.TASK_STAND_STILL(h, wet ? 20000 : 30000);
+                            act.Until = now + (wet ? 20000 : 30000);
+                            act.NextThought = now + 2500;
+                        }
+                        else if (now - act.Started > 45000)
+                            act.Until = now;   // never got there: let it go
+                    }
+                    else if (act.NextThought > 0 && now >= act.NextThought)
+                    {
+                        act.NextThought = 0;
+                        Think(act, LoopVoice.BreakThought(act.Kind, CLOCK.GET_CLOCK_HOURS(), act.P.Id + "|" + act.Kind + "|" + now / 1000));
+                    }
+                    break;
                 case "lookaround":
                 {
                     double heading = ENTITY.GET_ENTITY_HEADING(h) * Math.PI / 180.0;
@@ -761,12 +828,24 @@ namespace EnrageWestworld.InGame
             }
             if (DespairRoll(act, me, dist))
                 ending = "despair";
+            if (ending != "despair" && !act.Passive && _cfg.LoopVoice && act.St != null && act.St.Has("centre") && _rng.Next(100) < LoopVoice.ResetChance)
+                ending = "reset";   // past the centre: the loop closes over them, cheerful and blank (Core/LoopVoice.cs; SIXDAY 12a)
             act.Ending = ending;
             act.Phase = 3;
             act.Arrived = false;
             act.PhaseUntil = now;
             switch (ending)
             {
+                case "reset":
+                {
+                    TASK.CLEAR_PED_TASKS(h, true, false);
+                    TASK.TASK_STAND_STILL(h, 9000);
+                    act.Until = now + 9000;
+                    Think(act, LoopVoice.ResetThought(act.P.Id + "|reset|" + now / 1000));
+                    _engine.ResetWake(act.P, act.St, Bridge.Now());
+                    _resetsSeen++;
+                    break;
+                }
                 case "plead":
                 {
                     act.Until = now + 9000;
@@ -826,6 +905,8 @@ namespace EnrageWestworld.InGame
             int h = act.Handle;
             switch (act.Ending)
             {
+                case "reset":
+                    break;   // stood still, the thought said, the loop closed (ChooseEnding)
                 case "escape":
                     if (!act.Arrived && pos.DistanceTo(act.Goal) < 3f)
                     {

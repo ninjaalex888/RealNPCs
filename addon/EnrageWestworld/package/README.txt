@@ -511,6 +511,12 @@ NEW IN 0.7.11
   a fearful one bars its doors early, a prospering one complains of prices and new faces. The
   regulars a town keeps scale with the index (never below 10). A monthly mention in the paper for
   towns you've been to. ThinStreets (off): thinner streets in a town under 30. F7 "TEST towns:".
+- The voice of the habit (LoopVoice, with WestWorld): a waking regular hears their routine as a voice
+  giving orders at the hour, on the ticker, once a day ("Seven o'clock. The saloon. You'll be at the
+  saloon."); from the third stage they answer it back; at the fourth they break the loop now and then
+  (a broom on an empty street at night, the church wall at noon, the river's edge), and once come to
+  the centre: three thoughts that end with the voice known as their own. After it an ending may be a
+  reset: back to the start, cheerful and blank, and their friends notice. F7 "TEST loop:".
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if

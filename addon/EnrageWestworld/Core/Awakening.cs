@@ -253,6 +253,15 @@ namespace EnrageWestworld.Core
 
         public static string Thought(Person p, PersonState st, PlayerRef you, string seed)
         {
+            if (st != null && st.WakeStage >= Awake && !st.Has("centre"))
+            {
+                // the centre (Core/LoopVoice.cs; SIXDAY 12a): three thoughts, in order, that end with them knowing the voice as their own
+                int n = st.Has("centre2") ? 3 : st.Has("centre1") ? 2 : 1;
+                st.Mark("centre" + n);
+                if (n >= LoopVoice.CentreCount)
+                    st.Mark("centre");
+                return Hosts.Fill(LoopVoice.CentreLine(n), p, you, seed);
+            }
             return Pick(ThoughtPool, p, st, you, seed);
         }
 
