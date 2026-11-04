@@ -4,7 +4,7 @@ Oct 26, 2026 · lexthestoic
 
 ## Built 2026-11-03 (unreleased): allies who come to your aid (a player's request, 2026-11-03)
 
-Built as `[Encounters] AlliesHelp` (Core/Allies.cs, Game/WestworldScript.Allies.cs; see the CHANGELOG): in-town allies against anyone in combat with you (never the law), a revolver given against guns, a friend from the ledger happening by on the road (on foot, 30 to 45 m off; riding in waits on a horse spawn), the word after, the "defend" memory, enRAGE's fondness up. Later the same day: a green dot on each ally (`AlliesDot`), the body wait for the test's man and the road friend, fists against fists, nobody new while wanted. Still to do from the sketch below: an ally who dies grieved by their town with a cost to you; a friend arriving on horseback. The sketch, as it was:
+Built as `[Encounters] AlliesHelp` (Core/Allies.cs, Game/WestworldScript.Allies.cs; see the CHANGELOG): in-town allies against anyone in combat with you (the law too, since Lex asked that evening; friends near you wear the green dot whenever they're about, and someone who owes you comes whatever the odds), a revolver given against guns, a friend from the ledger happening by on the road (on foot, 30 to 45 m off; riding in waits on a horse spawn), the word after, the "defend" memory, enRAGE's fondness up. Later the same day: a green dot on each ally (`AlliesDot`), the body wait for the test's man and the road friend, fists against fists, nobody new while wanted. Still to do from the sketch below: an ally who dies grieved by their town with a cost to you; a friend arriving on horseback. The sketch, as it was:
 
 ## Built 2026-11-03 (unreleased): the moment they're in, and greeting fondness (Lex, 2026-11-03)
 

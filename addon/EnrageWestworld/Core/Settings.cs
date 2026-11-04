@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 203;
+        public const int CurrentVersion = 204;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -249,7 +249,7 @@ namespace EnrageWestworld.Core
         public int AlliesMost = 3;           // ... at most this many at once
         public int AlliesLiking = 90;        // ... enRAGE's fondness for you (0-100) from which someone counts as a friend (Lex, 2026-11-03: "a friend when the fondness bar is 90% or higher"; 40 until settings version 202); a kindness of yours they remember, a trouble you mended, talks and your name known count on their own
         public int AlliesRoadChance = 30;    // ... percent: out of the towns, with nobody you know in sight and two or more armed against you, a friend from a town's ledger happens by
-        public bool AlliesDot = true;        // ... a small green dot on the map on each ally while they're with you (Lex, 2026-11-03; settings version 199)
+        public bool AlliesDot = true;        // ... a small green dot on the map on each friend near you and on each ally while they're with you (Lex, 2026-11-03; settings version 199, friends from 204)
         public string AlliesDotColour = "BLIP_MODIFIER_DEBUG_GREEN";   // ... the dot's colour: one of the game's blip modifiers by name; empty keeps the companion dot's own colour
         public int GreetLiking = 34;         // [Encounters] enRAGE's fondness for you (0-100) grows by this on every greeting of someone (three hellos fill the bar and pass AlliesLiking 90: Lex, 2026-11-03, "each greet gives 25% fondness boost for now until we add in more NPC interactions", then "3 greets will get to 100%"); settings version 199 (12), 200 (20), 201 (25), 34 from 203
 
@@ -792,6 +792,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 204)
+                    log?.Invoke("Settings: friends near you wear the green dot on the map whenever they're about ([Encounters] AlliesDot), and come to your aid against anyone, the law too; someone who owes you (the bar at AlliesLiking or more, someone you saved) comes whatever the odds.");
                 if (s.SettingsVersion < 203)
                 {
                     // 2026-11-03, Lex: "3 greets will get to 100% fondness, instead of 4": GreetLiking 34; an ini on any built value so far (12, 20, 25)
@@ -1319,12 +1321,12 @@ namespace EnrageWestworld.Core
             b.AppendLine("CalloutsArthur = " + B(CalloutsArthur) + "   ; by day in a town, out of doors, one of the people near with something against you (you struck or robbed them, they saw you kill, word of your thieving reached them, or you soured them) walks up and says it to your face. Walk off past 12 m and they call you a coward; stay and most put up their fists (fighting them is self-defence); hold a gun on them and they back off. Once a day each");
             b.AppendLine("CalloutsArthurChance = " + CalloutsArthurChance + "   ; percent on each encounter roll while one may happen (five real minutes at least between them)");
             b.AppendLine("CalloutsArthurDraw = " + CalloutsArthurDraw + "   ; percent: an armed hothead calling you out over blood (a beating, a killing, an old grudge) draws on you instead (0 never)");
-            b.AppendLine("AlliesHelp = " + B(AlliesHelp) + "   ; attacked (not by the law) within sight of people who think well of you, some of them come to your aid: the brave and the hot first, a friend of yours readier, cowards never, a woman only against fists, and against a gun only those who carry one (they're given a revolver for it and keep it after). They shout as they come, and have a word with you after; they remember it, and think better of you for it");
+            b.AppendLine("AlliesHelp = " + B(AlliesHelp) + "   ; attacked by anyone, the law too, within sight of people who think well of you, some of them come to your aid: someone who owes you (the bar at AlliesLiking or more, someone you saved) whatever the odds, and of the rest the brave and the hot first, cowards never, a woman only against fists, and against a gun only those who carry one (they're given a revolver for it and keep it after). They shout as they come, and have a word with you after; they remember it, and think better of you for it");
             b.AppendLine("AlliesMetres = " + AlliesMetres + "   ; from within this many metres of you (10 to 80)");
             b.AppendLine("AlliesMost = " + AlliesMost + "   ; at most this many with you at once (1 to 6)");
             b.AppendLine("AlliesLiking = " + AlliesLiking + "   ; enRAGE's fondness for you (0 to 100: the bar under people with FeelingBars) from which someone counts as a friend of yours (90: three greetings, or saving them); a kindness of yours they remember, a trouble of theirs you mended, talks and your name known count on their own; 0: enRAGE's fondness doesn't count");
             b.AppendLine("AlliesRoadChance = " + AlliesRoadChance + "   ; percent: out of the towns, with nobody you know in sight and two or more armed against you, a friend from a town's ledger happens by and runs in (once in five minutes at most; 0 never)");
-            b.AppendLine("AlliesDot = " + B(AlliesDot) + "   ; a small green dot on the map on each ally while they're with you (the game's own small companion dot, recoloured); someone who already has a dot keeps their own");
+            b.AppendLine("AlliesDot = " + B(AlliesDot) + "   ; a small green dot on the map on each friend near you (the bar at AlliesLiking or more, someone you saved, a kindness remembered, a trouble mended; within 80 m) and on each ally while they're with you (the game's own small companion dot, recoloured); someone who already has a dot keeps their own");
             b.AppendLine("AlliesDotColour = " + AlliesDotColour + "   ; the dot's colour: one of the game's blip modifiers by name (BLIP_MODIFIER_DEBUG_GREEN as built; BLIP_MODIFIER_FRIENDLY the companions' blue); empty: the companion dot's own colour");
             b.AppendLine("GreetLiking = " + GreetLiking + "   ; enRAGE's fondness for you (0 to 100: the bar under people with FeelingBars, what AlliesLiking reads) grows by this much on every greeting of someone (34: three hellos fill the bar and make a friend who'll stand with you, AlliesLiking 90); nothing from someone afraid of you or angry with you; 0 off (0 to 50)");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");

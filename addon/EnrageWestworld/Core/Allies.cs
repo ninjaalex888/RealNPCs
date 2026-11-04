@@ -42,15 +42,30 @@ namespace EnrageWestworld.Core
             return w;
         }
 
-        /// Whether this person comes to your aid: warmth 2 or more (a friend), or 1 with the nerve for it. The bar: their own
-        /// caution (anxiety, the risk they'll take, assertiveness), a gun against them unless they carry one, the first to come
-        /// readiest and each after less so; a coward never; the drunk and the hot readier; a woman only against fists.
+        /// Whether this person comes to your aid: someone who owes you (warmth 3: the bar at AlliesLiking or more, someone you
+        /// saved, a trouble you mended) always (Lex, 2026-11-03: a friend "would now protect the main character if fought by the
+        /// law or anyone else"); a friend (warmth 2) most times, someone who merely thinks well of you (1) with the nerve for it.
+        /// The bar: their own caution (anxiety, the risk they'll take, assertiveness), a gun against them unless they carry one,
+        /// the first to come readiest and each after less so; a coward never; the drunk and the hot readier; a woman only
+        /// against fists.
         public static AllyTake Weigh(Traits t, string temper, bool woman, bool drunk, int warmth, bool foeArmed, bool armed, int foes, int helping, string seed)
         {
             var a = new AllyTake();
-            if (t == null || warmth <= 0)
+            if (warmth <= 0)
             {
-                a.Why = warmth <= 0 ? "no fondness for you" : "no mind to weigh";
+                a.Why = "no fondness for you";
+                return a;
+            }
+            if (warmth >= 3)
+            {
+                a.Comes = true;
+                a.Score = 2f;
+                a.Why = "owes you: comes whatever the odds" + (foeArmed ? ", guns out" : "") + (helping > 0 ? ", " + helping + " with you already" : "");
+                return a;
+            }
+            if (t == null)
+            {
+                a.Why = "no mind to weigh";
                 return a;
             }
             if (temper == "Coward")

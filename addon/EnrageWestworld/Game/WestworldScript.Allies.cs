@@ -1,12 +1,13 @@
 // Allies who come to your aid (a player's request, 2026-11-03, the roadmap's front item; Lex: "more interactions and NPC
 // events that can add to the fondness"; [Encounters] AlliesHelp; Core/Allies.cs weighs who comes and has their words).
-// Every 1.5 s: anyone in combat with you within AlliesMetres (never the law, never during a mission, never while you're
-// wanted or the law has an incident on you: the townsfolk answering your crime are "in combat with you" too) is a foe.
-// While foes stand, the named people near who think well of you (enRAGE's fondness, a kindness of yours they remember, a
-// trouble you mended, talks and your name known; never the afraid or the aggrieved) are weighed by their own nature
-// (Allies.Weigh), and the readiest comes: up out of their seat the game's way, a revolver given against guns (fists kept
-// to fists), a shout as they come, straight at the nearest foe, retasked as foes fall, a small green dot on the map while
-// they're with you ([Encounters] AlliesDot, AlliesDotColour; Lex, 2026-11-03). Out of the towns, with nobody you know in
+// Every 1.5 s: anyone in combat with you within AlliesMetres (the law too, and the townsfolk answering your crime: Lex,
+// 2026-11-03, a friend "would now protect the main character if fought by the law or anyone else"; never during a mission)
+// is a foe. While foes stand, the named people near who think well of you (enRAGE's fondness, a kindness of yours they
+// remember, a trouble you mended, someone you saved, talks and your name known; never the afraid or the aggrieved) are
+// weighed by their own nature (Allies.Weigh: someone who owes you, the bar at AlliesLiking or more, comes whatever the
+// odds), and the readiest comes: up out of their seat the game's way, a revolver given against guns (fists kept to
+// fists), a shout as they come, straight at the nearest foe, retasked as foes fall, a small green dot on the map
+// (the one friends near you wear anyway: WestworldScript.FriendDots.cs; [Encounters] AlliesDot, AlliesDotColour). Out of the towns, with nobody you know in
 // sight and two or more armed against you, a friend from a town's ledger may happen by (AlliesRoadChance): made 30-45 m
 // off in their own clothes as soon as the game has their body streamed in, and run in. When no foe is left for six
 // seconds it's over: they turn to you with a word (your words, in their voice with the voice server), remember it as
@@ -81,13 +82,10 @@ namespace EnrageWestworld.InGame
                 if (!ENTITY.DOES_ENTITY_EXIST(gone.Handle))
                     AllyDotClear(gone);
             _allies.RemoveAll(a => !ENTITY.DOES_ENTITY_EXIST(a.Handle));
-            // the foes: whoever is in combat with you within reach, never the law; none during a mission. While you're wanted,
-            // nobody new counts (the townsfolk answering your crime are "in combat with you" too, and nobody should come to
-            // shoot them: the review); the foes already engaged stay foes, so a fight the law walks into isn't called over
-            // with the gunman still up (the advisor)
+            // the foes: whoever is in combat with you within reach, the law and the townsfolk answering your crime among them
+            // (Lex, 2026-11-03: friends protect you "if fought by the law or anyone else"); none during a mission
             _alliesFoes.Clear();
-            bool armedFoe = false, heldByLaw = false;
-            bool wanted = PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0;
+            bool armedFoe = false;
             if (!MISC.GET_MISSION_FLAG())
                 foreach (Ped p in Peds.All())
                 {
@@ -96,13 +94,8 @@ namespace EnrageWestworld.InGame
                     int h = p.Handle;
                     if (h == me.Handle || !p.Exists() || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(me.Position) > _cfg.AlliesMetres)
                         continue;
-                    if (!PED.IS_PED_IN_COMBAT(h, me.Handle) || Natives.IsLaw(p) || _allies.Any(a => a.Handle == h))
+                    if (!PED.IS_PED_IN_COMBAT(h, me.Handle) || _allies.Any(a => a.Handle == h))
                         continue;
-                    if (wanted && !_alliesSeenFoes.Contains(h) && h != _alliesTestMan)   // the Testing row's man counts whatever the law thinks of you (the advisor)
-                    {
-                        heldByLaw = true;
-                        continue;
-                    }
                     _alliesFoes.Add(h);
                     if (WEAPON.IS_PED_ARMED(h, 4))
                         armedFoe = true;
@@ -110,8 +103,6 @@ namespace EnrageWestworld.InGame
             foreach (int f in _alliesSeenFoes)
                 if (ENTITY.DOES_ENTITY_EXIST(f) && ENTITY.IS_ENTITY_DEAD(f))
                     _alliesFoesFell = true;   // one of them fell this fight: the word after says won, not ran
-            if (heldByLaw)
-                _alliesWhyNot = "you're wanted: nobody new comes (the townsfolk answering your crime aren't foes)";
             if (_alliesFoes.Count == 0)
             {
                 if (_alliesFightSince != 0 && now - _alliesFoeAt > AlliesOverMs)
@@ -138,8 +129,8 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_COMBAT_PED(a.Handle, a.Target, 0, 16);
                 }
             }
-            if (wanted || _allies.Count(a => !ENTITY.IS_ENTITY_DEAD(a.Handle)) >= _cfg.AlliesMost)
-                return;   // wanted: those with you fight on, nobody new comes
+            if (_allies.Count(a => !ENTITY.IS_ENTITY_DEAD(a.Handle)) >= _cfg.AlliesMost)
+                return;
             // who comes: the readiest of those near who think well of you
             Ally came = AlliesLook(me, armedFoe, now);
             if (came != null)
@@ -272,20 +263,7 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.AlliesDot)
                 return;
-            try
-            {
-                if (MAP.GET_BLIP_FROM_ENTITY(a.Handle) != 0)
-                    return;
-                a.Dot = new Blip(MAP.BLIP_ADD_FOR_ENTITY(Natives.Hash("BLIP_STYLE_COMPANION"), a.Handle));
-                if (!string.IsNullOrEmpty(_cfg.AlliesDotColour))
-                    MAP.BLIP_ADD_MODIFIER(a.Dot.Handle, Natives.Hash(_cfg.AlliesDotColour.Trim()));
-                a.Dot.Label = Person.FirstOf(a.Name) + ", with you";
-            }
-            catch (Exception ex)
-            {
-                a.Dot = null;
-                Log.Write("ALLIES the dot on " + a.Name + " failed: " + ex.Message);
-            }
+            a.Dot = GreenDot(a.Handle, Person.FirstOf(a.Name) + ", with you");   // the friends' dot (WestworldScript.FriendDots.cs); null when they wear one already
         }
 
         private static void AllyDotClear(Ally a)
@@ -301,11 +279,12 @@ namespace EnrageWestworld.InGame
             a.Dot = null;
         }
 
-        /// The script going away (OnAborted): the dots go with it.
+        /// The script going away (OnAborted): the dots go with it, the friends' too.
         private void AlliesAbort()
         {
             foreach (Ally a in _allies)
                 AllyDotClear(a);
+            FriendDotsClear();
         }
 
         /// A friend from a town's ledger happens by: someone who thinks well of you (a kindness remembered, a trouble mended,

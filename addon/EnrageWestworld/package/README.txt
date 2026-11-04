@@ -147,7 +147,7 @@ NEW IN 0.7.19
   Cobb, Ellis Island, the old West gone, the suffrage women, Geronimo's book), each from the
   month it was in the papers. In the talks above, and when you ask someone the news.
 - Allies who come to your aid ([Encounters] AlliesHelp, on; AlliesMetres 40, AlliesMost 3,
-  AlliesLiking 90, AlliesRoadChance 30): attacked (not by the law) within sight of people who
+  AlliesLiking 90, AlliesRoadChance 30): attacked by anyone, the law too, within sight of people who
   think well of you (enRAGE's fondness, a kindness of yours they remember, a trouble you
   mended, talks and your name known), some of them come: the brave and the hot first, the loyal
   for a friend, cowards never, a woman only against fists; against guns they're given a
@@ -163,7 +163,8 @@ NEW IN 0.7.19
   beside them. About 430 new lines by temper. The AI model is told what's happening to them.
   Only the waking doubt the world: someone still asleep never wonders whether any of it is
   real. Not yet seen in game.
-- A green dot on each ally on the map while they're with you ([Encounters] AlliesDot, on;
+- A green dot on each friend near you on the map (the bar at AlliesLiking or more, someone you
+  saved), and on each ally while they're with you ([Encounters] AlliesDot, on;
   AlliesDotColour: a blip modifier's name, BLIP_MODIFIER_DEBUG_GREEN as built). Greeting
   someone makes them fonder of you ([Encounters] GreetLiking, 34): enRAGE's fondness rises
   by a third of the bar on every greeting of someone, so three hellos fill the bar and make
