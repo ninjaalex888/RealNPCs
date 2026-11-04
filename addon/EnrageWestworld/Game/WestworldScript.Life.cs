@@ -32,6 +32,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             GangStep(now);   // rival gangs who meet near you (WestworldScript.Gangs.cs)
             JoinYouStep(now);   // onlookers who join a fistfight of yours (WestworldScript.JoinYou.cs)
+            AlliesStep(now);    // people who think well of you come to your aid when you're attacked (WestworldScript.Allies.cs)
             PlansStep(me, now);   // plans over days (WestworldScript.Plans.cs)
             PicksStep(now);   // the model's picks, as they come back (WestworldScript.Picks.cs)
             AloudStep(now);   // a thought said aloud in their own voice (WestworldScript.Aloud.cs)

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 196;
+        public const int CurrentVersion = 197;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -244,6 +244,11 @@ namespace EnrageWestworld.Core
         public int CalloutsArthurChance = 30;
         public int CalloutsArthurDraw = 10;   // percent: an armed hothead calling you out over blood draws instead of putting up fists (0 never)
         public int HogtiedTurnsOnYou = 25;   // [Encounters] percent: one you cut loose pulls a knife on you instead of thanking you (violence against Arthur, on as it comes; Lex, 2026-11-01); settings version 189
+        public bool AlliesHelp = true;       // [Encounters] attacked within sight of people who think well of you, some of them come to your aid (Core/Allies.cs; a player's request, 2026-11-03; settings version 197)
+        public int AlliesMetres = 40;        // ... from within this many metres
+        public int AlliesMost = 3;           // ... at most this many at once
+        public int AlliesLiking = 40;        // ... enRAGE's fondness for you (0-100) from which someone counts as a friend; a kindness of yours they remember, a trouble you mended, talks and your name known count on their own
+        public int AlliesRoadChance = 30;    // ... percent: out of the towns, with nobody you know in sight and two or more armed against you, a friend from a town's ledger happens by
 
         // [World]
         public bool Deeds = true;
@@ -784,6 +789,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 197)
+                    log?.Invoke("Settings: new in this version: [Encounters] AlliesHelp (on), AlliesMetres (40), AlliesMost (3), AlliesLiking (40), AlliesRoadChance (30): attacked within sight of people who think well of you, some of them come to your aid, with a gun if the attackers have guns; out of the towns a friend from the ledger may happen by.");
                 if (s.SettingsVersion < 196)
                     log?.Invoke("Settings: new in this version: [Mind] MindTalks (on): people near you talk to each other from what's on their minds, the worry they're living through, the times they live in (the election, the war, the reservations, the new machines), the stranger, a plan, the town's talk; the other answers from their own nature, and with the AI model in its own words.");
                 if (s.SettingsVersion < 195)
@@ -891,6 +898,10 @@ namespace EnrageWestworld.Core
             HogtiedTurnsOnYou = Math.Max(0, Math.Min(100, HogtiedTurnsOnYou));
             CalloutsArthurChance = Math.Max(0, Math.Min(100, CalloutsArthurChance));
             CalloutsArthurDraw = Math.Max(0, Math.Min(100, CalloutsArthurDraw));
+            AlliesMetres = Math.Max(10, Math.Min(80, AlliesMetres));
+            AlliesMost = Math.Max(1, Math.Min(6, AlliesMost));
+            AlliesLiking = Math.Max(0, Math.Min(100, AlliesLiking));
+            AlliesRoadChance = Math.Max(0, Math.Min(100, AlliesRoadChance));
             GatheringHostile = Math.Max(0, Math.Min(100, GatheringHostile));
             LawShootsThieves = Math.Max(0, Math.Min(100, LawShootsThieves));
             ActThoughtEachSeconds = Math.Max(20, Math.Min(600, ActThoughtEachSeconds));
@@ -1268,6 +1279,11 @@ namespace EnrageWestworld.Core
             b.AppendLine("CalloutsArthur = " + B(CalloutsArthur) + "   ; by day in a town, out of doors, one of the people near with something against you (you struck or robbed them, they saw you kill, word of your thieving reached them, or you soured them) walks up and says it to your face. Walk off past 12 m and they call you a coward; stay and most put up their fists (fighting them is self-defence); hold a gun on them and they back off. Once a day each");
             b.AppendLine("CalloutsArthurChance = " + CalloutsArthurChance + "   ; percent on each encounter roll while one may happen (five real minutes at least between them)");
             b.AppendLine("CalloutsArthurDraw = " + CalloutsArthurDraw + "   ; percent: an armed hothead calling you out over blood (a beating, a killing, an old grudge) draws on you instead (0 never)");
+            b.AppendLine("AlliesHelp = " + B(AlliesHelp) + "   ; attacked (not by the law) within sight of people who think well of you, some of them come to your aid: the brave and the hot first, a friend of yours readier, cowards never, a woman only against fists, and against a gun only those who carry one (they're given a revolver for it and keep it after). They shout as they come, and have a word with you after; they remember it, and think better of you for it");
+            b.AppendLine("AlliesMetres = " + AlliesMetres + "   ; from within this many metres of you (10 to 80)");
+            b.AppendLine("AlliesMost = " + AlliesMost + "   ; at most this many with you at once (1 to 6)");
+            b.AppendLine("AlliesLiking = " + AlliesLiking + "   ; enRAGE's fondness for you (0 to 100) from which someone counts as a friend of yours; a kindness of yours they remember, a trouble of theirs you mended, talks and your name known count on their own; 0: enRAGE's fondness doesn't count");
+            b.AppendLine("AlliesRoadChance = " + AlliesRoadChance + "   ; percent: out of the towns, with nobody you know in sight and two or more armed against you, a friend from a town's ledger happens by and runs in (once in five minutes at most; 0 never)");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: the awake stand in a silent circle, facing in: from midnight to half past three out in the wilds (once a night), and with GatheringHours any by day too, in an open field or just outside a town's edge");
