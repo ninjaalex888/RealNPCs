@@ -201,6 +201,13 @@ NEW IN 0.7.19
   deaths play as they are; RealNPCs never puts a line in Arthur's mouth over one already playing,
   so a cut-dialogue mod's lines aren't talked over; Arthur's own gunfight calls when someone comes
   at him with a gun.
+- A broken wagon wheel ([Encounters] WagonWheel, on; WagonWheelChance 20): by day on the roads,
+  once a day, a wagon ahead of you loses a wheel and stops, the driver down beside it; within
+  25 m he calls to you. Stop on foot within 3 m of the wagon for three seconds and you set the
+  wheel with him (his thanks, his liking for you up, and he drives on); ride past and once you're
+  40 m gone he calls after you to send word: reach any town within thirty game minutes and it's
+  sent. Nothing is spawned: the wagon is the game's own. Testing row "A wagon ahead loses a
+  wheel (the scene)".
 - A wagon's wheel off, the probe (the Testing row "A wagon's wheel off"): breaks one wheel on an
   ambient wagon out of view, watches what the game does for a minute, mends it, and says what it
   found in the log and F7 "TEST wagon:". The scene waits on those answers.

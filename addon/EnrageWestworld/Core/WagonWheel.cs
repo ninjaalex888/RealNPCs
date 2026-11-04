@@ -92,6 +92,46 @@ namespace EnrageWestworld.Core
     public static class WagonWheel
     {
         public const int WheelsToTry = 4;
+        // the scene ([Encounters] WagonWheel), built on the probe's answer of 2026-11-04 10:38 (the plain break-off-wheel native)
+        public const float NearMetres = 40f, FarMetres = 150f;   // the wagon ahead, out of view, this far off
+        public const float CallMetres = 25f;      // the driver calls to you from here
+        public const float HelpMetres = 3f;       // on foot this near the wagon, still...
+        public const int HelpStillMs = 3000;      // ...this long, and you've stopped to help
+        public const int LiftMs = 6000;           // the lift and the wheel going on
+        public const float PassMetres = 40f;      // called to and this far gone: you rode on
+        public const int WordMinutes = 30;        // reach a town within this and the word is sent
+        public const float GoneMetres = 220f;     // this far from the wagon before you've dealt with it: over
+        public const int DriverDownMs = 25000;    // the driver still on the box this long after the stop: asked down
+        public const int MostMs = 600000;         // ten minutes and it's over whatever happened
+
+        /// By day: wagons break down between six and eight.
+        public static bool Hour(int clock)
+        {
+            return clock >= 6 && clock < 20;
+        }
+
+        /// Whether the wagon is ahead of you: the way you face against the way to it (the flat dot of the two, over a fifth).
+        public static bool Ahead(float fx, float fy, float dx, float dy)
+        {
+            double fl = Math.Sqrt(fx * fx + fy * fy), dl = Math.Sqrt(dx * dx + dy * dy);
+            if (fl < 0.01 || dl < 0.01)
+                return false;
+            return (fx * dx + fy * dy) / (fl * dl) > 0.2;
+        }
+
+        /// What he says as you put your shoulder to it.
+        public static string LiftWords(string seed)
+        {
+            return Voice.Pick(seed + "|wl", "Now. Up. Up, and hold her there.", "That's it. Hold her. I've got the wheel.", "Together, on three. One. Two. Up.");
+        }
+
+        /// The notice when you've told a town about the wagon out on the road.
+        public static string WordSent(string town, string seed)
+        {
+            string t = town ?? "town";
+            return Voice.Pick(seed + "|ws", "You told them in " + t + " about the wagon down on the road. The smith is saddling up.",
+                "Word of the wagon reached " + t + " with you. Somebody will ride out to it.");
+        }
 
         /// The ways the row tries, one a press, round the list.
         public static readonly string[] Ways = { "draft", "wheel", "mission", "damage", "health" };
@@ -163,6 +203,8 @@ namespace EnrageWestworld.Core
                 yield return DriverThanks("s" + i);
                 yield return DriverSendWord("Valentine", "s" + i);
                 yield return PassedBy("s" + i);
+                yield return LiftWords("s" + i);
+                yield return WordSent("Valentine", "s" + i);
             }
         }
     }

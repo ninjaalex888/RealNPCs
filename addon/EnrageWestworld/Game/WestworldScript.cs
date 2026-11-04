@@ -1228,7 +1228,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST criminals: " + CriminalsStatus());
 			Log.Write("TEST epilogue: " + EpilogueStatus());
 			Log.Write("TEST places remember: " + PlaceMemoryStatus());
-			Log.Write("TEST wagon: " + WagonStatus());
+			Log.Write("TEST wagon: " + WagonStatus() + "; the scene: " + WagonSceneStatus());
 			Log.Write("TEST regard: " + RegardStatus());
 			Log.Write("TEST pacing: " + (_store != null ? Pacing.Status(_store.Pace, _store.LastGameMin) : "not loaded"));
 			Log.Write("TEST story: " + StoryStatus());

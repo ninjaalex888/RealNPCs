@@ -177,6 +177,7 @@ namespace EnrageWestworld.InGame
                 case "visitor":
                 case "traveller":
                 case "supper":
+                case "wagonscene":
                 case "campfire":
                 case "callout2":
                 case "domestic":
@@ -191,6 +192,7 @@ namespace EnrageWestworld.InGame
                             : a.Id == "visitor" ? "the hour (midnight to 04:00), once a night, the roll (it still needs a town, out of doors, no lawman near)"
                             : a.Id == "traveller" ? "the hour (07:00-19:00), being on a road, once a day, the roll (not the towns)"
                             : a.Id == "supper" ? "the hour (17:30-21:00), being on a road, once a day, the lawman rule, the roll (not the towns or the ticker); it takes no money, moves no clock and saves nothing"
+                            : a.Id == "wagonscene" ? "the hour (06:00-20:00), being on a road, once a day, the roll, and the wagon being ahead of you (not the towns, nor a wagon in view); the thanks raise no liking"
                             : a.Id == "campfire" ? "the hour (20:00-04:00), the rest between fires, the roll (not the towns)"
                             : a.Id == "hogtied" ? "the hour (06:00-20:00), once a day, the roll (not the towns); a test takes no money when you pay"
                             : a.Id == "callyou" ? "the hour (08:00-20:00), the rest between them, once a day each, the people's rests, the roll (it still needs a town's street and someone named near with something against you)"

@@ -47,7 +47,7 @@ namespace EnrageWestworld.InGame
             Safe("encounters", _aEncounters);
         }
 
-        private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null || _exec != null || _visitor != null || _traveller != null || _campfire != null || _supper != null || StagedLive; } }
+        private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null || _exec != null || _visitor != null || _traveller != null || _campfire != null || _supper != null || _wagonScene != null || StagedLive; } }
 
         /// What's going on, for the log and the stalker key.
         private string EncounterWhat
@@ -56,6 +56,8 @@ namespace EnrageWestworld.InGame
             {
                 if (_crying != null)
                     return "the crying woman is out";
+                if (_wagonScene != null)
+                    return "a wagon stands on the road with a wheel off";
                 if (_visitor != null)
                     return "a figure is abroad in the dark";
                 if (_traveller != null)
@@ -106,6 +108,8 @@ namespace EnrageWestworld.InGame
                 DomesticStep(now);
             if (_hog != null)
                 HogtiedStep(now);
+            if (_wagonScene != null)
+                WagonSceneStep(now);   // a wagon with a wheel off (WestworldScript.WagonScene.cs; roadmap 32)
             if (_callYou != null)
                 CallYouStep(now);
             StagedChecksStep(now);
@@ -169,7 +173,7 @@ namespace EnrageWestworld.InGame
         }
 
         private int _encounterTurn;
-        private const int EncounterKinds = 12;   // the eight before NIGHT4 item 4, then the street callout, the husband's temper, the hogtied captive and the callout at you
+        private const int EncounterKinds = 13;   // the eight before NIGHT4 item 4, then the street callout, the husband's temper, the hogtied captive, the callout at you, and the wagon with a wheel off (roadmap 32)
 
         /// The kinds that happen in a town's street among the people already there (they don't wait on the Director's scene).
         private static bool StreetKind(int kind)
@@ -248,6 +252,18 @@ namespace EnrageWestworld.InGame
                         return false;
                     StartTraveller(now);   // Pacing notes it once he's on the road (TravellerSpawn)
                     return true;
+                case 12:
+                    if (!_cfg.WagonWheel || _wagonScene != null)
+                        return false;
+                    not = WagonSceneNotNow();
+                    if (not != null)
+                    {
+                        notNow.Add("a wagon's wheel: " + not);
+                        return false;
+                    }
+                    if (!EncounterRoll("a wagon losing a wheel", _cfg.WagonWheelChance))
+                        return false;
+                    return StartWagonScene(now, false);   // false when no wagon fits: the roll is spent, the next kind's turn
                 case 5:
                     if (!_cfg.SupperInvitation || _supper != null)
                         return false;
@@ -345,7 +361,7 @@ namespace EnrageWestworld.InGame
             get
             {
                 return (_crying != null ? 1 : 0) + (_exec != null ? 1 : 0) + (HermitWithYou() ? 1 : 0) + (_gathering != null ? 1 : 0) + (_visitor != null ? 1 : 0) +
-                       (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0) + (_streetCallout != null ? 1 : 0) + (_domestic != null ? 1 : 0) + (_hog != null ? 1 : 0) + (_callYou != null ? 1 : 0);
+                       (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0) + (_streetCallout != null ? 1 : 0) + (_domestic != null ? 1 : 0) + (_hog != null ? 1 : 0) + (_callYou != null ? 1 : 0) + (_wagonScene != null ? 1 : 0);
             }
         }
 
@@ -361,6 +377,7 @@ namespace EnrageWestworld.InGame
                 case "visitor": return _visitor != null;
                 case "traveller": return _traveller != null;
                 case "supper": return _supper != null;
+                case "wagonscene": return _wagonScene != null;
                 case "campfire": return _campfire != null;
                 case "gathering": return _gathering != null;
                 case "callout2": return _streetCallout != null;
@@ -448,6 +465,18 @@ namespace EnrageWestworld.InGame
                 case "crying":
                     StartCrying(now, true);
                     break;
+                case "wagonscene":
+                    {
+                        string notW = WagonSceneNotNow(true);
+                        if (notW != null)
+                        {
+                            Log.Write("ENCOUNTER test, wagon: not now: " + notW);
+                            Hint("Not now: " + notW + ".", 5000);
+                        }
+                        else if (!StartWagonScene(now, true))
+                            Hint("No wagon with a driver out of view within 150 m to lose a wheel.", 5000);
+                        break;
+                    }
                 case "traveller":
                     string notT = TravellerNotNow(true);
                     if (notT != null)

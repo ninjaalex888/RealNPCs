@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 244;
+        public const int CurrentVersion = 245;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -234,6 +234,8 @@ namespace EnrageWestworld.Core
         public int NightVisitorChance = 18;
         public bool Travellers = true;
         public int TravellerChance = 20;
+        public bool WagonWheel = true;    // [Encounters] a wagon ahead of you on the road loses a wheel (roadmap 32; Core/WagonWheel.cs; settings version 245)
+        public int WagonWheelChance = 20;
         public bool Campfires = true;     // [Encounters] strangers at a campfire at night in the wilds (night 2026-10-28, item 14; settings version 90)
         public int CampfireChance = 15;
         public bool VoiceBelow = true;    // [Encounters] West World: late at night in a saloon, a muffled plea from under the boards and the barkeep's thoughts (night 2026-10-28, item 14; settings version 90)
@@ -845,6 +847,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 245)
+                    log?.Invoke("Settings: new in this version: [Encounters] WagonWheel (on): by day on the roads, a wagon ahead of you loses a wheel; stop and set it, or ride on and send word from the next town.");
                 if (s.SettingsVersion < 244)
                     log?.Invoke("Settings: new in this version: [Display] TownRegard (on): the town's regard of you in the Around town box: its known killings of yours against your kindnesses, its mood, who you know here is afraid or fond, and the talk.");
                 if (s.SettingsVersion < 243)
@@ -1120,6 +1124,7 @@ namespace EnrageWestworld.Core
             CryingWomanChance = Math.Max(0, Math.Min(100, CryingWomanChance));
             NightVisitorChance = Math.Max(0, Math.Min(100, NightVisitorChance));
             TravellerChance = Math.Max(0, Math.Min(100, TravellerChance));
+            WagonWheelChance = Math.Max(0, Math.Min(100, WagonWheelChance));
             CampfireChance = Math.Max(0, Math.Min(100, CampfireChance));
             SupperChance = Math.Max(0, Math.Min(100, SupperChance));
             ExecutionChance = Math.Max(0, Math.Min(100, ExecutionChance));
@@ -1461,6 +1466,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("NightVisitorChance = " + NightVisitorChance + "   ; percent on each roll, midnight to four, once a night at most");
             b.AppendLine("Travellers = " + B(Travellers) + "   ; by day on the roads, a man on foot waves you down and asks the way to the nearest town; greet him, or stop a moment, and he finds his way");
             b.AppendLine("TravellerChance = " + TravellerChance + "   ; percent on each roll, seven in the morning to seven at night, once a day at most");
+            b.AppendLine("WagonWheel = " + B(WagonWheel) + "   ; by day on the roads (06:00-20:00), once a day: a wagon ahead of you, out of view, loses a wheel and stops, the driver down beside it; within 25 m he calls to you. On foot within 3 m of the wagon for three seconds you set the wheel with him (his thanks, his liking for you up, and he drives on); ride past and once you're 40 m gone he calls after you to send word: reach any town within thirty game minutes and it's sent. Nothing is spawned: the wagon is the game's own, handed back");
+            b.AppendLine("WagonWheelChance = " + WagonWheelChance + "   ; percent on each encounter roll (0 to 100)");
             b.AppendLine("Campfires = " + B(Campfires) + "   ; at night in the wilds, two or three men round a fire off the road call you over for coffee and a tale; now and then a traveller walks in from the dark");
             b.AppendLine("CampfireChance = " + CampfireChance + "   ; percent on each roll, eight in the evening to four, with ten game hours between fires");
             b.AppendLine("VoiceBelow = " + B(VoiceBelow) + "   ; West World: late at night in a saloon, a muffled plea from under the boards behind the bar; the barkeep says it's the pipes, and his thoughts say otherwise; once a night a town");
