@@ -20,6 +20,18 @@ namespace EnrageWestworld.Core
 
     public static class Allies
     {
+        /// Whether what they feel about you stands in the way of friendship: a grudge or hate (hostile, or anger 40 or more) always;
+        /// fear (afraid of you: enRAGE's fear 40 or more, or a killing of yours seen lately) only while the bar is below the line. A
+        /// full bar outranks fear (Lex, 2026-11-04: Margaret at the top of the bar wore no dot, because the town knew him for a
+        /// killer): people do befriend dangerous men, and the bar is the thing the player fills on purpose.
+        public static bool Against(string regard, float fear, float anger, float like, int likingFrom)
+        {
+            if (regard == "hostile" || anger >= 40f)
+                return true;
+            bool afraid = regard == "afraid" || fear >= 40f;
+            return afraid && !(likingFrom > 0 && like >= likingFrom);
+        }
+
         /// How warm someone is to you, from everything the add-on keeps: 0 nothing, 1 a little, 2 a friend, 3 someone who owes
         /// you. enRAGE's fondness (0-100) counts from `likingFrom` up, a kindness of yours lately or a trouble you mended counts
         /// as a friend's, talks and your name known a little; fear or a grudge, nothing at all. Someone you saved (a bully

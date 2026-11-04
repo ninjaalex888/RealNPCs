@@ -222,19 +222,27 @@ namespace EnrageWestworld.InGame
 
         /// How warm this person is to you, from everything kept: enRAGE's fondness, a kindness of yours lately, a trouble you
         /// mended, talks and your name known; nothing for the afraid or the aggrieved. The Testing row's friend counts as one.
+        private readonly HashSet<int> _friendHeldLogged = new HashSet<int>();   // a full bar held back from friendship, said once a body
+
         private int AllyWarmth(Ped p, MindWho w)
         {
             float fear, like, anger;
             if (!_bridge.FeelingsOf(p.Handle, out fear, out like, out anger))
                 fear = like = anger = 0f;
             string regard = SightRegard(p, w.Id);
-            bool against = regard == "afraid" || regard == "hostile" || fear >= 40f || anger >= 40f;
+            bool against = Allies.Against(regard, fear, anger, like, _cfg.AlliesLiking);   // fear doesn't outrank a full bar; a grudge does (Lex, 2026-11-04: Margaret)
             long g = _store.LastGameMin;
             bool kind = _store.WorldLog != null && Interact.KindLately(_store.WorldLog, w.Id, g);
             bool mended = _store.WorrySettled != null && _store.WorrySettled.ContainsKey(w.Id);
             bool saved = _store.WorldLog != null && Interact.SavedLately(_store.WorldLog, w.Id, g);   // someone you saved owes you, whatever else they feel (WestworldScript.Saved.cs)
             PersonState st = _store.Find(w.Id);
             int warmth = Allies.Warmth(like, _cfg.AlliesLiking, kind, mended, st != null ? st.Talks : 0, st != null && st.KnowsName, against, saved);
+            if (warmth < 2 && _cfg.AlliesLiking > 0 && like >= _cfg.AlliesLiking && _friendHeldLogged.Add(p.Handle))
+            {
+                if (_friendHeldLogged.Count > 300)
+                    _friendHeldLogged.Clear();
+                Log.Write("FRIENDS " + (w.Name ?? "someone") + ": the bar at " + (int)like + " and no friend: " + (regard ?? "no regard") + ", enRAGE's fear " + (int)fear + ", anger " + (int)anger + " (once a body)");
+            }
             if (p.Handle == _alliesTestFriend && !against)
                 warmth = Math.Max(warmth, 2);
             return warmth;

@@ -156,7 +156,8 @@ NEW IN 0.7.19
 - Allies who come to your aid ([Encounters] AlliesHelp, on; AlliesMetres 40, AlliesMost 3,
   AlliesLiking 90, AlliesRoadChance 30): attacked by anyone, the law too, within sight of people who
   think well of you (enRAGE's fondness, a kindness of yours they remember, a trouble you
-  mended, talks and your name known), some of them come: the brave and the hot first, the loyal
+  mended, talks and your name known; a full bar is a friend even when they're afraid of you, a
+  grudge or anger still isn't), some of them come: the brave and the hot first, the loyal
   for a friend, cowards never, a woman only against fists; against guns they're given a
   revolver. They shout as they come, go for your attackers, and have a word with you after;
   they remember standing with you, and enRAGE's townsfolk think better of you for it. Out of
