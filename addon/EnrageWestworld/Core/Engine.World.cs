@@ -921,6 +921,7 @@ namespace EnrageWestworld.Core
                 DebtTick(now);
             GoalTick(now);
             EventsDaily(now);   // the dances posted on Thursdays (Engine.Events.cs)
+            DeparturesDaily(now);   // who leaves on the train today, and yesterday's leavers gone (Engine.Trains.cs)
         }
 
         private void AwarenessTick(long now)

@@ -1284,6 +1284,7 @@ namespace EnrageWestworld.InGame
             StreetStep(now);    // the street reacts to other people's fights, and to who walks among them (WestworldScript.Street.cs)
             LettersStep(now);   // a letter's writer waiting to meet you (WestworldScript.Letters.cs)
             SpotsStep(now);   // the spot key's request (WestworldScript.Spots.cs)
+            TrainsStep(now);   // a train at the platform: who gets off and who gets on (WestworldScript.Trains.cs)
             TownEventsStep(now);   // the town's day: a dance staged when you're there (WestworldScript.TownEvents.cs)
             SpaceStep(now);     // and mind you standing too close (WestworldScript.Space.cs)
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)

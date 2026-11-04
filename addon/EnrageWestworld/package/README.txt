@@ -499,6 +499,12 @@ NEW IN 0.7.11
   and press it: the place is written to spots.txt beside this file under the current kind; Shift and
   the key change the kind (the news line says which). The trains, the hangings and the shows stand at
   these. Refused indoors. The key builds the table and is safe to ignore.
+- Train time (TrainTime): with a platform spot for the town (the spot key, or come out of its station
+  once), a train standing at it is noticed: people on the platform turn to look, the station's keeper
+  calls it, one person steps down and becomes a resident (kin of someone in town, or a newcomer from
+  a far city), letters waiting for the town come off it, and a resident whose trouble just ended in
+  leaving (the ticket bought, the house gone to the bank, a son gone) says goodbye to a friend, walks
+  to the train and is gone for good. Away, they go all the same. F7 "TEST trains:".
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
@@ -1595,7 +1601,7 @@ in the file. The new ones:
             tied up off the road, two men by them; HogtiedMenDraw (true; set false to turn it off):
             their leader may draw on you unprovoked as you come near (never bounty hunters)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
-            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), EventTrials (true), EventShows (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), EventTrials (true), EventShows (true), TrainTime (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
             Bravery (85, 0-100): the brave stand their ground where the game would send them running;

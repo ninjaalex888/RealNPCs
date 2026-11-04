@@ -42,6 +42,8 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public bool Fled;             // woke and walked out of their town (the wake acts' escape): lives rough now, never recast on a passer-by
         [DataMember(EmitDefaultValue = false)] public long FledAt;
         [DataMember(EmitDefaultValue = false)] public string Held;           // the trial's or the hanging's event id while the law holds them at the jail (Core/Trials.cs); null when free
+        [DataMember(EmitDefaultValue = false)] public bool Left;             // took the train out of their town for good (Core/Trains.cs); Fled is set with it, so no cast finds them
+        [DataMember(EmitDefaultValue = false)] public long LeftAt;
         [DataMember(EmitDefaultValue = false)] public bool HasCamp;          // where they live in the wilds, chosen once
         [DataMember(EmitDefaultValue = false)] public float CampX, CampY, CampZ;
         [DataMember(EmitDefaultValue = false)] public bool Regular;          // one of their town's regulars (Regulars.cs): met again and again, kept

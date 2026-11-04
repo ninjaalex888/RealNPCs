@@ -1475,22 +1475,7 @@ namespace EnrageWestworld.InGame
             if (_cfg.RumoursTravel)
                 foreach (string line in _engine.TownGossip(town, 2))
                     News("In " + town, line);
-            if (_cfg.Letters && PostTowns.Contains(town))
-            {
-                List<Paper> waiting = _store.Papers.Where(p => !p.Delivered && (p.Town == null || p.Town == town)).ToList();
-                if (waiting.Count > 0)
-                {
-                    foreach (Paper p in waiting)
-                    {
-                        p.Delivered = true;
-                        p.Town = town;
-                        p.At = now;
-                    }
-                    string what = waiting.Count == 1 ? "a letter" : Voice.Number(waiting.Count) + " letters";
-                    News("Post office", "The clerk in " + town + " had " + what + " for you" + (waiting.Count == 1 && waiting[0].From != null ? ", from " + waiting[0].From : "") + ". [" + _readerKey + "] to read.");
-                    Log.Write("LETTERS collected in " + town + ": " + string.Join(", ", waiting.Select(p => p.Title)));
-                }
-            }
+            DeliverLetters(town, now, "post");   // the post office's letters (WestworldScript.Trains.cs: off the train too)
         }
 
         private string InteriorKind(uint type)

@@ -221,6 +221,15 @@ namespace EnrageWestworld.Core
                     n += r.Heard.RemoveAll(h => h.At > cut);
             }
             n += Deeds.RemoveAll(d => d.At > cut);
+            foreach (Resident r in Residents)
+                if (r != null && r.Left && r.LeftAt > cut)
+                {
+                    r.Left = false;   // the train they took after the cut hasn't left yet (Core/Trains.cs)
+                    r.LeftAt = 0;
+                    r.Fled = false;
+                    r.FledAt = 0;
+                    n++;
+                }
             n += Ties.RemoveAll(t => t.At > cut);
             n += Links.RemoveAll(l => l.At > cut);
             n += TownRumours.RemoveAll(r => r.At > cut);
