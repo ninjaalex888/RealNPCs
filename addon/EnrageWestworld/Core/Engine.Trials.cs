@@ -60,7 +60,7 @@ namespace EnrageWestworld.Core
                 Arrest(r, kill.TargetId, kill.TargetName ?? "a man", town, now);
                 return "held for the death of " + (kill.TargetName ?? "a man");
             }
-            bool thief = Store.Ties.Any(t => t != null && (t.Kind == "pickpocket" || t.Kind == "mugging" || t.Kind == "lift") && t.Doer == id);
+            bool thief = Store.Ties.Any(t => t != null && t.Crime != null && t.CrimeDoer == id);   // the theft kept on the tie, whatever came between them since (the review of items 15-19)
             if (thief)
             {
                 if (Cfg.Newspaper)

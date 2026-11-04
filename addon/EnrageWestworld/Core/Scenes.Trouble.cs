@@ -193,7 +193,8 @@ namespace EnrageWestworld.Core
         /// as they square up (before the first fight beat) with his shout; then by the attacker's temper and drink they heed
         /// (the hot and the drunk three times in ten, the proud half the time, the rest three in four): a last word and both
         /// walk out, the fight never comes (the beats from the fight on are dropped, Fight off); or the attacker shoves him
-        /// off, he swears to fetch the sheriff and goes, and the fight is as it was. C is the barkeep (cast index 2).
+        /// off, he has a last word and the fight is as it was. Either way he goes back behind his bar (the Director's "post":
+        /// the scenario point "approach" took him from; the review of items 15-19). C is the barkeep (cast index 2).
         /// Returns "heeds", "shoved", or null when there's no fight to step into (then the barkeep has his say after, as before).
         public static string BarkeepSteps(Scene s, string seed, string aTemper, bool aDrunk, string keepFirst, bool aWoman)
         {
@@ -212,6 +213,7 @@ namespace EnrageWestworld.Core
                 add.Add(new Beat(0, Voice.Pick(seed + "|bh", "...This isn't finished.", "Outside, then. After you.", "Another time. Count on it."), "angry"));
                 add.Add(new Beat(0, null, null, "walkaway", 800));
                 add.Add(new Beat(1, Voice.Pick(seed + "|bq", "Any time you like.", "...Yeah. Another time.", "Thank the barkeep, friend."), "mild", "walkaway"));
+                add.Add(new Beat(2, null, null, "post", 300));   // and the barkeep back behind his bar
                 s.Beats.RemoveRange(at, s.Beats.Count - at);
                 s.Beats.AddRange(add);
                 s.Fight = false;
@@ -219,15 +221,17 @@ namespace EnrageWestworld.Core
                 return "heeds";
             }
             add.Add(new Beat(0, Voice.Pick(seed + "|bs", "Stay behind your bar, " + keep + "!", "This is none of yours, " + keep + "!", "Back off or you're next!"), "threat", "shove") { To = 2 });
-            add.Add(new Beat(2, Voice.Pick(seed + "|br", "Right. The sheriff, then.", "On your own heads!", "I'll remember this, the pair of you."), "angry", "walkaway"));
+            add.Add(new Beat(2, Voice.Pick(seed + "|br", "Fine. Break each other's heads. Not my bar.", "On your own heads!", "I'll remember this, the pair of you."), "angry", "post"));   // back behind his bar, not off up the street
             s.Beats.InsertRange(at, add);
             return "shoved";
         }
 
         /// The drunk really taking it outside (SIXDAY item 17): the sharp answer with the saloon's door known: the two walk out
         /// side by side (the Director's "outside", to the door the game side remembers) and the fight is in the street; the
-        /// drunk goes down as the brawl's own fate has it, comes round and asks who won. Kind "drunk" still (the tie, the word
-        /// of it); a fight (Fight), so the Director arms the fists.
+        /// whoever the fists put down comes round and asks who won: from "endfight" on, A is the winner (the Director swaps the
+        /// cast by who won), so the winner's beats are A's and the loser's B's (the review of items 15-19). Kind "drunk" still (the
+        /// tie, the word of it: the Director reports "drunk" at "endfight" here, there being no "passout"); a fight (Fight), so the
+        /// Director arms the fists.
         public static Scene DrunkOutside(SceneCast c, string seed)
         {
             string a = N(c, 0, seed);
@@ -236,11 +240,11 @@ namespace EnrageWestworld.Core
              .Add(1, Voice.Pick(seed + "da", "Fine. Let's go.", "You want it, you've got it."), "threat")
              .Add(0, null, null, "outside", OutsideWalkMs)
              .Add(1, Voice.Pick(seed + "do", "Put 'em up, then.", "Well? You wanted it.", "Last chance to walk away, " + a + "."), "angry", "fight", 8000)
-             .Add(0, null, null, "endfight")
-             .Add(1, Voice.Pick(seed + "dm", "Sleep it off in the street.", "So much for the big fight.", "Somebody fetch him a blanket."), "mock")
-             .Add(1, null, null, "walkaway", 3000)
-             .Add(0, null, null, "cometo", 1500)
-             .Add(0, Voice.Pick(seed + "dw", "Where'd he go? I had him...", "Did I win?", "...Street's moving."), "drunk");
+             .Add(0, null, null, "endfight")   // from here A is whoever won
+             .Add(0, Voice.Pick(seed + "dm", "Sleep it off in the street.", "So much for the big fight.", "Somebody fetch him a blanket."), "mock")
+             .Add(0, null, null, "walkaway", 3000)
+             .Add(1, null, null, "cometo", 1500)
+             .Add(1, Voice.Pick(seed + "dw", "Where'd he go? I had him...", "Did I win?", "...Street's moving."), "drunk");
             return s;
         }
 

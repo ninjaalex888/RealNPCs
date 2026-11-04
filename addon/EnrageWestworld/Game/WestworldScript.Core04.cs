@@ -1137,7 +1137,7 @@ namespace EnrageWestworld.InGame
                 // what they're known for this week: putting a man's face in the bar, or being caught at a pocket
                 long g = Bridge.Now();
                 string known = _store.Ties.Any(x => x.Did(who.Id) && x.Kind == "rough" && g - x.At >= 0 && g - x.At < 7 * 1440L) ? "bully"
-                             : (_cfg.CriminalClass ? Criminals.Bent(_store.Ties, who.Id, g)   // the criminal class (item 16): the month, and lifts and muggings too
+                             : (_cfg.CriminalClass ? Criminals.Known(_store.Ties, who.Id, g)   // the criminal class (item 16): the month's thefts the town saw (a pickpocket caught, a mugging; never a lift nobody noticed: the review of items 15-19)
                                                    : _store.Ties.Any(x => x.Did(who.Id) && x.Kind == "pickpocket" && g - x.At >= 0 && g - x.At < 7 * 1440L)) ? "thief" : null;
                 list.Add(new InnerLife.Nearby { Id = who.Id, Name = Person.FirstOf(who.Name), Temper = who.Temper, Woman = who.Woman, WellOff = who.WellOff, Drunk = who.Drunk, Known = known });
             }

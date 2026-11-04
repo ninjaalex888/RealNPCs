@@ -33,11 +33,11 @@ namespace EnrageWestworld.Core
             for (int i = 0; i < ties.Count; i++)
             {
                 SceneTie t = ties[i];
-                if (t == null || !IsCrime(t.Kind) || !t.Did(id) || t.At > now || now - t.At >= BentDays * 1440L)
-                    continue;
+                if (t == null || t.Crime == null || t.CrimeDoer != id || t.CrimeAt > now || now - t.CrimeAt >= BentDays * 1440L)
+                    continue;   // the theft kept on the tie (Crime, CrimeAt, CrimeDoer), not its latest Kind: small talk since doesn't wipe it (the review of items 15-19)
                 n++;
-                if (t.At > lastAt)
-                    lastAt = t.At;
+                if (t.CrimeAt > lastAt)
+                    lastAt = t.CrimeAt;
             }
             return n;
         }
@@ -49,6 +49,21 @@ namespace EnrageWestworld.Core
             return Crimes(ties, id, now, out last) > 0;
         }
 
+        /// Known as a thief: a theft this month the town saw: caught at a pocket, or a mugging (the one robbed saw his face). A lift
+        /// nobody saw (Scenes.Lift: the thief walked off before anyone noticed) makes him bent, never known (the review of items 15-19).
+        public static bool Known(List<SceneTie> ties, string id, long now)
+        {
+            if (ties == null || id == null)
+                return false;
+            for (int i = 0; i < ties.Count; i++)
+            {
+                SceneTie t = ties[i];
+                if (t != null && t.Crime != null && t.Crime != "lift" && t.CrimeDoer == id && t.CrimeAt <= now && now - t.CrimeAt < BentDays * 1440L)
+                    return true;
+            }
+            return false;
+        }
+
         /// Gone straight: a theft to their name once, none in ReformDays; lastAt the last one (the once-only mark's key).
         public static bool Reformed(List<SceneTie> ties, string id, long now, out long lastAt)
         {
@@ -58,8 +73,8 @@ namespace EnrageWestworld.Core
             for (int i = 0; i < ties.Count; i++)
             {
                 SceneTie t = ties[i];
-                if (t != null && IsCrime(t.Kind) && t.Did(id) && t.At <= now && t.At > lastAt)
-                    lastAt = t.At;
+                if (t != null && t.Crime != null && t.CrimeDoer == id && t.CrimeAt <= now && t.CrimeAt > lastAt)
+                    lastAt = t.CrimeAt;
             }
             return lastAt > 0 && now - lastAt >= ReformDays * 1440L;
         }

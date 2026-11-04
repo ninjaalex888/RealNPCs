@@ -30,6 +30,7 @@ namespace EnrageWestworld.InGame
             public TrystOffer Offer;
             public int Phase, At;
             public string After;
+            public bool Recorded;   // written down (the engine's record, the husband's chance): the price stays with the saloon from then
         }
 
         private TrystOffer _trystOffer;
@@ -89,8 +90,9 @@ namespace EnrageWestworld.InGame
                 Log.Write("TRYST asked: " + o.Name + " (" + o.Kind + "): " + ask + " -> not tonight" + (o.Greeted < 0 ? " (flirted cold)" : "") + ": " + no);
                 return true;
             }
-            // the saloon's price (item 15): said before her yes, taken when he has it; without it, no night
-            int price = o.Kind == "saloon" && _cfg.TrystsAfter && _cfg.TrystPrice > 0 ? _cfg.TrystPrice * 100 : 0;
+            // the saloon's price (item 15): said before her yes, taken when he has it; without it, no night. Taken once: the same
+            // offer asked again (CasualHookups started nothing, "ask her again") was charged twice (the review of items 15-19)
+            int price = o.Kind == "saloon" && _cfg.TrystsAfter && _cfg.TrystPrice > 0 && o.Cents == 0 ? _cfg.TrystPrice * 100 : 0;
             if (price > 0 && MONEY._MONEY_GET_CASH_BALANCE() < price)
             {
                 string broke = Trysts.CantPay(_cfg.TrystPrice, seed);
@@ -145,6 +147,8 @@ namespace EnrageWestworld.InGame
             if (cant != null)
             {
                 o.Until = Game.GameTime + Trysts.OfferMs;
+                if (!there)
+                    TrystRefund(o, "she's gone or too far off, and the offer with her");   // (the review)
                 _trystOffer = there ? o : null;
                 Log.Write("TRYST " + o.Name + ": " + why + ", and RealNPCs' own night can't be now (" + cant + ")" + (there ? "; Hook up (H) to ask her again" : ""));
                 if (tell && there)
@@ -177,6 +181,12 @@ namespace EnrageWestworld.InGame
             TrystRun t = _tryst;
             if (t == null)
             {
+                TrystOffer o = _trystOffer;
+                if (o != null && o.Cents > 0 && _hookRun == null && now > o.Until)
+                {
+                    TrystRefund(o, "her offer lapsed with the price paid");   // paid and never asked again in time, no watch going: the saloon's money back (the review)
+                    _trystOffer = null;
+                }
                 TrystAfterLook(now);   // the days after (item 15)
                 return;
             }
@@ -189,6 +199,7 @@ namespace EnrageWestworld.InGame
                     if (MISC.GET_MISSION_FLAG() || PED.IS_PED_IN_COMBAT(Game.Player.Character.Handle, 0) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                     {
                         Log.Write("TRYST called off before the dark: something came between");
+                        TrystRefund(t.Offer, "the night was called off before the dark");
                         _tryst = null;
                         return;
                     }
@@ -208,6 +219,7 @@ namespace EnrageWestworld.InGame
                     }
                     CLOCK.ADD_TO_CLOCK_TIME(1, 0, 0);
                     t.After = _engine.Tryst(t.Offer.Who, t.Offer.Kind, Bridge.Now(), _placeTown, _placeKind == "saloon", t.Offer.Cents);   // written down; a husband may hear (item 15)
+                    t.Recorded = true;
                     t.Phase = 2;
                     t.At = now + 2500;
                     break;
@@ -235,6 +247,8 @@ namespace EnrageWestworld.InGame
         /// fortnight; each once (Core/Engine.Trysts.cs keeps the once). The husband comes by the kin's walk-up.
         private void TrystAfterLook(int now)
         {
+            // _mindNear is the mind shadow's list of the known people near (WestworldScript.Mind.cs): with [Mind] MindShadow off nobody is
+            // ever near here and the days after are never seen (said in F7; the review of items 15-19)
             if (_cfg == null || !_cfg.TrystsAfter || now < _nextTrystLook || _store == null || _store.Trysts == null || _store.Trysts.Count == 0 || _placeTown == null || _mindNear.Count == 0)
                 return;
             _nextTrystLook = now + 20000;
@@ -269,8 +283,8 @@ namespace EnrageWestworld.InGame
                     Log.Write("TRYST the morning after: " + w.Name + " thinks: " + line);
                     continue;
                 }
-                string word = _engine.TrystExpects(w.Id, g);
-                if (word != null && d <= 8f)
+                string word = d <= 8f ? _engine.TrystExpects(w.Id, g) : null;   // asked only within 8 m: the engine's once is spent by the asking (the review)
+                if (word != null)
                 {
                     TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 4000, 0, 51, 0);
                     Feed.Say(w.Name, word, Speech.When(h, "angry", me.Handle), h, toYou: true);
@@ -312,6 +326,8 @@ namespace EnrageWestworld.InGame
                 CAM.DO_SCREEN_FADE_IN(500);
                 PLAYER.SET_PLAYER_CONTROL(Game.Player.Handle, true, 0, false);
                 Log.Write("TRYST watchdog: the screen was dark too long; brought back");
+                if (_tryst != null && !_tryst.Recorded)
+                    TrystRefund(_tryst.Offer, "the watchdog brought the screen back before the night was written down");
             }
             catch
             {
@@ -323,6 +339,9 @@ namespace EnrageWestworld.InGame
         /// A mission started, or the add-on is stopping: the light back and the controls with it, if it was dark.
         private void TrystAbort()
         {
+            TrystRefund(_trystOffer, "the offer was dropped (a mission, or the add-on stopping)");   // the saloon's price back when no night comes of it (the review)
+            if (_tryst != null && !_tryst.Recorded)
+                TrystRefund(_tryst.Offer, "the night was cut short before it was written down");
             _trystOffer = null;
             _hookRun = null;
             if (_tryst == null && _trystDarkSince == 0)
@@ -342,6 +361,23 @@ namespace EnrageWestworld.InGame
             _tryst = null;
         }
 
+        /// The saloon's price given back when no night came of it (the review of items 15-19): once per offer, said in the log.
+        private void TrystRefund(TrystOffer o, string why)
+        {
+            if (o == null || o.Cents <= 0)
+                return;
+            try
+            {
+                MONEY._MONEY_INCREMENT_CASH_BALANCE(o.Cents, 0);
+                Log.Write("TRYST the saloon's $" + o.Cents / 100 + " given back: " + why);
+            }
+            catch (Exception ex)
+            {
+                Log.Write("TRYST the saloon's $" + o.Cents / 100 + " couldn't be given back (" + ex.Message + ")");
+            }
+            o.Cents = 0;
+        }
+
         /// F7: the setting, the chances, a waiting offer, this session's.
         private string TrystStatus()
         {
@@ -350,7 +386,7 @@ namespace EnrageWestworld.InGame
             string offer = _trystOffer != null && Game.GameTime < _trystOffer.Until ? _trystOffer.Name + " (" + _trystOffer.Kind + ", " + (_trystOffer.Until - Game.GameTime) / 1000 + " s left)" : "none";
             return "on; women answer by chance: single " + _cfg.WillingSingle + "%, married or spoken for " + _cfg.WillingTaken + "%, the saloon's always, what they think of you tipping it; " +
                    "offer waiting: " + offer + (_tryst != null ? "; one going on (phase " + _tryst.Phase + ")" : "") + "; this session " + _trystCount + (_trystLast != null ? ", last " + _trystLast : "") +
-                   "; the saloon's price $" + _cfg.TrystPrice + "; " + (_engine != null ? _engine.TrystsStatus(Bridge.Now()) : "") + " (this session " + _trystMornings + " mornings, " + _trystExpects + " words, " + _trystCooled + " cooled)";
+                   "; the saloon's price $" + _cfg.TrystPrice + (_cfg.MindShadow ? "" : "; the days after's looks need [Mind] MindShadow, which is off") + "; " + (_engine != null ? _engine.TrystsStatus(Bridge.Now()) : "") + " (this session " + _trystMornings + " mornings, " + _trystExpects + " words, " + _trystCooled + " cooled)";
         }
     }
 }

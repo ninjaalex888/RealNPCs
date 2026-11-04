@@ -55,6 +55,7 @@ namespace EnrageWestworld.InGame
             public int MeetGoAt;                 // the walker was sitting or leaning: he sets off once he's up (0: on his way)
             public bool Downed;                  // "passout" played: he's lying there until "cometo", or the end gets him up
             public bool MadeDrunk;               // A was given a drunk voice for the scene
+            public int DrunkHandle;              // ...and who that was: an endfight may have swapped him to B since (the review of items 15-19)
             public bool HappenedSent;            // the scene's defining moment has been reported (Happened)
             public int ReactAt;                  // when the one spoken to reacts to the line (0: no reaction due)
             public int ReactBy, ReactTo;         // who reacts, and to whom
@@ -65,6 +66,10 @@ namespace EnrageWestworld.InGame
             public int ApproachGoAt;             // the third was sitting or leaning: they set off once they're up (0: on their way)
             public int ApproachCheckAt;          // when the walk was last seen getting nearer, or last sent again
             public float ApproachBest;           // the nearest they've been
+            public bool ThirdFrom, ThirdOut, ThirdBack;   // "approach" recorded where the third came from; they were in a scenario then; "post" has sent them back
+            public int ThirdPoint;               // the scenario point they were using (0: none), for "post" (the barkeep back behind his bar; the review of items 15-19)
+            public uint ThirdType;
+            public Vector3 ThirdAt;              // where they stood
             public bool Side;                    // a quiet talk beside the scene (Start with side): voices and near subtitles only
             public bool Ended;                   // End has begun: the joiners are let go for good
             public List<int[]> Joiners = new List<int[]>();   // those who joined the fight: { handle, side (0 with A, 1 with B), whom they went for } (Core/JoinIn.cs)
@@ -425,6 +430,7 @@ namespace EnrageWestworld.InGame
                 STREAMING.REQUEST_ANIM_DICT(DrunkDict);
                 AUDIO.SET_PED_IS_DRUNK(l.Cast[0].Handle, true);   // he sounds it, too
                 l.MadeDrunk = true;
+                l.DrunkHandle = l.Cast[0].Handle;
             }
             Log.Write("SCENE " + (side ? "(beside, " + _side.Count + " now) " : second ? "(second) " : "") + s.Kind + ": " + string.Join(" & ", l.Names));
             return true;
@@ -560,7 +566,7 @@ namespace EnrageWestworld.InGame
                 _side.Remove(l);
             if (l.Slamming)
                 SlamStop?.Invoke();
-            Ped a0 = l.Cast.Length > 0 ? l.Cast[0] : null;
+            Ped a0 = l.DrunkHandle != 0 && ENTITY.DOES_ENTITY_EXIST(l.DrunkHandle) ? new Ped(l.DrunkHandle) : l.Cast.Length > 0 ? l.Cast[0] : null;   // the drunk by handle: an endfight may have swapped him to B (the review)
             if (a0 != null && a0.Exists() && !ENTITY.IS_ENTITY_DEAD(a0.Handle))
             {
                 // a drunk still lying where he fell gets up as the scene ends, whatever ended it, and sobers in his voice
@@ -578,6 +584,8 @@ namespace EnrageWestworld.InGame
             // a third still walking over when it ended (the player left, someone in it was hurt) is let go on their way
             if (l.ApproachUntil > 0 && l.Cast.Length > 2 && l.Cast[2] != null && l.Cast[2].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[2].Handle))
                 TASK.TASK_WANDER_STANDARD(l.Cast[2].Handle, 10f, 10);
+            else if (l.ThirdOut && !l.ThirdBack)
+                BackToPost(l, 2);   // taken out of a scenario by "approach" (the barkeep off his bar) and the scene cut before "post": back all the same (the review of items 15-19)
             if (l.Fighting && l.FightOn)
                 SnapEnd(l, Game.GameTime);   // cut short with fists still flying: the aftermath watch sees the blows after
             l.Ended = true;
@@ -1039,6 +1047,12 @@ namespace EnrageWestworld.InGame
                         // (else A), and the next beat waits until they're there (Tick), as "meet" does. Before 2026-10-29 the
                         // walk had 2.6 s and the next beat's face turned them where they stood: the one who stepped in said it
                         // from 9 m off (Lex)
+                        // where they came from, for "post" (the barkeep back behind his bar at the end; the review of items 15-19)
+                        l.ThirdFrom = true;
+                        l.ThirdAt = me.Position;
+                        l.ThirdOut = PED.IS_PED_USING_ANY_SCENARIO(h);
+                        l.ThirdPoint = l.ThirdOut ? TASK._GET_SCENARIO_POINT_PED_IS_USING(h, true) : 0;
+                        l.ThirdType = l.ThirdOut ? (uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h) : 0u;
                         l.ApproachTo = other;
                         l.ApproachBest = me.Position.DistanceTo(them.Position);
                         l.ApproachCheckAt = Game.GameTime;
@@ -1194,7 +1208,14 @@ namespace EnrageWestworld.InGame
                     }
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(l.Cast[0].Handle, true);
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(l.Cast[1].Handle, true);
+                    if (l.Scene.Kind == "drunk")
+                        Report(l, "drunk");   // the drunk outside has no "passout": the fists putting one of them down is the tie's moment (the review of items 15-19)
                     return 1500;
+                case "post":
+                    // the third back where "approach" took them from (the barkeep behind his bar): their scenario point if it's
+                    // still there and free, by the point's own walk, else a walk to the spot (the review of items 15-19)
+                    BackToPost(l, who);
+                    return 600;
                 case "walkaway":
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
                     TASK.TASK_WANDER_STANDARD(h, 10f, 10);
@@ -1432,6 +1453,31 @@ namespace EnrageWestworld.InGame
             {
                 Log.Write("SCENE report " + what + " failed: " + ex.Message);
             }
+        }
+
+        /// The third sent back where "approach" took them from (ThirdAt): the scenario point they were using, if it still exists and
+        /// nobody else has it, by the point's own walk (the use-point task, as Rockstar's bar customers go back to theirs);
+        /// else a walk to the spot. Once per scene; nothing for a third never approached (the barkeep who only has his say).
+        private void BackToPost(Live l, int who)
+        {
+            if (who != 2 || !l.ThirdFrom || l.ThirdBack || l.Cast.Length <= 2 || l.Cast[2] == null || !l.Cast[2].Exists() || ENTITY.IS_ENTITY_DEAD(l.Cast[2].Handle))
+                return;
+            l.ThirdBack = true;
+            int h = l.Cast[2].Handle;
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            TASK.CLEAR_PED_TASKS(h, true, false);
+            int pt = l.ThirdPoint;
+            bool pointOk = pt != 0 && TASK.DOES_SCENARIO_POINT_EXIST(pt);
+            if (pointOk)
+            {
+                int user = TASK._GET_PED_USING_SCENARIO_POINT(pt);
+                pointOk = user == 0 || user == h;
+            }
+            if (pointOk)
+                TASK.TASK_USE_SCENARIO_POINT(h, pt, "", 0, true, false, 0u, false, -1f, false);   // the point's own walk (Game/ScenarioExit.cs Restore's call)
+            else
+                TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, l.ThirdAt.X, l.ThirdAt.Y, l.ThirdAt.Z, 1f, -1, 0.6f, 0, 0f);
+            Log.Write("SCENE the third back to their post: " + (pointOk ? "their scenario point" : l.ThirdPoint != 0 ? "the spot (their point is gone or taken)" : "the spot where they stood"));
         }
 
         /// Health now, as a share of what it was when the fight started.

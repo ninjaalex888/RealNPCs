@@ -164,15 +164,19 @@ namespace EnrageWestworld.InGame
                 _ticker.Push(k.Name + ", thinking", KinGrudges.Thought(k, k.Id + "|after"), "near", h);
         }
 
-        /// A kin's walk that ended without the word (the time ran out, the body was lost, you aimed at him, the walk was called
-        /// off): done all the same, and said so. Nothing for a walk that isn't a kin's.
-        private void KinGrudgeGaveUp(GrudgeWalk w, string how)
+        /// A kin's walk that ended without the word (the time ran out, the body was lost, you aimed at him): done all the same,
+        /// and said so; `keep` (the walk called off by a mission or the add-on stopping, nothing of his doing): the grudge stands and
+        /// he comes again tomorrow (Engine.KinLater; the review of items 15-19). Nothing for a walk that isn't a kin's.
+        private void KinGrudgeGaveUp(GrudgeWalk w, string how, bool keep = false)
         {
             KinGrudge k = w != null ? w.Kin : null;
             if (k == null)
                 return;
             w.Kin = null;
-            _engine.KinDone(k, how ?? "never reached you", Bridge.Now());
+            if (keep)
+                _engine.KinLater(k, how ?? "the walk was called off", Bridge.Now());
+            else
+                _engine.KinDone(k, how ?? "never reached you", Bridge.Now());
         }
 
         private string KinGrudgesStatus()

@@ -33,7 +33,7 @@ namespace EnrageWestworld.InGame
         public bool Mounted, AtCamp;
         private Ped _horse;
         private uint _horseModel;
-        private int _horseTries, _dismountAt;
+        private int _horseTries, _dismountAt, _dismountAskAt, _dismountAsks;
         private bool _fireSpoke;
         private const ulong SetPedOntoMount = 0x028F76B6E78246EB, TaskDismountAnimal = 0x48E92D3DDE23C23A;   // by hash, as the allies' ride (WestworldScript.Allies.cs)
         private const float FireEdgeMin = 13f, FireEdgeMax = 18f;   // the revenant at camp: just past the firelight
@@ -145,8 +145,8 @@ namespace EnrageWestworld.InGame
                 _horseModel = Natives.Hash(Allies.HorseModel(Label + "|" + now));
             if (Mounted && !Spawner.Ready(_horseModel))
             {
-                if (++_horseTries < 8)
-                    return false;   // the horse's model still streaming in: a moment more
+                if (++_horseTries < 16)
+                    return false;   // the horse's model still streaming in: a moment more (a try every 250 ms, _nextTry: four seconds in all)
                 Mounted = false;
                 Log.Write("STALKER " + Label + ": his horse never streamed in; on foot");
             }
@@ -256,9 +256,26 @@ namespace EnrageWestworld.InGame
                 _stillSince = now;
             bool close = _mode == Mode.Circle || _mode == Mode.Retreat || _mode == Mode.Rush || _mode == Mode.Act;   // he chose to be near: no "caught" flight
             if (Mounted && _mode != Mode.Stare && _mode != Mode.Lurk && _mode != Mode.Watched)
-                Dismount(now);   // anything but sitting and watching is done on foot
+            {
+                Dismount(now);   // anything but sitting and watching is done on foot: the dismount gets this think to itself and holds the orders 3.5 s (the review of items 15-19: a move order the same tick overrode it)
+                return;
+            }
             if (_horse != null && !Mounted && now - _dismountAt > 6000 && _horse.Exists() && !ENTITY.IS_ENTITY_ON_SCREEN(_horse.Handle))
-                HorseAway(true);   // the horse given back once it's out of view
+            {
+                if (!PED.IS_PED_ON_MOUNT(h))
+                    HorseAway(true);   // the horse given back once it's out of view
+                else if (now - _dismountAt > 20000)
+                {
+                    Log.Write("STALKER " + Label + " never got down (asked " + _dismountAsks + " times more): the horse is the game's now, under him");
+                    HorseAway(false);   // never deleted under him (the review)
+                }
+                else if (now >= _dismountAskAt)
+                {
+                    _dismountAskAt = now + 5000;
+                    _dismountAsks++;
+                    Function.Call(TaskDismountAnimal, h, 0, 0, 0, 0, 0);   // still in the saddle: asked again
+                }
+            }
 
             if (_mode != Mode.Flee && (threatened || (dist < 7f && !close) || now > _endsAt))
             {
@@ -704,6 +721,8 @@ namespace EnrageWestworld.InGame
         {
             Mounted = false;
             _dismountAt = now;
+            _dismountAskAt = now + 6000;
+            _nextOrder = now + 3500;   // the move orders wait for the dismount (the review of items 15-19)
             try
             {
                 if (_ped != null && _ped.Exists() && PED.IS_PED_ON_MOUNT(_ped.Handle))

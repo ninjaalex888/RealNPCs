@@ -354,7 +354,7 @@ namespace EnrageWestworld.Core
                 foreach (TrystRecord t in Trysts)
                     if (t != null && t.LastAt > cut)
                     {
-                        t.Count = Math.Max(1, t.Count - 1);   // the last night undone: the one before stands
+                        t.Count = Math.Max(1, t.Count - 1);   // the last night undone: the one before stands (the nights aren't kept one by one: PaidCents stays as it was, said plainly)
                         t.LastAt = t.At;
                         t.MorningAt = 0;
                         t.ExpectAt = 0;
@@ -369,7 +369,7 @@ namespace EnrageWestworld.Core
                     {
                         PersonState vst;
                         if (People.TryGetValue(k.VictimId, out vst) && vst != null && vst.Told != null)
-                            vst.Told.Remove(EnrageWestworld.Core.KinGrudges.Mark);   // the wrong undone: the once-only mark goes with the grudge
+                            vst.Told.Remove(k.Wrong == "tryst" ? "husband" : EnrageWestworld.Core.KinGrudges.Mark);   // the wrong undone: the once-only mark goes with the grudge (a husband's is "husband", Engine.Trysts; the review of items 15-19)
                     }
                 n += KinGrudges.RemoveAll(k => k != null && k.At > cut);   // a wrong undone: nobody comes about it
                 foreach (KinGrudge k in KinGrudges)
@@ -614,6 +614,13 @@ namespace EnrageWestworld.Core
             if (Residents == null) Residents = new List<Resident>();
             if (Posts == null) Posts = new List<Post>();
             if (Ties == null) Ties = new List<SceneTie>();
+            foreach (SceneTie t in Ties)
+                if (t != null && t.Crime == null && t.Doer != null && EnrageWestworld.Core.Criminals.IsCrime(t.Kind))
+                {
+                    t.Crime = t.Kind;   // older saves: the theft read off Kind, as the criminal class did before (the review of items 15-19)
+                    t.CrimeAt = t.At;
+                    t.CrimeDoer = t.Doer;
+                }
             if (Links == null) Links = new List<WorryLink>();
             if (Deaths == null) Deaths = new List<DeathEntry>();
             if (Later == null) Later = new List<LaterAct>();

@@ -29,6 +29,8 @@ namespace EnrageWestworld.InGame
 
         private void CriminalsLook(int now)
         {
+            // _mindNear is the mind shadow's list of the known people near (WestworldScript.Mind.cs): with [Mind] MindShadow off nobody is
+            // ever near here (said in F7; the review of items 15-19)
             if (_mindNear.Count == 0 || MISC.GET_MISSION_FLAG())
                 return;
             Ped me = Game.Player.Character;
@@ -57,7 +59,7 @@ namespace EnrageWestworld.InGame
         {
             if (_engine == null || _store == null)
                 return "not loaded";
-            return _engine.CriminalsStatus(Bridge.Now()) + "; " + _reformThoughts + " reform thoughts this session";
+            return _engine.CriminalsStatus(Bridge.Now()) + "; " + _reformThoughts + " reform thoughts this session" + (_cfg != null && !_cfg.MindShadow ? "; the reform look needs [Mind] MindShadow, which is off" : "");
         }
     }
 }

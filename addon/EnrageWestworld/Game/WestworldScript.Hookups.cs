@@ -629,7 +629,7 @@ namespace EnrageWestworld.InGame
                         if (h.Willing)
                         {
                             HookupsLearnTakes(h.Handle, h.Name);   // his side of its scene seen (a willing watch begins on nothing else)
-                            h.After = _engine.Tryst(h.Who, h.Kind, Bridge.Now());
+                            h.After = _engine.Tryst(h.Who, h.Kind, Bridge.Now(), _placeTown, _placeKind == "saloon", h.Offer != null ? h.Offer.Cents : 0);   // written down as RealNPCs' own night is: the record, the husband's chance, the price (the review of items 15-19)
                             _trystOffer = null;
                             _trystCount++;
                             _trystLast = h.Name + " (" + h.Kind + ", CasualHookups)";

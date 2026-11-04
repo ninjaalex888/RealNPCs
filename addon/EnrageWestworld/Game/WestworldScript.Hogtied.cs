@@ -97,7 +97,7 @@ namespace EnrageWestworld.InGame
             int stage;
             bool good;
             string worry = InnerLife.WorryNow(p, _store.LastGameMin / 1440, out kind, out stage, out good) && !good ? kind : null;
-            bool thief = _store.Ties.Any(t => t.Doer == r.Id && (t.Kind == "pickpocket" || t.Kind == "lift" || t.Kind == "mugging"));
+            bool thief = _store.Ties.Any(t => t != null && t.Crime != null && t.CrimeDoer == r.Id);   // the theft kept on the tie (the review of items 15-19)
             var h = new HogRun { R = r, Name = r.Name, Town = town ?? r.Town, Region = region, StartedAt = now, Test = test, Seed = r.Id + "|hog|" + Bridge.Now() / 1440 };
             h.Captors = Hogtied.CaptorsFor(thief, worry);
             h.Price = Hogtied.Price(h.Captors, h.Seed);

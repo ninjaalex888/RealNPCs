@@ -97,6 +97,16 @@ namespace EnrageWestworld.Core
             Log("KIN GRUDGE: " + k.Name + " (" + Person.FirstOf(k.VictimName ?? "?") + "'s " + k.Relation + "): " + how);
         }
 
+        /// A kin's walk called off by something outside the story (a mission, the add-on stopping): the grudge stands, due again
+        /// tomorrow, and his week to find you runs from then (the review of items 15-19).
+        public void KinLater(KinGrudge k, string why, long now)
+        {
+            if (k == null || k.Done)
+                return;
+            k.DueAt = now + 1440L;
+            Log("KIN GRUDGE: " + k.Name + " (" + Person.FirstOf(k.VictimName ?? "?") + "'s " + k.Relation + "): " + why + "; he comes again tomorrow");
+        }
+
         /// A Testing row: a man of this person's kin due here now, as if the player had threatened them a week ago; the mark
         /// isn't set (a test). What was made, or why not ("no ...").
         public string KinTest(string victimId, string town, long now)

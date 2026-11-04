@@ -716,6 +716,8 @@ namespace EnrageWestworld.InGame
                 // or a drink stood is an apology (the review)
                 string noted = s.Ladder == null ? s.Kind : s.Fight && s.Kind == "standoff" ? "brawl"
                              : s.Kind == "argue" && s.Ladder.Count > 0 && (s.Ladder[s.Ladder.Count - 1].Ended == "apology" || s.Ladder[s.Ladder.Count - 1].Ended == "drink") ? "apology" : s.Kind;
+                if (noted == "brawl" && !s.Fight)
+                    noted = "argue";   // the barkeep stepped in and they heeded him (Scenes.BarkeepSteps): hard words, no blows; no hostile tie for a fight that never came (the review of items 15-19)
                 // a face in the bar, a drunk on the floor, a purse gone: noted only once it happens (a walk-over that
                 // never arrives leaves nothing); any other scene counts as soon as it starts, broken up or not
                 _pendingNote = !test && (s.Kind == "rough" || s.Kind == "drunk" || s.Kind == "lift" || s.Kind == "help" || s.Kind == "passby" || s.NoteAtCue) ? p : null;

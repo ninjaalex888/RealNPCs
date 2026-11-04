@@ -39,7 +39,7 @@ namespace EnrageWestworld.Core
                 return "off";
             var bent = new List<string>();
             int reformed = 0;
-            foreach (string id in Store.Ties.Where(t => t != null && Criminals.IsCrime(t.Kind) && t.Doer != null).Select(t => t.Doer).Distinct().ToList())
+            foreach (string id in Store.Ties.Where(t => t != null && t.Crime != null && t.CrimeDoer != null).Select(t => t.CrimeDoer).Distinct().ToList())
             {
                 long last;
                 int n = Criminals.Crimes(Store.Ties, id, now, out last);

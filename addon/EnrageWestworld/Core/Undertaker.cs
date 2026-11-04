@@ -12,7 +12,7 @@ namespace EnrageWestworld.Core
 {
     public static class Undertaker
     {
-        public const float ReachMetres = 80f;     // a destination this far from the body is carried to (under the carry's own 110 s)
+        public const float ReachMetres = 80f;     // a destination this far from the body is carried to (the carry's cap grows with the walk: WestworldScript.Bodies.cs CarryCap)
         public const float MournerMetres = 25f;   // a friend of the dead this near when the lift settles follows
 
         /// Where the body goes: the undertaker's when his door is within reach, else the jail door, else null (the short carry).

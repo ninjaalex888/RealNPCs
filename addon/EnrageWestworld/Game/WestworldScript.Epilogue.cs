@@ -55,6 +55,8 @@ namespace EnrageWestworld.InGame
 
         private void EpilogueLook(int now)
         {
+            // _mindNear is the mind shadow's list of the known people near (WestworldScript.Mind.cs): with [Mind] MindShadow off nobody is
+            // ever near here (said in F7; the review of items 15-19)
             if (_mindNear.Count == 0 || MISC.GET_MISSION_FLAG())
                 return;
             Ped me = Game.Player.Character;
@@ -96,7 +98,7 @@ namespace EnrageWestworld.InGame
                 if (st != null && st.Has(Epilogue.Morgan))
                     remember++;
             return (_store.CarriedOver ? "carried over" + (_epilogueCarried != null ? " this session (" + _epilogueCarried + ")" : "") : "not carried over" + (_engine != null && _engine.Player.Scarred ? " (John's save had people already, or no arthur.json)" : " (Arthur's own save)")) +
-                   "; " + since + " residents with eight years on them, " + remember + " remember a man called Morgan, " + _morganThoughts + " thought of it this session";
+                   "; " + since + " residents with eight years on them, " + remember + " remember a man called Morgan, " + _morganThoughts + " thought of it this session" + (!_cfg.MindShadow ? "; the look needs [Mind] MindShadow, which is off" : "");
         }
     }
 }

@@ -269,7 +269,7 @@ namespace EnrageWestworld.InGame
             _grudgeWalk = null;
             if (w == null)
                 return;
-            KinGrudgeGaveUp(w, "the walk was called off");   // a kin's: done, never re-cast for the same word (the review of item 14)
+            KinGrudgeGaveUp(w, "the walk was called off", true);   // a kin's: kept for tomorrow (a mission or the add-on stopping isn't his failing: the review of items 15-19), never re-cast the same day
             if (w.Ped != null && w.Ped.Exists() && !w.Ped.IsDead)
             {
                 int h = w.Ped.Handle;

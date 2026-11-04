@@ -23,6 +23,9 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public int Stage;             // how far a story between them has gone (follow-up scenes)
         [DataMember(EmitDefaultValue = false)] public string Doer;           // for trouble one did to the other (rough, pickpocket, lift, drunk): who did it
         [DataMember(EmitDefaultValue = false)] public bool Courted;          // they were sweethearts (a flirt, sweet words, a proposal): a quarrel since leaves them at odds (Scenes.Mend)
+        [DataMember(EmitDefaultValue = false)] public string Crime;          // the latest theft between them (pickpocket, lift, mugging), kept when a later scene moves Kind on (the criminal class reads it: Core/Criminals.cs; the review of items 15-19)
+        [DataMember(EmitDefaultValue = false)] public long CrimeAt;          // when
+        [DataMember(EmitDefaultValue = false)] public string CrimeDoer;      // who did it
 
         /// This one did it to the other (the attacker, the thief, the drunk who called him out).
         public bool Did(string id)
@@ -146,6 +149,12 @@ namespace EnrageWestworld.Core
                 t.Kind = kind;
             if (doer != null || kind != "avoid")
                 t.Doer = doer;   // keeping clear of him doesn't change who did what to whom
+            if (doer != null && Criminals.IsCrime(kind))
+            {
+                t.Crime = kind;   // kept when a later scene between them moves Kind on: small talk since doesn't wipe a theft (the review of items 15-19)
+                t.CrimeAt = now;
+                t.CrimeDoer = doer;
+            }
             t.Warmth = Math.Max(-3, Math.Min(3, t.Warmth + effect.Value));
             if (kind == "settled" && t.Warmth < 1)
                 t.Warmth = 1;   // squared up: whatever the calling in left between them, it's mended

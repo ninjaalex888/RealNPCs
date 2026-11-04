@@ -54,6 +54,7 @@ namespace EnrageWestworld.InGame
             public bool Straight;          // the order now is the straight walk
             public int LastCheckAt, CarryAt;   // the last progress check; the carry settled
             public float OrderDist;        // metres to the spot when the order went
+            public float CarryDist;        // metres to the first spot as the carry settled (CarryCap; the review of items 15-19)
             public int Slow;               // checks in a row under a metre gained
             public Vector3 LiftedAt;       // where he stood as the carry settled
             public Vector3 BodyStart;      // where it lay (its Z the street's, for the settle-time spots: the review)
@@ -492,9 +493,9 @@ namespace EnrageWestworld.InGame
                 return;
             }
             Vector3 lawAt = ENTITY.GET_ENTITY_COORDS(c.Law, true, true), bodyAt = ENTITY.GET_ENTITY_COORDS(c.Body, true, true);
-            if (c.Stage >= BcUnarm && c.Stage < BcSetDown && now - c.CarryAt > 110000 && PED._GET_CARRIER_AS_PED(c.Body) == c.Law)
+            if (c.Stage >= BcUnarm && c.Stage < BcSetDown && now - c.CarryAt > CarryCap(c) && PED._GET_CARRIER_AS_PED(c.Body) == c.Law)
             {
-                BodyGiveUp(c, lawAt, "110 s carrying and not there (" + (int)lawAt.DistanceTo(c.Goal) + " m off the spot)", now);   // set down, not dropped by a clear
+                BodyGiveUp(c, lawAt, CarryCap(c) / 1000 + " s carrying and not there (" + (int)lawAt.DistanceTo(c.Goal) + " m off the spot)", now);   // set down, not dropped by a clear
                 return;
             }
             bool his = PED._GET_CARRIER_AS_PED(c.Body) == c.Law;
@@ -549,6 +550,7 @@ namespace EnrageWestworld.InGame
                                 goalWhy = "none found from where you are now (" + goalWhy + "): the ones from the start kept";
                             c.SpotIx = 0;
                             c.CarryAt = now;
+                            c.CarryDist = lawAt.DistanceTo(c.Goal);
                             c.LiftedAt = lawAt;
                             Log.Write("LAW clears: the lawman lifts " + c.Who + " (" + CarryWords(c.Law, c.Body) + ", settled after " + (now - c.StageAt) / 1000 +
                                       " s) and carries it " + (int)lawAt.DistanceTo(c.Goal) + " m, to a spot " + (int)FlatFrom(c.Goal, you) + " m from you (" + goalWhy + ")");
@@ -698,10 +700,17 @@ namespace EnrageWestworld.InGame
         }
 
         /// How long one spot may take: 25 s, or the walk at a carrying pace (0.7 m/s) and 8 s (the review: a 20 m carry with a
-        /// detour came close to 25 s). The 110 s carry limit stops a runaway.
+        /// detour came close to 25 s). The carry's own cap (CarryCap) stops a runaway.
         private static int SpotCap(BodyClear c)
         {
             return Math.Max(25000, (int)((c.OrderDist / 0.7f + 8f) * 1000f));
+        }
+
+        /// How long the whole carry may take: 110 s, or the walk to the first spot at a carrying pace (0.7 m/s) and 40 s for the
+        /// lift, the turns and a detour: the undertaker's door may be 80 m off, 114 s of walking alone (the review of items 15-19).
+        private static int CarryCap(BodyClear c)
+        {
+            return Math.Max(110000, (int)((c.CarryDist / 0.7f + 40f) * 1000f));
         }
 
         /// A walk order with the body has just gone: its clock and distance, the first check 2.5 s on (a turn or the end of
@@ -897,6 +906,12 @@ namespace EnrageWestworld.InGame
             c.MournerOrderAt = now;
             if (!ENTITY.DOES_ENTITY_EXIST(c.Mourner) || ENTITY.IS_ENTITY_DEAD(c.Mourner) || PED.IS_PED_IN_COMBAT(c.Mourner, 0))
             {
+                c.Mourner = 0;
+                return;
+            }
+            if (_director.Involves(c.Mourner) || WalkingUp(c.Mourner))
+            {
+                Log.Write("LAW clears: " + c.MournerName + " was taken by a scene or a walk-up; no longer following");   // (NotFree keeps them out of those now; the review of items 15-19)
                 c.Mourner = 0;
                 return;
             }

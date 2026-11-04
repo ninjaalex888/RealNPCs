@@ -226,6 +226,8 @@ namespace EnrageWestworld.InGame
                     {
                         _stalkerPendingUntil = 0;
                         _stalkFails = 0;
+                        if (_stalker.AtCamp)
+                            _campRevenants++;   // a revenant at the fire's edge, now that he's there
                     }
                     else if (now > _stalkerPendingUntil)
                     {
@@ -273,14 +275,14 @@ namespace EnrageWestworld.InGame
             string blocked = StalkBlocker();
             if (_cfg.Stalkers && _cfg.WestWorld && blocked == null)
             {
-                if (_cfg.RevenantsAtCamp && AtFireNow())
+                if (_cfg.RevenantsAtCamp)
                 {
-                    // a revenant at camp (SIXDAY item 19): one due, or due within two days, comes to the edge of the firelight
+                    // a revenant at camp (SIXDAY item 19): one due, or due within two days, comes to the edge of the firelight (the cheap
+                    // look at the list first, the fire's natives only when there is one; counted when he appears: the review of items 15-19)
                     Fallen soon = _store.Fallen.FirstOrDefault(f => !f.Done && f.ReturnAt > 0 && gameMin >= f.ReturnAt - 2 * 1440L);
-                    if (soon != null)
+                    if (soon != null && AtFireNow())
                     {
                         soon.ReturnAt = 0;
-                        _campRevenants++;
                         Log.Write("STALKER revenant at camp: " + (soon.Name ?? "someone you killed") + " comes to the edge of your firelight");
                         BeginStalker(soon, soon.Model, soon.Woman, soon.Name ?? "A familiar " + (soon.Woman ? "woman" : "man"), now, false, -1, true);
                         return;
