@@ -211,12 +211,54 @@ namespace EnrageWestworld.InGame
                 Resident holder = HolderAt(keeper, keeperKind);
                 SpeechCaption(holder != null ? holder.Name : keeperKind.Role, Trains.ArrivalLine(keeperKind.Role, town + "|" + now / 1000), keeper.Handle, 4500, false, true);
             }
-            if (stepDown != null)
+            Resident back = stepDown != null ? _engine.ReturnerDue(town, gameNow) : null;   // a neighbour who left, back on this train (item 22)
+            if (back != null)
+                arrival = StepBack(stepDown, back, town, gameNow);
+            else if (stepDown != null)
                 arrival = StepDown(stepDown, town, gameNow);
             DeliverLetters(town, gameNow, "train");
             if (leaver != null && (ownBody ?? leaverBody) != null)
                 LeaverCast(leaver, ownBody ?? leaverBody, train, at, now, gameNow, ownBody != null);
             Log.Write("TRAIN " + town + ": arrived (" + looking + " looking" + (keeper != null ? ", the keeper called it" : "") + (arrival != null ? ", arrival: " + arrival : ", nobody got off") + (leaver != null ? ((ownBody ?? leaverBody) != null ? ", leaving: " + leaver.Name : ", " + leaver.Name + " leaving but no free body for them") : "") + ")");
+        }
+
+        private int _trainsBack, _trainDoubleTakes;
+
+        /// A free body by the platform becomes a neighbour who left and is back (Core/Engine.Trains.cs ReturnerDue): bound to their own
+        /// record (their outfit only on their own model), back among the town's people; a friend near and in view does a double take.
+        private string StepBack(Ped p, Resident r, string town, long gameNow)
+        {
+            int h = p.Handle;
+            uint model = ENTITY.GET_ENTITY_MODEL(h);
+            UnbindOthers(r.Id);
+            _resBind[h] = new ResBind { R = r, Model = model };
+            if (r.Regular && r.Outfit > 0 && r.Model == model && _cfg.RegularsDress && _bridge.CanTellLooked)
+            {
+                PED._EQUIP_META_PED_OUTFIT_PRESET(h, r.Outfit, false);
+                PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+            }
+            _engine.ReturnedByTrain(r, town, gameNow);
+            _engine.KeepResident(r, gameNow);
+            _trainsBack++;
+            // the double take: a bound friend near, in view, thinks of it
+            Ped me = Game.Player.Character;
+            foreach (string f in Trials.FriendsOf(r.Id, _store.Ties))
+            {
+                foreach (KeyValuePair<int, ResBind> kv in _resBind)
+                    if (kv.Value.R != null && kv.Value.R.Id == f && ENTITY.DOES_ENTITY_EXIST(kv.Key) && !ENTITY.IS_ENTITY_DEAD(kv.Key))
+                    {
+                        Ped friend = new Ped(kv.Key);
+                        if (friend.Position.DistanceTo(p.Position) > 25f || !NodInView(me, friend))
+                            continue;
+                        TASK.TASK_LOOK_AT_ENTITY(kv.Key, h, 5000, 0, 51, 0);
+                        string thought = Trains.BackThought(Person.FirstOf(r.Name), r.Id + "|" + gameNow);
+                        _ticker.Push(kv.Value.R.Name + ", thinking", thought, "near", kv.Key);
+                        _trainDoubleTakes++;
+                        Log.Write("TRAIN " + town + ": " + kv.Value.R.Name + " does a double take at " + r.Name + "; thinks: " + thought);
+                        return r.Name + " (back from the west; " + kv.Value.R.Name + " saw)";
+                    }
+            }
+            return r.Name + " (back from the west)";
         }
 
         /// A free body by the platform becomes someone new to the town: kin of a resident here (one time in two, when there is one), else a newcomer.
@@ -374,7 +416,7 @@ namespace EnrageWestworld.InGame
         {
             Vector3 pos = Game.Player.Character.Position;
             Spot platform = Spots.Nearest(_spots, null, "platform", pos.X, pos.Y);
-            return (platform != null ? "nearest platform " + platform.Town + " " + (int)Spots.Distance(platform, pos.X, pos.Y) + " m" : "no platform spot known (the spot key, or come out of a station)") +
+            return "neighbours back off the train " + _trainsBack + " (" + _trainDoubleTakes + " double takes); " + (platform != null ? "nearest platform " + platform.Town + " " + (int)Spots.Distance(platform, pos.X, pos.Y) + " m" : "no platform spot known (the spot key, or come out of a station)") +
                    "; last train: " + _trainLastSeen + (_trainHandle != 0 ? " (one at the platform now" + (_trainArrived ? ", arrived" : "") + ")" : "") +
                    "; this session: " + _trainsArrived + " arrivals, " + _trainsDeparted + " departures, " + _trainNewcomers + " stepped down, " + _trainLookers + " looked" +
                    (_leaver != null ? "; " + _leaver.Name + " on the platform to leave" : "") + "; engine: " + _engine.TrainsEngineStatus();

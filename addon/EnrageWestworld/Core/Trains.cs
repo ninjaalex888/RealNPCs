@@ -94,6 +94,22 @@ namespace EnrageWestworld.Core
                 : name + " stepped off the train in " + town + ", from " + (from ?? "the east") + ", with one bag and no plans anyone knows of.";
         }
 
+        public const int ReturnChance = 33, ReturnAfterDays = 7;   // a neighbour who left comes back on a later train (SIXDAY item 22; roadmap 36)
+
+        /// The notice when someone who left comes back off a train.
+        public static string BackNotice(string town, string name, long daysGone)
+        {
+            return name + " stepped off the train in " + town + ", " + (daysGone <= 1 ? "a day" : Voice.Number((int)Math.Min(90, daysGone)) + " days") + " after leaving it. The west didn't take.";
+        }
+
+        /// What a friend thinks, seeing them back: the double take.
+        public static string BackThought(string first, string seed)
+        {
+            string f = first ?? "them";
+            return Voice.Pick(seed + "|back", "That's " + f + ". I stood on that platform and watched " + f + " go.", f + "? Thought the west had " + f + " for good.",
+                "Well, look. " + f + ", back with the same bag. I'll not ask.", f + " came back. They always say they won't, and they always do.");
+        }
+
         public static string LeftNotice(string town, string name, string why, bool seen)
         {
             return seen
@@ -117,6 +133,10 @@ namespace EnrageWestworld.Core
             yield return LeftNotice("Valentine", "Hiram Teale", LeavesWhy("savings"), true);
             yield return LeftNotice("Valentine", "Hiram Teale", LeavesWhy("bank"), false);
             yield return LeftNotice("Valentine", "Hiram Teale", LeavesWhy("son"), false);
+            yield return BackNotice("Valentine", "Hiram Teale", 1);
+            yield return BackNotice("Valentine", "Hiram Teale", 12);
+            for (int i = 0; i < 4; i++)
+                yield return BackThought("Hiram", "b" + i);
         }
     }
 }

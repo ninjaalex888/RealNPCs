@@ -447,7 +447,9 @@ namespace EnrageWestworld.InGame
             if (_cfg.StalkerMutters && _mode != Mode.Flee && (!watched || _mode == Mode.Circle || _mode == Mode.Rush || _mode == Mode.Act) && dist < 50f && now >= _nextMutter)
             {
                 _nextMutter = now + 40000 + _rng.Next(30000);
-                string mutter = AtCamp && !_fireSpoke && Revenant != null ? Hosts.RevenantAtFire(Revenant, you, Label + now / 1000) : Hosts.StalkerMutter(Revenant, you, Revenant != null, Label + now / 1000);
+                string mutter = AtCamp && !_fireSpoke && Revenant != null ? Hosts.RevenantAtFire(Revenant, you, Label + now / 1000)
+                              : Revenant != null && Revenant.Held != null && Voice.Chance(Label + now / 1000 + "|held", 35) ? Hosts.RevenantHeld(Revenant, you, Label + now / 1000)   // the grudge from before (item 22)
+                              : Hosts.StalkerMutter(Revenant, you, Revenant != null, Label + now / 1000);
                 _fireSpoke = true;
                 say(Label, mutter, Revenant != null);
             }

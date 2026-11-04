@@ -86,6 +86,38 @@ namespace EnrageWestworld.Core
             return id != null && _leaving.TryGetValue(id, out why) ? why : null;
         }
 
+        private int _trainReturns;
+
+        /// A neighbour who left this town on the train, a week ago or more, due back on this one (one in three, by the day); null
+        /// for none (SIXDAY item 22; roadmap 36).
+        public Resident ReturnerDue(string town, long now)
+        {
+            if (Cfg == null || !Cfg.ReturningNeighbours || town == null)
+                return null;
+            foreach (Resident r in Store.Residents)
+                if (r != null && r.Left && !r.Dead && r.Town == town && r.Name != null && now - r.LeftAt >= Trains.ReturnAfterDays * 1440L && Voice.Chance(r.Id + "|back|" + now / 1440, Trains.ReturnChance))
+                    return r;
+            return null;
+        }
+
+        /// Back off the train: back among the town's people (Left and Fled off), a notice, the log, the ledger's arrival.
+        public void ReturnedByTrain(Resident r, string town, long now)
+        {
+            if (r == null)
+                return;
+            long gone = r.LeftAt > 0 ? (now - r.LeftAt) / 1440 : 0;
+            r.Left = false;
+            r.LeftAt = 0;
+            r.Fled = false;
+            r.FledAt = 0;
+            r.ByTrain = true;
+            PersonState st = Store.Get(PersonOfResident(r));
+            st.Mark("back:" + now);
+            _trainReturns++;
+            Push(new Toast { Kind = "life", Title = "Off the train in " + ShortTown(town), Weight = 30, Text = Trains.BackNotice(town, r.Name, gone) });
+            Log("TRAIN " + town + ": " + r.Name + " is back, " + gone + " days after leaving");
+        }
+
         /// Gone for good on the train: never cast again (Fled as well, which every cast checks), a notice, the log.
         public void Departed(Resident r, long now, bool seen, string why)
         {

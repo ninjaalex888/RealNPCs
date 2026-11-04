@@ -1080,10 +1080,13 @@ namespace EnrageWestworld.InGame
                     Label = label, Town = town, Zone = zone, X = pos.X, Y = pos.Y, Z = pos.Z, Weapon = how, Headshot = headshot, At = gameMin, Rolled = true,
                     Seen = seen, Begged = begged
                 };
+                string heldId, heldName;
+                if (LastingId(victim, out heldId, out heldName) && heldId != null)
+                    f.Held = Nemesis.Held(_store.WorldLog, heldId, gameMin);   // what they held against you before (nemesis memory past death; item 22)
                 if (!law && _rng.Next(100) < _cfg.StrangerReturnChance)
                     f.ReturnAt = gameMin + 1440 + _rng.Next(1440 * 5);
                 _store.Fallen.Add(f);
-                Log.Detail("FALLEN " + (f.Name ?? f.Label) + " near " + place + (f.ReturnAt > 0 ? " - will come back" : ""));
+                Log.Detail("FALLEN " + (f.Name ?? f.Label) + " near " + place + (f.ReturnAt > 0 ? " - will come back" : "") + (f.Held != null ? " (held: " + f.Held + ")" : ""));
             }
         }
 

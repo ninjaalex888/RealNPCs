@@ -403,11 +403,26 @@ namespace EnrageWestworld.Core
             string place = !string.IsNullOrEmpty(f.Town) ? "in " + f.Town : !string.IsNullOrEmpty(f.Zone) ? "out by " + f.Zone : "on the road";
             string with = string.IsNullOrEmpty(f.Weapon) ? "" : (f.Weapon.StartsWith("bare") ? " With your bare hands." : " " + Grammar.UpperFirst(f.Weapon) + ".");
             string name = you.KnownByName ? you.Surname : "mister";
+            if (f.Held != null && Voice.Chance(seed + "|heldfirst", 50))
+                return RevenantHeld(f, you, seed);   // what he held against you comes first (item 22)
             return Voice.Pick(seed,
                 "You killed me " + place + "." + with + (f.Headshot ? " Right through the head." : "") + " I remember the dark after, too. Do you want to hear about the dark?",
                 "We've met, " + name + ". You were the last thing I ever saw.",
                 (f.Name != null ? "It's me. " + f.Name + ". " : "") + "You shot me " + place + ". And here I am. Ain't that something?",
                 "I came back. I don't know how. But I remembered your face the whole way.");
+        }
+
+        /// The revenant's grievance from before the killing (Fallen.Held, Core/Nemesis.cs; SIXDAY item 22): what he held, then
+        /// the death, in the order he's had time to think about.
+        public static string RevenantHeld(Fallen f, PlayerRef you, string seed)
+        {
+            string held = f != null && f.Held != null ? f.Held : "you wronged me";
+            string name = you != null && you.KnownByName ? you.Surname : "mister";
+            return Voice.Pick(seed + "|held",
+                "First " + held + ". Then you killed me. I've had time to think about the order of it.",
+                "I was angry before you ever drew, " + name + ": " + held + ". The rest only settled it.",
+                "Remember when " + held + "? You looked at me the same way the day you did the other thing.",
+                "Being dead I can hold a grudge a long time. " + Grammar.UpperFirst(held) + ", and I'm holding it.");
         }
 
         public static string StalkerMutter(Fallen f, PlayerRef you, bool revenant, string seed)

@@ -84,6 +84,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public bool Begged;      // shot while pleading for their life
         [DataMember(EmitDefaultValue = false)] public bool Mourned;     // their widow (or brother) has grieved on screen
         [DataMember(EmitDefaultValue = false)] public long MournedAt;   // the game minute they were grieved on screen: one mourner a town a game day (NIGHT4 fix 6)
+        [DataMember(EmitDefaultValue = false)] public string Held;      // what they held against the player before he killed them, in their own words (Core/Nemesis.cs; SIXDAY item 22); the revenant says so
     }
 
     [DataContract]

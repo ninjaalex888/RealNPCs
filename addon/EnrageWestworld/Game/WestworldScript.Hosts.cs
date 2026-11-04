@@ -538,7 +538,7 @@ namespace EnrageWestworld.InGame
             _stalkerIsTest = test;
             _stalker = new Stalker(f, label, woman, _cfg);
             _stalker.AtCamp = atCamp;
-            _stalker.Mounted = !atCamp && _cfg.StalkerHorse > 0 && _rng.Next(100) < _cfg.StalkerHorse;   // on horseback now and then (SIXDAY item 19)
+            _stalker.Mounted = !atCamp && _cfg.StalkerHorse > 0 && _rng.Next(100) < (f != null && f.Held != null ? Math.Min(100, _cfg.StalkerHorse * 2) : _cfg.StalkerHorse);   // on horseback now and then (SIXDAY item 19); a revenant with a grudge from before rides out twice as often (item 22)
             _stalkerPendingUntil = now + 25000;
             Log.Write("STALKER begins: " + label + (f != null ? " (killed " + (f.Town ?? f.Zone ?? "somewhere") + ")" : " (a stranger)") + (test ? " (key)" : "") +
                       (atCamp ? ", at your camp" : _stalker.Mounted ? ", on horseback" : "") + ", game time " + Clock(Bridge.Now()));
