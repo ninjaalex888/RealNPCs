@@ -148,7 +148,7 @@ namespace EnrageWestworld.Core
                 case "Greedy": Lean(d, "haggle", 50); Lean(d, "cheat", 40); Lean(d, "pickpocket", 30); Lean(d, "pitch", 30); break;
                 case "Loyal": Lean(d, "smalltalk", 20); Lean(d, "gossip", 20); break;
                 case "Cold": Lean(d, "smalltalk", -30); Lean(d, "gossip", -30); Lean(d, "flirt", -30); break;
-                case "Drifter": Lean(d, "talltale", 30); Lean(d, "song", 20); break;
+                case "Drifter": Lean(d, "talltale", 30); Lean(d, "nighttale", 30); Lean(d, "song", 20); break;
             }
             if (m.Temper != null)
                 mine.Add(m.Temper.ToLowerInvariant());
@@ -263,6 +263,7 @@ namespace EnrageWestworld.Core
                 case "standoff": return "square up to " + o + " in the street";
                 case "song": return "strike up a song with " + o;
                 case "talltale": return "spin " + o + " a tall tale";
+                case "nighttale": return "tell " + o + " one of the old tales";
                 case "paper": return "read " + o + " something out of the paper";
                 case "haggle": return "try to sell " + o + " something";
                 case "pitch": return "sell " + o + " a bottle of tonic";

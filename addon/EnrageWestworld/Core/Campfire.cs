@@ -31,16 +31,24 @@ namespace EnrageWestworld.Core
                          : Voice.Pick(seed + "|welcome", "There now. Pass him the pot, Clem.", "Sit easy. Nobody here's anybody.", "Help yourself. It's boiled twice but it's hot.");
         }
 
-        /// Which of the five tales this seed tells.
+        /// Which tale this seed tells: 0-4 the fire's own five; FolkBase and up one of the old tales (Core/Folklore.cs), half the
+        /// time while [Scenes] NightTales is on (Run 3, item 3: the old tales told by the fire).
         public static int TaleIndex(string seed)
         {
+            if (Folklore.On && Voice.Chance(seed + "|folkfire", FolkChance))
+                return FolkBase + (int)(Voice.Hash(seed + "|folk") % Folklore.All.Length);
             return (int)(Voice.Hash(seed + "|tale") % 5);
         }
+
+        public const int FolkBase = 100, FolkChance = 50;
 
         /// The tale, three or four lines, by the one who called you over; the others' answers between (Answer).
         public static string[] Tale(string seed)
         {
-            switch (TaleIndex(seed))
+            int index = TaleIndex(seed);
+            if (index >= FolkBase)
+                return Folklore.All[index - FolkBase].Lines;   // one of the old tales, told by the fire
+            switch (index)
             {
                 case 0:
                     return new[] { "Had a mule once would only cross a river backwards. Swear to God.",
@@ -74,6 +82,8 @@ namespace EnrageWestworld.Core
         /// mule only when it's the mule's tale.
         public static string Answer(int line, string seed, int tale = -1)
         {
+            if (tale >= FolkBase)
+                return Folklore.FireAnswer(line, seed);   // the others at the fire, at one of the old tales
             switch (line)
             {
                 case 0: return tale == 0 ? Voice.Pick(seed + "|a0", "Here he goes.", "Not the mule again.", "Let him tell it.") : Voice.Pick(seed + "|a0", "Here he goes.", "Let him tell it.", "This one's true, near enough.");

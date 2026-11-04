@@ -228,6 +228,7 @@ namespace EnrageWestworld.InGame
         {
             Log.Debug = _cfg.DebugLog;
             InnerLife.Historical = _cfg.HistoricalAccuracy;   // [World] HistoricalAccuracy: the times, the year, the calendar (Core/Calendar.cs)
+            Folklore.On = _cfg.NightTales;   // [Scenes] NightTales: the old tales, in the street's scenes and by a campfire (Core/Folklore.cs)
             Almanac.On = _cfg.Almanac;   // [World] Almanac: the year's dated news (Core/Almanac.cs)
             Almanac.Share = _cfg.AlmanacShare;
             LoopVoice.On = _cfg.WestWorld && _cfg.LoopVoice;   // the centre's thoughts only with the voice on (Core/LoopVoice.cs)

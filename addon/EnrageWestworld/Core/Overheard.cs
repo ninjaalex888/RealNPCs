@@ -103,6 +103,7 @@ namespace EnrageWestworld.Core
                 case "gossip": return a + " and " + t + " traded the town's talk";
                 case "song": return a + " sang for " + t;
                 case "talltale": return a + " told " + t + " a tall one";
+                case "nighttale": return a + " told " + t + " one of the old tales";
                 case "pitch": return a + " tried to sell " + t + " something";
                 case "hosts": return a + " and " + t + " spoke strangely together";
                 case "pickpocket": case "lift": return a + " picked " + t + "'s pocket";
@@ -174,6 +175,8 @@ namespace EnrageWestworld.Core
                     return "A scuffle behind you.";
                 case "song": case "talltale": case "cheer": case "glad": case "gossip": case "hosts":
                     return "Laughter behind you.";
+                case "nighttale":
+                    return "A low voice telling something, behind you.";
                 case "flirt": case "sweet": case "propose": case "courting":
                     return "Soft words behind you.";
                 case "mourn": case "widow": case "comfort": case "condole":

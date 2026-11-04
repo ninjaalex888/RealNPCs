@@ -218,7 +218,7 @@ namespace EnrageWestworld.Core
                 case "brawl": case "rough": case "standoff": case "pickpocket": case "lift": case "drunk": case "cheat": case "posse":
                 case "callout": case "jealous": case "mugging": case "shootout":
                     return 3;
-                case "mourn": case "propose": case "grudge": case "haggle": case "song": case "talltale": case "lostchild": case "preacher":
+                case "mourn": case "propose": case "grudge": case "haggle": case "song": case "talltale": case "nighttale": case "lostchild": case "preacher":
                 case "marry": case "beg": case "condole": case "avenger": case "defend":
                     return 2;
                 case "argue": case "fall": case "help": case "round": case "standup": case "apology": case "patient": case "tend": case "charity":

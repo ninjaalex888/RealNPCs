@@ -22,6 +22,8 @@ namespace EnrageWestworld.Core
             if (c.Saloon || c.Night)
                 w.Add(new KeyValuePair<string, int>("song", c.Saloon && c.Night ? 14 : c.Saloon ? 8 : 3));
             w.Add(new KeyValuePair<string, int>("talltale", (c.OldTimer ? 12 : 4) + (c.Legend != null ? 6 : 0)));
+            if (c.Night && Folklore.On)
+                w.Add(new KeyValuePair<string, int>("nighttale", (c.Saloon ? 10 : 5) + (c.OldTimer ? 4 : 0)));   // the old tales after dark (Core/Folklore.cs; Run 3, item 3)
             if (!c.Night)
                 w.Add(new KeyValuePair<string, int>("paper", c.PaperItems.Count > 0 ? 10 : 4));
             if (!c.Night && !c.Saloon)
@@ -39,6 +41,7 @@ namespace EnrageWestworld.Core
                 case "standoff": return Standoff(c, seed, true);
                 case "song": return Song(c, seed);
                 case "talltale": return TallTale(c, seed);
+                case "nighttale": return NightTale(c, seed);
                 case "paper": return ReadPaper(c, seed);
                 case "haggle": return Haggle(c, seed);
                 case "pitch": return Pitch(c, seed);
@@ -207,6 +210,29 @@ namespace EnrageWestworld.Core
                 case 3: s.Add(1, "Uh huh. And where's that rifle now?", "mock").Add(0, "Lent it to a fella. Never saw him again. Lightning, probably."); break;
                 default: s.Add(1, "...You ever tell the truth, " + a + "?", "mild").Add(0, "Once. Nobody believed me, so I quit."); break;
             }
+            return s;
+        }
+
+        // ---- a tale of the night (Run 3, item 3; Lex: "this is good with people telling night folklore") -----------------
+
+        /// One of the old tales (Core/Folklore.cs) told by A, line by line; B answers between by their nature (a coward
+        /// shivers at a ghost, the hard scoff, the rest lean in) and has the last word.
+        public static Scene NightTale(SceneCast c, string seed)
+        {
+            FolkTale tale = Folklore.Pick(seed);
+            if (tale == null)
+                return null;
+            string temperB = c.Tempers != null && c.Tempers.Length > 1 ? c.Tempers[1] : null;
+            string taking = Folklore.Taking(temperB, tale.Eerie, seed);
+            string answerVoice = taking == "shiver" ? "scared" : taking == "scoff" ? "mock" : "respond";
+            Scene s = new Scene { Kind = "nighttale", Summary = "an old tale told after dark" };
+            for (int i = 0; i < tale.Lines.Length; i++)
+            {
+                s.Add(0, tale.Lines[i], i == 0 ? "chat" : null, i == 0 ? (c.Saloon ? "face" : null) : null, i == 0 ? 400 : 0);
+                if (i < tale.Lines.Length - 1 && (i == 0 || Voice.Chance(seed + "|between" + i, 50)))
+                    s.Add(1, Folklore.Between(taking, seed + i), answerVoice);
+            }
+            s.Add(1, Folklore.Close(taking, seed), answerVoice);
             return s;
         }
 
@@ -501,6 +527,7 @@ namespace EnrageWestworld.Core
                 case "gossip":
                 case "paper":
                 case "talltale":
+                case "nighttale":
                 case "smalltalk":
                     if (friendly)
                     {

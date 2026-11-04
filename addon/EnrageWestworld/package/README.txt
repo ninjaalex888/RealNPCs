@@ -257,6 +257,14 @@ NEW IN 0.7.19
   San Francisco, the Thaw trial, Monongah, The Jungle, Taft and Bryan, the Cubs, Johnson and
   Cobb, Ellis Island, the old West gone, the suffrage women, Geronimo's book), each from the
   month it was in the papers. In the talks above, and when you ask someone the news.
+- The old tales told at night ([Scenes] NightTales, on): after dark, in the saloon and in the street,
+  someone tells one of the old tales of the country, line by line: the bell on the grave, the
+  tommyknockers in the mines, the feu follet over the bayou, the Bell Witch of Tennessee, the
+  phantom stage, the Lost Dutchman's mine, Tailypo, the fiddler at the crossroads, La Llorona, the
+  brakeman's lantern, John Henry, the hoop snake, the white pacing stallion. The one listening
+  answers by their nature: a coward shivers at a ghost, the hard scoff, the rest lean in. By a
+  campfire in the wilds the man who calls you over tells one of them about half the time. The
+  Testing row "An old tale told after dark" (TestNightTaleKey) starts one between the nearest two.
 - People talk over the times ([Mind] TimesTalk, on; TimesTalkShare 100; with MindTalks and
   [World] HistoricalAccuracy): any two who stop near you, friends or strangers, may talk over the
   news of the day: the almanac's story of the fortnight, or a topic of the year, among them who

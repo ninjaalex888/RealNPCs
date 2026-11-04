@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 250;
+        public const int CurrentVersion = 251;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -405,6 +405,7 @@ namespace EnrageWestworld.Core
         public bool Standoffs = true;
         public bool Songs = true;
         public bool TallTales = true;
+        public bool NightTales = true;   // [Scenes] at night the old tales are told: in the saloon, the street after dark and at a campfire (Core/Folklore.cs; Run 3, item 3; settings version 251)
         public bool NewspaperTalk = true;
         public bool Haggling = true;
         public bool SnakeOil = true;
@@ -858,6 +859,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 251)
+                    log?.Invoke("Settings: new in this version: [Scenes] NightTales (on): at night people tell the old tales, in the saloon, in the street after dark and at a campfire: the bell on the grave, the tommyknockers, the feu follet, the Bell Witch, Tailypo, the white stallion.");
                 if (s.SettingsVersion < 250)
                     log?.Invoke("Settings: new in this version: [Mind] TimesTalk (on), TimesTalkShare (100): people near you talk over the times far more often: 1899's news, who holds office, the wheat and the bank, the railroad, the catalogue, the dry vote, the old soldiers; by day in the street, any hour in the saloon.");
                 if (s.SettingsVersion < 249)
@@ -1659,6 +1662,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Standoffs = " + B(Standoffs) + "   ; two men square off in the street (guns come out only away from the law)");
             b.AppendLine("Songs = " + B(Songs) + "   ; drunks sing old songs in saloons and at night");
             b.AppendLine("TallTales = " + B(TallTales) + "   ; old-timers tell tall tales, sometimes about you");
+            b.AppendLine("NightTales = " + B(NightTales) + "   ; at night the old tales are told, in the saloon, in the street after dark and at a campfire in the wilds: the bell on the grave, the tommyknockers, the feu follet, the Bell Witch, Tailypo, the fiddler at the crossroads, the white stallion; the listener shivers, scoffs or leans in by their nature");
             b.AppendLine("NewspaperTalk = " + B(NewspaperTalk) + "   ; somebody reads the paper aloud, your deeds included");
             b.AppendLine("Haggling = " + B(Haggling) + "   ; horse trading and haggling in the street");
             b.AppendLine("SnakeOil = " + B(SnakeOil) + "   ; a snake-oil man works the crowd");
