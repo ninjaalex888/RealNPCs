@@ -52,6 +52,12 @@ namespace EnrageWestworld.Core
             return (int)new DateTime(year, month, day).DayOfWeek;
         }
 
+        /// Election Day's day of November: the first Tuesday after the first Monday (7 November 1899, 5 November 1907).
+        public static int ElectionDay(int year)
+        {
+            return Nth(year, 11, DayOfWeek.Monday, 1).AddDays(1).Day;
+        }
+
         private static DateTime Nth(int year, int month, DayOfWeek dow, int n)
         {
             DateTime d = new DateTime(year, month, 1);

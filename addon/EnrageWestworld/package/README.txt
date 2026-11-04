@@ -473,6 +473,14 @@ NEW IN 0.7.11
   then); there, it's staged outside the saloon you last came out of: a fiddler, the dancing, the
   caller's shouts. Shots break it up and the town remembers who fired. Stay a while and the
   regulars think the better of you.
+- Election day (EventElections): the first Tuesday after the first Monday of November, in every
+  town with five living regulars. Two of the town's men stand for mayor or town marshal, posted a
+  week ahead (a notice, the paper, a poster among your papers). The voters are the town's regulars,
+  each leaning by their ties and temper. Talk to a candidate: your word for him (worth what the town
+  makes of you), five dollars of whiskey for his voters (the town thinks the less of it), or a word
+  to step aside (a threat). The tally at four whether you're there or not; the result in the paper;
+  the town takes sides after. There in the hours: a speech from the porch, hecklers, a party man
+  with a ticket for you.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if
@@ -1569,7 +1577,7 @@ in the file. The new ones:
             tied up off the road, two men by them; HogtiedMenDraw (true; set false to turn it off):
             their leader may draw on you unprovoked as you come near (never bounty hunters)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
-            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
             Bravery (85, 0-100): the brave stand their ground where the game would send them running;

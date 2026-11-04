@@ -25,6 +25,10 @@ namespace EnrageWestworld.InGame
             public int Since, NextCall, Looked, SpawnedAt, ReleaseAt;
             public uint FiddlerModel, WomanModel, ManModel;
             public bool Ready, FiddlerSeated;
+            public string Speaker, SpeakerId;      // election day: the man on the porch (the run's first place is his)
+            public int SpeakerOutfit = -1, Step;
+            public string[] Lines;
+            public bool Grumbled, Ticketed, Argued;
             public readonly Dictionary<int, int> Health = new Dictionary<int, int>();
         }
 
@@ -66,6 +70,8 @@ namespace EnrageWestworld.InGame
                 return;
             if (e.Kind == "dance" && _cfg.EventDances)
                 BeginDance(e, now);
+            else if (e.Kind == "election" && _cfg.EventElections)
+                BeginElection(e, now);
         }
 
         /// The dance staged: outside the saloon he came out of here, else behind the camera, 20-35 m off.
@@ -91,9 +97,44 @@ namespace EnrageWestworld.InGame
             Log.Write("EVENT dance " + e.Town + ": staging " + (int)at.DistanceTo(me.Position) + " m off (" + (_saloonDoor.ContainsKey(e.Town) ? "outside the saloon" : "in the street") + ")");
         }
 
+        /// Election day staged: a porch speech at the town's heart, the candidate whose hour it is (the first before one, the second after)
+        /// before a listening crowd; hecklers, an old man's grumble, a party man's tickets, and supporters at words.
+        private void BeginElection(TownEvent e, int now)
+        {
+            Ped me = Game.Player.Character;
+            Vector3 centre;
+            float radius;
+            if (!_bridge.TownCore(e.Town, out centre, out radius))
+                return;
+            if (centre.DistanceTo(me.Position) > TownEvents.NearMetres)
+                return;
+            Vector3 at;
+            if (!EncounterSpot(me, 18f, 32f, out at))
+                return;   // nowhere unseen just now
+            long g = Bridge.Now();
+            bool second = g >= e.At + (Elections.PollsTo - Elections.PollsFrom) * 30;   // the second man speaks the second half
+            string id = second ? e.BId : e.AId, name = second ? e.BName : e.AName;
+            Resident who = _store.FindResident(id);
+            var run = new EventRun { E = e, At = at, Since = now, NextCall = now + 5000, Speaker = name, SpeakerId = id };
+            int seed = (e.Id ?? "").GetHashCode();
+            run.FiddlerModel = who != null && who.Model != 0 ? who.Model : Spawner.ModelFor(e.Town, false, seed);   // the speaker's own build, when he has been seen
+            run.SpeakerOutfit = who != null && (who.Regular || who.Outfit > 0) ? who.Outfit : -1;
+            run.WomanModel = Spawner.ModelFor(e.Town, true, seed + 1);
+            run.ManModel = Spawner.ModelFor(e.Town, false, seed + 2);
+            run.Lines = Elections.Speech(who != null ? who.Personality : null, e.Town, e.Extra ?? "mayor", e.Id);
+            _eventRun = run;
+            _eventsStaged++;
+            Log.Write("EVENT election " + e.Town + ": staging " + name + "'s speech " + (int)at.DistanceTo(me.Position) + " m off");
+        }
+
         private void EventStep(int now)
         {
             EventRun r = _eventRun;
+            if (r.E.Kind == "election")
+            {
+                ElectionStep(r, now);
+                return;
+            }
             long g = Bridge.Now();
             Ped me = Game.Player.Character;
             if (!r.Ready)
@@ -212,6 +253,148 @@ namespace EnrageWestworld.InGame
                     n++;
                 }
             }
+        }
+
+        private void ElectionStep(EventRun r, int now)
+        {
+            long g = Bridge.Now();
+            Ped me = Game.Player.Character;
+            if (!r.Ready)
+            {
+                if (!(Spawner.Ready(r.FiddlerModel) & Spawner.Ready(r.WomanModel) & Spawner.Ready(r.ManModel)))
+                {
+                    if (now - r.Since > 15000)
+                    {
+                        Log.Write("EVENT election " + r.E.Town + ": the game never streamed the bodies in; the polls run on without the speech");
+                        _eventRun = null;
+                        _eventsNext = now + 120000;
+                    }
+                    return;
+                }
+                if (!Spawner.SafeToSpawn())
+                    return;
+                Vector3 p0 = r.At;
+                r.Fiddler = Spawner.Spawn(r.FiddlerModel, p0, 180f);   // the speaker (the run's first place)
+                if (r.Fiddler == null)
+                {
+                    _eventRun = null;
+                    _eventsNext = now + 120000;
+                    return;
+                }
+                if (r.SpeakerOutfit >= 0)
+                {
+                    PED._EQUIP_META_PED_OUTFIT_PRESET(r.Fiddler.Handle, r.SpeakerOutfit, false);
+                    PED._UPDATE_PED_VARIATION(r.Fiddler.Handle, false, true, true, true, false);
+                }
+                r.Cast.Add(r.Fiddler);
+                if (r.SpeakerId != null)
+                {
+                    Resident who = _store.FindResident(r.SpeakerId);
+                    if (who != null)
+                        _resBind[r.Fiddler.Handle] = new ResBind { R = who, Model = r.FiddlerModel };   // himself: his name card, and Talk knows him
+                }
+                float[][] spots = { new[] { -2.5f, 3f }, new[] { 0f, 3.6f }, new[] { 2.5f, 3f }, new[] { -1.2f, 5.5f }, new[] { 1.5f, 5.8f } };
+                for (int i = 0; i < spots.Length; i++)
+                {
+                    Ped p = Spawner.Spawn(i == 1 ? r.WomanModel : r.ManModel, p0 + new Vector3(spots[i][0], spots[i][1], 0f), 0f);
+                    if (p == null)
+                        continue;
+                    r.Cast.Add(p);
+                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(p.Handle, r.Fiddler.Handle, 120000, 0f, 0f, 0f);
+                    TASK.TASK_LOOK_AT_ENTITY(p.Handle, r.Fiddler.Handle, 120000, 0, 51, 0);
+                }
+                foreach (Ped p in r.Cast)
+                {
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, true);
+                    r.Health[p.Handle] = ENTITY.GET_ENTITY_HEALTH(p.Handle);
+                }
+                r.Ready = true;
+                r.SpawnedAt = now;
+                Log.Write("EVENT election " + r.E.Town + ": " + r.Speaker + " on the porch, " + (r.Cast.Count - 1) + " listening");
+                return;
+            }
+            if (r.ReleaseAt > 0)
+            {
+                if (now > r.ReleaseAt)
+                {
+                    foreach (Ped p in r.Cast)
+                        Spawner.Release(p, !ENTITY.IS_ENTITY_ON_SCREEN(p.Handle));
+                    _eventRun = null;
+                    _eventsNext = now + 180000;   // the next speech, the other man's, three minutes on at the soonest
+                }
+                return;
+            }
+            bool byYou = false;
+            string broke = now - r.SpawnedAt < 1500 ? null : EventBroken(r, out byYou);
+            if (broke != null)
+            {
+                BreakEventRun(r, byYou, broke, now, g);
+                return;
+            }
+            float d = me.Position.DistanceTo(r.At);
+            if (d > 120f || g >= r.E.Until)
+            {
+                bool stayed = now - r.Since >= 90000;
+                if (g >= r.E.Until)
+                    _engine.FinishEvent(r.E, stayed, g);   // the polls closed with him there: the tally
+                else if (stayed)
+                    r.E.Attended = true;
+                if (stayed) _eventsAttended++;
+                foreach (Ped p in r.Cast)
+                    WanderLater(p.Handle, now + 1000 + _rng.Next(5000));
+                Log.Write("EVENT election " + r.E.Town + ": " + (g >= r.E.Until ? "the polls closed" : "you rode off") + (stayed ? ", you stayed a while" : ""));
+                r.ReleaseAt = now + 8000;
+                return;
+            }
+            if (now < r.NextCall || d > 45f)
+                return;
+            r.NextCall = now + 7000 + _rng.Next(3000);
+            if (r.Step < r.Lines.Length)
+            {
+                SpeechCaption(Person.FirstOf(r.Speaker), r.Lines[r.Step], r.Fiddler.Handle, 6000, false, false);
+                if (r.Step % 3 == 2 && r.Cast.Count > 2)
+                {
+                    Ped h = r.Cast[1 + _rng.Next(r.Cast.Count - 1)];
+                    SpeechCaption("A voice in the crowd", Elections.Heckle(r.E.Id + "|" + r.Step), h.Handle, 2500, false, false);
+                    Speech.SayAny(h.Handle, _rng.Next(2) == 0 ? Speech.Cheer : Speech.Mock, r.Fiddler.Handle);
+                }
+                r.Step++;
+                return;
+            }
+            if (!r.Grumbled && r.Cast.Count > 1)
+            {
+                r.Grumbled = true;
+                SpeechCaption("An old man", Elections.Grumble(r.E.Id), r.Cast[r.Cast.Count - 1].Handle, 5000, false, false);
+                return;
+            }
+            if (!r.Ticketed && d < 12f && r.Cast.Count > 2)
+            {
+                r.Ticketed = true;
+                Ped party = r.Cast[2];
+                TASK.TASK_TURN_PED_TO_FACE_ENTITY(party.Handle, me.Handle, 3000, 0f, 0f, 0f);
+                SpeechCaption("A party man", Elections.Ticket(r.E.Id), party.Handle, 4500, true, false);
+                return;
+            }
+            if (!r.Argued)
+            {
+                r.Argued = true;
+                string said;
+                string why = FireScene("argue", now, r.E.Id + "|argue", out said);   // supporters at words, by the test's own path: the nearest free named pair
+                Log.Detail("EVENT election: supporters' argue " + (why == null ? "started" : "not started (" + why + ")"));
+                return;
+            }
+            // the speech done: the crowd thins
+            foreach (Ped p in r.Cast)
+                if (p != r.Fiddler)
+                    WanderLater(p.Handle, now + _rng.Next(4000));
+            WanderLater(r.Fiddler.Handle, now + 6000);
+            if (now - r.Since >= 90000)
+            {
+                r.E.Attended = true;
+                _eventsAttended++;
+            }
+            Log.Write("EVENT election " + r.E.Town + ": " + r.Speaker + "'s speech done");
+            r.ReleaseAt = now + 8000;
         }
 
         private string EventBroken(EventRun r, out bool byYou)

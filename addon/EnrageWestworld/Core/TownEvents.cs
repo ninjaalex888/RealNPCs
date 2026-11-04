@@ -24,7 +24,9 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public string Outcome;   // away, attended, broken (why)
         [DataMember(EmitDefaultValue = false)] public string AId, AName, BId, BName;   // the kind's own people (candidates, the accused...)
         [DataMember(EmitDefaultValue = false)] public string Extra;     // the kind's own word (the office, the verdict, the show's bill)
-        [DataMember(EmitDefaultValue = false)] public int Count;        // the kind's own number (votes, the crowd)
+        [DataMember(EmitDefaultValue = false)] public int Count;        // the kind's own number (votes for A, the crowd)
+        [DataMember(EmitDefaultValue = false)] public int Count2;       // (votes for B)
+        [DataMember(EmitDefaultValue = false)] public string Endorsed, WhiskeyFor, LeanedOn;   // the player's part in an election, by candidate id (Core/Elections.cs)
     }
 
     public static class TownEvents

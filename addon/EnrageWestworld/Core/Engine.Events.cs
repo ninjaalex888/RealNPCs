@@ -15,10 +15,12 @@ namespace EnrageWestworld.Core
         {
             if (!Cfg.TownEvents || Store.Events == null)
                 return;
+            long today = now / 1440;
+            if (Cfg.EventElections)
+                ElectionsDaily(now, today);
             int weekday = InnerLife.Weekday;
             if (weekday < 0)
                 return;   // the clock's weekday unknown: no scheduling
-            long today = now / 1440;
             int toSat = TownEvents.DaysToSaturday(weekday);
             if (!Cfg.EventDances || weekday != TownEvents.DancePostDay)
                 return;
@@ -42,6 +44,119 @@ namespace EnrageWestworld.Core
             }
         }
 
+        /// Election Day a week off (the clock's date known): a race in every town with five living regulars, posted.
+        private void ElectionsDaily(long now, long today)
+        {
+            int year = InnerLife.CalendarYear, month = InnerLife.ClockMonth, day = InnerLife.ClockDay;
+            if (year < 1800 || month != 11 || day <= 0)
+                return;
+            int electionDay = Elections.Day(year);
+            if (day != electionDay - Elections.PostDaysAhead)
+                return;
+            long electionGameDay = today + Elections.PostDaysAhead;
+            foreach (string town in Rumours.Towns.Keys)
+            {
+                if (Store.Events.Any(x => x.Kind == "election" && x.Town == town && x.At / 1440 == electionGameDay))
+                    continue;
+                List<Resident> regulars = Store.Residents.Where(r => r.Regular && !r.Dead && !r.Fled && r.Town == town).ToList();
+                if (regulars.Count < Elections.LeastRegulars)
+                    continue;
+                Resident[] c = Elections.Candidates(regulars, Store.Ties, Voice.NowYear, town + "|" + year);
+                if (c == null)
+                    continue;
+                TownEvent e = Elections.Make(town, electionGameDay, c[0], c[1]);
+                e.Posted = true;
+                Store.Events.Add(e);
+                Push(new Toast { Kind = "life", Title = "Election in " + ShortTown(town), Weight = 35, Text = Elections.PostedText(e) });
+                if (Cfg.Newspaper)
+                    Requests.Add(new WorldRequest { Kind = "paper", Town = town, Text = Elections.PaperText(e) });
+                Store.Papers.Add(new Paper { Id = Ids.New(), Kind = "clipping", Title = "Election notice, " + town, From = "a poster", Body = Elections.ClippingBody(e, c[0].Trade, c[1].Trade), At = now, Delivered = true, Town = town });
+                Log("EVENT election " + town + ": posted; " + e.AName + " and " + e.BName + " stand for " + e.Extra + " on " + electionDay + " November " + year);
+            }
+        }
+
+        /// The polls closed: the tally, the paper, and what the town thinks of the two after.
+        private void ElectionClose(TownEvent e, long now, bool attended)
+        {
+            List<Resident> regulars = Store.Residents.Where(r => r.Regular && !r.Dead && !r.Fled && r.Town == e.Town).ToList();
+            Resident a = Store.FindResident(e.AId), b = Store.FindResident(e.BId);
+            if (a == null || b == null)
+            {
+                e.Outcome = "called off";
+                Log("EVENT election " + e.Town + ": called off (a candidate gone)");
+                return;
+            }
+            int killsKnown = 0, kindnesses = 0;
+            long since = now - Reputation.StandingDays * 1440L;
+            foreach (Deed d in Store.Deeds)
+                if (d.Known && d.Town == e.Town && d.At >= since && (d.Kind == "kill" || d.Kind == "murder" || d.Kind == "lawkill"))
+                    killsKnown += Math.Max(1, d.Count);
+            foreach (Happening h in Store.WorldLog)
+                if (h != null && h.DoerId == "player" && h.Town == e.Town && h.At >= since && Fondness.IsKindness(h.Kind))
+                    kindnesses++;
+            string standing = Reputation.Standing(killsKnown, kindnesses);
+            int va, vb;
+            Elections.Tally(regulars, a, b, Store.Ties, e.Endorsed, standing, e.WhiskeyFor, e.LeanedOn, e.Id, out va, out vb);
+            e.Count = va;
+            e.Count2 = vb;
+            bool aWon = va > vb;
+            Resident winner = aWon ? a : b, loser = aWon ? b : a;
+            e.Outcome = winner.Name + " (" + va + "-" + vb + ")";
+            // the ties: the winner's voters warm to him, the loser's sour toward him; both think of it
+            foreach (Resident v in regulars)
+            {
+                if (v.Id == a.Id || v.Id == b.Id)
+                    continue;
+                bool forA = Elections.Lean(v, a, b, Store.Ties, e.Id) >= 0;
+                bool won = forA == aWon;
+                Ties.Note(Store.Ties, v.Id, v.Name, winner.Id, winner.Name, e.Town, won ? "cheer" : "envy", now);
+                if (Cfg.Minds)
+                {
+                    PersonState st = MindOf(v.Id, v.Name);
+                    if (st != null)
+                        Minds.Note(st.Mind, new MindMemory { Kind = won ? "warmth" : "slight", Sub = "election", How = "did", Who = new List<string> { winner.Id }, Names = new List<string> { Person.FirstOf(winner.Name) }, Town = e.Town, At = now, Feel = won ? 2 : -1, Strength = 35, Key = "election:" + e.Id + ":" + v.Id }, now);
+                }
+            }
+            Ties.Note(Store.Ties, loser.Id, loser.Name, winner.Id, winner.Name, e.Town, "envy", now);
+            Push(new Toast { Kind = "life", Title = "The election in " + ShortTown(e.Town), Weight = 45, Text = Elections.ResultToast(e, va, vb) });
+            if (Cfg.Newspaper)
+                Requests.Add(new WorldRequest { Kind = "paper", Town = e.Town, Text = Elections.ResultText(e, va, vb) });
+            Log("EVENT election " + e.Town + ": " + a.Name + " " + va + ", " + b.Name + " " + vb + " -> " + winner.Name + (e.Endorsed != null ? " (you endorsed " + (e.Endorsed == a.Id ? a.Name : b.Name) + ")" : "") + (attended ? "; you were there" : ""));
+        }
+
+        /// The race this person stands in, posted and not over, if any.
+        public TownEvent ElectionFor(string id, long now)
+        {
+            if (!Cfg.TownEvents || !Cfg.EventElections || Store.Events == null || id == null)
+                return null;
+            foreach (TownEvent e in Store.Events)
+                if (e != null && e.Kind == "election" && !e.Done && (e.AId == id || e.BId == id) && now < e.Until)
+                    return e;
+            return null;
+        }
+
+        /// The player's part: his word for a candidate, whiskey for the voters (the town sours), a candidate leaned on.
+        public void ElectionWord(TownEvent e, string candidateId, string what, long now)
+        {
+            if (e == null || candidateId == null)
+                return;
+            if (what == "endorse")
+                e.Endorsed = candidateId;
+            else if (what == "whiskey")
+            {
+                e.WhiskeyFor = candidateId;
+                foreach (Resident r in Store.Residents.Where(x => x.Regular && !x.Dead && x.Town == e.Town))
+                {
+                    PersonState st = MindOf(r.Id, r.Name);
+                    if (st != null)
+                        st.Affection = Romance.Clamp(st.Affection + Elections.WhiskeyAffection, -100, 100);   // votes bought: the town thinks the less of it
+                }
+            }
+            else if (what == "lean")
+                e.LeanedOn = candidateId;
+            Log("EVENT election " + e.Town + ": you " + what + " " + (candidateId == e.AId ? e.AName : e.BName));
+        }
+
         /// From WorldTick: an event whose hour has passed with nobody there resolves itself.
         private void EventsTick(long now)
         {
@@ -57,9 +172,13 @@ namespace EnrageWestworld.Core
             e.Done = true;
             e.Outcome = "away";
             if (e.Kind == "dance")
+            {
                 DanceLeaves(e, now, false);
-            Push(new Toast { Kind = "life", Title = "Word from " + ShortTown(e.Town), Weight = 20, Text = TownEvents.OverText(e, 0, false) });
-            Log("EVENT " + e.Kind + " " + e.Town + ": away (" + (e.Count) + " pairs)");
+                Push(new Toast { Kind = "life", Title = "Word from " + ShortTown(e.Town), Weight = 20, Text = TownEvents.OverText(e, 0, false) });
+                Log("EVENT " + e.Kind + " " + e.Town + ": away (" + (e.Count) + " pairs)");
+            }
+            else if (e.Kind == "election")
+                ElectionClose(e, now, false);
         }
 
         /// What a dance leaves: the regulars' ties and memories (and, attended, their thought of the player who came).
@@ -108,9 +227,13 @@ namespace EnrageWestworld.Core
             e.Attended = attended;
             e.Outcome = attended ? "attended" : "left";
             if (e.Kind == "dance")
+            {
                 DanceLeaves(e, now, attended);
-            Push(new Toast { Kind = "life", Title = e.Title, Weight = 25, Text = TownEvents.OverText(e, e.Count, attended) });
-            Log("EVENT " + e.Kind + " " + e.Town + ": " + e.Outcome + " (" + e.Count + " pairs)");
+                Push(new Toast { Kind = "life", Title = e.Title, Weight = 25, Text = TownEvents.OverText(e, e.Count, attended) });
+                Log("EVENT " + e.Kind + " " + e.Town + ": " + e.Outcome + " (" + e.Count + " pairs)");
+            }
+            else if (e.Kind == "election")
+                ElectionClose(e, now, attended);
         }
 
         /// Shots or a gun pointed broke it up: nothing comes of it, and the town remembers who fired.
@@ -146,7 +269,7 @@ namespace EnrageWestworld.Core
             {
                 if (e == null) continue;
                 if (!e.Done)
-                    parts.Add(e.Kind + " in " + e.Town + " " + (now >= e.At ? "on now" : "in " + Math.Max(0, e.At - now) / 60 + " h"));
+                    parts.Add(e.Kind + " in " + e.Town + " " + (now >= e.At ? "on now" : "in " + Math.Max(0, e.At - now) / 60 + " h") + (e.Kind == "election" ? " (" + e.AName + " v " + e.BName + " for " + e.Extra + (e.Endorsed != null ? ", your word given" : "") + ")" : ""));
                 else if (now - e.Until < 3 * 1440)
                     parts.Add(e.Kind + " in " + e.Town + ": " + e.Outcome);
             }

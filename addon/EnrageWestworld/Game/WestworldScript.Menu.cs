@@ -55,6 +55,7 @@ namespace EnrageWestworld.InGame
             public List<SceneTie> About;  // the ties he can ask about (Core/Verbs.cs; SIXDAY item 6): rows "about:0", "about:1"
             public Verbs.Loan Loan;       // the loan to them still out, if any (the collect row)
             public int IntroduceHandle;   // someone near they don't know, for "Have you met..." (0: nobody)
+            public TownEvent Election;    // the race they stand in, if any (Core/Elections.cs; SIXDAY item 10b)
             public string IntroduceId, IntroduceName, IntroduceTemper;
             public bool IntroduceWoman;
             public VoiceJob Listen;       // the listen under way (WestworldScript.Voiced.cs), read here each frame
@@ -375,6 +376,7 @@ namespace EnrageWestworld.InGame
             Verbs.Loan loan = verbs ? Verbs.LoanOut(_store.WorldLog, id, _store.LastGameMin) : null;
             MindWho introduce = null;
             int introduceHandle = verbs ? IntroduceCandidate(p, id, now, out introduce) : 0;
+            TownEvent election = id != null && !performer && coverDollars == 0 ? _engine.ElectionFor(id, _store.LastGameMin) : null;   // a candidate in the town's election
             _menu = new TalkMenu
             {
                 Handle = h, Id = id, Name = name ?? TalkName(p), First = name != null ? Person.FirstOf(name) : TalkName(p), Temper = temper, Worry = worry,
@@ -385,7 +387,7 @@ namespace EnrageWestworld.InGame
                 Regard = regard, Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
                 Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440), WorryStage = worryStage,
                 Condole = condole, YouKilledKnown = youKilledKnown, CoverDollars = coverDollars, Debtor = debtor,
-                About = about, Loan = loan, IntroduceHandle = introduceHandle, IntroduceId = introduce != null ? introduce.Id : null, IntroduceName = introduce != null ? introduce.Name : null,
+                Election = election, About = about, Loan = loan, IntroduceHandle = introduceHandle, IntroduceId = introduce != null ? introduce.Id : null, IntroduceName = introduce != null ? introduce.Name : null,
                 IntroduceTemper = introduce != null && introduce.P != null ? introduce.P.Personality : null, IntroduceWoman = introduceHandle != 0 && !PED.IS_PED_MALE(introduceHandle)
             };
             TalkRefreshOptions();
@@ -450,7 +452,8 @@ namespace EnrageWestworld.InGame
                                              about2: _menu.About != null && _menu.About.Count > 1 ? Person.FirstOf(_menu.About[1].Other(_menu.Id)) : null,
                                              lend: _cfg.TalkVerbs && _menu.Id != null && !_menu.Performer && _menu.CoverDollars == 0, collect: _menu.Loan != null,
                                              introduce: _menu.IntroduceName != null ? Person.FirstOf(_menu.IntroduceName) : null,
-                                             mend: mend, mirror: mirror);
+                                             mend: mend, mirror: mirror,
+                                             election: _menu.Election != null ? Elections.Rows(_menu.Election, _menu.Id, cash) : null);
             if (_cfg.TalkVoice)
             {
                 InteractOption speak = _menu.Options.Find(x => x.Id == "speak");
@@ -654,6 +657,7 @@ namespace EnrageWestworld.InGame
                   : o.Id == "introduce" ? Verbs.Introduce(t.Temper, t.Woman, Person.FirstOf(t.IntroduceName), t.IntroduceWoman, t.Regard, sd)
                   : o.Id.StartsWith("mend:", StringComparison.Ordinal) ? Helps.Answer(Helps.Mend(t.Worry), t.Temper, t.Woman, t.Regard, sd)   // every worry's mend and its mirror (Core/Helps.cs)
                   : o.Id.StartsWith("mirror:", StringComparison.Ordinal) ? Helps.Answer(Helps.Mirror(t.Worry), t.Temper, t.Woman, t.Regard, sd)
+                  : o.Id.StartsWith("vote:", StringComparison.Ordinal) ? Elections.Answer(o.Id.Substring(5), t.Temper, t.Regard, sd)   // a candidate (Core/Elections.cs)
                   : Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd, YourSurname(), t.Self);
             }
             if (_talkLastLine.Count > 400)
@@ -743,6 +747,13 @@ namespace EnrageWestworld.InGame
                 IntroduceDo(t, a, now);   // the two made known to each other
             if (t.PendingId == "about:0" || t.PendingId == "about:1")
                 _talkAbout++;
+            if (t.PendingId.StartsWith("vote:", StringComparison.Ordinal) && t.Election != null)
+            {
+                string what = t.PendingId.Substring(5);
+                bool took = what == "endorse" ? a.LikeDelta > 0 : what == "whiskey" ? a.Cents > 0 : true;   // a refused word or whiskey changes nothing; a lean lands whatever they say
+                if (took)
+                    _engine.ElectionWord(t.Election, t.Id, what, _store.LastGameMin);
+            }
             if (t.PendingId == "house" && a.Cents > 0)
                 HouseRound(t, now);   // the room cheers and everyone treated is fonder (WestworldScript.Fondness.cs)
             if (t.PendingId == "cover" && a.Cents > 0)

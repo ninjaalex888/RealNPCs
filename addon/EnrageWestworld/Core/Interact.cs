@@ -94,7 +94,7 @@ namespace EnrageWestworld.Core
                                                    string fixKind = "debt", bool house = false, bool gift = false, bool woman = false, string condoleFor = null, bool escort = false,
                                                    string errandTo = null, string deliverFrom = null, string deliverMessage = null, bool typed = false, bool spoken = false,
                                                    string about1 = null, string about2 = null, bool lend = false, bool collect = false, string introduce = null,
-                                                   Help mend = null, Help mirror = null)
+                                                   Help mend = null, Help mirror = null, List<InteractOption> election = null)
         {
             // house, gift, condoleFor: the fondness interactions (Core/Fondness.cs; SIXDAY item 1): whiskey for the house (a saloon with company at
             // the bar), a gift, condolences to someone grieving a friend (their first name)
@@ -141,6 +141,8 @@ namespace EnrageWestworld.Core
                 list.Add(new InteractOption { Id = "errand", Label = Fondness.ErrandLabel(errandTo) });
             if (sorry)
                 list.Add(new InteractOption { Id = "sorry", Label = sorryJustNow ? "I didn't mean that." : "I'm sorry about before." });   // minutes after a warning, a quick word; later, an apology
+            if (election != null)
+                list.AddRange(election);   // a candidate in the town's election (Core/Elections.cs; SIXDAY item 10b)
             list.Add(new InteractOption { Id = "threaten", Label = "Watch yourself." });
             if (spoken)
                 list.Add(new InteractOption { Id = "speak", Label = FreeTalk.SpeakLabel() });   // his own words, by microphone (the voice server's ear; SIXDAY item 4b)
