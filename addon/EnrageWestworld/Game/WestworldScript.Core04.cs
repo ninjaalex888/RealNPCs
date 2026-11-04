@@ -1137,7 +1137,8 @@ namespace EnrageWestworld.InGame
                 // what they're known for this week: putting a man's face in the bar, or being caught at a pocket
                 long g = Bridge.Now();
                 string known = _store.Ties.Any(x => x.Did(who.Id) && x.Kind == "rough" && g - x.At >= 0 && g - x.At < 7 * 1440L) ? "bully"
-                             : _store.Ties.Any(x => x.Did(who.Id) && x.Kind == "pickpocket" && g - x.At >= 0 && g - x.At < 7 * 1440L) ? "thief" : null;
+                             : (_cfg.CriminalClass ? Criminals.Bent(_store.Ties, who.Id, g)   // the criminal class (item 16): the month, and lifts and muggings too
+                                                   : _store.Ties.Any(x => x.Did(who.Id) && x.Kind == "pickpocket" && g - x.At >= 0 && g - x.At < 7 * 1440L)) ? "thief" : null;
                 list.Add(new InnerLife.Nearby { Id = who.Id, Name = Person.FirstOf(who.Name), Temper = who.Temper, Woman = who.Woman, WellOff = who.WellOff, Drunk = who.Drunk, Known = known });
             }
             _engine.Nearby = list;
@@ -1295,6 +1296,7 @@ namespace EnrageWestworld.InGame
             SpaceStep(now);     // and mind you standing too close (WestworldScript.Space.cs)
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
             KinGrudgesStep(now); // the kin who come about a wrong of yours (WestworldScript.KinGrudges.cs)
+            CriminalsStep(now);  // the criminal class: a thief gone straight thinks of it (WestworldScript.Criminals.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             LonelyStep(now);    // someone lonely who knows you comes over (WestworldScript.Lonely.cs)
             FavourStep(now);    // someone in trouble comes to ask a favour (WestworldScript.Favours.cs)

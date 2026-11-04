@@ -169,7 +169,9 @@ namespace EnrageWestworld.InGame
                 return null;
             long g = Bridge.Now();
             s.Taken = _engine.SpokenFor(s.Id);
-            s.Known = _store.Ties.Any(t => t.Doer == s.Id && (t.Kind == "rough" || t.Kind == "pickpocket") && g - t.At >= 0 && g - t.At < 3 * 1440);
+            bool bent = _cfg.CriminalClass && Criminals.Bent(_store.Ties, s.Id, g);   // the criminal class (item 16): a theft this month, and they keep to it
+            s.Bent = bent;
+            s.Known = bent || _store.Ties.Any(t => t.Doer == s.Id && (t.Kind == "rough" || t.Kind == "pickpocket") && g - t.At >= 0 && g - t.At < 3 * 1440);
             s.Mood = s.P != null ? _engine.MoodToday(s.P, s.P.Home ?? _placeTown) : null;
             s.Shamed = _cfg.MindLive && _cfg.MindTempers ? ShamedLately(s.Id, g) : null;   // displaced aggression (NIGHT3): who's been shamed today
             long griefAt;
@@ -649,7 +651,8 @@ namespace EnrageWestworld.InGame
                 SceneTie bad = _store.Ties.FirstOrDefault(t => t.Has(doer.Id) && t.Has(done.Id));
                 // a lift is noticed too late now and then: by the alert, more often (the thief is long gone by then)
                 return kind == "rough" ? Scenes.Rough(cast, seed, bad != null && bad.Warmth < 0, answer)
-                     : kind == "lift" ? Scenes.Lift(cast, seed, Voice.Chance(seed + "late", Reasons.Alert(done.Temper) ? 60 : 35))
+                     : kind == "lift" ? (done.Drunk && _cfg.CriminalClass ? Scenes.Rolled(cast, seed, Voice.Chance(seed + "late", 25))   // a drunk rolled (item 16): he comes round to it one time in four
+                                         : Scenes.Lift(cast, seed, Voice.Chance(seed + "late", Reasons.Alert(done.Temper) ? 60 : 35)))
                      : Scenes.Drunk(cast, seed, answer);
             }
             if (kind.StartsWith("court:") || (kind == "court" && courtAnswer != null))

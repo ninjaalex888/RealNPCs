@@ -31,6 +31,7 @@ namespace EnrageWestworld.Core
         public string GriefId;    // the dead friend's id (null when unknown)
         public Func<string, bool> HeardOf;   // whether word of this death (by the dead one's id) has reached them; null: not asked
         public bool Known;        // known lately for a face in the bar or a hand in a coat
+        public bool Bent;         // of the criminal class: a theft to their name this month (Core/Criminals.cs; SIXDAY item 16), set by the game side
         public string Shamed;     // slighted, had words or beaten in the last four hours and not answered it ("slighted", "had words", "beaten"), else null (NIGHT3: displaced aggression)
     }
 
@@ -302,7 +303,7 @@ namespace EnrageWestworld.Core
             if (need != null && (y.WellOff || y.Drunk) && x.Id != y.Id)
             {
                 bool caught = !x.Woman && !y.Drunk && Voice.Hash(x.Id + y.Id + gameDay + "caught") % 100 < (Alert(y.Temper) ? 55 : 30) - (x.Temper == "Drifter" ? 20 : 0);
-                all.Add(new Reason { Kind = caught ? "pickpocket" : "lift", Fallback = caught ? "lift" : null, Strength = need == Desperate && worry && stage == 2 ? 47 : 43,
+                all.Add(new Reason { Kind = caught ? "pickpocket" : "lift", Fallback = caught ? "lift" : null, Strength = need == Desperate && worry && stage == 2 ? 47 : need == Criminals.KeepsToIt ? 46 : 43,
                                      Why = x.Name + " " + need + ", and " + y.Name + (y.Drunk ? " is in his cups" : " looks like money") + (caught ? "; the mark feels it" : "") });
             }
             // the same want in an honest person: they ask instead of taking (the well-off, never the drunk)
@@ -514,6 +515,8 @@ namespace EnrageWestworld.Core
         {
             if (x == null || x.Temper == "Loyal" || (x.P != null && x.P.Has("honest")))
                 return null;
+            if (x.Bent)   // the criminal class (Core/Criminals.cs; item 16): a theft this month, and they keep to it, whatever their nature or their money
+                return Voice.Hash(x.Id + gameDay + "thief") % 100 < Criminals.KeepsChance ? Criminals.KeepsToIt : null;
             string kind;
             int stage;
             bool good;

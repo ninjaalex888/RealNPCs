@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 231;
+        public const int CurrentVersion = 232;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -338,6 +338,7 @@ namespace EnrageWestworld.Core
         public bool GangShootouts = true;   // [World] men of two rival gangs who meet near you fight it out: words, a standoff, a shootout (Lex, 2026-10-30; settings version 133)
         public bool WomenInFights = true;   // [Scenes] women may come to blows too, at half a man's chance for each woman in it (Lex, 2026-10-29: "we can allow men to trade blows with women in this mod ... 50% less likely than a man getting in a fight until we have the innermind logic take over"; night 2026-10-29, item 2b; settings version 107); false: two men only, as before
         public bool NpcThieves = true;
+        public bool CriminalClass = true;    // people who take to crime keep to it: a theft to their name this month makes them likelier to go for a pocket again, known as a thief the whole month, a drunk rolled with its own words, and gone straight after thirty clean days (Core/Criminals.cs; roadmap 28; SIXDAY item 16; settings version 232)
         public bool DrunkChallenges = true;
         public bool Reactions = true;
         public bool Acknowledge = true;
@@ -830,6 +831,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 232)
+                    log?.Invoke("Settings: new in this version: [Scenes] CriminalClass (on): thieves keep to it for a month, are known for it that long, roll drunks, and go straight after thirty clean days.");
                 if (s.SettingsVersion < 231)
                     log?.Invoke("Settings: new in this version: [Romance] TrystPrice (2): the saloon's price for the night; TrystsAfter (on): the morning after, a sweetheart who expects you back, a husband who finds out.");
                 if (s.SettingsVersion < 230)
@@ -1565,6 +1568,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("WomenInFights = " + B(WomenInFights) + "   ; women may come to blows in a quarrel too (with a man or another woman), half as often as two men for each woman in it; false: only two men ever fight");
             b.AppendLine("RoughHandling = " + B(RoughHandling) + "   ; street scenes: a man with a grudge (or a hothead with drink in him) grabs another and smashes his face into the nearest table, bar or wall, with the game's own move; with nothing to hand it stays a fistfight");
             b.AppendLine("NpcThieves = " + B(NpcThieves) + "   ; street scenes: someone short of money or light-fingered picks a well-off or drunk mark's pocket; mostly the mark never knows who");
+            b.AppendLine("CriminalClass = " + B(CriminalClass) + "   ; people who take to crime keep to it: anyone with a pocket picked, a lift or a mugging to their name in the last thirty days is likelier to go for a pocket again whatever their nature or their money, wears the thief's name over their head the whole month, rolls a drunk with words of its own, and after thirty clean days has gone straight and thinks of it once; false: a thief is forgotten in a week, as before");
             b.AppendLine("DrunkChallenges = " + B(DrunkChallenges) + "   ; street scenes: a drunk in a saloon at night calls a man out and falls on his face before a punch is thrown");
             b.AppendLine("CrudeTalk = " + B(CrudeTalk) + "   ; in those conversations, the game's own crude remarks: a man to a woman in a saloon of an evening (she tells him off), or between sweethearts at night");
             b.AppendLine("SceneReactions = " + B(SceneReactions) + "   ; greet or antagonize someone in a scene: take a side, break up a fight, or stir it up");

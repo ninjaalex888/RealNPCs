@@ -87,6 +87,22 @@ namespace EnrageWestworld.Core
             return s;
         }
 
+        /// A drunk rolled (SIXDAY item 16, the criminal class): the same lift on a man in his cups, a helping hand that isn't,
+        /// the mark too far gone to feel it (he comes round to it now and then). Kind "lift" still: the tie, the word of
+        /// it and the law are the pocket's.
+        public static Scene Rolled(SceneCast c, string seed, bool noticed)
+        {
+            Scene s = new Scene { Kind = "lift", Summary = "a drunk was rolled" };
+            s.Add(0, null, null, "approach", 200)
+             .Add(0, Voice.Pick(seed + "rp", "Easy there, friend. You've had a skinful.", "Steady, now. Let me get you straight.", "Whoa. Lean on me a second, old-timer."), "greet")
+             .Add(1, Voice.Pick(seed + "rr", "...'m fine. Fine.", "Get off... get off me.", "Who're you? Where's... never mind."), "drunk")
+             .Add(0, Voice.Pick(seed + "rs", "There. Sleep it off.", "Right as rain. Night, friend.", "You'll be fine. Mind the step."), "mild")
+             .Add(0, null, null, "walkaway", 4000);
+            if (noticed)
+                s.Add(1, Voice.Pick(seed + "rn", "Hey... my money. Where's my... HEY.", "...Pockets. My pockets are... somebody. Somebody!", "That feller. That feller had his hands... thief! Thief!"), "scared", "lookplayer");
+            return s;
+        }
+
         /// A drunk calls a man out and goes down before a punch is thrown. answer: how the other takes it.
         public static Scene Drunk(SceneCast c, string seed, string answer)
         {
