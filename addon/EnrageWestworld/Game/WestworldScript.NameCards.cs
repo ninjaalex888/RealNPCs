@@ -553,10 +553,7 @@ namespace EnrageWestworld.InGame
             if (ac == null)
                 return null;
             string shown = _bridge != null ? _bridge.ShownNameOf(ac) : null;
-            if (shown != null)
-                return shown;
-            string full = ac.FullName;
-            return string.IsNullOrEmpty(full) ? ac.Name : full;
+            return shown ?? ac.Name;   // the record's name without its title, as enRAGE's card gives it (the review)
         }
 
         private bool NameCardFillInner(Ped p, NameCard c, bool everyone)

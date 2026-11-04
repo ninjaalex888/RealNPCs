@@ -366,7 +366,9 @@ namespace EnrageWestworld.Core
             // the solitary bring it up half as often; a roll a pair and a day keeps the same two from talking it over every hour
             if (where.MindTalks && x.Id != y.Id && Voice.Chance(PairKey(x, y) + gameDay + "mindtalk", x.Temper == "Cold" || x.Temper == "Greedy" ? 35 : 70))
                 all.Add(new Reason { Kind = "mindtalk", Strength = worry && stage <= 1 ? 39 : 37, Why = x.Name + " has something on their mind, and " + y.Name + " is there" });
-            Reason times = TimesReason(x, y, gameDay, where);
+            // the times stand aside where a theft, a beggar or someone's own news is to be had (the review: at 44 they beat a lift's
+            // 43, the news's 42 and a beggar's 41 on every pair-day they came up)
+            Reason times = all.Exists(r => r.Kind == "lift" || r.Kind == "pickpocket" || r.Kind == "beg" || r.Kind == "x:goodnews" || r.Kind == "x:badnews") ? null : TimesReason(x, y, gameDay, where);
             if (times != null)
                 all.Add(times);
             Reason best = null;
@@ -387,7 +389,7 @@ namespace EnrageWestworld.Core
         // fits the period: the paper came weekly, and the store, the saloon and the depot were where it was read aloud and argued
         // over; strangers talked news as readily as friends, and it was the safest talk there was between people who didn't
         // know each other's business.
-        public const int TimesStrength = 44, TimesChance = 55, TimesNightChance = 20;
+        public const int TimesStrength = 41, TimesChance = 80, TimesNightChance = 30;
 
         /// Two who may talk over the times today (a roll a pair and a day; by night in the street, less), or null.
         private static Reason TimesReason(Someone x, Someone y, long gameDay, Place where)

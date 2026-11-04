@@ -151,6 +151,7 @@ namespace EnrageWestworld.InGame
 
         private Type _namedType;
         private FieldInfo _namedName;
+        private readonly System.Collections.Generic.HashSet<int> _labelled = new System.Collections.Generic.HashSet<int>();   // bodies whose label RenameNamedAt set (ours)
 
         /// The name enRAGE shows for one of its acquaintances (Run 3, item 1; Lex's /goal: "enRAGE's visible name (its card and
         /// prompt) everywhere, its acquaintances included"): its card and its lock-on prompt both read its _named list for the
@@ -162,11 +163,15 @@ namespace EnrageWestworld.InGame
         {
             if (f == null || f.LastHandle == 0 || _acqOf == null || Mod == null)
                 return null;
+            if (_labelled.Contains(f.LastHandle))
+                return null;   // a label we set ourselves (a made relative, a town regular): never an acquaintance's name (the review)
             try
             {
                 IDictionary acq = _acqOf.GetValue(Mod) as IDictionary;
                 if (acq == null || !acq.Contains(f.LastHandle) || !ReferenceEquals(acq[f.LastHandle], f.Raw))
                     return null;   // the game gave that handle to someone else, or enRAGE let them go
+                if (RDR2.Native.ENTITY.GET_ENTITY_MODEL(f.LastHandle) != f.Model)
+                    return null;   // the handle reused for another body between enRAGE's looks (the review)
             }
             catch
             {
@@ -195,6 +200,9 @@ namespace EnrageWestworld.InGame
                 if (f == null)
                     return false;
                 f.SetValue(n, name);
+                if (_labelled.Count > 500)
+                    _labelled.Clear();
+                _labelled.Add(handle);   // ours now: ShownNameOf never hands it to an acquaintance
                 MethodInfo label = Mod.GetType().GetMethod("SetPromptName", Any, null, new[] { typeof(int), typeof(string) }, null);
                 if (label != null)
                     label.Invoke(null, new object[] { handle, name });

@@ -268,12 +268,13 @@ NEW IN 0.7.19
 - People talk over the times ([Mind] TimesTalk, on; TimesTalkShare 100; with MindTalks and
   [World] HistoricalAccuracy): any two who stop near you, friends or strangers, may talk over the
   news of the day: the almanac's story of the fortnight, or a topic of the year, among them who
-  holds office (McKinley and Mark Hanna, Vice President Hobart until his death in November, Root
+  holds office (McKinley and Mark Hanna, Vice President Hobart to October, Root
   at the War Department after Alger, Henderson of Iowa in the Speaker's chair from December;
   Roosevelt's men in 1907), and how the heartland lives (the wheat and the bank, the railroad's
   rates, the catalogue and the mail route, the dry vote, the old soldiers, the telephone, the
-  bicycle, the camp meeting). About one street scene in five, where before it was one in fifty;
-  often a second round, more of the same news and another answer. By day in the street, any hour
+  bicycle, the camp meeting). One main street scene in fourteen (one in fifty before) and more
+  than a quarter of the second scenes beside them; never in place of a theft, a beggar or someone's
+  own news. By day in the street, any hour
   in the saloon; said in their own voices with the voice server. The Testing row "Two people
   talk over the times" (TestTimesTalkKey) starts one between the nearest two.
 - Allies who come to your aid ([Encounters] AlliesHelp, on; AlliesMetres 40, AlliesMost 3,

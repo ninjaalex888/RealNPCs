@@ -30,6 +30,7 @@ namespace EnrageWestworld.Core
         public string[] Shrug;    // the other, not much caring
         public int Until;         // the last month it was talked of (0: the year's end): Hobart alive until November (Run 3, item 2)
         public int Weight = 1;    // how much more often it comes up than one topic (2: who holds office; Lex, 2026-11-04)
+        public string[] More;     // the second round's word from the one who brought it up: more on the subject, never the news told again (the review of Run 3, item 2); null, no second round
     }
 
     public static class Times
@@ -40,11 +41,12 @@ namespace EnrageWestworld.Core
         }
 
         /// A topic with its last month and its weight (Run 3, item 2: who holds office and how the country lives in 1899).
-        private static TimesTopic TW(string key, int year, int from, int until, int weight, string lean, string[] openers, string[] @for, string[] against, string[] shrug)
+        private static TimesTopic TW(string key, int year, int from, int until, int weight, string lean, string[] openers, string[] @for, string[] against, string[] shrug, string[] more = null)
         {
             TimesTopic t = T(key, year, from, lean, openers, @for, against, shrug);
             t.Until = until;
             t.Weight = weight;
+            t.More = more;
             return t;
         }
 
@@ -530,8 +532,7 @@ namespace EnrageWestworld.Core
                       "I never knew one. Can't say I'd know what to say.",
                       "Fewer every year, like the buffalo. The country's changing shape." }),
             // ---- Run 3, item 2 (2026-11-04; Lex: "Ideally the player will just hear lots of talk relating to the time of living
-            // in America midwest 1899", who holds office among it): the officeholders of the year (McKinley, Hobart until his death
-            // in November, the War Department after Alger, Henderson of Iowa in Reed's chair from December; Roosevelt's men in
+            // in America midwest 1899", who holds office among it): the officeholders of the year (McKinley, Hobart to October (he died on the 21st of November; the almanac has it), the War Department after Alger, Henderson of Iowa in Reed's chair from December; Roosevelt's men in
             // 1907), and how the heartland lived (the wheat and the bank, the railroad's rates, the catalogue and the mail route,
             // the dry vote, the old soldiers, the telephone, the bicycle, the camp meeting). The officeholders count double.
             TW("president", 1899, 1, 0, 2, "politics",
@@ -539,7 +540,7 @@ namespace EnrageWestworld.Core
                       "Fella from back East says McKinley's running the country, and Mark Hanna's running McKinley.",
                       "President McKinley won the war in a summer, and now he's got islands half a world away to run.",
                       "Who's president? McKinley. Same as last year. Sits in Washington and lets the country come to him.",
-                      "McKinley soldiered in the war between the states. Major McKinley. Now he's sending boys to Manila." },
+                      "McKinley soldiered in the war. Major McKinley. Now he's sending boys to Manila." },
               new[] { "McKinley's a steady hand. After '93 the country could do with steady.",
                       "The mills are running and the wheat's moving. Say what you like, that's McKinley.",
                       "He won the war in a summer. Give the man his due." },
@@ -548,37 +549,45 @@ namespace EnrageWestworld.Core
                       "Bryan would've given the farmer a fair shake. McKinley gives the railroads one." },
               new[] { "Somebody's always president. My cow don't care which.",
                       "Washington's a long way from this porch.",
-                      "Never voted in my life. Ain't about to start for an Ohio lawyer." }),
-            TW("hobart", 1899, 1, 11, 1, "politics",
-              new[] { "Vice President Hobart's poorly, the paper says. His heart. Jersey man, and a rich one.",
-                      "Who's the vice president? Hobart. Nobody west of Philadelphia could tell you what he looks like.",
-                      "Hobart runs the Senate for McKinley, they say, and does it quiet. That's the job, I suppose." },
+                      "Never voted in my life. Ain't about to start for an Ohio lawyer." },
+              new[] { "Hanna's raising money for next year already, they say. The bankers give, and the bankers get.",
+                      "They say he sits up half the night in a room full of telegraph wires, reading the war news." }),
+            TW("hobart", 1899, 1, 10, 1, "politics",
+              new[] { "Who's the vice president? Hobart. Nobody west of Philadelphia could tell you what he looks like.",
+                      "Hobart runs the Senate for McKinley, they say, and does it quiet. That's the job, I suppose.",
+                      "Vice President Hobart's a Jersey lawyer, and a rich one. Couldn't pick him out of a crowd." },
               new[] { "A quiet man in Washington is a rare thing. Good for him.",
                       "He keeps the Senate in line. McKinley's lucky in him." },
               new[] { "A Jersey moneyman next in line for the White House. Fine company for the trusts.",
                       "Never heard him say a word for the farmer." },
               new[] { "Vice president. Might as well be the man who winds the clocks.",
-                      "Didn't know we had one." }),
+                      "Didn't know we had one." },
+              new[] { "They call him the assistant president back East. McKinley leans on him.",
+                      "Paterson's his town. Silk mills. He has a hand in half of them, they say." }),
             TW("novp", 1899, 12, 0, 1, "politics",
               new[] { "Hobart's dead, and there's no vice president now. McKinley'll want a new man on the ticket next year.",
-                      "With Hobart in the ground the Senate's got a stand-in to run it. The country goes on regardless.",
+                      "With Hobart in the ground, Frye of Maine has the chair in the Senate. The country goes on regardless.",
                       "No vice president till next year's election. Never knew we could do without one. Seems we can." },
               new[] { "McKinley will pick a good man. He picks careful.",
                       "The country don't stop for one funeral. That's right." },
               new[] { "The bosses'll pick the next one in a back room, same as they picked Hobart.",
                       "One man in the White House and nobody behind him. That's a gamble." },
               new[] { "Never knew what the last one did. Won't miss the next.",
-                      "An office don't need a man to sit in it. Ask any clerk." }),
+                      "An office don't need a man to sit in it. Ask any clerk." },
+              new[] { "There's talk of Roosevelt for the ticket. He says he'd sooner stay governor.",
+                      "They flew the flags at half-mast for him. Paterson turned out to a man." }),
             TW("wardept", 1899, 8, 0, 1, "politics",
               new[] { "Alger's out as Secretary of War. Embalmed beef and fever camps, and finally somebody noticed.",
                       "There's a New York lawyer named Root running the army now. Never wore a uniform, they say.",
-                      "They fed our boys tinned beef that stank in Cuba. Now Alger's gone. One man, for all that." },
+                      "They fed our boys canned beef that stank in Cuba. Now Alger's gone. One man, for all that." },
               new[] { "A lawyer's what that department needs. Somebody to count the beef before it ships.",
                       "Root's a hard worker. The army could stand some order." },
               new[] { "Alger goes and the meat packers keep their money. That's Washington justice.",
                       "Swapping one rich man for another. The boys in the camps won't notice." },
               new[] { "Secretary of something. They change them like horses at a stage stop.",
-                      "Whoever runs the army, it's the private who eats the beef." }),
+                      "Whoever runs the army, it's the private who eats the beef." },
+              new[] { "Root says he'll make the army over from top to bottom. A lawyer, making soldiers.",
+                      "The court of inquiry found the beef bad and nobody to blame. That's how it goes with beef." }),
             TW("speaker", 1899, 12, 0, 1, "politics",
               new[] { "Henderson of Iowa's Speaker of the House now. First one from west of the Mississippi, they say.",
                       "Czar Reed quit Congress for a law office in New York. Henderson, the Iowa man, has his chair.",
@@ -588,7 +597,9 @@ namespace EnrageWestworld.Core
               new[] { "Iowa or Maine, a Speaker does what the party tells him.",
                       "Reed at least said what he thought. This one'll say what he's told." },
               new[] { "Speaker of the House. Never heard him speak, myself.",
-                      "Congress is just a saloon with worse whiskey." }),
+                      "Congress is just a saloon with worse whiskey." },
+              new[] { "Henderson went to the war a private and came home a colonel.",
+                      "Reed quit over the islands, they say. Wanted no part of an empire." }),
             TW("farm", 1899, 1, 0, 1, "politics",
               new[] { "Wheat's coming in heavy and the price is nothing. The more we grow, the less it brings.",
                       "The bank holds the paper on half the farms around {town}. A dry year and they own the rest.",
@@ -601,7 +612,9 @@ namespace EnrageWestworld.Core
                       "Bryan said it plain: they're crucifying the farmer on a cross of gold.",
                       "Every year more work and less money. Somebody in Chicago gets fat on it." },
               new[] { "Rain or no rain, the cows want milking.",
-                      "I grow what I eat and sell what's left. Prices are the bank's worry." }),
+                      "I grow what I eat and sell what's left. Prices are the bank's worry." },
+              new[] { "Hired men want a dollar and a half a day at harvest now. Can't get them for less.",
+                      "The bank man drove out in a buggy to look at my wheat. Never a good sign." }),
             TW("railroad", 1899, 1, 0, 1, "politics",
               new[] { "Freight rates went up again. The railroad charges what it likes, and where else can a man ship?",
                       "They say the railroad owns half the legislature. The other half rides free on its passes.",
@@ -612,7 +625,9 @@ namespace EnrageWestworld.Core
               new[] { "The railroad's a thief with a timetable.",
                       "The Populists had it right. The government ought to run the lines." },
               new[] { "I go by wagon. The railroad can charge the moon.",
-                      "Trains come, trains go. The cows don't mind them." }),
+                      "Trains come, trains go. The cows don't mind them." },
+              new[] { "The freight to Chicago costs more than the wheat's worth, some years.",
+                      "They gave the railroad every other section of land out West, and it still wants more." }),
             TW("catalogue", 1899, 1, 0, 1, "wonder",
               new[] { "My wife ordered a stove from the Sears catalogue. Came by rail from Chicago, cheaper than the store.",
                       "The Montgomery Ward book's thicker than the Bible and read more, in some houses.",
@@ -622,20 +637,24 @@ namespace EnrageWestworld.Core
               new[] { "Every dollar sent to Chicago is a dollar the store in {town} never sees.",
                       "You can't try on boots from a picture. Mine pinch to this day." },
               new[] { "I can't read the half of it. The pictures are nice.",
-                      "The store, the book, it all costs money I don't have." }),
+                      "The store, the book, it all costs money I don't have." },
+              new[] { "The catalogue sells a revolver cheaper than the gunsmith in town.",
+                      "The children cut the pictures out of the old book when the new one comes." }),
             TW("temperance", 1899, 1, 0, 1, "people",
               new[] { "The temperance women want the county dry. Prayed outside the saloon in {town} all Saturday.",
-                      "Half the counties back East have voted themselves dry. Local option, they call it.",
+                      "Towns back East are voting themselves dry, one by one. Local option, they call it.",
                       "There's a league now, the Anti-Saloon League, with offices and lawyers. They mean business." },
               new[] { "I've seen what drink does to a family. Let them close every one.",
                       "A man's wages go in the saloon door and never come out. The women are right." },
               new[] { "A man works all week, he'll have his drink. No preacher's wife will tell him otherwise.",
                       "Close the saloons and they'll drink behind the barn. Always have." },
               new[] { "I drink when I'm dry and pray when I'm scared. Same as anybody.",
-                      "Wet or dry, the county'll still be poor." }),
+                      "Wet or dry, the county'll still be poor." },
+              new[] { "The women sing hymns on the boardwalk till the barkeep pulls the shades.",
+                      "A dry county just means the drinking goes over the county line." }),
             TW("veterans", 1899, 1, 0, 1, "people",
               new[] { "The old soldiers march on Decoration Day. Fewer every year, and slower.",
-                      "My uncle draws a pension for the leg he left at Shiloh. Twelve dollars a month, and he earned it.",
+                      "My uncle draws a pension for what Shiloh did to him. Not much, and he earned every cent.",
                       "The boys back from Cuba are quieter than the old soldiers. The fever took more than the Spanish.",
                       "Blue and gray marched together in that war with Spain. Took a war to do it." },
               new[] { "Those men gave their legs and their youth. A pension's the least we owe them.",
@@ -643,7 +662,9 @@ namespace EnrageWestworld.Core
               new[] { "Half the pensioners never saw a battle. The government pays for lies.",
                       "Thirty-four years on and still drawing. Some war." },
               new[] { "Every man I know fought somebody somewhere.",
-                      "Wars end. The old men keep marching. That's how it goes." }),
+                      "Wars end. The old men keep marching. That's how it goes." },
+              new[] { "The Grand Army post meets over the bank, and they fight the war again every month.",
+                      "There's men in the soldiers' home at Leavenworth who've not had a letter in thirty years." }),
             TW("telephone", 1899, 1, 0, 1, "wonder",
               new[] { "The doctor in Saint Denis has a telephone now. Somebody's sick at midnight, he knows by five past.",
                       "There's a telephone at the depot in the next county. Talk to Saint Denis like they're in the room.",
@@ -653,7 +674,9 @@ namespace EnrageWestworld.Core
               new[] { "A bell ringing in your house any hour a stranger likes. No thank you.",
                       "Letters were good enough for my father." },
               new[] { "Who would I telephone? Everybody I know lives on this street.",
-                      "Wires everywhere. Birds like them, anyway." }),
+                      "Wires everywhere. Birds like them, anyway." },
+              new[] { "The girl at the exchange knows everybody's business before the preacher does.",
+                      "They say you can talk from New York to Chicago on the long line now." }),
             TW("bicycle", 1899, 1, 0, 1, "wonder",
               new[] { "Ladies riding bicycles in the cities now, in bloomers. The preacher's beside himself.",
                       "Fella came through {town} on a bicycle, said he was riding to the Pacific. Wished him luck with the hills.",
@@ -663,8 +686,10 @@ namespace EnrageWestworld.Core
               new[] { "A horse knows the way home when you're drunk. Try that on a bicycle.",
                       "Women in bloomers. What's next, women in the saloon?" },
               new[] { "It'll pass, like everything from the cities.",
-                      "Don't care how a man gets there, so he gets there." }),
-            TW("revival", 1899, 6, 0, 1, "people",
+                      "Don't care how a man gets there, so he gets there." },
+              new[] { "The doctor in Saint Denis makes his calls on a bicycle now, they say.",
+                      "They race them on tracks back East, and thousands pay to watch." }),
+            TW("revival", 1899, 6, 9, 1, "people",
               new[] { "There's a camp meeting at the creek this week. Tents, a preacher from Missouri, singing till midnight.",
                       "Half the county got saved at the revival last summer. Half of them got unsaved by harvest.",
                       "The circuit rider's due Sunday. Three churches, one preacher, a horse with a sore foot." },
@@ -673,18 +698,22 @@ namespace EnrageWestworld.Core
               new[] { "A preacher from Missouri with a tent and a collection plate. I've seen the act.",
                       "Shouting and fainting in a field. That's not religion, it's a circus." },
               new[] { "I go for the singing and the supper.",
-                      "God's the same in a tent or a church, I suppose." }),
+                      "God's the same in a tent or a church, I suppose." },
+              new[] { "The preacher says the end is near. He's said it every summer since '88.",
+                      "They baptized forty in the creek on Sunday. Water cold enough to save anybody." }),
             TW("office07", 1907, 1, 0, 2, "politics",
               new[] { "Roosevelt's president, Fairbanks is vice president, and nobody remembers that last part.",
-                      "Uncle Joe Cannon runs the House like his own front parlour. Nothing passes he don't like.",
-                      "Taft's Secretary of War and Roosevelt's choice for next year. Big man. Bigger than the job, maybe.",
+                      "Uncle Joe Cannon runs the House like his own front parlor. Nothing passes he don't like.",
+                      "Taft's Secretary of War, and they say Roosevelt wants him next. Big man. Bigger than the job, maybe.",
                       "Root's Secretary of State now. The same lawyer who ran the army for McKinley." },
               new[] { "Good men, most of them. The country's never been richer.",
                       "Roosevelt picks able men. Say that for him." },
               new[] { "The same lawyers going round the same table. Where's the farmer in that crowd?",
                       "Cannon sits on every bill the people want. One old man and his cigar." },
               new[] { "Names in a paper. Wheat's the same price whoever's in.",
-                      "I couldn't name you three of them and I'm none the poorer." })
+                      "I couldn't name you three of them and I'm none the poorer." },
+              new[] { "Bryan's to run a third time next year, they say. Third time lucky.",
+                      "Fairbanks sits over the Senate and nobody notices. That's a vice president's lot." })
         };
 
         /// The topics of this year that were in the papers by this month (month 0: the whole year).
@@ -744,7 +773,7 @@ namespace EnrageWestworld.Core
         /// Every line, for the tests.
         public static IEnumerable<string> AllLines()
         {
-            return All.SelectMany(t => t.Openers.Concat(t.For).Concat(t.Against).Concat(t.Shrug));
+            return All.SelectMany(t => t.Openers.Concat(t.For).Concat(t.Against).Concat(t.Shrug).Concat(t.More ?? new string[0]));
         }
     }
 }

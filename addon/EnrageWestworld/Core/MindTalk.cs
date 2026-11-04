@@ -190,21 +190,23 @@ namespace EnrageWestworld.Core
                     {
                         open = Voice.Pick(seed + "ao", news.Lines);
                         reply = Almanac.Reply(news, manner, seed);
-                        open2 = Other(news.Lines, seed + "ao2", open);
-                        string r2 = Almanac.Reply(news, manner, seed + "|2");
-                        reply2 = r2 != reply ? r2 : null;
-                        break;
+                        break;   // a story of the fortnight: one round (its lines each tell the news afresh: the review)
                     }
                     news = null;
                     times = Times.Pick(c.Year, c.Month, seed);
                     if (times != null)
                     {
                         string stance = Stance(times, c.B, manner, seed);
-                        open = Voice.Pick(seed + "to", times.Openers);
-                        reply = Times.Reply(times, stance, seed, town);
-                        open2 = Other(times.Openers, seed + "to2", open);
                         string[] pool = stance == "for" ? times.For : stance == "against" ? times.Against : times.Shrug;
-                        reply2 = Other(pool, seed + "tr2", Voice.Pick(seed + "reply" + stance, pool));
+                        open = Voice.Pick(seed + "to", times.Openers);
+                        string said = Voice.Pick(seed + "reply" + stance, pool);   // picked once and kept: with SaidLately a second pick of the same seed gives another line (the review)
+                        reply = Times.Fill(said, town);
+                        if (times.More != null && times.More.Length > 0 && Voice.Chance(seed + "more", TimesMoreChance))
+                        {
+                            open2 = Voice.Pick(seed + "tm2", times.More);   // more on the same subject (the topic's own follow-ups)
+                            string r2 = Other(pool, seed + "tr2", said);
+                            reply2 = r2 != null && r2 != said ? Times.Fill(r2, town) : null;
+                        }
                     }
                     break;
                 case "stranger":
@@ -244,7 +246,7 @@ namespace EnrageWestworld.Core
             Scene s = new Scene { Kind = kind, Summary = aName + " and " + bName + ", talking of " + TopicWords(topic, times, news), Doer = kind == "brushoff" ? 1 : -1 };
             s.Add(0, fill(open), openVoice, "face");
             s.Add(1, fill(reply), replyVoice, manner == "cold" && (topic == "worry" || topic == "need") ? "walkaway" : null);
-            if (topic == "times" && open2 != null && reply2 != null && Voice.Chance(seed + "more", TimesMoreChance))
+            if (topic == "times" && open2 != null && reply2 != null)   // the chance rolled where the round was picked
             {
                 s.Add(0, fill(open2), "chat", null);   // the second round: more of the same news, and the other's word on it again
                 s.Add(1, fill(reply2), replyVoice, null);

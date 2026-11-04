@@ -245,7 +245,7 @@ namespace EnrageWestworld.InGame
 			return new Folk
 			{
 				Id = a.Id,
-				Name = shown ?? a.FullName,
+				Name = shown ?? a.Name,   // enRAGE's card's name has no title; neither does this (the review: it came and went)
 				Town = a.Town,
 				Temper = a.Temper,
 				Woman = Models.Female(a.Model),

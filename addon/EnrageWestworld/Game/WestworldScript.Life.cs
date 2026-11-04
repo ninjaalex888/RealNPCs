@@ -1917,6 +1917,8 @@ namespace EnrageWestworld.InGame
         /// handed back, a resident of ours bound to it takes that name too (SettleName).
         private bool KinNameToEnrage(KinWalk w, int h)
         {
+            if (_bridge.AcquaintanceAt(h) != null)
+                return true;   // enRAGE has linked the body to someone of its own: their name is theirs, never written over (the review)
             string theirs = _bridge.EnrageNameAt(h);
             if (theirs == null)
                 return false;   // not named by enRAGE yet: tried again next step
