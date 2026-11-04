@@ -934,6 +934,16 @@ namespace EnrageWestworld.InGame
             };
             cast.Knows = CastKnows(a, b, crowd);
             CastWarmth(a, b, crowd, cast);
+            if (_cfg.WestWorld && _cfg.WakeLines)
+            {
+                // a stage-four person's line that wakes, said to someone tied to them or waking too (Core/WakeLines.cs; SIXDAY 12c)
+                string aId, aName, bId, bName;
+                LastingId(a, out aId, out aName);
+                LastingId(b, out bId, out bName);
+                string line = _engine.WakeLineFor(aId, bId);
+                if (line != null) { cast.WakeLine = line; cast.WakeLineBy = 0; }
+                else if ((line = _engine.WakeLineFor(bId, aId)) != null) { cast.WakeLine = line; cast.WakeLineBy = 1; }
+            }
             if (!saloon || _cfg.SaloonGossip)
                 cast.Rumours.AddRange(_engine.RumourPool(_placeTown, 4));
             // guns come out in a standoff only when both carry them and no lawman is close enough to start shooting

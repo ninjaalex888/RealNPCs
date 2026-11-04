@@ -522,6 +522,12 @@ NEW IN 0.7.11
   12 m, has a sharp deja vu; two people whose quarrel or kiss was undone both think of it; the waking
   open their talk with the morning that happened twice; the ticker says how many times the world
   went back. F7 "TEST ghosts:".
+- A line that wakes, and the revived dead seen (WakeLines, with WestWorld): each person at the fourth
+  stage holds one line out of the public domain and says it as a talk closes with someone tied to
+  them; a listener who already suspects and hears the same line from two different people within three
+  days wakes a stage, one a town a day. And someone who knew a man for dead and sees him alive again
+  (a save loaded from before) looks, steps back and thinks of it once; the town chews on it for a day.
+  F7 "TEST wakelines:".
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if

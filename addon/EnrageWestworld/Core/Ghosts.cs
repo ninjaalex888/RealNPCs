@@ -25,6 +25,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public long RewoundAt;     // game minute the clock turned back to
         [DataMember(EmitDefaultValue = false)] public bool ByPlayer;      // a killing of his
         [DataMember(EmitDefaultValue = false)] public bool Felt;          // the deja vu had; a tie's memories given
+        [DataMember(EmitDefaultValue = false)] public List<string> SeenBy;   // who has seen the revived man and reacted (Core/WakeLines.cs): once each
     }
 
     public static class Ghosts

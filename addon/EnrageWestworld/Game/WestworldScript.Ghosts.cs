@@ -37,6 +37,7 @@ namespace EnrageWestworld.InGame
             }
             if (MISC.GET_MISSION_FLAG() || _resBind.Count == 0)
                 return;
+            RevivedSeenStep(now);   // the revived dead seen by those who knew them for dead (WestworldScript.WakeLines.cs)
             Ped me = Game.Player.Character;
             foreach (KeyValuePair<int, ResBind> kv in _resBind)
             {

@@ -92,6 +92,8 @@ namespace EnrageWestworld.Core
         public string[] Tempers = new string[3];            // A, B and C's temperaments (Reactions.Listener); null: none known
         public int MindLead;                                // a chance meeting the minds chose: whose side a cold shoulder or a loan is on (0 A, 1 B; Scenes.Minds.cs)
         public string MindWorry;                            // ... and the asker's money worry (debt, bank, savings, cards)
+        public string WakeLine;                             // a stage-four person's line that wakes (Core/WakeLines.cs), said as a talk closes
+        public int WakeLineBy = -1;                         // ...by A (0) or B (1); -1 nobody
         public int Friend = -1;                             // the quarrel ladder's friend at hand, the cast's third: 0 a friend of A, 1 of B, -1 nobody (Scenes.Ladder.cs)
     }
 
@@ -159,6 +161,18 @@ namespace EnrageWestworld.Core
         }
 
         public static Scene Make(string kind, SceneCast c, string seed)
+        {
+            Scene s = MakeInner(kind, c, seed);
+            if (s != null && c != null && c.WakeLine != null && c.WakeLineBy >= 0 && c.WakeLineBy <= 1 && (kind == "hosts" || kind == "smalltalk" || kind == "gossip"))
+            {
+                // a line that wakes (Core/WakeLines.cs; SIXDAY 12c): said as the talk closes, and taken in
+                s.Add(c.WakeLineBy, c.WakeLine, null, null, 500);
+                s.Add(1 - c.WakeLineBy, WakeLines.Heard(seed + "|wl"), null, null, 500);
+            }
+            return s;
+        }
+
+        private static Scene MakeInner(string kind, SceneCast c, string seed)
         {
             switch (kind)
             {
