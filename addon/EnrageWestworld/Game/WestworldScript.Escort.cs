@@ -52,21 +52,23 @@ namespace EnrageWestworld.InGame
             return false;
         }
 
-        /// They said yes (TalkAnswer): the walk begins once the list has closed (the first step orders it).
-        private void EscortStart(TalkMenu t, int now)
+        /// They said yes (TalkAnswer): the walk begins once the list has closed (the first step orders it). False when
+        /// there's no spot to walk to (the list goes on as after any answer).
+        private bool EscortStart(TalkMenu t, int now)
         {
             if (_escort != null || t == null || !ENTITY.DOES_ENTITY_EXIST(t.Handle))
-                return;
+                return false;
             Ped p = new Ped(t.Handle);
             Vector3 home;
             if (!EscortSpot(p.Position, out home))
             {
                 Log.Write("FOND escort: no way home found for " + t.Name + " (no spot 60-100 m off to walk to)");
-                return;
+                return false;
             }
             _escort = new EscortRun { Ped = p, Id = t.Id, Name = t.Name, Temper = t.Temper, Woman = t.Woman, Drunk = t.Drunk, Home = home, StartedAt = now, StepAt = now + 1500, Test = _escortTest };
             _escortsStarted++;
             Log.Write("FOND escort: you're seeing " + t.Name + " home (" + (int)home.DistanceTo(p.Position) + " m off)" + (_escortTest ? " (a test)" : ""));
+            return true;
         }
 
         private void EscortWalk(EscortRun e, int now)
@@ -84,7 +86,14 @@ namespace EnrageWestworld.InGame
         private void EscortStep(int now)
         {
             EscortRun e = _escort;
-            if (e == null || now < e.StepAt)
+            if (e == null)
+                return;
+            if (_featureOff.Contains("escort"))
+            {
+                EscortAbort();   // Safe switched the escort off after errors: nobody stays held or busy for it (the review)
+                return;
+            }
+            if (now < e.StepAt)
                 return;
             e.StepAt = now + 250;
             Safe("escort", () => EscortStepImpl(e, _now));
@@ -248,6 +257,8 @@ namespace EnrageWestworld.InGame
                 return "[Encounters] FondnessActs is off";
             if (_escort != null)
                 return "you're already seeing " + _escort.Name + " home";
+            if (_menu != null)
+                TalkClose("the Testing row again");   // (its close would clear the flag set next: the review)
             _escortTest = true;
             string r = TalkTest(now);   // WestworldScript.Menu.cs: the list on the nearest known person
             if (r != null)

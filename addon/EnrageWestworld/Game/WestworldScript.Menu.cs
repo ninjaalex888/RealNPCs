@@ -351,7 +351,7 @@ namespace EnrageWestworld.InGame
             bool woman = !PED.IS_PED_MALE(h), seated = PED.IS_PED_USING_ANY_SCENARIO(h) && ENTITY.GET_ENTITY_SPEED(h) < 0.4f;
             bool drunk = InHisCups(p, w != null ? w.P : null);
             string regard = SightRegard(p, id);
-            bool escortOffer = _cfg.FondnessActs && _escort == null && coverDollars == 0 && !performer && (_escortTest ? !seated : Fondness.EscortOffered(Natives.Night(), _placeTown != null, woman, drunk, temper, regard, seated));
+            bool escortOffer = _cfg.FondnessActs && _escort == null && coverDollars == 0 && !performer && MayDirectWhyNot(p) == null && (_escortTest ? !seated : Fondness.EscortOffered(Natives.Night(), _placeTown != null, woman, drunk, temper, regard, seated));   // never a walk order for someone enRAGE or a mission is driving (the review)
             Errand carrying;
             bool deliver = _cfg.FondnessActs && id != null && ErrandFor(id, out carrying);   // the one a carried word is for (WestworldScript.Errand.cs)
             SceneTie errandTie = _cfg.FondnessActs && !performer && coverDollars == 0 && _errand == null && id != null ? Fondness.ErrandTie(_store.Ties, id, _placeTown, _store.LastGameMin, x => _store.DeathOf(x) == null) : null;
@@ -362,7 +362,7 @@ namespace EnrageWestworld.InGame
                 Woman = woman, Devout = w != null && w.Traits != null && w.Traits[Traits.Piety] > 1.2f, MoneyWorry = worry == "debt" || worry == "savings" || worry == "bank",
                 Drunk = drunk, EscortOffer = escortOffer, ErrandTie = errandTie, ErrandOtherWoman = errandOtherWoman, Deliver = deliver, Performer = performer,
                 Trade = w != null && w.P != null ? w.P.Trade : null, FolkId = ac != null ? ac.Id : null, P = w != null ? w.P : null,
-                Seated = seated,   // sat, leaning or stood at their point: they talk from there; a scenario's walker is stopped like anyone else
+                Seated = seated || performer,   // sat, leaning or stood at their point: they talk from there; a scenario's walker is stopped like anyone else; a performer plays on (the review)
                 Regard = regard, Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
                 Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440), WorryStage = worryStage,
                 Condole = condole, YouKilledKnown = youKilledKnown, CoverDollars = coverDollars, Debtor = debtor
@@ -562,6 +562,11 @@ namespace EnrageWestworld.InGame
             Happening wrong = o.Id == "sorry" ? Interact.LastWrong(_store.WorldLog, t.Id, _store.LastGameMin) : null;
             // asked the same thing again, they don't give the very same words (the no-model run, item 7: the last answer to each person
             // for each option kept in memory; a few other seeds tried; only the words vary, never what the answer does)
+            if (o.Id == "deliver" && _errand == null)
+            {
+                TalkRefreshOptions();   // the word lapsed since the list was drawn (the review)
+                return;
+            }
             string lastKey = t.Id + "|" + o.Id, last;
             _talkLastLine.TryGetValue(lastKey, out last);
             InteractAnswer a = null;
@@ -605,6 +610,12 @@ namespace EnrageWestworld.InGame
             t.Pending = null;
             Ped me = Game.Player.Character;
             int h = t.Handle;
+            if (t.PendingId == "cover" && !DebtStillPressed(t))
+            {
+                Hint("The moment passed.", 2500);   // the scene ended, or turned to blows, while the answer was coming: nothing paid (the review)
+                TalkClose("the moment passed");
+                return;
+            }
             if (a.Cents > 0)
             {
                 int cash;
@@ -634,15 +645,15 @@ namespace EnrageWestworld.InGame
             if (t.PendingId == "tip")
             {
                 TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 2500, 0, 51, 0);   // a look up from the keys, and the thanks in their voice (TalkSay)
-                if (t.Id != null)
-                    _engine.Tipped(t.Id, t.Name, _store.LastGameMin);
+                if (t.Id != null && !again)
+                    _engine.Tipped(t.Id, t.Name, _store.LastGameMin);   // a second quarter within the hour buys no more affection (the review)
                 _tips++;
                 _fondLast = "a coin for " + t.Name;
                 Log.Write("FOND tip: a coin for the music to " + t.Name + (t.Id == null ? " (a performer the game keeps for itself: nothing remembered)" : ""));
             }
             if (a.Event != null && t.Id != null)
             {
-                _kindSeenOff = t.PendingId == "tip";   // a quarter in a hat is no kindness to be seen
+                _kindSeenOff = t.PendingId == "tip" || t.PendingId == "house";   // a quarter in a hat is no kindness to be seen; the house's treated are credited by HouseRound, not twice (the review)
                 RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h,
                             a.Settles ? Thanks.OutcomeOf(t.Worry) : a.Event == "charity" ? (t.PendingId == "gift" ? Fondness.GiftOutcome : t.PendingId == "tip" ? Fondness.TipOutcome : "gave $" + a.Cents / 100) : t.PendingId == "house" ? "whiskey for the house" : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf)
                 _kindSeenOff = false;
@@ -695,9 +706,13 @@ namespace EnrageWestworld.InGame
                         t.CloseAt = now + 3500;
                         break;
                     case "escort":
-                        EscortStart(t, now);   // they set off for home once the list closes (WestworldScript.Escort.cs)
-                        t.KeepOrders = true;
-                        t.CloseAt = now + 1200;
+                        if (EscortStart(t, now))   // they set off for home once the list closes (WestworldScript.Escort.cs)
+                        {
+                            t.KeepOrders = true;
+                            t.CloseAt = now + 1200;
+                        }
+                        else
+                            TalkFace(t, me, false);   // no way home found: the list stays, as after any answer (the review)
                         break;
                     case "errand":
                         ErrandStart(t, a, now);   // a word to carry (WestworldScript.Errand.cs); they stay

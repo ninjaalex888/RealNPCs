@@ -24,7 +24,7 @@ namespace EnrageWestworld.InGame
             public string FromId, FromName, ToId, ToName, Town, Message;
             public bool Sweethearts;
             public long StartedMin;
-            public int ScanAt, ToHandle;
+            public int ScanAt, ToHandle, DotTriedFor;   // DotTriedFor: the body a dot was tried on (one wearing another's dot gets none, once)
             public Blip Dot;
         }
 
@@ -50,7 +50,14 @@ namespace EnrageWestworld.InGame
         private void ErrandStep(int now)
         {
             Errand e = _errand;
-            if (e == null || now < e.ScanAt)
+            if (e == null)
+                return;
+            if (_featureOff.Contains("errand"))
+            {
+                ErrandAbort();   // Safe switched the errand off after errors: the deliver row doesn't stay up for good (the review)
+                return;
+            }
+            if (now < e.ScanAt)
                 return;
             e.ScanAt = now + 2000;
             Safe("errand", () => ErrandStepImpl(e, _now));
@@ -89,13 +96,14 @@ namespace EnrageWestworld.InGame
                     }
                 }
             }
-            if (found != e.ToHandle || (found != 0 && e.Dot == null))
+            if (found != e.ToHandle || (found != 0 && e.Dot == null && e.DotTriedFor != found))
             {
                 ErrandDotRemove(e);
                 e.ToHandle = found;
                 if (found != 0)
                 {
-                    e.Dot = GreenDot(found, Person.FirstOf(e.ToName) + ": a word to carry");   // the friends' small dot (WestworldScript.FriendDots.cs); null when they wear one already
+                    e.DotTriedFor = found;
+                    e.Dot = GreenDot(found, Person.FirstOf(e.ToName) + ": a word to carry");   // the friends' small dot (WestworldScript.FriendDots.cs); null when they wear one already (tried once: the review)
                     Log.Detail("FOND errand: " + e.ToName + " is near (" + (int)new Ped(found).Position.DistanceTo(me.Position) + " m)");
                 }
             }
@@ -147,9 +155,7 @@ namespace EnrageWestworld.InGame
             // the one who sent it: fonder of you, and the memory; their handle may be anywhere (the log gets the position of the one you told)
             RecordEvent("help", "player", "you", e.FromId, e.FromName, ENTITY.GET_ENTITY_COORDS(t.Handle, true, true), me.Handle, me.Handle, t.Handle, Fondness.ErrandOutcome);
             _engine.ErrandCarried(e.FromId, e.FromName, e.ToId, e.ToName, g, madeUp);
-            FolkRef ac = _bridge != null ? _bridge.AcquaintanceAt(t.Handle) : null;
-            if (ac != null)
-                _bridge.LikeMore(ac.Id, Fondness.ErrandLiking);   // the one you told
+            // the one you told: their answer's own LikeDelta (Fondness.Deliver) went through TalkAnswer; not twice (the review)
             string fromAcq = FolkIdOf(e.FromId);
             if (fromAcq != null && _bridge != null)
                 _bridge.LikeMore(fromAcq, madeUp ? Fondness.ErrandLiking : Fondness.ErrandLiking / 2);   // the sender, one of enRAGE's townsfolk, by id (their body may be anywhere)

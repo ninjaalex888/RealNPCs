@@ -109,7 +109,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash(CampfireSit), 600000, true, 0u, -1f, false);
                 c.Sitters.Add(p);
                 _encounterPeds.Add(h);
-                c.Residents.Add(CampfireResident(p, c.Models[i], c.Seed + "|" + i));   // one of the nearest town's people, dressed as its regulars are (unseen yet)
+                c.Residents.Add(CampfireResident(c, p, c.Models[i], c.Seed + "|" + i));   // one of the nearest town's people, dressed as its regulars are (unseen yet)
             }
             if (c.Sitters.Count == 0)
             {
@@ -223,7 +223,8 @@ namespace EnrageWestworld.InGame
                             c.Line = 0;
                             _campfireSat++;
                             c.SatOnce = true;
-                            CampfireKeep(c);   // the men are kept from now on: they'll remember the night
+                            if (!c.Test)
+                                CampfireKeep(c);   // the men are kept from now on: they'll remember the night (a test keeps nobody: the review)
                             Log.Write("CAMPFIRE you sat down; the tale begins");
                         }
                     }
@@ -314,6 +315,8 @@ namespace EnrageWestworld.InGame
                 if (p == null || !p.Exists())
                     continue;   // the handle stays in _encounterPeds, so a death after is judged as any of ours
                 bool seen = me != null && me.Exists() && ENTITY.IS_ENTITY_ON_SCREEN(p.Handle) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, p.Handle, 17);
+                if (!seen && !p.IsDead)
+                    _resBind.Remove(p.Handle);   // the body goes: its name with it, before the handle is reused (the review)
                 Spawner.Release(p, !seen && !p.IsDead);   // deleted unseen; seen, let go to the game with their sit kept (the dead stay)
             }
             if (c.Fire != 0 && ENTITY.DOES_ENTITY_EXIST(c.Fire))
@@ -343,7 +346,7 @@ namespace EnrageWestworld.InGame
         /// an outfit of its own when the town has room, so he's cast in its street later and remembers the night), bound to
         /// this body, dressed as the regulars are. Not kept in the save until you sit with them. Null when there's no town
         /// near, or the acts are off.
-        private Resident CampfireResident(Ped p, uint model, string seed)
+        private Resident CampfireResident(CampfireRun c, Ped p, uint model, string seed)
         {
             if (!_cfg.FondnessActs || _store == null || _engine == null || p == null || !p.Exists())
                 return null;
@@ -354,17 +357,17 @@ namespace EnrageWestworld.InGame
             long g = _store.LastGameMin;
             bool dress = _cfg.RegularsDress;
             int outfits = dress ? OutfitsOf(h, model) : Regulars.PerModel;
-            int outfit = Regulars.NewOutfit(_store.Residents, town, model, outfits, _cfg.RegularsPerTown, seed);
+            var taken = new List<Resident>(_store.Residents);   // the town's regulars, and the men already at this fire (two of one build drew the same outfit: the review)
+            foreach (Resident other in c.Residents)
+                if (other != null)
+                    taken.Add(other);
+            int outfit = Regulars.NewOutfit(taken, town, model, outfits, _cfg.RegularsPerTown, seed);
             Resident r = _engine.MeetResident(model, false, town, "a drifter", seed, g, false);
-            if (outfit >= 0)
+            r.Outfit = outfit;   // -1: the town has no room for another regular (CampfireKeep reads it); Regular only once kept (an unkept Regular read as known everywhere: the review)
+            if (outfit >= 0 && dress)
             {
-                r.Regular = true;   // met again in that town's street, as its regulars are
-                r.Outfit = outfit;
-                if (dress)
-                {
-                    PED._EQUIP_META_PED_OUTFIT_PRESET(h, outfit, false);
-                    PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
-                }
+                PED._EQUIP_META_PED_OUTFIT_PRESET(h, outfit, false);
+                PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
             }
             _resBind[h] = new ResBind { R = r, Model = model };
             return r;
@@ -381,6 +384,10 @@ namespace EnrageWestworld.InGame
             {
                 if (r == null)
                     continue;
+                if (r.Outfit >= 0)
+                    r.Regular = true;   // met again in that town's street, as its regulars are
+                else
+                    r.Outfit = 0;       // no room among the regulars: a kept resident, never recast
                 _engine.KeepResident(r, g);
                 kept++;
                 names = names == null ? r.Name + (r.Regular ? "" : " (no room among the regulars)") : names + ", " + r.Name + (r.Regular ? "" : " (no room among the regulars)");

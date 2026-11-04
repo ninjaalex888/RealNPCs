@@ -159,8 +159,8 @@ namespace EnrageWestworld.InGame
         {
             dollars = 0;
             debtor = 0;
-            if (!_cfg.FondnessActs || _director == null || _director.CurrentKind != "debt" || _director.CurrentIntruded)
-                return false;
+            if (!_cfg.FondnessActs || _director == null || _director.CurrentKind != "debt" || _director.CurrentIntruded || _director.CurrentIndex < 2)
+                return false;   // the creditor has said why he's here (two beats in; the review: a word during his walk-over left the scene waiting on it)
             Scene s = _director.CurrentScene;
             Ped a = _director.CastAt(0), b = _director.CastAt(1);
             if (s == null || s.Amount <= 0 || a == null || b == null || !a.Exists() || !b.Exists() || a.Handle != target || b.IsDead)
@@ -174,7 +174,7 @@ namespace EnrageWestworld.InGame
         private bool DebtStillPressed(TalkMenu t)
         {
             int dollars, debtor;
-            return DebtCoverable(t.Handle, out dollars, out debtor) && debtor == t.Debtor;
+            return DebtCoverable(t.Handle, out dollars, out debtor) && debtor == t.Debtor && !PED.IS_PED_IN_COMBAT(t.Debtor, 0) && !PED.IS_PED_IN_COMBAT(t.Handle, 0);
         }
 
         /// He covered what the man owed; the creditor has answered and been paid: the debtor's kindness (a
@@ -224,14 +224,15 @@ namespace EnrageWestworld.InGame
                       (settled ? "; their debt worry is settled" : "") + (rewritten ? "" : "; the scene had already turned"));
         }
 
-        /// The scenario this person is using, by name (null for none, or one the add-on has no name for).
+        /// The performer's scenario this person is using, by name (null for anyone else: the game's type hash against
+        /// Fondness.PerformerNames; the mind's own scenario list knows only the piano: the review).
         private static string PerformerScenario(int h)
         {
             try
             {
                 if (!PED.IS_PED_USING_ANY_SCENARIO(h))
                     return null;
-                return MindScenarios.NameOf((uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h));
+                return Fondness.PerformerScenario((uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h));
             }
             catch
             {
@@ -239,10 +240,10 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// At the piano, the guitar or the banjo.
+        /// At the piano, the guitar, the banjo or the fiddle.
         private static bool PerformerAt(int h)
         {
-            return Fondness.Performer(PerformerScenario(h));
+            return PerformerScenario(h) != null;
         }
 
         /// A performer's identity, made if need be (a resident of this town, so they remember the face): false for one of

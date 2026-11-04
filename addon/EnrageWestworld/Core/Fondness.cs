@@ -476,9 +476,9 @@ namespace EnrageWestworld.Core
             SceneTie best = null;
             foreach (SceneTie t in ties)
             {
-                if (t == null || !t.Has(id) || t.Kind == "lift" || t.Kind == "pickpocket" || t.Kind == "mugging" || now - t.At < 0 || now - t.At >= 7 * 1440L)
-                    continue;
-                if (!(t.Warmth < 0 || (t.Courted && t.Warmth <= 0 && t.Kind != "makeup")))
+                if (t == null || !t.Has(id) || t.Kind == "lift" || t.Kind == "pickpocket" || t.Kind == "mugging" || t.Kind == "makeup" || now - t.At < 0 || now - t.At >= 7 * 1440L)
+                    continue;   // a quarrel mended (by a carried word, or their own making up) isn't a quarrel (the review: a tie at -3 mended to -1 was offered again)
+                if (!(t.Warmth < 0 || (t.Courted && t.Warmth <= 0)))
                     continue;
                 string other = t.A == id ? t.B : t.A;
                 if (other == null || other == "player" || string.IsNullOrEmpty(t.Other(id)) || (town != null && t.Town != null && t.Town != town) || (alive != null && !alive(other)))
@@ -618,8 +618,37 @@ namespace EnrageWestworld.Core
         public const int TipCents = 25;
         public const string TipOutcome = "a coin for the music";   // the charity happening's outcome (Thanks reads it back as "tip")
 
-        /// Whether this scenario makes its user a performer worth a coin: the piano, the guitar, the banjo (the game's own
-        /// scenario names, lower-case).
+        /// The game's own scenario types that make their user a performer worth a coin: the piano, the guitar (and its
+        /// hand-off, pick-up, rest, put-down and wander), the banjo (the same), the fiddle bench. By hash, as the game
+        /// names the type someone is using (the review: the mind's own scenario list knows only the piano).
+        public static readonly string[] PerformerNames =
+        {
+            "PROP_HUMAN_PIANO", "WORLD_HUMAN_GUITAR", "WORLD_HUMAN_GUITAR_HANDOFF", "WORLD_HUMAN_GUITAR_PICKUP", "WORLD_HUMAN_GUITAR_RESTING", "WORLD_HUMAN_GUITAR_PUTDOWN", "WORLD_HUMAN_GUITAR_WANDER",
+            "PROP_HUMAN_SEAT_CHAIR_BANJO", "PROP_HUMAN_SEAT_CHAIR_BANJO_HANDOFF", "PROP_HUMAN_SEAT_CHAIR_BANJO_RESTING", "WORLD_HUMAN_BANJO_PICKUP", "WORLD_HUMAN_BANJO_PUTDOWN", "WORLD_HUMAN_BANJO_WANDER",
+            "PROP_HUMAN_SEAT_BENCH_FIDDLE", "PROP_HUMAN_SEAT_BENCH_FIDDLE_UPBEAT"
+        };
+        private static Dictionary<uint, string> _performers;
+
+        /// The performer's scenario name for this type hash, or null for anyone else's. No allocation after the first call.
+        public static string PerformerScenario(uint hash)
+        {
+            if (_performers == null)
+            {
+                var d = new Dictionary<uint, string>();
+                foreach (string n in PerformerNames)
+                    d[MindScenarios.Joaat(n)] = n;
+                _performers = d;
+            }
+            string s;
+            return _performers.TryGetValue(hash, out s) ? s : null;
+        }
+
+        public static bool Performer(uint hash)
+        {
+            return PerformerScenario(hash) != null;
+        }
+
+        /// Whether this scenario makes its user a performer worth a coin, by name (the tests; the game asks by hash).
         public static bool Performer(string scenario)
         {
             if (string.IsNullOrEmpty(scenario))

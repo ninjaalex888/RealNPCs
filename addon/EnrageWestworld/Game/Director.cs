@@ -296,6 +296,7 @@ namespace EnrageWestworld.InGame
         public SceneCast CurrentInfo { get { return _live != null ? _live.Info : null; } }
         public string CurrentSeed { get { return _live != null ? _live.Seed : null; } }
         public bool CurrentIntruded { get { return _live != null && _live.Intruded; } }
+        public int CurrentIndex { get { return _live != null ? _live.Index : 0; } }   // the next beat's index: how far the scene has played
 
         /// The full scene waits: its next beat no sooner than `ms` from now (the Talk menu open on one of its people).
         public void HoldLive(int ms)
