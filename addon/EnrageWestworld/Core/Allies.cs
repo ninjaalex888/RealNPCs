@@ -141,6 +141,47 @@ namespace EnrageWestworld.Core
             return Voice.Pick(seed + "shout", road ? RoadComing : armed ? ComingArmed : Coming);
         }
 
+        // ---- the friend from the road rides in (SIXDAY item 2; [Encounters] AlliesRide) ----------------------------------
+
+        /// Horses a townsman might own, by the game's own model names (a saddle horse, nothing a gang would ride).
+        public static readonly string[] HorseModels = { "A_C_Horse_KentuckySaddle_Grey", "A_C_Horse_Morgan_Bay", "A_C_Horse_Tennesseewalker_Chestnut", "A_C_Horse_AmericanStandardbred_Black", "A_C_Horse_KentuckySaddle_Black" };
+        public const float RideMinMetres = 45f, RideMaxMetres = 70f;   // made further off than a man on foot (30-45), so the ride shows
+        public const float DismountMetres = 14f;   // down off the horse this near you, and in on foot
+        public const int RideNoProgressMs = 8000;  // no nearer in this long (the horse won't take the order): down and run, as before
+        public const int RideMostMs = 40000;       // and however it goes, off the horse by then
+
+        public static string HorseModel(string seed)
+        {
+            return HorseModels[Voice.Hash(seed + "|horse") % HorseModels.Length];
+        }
+
+        // ---- an ally who fell (SIXDAY item 2; [Encounters] AlliesGrieved) ----------------------------------------------
+
+        /// What those who knew the fallen think the less of you by: enRAGE's fondness (the setting for a friend, a third of
+        /// it for someone merely known) and our own affection.
+        public static int FellLiking(bool friend, int setting)
+        {
+            return friend ? setting : setting / 3;
+        }
+
+        public static int FellAffection(bool friend)
+        {
+            return friend ? 10 : 4;
+        }
+
+        /// The town's word of it, that evening.
+        public static string FellNews(string deadFirst, string yourName)
+        {
+            string you = yourName != null ? Person.FirstOf(yourName) ?? yourName : "the stranger";
+            return deadFirst + " is dead: stood with " + you + " when the guns came out, and took a bullet meant for " + (yourName != null ? "him" : "the stranger") + ".";
+        }
+
+        /// To you, as they fall.
+        public static string FellCaption(string deadName)
+        {
+            return (Person.FirstOf(deadName) ?? "Your friend") + " fell standing with you.";
+        }
+
         public static string After(bool foesRan, bool hurt, string seed)
         {
             return Voice.Pick(seed + "after", hurt ? AfterHurt : foesRan ? AfterRan : AfterWon);
@@ -154,7 +195,8 @@ namespace EnrageWestworld.Core
 
         public static IEnumerable<string> AllLines()
         {
-            return Coming.Concat(ComingArmed).Concat(AfterWon).Concat(AfterRan).Concat(AfterHurt).Concat(RoadComing);
+            return Coming.Concat(ComingArmed).Concat(AfterWon).Concat(AfterRan).Concat(AfterHurt).Concat(RoadComing)
+                         .Concat(new[] { FellNews("Abner", "Arthur Morgan"), FellNews("Abner", null), FellCaption("Abner Tuck") });
         }
     }
 }

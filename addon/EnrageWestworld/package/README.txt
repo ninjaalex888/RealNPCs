@@ -159,7 +159,11 @@ NEW IN 0.7.19
   for a friend, cowards never, a woman only against fists; against guns they're given a
   revolver. They shout as they come, go for your attackers, and have a word with you after;
   they remember standing with you, and enRAGE's townsfolk think better of you for it. Out of
-  the towns a friend from a town's ledger may happen by. Not yet seen in game.
+  the towns a friend from a town's ledger may happen by, on horseback (AlliesRide, on), and come
+  in off the horse. An ally who dies standing with you is grieved by those who knew them, who
+  lose AlliesGrievedLiking (15) of their fondness for you (a third for someone who merely knew
+  them) and remember whose quarrel it was; the town has it by evening (AlliesGrieved, on). Not
+  yet seen in game.
 - Thoughts follow the moment they're in: someone fighting you (fists or guns), fighting
   someone else, running for their life, knocked down, hurt, or looking down your barrel
   thinks of that before anything, awake or not, with or without the AI model (the line is

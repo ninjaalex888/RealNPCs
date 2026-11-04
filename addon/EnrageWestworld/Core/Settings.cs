@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 206;
+        public const int CurrentVersion = 207;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -256,6 +256,9 @@ namespace EnrageWestworld.Core
         public bool FondnessActs = true;     // [Encounters] more ways to win people over through Talk: whiskey for the house in a saloon, a gift, condolences to someone grieving (Core/Fondness.cs; SIXDAY item 1, 2026-11-04; settings version 206)
         public bool KindnessSeen = true;     // [Encounters] the named people who see you do a kindness to someone else (a drink stood, money given, a hand up, a bully faced, a mercy) think better of you too (settings version 206)
         public int KindnessSeenLiking = 5;   // ... enRAGE's fondness each of them gains (0-30); our residents' affection moves a little on its own
+        public bool AlliesRide = true;       // [Encounters] the friend from the road comes on horseback (45-70 m off, down off the horse near you); off: on foot, 30-45 m off, as before (SIXDAY item 2; settings version 207)
+        public bool AlliesGrieved = true;    // [Encounters] an ally who dies standing with you is grieved by those who knew them, who think the less of you for it, and the town has it by evening
+        public int AlliesGrievedLiking = 15; // ... enRAGE's fondness a friend of the fallen loses (0-50; a third of it for someone who merely knew them)
 
         // [World]
         public bool Deeds = true;
@@ -796,6 +799,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 207)
+                    log?.Invoke("Settings: new in this version: [Encounters] AlliesRide (on): the friend from the road rides in on horseback; AlliesGrieved (on), AlliesGrievedLiking (15): an ally who dies standing with you is grieved by those who knew them, who think the less of you for it.");
                 if (s.SettingsVersion < 206)
                     log?.Invoke("Settings: new in this version: [Encounters] FondnessActs (on): whiskey for the house, a gift and condolences in Talk; KindnessSeen (on) and KindnessSeenLiking (5): people who see you do a kindness to someone else think better of you too.");
                 if (s.SettingsVersion < 205)
@@ -954,6 +959,7 @@ namespace EnrageWestworld.Core
             AlliesDotScale = Math.Max(0.2f, Math.Min(2f, AlliesDotScale));
             GreetLiking = Math.Max(0, Math.Min(50, GreetLiking));
             KindnessSeenLiking = Math.Max(0, Math.Min(30, KindnessSeenLiking));
+            AlliesGrievedLiking = Math.Max(0, Math.Min(50, AlliesGrievedLiking));
             GatheringHostile = Math.Max(0, Math.Min(100, GatheringHostile));
             LawShootsThieves = Math.Max(0, Math.Min(100, LawShootsThieves));
             ActThoughtEachSeconds = Math.Max(20, Math.Min(600, ActThoughtEachSeconds));
@@ -1343,6 +1349,9 @@ namespace EnrageWestworld.Core
             b.AppendLine("FondnessActs = " + B(FondnessActs) + "   ; more ways to win people over through Talk (Q, locked on): whiskey for the house ($2, in a saloon with two or more others at the bar: the room cheers and everyone treated is fonder of you, the drunk most), a gift (forty cents: a pouch of tobacco for a man, a tin of peaches for a woman; the proud take a gift where they'd refuse money, the poor are fondest of one), and condolences to someone grieving a friend (thrown back by anyone who knows you killed them)");
             b.AppendLine("KindnessSeen = " + B(KindnessSeen) + "   ; the named people who see you do a kindness to someone else from within 12 m (a drink stood, money or a gift given, a debt paid, a hand up, a bully faced, a mercy shown) think better of you too, and remember seeing you do right");
             b.AppendLine("KindnessSeenLiking = " + KindnessSeenLiking + "   ; enRAGE's fondness for you (the bar under people) that each of them gains for it (0 to 30; 0: only our own people's affection moves)");
+            b.AppendLine("AlliesRide = " + B(AlliesRide) + "   ; the friend from a town's ledger who happens by on the road comes on horseback, 45-70 m off, and is down off the horse and in on foot near you (if the horse won't take the order within 8 s they run in as before); off: on foot, 30-45 m off");
+            b.AppendLine("AlliesGrieved = " + B(AlliesGrieved) + "   ; an ally who dies standing with you is grieved by those who knew them: their friends lose AlliesGrievedLiking of their fondness for you (a third of it for someone who merely knew them), remember whose quarrel it was, and the town has it by evening");
+            b.AppendLine("AlliesGrievedLiking = " + AlliesGrievedLiking + "   ; enRAGE's fondness a friend of the fallen loses (0 to 50)");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: the awake stand in a silent circle, facing in: from midnight to half past three out in the wilds (once a night), and with GatheringHours any by day too, in an open field or just outside a town's edge");

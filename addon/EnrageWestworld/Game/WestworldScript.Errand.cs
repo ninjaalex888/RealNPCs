@@ -149,7 +149,10 @@ namespace EnrageWestworld.InGame
             _engine.ErrandCarried(e.FromId, e.FromName, e.ToId, e.ToName, g, madeUp);
             FolkRef ac = _bridge != null ? _bridge.AcquaintanceAt(t.Handle) : null;
             if (ac != null)
-                _bridge.LikeMore(ac.Id, Fondness.ErrandLiking);   // the one you told (the sender's enRAGE fondness waits on meeting them: the engine's affection moves now)
+                _bridge.LikeMore(ac.Id, Fondness.ErrandLiking);   // the one you told
+            string fromAcq = FolkIdOf(e.FromId);
+            if (fromAcq != null && _bridge != null)
+                _bridge.LikeMore(fromAcq, madeUp ? Fondness.ErrandLiking : Fondness.ErrandLiking / 2);   // the sender, one of enRAGE's townsfolk, by id (their body may be anywhere)
             _errandsDelivered++;
             _errandLast = e.ToName + (madeUp ? " took " : " sent back ") + Person.FirstOf(e.FromName) + "'s word";
             _fondLast = _errandLast;

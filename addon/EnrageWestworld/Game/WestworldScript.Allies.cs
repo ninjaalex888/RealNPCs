@@ -39,7 +39,21 @@ namespace EnrageWestworld.InGame
         private readonly List<Ally> _allies = new List<Ally>();
         private readonly List<int> _alliesFoes = new List<int>();
         private readonly Dictionary<int, int> _alliesAskedAt = new Dictionary<int, int>();
-        private int _alliesNextAt, _alliesFightSince, _alliesFoeAt, _alliesRoadAt, _alliesRoadTriedFor, _alliesCame, _alliesRoadCame, _alliesFights, _alliesFell, _alliesTestFriend, _alliesTestMan;
+        private int _alliesNextAt, _alliesFightSince, _alliesFoeAt, _alliesRoadAt, _alliesRoadTriedFor, _alliesCame, _alliesRoadCame, _alliesFights, _alliesFell, _alliesTestFriend, _alliesTestMan, _alliesRode, _alliesGrieved;
+        private const ulong SetPedOntoMount = 0x028F76B6E78246EB, TaskDismountAnimal = 0x48E92D3DDE23C23A;   // by hash: the API's wrappers differ between builds (the 0.7.7 lesson)
+
+        /// The friend from the road on their way in on horseback (SIXDAY item 2; [Encounters] AlliesRide).
+        private sealed class AllyRide
+        {
+            public Ped Rider, Horse;
+            public Resident Friend;
+            public int Since, CheckedAt, DismountAt;
+            public float LastD;
+            public bool Dismounting;
+        }
+
+        private AllyRide _alliesRide;
+        private uint _alliesPendHorse;
         private string _alliesLast, _alliesWhyNot;
         // a body on its way (the Testing row's revolver man, a friend from the road): made when the game has their model
         // streamed in. Spawner.Spawn only asks for a model it hasn't got and makes nobody that call (Lex, 2026-11-03: the
@@ -78,6 +92,8 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             if (me == null || !me.Exists())
                 return;
+            if (_alliesRide != null)
+                AlliesRideStep(me, now);   // the friend from the road on horseback
             foreach (Ally gone in _allies)
                 if (!ENTITY.DOES_ENTITY_EXIST(gone.Handle))
                     AllyDotClear(gone);
@@ -255,6 +271,41 @@ namespace EnrageWestworld.InGame
             return a;
         }
 
+        /// An ally who died standing with you: those who knew them hear of it and think the less of you (our affection and
+        /// their memory through the engine; enRAGE's fondness through its own method), the town has it by evening,
+        /// and you're told now (SIXDAY item 2; Core/Engine.Allies.cs).
+        private void AllyFell(Ally a, int now)
+        {
+            if (!_cfg.AlliesGrieved || a == null || a.Id == null || _engine == null)
+                return;
+            try
+            {
+                Feed.Notice("RealNPCs", Allies.FellCaption(a.Name));
+                List<KeyValuePair<string, bool>> mourners = _engine.AllyFell(a.Id, a.Name, _placeTown, _store.LastGameMin, YourFullName());
+                int folk = 0;
+                foreach (KeyValuePair<string, bool> m in mourners)
+                {
+                    string acq = FolkIdOf(m.Key);
+                    if (acq == null)
+                        continue;
+                    _bridge.LikeMore(acq, -Allies.FellLiking(m.Value, _cfg.AlliesGrievedLiking));   // enRAGE's own method for its own townsfolk, by id (their bodies may be anywhere)
+                    folk++;
+                }
+                _alliesGrieved++;
+                Log.Write("ALLIES " + a.Name + "'s death costs you: " + mourners.Count + " who knew them think the less of you (" + folk + " of enRAGE's townsfolk, -" + _cfg.AlliesGrievedLiking + " a friend); the town will talk of it this evening");
+            }
+            catch (Exception ex)
+            {
+                Log.Write("ALLIES the death's cost couldn't be counted for " + a.Name + ": " + ex.Message);
+            }
+        }
+
+        /// enRAGE's own id for one of its townsfolk from the add-on's lasting id ("folk:<id>"), null for anyone else.
+        private static string FolkIdOf(string lastingId)
+        {
+            return lastingId != null && lastingId.StartsWith("folk:", StringComparison.Ordinal) && lastingId.Length > 5 ? lastingId.Substring(5) : null;
+        }
+
         /// A small green dot on the map on each ally while they're with you (Lex, 2026-11-03: "light green mini dots on the
         /// minimap, similar to the mini white dots"): the game's own companion dot (the small dot the enemy's is, in the
         /// companions' colour), recoloured by [Encounters] AlliesDotColour (a blip modifier's name; empty keeps the
@@ -314,8 +365,15 @@ namespace EnrageWestworld.InGame
             bool ready = Spawner.Ready(friend.Model);   // streaming starts now
             _alliesPendKind = "road";
             _alliesPendModel = friend.Model;
-            _alliesPendMin = 30f;
-            _alliesPendMax = 45f;
+            _alliesPendHorse = 0;
+            if (_cfg.AlliesRide)
+            {
+                _alliesPendHorse = Natives.Hash(Allies.HorseModel(friend.Id + "|" + now));
+                if (!Spawner.Ready(_alliesPendHorse))   // the horse's model asked for beside the rider's; made only if it's in by then
+                    Log.Detail("ALLIES the horse's body is streaming in");
+            }
+            _alliesPendMin = _cfg.AlliesRide ? Allies.RideMinMetres : 30f;
+            _alliesPendMax = _cfg.AlliesRide ? Allies.RideMaxMetres : 45f;
             _alliesPendSince = now;
             _alliesPendFriend = friend;
             Log.Write("ALLIES " + friend.Name + " of " + (friend.Town ?? "the ledger") + " is on the way from the road (" + (ready ? "body ready" : "body streaming in") + ")");
@@ -390,7 +448,126 @@ namespace EnrageWestworld.InGame
             _resBind[h] = new ResBind { R = friend, Model = friend.Model };
             _encounterPeds.Add(h);
             _alliesRoadAt = now;
+            if (_cfg.AlliesRide && _alliesPendHorse != 0 && AlliesRideIn(p, friend, now))
+                return;   // on horseback: in once they're down off it (AlliesRideStep)
             AllyStart(p, friend.Id, friend.Name, true, true, now, "a friend from " + (friend.Town ?? "the ledger") + ", happening by");
+        }
+
+        /// The friend on horseback: a horse made under them where they stand (unseen), the two sent your way at a canter;
+        /// off the horse near you and in on foot (AlliesRideStep). False when no horse could be made: in on foot as before.
+        private bool AlliesRideIn(Ped p, Resident friend, int now)
+        {
+            try
+            {
+                if (!Spawner.Ready(_alliesPendHorse))
+                {
+                    Log.Write("ALLIES " + friend.Name + "'s horse never streamed in: on foot");
+                    return false;
+                }
+                Vector3 at = p.Position;
+                float heading = ENTITY.GET_ENTITY_HEADING(p.Handle);
+                Ped horse = Spawner.Spawn(_alliesPendHorse, at, heading);
+                if (horse == null)
+                {
+                    Log.Write("ALLIES no horse for " + friend.Name + " (" + (Spawner.LastSpawnWhy ?? "the game made none") + "): on foot");
+                    return false;
+                }
+                Function.Call(SetPedOntoMount, p.Handle, horse.Handle, -1, true);
+                Ped me = Game.Player.Character;
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, true);
+                TASK.TASK_GO_TO_ENTITY(p.Handle, me.Handle, 30000, 6f, 2.5f, 0f, 0);   // the rider's order drives the mount (checked: no nearer in 8 s and they're down and running)
+                _alliesRide = new AllyRide { Rider = p, Horse = horse, Friend = friend, Since = now, CheckedAt = now, LastD = at.DistanceTo(me.Position) };
+                Speech.SayTag(p.Handle, "fight", me.Handle);
+                SpeechCaption(Person.FirstOf(friend.Name), Allies.Shout(true, true, friend.Id + "|ride|" + now), p.Handle, 2500, true);
+                Log.Write("ALLIES " + friend.Name + " rides in from " + (int)_alliesRide.LastD + " m off (" + Allies.HorseModel(friend.Id + "|" + now) + ")");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Write("ALLIES the ride failed (" + ex.Message + "): on foot");
+                _alliesRide = null;
+                return false;
+            }
+        }
+
+        /// Every allies tick while a friend rides in: down off the horse near you (or when the horse won't come, or the
+        /// fight's over), then in on foot as any ally; the horse given back to the game.
+        private void AlliesRideStep(Ped me, int now)
+        {
+            AllyRide r = _alliesRide;
+            if (r == null)
+                return;
+            try
+            {
+                if (r.Rider == null || !r.Rider.Exists() || r.Rider.IsDead)
+                {
+                    AlliesRideEnd("the rider's gone", false);
+                    return;
+                }
+                int h = r.Rider.Handle;
+                if (r.Dismounting)
+                {
+                    if (!PED.IS_PED_ON_MOUNT(h) || now - r.DismountAt > 4000)
+                    {
+                        AlliesRideEnd(null, true);   // down (or stuck on the horse: let go of it anyway): in on foot
+                        if (_alliesFoes.Count > 0)
+                            AllyStart(r.Rider, r.Friend.Id, r.Friend.Name, true, true, now, "a friend from " + (r.Friend.Town ?? "the ledger") + ", riding in");
+                        else
+                            AlliesLetGo(h);   // the fight ended on the way: the game's again
+                    }
+                    return;
+                }
+                float d = r.Rider.Position.DistanceTo(me.Position);
+                bool mounted = PED.IS_PED_ON_MOUNT(h);
+                bool near = d <= Allies.DismountMetres;
+                bool stuck = now - r.CheckedAt >= Allies.RideNoProgressMs && d > r.LastD - 5f;
+                bool over = _alliesFoes.Count == 0 && _alliesFightSince == 0;
+                if (near || stuck || over || !mounted || now - r.Since > Allies.RideMostMs)
+                {
+                    if (mounted)
+                        Function.Call(TaskDismountAnimal, h, 0, 0, 0, 0, 0);
+                    r.Dismounting = true;
+                    r.DismountAt = now;
+                    Log.Write("ALLIES " + r.Friend.Name + (near ? " is here" : stuck ? "'s horse won't come" : over ? ": the fight's over" : !mounted ? " never got on the horse" : " rode long enough") + ": down and " + (over ? "away" : "in on foot") + " (" + (int)d + " m)");
+                    return;
+                }
+                if (now - r.CheckedAt >= Allies.RideNoProgressMs)
+                {
+                    r.CheckedAt = now;
+                    r.LastD = d;
+                    TASK.TASK_GO_TO_ENTITY(h, me.Handle, 30000, 6f, 2.5f, 0f, 0);   // the order again, in case the game took it
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Write("ALLIES the ride step failed (" + ex.Message + ")");
+                AlliesRideEnd("it failed", false);
+            }
+        }
+
+        /// The horse given back to the game (it wanders off; never deleted in sight), the ride forgotten.
+        private void AlliesRideEnd(string why, bool rodeIn)
+        {
+            AllyRide r = _alliesRide;
+            _alliesRide = null;
+            if (r == null)
+                return;
+            if (rodeIn)
+                _alliesRode++;
+            try
+            {
+                if (r.Horse != null && r.Horse.Exists())
+                    Spawner.Release(r.Horse, false);
+            }
+            catch
+            {
+            }
+            if (why != null)
+            {
+                Log.Write("ALLIES the ride ends: " + why);
+                if (r.Rider != null && r.Rider.Exists() && !_allies.Any(a => a.Handle == r.Rider.Handle))
+                    AlliesLetGo(r.Rider.Handle);
+            }
         }
 
         /// The Testing row's man is here: a revolver, and at you.
@@ -422,6 +599,7 @@ namespace EnrageWestworld.InGame
                     fell++;
                     _alliesFell++;
                     Log.Write("ALLIES " + a.Name + " fell standing with you");
+                    AllyFell(a, now);   // grieved by those who knew them, at a cost to you ([Encounters] AlliesGrieved)
                     if (a.Road)
                         AlliesLetGo(h);
                     continue;
@@ -545,7 +723,7 @@ namespace EnrageWestworld.InGame
 
         private string AlliesStatus()
         {
-            return (_cfg.AlliesHelp ? "on" : "off ([Encounters] AlliesHelp)") + "; " + _alliesFights + " fights of yours seen, " + _alliesCame + " came to your aid (" + _alliesRoadCame + " from the road), " + _alliesFell + " fell" +
+            return (_cfg.AlliesHelp ? "on" : "off ([Encounters] AlliesHelp)") + "; " + _alliesFights + " fights of yours seen, " + _alliesCame + " came to your aid (" + _alliesRoadCame + " from the road, " + _alliesRode + " on horseback), " + _alliesFell + " fell (" + _alliesGrieved + " grieved at a cost to you)" + (_alliesRide != null ? ", one riding in now" : "") +
                    (_allies.Count > 0 ? "; " + _allies.Count + " with you now" : "") + (_alliesPendKind != null ? "; " + (_alliesPendKind == "test" ? "the test's man" : "a friend from the road") + " on the way" : "") +
                    (_alliesLast != null ? "; last: " + _alliesLast : "") + (_alliesWhyNot != null ? "; held back lately: " + _alliesWhyNot : "");
         }
