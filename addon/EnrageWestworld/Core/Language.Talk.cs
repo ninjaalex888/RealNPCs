@@ -32,6 +32,7 @@ namespace EnrageWestworld.Core
                 case "house": return "He buys whiskey for everyone in the saloon, you among them.";
                 case "gift": return "He hands you a small gift (tobacco, or a tin of peaches), asking nothing for it.";
                 case "condole": return "He says he is sorry about the death of your friend.";
+                case "cover": return "He offers to pay you, in full and here and now, the money the man you are pressing owes you.";
                 case "threaten": return "He tells you to watch yourself, and means it as a threat.";
                 default: return "He says good day.";
             }

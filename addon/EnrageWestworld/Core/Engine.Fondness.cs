@@ -47,6 +47,52 @@ namespace EnrageWestworld.Core
                 }, now);
         }
 
+        /// The player covered their debt while the creditor stood over them: fonder of him by a lot, and a memory of it
+        /// (the "debtpaid|did" pools). The worry itself is settled by SettleWorry where it's their debt worry.
+        public void DebtCovered(string id, string name, long now)
+        {
+            PersonState st = MindOf(id, name);
+            if (st == null)
+                return;
+            st.Talks++;
+            st.Sightings = Math.Max(st.Sightings, 1);
+            st.Affection = Romance.Clamp(st.Affection + Fondness.CoverDebtorAffection, -100, 100);
+            if (Cfg.Minds)
+                Minds.Note(st.Mind, new MindMemory
+                {
+                    Kind = "deed:kindness", Sub = "debtpaid", How = "did", Who = new List<string> { "player" },
+                    Town = CurrentTown, At = now, Feel = 3, Strength = 80, Key = "debtpaid:" + now / 60
+                }, now);
+        }
+
+        /// The creditor the player paid: a little fonder (he got his money).
+        public void PaidByYou(string id, string name)
+        {
+            PersonState st = MindOf(id, name);
+            if (st == null)
+                return;
+            st.Sightings = Math.Max(st.Sightings, 1);
+            st.Affection = Romance.Clamp(st.Affection + Fondness.CoverPaidAffection, -100, 100);
+        }
+
+        /// One of the men at a fire the player sat at: fonder of him, and a memory of the night (the "campfire|did" pools),
+        /// so a regular of the nearest town who was at that fire remembers him in the street.
+        public void CampfireShared(string id, string name, long now)
+        {
+            PersonState st = MindOf(id, name);
+            if (st == null)
+                return;
+            st.Talks++;
+            st.Sightings = Math.Max(st.Sightings, 1);
+            st.Affection = Romance.Clamp(st.Affection + Fondness.CampfireAffection, -100, 100);
+            if (Cfg.Minds)
+                Minds.Note(st.Mind, new MindMemory
+                {
+                    Kind = "deed:kindness", Sub = "campfire", How = "did", Who = new List<string> { "player" },
+                    Town = CurrentTown, At = now, Feel = 2, Strength = 55, Key = "campfire:" + now / 180
+                }, now);
+        }
+
         /// The first name of a friend this person grieves (word of the death reached them within `days`), with the dead
         /// one's id; null when nobody. For condolences (Fondness.Condole).
         public string GrievesFor(string id, int days, out string deadId)

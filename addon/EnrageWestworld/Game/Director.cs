@@ -290,6 +290,38 @@ namespace EnrageWestworld.InGame
             return l != null && i >= 0 && i < l.Cast.Length ? l.Cast[i] : null;
         }
 
+        /// The full scene playing, its cast's description and its seed (null with none): for the Talk menu's word with the
+        /// creditor of a debt scene (WestworldScript.Fondness.cs).
+        public Scene CurrentScene { get { return _live != null ? _live.Scene : null; } }
+        public SceneCast CurrentInfo { get { return _live != null ? _live.Info : null; } }
+        public string CurrentSeed { get { return _live != null ? _live.Seed : null; } }
+        public bool CurrentIntruded { get { return _live != null && _live.Intruded; } }
+
+        /// The full scene waits: its next beat no sooner than `ms` from now (the Talk menu open on one of its people).
+        public void HoldLive(int ms)
+        {
+            Live l = _live;
+            if (l != null)
+                l.NextAt = Math.Max(l.NextAt, Game.GameTime + ms);
+        }
+
+        /// The rest of the full scene replaced by `s` (the player's step-in rewrites it the same way): the beats given
+        /// play from here, then the scene ends as any other. False with no scene, or one already rewritten or fighting.
+        public bool Rewrite(Scene s, string why)
+        {
+            Live l = _live;
+            if (l == null || s == null || s.Beats.Count == 0 || l.Intruded || l.Fighting)
+                return false;
+            Scene r = new Scene { Kind = l.Scene.Kind, Cast = l.Scene.Cast, Fight = l.Scene.Fight, Summary = s.Summary ?? l.Scene.Summary, Amount = l.Scene.Amount };
+            r.Beats.AddRange(s.Beats.Where(b => b.Who < l.Cast.Length));
+            l.Scene = r;
+            l.Index = 0;
+            l.Intruded = true;
+            l.NextAt = Game.GameTime + 300;
+            Log.Write("SCENE " + r.Kind + ": " + why);
+            return true;
+        }
+
         /// How far `at` is from the nearest of either full scene's people (float.MaxValue with none playing): the encounters keep
         /// clear of the full scenes (NIGHT4 item 6, the review across features). No allocation.
         public float FullSceneMetres(Vector3 at)

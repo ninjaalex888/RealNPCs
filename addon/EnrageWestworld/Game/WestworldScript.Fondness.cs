@@ -20,7 +20,7 @@ namespace EnrageWestworld.InGame
         private readonly List<int> _kindSeenHandles = new List<int>();   // the witnesses of the happening being written, from near (RecordEvent)
         private bool _kindSeenOff;   // the house's own per-person happenings are no fresh kindness to be seen (one sighting for the round, not eight)
         private bool _kindSeenFailed;
-        private int _kindSeenTimes, _kindSeenPeople, _houseRounds, _houseCheered, _houseTreated;
+        private int _kindSeenTimes, _kindSeenPeople, _houseRounds, _houseCheered, _houseTreated, _coverDebts, _campfireRemembered;
         private string _fondLast;
 
         /// From RecordEvent, once the witnesses are known: a kindness of the player's, seen from near by named people.
@@ -153,11 +153,82 @@ namespace EnrageWestworld.InGame
             Log.Write("FOND round: you stood the house a drink" + (_placeTown != null ? " in " + _placeTown : "") + "; " + cheered + " cheered, " + treated + " of them people you know" + (cheered == 0 ? " (nobody free at the bar)" : ""));
         }
 
+        /// The creditor of the debt scene playing (its first, pressing its second, who is alive and still in it): what the
+        /// stranger can cover, and for whom. Nothing once the scene is rewritten (a step-in, a cover already paid).
+        private bool DebtCoverable(int target, out int dollars, out int debtor)
+        {
+            dollars = 0;
+            debtor = 0;
+            if (!_cfg.FondnessActs || _director == null || _director.CurrentKind != "debt" || _director.CurrentIntruded)
+                return false;
+            Scene s = _director.CurrentScene;
+            Ped a = _director.CastAt(0), b = _director.CastAt(1);
+            if (s == null || s.Amount <= 0 || a == null || b == null || !a.Exists() || !b.Exists() || a.Handle != target || b.IsDead)
+                return false;
+            dollars = s.Amount;
+            debtor = b.Handle;
+            return true;
+        }
+
+        /// Whether the creditor's scene is still the one the list opened on.
+        private bool DebtStillPressed(TalkMenu t)
+        {
+            int dollars, debtor;
+            return DebtCoverable(t.Handle, out dollars, out debtor) && debtor == t.Debtor;
+        }
+
+        /// He covered what the man owed; the creditor has answered and been paid: the debtor's kindness (a
+        /// settled debt for the thanks, the trust and the mind; their own debt worry, when that's what it is, settled for
+        /// the rest of its run), the creditor a little fonder, and the scene's end: the creditor walks off, the debtor
+        /// turns to you with their thanks and goes.
+        private void CoverDebt(TalkMenu t, int now)
+        {
+            Ped me = Game.Player.Character;
+            long g = _store.LastGameMin;
+            string seed = t.Id + "|cover|" + now / 1000;
+            string dId = null, dName = null, dTemper = null;
+            bool settled = false, lasting = false;
+            if (t.Debtor != 0 && ENTITY.DOES_ENTITY_EXIST(t.Debtor) && !ENTITY.IS_ENTITY_DEAD(t.Debtor))
+            {
+                Ped d = new Ped(t.Debtor);
+                lasting = LastingId(d, out dId, out dName, out dTemper) && dId != null;
+                if (lasting)
+                {
+                    RecordEvent("help", "player", "you", dId, dName, d.Position, me.Handle, me.Handle, t.Debtor, Thanks.DebtOutcome);   // what late thanks reads: a debt settled
+                    FolkRef ac = _bridge != null ? _bridge.AcquaintanceAt(t.Debtor) : null;
+                    if (ac != null)
+                        _bridge.LikeMore(ac.Id, Fondness.CoverDebtorLiking);   // enRAGE's own method for its own townsfolk
+                    _engine.DebtCovered(dId, dName, g);
+                    MindWho w = MindKnown(t.Debtor, now);
+                    string kind;
+                    int stage;
+                    bool good;
+                    if (w != null && w.P != null && InnerLife.WorryNow(w.P, g / 1440, out kind, out stage, out good) && kind == "debt" && stage <= 2)
+                    {
+                        _engine.SettleWorry(dId);   // their own debt worry: the rest of its run reads as ended well (as the menu's settle)
+                        settled = true;
+                    }
+                }
+            }
+            FolkRef ca = _bridge != null ? _bridge.AcquaintanceAt(t.Handle) : null;
+            if (ca != null)
+                _bridge.LikeMore(ca.Id, Fondness.CoverLiking);
+            _engine.PaidByYou(t.Id, t.Name);
+            string thanks = Fondness.CoverThanks(dTemper, t.Debtor != 0 && ENTITY.DOES_ENTITY_EXIST(t.Debtor) && !PED.IS_PED_MALE(t.Debtor), seed);
+            bool rewritten = _director.Rewrite(Scenes.DebtCovered(_director.CurrentInfo ?? new SceneCast(), _director.CurrentSeed ?? seed, thanks), "the stranger covered the debt ($" + t.CoverDollars + "): the creditor goes paid, the debtor thanks him");
+            t.KeepOrders = true;   // the scene's walk-off stands
+            t.CloseAt = now + 1500;
+            _coverDebts++;
+            _fondLast = "a debt of $" + t.CoverDollars + " covered";
+            Log.Write("FOND debt covered: you paid " + t.Name + " the $" + t.CoverDollars + (dName != null ? " " + dName + " owed" : " owed") + (lasting ? "" : " (the debtor is nobody RealNPCs knows: no thanks to come)") +
+                      (settled ? "; their debt worry is settled" : "") + (rewritten ? "" : "; the scene had already turned"));
+        }
+
         private string FondnessStatus()
         {
             return (_cfg.FondnessActs ? "Talk's extra acts on (whiskey for the house, a gift, condolences)" : "Talk's extra acts off ([Encounters] FondnessActs)") +
                    "; kindness seen " + (_cfg.KindnessSeen ? "on (+" + _cfg.KindnessSeenLiking + " fondness, within " + (int)Fondness.SeenMetres + " m)" : "off") +
-                   "; this session: " + _kindSeenTimes + " kindnesses seen by " + _kindSeenPeople + " people, " + _houseRounds + " rounds for the house (" + _houseCheered + " cheered, " + _houseTreated + " treated)" +
+                   "; this session: " + _kindSeenTimes + " kindnesses seen by " + _kindSeenPeople + " people, " + _houseRounds + " rounds for the house (" + _houseCheered + " cheered, " + _houseTreated + " treated), " + _coverDebts + " debts covered, " + _campfireRemembered + " fires remembered" +
                    (_fondLast != null ? "; last: " + _fondLast : "");
         }
     }

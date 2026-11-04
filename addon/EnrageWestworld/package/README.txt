@@ -398,7 +398,11 @@ NEW IN 0.7.11
   each with a drink of yours to remember); a gift (forty cents: a pouch of tobacco for a
   man, a tin of peaches for a woman), which the proud take where they'd refuse money and
   the poor are fondest of; and condolences to someone grieving a friend ("I'm sorry about
-  Abner."), thrown back by anyone who knows you killed them.
+  Abner."), thrown back by anyone who knows you killed them. And when a creditor is pressing
+  someone in the street before you, lock on to the creditor: Talk offers "I'll cover what he
+  owes you ($N)." alone; he walks off paid, the one pressed thanks you and is yours after.
+  The men at a campfire you sit at are the nearest town's people from then on, and remember
+  the night in its street.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if

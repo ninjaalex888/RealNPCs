@@ -294,6 +294,77 @@ namespace EnrageWestworld.Core
             return a;
         }
 
+        // ---- a debt covered in the street ----------------------------------------------------------------
+
+        public const int CoverLiking = 10;        // the creditor, paid: a little fonder (he got his money; it's not his kindness)
+        public const int CoverDebtorLiking = 30;  // the debtor: as the menu's settled debt
+        public const int CoverPaidAffection = 4, CoverDebtorAffection = 15;
+
+        public static string CoverLabel(int dollars)
+        {
+            return "I'll cover what he owes you ($" + dollars + ").";
+        }
+
+        /// The list for a creditor pressing someone in the street: the one thing to say to him, and never mind.
+        public static List<InteractOption> CoverOptions(int cash, int dollars)
+        {
+            return new List<InteractOption>
+            {
+                new InteractOption { Id = "cover", Label = CoverLabel(dollars), Why = cash < dollars * 100 ? "not enough money" : null },
+                new InteractOption { Id = "bye", Label = "Never mind." }
+            };
+        }
+
+        /// The creditor's answer, paid by a stranger: by his temper (he's not refusing money that's owed him, whoever
+        /// holds it out; the proud want it known it was owed, the greedy count it twice). Event none: it's the debtor's
+        /// kindness, written by the game side; Cents the sum, taken when the answer comes.
+        public static InteractAnswer Cover(string temper, int dollars, string seed)
+        {
+            var a = new InteractAnswer { Then = "stay", Cents = dollars * 100, Friendly = true };
+            switch (temper)
+            {
+                case "Greedy":
+                    a.Line = Pick(seed + "|cvg", "Your money's as good as his. Better, likely. We're square, then.", "Count it out, then. ...All there. He's a lucky man to have a friend like you.");
+                    a.Thought = "A stranger pays another man's debts. There's more where that came from, I'd wager.";
+                    break;
+                case "Cold":
+                    a.Line = Pick(seed + "|cvc", "If you say so. It's your money to throw away.", "Paid is paid. Who pays makes no odds to me.");
+                    a.Friendly = false;
+                    a.Thought = "Paid, then. By a fool, but paid.";
+                    break;
+                case "Proud":
+                    a.Line = Pick(seed + "|cvp", "It was owed, mind. Fair and square. But I'll take it, and we're done.", "I'm not a hard man. I only wanted what was mine. Obliged to you.");
+                    a.Thought = "Let the street see I was in the right. The money's beside the point. Mostly.";
+                    break;
+                case "Hothead":
+                    a.Line = Pick(seed + "|cvh", "Well, I'll be. Fine. Fine! We're square, him and me.", "Huh. Didn't see that coming. All right. He's paid.");
+                    a.Thought = "Had my fist half made. Stranger took the wind out of it.";
+                    break;
+                default:
+                    a.Line = Pick(seed + "|cv", "Then we're square. Obliged, mister.", "Well. That settles it, then. I'll say good day.", "I'll take it, and I'll say this: he's lucky in his friends.");
+                    a.Thought = Pick(seed + "|cvt", "Paid, and no hard feelings. Best way.", "A stranger paid it. Never saw the like.");
+                    break;
+            }
+            return a;
+        }
+
+        /// The debtor's thanks, said to the stranger as the creditor walks off (a scene beat: Scenes.DebtCovered).
+        public static string CoverThanks(string temper, bool woman, string seed)
+        {
+            switch (temper)
+            {
+                case "Proud": return woman ? "I'll see every cent of that back to you, mister. Every cent." : "That's a loan, you understand. I'll see it back to you. But... thank you.";
+                case "Cold": return "Why would you do a thing like that? ...Thank you.";
+                case "Coward": return "Mister, I... I don't know what to say. I thought he'd take the mule. Thank you.";
+                case "Greedy": return "Just like that? Well, I won't argue. Thank you kindly.";
+                default: return Pick(seed + "|cvth", "Heaven keep you, mister. Heaven keep you.", "I don't know you. You don't know me. And you did that. Thank you.", "I'll not forget this. Not if I live to ninety.");
+            }
+        }
+
+        // ---- a fire shared ----------------------------------------------------------------------------------
+
+        public const int CampfireAffection = 10;   // the men at a fire you sat at: fonder of you, and a memory (Engine.CampfireShared)
+
         private static string Pick(string seed, params string[] lines)
         {
             return lines[Voice.Hash(seed) % lines.Length];
@@ -301,6 +372,17 @@ namespace EnrageWestworld.Core
 
         public static IEnumerable<string> AllLines()
         {
+            yield return CoverLabel(15);
+            foreach (InteractOption o in CoverOptions(1000, 15))
+                yield return o.Label;
+            foreach (string temper in new[] { null, "Hothead", "Coward", "Proud", "Cold", "Greedy" })
+                for (int i = 0; i < 3; i++)
+                {
+                    InteractAnswer cv = Cover(temper, 10 + i * 5, "cv" + i);
+                    yield return cv.Line;
+                    yield return cv.Thought;
+                    yield return CoverThanks(temper, i == 1, "th" + i);
+                }
             yield return HouseLabel();
             yield return GiftLabel(false);
             yield return GiftLabel(true);

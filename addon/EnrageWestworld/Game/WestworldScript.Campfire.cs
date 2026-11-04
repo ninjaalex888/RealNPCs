@@ -20,6 +20,8 @@ namespace EnrageWestworld.InGame
         {
             public readonly List<Ped> Sitters = new List<Ped>();
             public readonly List<uint> Models = new List<uint>();
+            public readonly List<Resident> Residents = new List<Resident>();   // who the sitters are to the nearest town (null for one who couldn't be; [Encounters] FondnessActs)
+            public bool SatOnce;             // you sat with them: they're kept, and remember you (Engine.CampfireShared)
             public int Fire;                 // the campfire object, 0 for none
             public Vector3 At;               // the fire
             public string Phase = "spawn", Seed;   // spawn, waiting, hailed, sat, telling, parting, done
@@ -107,6 +109,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash(CampfireSit), 600000, true, 0u, -1f, false);
                 c.Sitters.Add(p);
                 _encounterPeds.Add(h);
+                c.Residents.Add(CampfireResident(p, c.Models[i], c.Seed + "|" + i));   // one of the nearest town's people, dressed as its regulars are (unseen yet)
             }
             if (c.Sitters.Count == 0)
             {
@@ -219,6 +222,8 @@ namespace EnrageWestworld.InGame
                             c.NextLineAt = now + 5000;
                             c.Line = 0;
                             _campfireSat++;
+                            c.SatOnce = true;
+                            CampfireKeep(c);   // the men are kept from now on: they'll remember the night
                             Log.Write("CAMPFIRE you sat down; the tale begins");
                         }
                     }
@@ -326,10 +331,82 @@ namespace EnrageWestworld.InGame
             _campfireLast = why;
             if (c.Phase != "spawn")
                 _campfires++;
+            if (c.SatOnce && !c.Test)
+                CampfireRemember(c);
             int focus = c.Sitters.Count > 0 && c.Sitters[0] != null && c.Sitters[0].Exists() ? c.Sitters[0].Handle : 0;
             if (!c.Test && c.Phase != "spawn")
                 Safe("world events", () => RecordEvent("encounter:campfire", null, "strangers at a fire", "player", "you", c.At, focus, focus, 0, why));
             Log.Write("CAMPFIRE over: " + why);
+        }
+
+        /// One of the men at the fire as one of the nearest town's people: a resident made now (a regular of that town with
+        /// an outfit of its own when the town has room, so he's cast in its street later and remembers the night), bound to
+        /// this body, dressed as the regulars are. Not kept in the save until you sit with them. Null when there's no town
+        /// near, or the acts are off.
+        private Resident CampfireResident(Ped p, uint model, string seed)
+        {
+            if (!_cfg.FondnessActs || _store == null || _engine == null || p == null || !p.Exists())
+                return null;
+            string town = Rumours.NearestTown(p.Position.X, p.Position.Y);
+            if (town == null)
+                return null;
+            int h = p.Handle;
+            long g = _store.LastGameMin;
+            bool dress = _cfg.RegularsDress;
+            int outfits = dress ? OutfitsOf(h, model) : Regulars.PerModel;
+            int outfit = Regulars.NewOutfit(_store.Residents, town, model, outfits, _cfg.RegularsPerTown, seed);
+            Resident r = _engine.MeetResident(model, false, town, "a drifter", seed, g, false);
+            if (outfit >= 0)
+            {
+                r.Regular = true;   // met again in that town's street, as its regulars are
+                r.Outfit = outfit;
+                if (dress)
+                {
+                    PED._EQUIP_META_PED_OUTFIT_PRESET(h, outfit, false);
+                    PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+                }
+            }
+            _resBind[h] = new ResBind { R = r, Model = model };
+            return r;
+        }
+
+        /// You sat down with them: kept in the save from now on (a regular of the nearest town, or a kept resident when
+        /// the town had no room for another regular).
+        private void CampfireKeep(CampfireRun c)
+        {
+            long g = _store.LastGameMin;
+            int kept = 0;
+            string names = null;
+            foreach (Resident r in c.Residents)
+            {
+                if (r == null)
+                    continue;
+                _engine.KeepResident(r, g);
+                kept++;
+                names = names == null ? r.Name + (r.Regular ? "" : " (no room among the regulars)") : names + ", " + r.Name + (r.Regular ? "" : " (no room among the regulars)");
+            }
+            if (kept > 0)
+                Log.Write("CAMPFIRE the men at the fire are " + c.Residents[0].Town + "'s people now: " + names);
+        }
+
+        /// The fire's over and you sat at it: each of them fonder of you, with a memory of the night to think of in town.
+        private void CampfireRemember(CampfireRun c)
+        {
+            long g = _store.LastGameMin;
+            int n = 0;
+            foreach (Resident r in c.Residents)
+            {
+                if (r == null)
+                    continue;
+                _engine.CampfireShared(r.Id, r.Name, g);
+                n++;
+            }
+            if (n > 0)
+            {
+                _campfireRemembered++;
+                _fondLast = "a fire shared with " + n;
+                Log.Write("FOND campfire: " + n + " of " + (c.Residents[0] != null ? c.Residents[0].Town : "the town") + "'s people shared their fire with you and will remember it");
+            }
         }
 
         private string CampfireStatus()

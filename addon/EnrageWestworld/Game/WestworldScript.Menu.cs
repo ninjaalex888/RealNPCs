@@ -40,6 +40,8 @@ namespace EnrageWestworld.InGame
             public bool Woman, Devout, MoneyWorry, Seated, KeepOrders, KnowsName;
             public string Condole;     // the first name of a friend they grieve (condolences can be offered: Core/Fondness.cs), or null
             public bool YouKilledKnown;   // ...and they know he's the one who killed them
+            public int CoverDollars;      // a creditor pressing someone in a debt scene: what the stranger can cover (Core/Fondness.cs); 0 otherwise
+            public int Debtor;            // ...the one pressed (a handle)
             public Person P;           // who they are to the mind, for their worry's words when he asks after it
             public float Reach;
             public List<InteractOption> Options;
@@ -232,8 +234,10 @@ namespace EnrageWestworld.InGame
             if (p.Position.DistanceTo(me.Position) > reach)
                 return "too far";
             bool record = IsRecord(target);
+            int dollars, debtor;
+            bool cover = DebtCoverable(target, out dollars, out debtor);   // the creditor of a debt scene: the one word with him (WestworldScript.Fondness.cs)
             if (MISC.GET_MISSION_FLAG() || PED.IS_PED_IN_COMBAT(target, 0) || PED.IS_PED_FLEEING(target) || PED.IS_PED_RAGDOLL(target) || PED.IS_PED_ON_MOUNT(target) ||
-                PED.IS_PED_IN_ANY_VEHICLE(target, false) || _director.Involves(target) || (NotFree(target) && !LonelyWaiting(target) && !FavourWaiting(target)) || Spawner.IsOurs(target) ||   // the lonely one waits for exactly this
+                PED.IS_PED_IN_ANY_VEHICLE(target, false) || (!cover && (_director.Involves(target) || (NotFree(target) && !LonelyWaiting(target) && !FavourWaiting(target)) || Spawner.IsOurs(target))) ||   // the lonely one waits for exactly this
                 (record ? _bridge.EnrageFighter(target) || _bridge.Interrogating : Natives.OtherScripts(target)))
                 return "busy";
             string id, name, temper;
@@ -319,6 +323,9 @@ namespace EnrageWestworld.InGame
                     youKilledKnown = dead != null && dead.By == "player" && (_engine.YourKillGrieved(id, Fondness.CondoleDays, out knownId) != null || _engine.Grudged(id, deadId));   // the killing is laid at his door
                 }
             }
+            int coverDollars = 0, debtor = 0;
+            if (_cfg.FondnessActs)
+                DebtCoverable(h, out coverDollars, out debtor);   // a creditor pressing someone: the list is the one word with him
             _menu = new TalkMenu
             {
                 Handle = h, Id = id, Name = name ?? TalkName(p), First = name != null ? Person.FirstOf(name) : TalkName(p), Temper = temper, Worry = worry,
@@ -327,7 +334,7 @@ namespace EnrageWestworld.InGame
                 Seated = PED.IS_PED_USING_ANY_SCENARIO(h) && ENTITY.GET_ENTITY_SPEED(h) < 0.4f,   // sat, leaning or stood at their point: they talk from there; a scenario's walker is stopped like anyone else
                 Regard = SightRegard(p, id), Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
                 Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440), WorryStage = worryStage,
-                Condole = condole, YouKilledKnown = youKilledKnown
+                Condole = condole, YouKilledKnown = youKilledKnown, CoverDollars = coverDollars, Debtor = debtor
             };
             TalkRefreshOptions();
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);   // the game's own "you're standing too close" and the like wait till goodbye (Lex, 2026-10-31); undone in TalkClose
@@ -336,7 +343,7 @@ namespace EnrageWestworld.InGame
             TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 26000, 0, 51, 0);
             _talkOpened++;
             Log.Write("TALK menu opened on " + _menu.Name + (_menu.Temper != null ? " (" + _menu.Temper + ")" : "") + (_menu.Regard != null ? ", " + _menu.Regard + " of you" : "") +
-                      (_menu.Worry != null ? ", worried about " + _menu.Worry : "") + " (" + how + ")");
+                      (_menu.Worry != null ? ", worried about " + _menu.Worry : "") + (_menu.CoverDollars > 0 ? ", pressing someone for $" + _menu.CoverDollars : "") + " (" + how + ")");
             return null;
         }
 
@@ -365,6 +372,13 @@ namespace EnrageWestworld.InGame
             catch
             {
                 cash = 0;   // no reading: the money options stay greyed
+            }
+            if (_menu.CoverDollars > 0)
+            {
+                _menu.Options = Fondness.CoverOptions(cash, _menu.CoverDollars);   // a creditor mid-scene: cover the debt, or never mind
+                _menu.Sel = Math.Min(_menu.Sel, _menu.Options.Count - 1);
+                _menu.Rows = null;
+                return;
             }
             bool told = _talkConfided.Contains(TalkToldKey(_menu));
             string selId = _menu.Options != null && _menu.Sel < _menu.Options.Count ? _menu.Options[_menu.Sel].Id : null;
@@ -410,7 +424,8 @@ namespace EnrageWestworld.InGame
             else if (me.Position.DistanceTo(t.From) > 3f) close = "you walked off";
             else if (ENTITY.GET_ENTITY_COORDS(t.Handle, true, true).DistanceTo(me.Position) > t.Reach + 1f) close = "too far apart";
             else if (PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle) || PED.IS_PED_IN_COMBAT(me.Handle, 0) || PED.IS_PED_IN_COMBAT(t.Handle, 0)) close = "a weapon or a fight";
-            else if (MISC.GET_MISSION_FLAG() || _director.Involves(t.Handle)) close = "a mission or a scene";
+            else if (MISC.GET_MISSION_FLAG() || (t.CoverDollars == 0 && _director.Involves(t.Handle))) close = "a mission or a scene";
+            else if (t.CoverDollars > 0 && t.Pending == null && t.CloseAt == 0 && !DebtStillPressed(t)) close = "the moment passed";   // the creditor's scene ended by itself
             else if (!PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle)) close = "a cutscene or the game's own menu";
             else if (t.Pending == null && now - t.LastAt > 25000) close = "nothing chosen";
             else if (t.CloseAt > 0 && now >= t.CloseAt) close = "done";
@@ -419,6 +434,8 @@ namespace EnrageWestworld.InGame
                 TalkClose(close);
                 return;
             }
+            if (t.CoverDollars > 0 && t.CloseAt == 0)
+                _director.HoldLive(1500);   // the scene waits while the word is had
             if (t.Pending != null && now >= t.AnswerAt)
                 TalkAnswer(t, now);
             if (_menu != t)
@@ -523,6 +540,7 @@ namespace EnrageWestworld.InGame
                   : o.Id == "house" ? Fondness.House(t.Temper, t.Woman, t.Devout, t.Regard, sd)   // the fondness interactions (Core/Fondness.cs)
                   : o.Id == "gift" ? Fondness.Gift(t.Temper, t.Woman, t.Regard, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd)
                   : o.Id == "condole" ? Fondness.Condole(t.Temper, t.Woman, t.Regard, t.YouKilledKnown, sd)
+                  : o.Id == "cover" ? Fondness.Cover(t.Temper, t.CoverDollars, sd)
                   : Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd, YourSurname(), t.Self);
             }
             if (_talkLastLine.Count > 400)
@@ -581,6 +599,8 @@ namespace EnrageWestworld.InGame
                             a.Settles ? Thanks.OutcomeOf(t.Worry) : a.Event == "charity" ? (t.PendingId == "gift" ? Fondness.GiftOutcome : "gave $" + a.Cents / 100) : t.PendingId == "house" ? "whiskey for the house" : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf)
             if (t.PendingId == "house" && a.Cents > 0)
                 HouseRound(t, now);   // the room cheers and everyone treated is fonder (WestworldScript.Fondness.cs)
+            if (t.PendingId == "cover" && a.Cents > 0)
+                CoverDebt(t, now);    // the debtor's kindness, the creditor paid, the scene's end (WestworldScript.Fondness.cs)
             if (a.LikeDelta != 0 && t.FolkId != null)
                 _bridge.LikeMore(t.FolkId, a.LikeDelta);   // enRAGE's own method for its own townsfolk
             if (a.Confided)

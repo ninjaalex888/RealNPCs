@@ -41,6 +41,7 @@ namespace EnrageWestworld.Core
         public int Doer = -1;    // which of the cast did the one-sided thing when the scene's own shape says (the creditor who called a debt in, the one who brushed the other off); -1: the tie's rule (Ties.Trouble: A) or nobody (item 17)
         public List<Escalation.Step> Ladder;   // the quarrel ladder's run this scene was built from (Scenes.Ladder.cs; behind [Mind] MindLive); null for the fixed scenes
         public string LadderNote;              // what the ladder said that the scene doesn't play (the shot), for the log
+        public int Amount;                     // dollars at stake, where the scene has a sum (the debt called in): what the player can cover (Core/Fondness.cs)
         public readonly List<Beat> Beats = new List<Beat>();
 
         public Scene Add(int who, string line, string voice = null, string act = null, int ms = 0)
@@ -348,7 +349,7 @@ namespace EnrageWestworld.Core
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
             int amount = 10 + Voice.Hash(seed + "amt") % 8 * 5;
-            Scene s = new Scene { Kind = "debt", Doer = 0, Summary = "a man called in a debt of " + amount + " dollars" };   // A calls it in
+            Scene s = new Scene { Kind = "debt", Doer = 0, Amount = amount, Summary = "a man called in a debt of " + amount + " dollars" };   // A calls it in
             s.Add(0, b + ". You know why I'm here.", "mild", "approach").Add(1, "I need more time.", "scared").Add(0, "You had time. " + Grammar.UpperFirst(Voice.Number(amount)) + " dollars, " + b + ".")
              .Add(1, "I got five. Take five.", "scared");
             switch (Voice.Hash(seed) % 3)
@@ -363,6 +364,18 @@ namespace EnrageWestworld.Core
                     s.Add(0, "...Keep it. Buy your kids some shoes. But this is the last time, " + b + ".", "mild", "walkaway").Add(1, "God bless you. God bless you.", "thanks");
                     break;
             }
+            return s;
+        }
+
+        /// The debt scene's end when the stranger covers what's owed, said to the creditor through Talk (Core/Fondness.cs):
+        /// the creditor's answer is said by the menu; here the creditor walks off paid, and the debtor turns to the stranger
+        /// with their thanks and goes on their way. A's and B's places are the debt scene's (A the creditor).
+        public static Scene DebtCovered(SceneCast c, string seed, string thanks)
+        {
+            Scene s = new Scene { Kind = "debt", Doer = 0, Summary = "a stranger paid a man's debt for him in the street" };
+            s.Add(0, null, null, "walkaway");
+            s.Add(1, thanks, "thanks", "faceplayer", 800);
+            s.Add(1, null, null, "walkaway");
             return s;
         }
 
