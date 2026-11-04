@@ -38,6 +38,7 @@ namespace EnrageWestworld.InGame
         private const int AlliesTickMs = 1500, AlliesOverMs = 6000, AlliesRoadGapMs = 300000, AlliesAskGapMs = 20000, AlliesBodyWaitMs = 15000, AlliesHorseWaitMs = 6000;   // the horse's body waited for this long past the rider's, then on foot (the review)
         private readonly List<Ally> _allies = new List<Ally>();
         private readonly List<int> _alliesFoes = new List<int>();
+        private bool _alliesFoesLaw;   // one of the foes is the law: no lawman comes against his own (Lex, 2026-11-04: lawmen may be friends)
         private readonly Dictionary<int, int> _alliesAskedAt = new Dictionary<int, int>();
         private int _alliesNextAt, _alliesFightSince, _alliesFoeAt, _alliesRoadAt, _alliesRoadTriedFor, _alliesCame, _alliesRoadCame, _alliesFights, _alliesFell, _alliesTestFriend, _alliesTestMan, _alliesRode, _alliesGrieved;
         private const ulong SetPedOntoMount = 0x028F76B6E78246EB, TaskDismountAnimal = 0x48E92D3DDE23C23A;   // by hash: the API's wrappers differ between builds (the 0.7.7 lesson)
@@ -102,6 +103,7 @@ namespace EnrageWestworld.InGame
             // the foes: whoever is in combat with you within reach, the law and the townsfolk answering your crime among them
             // (Lex, 2026-11-03: friends protect you "if fought by the law or anyone else"); none during a mission
             _alliesFoes.Clear();
+            _alliesFoesLaw = false;
             bool armedFoe = false;
             if (!MISC.GET_MISSION_FLAG())
                 foreach (Ped p in Peds.All())
@@ -114,6 +116,8 @@ namespace EnrageWestworld.InGame
                     if (!PED.IS_PED_IN_COMBAT(h, me.Handle) || _allies.Any(a => a.Handle == h))
                         continue;
                     _alliesFoes.Add(h);
+                    if (Natives.IsLaw(p))
+                        _alliesFoesLaw = true;
                     if (WEAPON.IS_PED_ARMED(h, 4))
                         armedFoe = true;
                 }
@@ -178,8 +182,8 @@ namespace EnrageWestworld.InGame
                 int h = p.Handle;
                 if (h == me.Handle || !p.Exists() || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(at) > _cfg.AlliesMetres)
                     continue;
-                if (_alliesFoes.Contains(h) || _allies.Any(a => a.Handle == h) || Natives.IsLaw(p) || Natives.IsChild(p) || Natives.StoryModel(p) || !IsGrownUp(p))
-                    continue;
+                if (_alliesFoes.Contains(h) || _allies.Any(a => a.Handle == h) || (Natives.IsLaw(p) && _alliesFoesLaw) || Natives.IsChild(p) || Natives.StoryModel(p) || !IsGrownUp(p))
+                    continue;   // (a lawman who thinks well of you comes against anyone but the law; Lex, 2026-11-04)
                 if (Spawner.IsOurs(h) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) ||
                     _director.Involves(h) || IsStaged(h) || MindGettingUp(h) || InTalk(h) || MayDirectWhyNot(p) != null)
                     continue;

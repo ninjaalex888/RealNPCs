@@ -510,6 +510,16 @@ namespace EnrageWestworld.InGame
                         {
                             if (ENTITY.IS_ENTITY_ATTACHED_TO_ANY_PED(c.Body))
                             {
+                                if (his)
+                                {
+                                    // he has it in his arms already (the game's own pick-up got there first): the carry is ours from here,
+                                    // no lift to order (Lex, 2026-11-04: the clear ended here and left him standing with the body)
+                                    c.Stage = BcLift;
+                                    c.StageAt = now;
+                                    c.Reached = true;
+                                    Log.Write("LAW clears: he has " + c.Who + " in his arms already (" + CarryWords(c.Law, c.Body) + "): the carry is ours from here");
+                                    break;
+                                }
                                 BodyClearEnd(c, "someone else has hold of it (" + CarryWords(c.Law, c.Body) + ")", false);
                                 break;
                             }
@@ -835,14 +845,25 @@ namespace EnrageWestworld.InGame
             BodyMournerEnd(c, done);
             if (ENTITY.DOES_ENTITY_EXIST(c.Law) && !ENTITY.IS_ENTITY_DEAD(c.Law))
             {
+                int setDownMs = 0;
                 if (PED.IS_PED_CARRYING_SOMETHING(c.Law))
-                    TASK.CLEAR_PED_TASKS(c.Law, true, false);   // never left holding it
+                {
+                    if (ENTITY.DOES_ENTITY_EXIST(c.Body) && PED._GET_CARRIER_AS_PED(c.Body) == c.Law)
+                    {
+                        // set down where he stands, the game's own way: a bare clear left him standing with the body in his arms (Lex, 2026-11-04)
+                        Vector3 at = ENTITY.GET_ENTITY_COORDS(c.Law, true, true);
+                        TASK.TASK_PLACE_CARRIED_ENTITY_AT_COORD(c.Law, c.Body, at.X, at.Y, at.Z, 1f, 1);
+                        setDownMs = 5000;
+                    }
+                    else
+                        TASK.CLEAR_PED_TASKS(c.Law, true, false);   // never left holding something else
+                }
                 if (Spawner.IsBorrowed(c.Law))
-                    LawGiveBack(c.Law, Game.GameTime + 1500);   // back to the game and his rounds (Spawner.Release: unblocked, wandering)
+                    LawGiveBack(c.Law, Game.GameTime + 1500 + setDownMs);   // back to the game and his rounds (Spawner.Release: unblocked, wandering)
                 else
                 {
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(c.Law, false);
-                    WanderLater(c.Law, Game.GameTime + 4000);
+                    WanderLater(c.Law, Game.GameTime + 4000 + setDownMs);
                 }
             }
             if (done)

@@ -157,7 +157,7 @@ NEW IN 0.7.19
   AlliesLiking 90, AlliesRoadChance 30): attacked by anyone, the law too, within sight of people who
   think well of you (enRAGE's fondness, a kindness of yours they remember, a trouble you
   mended, talks and your name known; a full bar is a friend even when they're afraid of you, a
-  grudge or anger still isn't), some of them come: the brave and the hot first, the loyal
+  grudge or anger still isn't; a lawman too, against anyone but the law), some of them come: the brave and the hot first, the loyal
   for a friend, cowards never, a woman only against fists; against guns they're given a
   revolver. They shout as they come, go for your attackers, and have a word with you after;
   they remember standing with you, and enRAGE's townsfolk think better of you for it. Out of
@@ -623,7 +623,8 @@ NEW IN 0.7.11
   box's title says what it makes of you (a killer here, a peacemaker, or nothing held against
   you, with the killings of yours known this week and your kindnesses); on coming into a town,
   and whenever that changes, an item says the town's mood, how many of the people you know here
-  are afraid or fond of you, and the latest talk about you that has reached it.
+  are afraid or fond of you, and the latest talk about you that has reached it. The box stays up
+  with that line the whole time you're in a town.
 - The brave stand up ([World] BraveStand, on): a brave townsperson the game has cowering (a
   killing seen, a gun drawn) is stood up, holds their ground on their feet for twenty seconds,
   then walks off; the game's cower beside a body looked like freezing with fear.

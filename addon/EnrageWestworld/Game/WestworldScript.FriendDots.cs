@@ -60,7 +60,7 @@ namespace EnrageWestworld.InGame
                 int h = p.Handle;
                 if (h == me.Handle || !p.Exists() || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(at) > FriendDotMetres)
                     continue;
-                if (Natives.IsLaw(p) || Natives.IsChild(p) || Natives.StoryModel(p) || Spawner.IsOurs(h))
+                if (Natives.IsChild(p) || Natives.StoryModel(p) || Spawner.IsOurs(h))   // (the law too: a lawman at the top of the bar is a friend; Lex, 2026-11-04)
                     continue;
                 MindWho w = MindKnown(h, now);
                 if (w == null || w.Id == null)

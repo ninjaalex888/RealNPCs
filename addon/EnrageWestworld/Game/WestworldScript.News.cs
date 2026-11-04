@@ -55,7 +55,8 @@ namespace EnrageWestworld.InGame
         {
             int since = _newsLastFrame == 0 ? 0 : now - _newsLastFrame;
             _newsLastFrame = now;
-            if (_newsShown == null && _newsQueue.Count == 0)
+            bool standing = _cfg != null && _cfg.TownRegard && _regardLine != null;   // in a town the box stays up with the regard line (Lex, 2026-11-04: "show at all times while within that town")
+            if (_newsShown == null && _newsQueue.Count == 0 && !standing)
                 return;
             if (PanelOpen || _reader.Open || !TickerVisible(now))
             {
@@ -67,7 +68,11 @@ namespace EnrageWestworld.InGame
             if (_newsShown == null)
             {
                 if (_newsQueue.Count == 0)
+                {
+                    if (standing)
+                        DrawNewsStanding();
                     return;
+                }
                 _newsShown = _newsQueue[0];
                 _newsQueue.RemoveAt(0);
                 _newsLines = null;
@@ -75,6 +80,18 @@ namespace EnrageWestworld.InGame
                 _newsUntil = now + Math.Min(16000, 7000 + _newsShown.Text.Length * 45);
             }
             DrawNews(now);
+        }
+
+        /// The box with nothing new: the title and the town's regard line alone, steady, while you're in a town.
+        private void DrawNewsStanding()
+        {
+            const float title = 0.26f, body = 0.23f, pad = 0.006f;
+            float x = MeterX, w = MeterW, room = w - pad * 2f;
+            float y = _meterBottom > 0f ? _meterBottom + 0.008f : MeterY;
+            float height = pad * 2f + Draw.LineHeight(title) + 0.003f + Draw.LineHeight(body);
+            Draw.Rect(x, y, w, height, 12, 10, 8, 150);
+            Draw.Text(NewsTitle, x + pad, y + pad, title, 236, 214, 160, 255);
+            Draw.Text(Draw.Fit(_regardLine, body, room), x + pad, y + pad + Draw.LineHeight(title) + 0.003f, body, 212, 184, 124, 255);
         }
 
         private void DrawNews(int now)
