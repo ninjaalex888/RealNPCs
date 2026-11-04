@@ -441,6 +441,9 @@ namespace EnrageWestworld.InGame
                 case "allies":
                     skipped = "the fondness (the nearest named person counts as your friend) and the ally's own nerve";
                     return AlliesTest(now, out said);   // WestworldScript.Allies.cs
+                case "escort":
+                    skipped = "the hour, the town and who'd be offered it (anyone known within 6 m, on their feet)";
+                    return EscortTest(now);   // WestworldScript.Escort.cs
                 case "wakestrange":
                     skipped = "the stage's roll, the hold's turn and, for stripping, its chance and the once-a-person mark";
                     {

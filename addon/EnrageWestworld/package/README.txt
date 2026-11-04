@@ -402,7 +402,10 @@ NEW IN 0.7.11
   someone in the street before you, lock on to the creditor: Talk offers "I'll cover what he
   owes you ($N)." alone; he walks off paid, the one pressed thanks you and is yours after.
   The men at a campfire you sit at are the nearest town's people from then on, and remember
-  the night in its street.
+  the night in its street. After dark in a town, Talk on a woman, someone in drink or a timid
+  man offers "Let me see you home.": say yes and walk them to their door, 60-100 m off (fall
+  behind and they wait, then go on alone); at the door they thank you, and are fonder of you by
+  a lot. Testing row "Walk someone home".
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if

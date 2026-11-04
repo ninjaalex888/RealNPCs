@@ -59,7 +59,7 @@ namespace EnrageWestworld.Core
             {
                 case "round": return "drink";
                 case "charity": return e.Outcome == Fondness.GiftOutcome ? "gift" : "money";   // a gift (Core/Fondness.cs) is thanked for as its own kind
-                case "help": return e.Outcome == DebtOutcome ? "debt" : e.Outcome == DoctorOutcome ? "doctor" : e.Outcome == ToothOutcome ? "tooth" : e.Outcome == FareOutcome ? "ticket" : null;
+                case "help": return e.Outcome == DebtOutcome ? "debt" : e.Outcome == DoctorOutcome ? "doctor" : e.Outcome == ToothOutcome ? "tooth" : e.Outcome == FareOutcome ? "ticket" : e.Outcome == Fondness.EscortOutcome ? "escort" : null;
                 default: return null;
             }
         }
@@ -89,13 +89,13 @@ namespace EnrageWestworld.Core
         {
             if (test)
                 return true;
-            int chance = Mended(kind) ? MendedChance : kind == "money" ? (cents >= 500 ? FiveChance : DollarChance) : kind == "gift" ? DollarChance : DrinkChance;   // a gift is thanked for as a dollar is
+            int chance = Mended(kind) ? MendedChance : kind == "money" ? (cents >= 500 ? FiveChance : DollarChance) : kind == "gift" ? DollarChance : kind == "escort" ? FiveChance : DrinkChance;   // a gift is thanked for as a dollar is, a walk home as five
             return Voice.Hash(key + "|comes") % 100 < chance;
         }
 
         private static int Rank(string kind)
         {
-            return Mended(kind) ? 3 : kind == "money" ? 2 : 1;
+            return Mended(kind) ? 3 : kind == "money" || kind == "escort" ? 2 : 1;
         }
 
         /// The kindness this person would thank him for now, or null: the biggest he did them (a debt, then money, then a
@@ -223,6 +223,10 @@ namespace EnrageWestworld.Core
                     return shy ? "The money for the fare. I'm going, thanks to you."
                                : sameDay ? Pick(seed + "|tti", "Got the ticket in my pocket. Wanted you to see it.", "Fare's paid, mister. Now I only want the nerve.")
                                          : Pick(seed + "|tti", "I'll be leaving one of these mornings. Wouldn't be, but for you.", "When I go, I'll think of you as the train pulls out.");
+                case "escort":
+                    return shy ? "You saw me home, that night. I was afraid, and you saw me home."
+                               : sameDay ? Pick(seed + "|tes", "You saw me to my door tonight. I wanted you told it was kind.", "That walk home. Not many would have. Thank you.")
+                                         : Pick(seed + "|tes", "You walked me home the other night. I think of it when the street's dark.", "That night you saw me home. I've told folk it was you.");
                 case "gift":
                     return shy ? "What you gave me. It was kind. That's all."
                                : sameDay ? Pick(seed + "|tgi", "That gift of yours. Didn't expect it. I wanted you told.", "What you gave me earlier. Folks don't give, mostly. Thank you.")
@@ -243,6 +247,7 @@ namespace EnrageWestworld.Core
                 case "tooth": return "Him. Paid the dentist for me. Can't look at him without grinning.";
                 case "ticket": return "Him that made up my fare. I'll write to him, if I ever learn his name.";
                 case "gift": return "Him. Gave me a gift, asking nothing for it. Decent of him.";
+                case "escort": return "Him that saw me home that night. I'd not have got there alone.";
                 default: return "Him. Gave me money when he didn't have to. I keep a tally.";
             }
         }

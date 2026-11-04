@@ -228,7 +228,7 @@ namespace EnrageWestworld.InGame
         {
             return (_cfg.FondnessActs ? "Talk's extra acts on (whiskey for the house, a gift, condolences)" : "Talk's extra acts off ([Encounters] FondnessActs)") +
                    "; kindness seen " + (_cfg.KindnessSeen ? "on (+" + _cfg.KindnessSeenLiking + " fondness, within " + (int)Fondness.SeenMetres + " m)" : "off") +
-                   "; this session: " + _kindSeenTimes + " kindnesses seen by " + _kindSeenPeople + " people, " + _houseRounds + " rounds for the house (" + _houseCheered + " cheered, " + _houseTreated + " treated), " + _coverDebts + " debts covered, " + _campfireRemembered + " fires remembered" +
+                   "; this session: " + _kindSeenTimes + " kindnesses seen by " + _kindSeenPeople + " people, " + _houseRounds + " rounds for the house (" + _houseCheered + " cheered, " + _houseTreated + " treated), " + _coverDebts + " debts covered, " + _campfireRemembered + " fires remembered; " + EscortStatus() +
                    (_fondLast != null ? "; last: " + _fondLast : "");
         }
     }

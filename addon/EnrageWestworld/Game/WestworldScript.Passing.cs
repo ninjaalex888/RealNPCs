@@ -317,7 +317,7 @@ namespace EnrageWestworld.InGame
         /// every walk-up's starter (the cross-cutting review: only thanks and the lonely asked all of these).
         private bool WalkUpGoing()
         {
-            return _menu != null || _thanksWalk != null || _grudgeWalk != null || _lonelyWalk != null || _favourWalk != null || _warnWalk != null || _kinWalk != null || _kinPending != null || _lifter != null || _liftRun != null || _theft != null;
+            return _menu != null || _escort != null || _thanksWalk != null || _grudgeWalk != null || _lonelyWalk != null || _favourWalk != null || _warnWalk != null || _kinWalk != null || _kinPending != null || _lifter != null || _liftRun != null || _theft != null;
         }
 
         /// One of the walk-ups to Arthur has them: thanks, a grudge, the lonely, kin, the pickpocket on his way or on the run.
@@ -342,6 +342,8 @@ namespace EnrageWestworld.InGame
         {
             if (_menu != null && _menu.Handle == h)
                 return true;   // listening to the player in the interaction menu (WestworldScript.Menu.cs)
+            if (EscortHas(h))
+                return true;   // being seen home by the player (WestworldScript.Escort.cs)
             if (_animTest != null && _animTest.Handle == h)
                 return true;   // the Testing page's animation rows have them (WestworldScript.AnimTest.cs)
             if (IsOnlooking(h))

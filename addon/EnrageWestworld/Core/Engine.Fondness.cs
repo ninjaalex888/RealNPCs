@@ -93,6 +93,26 @@ namespace EnrageWestworld.Core
                 }, now);
         }
 
+        /// The player walked them home through the dark (home: to the door; else he gave up part way: a share of the
+        /// affection for the thought, no memory). The "escort|did" pools.
+        public void Escorted(string id, string name, long now, bool home)
+        {
+            PersonState st = MindOf(id, name);
+            if (st == null)
+                return;
+            st.Sightings = Math.Max(st.Sightings, 1);
+            st.Affection = Romance.Clamp(st.Affection + (home ? Fondness.EscortAffection : Fondness.EscortGaveUpAffection), -100, 100);
+            if (!home)
+                return;
+            st.Talks++;
+            if (Cfg.Minds)
+                Minds.Note(st.Mind, new MindMemory
+                {
+                    Kind = "deed:kindness", Sub = "escort", How = "did", Who = new List<string> { "player" },
+                    Town = CurrentTown, At = now, Feel = 3, Strength = 60, Key = "escort:" + now / 60
+                }, now);
+        }
+
         /// The first name of a friend this person grieves (word of the death reached them within `days`), with the dead
         /// one's id; null when nobody. For condolences (Fondness.Condole).
         public string GrievesFor(string id, int days, out string deadId)

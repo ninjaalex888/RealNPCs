@@ -361,6 +361,106 @@ namespace EnrageWestworld.Core
             }
         }
 
+        // ---- walking someone home ---------------------------------------------------------------------------
+
+        public const float EscortMinMetres = 60f, EscortMaxMetres = 100f;   // their door, as far as the street knows: a spot this far off (Lex's roadmap: 60-100 m)
+        public const float EscortLagMetres = 8f;        // further behind than this and they stop and wait
+        public const int EscortLagMs = 5000, EscortWaitMs = 20000;   // behind this long and they stop; waited this long and they go on alone
+        public const int EscortLiking = 20, EscortAffection = 10, EscortGaveUpAffection = 2;   // seen home; the thought that counted when you didn't finish
+        public const string EscortOutcome = "saw them home";   // the help happening's outcome (Thanks reads it back as "escort")
+
+        /// Whether "Let me see you home." is offered: after dark in a town, to a woman, someone in drink or a timid man
+        /// (a Coward), who neither hates nor fears him, and isn't sat somewhere.
+        public static bool EscortOffered(bool night, bool town, bool woman, bool drunk, string temper, string regard, bool seated)
+        {
+            if (!night || !town || seated || regard == "hostile" || regard == "afraid")
+                return false;
+            return woman || drunk || temper == "Coward";
+        }
+
+        public static string EscortLabel()
+        {
+            return "Let me see you home.";
+        }
+
+        /// Their answer. A proud man knows the way to his own door; a woman who neither knows his name nor has had a
+        /// kindness from him, and isn't fond of him, won't walk out with a stranger half the time (she'd be talked of);
+        /// the drunk always, the timid gladly, the cold with a shrug. Yes is Then "escort": the walk is the game side's.
+        public static InteractAnswer Escort(string temper, bool woman, bool drunk, string regard, bool knowsName, bool kindLately, string seed)
+        {
+            var a = new InteractAnswer { Then = "stay", Friendly = true };
+            bool fond = regard == "fond";
+            if (temper == "Proud" && !woman && !drunk)
+            {
+                a.Line = Pick(seed + "|epr", "I know the way to my own door, thank you.", "I've walked it forty years, drunk and sober. I'll manage.");
+                a.Thought = "Does he take me for an old woman?";
+                return a;
+            }
+            if (woman && !drunk && !fond && !knowsName && !kindLately && Voice.Chance(seed + "|ew", 50))
+            {
+                a.Line = Pick(seed + "|ewn", "That's kind, but I don't walk out with men I don't know.", "No, thank you. I'd sooner not be talked about.");
+                a.Thought = "A stranger, offering to see me home. What they'd say.";
+                return a;
+            }
+            a.Then = "escort";
+            if (drunk)
+            {
+                a.Line = Pick(seed + "|ed", "Would you? Would you, now. Lead on, friend. Lead on.", "Home. Yes. Which way is it? ...You know the way. Good.", "You're a good man. A good, good man. It's this way. Or that way.");
+                a.Thought = "Good man. Good man. Where's my hat.";
+            }
+            else if (temper == "Cold" && !woman)
+            {
+                a.Line = "...If you like.";
+                a.Friendly = false;
+                a.Thought = "Company. Even his. The street's no place to be alone tonight.";
+            }
+            else if (woman)
+            {
+                a.Line = Pick(seed + "|ewy", "Would you? I'd be glad of it. It's not far.", "Thank you. I don't care for the street after dark.", "That's kind. Yes. It's just along here.");
+                a.Thought = "He asked properly. I'll walk with him, and keep my distance.";
+            }
+            else
+            {
+                a.Line = Pick(seed + "|em", "I'd not say no. The street's no place to be alone tonight.", "Decent of you, mister. It isn't far.");
+                a.Thought = "Safer with company. Even a stranger's.";
+            }
+            return a;
+        }
+
+        /// At the door, to his face.
+        public static string EscortThanks(string temper, bool woman, bool drunk, string seed)
+        {
+            if (drunk)
+                return Pick(seed + "|eth", "This is me. Or near enough. You're a good man. I'll remember you. Prob'ly.", "Home! Look at that. Thank you, friend. Thank you.");
+            switch (temper)
+            {
+                case "Cold": return "This is my door. ...Thank you.";
+                case "Coward": return "This is me. I don't know what I'd have done, alone. Thank you, mister.";
+                case "Proud": return woman ? "This is my door. It was kind of you, and I'll not forget it." : "My door. I'd have managed. But I'm obliged.";
+                default: return woman ? Pick(seed + "|etw", "This is me. Thank you, mister. I'll sleep better for it.", "Here's my door. That was kind. Good night, now.")
+                                      : Pick(seed + "|etm", "This is me. Obliged to you, mister. Good night.", "Here's my door. Good of you to walk it with me.");
+            }
+        }
+
+        public static string EscortGaveUp(string seed)
+        {
+            return Pick(seed + "|egu", "Never mind, mister. I'll go on alone.", "I'll manage the rest myself. Good night.");
+        }
+
+        public static string EscortGaveUpThought(string seed)
+        {
+            return Pick(seed + "|egt", "Offered to see me home, then wandered off. Men.", "Half way and he's gone. Should have known.");
+        }
+
+        /// What they think once they're in.
+        public static string EscortThought(bool woman, bool drunk, string seed)
+        {
+            if (drunk)
+                return "Walked home by a stranger. Can't recall his face. Recall he was kind.";
+            return woman ? Pick(seed + "|ewt", "Saw me to the door and asked nothing. A gentleman, whatever they say.", "Walked me home and kept his distance. I'll think well of him for it.")
+                         : Pick(seed + "|emt", "Walked me home like I was somebody. Decent of him.", "Safe in, thanks to him. The street was black as pitch.");
+        }
+
         // ---- a fire shared ----------------------------------------------------------------------------------
 
         public const int CampfireAffection = 10;   // the men at a fire you sat at: fonder of you, and a memory (Engine.CampfireShared)
@@ -373,8 +473,22 @@ namespace EnrageWestworld.Core
         public static IEnumerable<string> AllLines()
         {
             yield return CoverLabel(15);
+            yield return EscortLabel();
             foreach (InteractOption o in CoverOptions(1000, 15))
                 yield return o.Label;
+            foreach (string temper in new[] { null, "Hothead", "Coward", "Proud", "Cold", "Greedy" })
+                for (int i = 0; i < 4; i++)
+                {
+                    InteractAnswer es = Escort(temper, i % 2 == 1, i == 2, i == 3 ? "fond" : null, i == 1, false, "es" + i);
+                    yield return es.Line;
+                    yield return es.Thought;
+                    yield return EscortThanks(temper, i % 2 == 1, i == 2, "et" + i);
+                    yield return EscortThought(i % 2 == 1, i == 2, "eo" + i);
+                }
+            yield return EscortGaveUp("x");
+            yield return EscortGaveUp("y");
+            yield return EscortGaveUpThought("x");
+            yield return EscortGaveUpThought("y");
             foreach (string temper in new[] { null, "Hothead", "Coward", "Proud", "Cold", "Greedy" })
                 for (int i = 0; i < 3; i++)
                 {

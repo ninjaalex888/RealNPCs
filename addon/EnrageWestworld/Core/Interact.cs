@@ -14,7 +14,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class InteractOption
     {
-        public string Id;        // news, name, ask, drink, house, give, gift, settle, condole, sorry, threaten, bye
+        public string Id;        // news, name, ask, drink, house, give, gift, settle, condole, escort, sorry, threaten, bye (and cover, alone, for a creditor mid-scene)
         public string Label;     // what Arthur says, shown in the list
         public string Why;       // why it can't be chosen now (shown greyed), or null
     }
@@ -89,7 +89,7 @@ namespace EnrageWestworld.Core
         /// his whole name when they don't know it yet (he can tell them), the worry they've told him of (he can ask after
         /// it: AskLabel), and a wrong of his lately they're owed an apology for.
         public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool fixKnown = false, string tellName = null, string askAbout = null, bool sorry = false, bool sorryJustNow = false,
-                                                   string fixKind = "debt", bool house = false, bool gift = false, bool woman = false, string condoleFor = null)
+                                                   string fixKind = "debt", bool house = false, bool gift = false, bool woman = false, string condoleFor = null, bool escort = false)
         {
             // house, gift, condoleFor: the fondness interactions (Core/Fondness.cs; SIXDAY item 1): whiskey for the house (a saloon with company at
             // the bar), a gift, condolences to someone grieving a friend (their first name)
@@ -112,6 +112,8 @@ namespace EnrageWestworld.Core
                 list.Add(new InteractOption { Id = "settle", Label = FixLabel(fixKind), Why = cash < fix ? "not enough money" : null });
             if (condoleFor != null)
                 list.Add(new InteractOption { Id = "condole", Label = Fondness.CondoleLabel(condoleFor) });
+            if (escort)
+                list.Add(new InteractOption { Id = "escort", Label = Fondness.EscortLabel() });
             if (sorry)
                 list.Add(new InteractOption { Id = "sorry", Label = sorryJustNow ? "I didn't mean that." : "I'm sorry about before." });   // minutes after a warning, a quick word; later, an apology
             list.Add(new InteractOption { Id = "threaten", Label = "Watch yourself." });

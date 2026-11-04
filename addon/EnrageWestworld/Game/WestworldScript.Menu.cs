@@ -42,6 +42,8 @@ namespace EnrageWestworld.InGame
             public bool YouKilledKnown;   // ...and they know he's the one who killed them
             public int CoverDollars;      // a creditor pressing someone in a debt scene: what the stranger can cover (Core/Fondness.cs); 0 otherwise
             public int Debtor;            // ...the one pressed (a handle)
+            public bool Drunk;            // in drink (InHisCups)
+            public bool EscortOffer;      // "Let me see you home." is on the list (after dark in a town: a woman, the drunk, the timid; or the Testing row)
             public Person P;           // who they are to the mind, for their worry's words when he asks after it
             public float Reach;
             public List<InteractOption> Options;
@@ -326,13 +328,18 @@ namespace EnrageWestworld.InGame
             int coverDollars = 0, debtor = 0;
             if (_cfg.FondnessActs)
                 DebtCoverable(h, out coverDollars, out debtor);   // a creditor pressing someone: the list is the one word with him
+            bool woman = !PED.IS_PED_MALE(h), seated = PED.IS_PED_USING_ANY_SCENARIO(h) && ENTITY.GET_ENTITY_SPEED(h) < 0.4f;
+            bool drunk = InHisCups(p, w != null ? w.P : null);
+            string regard = SightRegard(p, id);
+            bool escortOffer = _cfg.FondnessActs && _escort == null && coverDollars == 0 && (_escortTest ? !seated : Fondness.EscortOffered(Natives.Night(), _placeTown != null, woman, drunk, temper, regard, seated));
             _menu = new TalkMenu
             {
                 Handle = h, Id = id, Name = name ?? TalkName(p), First = name != null ? Person.FirstOf(name) : TalkName(p), Temper = temper, Worry = worry,
-                Woman = !PED.IS_PED_MALE(h), Devout = w != null && w.Traits != null && w.Traits[Traits.Piety] > 1.2f, MoneyWorry = worry == "debt" || worry == "savings" || worry == "bank",
+                Woman = woman, Devout = w != null && w.Traits != null && w.Traits[Traits.Piety] > 1.2f, MoneyWorry = worry == "debt" || worry == "savings" || worry == "bank",
+                Drunk = drunk, EscortOffer = escortOffer,
                 Trade = w != null && w.P != null ? w.P.Trade : null, FolkId = ac != null ? ac.Id : null, P = w != null ? w.P : null,
-                Seated = PED.IS_PED_USING_ANY_SCENARIO(h) && ENTITY.GET_ENTITY_SPEED(h) < 0.4f,   // sat, leaning or stood at their point: they talk from there; a scenario's walker is stopped like anyone else
-                Regard = SightRegard(p, id), Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
+                Seated = seated,   // sat, leaning or stood at their point: they talk from there; a scenario's walker is stopped like anyone else
+                Regard = regard, Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
                 Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440), WorryStage = worryStage,
                 Condole = condole, YouKilledKnown = youKilledKnown, CoverDollars = coverDollars, Debtor = debtor
             };
@@ -386,7 +393,7 @@ namespace EnrageWestworld.InGame
             int company = _cfg.FondnessActs && _placeKind == "saloon" ? HouseCompany(_menu.Handle) : 0;   // whiskey for the house wants a house (WestworldScript.Fondness.cs)
             _menu.Options = Interact.Options(_placeKind == "saloon", cash, _menu.MoneyWorry && told, told && Interact.Mendable(_menu.Worry, _menu.WorryStage), _menu.KnowsName ? null : YourFullName(),
                                              told && _menu.P != null ? _menu.AskWorry : null, wrong != null, wrong != null && _store.LastGameMin - wrong.At < 60, _menu.Worry,   // a worry money can mend: the debt, the doctor, a dentist, the fare
-                                             house: company >= Fondness.HouseLeast, gift: _cfg.FondnessActs, woman: _menu.Woman, condoleFor: _menu.Condole);
+                                             house: company >= Fondness.HouseLeast, gift: _cfg.FondnessActs, woman: _menu.Woman, condoleFor: _menu.Condole, escort: _menu.EscortOffer);
             int at = selId != null ? _menu.Options.FindIndex(x => x.Id == selId) : -1;
             _menu.Sel = at >= 0 ? at : 0;   // the same option stays chosen (by index, "Watch yourself." slid under the cursor after an apology)
             _menu.Rows = null;
@@ -541,6 +548,7 @@ namespace EnrageWestworld.InGame
                   : o.Id == "gift" ? Fondness.Gift(t.Temper, t.Woman, t.Regard, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd)
                   : o.Id == "condole" ? Fondness.Condole(t.Temper, t.Woman, t.Regard, t.YouKilledKnown, sd)
                   : o.Id == "cover" ? Fondness.Cover(t.Temper, t.CoverDollars, sd)
+                  : o.Id == "escort" ? Fondness.Escort(t.Temper, t.Woman, t.Drunk, t.Regard, t.KnowsName, Interact.KindLately(_store.WorldLog, t.Id, _store.LastGameMin), sd)
                   : Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd, YourSurname(), t.Self);
             }
             if (_talkLastLine.Count > 400)
@@ -642,6 +650,11 @@ namespace EnrageWestworld.InGame
                         t.KeepOrders = true;
                         t.CloseAt = now + 3500;
                         break;
+                    case "escort":
+                        EscortStart(t, now);   // they set off for home once the list closes (WestworldScript.Escort.cs)
+                        t.KeepOrders = true;
+                        t.CloseAt = now + 1200;
+                        break;
                     default:
                         TalkFace(t, me, false);
                         break;
@@ -670,6 +683,8 @@ namespace EnrageWestworld.InGame
                 return;   // a drink or money turned down keeps its written words: the check can't tell a refusal worded as thanks (the review)
             if (o.Id == "condole" && a.Event == null)
                 return;   // condolences thrown back: the written words
+            if (o.Id == "escort" && a.Then != "escort")
+                return;   // the walk declined: the check can't tell a no worded kindly
             if (!string.IsNullOrEmpty(t.Self) && a.Line.Contains(t.Self))
                 return;   // their own name given back: the model may not say it (TalkCheck holds it), so the written line (the review)
             MindWho w = MindKnown(t.Handle, now);
@@ -794,6 +809,7 @@ namespace EnrageWestworld.InGame
                 _youNodAt[t.Id] = _now;   // just spoke with him: no passing look and greeting straight after goodbye (ToYou's rest)
             if (t.ThoughtAt > 0 && _talkLast != null)
                 TalkThink(t);
+            _escortTest = false;   // the Testing row's offer was for this list only
             _spaceAgain[t.Handle] = Game.GameTime + 60000;   // stood close to talk: no "a little room" from them straight after
             if (ENTITY.DOES_ENTITY_EXIST(t.Handle) && !ENTITY.IS_ENTITY_DEAD(t.Handle) && !_director.Involves(t.Handle))
             {
