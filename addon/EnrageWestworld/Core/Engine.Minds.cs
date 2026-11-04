@@ -985,6 +985,18 @@ namespace EnrageWestworld.Core
                 bool again = look.Seen >= 2;
                 c.Add(new Minds.Candidate { Source = again ? "player:again" : "player:look", Pull = (again ? 34 : 28) + Minds.Jitter(seed, "player", 6), Make = () => InnerLife.AboutPlayer(p, seed, told, look, again) });
             }
+            // the quiet side of the moment they're in (Core/Moments.cs: a drink, a smoke, the saddle, their work, how you look beside
+            // them): above the timeless fillers, below a worry or a fresh memory (the loud moments never get here: the game side
+            // thinks them first, WestworldScript.Moments.cs)
+            if (look != null && look.Now != null)
+            {
+                string quiet = Moments.Quiet(look.Now);
+                if (quiet != null)
+                {
+                    Moment mo = look.Now;
+                    c.Add(new Minds.Candidate { Source = "moment:" + quiet, Pull = Moments.Pull(quiet) + Minds.Jitter(seed, "moment", 6), Make = () => { string ms; return Moments.Ambient(p, mo, seed, told, out ms); } });
+                }
+            }
             // the day, the year, and the old timeless frames: low, taking turns
             c.Add(new Minds.Candidate { Source = "day", Pull = 16 + Minds.Jitter(seed, "day", 8), Make = () => InnerLife.DayLine(p, hour, seed, told) });
             c.Add(new Minds.Candidate { Source = "era", Pull = 10 + Minds.Jitter(seed, "era", 8), Make = () => InnerLife.EraLine(p, seed, told) });

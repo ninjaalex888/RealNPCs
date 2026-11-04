@@ -1093,7 +1093,18 @@ namespace EnrageWestworld.InGame
             if (r == null)
                 why = "no request could be built for " + w.Name;
             if (r != null)
+            {
                 r.TownMood = TownMood.Words(TownFearNow(now), _store.LastGameMin);   // the town on edge, for the model (NIGHT3 item 5)
+                try
+                {
+                    Ped me = Game.Player.Character;
+                    r.Now = Moments.Words(MomentOf(new Ped(handle), me, ENTITY.GET_ENTITY_COORDS(handle, true, true).DistanceTo(me.Position)));   // what's happening to them this moment ("Right now:" in the prompt; Core/Moments.cs)
+                }
+                catch (Exception ex)
+                {
+                    Log.Detail("MOMENT the words for the model failed: " + ex.Message);
+                }
+            }
             return r;
         }
 

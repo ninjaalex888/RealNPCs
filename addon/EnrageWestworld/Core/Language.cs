@@ -151,7 +151,7 @@ namespace EnrageWestworld.Core
             if (r.Near.Count > 0) b.Append("In sight: ").Append(string.Join(", ", r.Near.Take(4))).Append(".\n");
             if (r.Varied)
             {
-                if (r.Uncanny.Count > 0 && r.Stage < Awakening.Questioning) b.Append("Strange things lately: ").Append(string.Join("; ", r.Uncanny.Take(3))).Append(".\n");
+                if (r.Uncanny.Count > 0 && r.Stage >= Awakening.Stirring && r.Stage < Awakening.Questioning) b.Append("Strange things lately: ").Append(string.Join("; ", r.Uncanny.Take(3))).Append(".\n");   // the asleep aren't told: they never doubt (Language.Variety.MayDoubt)
                 if (!string.IsNullOrEmpty(r.Focus)) b.Append("Their mind goes to: ").Append(r.Focus).Append(".\n");
                 if (r.Recent.Count > 0) b.Append("Their thoughts lately (think of something else): ").Append(string.Join(" | ", r.Recent.Take(3))).Append(".\n");
             }

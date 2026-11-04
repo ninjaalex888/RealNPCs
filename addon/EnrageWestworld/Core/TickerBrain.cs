@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
         public int Handle;          // the game's handle for the person, 0 if none (for a sound as the thought shows)
         public Func<string> Text;   // computed lazily, at most every ThoughtCacheMs per person
         public bool Beside;         // right next to the player: every other turn, and a new thought every BesideCacheMs
+        public bool Urgent;         // in a loud moment (a fight, a flight, a gun on them: Core/Moments.cs): the first turn, and a new thought every UrgentCacheMs
     }
 
     public sealed class TickerBrain
@@ -34,6 +35,7 @@ namespace EnrageWestworld.Core
         public int SlotMs = 12000;
         public int ThoughtCacheMs = 90000;
         public int BesideCacheMs = 30000;
+        public int UrgentCacheMs = 6000;
         public int HistorySize = 14;
         public int GapMs;             // a blank this long between one line and the next (0: none)
 
@@ -158,6 +160,10 @@ namespace EnrageWestworld.Core
             {
                 if (!newcomer && _fresh.Count > 0 && (_prev == null || _prev.Kind == "near"))
                     next = TakeFresh();
+                // someone in a loud moment (fighting, fleeing, a gun on them) comes first, with a new line every few seconds
+                NearThought urgent = close.FirstOrDefault(n => n.Urgent);
+                if (next == null && urgent != null && !(_prev != null && _prev.Kind == "near" && _prev.Key == urgent.Key && now - _prev.ShownAt < UrgentCacheMs))
+                    next = NearLine(urgent, now);
                 // the person right beside the player gets every other turn
                 NearThought beside = close.FirstOrDefault(n => n.Beside);
                 if (next == null && beside != null && !(_prev != null && _prev.Kind == "near" && _prev.Key == beside.Key))
@@ -227,7 +233,7 @@ namespace EnrageWestworld.Core
                 return null;
             // the same thought again so soon: give the slot to the news instead
             KeyValuePair<int, string> last;
-            if (_shown.TryGetValue(n.Key, out last) && last.Value == line.Text && now - last.Key < (n.Beside ? BesideCacheMs : ThoughtCacheMs))
+            if (_shown.TryGetValue(n.Key, out last) && last.Value == line.Text && now - last.Key < CacheMs(n))
                 return null;
             _shown[n.Key] = new KeyValuePair<int, string>(now, line.Text);
             if (_shown.Count > 200)
@@ -235,11 +241,18 @@ namespace EnrageWestworld.Core
             return line;
         }
 
+        /// How long one person's thought is kept before a new one is asked for: a few seconds in a loud moment, half a
+        /// minute right beside the player, a minute and a half otherwise.
+        private int CacheMs(NearThought n)
+        {
+            return n.Urgent ? UrgentCacheMs : n.Beside ? BesideCacheMs : ThoughtCacheMs;
+        }
+
         private TickerLine NearLineRaw(NearThought n, int now)
         {
             KeyValuePair<int, string> cached;
             string text = null;
-            if (_thoughts.TryGetValue(n.Key, out cached) && now - cached.Key < (n.Beside ? BesideCacheMs : ThoughtCacheMs) && now >= cached.Key)
+            if (_thoughts.TryGetValue(n.Key, out cached) && now - cached.Key < CacheMs(n) && now >= cached.Key)
             {
                 text = cached.Value;
             }

@@ -216,6 +216,7 @@ namespace EnrageWestworld.Core
             public bool Armed;      // a gun in hand
             public bool Mounted;    // on a horse
             public int Seen;        // times this person has met him (a town regular), counting now
+            public Moment Now;      // the moment this person is in (Core/Moments.cs), for its quiet side: a drink, the saddle, their work; null unknown
         }
 
         /// A town regular who has met him before, seeing him again.
@@ -403,8 +404,14 @@ namespace EnrageWestworld.Core
             else if (roll < 58)
             {
                 string what;
-                own = NowThought(p, seed, told, day, out what);   // what's going on around them right now (InnerLife.Now.cs)
-                source = "now:" + what;
+                // the quiet side of the moment they're in (Core/Moments.cs: a drink, the saddle, their work) half the time, else
+                // what's going on around them (InnerLife.Now.cs)
+                own = look != null && look.Now != null && Voice.Chance(seed + "mo", 50) ? Moments.Ambient(p, look.Now, seed, told, out source) : null;
+                if (own == null)
+                {
+                    own = NowThought(p, seed, told, day, out what);
+                    source = "now:" + what;
+                }
             }
             if (own != null)
                 return own;

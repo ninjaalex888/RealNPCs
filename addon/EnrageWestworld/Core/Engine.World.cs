@@ -1214,7 +1214,7 @@ namespace EnrageWestworld.Core
         // ---- the ticker -----------------------------------------------------------------------------
 
         /// The private thought of a nearby person, for the bottom ticker.
-        public string TickerThought(Person p, long now)
+        public string TickerThought(Person p, long now, InnerLife.PlayerLook look = null)
         {
             PersonState st = Store.Get(p);
             PlayerRef you = Talk.RefFor(p, st, Player);
@@ -1265,6 +1265,15 @@ namespace EnrageWestworld.Core
                 return DebtThought(debt, p);
             if (st.Talks == 0 && st.Sightings > 0 && m == null)
                 return FirstSight(you, seed);
+            // the quiet side of the moment they're in (Core/Moments.cs: a drink, the saddle, their work) before enRAGE's own mood
+            // line, which was all a record had without a memory ("Can't complain": Lex, 2026-11-03)
+            if (look != null && look.Now != null && Voice.Chance(seed + "quiet", 65))
+            {
+                string ms;
+                string quiet = Moments.Ambient(p, look.Now, seed, st.Musings, out ms);
+                if (quiet != null)
+                    return quiet;
+            }
             return Voice.MoodLine(p, p.TopThought, seed);
         }
 

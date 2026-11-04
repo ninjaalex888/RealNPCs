@@ -1195,6 +1195,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST mind talks: " + MindTalkStatus());
 			Log.Write("TEST allies: " + AlliesStatus());
 			Log.Write("TEST greet liking: " + GreetLikingStatus());
+			Log.Write("TEST moments: " + MomentsStatus());
 			Log.Write("TEST save: " + SaveStatus());
 			Log.Write("TEST wake voices: " + WakeVoiceStatus());
 			Log.Write("TEST wake anim sets: " + _wakeAnimsResult);

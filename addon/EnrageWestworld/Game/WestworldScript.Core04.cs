@@ -905,9 +905,19 @@ namespace EnrageWestworld.InGame
             long now = Bridge.Now();
             ReadClock();
             List<KeyValuePair<Ped, float>> strangers = new List<KeyValuePair<Ped, float>>();
+            int nowMs = Game.GameTime;
+            MomentSweepStart();   // the street around you, for everyone's moment (WestworldScript.Moments.cs)
             foreach (Ped ped in Peds.All())
             {
+                if (ped == null)
+                    continue;
                 int h = ped.Handle;
+                if (h != me.Handle)
+                {
+                    float md = ped.Position.DistanceTo(pos);
+                    if (md <= 40f && PED.IS_PED_HUMAN(h))
+                        MomentSweep(h, md, ENTITY.IS_ENTITY_DEAD(h), nowMs);
+                }
                 if (IsHermit(h))
                 {
                     float hd = ped.Position.DistanceTo(pos);
@@ -936,13 +946,19 @@ namespace EnrageWestworld.InGame
                     continue;
                 // only people you can see think on the ticker, so it's always clear whose thought it is
                 bool seen = ENTITY.IS_ENTITY_ON_SCREEN(h) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17);
+                if (!seen)
+                    continue;   // only people you can see think on the ticker (the branches below asked each on their own; the counter's visit is noted first)
+                // a loud moment (a fight, a flight, a gun on them: WestworldScript.Moments.cs) gets the first turn and a line every few seconds
+                bool urgent = Moments.Urgent(MomentOf(ped, me, d));
                 RecordRef rec = _bridge.RecordAt(h);
                 if (rec != null)
                 {
-                    if (!rec.IsAlive || !seen)
+                    if (!rec.IsAlive)
                         continue;
                     Person p = PersonOf(rec);
-                    _near.Add(new NearThought { Key = p.Id, Name = p.Name, Handle = h, Distance = d, Beside = d < BesideMetres, Text = () => _engine.TickerThought(p, now) });
+                    PersonState ps = _store.Find(p.Id);
+                    _near.Add(new NearThought { Key = p.Id, Name = p.Name, Handle = h, Distance = d, Beside = d < BesideMetres, Urgent = urgent,
+                                                Text = () => ThoughtNow(ped, me, d, p, ps, p.Id, null, lk => _engine.TickerThought(p, now, lk)) });
                     continue;
                 }
                 // right beside you: a new thought every 15 game minutes (30 s), to match the ticker's quicker turn
@@ -950,8 +966,6 @@ namespace EnrageWestworld.InGame
                 FolkRef a = _bridge.AcquaintanceAt(h);
                 if (a != null && !string.IsNullOrEmpty(a.Name))
                 {
-                    if (!seen)
-                        continue;
                     Folk f = Snapshot.Of(a);
                     Person fp = _engine.PersonOfFolk(f.Key, f.Name, f.Woman, f.Town, now);
                     PersonState st = _store.Get(fp);
@@ -963,8 +977,9 @@ namespace EnrageWestworld.InGame
                         Name = f.Name,
                         Distance = d + 3f,
                         Beside = d < BesideMetres,
-                        Text = () => _cfg.WestWorld && st.WakeStage > 0 ? Hosts.Thought(fp, st, _engine.Player, f.Key + now / 180)
-                            : _engine.FolkThought(f, fp, st, f.Key + "|" + now / every, CLOCK.GET_CLOCK_HOURS(), Look(me, fd))
+                        Urgent = urgent,
+                        Text = () => ThoughtNow(ped, me, fd, fp, st, f.Key, Look(me, fd), lk => _cfg.WestWorld && st.WakeStage > 0 ? Hosts.Thought(fp, st, _engine.Player, f.Key + now / 180)
+                            : _engine.FolkThought(f, fp, st, f.Key + "|" + now / every, CLOCK.GET_CLOCK_HOURS(), lk))
                     });
                     continue;
                 }
@@ -977,27 +992,30 @@ namespace EnrageWestworld.InGame
                     {
                         NotePostVisit(holder, d);   // a visit counts whether or not you're looking at them
                         float near = d;
-                        if (seen)
-                            _near.Add(new NearThought
+                        _near.Add(new NearThought
+                        {
+                            Key = holder.Id,
+                            Handle = h,
+                            Name = holder.Name + ", " + pk.Role,
+                            Distance = d + 2f,
+                            Beside = d < BesideMetres,
+                            Urgent = urgent,
+                            Text = () =>
                             {
-                                Key = holder.Id,
-                                Handle = h,
-                                Name = holder.Name + ", " + pk.Role,
-                                Distance = d + 2f,
-                                Beside = d < BesideMetres,
-                                Text = () =>
-                                {
-                                    PersonState hs = _store.Find(holder.Id);
-                                    return _cfg.WestWorld && hs != null && hs.WakeStage > 0 ? Hosts.Thought(_engine.PersonOfResident(holder), hs, _engine.Player, holder.Id + "|" + now / 180)
-                                        : _engine.PostThought(holder, near < 10f, CLOCK.GET_CLOCK_HOURS(), holder.Id + "|" + now / every, Look(me, near));
-                                }
-                            });
+                                PersonState hs = _store.Find(holder.Id);
+                                Person hp = _engine.PersonOfResident(holder);
+                                return ThoughtNow(ped, me, near, hp, hs, holder.Id, Look(me, near), lk => _cfg.WestWorld && hs != null && hs.WakeStage > 0 ? Hosts.Thought(hp, hs, _engine.Player, holder.Id + "|" + now / 180)
+                                    : _engine.PostThought(holder, near < 10f, CLOCK.GET_CLOCK_HOURS(), holder.Id + "|" + now / every, lk));
+                            }
+                        });
                     }
                     continue;
                 }
-                if (seen && d < 12f && !PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h) && ResidentEligible(ped))
+                // someone fighting or fleeing is a stranger with a loud moment (a thought of it), not passed over as before
+                if (d < 12f && (urgent || (!PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h))) && ResidentEligible(ped))
                     strangers.Add(new KeyValuePair<Ped, float>(ped, d));
             }
+            MomentSweepEnd(me, nowMs);
             // the three nearest ordinary people get turns too (behind anyone with a name, unless right beside you)
             bool named = _near.Count > 0;
             foreach (KeyValuePair<Ped, float> s in strangers.OrderBy(x => x.Value).Take(3))
@@ -1005,6 +1023,7 @@ namespace EnrageWestworld.InGame
                 Ped stranger = s.Key;
                 float sd = s.Value;
                 bool woman = !PED.IS_PED_MALE(stranger.Handle);
+                bool loud = Moments.Urgent(MomentOf(stranger, me, sd));
                 Resident res = ResidentOf(stranger);
                 if (res != null)
                 {
@@ -1020,21 +1039,34 @@ namespace EnrageWestworld.InGame
                         Handle = stranger.Handle,
                         Distance = sd + 10f,
                         Beside = sd < BesideMetres,
+                        Urgent = loud,
                         Text = () =>
                         {
                             PersonState rst = _store.Find(res.Id);
                             InnerLife.PlayerLook look = Look(me, sd);
                             look.Seen = met;
-                            return _cfg.WestWorld && rst != null && rst.WakeStage > 0 ? Hosts.Thought(rp, rst, _engine.Player, res.Id + "|" + now / 180) : _engine.ResidentThought(rp, CLOCK.GET_CLOCK_HOURS(), res.Id + "|" + now / every, look);
+                            return ThoughtNow(stranger, me, sd, rp, rst, res.Id, look, lk => _cfg.WestWorld && rst != null && rst.WakeStage > 0 ? Hosts.Thought(rp, rst, _engine.Player, res.Id + "|" + now / 180)
+                                : _engine.ResidentThought(rp, CLOCK.GET_CLOCK_HOURS(), res.Id + "|" + now / every, lk));
                         }
                     });
                 }
-                else if (!named && _near.Count == 0)
+                else if (loud || (!named && _near.Count == 0))
                 {
-                    // someone who can't be a resident: only when nobody else is near, as before
+                    // someone who can't be a resident: only when nobody else is near, as before, or in a loud moment of their own
                     string key = "stranger:" + stranger.Handle;
                     string town = _placeTown;
-                    _near.Add(new NearThought { Key = key, Name = Grammar.UpperFirst(Director.Kind(stranger, woman)), Handle = stranger.Handle, Distance = sd + 10f, Text = () => _engine.StrangerThought(key + now / 600, town, woman) });
+                    _near.Add(new NearThought
+                    {
+                        Key = key, Name = Grammar.UpperFirst(Director.Kind(stranger, woman)), Handle = stranger.Handle, Distance = sd + 10f, Urgent = loud,
+                        Text = () => ThoughtNow(stranger, me, sd, null, null, key, null, lk =>
+                        {
+                            string t = _engine.StrangerThought(key + now / 600, town, woman);
+                            if (t != null || lk.Now == null)
+                                return t;
+                            string src;
+                            return Moments.Ambient(null, lk.Now, key + now / 600, null, out src);   // the quiet side of their moment rather than nothing
+                        })
+                    });
                 }
             }
             NoteNearby();

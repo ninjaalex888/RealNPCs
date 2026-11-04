@@ -76,11 +76,12 @@ namespace EnrageWestworld.Core
             return null;
         }
 
-        /// Whether this person has cause to doubt the world: from the second stage of waking, or with something strange
-        /// lived through (Uncanny, filled only when it's so).
+        /// Whether this person has cause to doubt the world: from the second stage of waking, or stirring (the first) with
+        /// something strange lived through (Uncanny, filled only when it's so). Someone still asleep never doubts, whatever
+        /// they lived through (Lex, 2026-11-03: only the waking realize).
         public static bool MayDoubt(LanguageRequest r)
         {
-            return r != null && (r.Stage >= Awakening.Questioning || r.Uncanny.Count > 0);
+            return r != null && (r.Stage >= Awakening.Questioning || (r.Stage >= Awakening.Stirring && r.Uncanny.Count > 0));
         }
 
         /// Whether a focus has something to be about for this request.

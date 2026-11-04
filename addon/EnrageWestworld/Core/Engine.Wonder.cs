@@ -67,7 +67,10 @@ namespace EnrageWestworld.Core
         /// The written wondering's candidate for this thought, or null (off, at or past the second stage, no cause, done today).
         private Minds.Candidate WonderCandidate(Person p, PersonState st, string seed, long now)
         {
-            if (Cfg == null || !Cfg.WrittenWakes || !Cfg.MindWakes || !Cfg.WestWorld || st == null || st.WakeStage >= Awakening.Questioning)
+            // only the waking wonder (stage one): someone still asleep never doubts the world in words, whatever they lived through
+            // (Lex, 2026-11-03: "only awake people from the West World part of the mod should realize they are in a simulation");
+            // stage one is still reached from what they lived through alone (Engine.Awakening: the share's pick leans by it)
+            if (Cfg == null || !Cfg.WrittenWakes || !Cfg.MindWakes || !Cfg.WestWorld || st == null || st.WakeStage < Awakening.Stirring || st.WakeStage >= Awakening.Questioning)
                 return null;
             long day;
             if (_wonderedOn.TryGetValue(p.Id, out day) && day == now / 1440)
