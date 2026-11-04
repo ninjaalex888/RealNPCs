@@ -21,6 +21,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public int Arrivals, Departures, DeathsByPlayer, DeathsOther, GoodDeeds, Hangings, Shows, Dances;
         [DataMember(EmitDefaultValue = false)] public long LastChangeAt;       // game minute the index last moved
         [DataMember(EmitDefaultValue = false)] public long LastPaperAt;        // the monthly mention
+        [DataMember(EmitDefaultValue = false)] public long MadeAt;             // game minute the ledger was first read (the first mention thirty days on at the latest; the review of item 14)
         [DataMember(EmitDefaultValue = false)] public string Why;              // the last change, in a word or two
     }
 

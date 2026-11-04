@@ -75,22 +75,26 @@ namespace EnrageWestworld.InGame
             {
                 if (c.Who.P == null)
                     continue;
-                Candidate sad = c.Who.Temper != "Greedy" && couple == null ? people.FirstOrDefault(o => o != c && o.Who.Id != c.Who.Id && Drinking(o.Who.Id) && o.Ped.Position.DistanceTo(c.Ped.Position) < RoundBar && TieWarmth(c.Who.Id, o.Who) > 0) : null;
-                if (sad != null && rank > Array.IndexOf(Scenes.RoundWhys, "cheer"))
-                {
-                    buyer = c;
-                    roundWhy = "cheer";
-                    rank = Array.IndexOf(Scenes.RoundWhys, "cheer");
-                    cheerFor = sad;
-                    continue;
-                }
                 string wk;
                 int ws;
                 bool good;
                 bool news = InnerLife.WorryNow(c.Who.P, g / 1440, out wk, out ws, out good) && ws >= 3 && good && !InnerLife.IsSettled(c.Who.Id, g / 1440);   // a debt he paid for them is no reason to stand the house a round
                 string w = couple != null && c.Who.Temper != "Greedy" && c.Who.Id != wed.AId && c.Who.Id != wed.BId && !AgainstCouple(c.Who.Id, wed) ? "wedding" :   // not the newlyweds themselves
                             Scenes.RoundWhy(news, c.Who.Mood, c.Who.P.Outgoing, c.Who.WellOff, c.Who.Temper, c.Who.Woman, InnerLife.TradeGroup(c.Who.P.Trade) == "girl") ?? (test ? "glad" : null);
-                int r = Array.IndexOf(Scenes.RoundWhys, w);
+                int r = w != null ? Array.IndexOf(Scenes.RoundWhys, w) : 9;
+                // a round for a man with bad news (roadmap 21; item 14): a friend of someone drinking it away tonight stands the house a drink, him
+                // first; his own better reason (good news, a wedding) comes first (the review of item 14)
+                int cheerRank = Array.IndexOf(Scenes.RoundWhys, "cheer");
+                Candidate sad = c.Who.Temper != "Greedy" && cheerRank < r && cheerRank < rank
+                              ? people.FirstOrDefault(o => o != c && o.Who.Id != c.Who.Id && Drinking(o.Who.Id) && o.Ped.Position.DistanceTo(c.Ped.Position) < RoundBar && TieWarmth(c.Who.Id, o.Who) > 0) : null;
+                if (sad != null)
+                {
+                    buyer = c;
+                    roundWhy = "cheer";
+                    rank = cheerRank;
+                    cheerFor = sad;
+                    continue;
+                }
                 if (w == null || r >= rank || !people.Any(o => o != c && o.Ped.Position.DistanceTo(c.Ped.Position) < RoundBar && TieWarmth(o.Who.Id, c.Who) >= 0))
                     continue;
                 buyer = c;

@@ -363,6 +363,13 @@ namespace EnrageWestworld.Core
             }
             if (KinGrudges != null)
             {
+                foreach (KinGrudge k in KinGrudges)
+                    if (k != null && k.At > cut && k.VictimId != null && People != null)
+                    {
+                        PersonState vst;
+                        if (People.TryGetValue(k.VictimId, out vst) && vst != null && vst.Told != null)
+                            vst.Told.Remove(EnrageWestworld.Core.KinGrudges.Mark);   // the wrong undone: the once-only mark goes with the grudge
+                    }
                 n += KinGrudges.RemoveAll(k => k != null && k.At > cut);   // a wrong undone: nobody comes about it
                 foreach (KinGrudge k in KinGrudges)
                     if (k != null && k.Done && k.DoneAt > cut)
@@ -589,6 +596,12 @@ namespace EnrageWestworld.Core
             if (Events == null) Events = new List<TownEvent>();
             if (TownLedgers == null) TownLedgers = new Dictionary<string, TownLedger>();
             if (KinGrudges == null) KinGrudges = new List<KinGrudge>();
+            KinGrudges.RemoveAll(k => k == null || (k.Done && LastGameMin - k.DoneAt > 30 * 1440L));   // the done ones kept a month (the review of item 14)
+            if (KinGrudges.Count > 100) KinGrudges.RemoveRange(0, KinGrudges.Count - 100);
+            if (Residents != null)
+                foreach (Resident r in Residents)
+                    if (r != null && !r.ByTrain && r.PostId == null && (r.Kin != null || r.From != null))
+                        r.ByTrain = true;   // saves from before ByTrain: kin or a far town with no counter of their own came by train (a post's successor keeps the counter)
             if (Trysts == null) Trysts = new List<TrystRecord>();
             if (Ghosts == null) Ghosts = new List<Ghost>();
             FixHeld();

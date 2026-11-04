@@ -17,8 +17,8 @@ namespace EnrageWestworld.Core
         /// calendar (the same by id and day whenever it's asked), so a reload or a day boundary loses nobody.
         private string LeavesOn(Resident r, long day)
         {
-            if (r == null || r.Id == null || r.Dead || r.Fled || r.Left || r.Held != null || r.Town == null || day < 0)
-                return null;
+            if (r == null || r.Id == null || r.Dead || r.Fled || r.Left || r.Held != null || r.PostId != null || r.Town == null || day < 0)
+                return null;   // (a counter keeper keeps his counter: the post's own records are not ours to send west; the review of item 14)
             Person p = PersonOfResident(r);
             if (p == null)
                 return null;

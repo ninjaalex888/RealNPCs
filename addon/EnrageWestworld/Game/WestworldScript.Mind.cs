@@ -737,7 +737,7 @@ namespace EnrageWestworld.InGame
         /// ones who only heard of it.
         private void MindCatchRound(int now)
         {
-            if (_mindEv == null || _cfg == null || !_cfg.MoodsCarry || _mindEvFelt.Count == 0 || _mindEvPeople.Count < 2)
+            if (_mindEv == null || _cfg == null || !_cfg.MindLive || !_cfg.MoodsCarry || _mindEvFelt.Count == 0 || _mindEvPeople.Count < 2)
                 return;
             int src = -1;
             for (int i = 0; i < _mindEvFelt.Count; i++)
@@ -768,7 +768,7 @@ namespace EnrageWestworld.InGame
                 bool had = false;
                 if (felt != null)
                     for (int j = 0; j < felt.Count; j++)
-                        if (felt[j].Why == "caught" && felt[j].At == g)
+                        if (felt[j].Why == "caught" && felt[j].At == g && felt[j].DoerId == sourceId)   // once per happening: this source, this minute (the review of item 14)
                         {
                             had = true;
                             break;

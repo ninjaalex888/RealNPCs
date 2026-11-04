@@ -77,9 +77,11 @@ namespace EnrageWestworld.InGame
             }
             _fallWatch = null;
             if (_director.Custom == null)
+            {
                 _director.Custom = SceneAction;
                 _director.CustomScene = SceneActionIn;   // the words that must know their scene (a line that wakes)
                 _director.OutsideSpot = () => SaloonDoorNear(40f);   // the drunk taking it outside (WestworldScript.Saloon.cs)
+            }
             if (_director.Slam == null)
             {
                 // the rough move for the Director's "slam" (WestworldScript.Roughs.cs)

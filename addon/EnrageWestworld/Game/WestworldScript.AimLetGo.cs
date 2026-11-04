@@ -329,6 +329,7 @@ namespace EnrageWestworld.InGame
             string what = null;
             if (_grudgeWalk != null && _grudgeWalk.Ped != null && _grudgeWalk.Ped.Handle == h)
             {
+                KinGrudgeGaveUp(_grudgeWalk, "you aimed at him");   // a kin's: done, not re-cast (the review of item 14)
                 _grudgeWalk = null;
                 what = "a grudge's walk-up to you";
             }

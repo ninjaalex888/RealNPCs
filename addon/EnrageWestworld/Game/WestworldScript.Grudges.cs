@@ -25,6 +25,7 @@ namespace EnrageWestworld.InGame
             public Ped Ped;
             public string Name, Line, Voice, Id, DeadId;
             public int Until, SaidAt;
+            public KinGrudge Kin;   // a kin's walk (WestworldScript.KinGrudges.cs), so the word or the giving up is never put to another's walk; null for the grudges' own
         }
 
         private GrudgeWalk _grudgeWalk;
@@ -203,7 +204,7 @@ namespace EnrageWestworld.InGame
             if (w.Ped == null || !w.Ped.Exists() || w.Ped.IsDead || _director.Involves(w.Ped.Handle) || MayDirectWhyNot(w.Ped) != null)
             {
                 _grudgeWalk = null;
-                KinGrudgeGaveUp();   // a kin's walk lost its body (WestworldScript.KinGrudges.cs)
+                KinGrudgeGaveUp(w, "the body was lost");   // a kin's walk lost its body (WestworldScript.KinGrudges.cs)
                 return;
             }
             int h = w.Ped.Handle;
@@ -223,15 +224,17 @@ namespace EnrageWestworld.InGame
                 }
                 else if (now > w.Until)
                 {
+                    PED.SET_PED_KEEP_TASK(h, false);   // handed back as taken (the kin's cast keeps the task while he walks)
                     TASK.TASK_WANDER_STANDARD(h, 10f, 10);
                     _grudgeWalk = null;
                     Log.Write("GRUDGE " + w.Name + " never reached you: gave it up");
-                    KinGrudgeGaveUp();
+                    KinGrudgeGaveUp(w, "never reached you");
                 }
                 return;
             }
             if (now - w.SaidAt > 5000)
             {
+                PED.SET_PED_KEEP_TASK(h, false);
                 TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // said it; turns and goes
                 _grudgeWalk = null;
             }
@@ -242,8 +245,8 @@ namespace EnrageWestworld.InGame
         /// Tick04: the one walking up to you, and now and then a look for someone grieving one you killed.
         private void GrudgesStep(int now)
         {
-            if (!_cfg.Grudges && _grudgeWalk != null)
-                GrudgesAbort();   // switched off mid-walk: let them go (else they'd stay busy, and the thanks would wait for ever)
+            if (!_cfg.Grudges && _grudgeWalk != null && _grudgeWalk.Kin == null)
+                GrudgesAbort();   // switched off mid-walk: let them go (else they'd stay busy, and the thanks would wait for ever); a kin's walk is stepped by KinGrudgesStep then
             if (!_cfg.Grudges || _store == null || (_grudgeWalk == null && now < _nextGrudgeYou))
                 return;
             if (_aGrudges == null)
@@ -262,9 +265,18 @@ namespace EnrageWestworld.InGame
 
         private void GrudgesAbort()
         {
-            if (_grudgeWalk != null && _grudgeWalk.Ped != null && _grudgeWalk.Ped.Exists())
-                TASK.CLEAR_PED_TASKS(_grudgeWalk.Ped.Handle, true, false);
+            GrudgeWalk w = _grudgeWalk;
             _grudgeWalk = null;
+            if (w == null)
+                return;
+            KinGrudgeGaveUp(w, "the walk was called off");   // a kin's: done, never re-cast for the same word (the review of item 14)
+            if (w.Ped != null && w.Ped.Exists() && !w.Ped.IsDead)
+            {
+                int h = w.Ped.Handle;
+                PED.SET_PED_KEEP_TASK(h, false);
+                TASK.CLEAR_PED_TASKS(h, true, false);
+                TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // the body is the game's again, going its own way (not left standing)
+            }
         }
 
         /// F7: on or off, the confrontations between people and with you this session, the last, and why not lately.

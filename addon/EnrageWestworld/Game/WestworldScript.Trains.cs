@@ -195,12 +195,12 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_LOOK_AT_ENTITY(h, train, 8000, 0, 51, 0);   // a look, never a task cleared
                     looking++;
                 }
-                bool free = ownBody == null && !_resBind.ContainsKey(h) && !ENTITY.IS_ENTITY_ON_SCREEN(h) && !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17) && ResidentWhy(p) == null && !_bridge.Looked(h) && d <= Trains.StepDownMetres;
+                bool free = !_resBind.ContainsKey(h) && !ENTITY.IS_ENTITY_ON_SCREEN(h) && !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17) && ResidentWhy(p) == null && !_bridge.Looked(h) && d <= Trains.StepDownMetres;
                 if (!free)
                     continue;
                 bool woman = !PED.IS_PED_MALE(h);
-                if (leaver != null && leaverBody == null && woman == leaver.Woman)
-                    leaverBody = p;
+                if (leaver != null && ownBody == null && leaverBody == null && woman == leaver.Woman)
+                    leaverBody = p;   // (their own body near stands for them: the free ones are the arrival's)
                 else if (stepDown == null)
                     stepDown = p;
             }
@@ -216,7 +216,7 @@ namespace EnrageWestworld.InGame
             DeliverLetters(town, gameNow, "train");
             if (leaver != null && (ownBody ?? leaverBody) != null)
                 LeaverCast(leaver, ownBody ?? leaverBody, train, at, now, gameNow, ownBody != null);
-            Log.Write("TRAIN " + town + ": arrived (" + looking + " looking" + (keeper != null ? ", the keeper called it" : "") + (arrival != null ? ", arrival: " + arrival : ", nobody got off") + (leaver != null ? (leaverBody != null ? ", leaving: " + leaver.Name : ", " + leaver.Name + " leaving but no free body for them") : "") + ")");
+            Log.Write("TRAIN " + town + ": arrived (" + looking + " looking" + (keeper != null ? ", the keeper called it" : "") + (arrival != null ? ", arrival: " + arrival : ", nobody got off") + (leaver != null ? ((ownBody ?? leaverBody) != null ? ", leaving: " + leaver.Name : ", " + leaver.Name + " leaving but no free body for them") : "") + ")");
         }
 
         /// A free body by the platform becomes someone new to the town: kin of a resident here (one time in two, when there is one), else a newcomer.
