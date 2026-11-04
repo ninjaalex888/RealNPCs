@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 220;
+        public const int CurrentVersion = 221;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -58,6 +58,7 @@ namespace EnrageWestworld.Core
         public float TickerScale = 0.30f;
         public float TickerWidth = 0.60f;
         public string TickerNextKey = "T";
+        public string SpotKey = "K";          // [Keys] records where you stand as a named place of the town (platform, wharf, cemetery...) into spots.txt; Shift and the key change the kind (Core/Spots.cs; SIXDAY item 11a; settings version 221)
         public bool ThoughtSounds = true;
         public bool SceneCues = true;             // [Ticker] a line on the ticker when something starts up at your back within 22 m ("Raised voices behind you."), at most once a minute (Core/Overheard.cs; SIXDAY item 7; settings version 214)
         public int TickerGapSeconds = 3;
@@ -817,6 +818,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 221)
+                    log?.Invoke("Settings: new in this version: [Keys] SpotKey (K): records where you stand as a named place of the town into spots.txt (Shift and the key change the kind); the trains, the hangings and the shows use the table. Safe to ignore.");
                 if (s.SettingsVersion < 220)
                     log?.Invoke("Settings: new in this version: [World] EventShows (on): a Wild West show acts out the most bent version of your legend once it has travelled; heckle, stand up as the real one, or rob the takings.");
                 if (s.SettingsVersion < 219)
@@ -1284,6 +1287,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("TickerScale = " + F(TickerScale) + "   ; text size");
             b.AppendLine("TickerWidth = " + F(TickerWidth) + "   ; share of the screen width it may use");
             b.AppendLine("TickerNextKey = " + TickerNextKey + "   ; shows the next line on the ticker now (on a long line, its next part first); while the bar shows two or more scenes nearby, the next of them");
+            b.AppendLine("SpotKey = " + SpotKey + "   ; records where you stand as a named place of the town (platform, wharf, pithead, stockyards, cemetery, bandstand, churchsteps, corral, mainstreet, saloonporch, bankdoor, jailyard, showground) into spots.txt beside this file; Shift and the key change the kind (shown on the news line); refused indoors. The trains, the hangings and the shows stand at these; safe to ignore");
             b.AppendLine("ThoughtSounds = " + B(ThoughtSounds) + "   ; when a thought of someone within a few steps comes up on the ticker, they make a small wordless sound (at most every 3 minutes each)");
             b.AppendLine("SceneCues = " + B(SceneCues) + "   ; a line on the ticker when something starts up at your back within 22 m (\"Raised voices behind you.\", \"A scuffle behind you.\", \"Laughter behind you.\"), at most once a minute");
             b.AppendLine("TickerGapSeconds = " + TickerGapSeconds + "   ; a short pause between one thought and the next, so they don't run together (0: none)");

@@ -51,6 +51,7 @@ namespace EnrageWestworld.InGame
                 _saloonDoor[_placeTown] = at;
             if (wasKind == "sheriff" && _placeTown != null)
                 _jailDoor[_placeTown] = at;   // the hanging is staged at the jail he came out of (WestworldScript.Trials.cs)
+            NoteStationDoor(wasKind, at);   // a station door stands for the platform while the town has none (WestworldScript.Spots.cs)
         }
 
         private void TownEventsStep(int now)

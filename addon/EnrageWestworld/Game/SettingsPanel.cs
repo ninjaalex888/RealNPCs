@@ -110,10 +110,10 @@ namespace EnrageWestworld.InGame
             { "GatheringHours", new[] { "any", "night" } }
         };
 
-        private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "SettingsKey2", "TickerNextKey", "TalkKey", "StalkerKey", "ExecutionKey", "CryingWomanKey", "HermitKey", "GatheringKey" };
+        private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "SettingsKey2", "TickerNextKey", "SpotKey", "TalkKey", "StalkerKey", "ExecutionKey", "CryingWomanKey", "HermitKey", "GatheringKey" };
 
         // the order RealNPCs' keys are listed in on the Hotkeys page
-        private static readonly string[] KeyOrder = { "ReaderKey", "FlirtKey", "TalkKey", "TickerNextKey", "TestKey", "SettingsKey", "SettingsKey2" };
+        private static readonly string[] KeyOrder = { "ReaderKey", "FlirtKey", "TalkKey", "TickerNextKey", "SpotKey", "TestKey", "SettingsKey", "SettingsKey2" };
 
         // the keys that make something happen now are the Testing page's (Core/TestActions.cs, [Testing]); Delete leaves
         // one of those, or the second settings key, without a key

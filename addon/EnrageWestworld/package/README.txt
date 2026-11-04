@@ -494,6 +494,11 @@ NEW IN 0.7.11
   acts out the most bent version of it under the name the rumour gave you. Away, the paper reviews
   it and the legend bends further. There: the ground outside town, a barker, riders, a crowd; J to
   heckle, stand up as the real one, or rob the takings. Testing row "show" to see it.
+- The spot key (K; [Keys] SpotKey): stand on a named place of a town (its platform, wharf, cemetery,
+  bandstand, church steps, corral, main street, saloon porch, bank door, jail yard, show ground...)
+  and press it: the place is written to spots.txt beside this file under the current kind; Shift and
+  the key change the kind (the news line says which). The trains, the hangings and the shows stand at
+  these. Refused indoors. The key builds the table and is safe to ignore.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if

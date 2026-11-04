@@ -42,6 +42,7 @@ namespace EnrageWestworld.InGame
         private KeySpec _readerKey;
         private bool _readerRequested;
         private KeySpec _tickerNextKey;
+        private KeySpec _spotKey;   // the spot table's key (WestworldScript.Spots.cs)
         private bool _tickerNextRequested;
         private KeySpec _talkHotkey;   // [World] TalkKey: Talk while its prompt is up (WestworldScript.Menu.cs)
         private string _iniPath;
@@ -249,6 +250,7 @@ namespace EnrageWestworld.InGame
             _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);
             _settingsKey2 = KeySpec.Parse(_cfg.SettingsKey2, Keys.None);   // None (or nothing): no second key
             _tickerNextKey = KeySpec.Parse(_cfg.TickerNextKey, Keys.T);
+            _spotKey = KeySpec.Parse(_cfg.SpotKey, Keys.K);   // Shift with it cycles the kind (MatchesLoose lets the Shift through)
             _talkHotkey = KeySpec.Parse(_cfg.TalkKey, Keys.Q);   // read only when TalkKey isn't Q: Q is the game's own control (WestworldScript.Menu.cs)
             Speech.ShoutsCarry = _cfg.ShoutsCarry;
             Observed.BoldThiefChance = _cfg.BoldThieves;   // a thief who tries it with the law looking on ([Scenes] BoldThieves)
@@ -338,7 +340,7 @@ namespace EnrageWestworld.InGame
         /// press counts once the key has been let go (T tapped through a long ticker line).
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
-            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || IsTestingKey(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e) || (!TalkOnControl() && _talkHotkey.Matches(e))))
+            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || IsTestingKey(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e) || _spotKey.MatchesLoose(e) || (!TalkOnControl() && _talkHotkey.Matches(e))))
                 return false;
             int t = Environment.TickCount;
             bool repeat = e.KeyCode == _lastHotkey && !_hotkeyLetGo && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
@@ -403,6 +405,11 @@ namespace EnrageWestworld.InGame
             if (_tickerNextKey.Matches(e) && _cfg.Ticker)
             {
                 _tickerNextRequested = true;
+                return true;
+            }
+            if (_spotKey.MatchesLoose(e))   // the spot table: the place under the kind, or with Shift the next kind (WestworldScript.Spots.cs)
+            {
+                _spotRequested = e.Shift ? 2 : 1;
                 return true;
             }
             return false;
@@ -1276,6 +1283,7 @@ namespace EnrageWestworld.InGame
             SightsStep(now);    // people notice how you look (WestworldScript.Sights.cs)
             StreetStep(now);    // the street reacts to other people's fights, and to who walks among them (WestworldScript.Street.cs)
             LettersStep(now);   // a letter's writer waiting to meet you (WestworldScript.Letters.cs)
+            SpotsStep(now);   // the spot key's request (WestworldScript.Spots.cs)
             TownEventsStep(now);   // the town's day: a dance staged when you're there (WestworldScript.TownEvents.cs)
             SpaceStep(now);     // and mind you standing too close (WestworldScript.Space.cs)
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)

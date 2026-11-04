@@ -150,6 +150,7 @@ namespace EnrageWestworld.InGame
 			}
 			_cfg = EnrageWestworld.Core.Settings.Load(Path.Combine(_dir, "RealNPCs.ini"), Log.Write).Gated();   // the master switches applied; the ini keeps the player's own values
 			Log.Debug = _cfg.DebugLog;
+			SpotsLoad();   // spots.txt beside the ini: the towns' named places (WestworldScript.Spots.cs)
 			Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
 			_testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
 			_flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.None);
@@ -1213,6 +1214,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST lift: " + LiftStatus());
 			Log.Write("TEST wake stages: " + WakeTagsStatus());
 			Log.Write("TEST events: " + EventsStatus());
+			Log.Write("TEST spots: " + SpotsStatus());
 			Log.Write("TEST pacing: " + (_store != null ? Pacing.Status(_store.Pace, _store.LastGameMin) : "not loaded"));
 			Log.Write("TEST story: " + StoryStatus());
 			Log.Write("TEST near: " + NearStatus());
