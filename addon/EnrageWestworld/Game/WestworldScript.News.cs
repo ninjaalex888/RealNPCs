@@ -82,17 +82,37 @@ namespace EnrageWestworld.InGame
             DrawNews(now);
         }
 
-        /// The box with nothing new: the title and the town's regard line alone, steady, while you're in a town.
+        private List<string> _regardStandingLines;
+        private string _regardStandingFor;
+
+        /// The box with nothing new: the title and the whole of the town's regard (the latest item, wrapped, up to six lines; the line
+        /// alone before the first item), steady, while you're in a town (Lex, 2026-11-04: the one line was cut off).
         private void DrawNewsStanding()
         {
             const float title = 0.26f, body = 0.23f, pad = 0.006f;
             float x = MeterX, w = MeterW, room = w - pad * 2f;
             float y = _meterBottom > 0f ? _meterBottom + 0.008f : MeterY;
-            float height = pad * 2f + Draw.LineHeight(title) + 0.003f + Draw.LineHeight(body);
+            string text = _regardLast ?? _regardLine;
+            if (_regardStandingLines == null || !ReferenceEquals(_regardStandingFor, text))
+            {
+                _regardStandingLines = Draw.Wrap(text, body, room);   // wrapped once per text, not per frame
+                if (_regardStandingLines.Count > 6)
+                    _regardStandingLines = _regardStandingLines.Take(5).Concat(new[] { Draw.Fit(string.Join(" ", _regardStandingLines.Skip(5)), body, room) }).ToList();
+                _regardStandingFor = text;
+            }
+            float height = pad * 2f + Draw.LineHeight(title) + 0.003f + _regardStandingLines.Count * Draw.LineHeight(body);
             Draw.Rect(x, y, w, height, 12, 10, 8, 150);
             Draw.Text(NewsTitle, x + pad, y + pad, title, 236, 214, 160, 255);
-            Draw.Text(Draw.Fit(_regardLine, body, room), x + pad, y + pad + Draw.LineHeight(title) + 0.003f, body, 212, 184, 124, 255);
+            float ty = y + pad + Draw.LineHeight(title) + 0.003f;
+            foreach (string line in _regardStandingLines)
+            {
+                Draw.Text(line, x + pad, ty, body, 212, 184, 124, 255);
+                ty += Draw.LineHeight(body);
+            }
         }
+
+        private List<string> _regardLineWrapped;
+        private string _regardLineFor;
 
         private void DrawNews(int now)
         {
@@ -108,16 +128,25 @@ namespace EnrageWestworld.InGame
             }
             bool label = !string.IsNullOrEmpty(_newsShown.Label);
             string regard = _cfg != null && _cfg.TownRegard ? _regardLine : null;   // the town's regard of you, under the title while you're in a town (WestworldScript.Regard.cs)
-            float height = pad * 2f + Draw.LineHeight(title) + 0.003f + (regard != null ? Draw.LineHeight(body) : 0f) + (label ? Draw.LineHeight(body) : 0f) + _newsLines.Count * Draw.LineHeight(body);
+            if (regard != null && (_regardLineWrapped == null || !ReferenceEquals(_regardLineFor, regard)))
+            {
+                _regardLineWrapped = Draw.Wrap(regard, body, room);   // two lines at most (the one line was cut off: Lex, 2026-11-04)
+                if (_regardLineWrapped.Count > 2)
+                    _regardLineWrapped = _regardLineWrapped.Take(1).Concat(new[] { Draw.Fit(string.Join(" ", _regardLineWrapped.Skip(1)), body, room) }).ToList();
+                _regardLineFor = regard;
+            }
+            int regardRows = regard != null ? _regardLineWrapped.Count : 0;
+            float height = pad * 2f + Draw.LineHeight(title) + 0.003f + regardRows * Draw.LineHeight(body) + (label ? Draw.LineHeight(body) : 0f) + _newsLines.Count * Draw.LineHeight(body);
             int a = Math.Max(0, Math.Min(255, Math.Min(now - _newsShownAt, _newsUntil - now) * 255 / 300));   // fades in and out
             Draw.Rect(x, y, w, height, 12, 10, 8, 150 * a / 255);
             Draw.Text(NewsTitle, x + pad, y + pad, title, 236, 214, 160, a);
             float ty = y + pad + Draw.LineHeight(title) + 0.003f;
             if (regard != null)
-            {
-                Draw.Text(Draw.Fit(regard, body, room), x + pad, ty, body, 212, 184, 124, a);
-                ty += Draw.LineHeight(body);
-            }
+                foreach (string rl in _regardLineWrapped)
+                {
+                    Draw.Text(rl, x + pad, ty, body, 212, 184, 124, a);
+                    ty += Draw.LineHeight(body);
+                }
             if (label)
             {
                 Draw.Text(Draw.Fit(_newsShown.Label, body, room), x + pad, ty, body, 205, 150, 92, a);

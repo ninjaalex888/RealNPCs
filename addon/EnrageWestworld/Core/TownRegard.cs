@@ -45,21 +45,28 @@ namespace EnrageWestworld.Core
             return (town ?? "?") + "|" + (standing ?? "-") + "|" + kills + "|" + kindnesses + "|" + (mood ?? "-");
         }
 
-        /// The item for the box: the standing with its counts (this week), the town's mood, how the people you know here regard you,
-        /// and the talk that has reached the town. known: the people you know within reach; afraid/fond/against among them.
-        public static string Item(string town, string standing, int kills, int kindnesses, string mood, int known, int afraid, int fond, int against, string talk)
+        /// The item for the box: the standing with its counts (this week), the town's mood, how many you've met in this town, how the
+        /// ones about town now regard you, and the talk that has reached the town. met: everyone you've met whose town this is;
+        /// known: those of them about town now; afraid/fond/against among those.
+        public static string Item(string town, string standing, int kills, int kindnesses, string mood, int met, int known, int afraid, int fond, int against, string talk)
         {
             string s = town + (standing == "killer" ? " knows you for a killer: " : standing == "peacemaker" ? " knows you for a peacemaker: " : " holds nothing against you: ") +
                        Killings(kills) + " of yours known this week, " + Kindnesses(kindnesses) + ".";
             if (mood != null && mood != "steady")
                 s += " The town is " + mood + ".";
-            if (known > 0)
+            if (met > 0 || known > 0)
             {
-                var parts = new List<string>();
-                if (afraid > 0) parts.Add(afraid + " afraid of you");
-                if (against > 0) parts.Add(against + " holding something against you");
-                if (fond > 0) parts.Add(fond + " fond of you");
-                s += " Of the " + known + " you know here, " + (parts.Count == 0 ? "none feel much either way" : string.Join(", ", parts.ToArray())) + ".";
+                s += " You've met " + (met == 1 ? "one person" : met + " people") + " here";
+                if (known > 0)
+                {
+                    var parts = new List<string>();
+                    if (afraid > 0) parts.Add(afraid + " afraid of you");
+                    if (against > 0) parts.Add(against + " holding something against you");
+                    if (fond > 0) parts.Add(fond + " fond of you");
+                    s += "; of the " + known + " about town now, " + (parts.Count == 0 ? "none feel much either way" : string.Join(", ", parts.ToArray())) + ".";
+                }
+                else
+                    s += ".";
             }
             if (!string.IsNullOrEmpty(talk))
                 s += " The talk here: \"" + talk.Trim().TrimEnd('.') + ".\"";
@@ -71,9 +78,9 @@ namespace EnrageWestworld.Core
             yield return Line("Valentine", "killer", 39, 0);
             yield return Line("Rhodes", null, 1, 2);
             yield return Line("Strawberry", "peacemaker", 0, 3);
-            yield return Item("Valentine", "killer", 39, 0, "fearful", 12, 9, 2, 1, "the man they can't kill gunned down a lawman");
-            yield return Item("Rhodes", null, 0, 0, "steady", 0, 0, 0, 0, null);
-            yield return Item("Strawberry", "peacemaker", 0, 3, "prospering", 4, 0, 3, 0, null);
+            yield return Item("Valentine", "killer", 39, 0, "fearful", 23, 12, 9, 2, 1, "the man they can't kill gunned down a lawman");
+            yield return Item("Rhodes", null, 0, 0, "steady", 0, 0, 0, 0, 0, null);
+            yield return Item("Strawberry", "peacemaker", 0, 3, "prospering", 4, 4, 0, 3, 0, null);
         }
     }
 }
