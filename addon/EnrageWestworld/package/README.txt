@@ -443,6 +443,11 @@ NEW IN 0.7.11
   can't, denied now and then by the greedy, who walk off); and "Have you met <X>?" when someone
   RealNPCs knows stands near whom they don't (a word each, a hat tipped, acquainted from then
   on: they nod to each other in passing).
+- Seeing what happened. The papers (N) end with Overheard ([Display] Overheard): what went on near
+  you in the last game day, one sentence each, newest first ("Simon Walsh and Ezra Whitlow came to
+  blows in the saloon, two hours ago."), then Who's who. And a cue on the ticker when a scene starts
+  out of your view within 22 m ([Ticker] SceneCues: "Raised voices behind you.", "A scuffle behind
+  you.", "Laughter behind you."), at most once a minute.
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if

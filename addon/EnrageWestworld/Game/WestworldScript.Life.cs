@@ -688,6 +688,7 @@ namespace EnrageWestworld.InGame
                 StorySecondStarted(s.Kind, now);
                 NoteInScene(people, s.Kind, now);
                 Onlookers(people);
+                SceneCue(s, people, now, test);   // "Raised voices behind you." when it's out of his view (WestworldScript.Overheard.cs)
                 return true;
             }
             if (test && _director.SecondBusy)
@@ -719,6 +720,7 @@ namespace EnrageWestworld.InGame
                 StoryMainStarted(noted, _pendingNote == null && !test, now);
                 NoteInScene(people, noted, now);
                 Onlookers(people);
+                SceneCue(s, people, now, test);   // "Raised voices behind you." when it's out of his view (WestworldScript.Overheard.cs)
                 return true;
             }
             return false;

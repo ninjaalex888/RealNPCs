@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 213;
+        public const int CurrentVersion = 214;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -59,6 +59,7 @@ namespace EnrageWestworld.Core
         public float TickerWidth = 0.60f;
         public string TickerNextKey = "T";
         public bool ThoughtSounds = true;
+        public bool SceneCues = true;             // [Ticker] a line on the ticker when something starts up at your back within 22 m ("Raised voices behind you."), at most once a minute (Core/Overheard.cs; SIXDAY item 7; settings version 214)
         public int TickerGapSeconds = 3;
         public bool ThoughtMarker = true;
         public bool ThoughtsOverHeads = true;
@@ -152,6 +153,7 @@ namespace EnrageWestworld.Core
         public bool NameCardsStrangerNames;      // a stranger's own name over "Stranger"; off: "Stranger" alone (Lex, 2026-10-30; settings version 124)
         public bool NameCardsSecondLine = true;   // the line under the name (temper, trade, Stranger, gang); off: the name alone (players, 2026-10-30; settings version 117)
         public bool WhosWho = true;               // for everyone (Lex, 2026-10-30; MindLive only for its Lately): the reader (the papers key) ends with a page of the people you've met, read from what is kept (Core/WhosWho.cs; roadmap 24; night 2026-10-29; settings version 116)
+        public bool Overheard = true;             // [Display] the papers end with Overheard: what went on near you in the last game day, one sentence each, newest first (read from what's kept; nothing saved) (Core/Overheard.cs; roadmap 24; SIXDAY item 7; settings version 214)
         public bool GrudgeMeter = true;
         public string VramGauge = "model";        // off | on | model: "VRAM 11.3 / 15.6 GB" at the top left, the whole card's memory in use as Windows counts it; model: only while Language is on (Lex, 2026-11-01; Core/Vram.cs; set aside for 0.7.12, back 2026-11-03; settings version 195)
 
@@ -807,6 +809,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 214)
+                    log?.Invoke("Settings: new in this version: [Display] Overheard (on): the papers end with what went on near you this last day; [Ticker] SceneCues (on): a cue on the ticker when voices are raised behind you.");
                 if (s.SettingsVersion < 213)
                     log?.Invoke("Settings: new in this version: [Encounters] TalkVerbs (on): Talk can ask what someone knows of a person they've had dealings with, lend ten dollars (and ask after it three days on), and introduce two people.");
                 if (s.SettingsVersion < 212)
@@ -1261,6 +1265,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("TickerWidth = " + F(TickerWidth) + "   ; share of the screen width it may use");
             b.AppendLine("TickerNextKey = " + TickerNextKey + "   ; shows the next line on the ticker now (on a long line, its next part first); while the bar shows two or more scenes nearby, the next of them");
             b.AppendLine("ThoughtSounds = " + B(ThoughtSounds) + "   ; when a thought of someone within a few steps comes up on the ticker, they make a small wordless sound (at most every 3 minutes each)");
+            b.AppendLine("SceneCues = " + B(SceneCues) + "   ; a line on the ticker when something starts up at your back within 22 m (\"Raised voices behind you.\", \"A scuffle behind you.\", \"Laughter behind you.\"), at most once a minute");
             b.AppendLine("TickerGapSeconds = " + TickerGapSeconds + "   ; a short pause between one thought and the next, so they don't run together (0: none)");
             b.AppendLine("ThoughtMarker = " + B(ThoughtMarker) + "   ; a small gold mark over the person whose thought is on the ticker");
             b.AppendLine("ThoughtsOverHeads = " + B(ThoughtsOverHeads) + "   ; the thoughts of people near you show above their head in small type, not on the bar (the news and the rest stay on the bar; a thought whose thinker is out of view is passed over, never put on the bar)");
@@ -1281,6 +1286,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("NameCardsStrangerNames = " + B(NameCardsStrangerNames) + "   ; someone you haven't met shows their name with Stranger under it; false: Stranger alone, until you've greeted them or dealt with them");
             b.AppendLine("NameCardsSecondLine = " + B(NameCardsSecondLine) + "   ; the smaller line under each name: their temper and trade, \"Stranger\", their gang, \"Wanted\", a nemesis's mood. Off shows the name alone; NameCards = off hides the cards altogether");
             b.AppendLine("WhosWho = " + B(WhosWho) + "   ; the papers you carry end with Who's who, the people you have met, the most recent first: who they are, how they take you, who they are friends or at odds with (and, with [Mind] MindLive, how they feel about you lately); read only");
+            b.AppendLine("Overheard = " + B(Overheard) + "   ; the papers end with Overheard: what went on near you in the last game day (a fight, a quarrel, a courting, a killing between others, within 22 m), one sentence each, newest first; read from what the add-on already keeps, nothing saved");
             b.AppendLine("GrudgeMeter = " + B(GrudgeMeter) + "   ; top right: strangers whose grudge against you is building, with the mark where they'd become a nemesis, and the nemesis after you");
             b.AppendLine("VramGauge = " + VramGauge + "   ; a small gauge at the top left, under the game's own updates: how much of your graphics card's memory is in use (the game, the AI model and everything else on it), as Task Manager counts it, e.g. VRAM 11.3 / 15.6 GB; amber over 85%, red over 95%. model: only while the AI model ([Mind] Language) is on; on: always; off: never");
             b.AppendLine();

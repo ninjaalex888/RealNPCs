@@ -434,6 +434,9 @@ namespace EnrageWestworld.InGame
                 return;
             List<Paper> papers = _store != null ? _store.Papers.Where(p => p.Delivered).OrderByDescending(p => p.At).ToList() : new List<Paper>();
             int unread = papers.FindIndex(p => !p.Read);
+            Paper overheard = OverheardPaper();   // what went on near you this last day (WestworldScript.Overheard.cs)
+            if (overheard != null)
+                papers.Add(overheard);
             if (_cfg != null && _cfg.WhosWho && _store != null)
             {
                 // the people you've met, last among the papers, made now and never kept (Core/WhosWho.cs); for everyone, its
@@ -453,6 +456,7 @@ namespace EnrageWestworld.InGame
                     papers.Add(new Paper { Kind = "note", Title = "Who's who", From = "from memory", Body = body, Delivered = true, Read = true });
             }
             _reader.Show(papers, unread >= 0 ? unread : 0);
+            Log.Detail("READER pages: " + papers.Count + " papers" + (overheard != null ? ", Overheard " + _overheardLines + " lines" : ""));
         }
 
         // ---- where notices go ---------------------------------------------------------------------
