@@ -37,6 +37,10 @@ namespace EnrageWestworld.Core
                 case "errand": return "He asks whether there is any word you'd have him carry to the person you quarrelled with.";
                 case "deliver": return "He brings you a word of peace from the person you quarrelled with, who sent him.";
                 case "tip": return "He drops you a coin for the music you are playing.";
+                case "about:0": case "about:1": return "He asks what you know of someone you have had dealings with.";
+                case "lend": return "He offers to lend you ten dollars, to be paid back in a few days.";
+                case "collect": return "He asks after the ten dollars he lent you.";
+                case "introduce": return "He introduces you to someone standing near whom you have not met.";
                 case "threaten": return "He tells you to watch yourself, and means it as a threat.";
                 default: return "He says good day.";
             }

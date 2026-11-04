@@ -71,7 +71,7 @@ namespace EnrageWestworld.Core
                     return 1;    // got home on a friend's arm
                 case "makeup":
                     return 2;   // a quarrel mended counts for more than one more kind word
-                case "smalltalk": case "gossip": case "haggle": case "hosts": case "brushoff": case "avoid": case "mindtalk":
+                case "smalltalk": case "gossip": case "haggle": case "hosts": case "brushoff": case "avoid": case "mindtalk": case "introduced":   // (introduced: made known to each other by the player, Core/Verbs.cs)
                     return 0;
                 default:
                     return null;

@@ -91,7 +91,8 @@ namespace EnrageWestworld.Core
         /// it: AskLabel), and a wrong of his lately they're owed an apology for.
         public static List<InteractOption> Options(bool saloon, int cash, bool moneyWorry, bool fixKnown = false, string tellName = null, string askAbout = null, bool sorry = false, bool sorryJustNow = false,
                                                    string fixKind = "debt", bool house = false, bool gift = false, bool woman = false, string condoleFor = null, bool escort = false,
-                                                   string errandTo = null, string deliverFrom = null, string deliverMessage = null, bool typed = false, bool spoken = false)
+                                                   string errandTo = null, string deliverFrom = null, string deliverMessage = null, bool typed = false, bool spoken = false,
+                                                   string about1 = null, string about2 = null, bool lend = false, bool collect = false, string introduce = null)
         {
             // house, gift, condoleFor: the fondness interactions (Core/Fondness.cs; SIXDAY item 1): whiskey for the house (a saloon with company at
             // the bar), a gift, condolences to someone grieving a friend (their first name)
@@ -102,6 +103,13 @@ namespace EnrageWestworld.Core
             string ask = AskLabel(askAbout);
             if (ask != null)
                 list.Add(new InteractOption { Id = "ask", Label = ask });
+            // the three more verbs (Core/Verbs.cs; SIXDAY item 6): what they know of someone, a loan and its collecting, an introduction
+            if (about1 != null)
+                list.Add(new InteractOption { Id = "about:0", Label = Verbs.AskAboutLabel(about1) });
+            if (about2 != null)
+                list.Add(new InteractOption { Id = "about:1", Label = Verbs.AskAboutLabel(about2) });
+            if (collect)
+                list.Insert(1, new InteractOption { Id = "collect", Label = Verbs.CollectLabel() });   // on his mind: first after the news
             list.Add(new InteractOption { Id = "drink", Label = "Let me stand you a drink.", Why = !saloon ? "only in a saloon" : cash < DrinkCents ? "not enough money" : null });
             if (house)
                 list.Add(new InteractOption { Id = "house", Label = Fondness.HouseLabel(), Why = !saloon ? "only in a saloon" : cash < Fondness.HouseCents ? "not enough money" : null });
@@ -110,12 +118,16 @@ namespace EnrageWestworld.Core
                 list.Add(new InteractOption { Id = "give", Label = "Here, take this ($" + giveCents / 100 + ")", Why = cash < giveCents ? "not enough money" : null });
             if (gift)
                 list.Add(new InteractOption { Id = "gift", Label = Fondness.GiftLabel(woman), Why = cash < Fondness.GiftCents ? "not enough money" : null });
+            if (lend && !collect)
+                list.Add(new InteractOption { Id = "lend", Label = Verbs.LendLabel(), Why = cash < Verbs.LendCents ? "not enough money" : null });   // one loan out at a time
             if (fixKnown && fix > 0)
                 list.Add(new InteractOption { Id = "settle", Label = FixLabel(fixKind), Why = cash < fix ? "not enough money" : null });
             if (condoleFor != null)
                 list.Add(new InteractOption { Id = "condole", Label = Fondness.CondoleLabel(condoleFor) });
             if (escort)
                 list.Add(new InteractOption { Id = "escort", Label = Fondness.EscortLabel() });
+            if (introduce != null)
+                list.Add(new InteractOption { Id = "introduce", Label = Verbs.IntroduceLabel(introduce) });
             if (deliverFrom != null && deliverMessage != null)
                 list.Insert(1, new InteractOption { Id = "deliver", Label = Fondness.DeliverLabel(deliverFrom, deliverMessage) });   // the word you carry, first after the news
             else if (errandTo != null)

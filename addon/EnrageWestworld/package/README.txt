@@ -435,6 +435,14 @@ NEW IN 0.7.11
   to them as if typed, the same answers either way. Nothing you say is kept or leaves the PC. The
   row is greyed, with the reason, when the server isn't running, has no transcriber (run
   install-voice.cmd again if the voices were set up before this version) or finds no microphone.
+  Three more rows ([Encounters] TalkVerbs, on): "What do you know of <X>?" for someone they've
+  had dealings with lately (praise, a grievance or a plain fact by how they stand with X, and a
+  warning when the town knows X for a thief, a brawler or a killer; the afraid and the hostile
+  carry no tales); "Could you use a loan? ($10)" (taken by most, owed three game days, then
+  "About that ten dollars I lent you...": paid back by those who can, put off by those who
+  can't, denied now and then by the greedy, who walk off); and "Have you met <X>?" when someone
+  RealNPCs knows stands near whom they don't (a word each, a hat tipped, acquainted from then
+  on: they nod to each other in passing).
   Up and down with the D-pad or the mouse wheel, Space or Enter (A) to say it,
   Backspace (B) to leave. They answer from who they are and how they stand with you, in their
   own recorded voice; with the AI model on, in its words, the meaning kept (the written line if

@@ -52,6 +52,11 @@ namespace EnrageWestworld.InGame
             public readonly System.Text.StringBuilder Typed = new System.Text.StringBuilder();
             public string Free;           // what he typed and said, as said
             public bool Listening;        // the voice server's ear is open (SIXDAY 4b): the row says so, the keys end it or drop it
+            public List<SceneTie> About;  // the ties he can ask about (Core/Verbs.cs; SIXDAY item 6): rows "about:0", "about:1"
+            public Verbs.Loan Loan;       // the loan to them still out, if any (the collect row)
+            public int IntroduceHandle;   // someone near they don't know, for "Have you met..." (0: nobody)
+            public string IntroduceId, IntroduceName, IntroduceTemper;
+            public bool IntroduceWoman;
             public VoiceJob Listen;       // the listen under way (WestworldScript.Voiced.cs), read here each frame
             public int ListenShown;       // the second the listening row shows (-1: writing it down); the row is rebuilt only when it changes
             public Person P;           // who they are to the mind, for their worry's words when he asks after it
@@ -99,7 +104,7 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<string> _talkConfided = new HashSet<string>();   // who has told him their worry this session (a money worry he knows of: the gift is five dollars)
         private readonly bool[] _talkKeys = new bool[13];
         private readonly bool[] _typeWas = new bool[256];   // the typed line's keys, each once per press
-        private int _talkTyped, _talkTypedModel, _talkSpoken;
+        private int _talkTyped, _talkTypedModel, _talkSpoken, _talkAbout, _talkLent, _talkCollected, _talkIntroduced;
         private string _talkLast;
         private Action _aTalkPrompt;
 
@@ -364,6 +369,12 @@ namespace EnrageWestworld.InGame
             bool deliver = _cfg.FondnessActs && id != null && ErrandFor(id, out carrying);   // the one a carried word is for (WestworldScript.Errand.cs)
             SceneTie errandTie = _cfg.FondnessActs && !performer && coverDollars == 0 && _errand == null && id != null ? Fondness.ErrandTie(_store.Ties, id, _placeTown, _store.LastGameMin, x => _store.DeathOf(x) == null) : null;
             bool errandOtherWoman = errandTie != null && Residents.IsWomansName(Person.FirstOf(errandTie.Other(id)));
+            // the three more verbs (Core/Verbs.cs; SIXDAY item 6): the ties he can ask about, a loan out, someone near to be introduced
+            bool verbs = _cfg.TalkVerbs && id != null && !performer && coverDollars == 0;
+            List<SceneTie> about = verbs ? Verbs.AskAboutOf(_store.Ties, id, _store.LastGameMin, x => _store.DeathOf(x) == null) : null;
+            Verbs.Loan loan = verbs ? Verbs.LoanOut(_store.WorldLog, id, _store.LastGameMin) : null;
+            MindWho introduce = null;
+            int introduceHandle = verbs ? IntroduceCandidate(p, id, now, out introduce) : 0;
             _menu = new TalkMenu
             {
                 Handle = h, Id = id, Name = name ?? TalkName(p), First = name != null ? Person.FirstOf(name) : TalkName(p), Temper = temper, Worry = worry,
@@ -373,7 +384,9 @@ namespace EnrageWestworld.InGame
                 Seated = seated || performer,   // sat, leaning or stood at their point: they talk from there; a scenario's walker is stopped like anyone else; a performer plays on (the review)
                 Regard = regard, Rumour = pool.Count > 0 ? pool[Voice.Hash(id) % pool.Count] : null,   // which of the town's talk they've heard: theirs, the same each time
                 Reach = reach, OpenedAt = now, LastAt = now, From = me.Position, KnowsName = _engine.KnowsYourName(id), Self = name, AskWorry = askWorry, WorryArc = InnerLife.ArcFor(id, _store.LastGameMin / 1440), WorryStage = worryStage,
-                Condole = condole, YouKilledKnown = youKilledKnown, CoverDollars = coverDollars, Debtor = debtor
+                Condole = condole, YouKilledKnown = youKilledKnown, CoverDollars = coverDollars, Debtor = debtor,
+                About = about, Loan = loan, IntroduceHandle = introduceHandle, IntroduceId = introduce != null ? introduce.Id : null, IntroduceName = introduce != null ? introduce.Name : null,
+                IntroduceTemper = introduce != null && introduce.P != null ? introduce.P.Personality : null, IntroduceWoman = introduceHandle != 0 && !PED.IS_PED_MALE(introduceHandle)
             };
             TalkRefreshOptions();
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);   // the game's own "you're standing too close" and the like wait till goodbye (Lex, 2026-10-31); undone in TalkClose
@@ -429,7 +442,11 @@ namespace EnrageWestworld.InGame
                                              errandTo: _menu.ErrandTie != null ? Person.FirstOf(_menu.ErrandTie.Other(_menu.Id)) : null,
                                              deliverFrom: _menu.Deliver && _errand != null ? Person.FirstOf(_errand.FromName) : null, deliverMessage: _menu.Deliver && _errand != null ? _errand.Message : null,
                                              typed: _cfg.TalkTyped && PAD.IS_USING_KEYBOARD_AND_MOUSE(0),   // his own words, typed: a keyboard in use
-                                             spoken: _cfg.TalkVoice);   // ...or by microphone (keyboard or pad; greyed below when the server has no ear)
+                                             spoken: _cfg.TalkVoice,   // ...or by microphone (keyboard or pad; greyed below when the server has no ear)
+                                             about1: _menu.About != null && _menu.About.Count > 0 ? Person.FirstOf(_menu.About[0].Other(_menu.Id)) : null,   // the three more verbs (Core/Verbs.cs)
+                                             about2: _menu.About != null && _menu.About.Count > 1 ? Person.FirstOf(_menu.About[1].Other(_menu.Id)) : null,
+                                             lend: _cfg.TalkVerbs && _menu.Id != null && !_menu.Performer && _menu.CoverDollars == 0, collect: _menu.Loan != null,
+                                             introduce: _menu.IntroduceName != null ? Person.FirstOf(_menu.IntroduceName) : null);
             if (_cfg.TalkVoice)
             {
                 InteractOption speak = _menu.Options.Find(x => x.Id == "speak");
@@ -627,6 +644,10 @@ namespace EnrageWestworld.InGame
                   : o.Id == "errand" ? Fondness.ErrandAsk(t.Temper, t.Woman, t.Regard, Person.FirstOf(t.ErrandTie.Other(t.Id)), t.ErrandOtherWoman, t.ErrandTie.Courted, sd)
                   : o.Id == "deliver" ? Fondness.Deliver(t.Temper, t.Woman, Person.FirstOf(_errand.FromName), Residents.IsWomansName(Person.FirstOf(_errand.FromName)), _errand.Sweethearts, sd)
                   : o.Id == "tip" ? Fondness.Tip(sd)
+                  : o.Id == "about:0" || o.Id == "about:1" ? Verbs.AskAbout(t.About[o.Id == "about:0" ? 0 : 1], t.Id, t.Temper, t.Regard, Verbs.KnownFor(_store.WorldLog, Verbs.OtherId(t.About[o.Id == "about:0" ? 0 : 1], t.Id), _store.LastGameMin), sd)   // the three more verbs (Core/Verbs.cs)
+                  : o.Id == "lend" ? Verbs.Lend(t.Temper, t.Woman, t.Regard, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd)
+                  : o.Id == "collect" ? Verbs.Collect(t.Temper, t.Woman, t.Regard, Verbs.LoanDue(t.Loan, _store.LastGameMin), !t.MoneyWorry, t.Loan != null ? t.Loan.Cents : Verbs.LendCents, sd)
+                  : o.Id == "introduce" ? Verbs.Introduce(t.Temper, t.Woman, Person.FirstOf(t.IntroduceName), t.IntroduceWoman, t.Regard, sd)
                   : Interact.Answer(o.Id, t.Temper, t.Woman, t.Devout, t.Regard, t.Rumour, t.Worry, confides, t.MoneyWorry && _talkConfided.Contains(TalkToldKey(t)), sd, YourSurname(), t.Self);
             }
             if (_talkLastLine.Count > 400)
@@ -679,6 +700,8 @@ namespace EnrageWestworld.InGame
                 }
                 MONEY._MONEY_DECREMENT_CASH_BALANCE(a.Cents);
             }
+            else if (a.Cents < 0)
+                MONEY._MONEY_INCREMENT_CASH_BALANCE(-a.Cents, 0);   // money back: a loan repaid (Core/Verbs.cs)
             bool again = a.Event != null && t.Id != null && Interact.Again(_store.WorldLog, t.Id, a.Event, _store.LastGameMin);
             if (again)
             {
@@ -701,11 +724,19 @@ namespace EnrageWestworld.InGame
             {
                 _kindSeenOff = t.PendingId == "tip" || t.PendingId == "house";   // a quarter in a hat is no kindness to be seen; the house's treated are credited by HouseRound, not twice (the review)
                 RecordEvent(a.Event, "player", "you", t.Id, t.Name, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h,
-                            a.Settles ? Thanks.OutcomeOf(t.Worry) : a.Event == "charity" ? (t.PendingId == "gift" ? Fondness.GiftOutcome : t.PendingId == "tip" ? Fondness.TipOutcome : "gave $" + a.Cents / 100) : t.PendingId == "house" ? "whiskey for the house" : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf)
+                            a.Settles ? Thanks.OutcomeOf(t.Worry) : a.Event == "charity" ? (t.PendingId == "gift" ? Fondness.GiftOutcome : t.PendingId == "tip" ? Fondness.TipOutcome : "gave $" + a.Cents / 100) : t.PendingId == "house" ? "whiskey for the house" : t.PendingId == "lend" ? Verbs.LentOutcome : "the interaction menu");   // what late thanks reads (Thanks.KindOf, CentsOf); the loan's outcome names its sum (Verbs.LoanCents)
                 _kindSeenOff = false;
             }
             if (t.PendingId == "deliver")
                 ErrandDelivered(t, a, now);   // the word's home (WestworldScript.Errand.cs)
+            if (t.PendingId == "lend" && a.Event == "loan")
+                LentDone(t, now);   // the loan's in the log (above): they remember the lending (Core/Verbs.cs)
+            if (t.PendingId == "collect")
+                CollectDone(t, a, now);   // paid, put off or denied: the log and the mind
+            if (t.PendingId == "introduce" && a.Then == "introduced")
+                IntroduceDo(t, a, now);   // the two made known to each other
+            if (t.PendingId == "about:0" || t.PendingId == "about:1")
+                _talkAbout++;
             if (t.PendingId == "house" && a.Cents > 0)
                 HouseRound(t, now);   // the room cheers and everyone treated is fonder (WestworldScript.Fondness.cs)
             if (t.PendingId == "cover" && a.Cents > 0)
@@ -1152,6 +1183,95 @@ namespace EnrageWestworld.InGame
             TalkTypedSend(t, text, now, true);
         }
 
+        // ---- the three more verbs (Core/Verbs.cs; SIXDAY item 6) ----
+
+        /// Someone near the person he's talking to, whom they don't know (no tie between them): the nearest free adult the mind
+        /// knows within 8 m, on screen, not the law or a keeper at a counter; 0 for nobody.
+        private int IntroduceCandidate(Ped a, string aId, int now, out MindWho who)
+        {
+            who = null;
+            Ped me = Game.Player.Character;
+            int best = 0;
+            float bestD = 8f;
+            foreach (Ped p in Peds.All())
+            {
+                int h = p.Handle;
+                if (h == a.Handle || h == me.Handle || !p.Exists() || ENTITY.IS_ENTITY_DEAD(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false))
+                    continue;
+                float d = p.Position.DistanceTo(a.Position);
+                if (d >= bestD || !ENTITY.IS_ENTITY_ON_SCREEN(h) || !Natives.Bystander(p, me.Handle, IsRecord(h)) || !IsGrownUp(p) || Natives.StoryModel(p) || PostKindOf(p) != null ||
+                    _director.Involves(h) || !MayDirect(p) || InTalk(h))
+                    continue;
+                MindWho w = MindKnown(h, now);
+                if (w == null || w.Id == null || w.Name == null || w.Id == aId)
+                    continue;
+                string wid = w.Id;
+                if (_store.Ties.Any(x => x.Has(aId) && x.Has(wid)))
+                    continue;   // they know each other already
+                best = h;
+                bestD = d;
+                who = w;
+            }
+            return best;
+        }
+
+        private void LentDone(TalkMenu t, int now)
+        {
+            _engine.Lent(t.Id, t.Name, _store.LastGameMin);
+            _talkLent++;
+            Log.Write("TALK lend: $" + Verbs.LendCents / 100 + " to " + t.Name + ", due in " + Verbs.LoanDays + " game days");
+        }
+
+        /// Asked after the loan: the outcome into the log under their own name (so the loan ends, or its due day moves), the mind told.
+        private void CollectDone(TalkMenu t, InteractAnswer a, int now)
+        {
+            string outcome = a.Message ?? "early";
+            if (outcome != "early")
+            {
+                int h = t.Handle;
+                Ped me = Game.Player.Character;
+                RecordEvent(outcome == "paid" ? "repaid" : outcome, t.Id, t.Name, "player", "you", ENTITY.GET_ENTITY_COORDS(h, true, true), h, h, me.Handle,
+                            outcome == "paid" ? "paid back $" + (-a.Cents) / 100 : outcome == "putoff" ? "put off" : "denied the loan");
+                if (outcome != "putoff")
+                    t.Loan = null;   // the loan is over, paid or denied
+                _talkCollected++;
+            }
+            _engine.Collected(t.Id, t.Name, _store.LastGameMin, outcome);
+            Log.Write("TALK collect: " + t.Name + " " + (outcome == "paid" ? "paid back $" + (-a.Cents) / 100 : outcome == "putoff" ? "put it off" : outcome == "refused" ? "denied the loan" : "was asked too soon"));
+        }
+
+        /// The two made known to each other: the newcomer turns, a word each and a hat tipped, a tie of no warmth between them (they nod in
+        /// passing from here), and both think the better of him.
+        private void IntroduceDo(TalkMenu t, InteractAnswer a, int now)
+        {
+            int bh = t.IntroduceHandle;
+            if (bh == 0 || t.IntroduceId == null || !ENTITY.DOES_ENTITY_EXIST(bh) || ENTITY.IS_ENTITY_DEAD(bh))
+                return;
+            Ped b = new Ped(bh), ap = new Ped(t.Handle);
+            if (b.Position.DistanceTo(ap.Position) > 10f || _director.Involves(bh) || !MayDirect(b))
+            {
+                Log.Write("TALK introduce: " + t.IntroduceName + " had moved off: nothing made of it");
+                return;
+            }
+            string seed = t.Id + "|intro|" + now / 1000;
+            bool bWoman = t.IntroduceWoman;
+            TASK.TASK_TURN_PED_TO_FACE_ENTITY(bh, t.Handle, 3000, 0f, 0f, 0f);
+            TASK.TASK_LOOK_AT_ENTITY(bh, t.Handle, 5000, 0, 51, 0);
+            NodGesture(b, ap, bWoman ? "nod" : "hattip", bWoman, seed + "b", t.IntroduceName);
+            NodGesture(ap, b, t.Woman ? "nod" : "hattip", t.Woman, seed + "a", t.Name);
+            NodSay(b, t.IntroduceName, ap, Speech.Greet, Verbs.Greets(t.IntroduceTemper, bWoman, t.First, seed), "greets " + t.Name);
+            Ties.Note(_store.Ties, t.Id, t.Name, t.IntroduceId, t.IntroduceName, _placeTown, "introduced", _store.LastGameMin);
+            _engine.Introduced(t.Id, t.Name, t.IntroduceId, t.IntroduceName, _store.LastGameMin);
+            string bf = FolkIdOf(t.IntroduceId);
+            if (bf != null && _bridge != null)
+                _bridge.LikeMore(bf, Verbs.IntroduceLiking);   // (the one he's talking to gets theirs through the answer's LikeDelta)
+            WanderLater(bh, now + 6000);   // the newcomer on their way after the word
+            _talkIntroduced++;
+            Log.Write("TALK introduce: " + t.Name + " and " + t.IntroduceName + " are acquainted now");
+            t.IntroduceHandle = 0;
+            t.IntroduceName = null;
+        }
+
         private static void TypeAppend(TalkMenu t, char c)
         {
             if (t.Typed.Length < FreeTalk.MostChars && FreeTalk.Allowed(c))
@@ -1246,6 +1366,7 @@ namespace EnrageWestworld.InGame
         {
             return (_cfg.InteractionMenu ? "on (Talk in the lock-on menu on " + (TalkOnControl() ? "the game's lock-on target-info control: Q unless rebound in its Controls menu, a pad's RB" : TalkKeyName() != null ? TalkKeyName() + ", read directly, or a pad's RB" : "a pad's RB only (TalkKey None)") + ")" : "off ([World] InteractionMenu)") + "; opened " + _talkOpened + " times, " + _talkSaid + " things said" +
                    (_talkConfided.Count > 0 ? ", " + _talkConfided.Count + " told you their worry" : "") + (_talkSettled > 0 ? ", " + _talkSettled + " worries mended" : "") + (_talkTyped + _talkSpoken > 0 ? ", " + _talkTyped + " things typed and " + _talkSpoken + " said by microphone (" + _talkTypedModel + " asked of the model)" : "") +
+                   (_talkAbout + _talkLent + _talkCollected + _talkIntroduced > 0 ? "; the verbs: asked about " + _talkAbout + ", lent " + _talkLent + ", collected " + _talkCollected + ", introduced " + _talkIntroduced : "") +
                    (_talkModelAsked > 0 ? "; the model worded " + _talkModelSaid + " of " + _talkModelAsked + " answers (" + _talkModelHeld + " held by the checks, " + _talkModelLate + " late)" : "") + (_menu != null ? "; open on " + _menu.Name : "");
         }
     }
