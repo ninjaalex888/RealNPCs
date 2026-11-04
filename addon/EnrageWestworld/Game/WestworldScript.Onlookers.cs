@@ -186,6 +186,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, goTo.X, goTo.Y, goTo.Z, 1.6f, -1, 1f, 0, 0f);
                 WanderLater(h, now + 22000);
             }
+            _onlookBusy[partner] = now + 24000;   // the partner is busy for the walk too, so no other feature takes them and the two split (the review of items 20-27)
             MindWho pw;
             string partnerName = _mindWho.TryGetValue(partner, out pw) && pw != null ? pw.Name : null;
             bool partnerWoman = !PED.IS_PED_MALE(partner);

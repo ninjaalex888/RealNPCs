@@ -1235,7 +1235,7 @@ namespace EnrageWestworld.InGame
                         dir = Math.Abs(dir.X) + Math.Abs(dir.Y) < 0.1f ? new Vector3(1f, 0f, 0f) : dir.Normalized;
                         Vector3 spot = lead.Position + dir * 25f;
                         if (me != lead)
-                            spot += new Vector3(-dir.Y, dir.X, 0f) * 1.2f;
+                            spot += new Vector3(-dir.Y, dir.X, 0f) * (who == 1 ? -1.2f : 1.2f);   // the side by who walks: two leavers naming the same man (the close round's A and B) don't share one point (the review of items 20-27)
                         PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
                         TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, spot.X, spot.Y, spot.Z, 1f, -1, 1f, 0, 0f);
                         if (_leaving.Count > 50)

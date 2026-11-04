@@ -38,7 +38,8 @@ namespace EnrageWestworld.Core
         }
 
         /// Arthur's residents into John's store, eight years on; the ties between them; the marks of those who met Arthur. A
-        /// summary for the log. now: John's clock (0 at a fresh store: the dates read as long ago).
+        /// summary for the log. now: John's clock at the load (the carried people are met now, so the store keeps them as it keeps
+        /// anyone met; the moved left eight years before now, so the trains may bring them back from the start, "years after").
         public static string CarryOver(Store arthur, Store john, long now, int year)
         {
             if (arthur == null || john == null)
@@ -59,7 +60,7 @@ namespace EnrageWestworld.Core
                 switch (fate)
                 {
                     case "died": r.Dead = true; died++; break;
-                    case "moved": r.Left = true; r.Fled = true; moved++; break;
+                    case "moved": r.Left = true; r.Fled = true; r.LeftAt = r.FledAt = now - Years * 365L * 1440L; moved++; break;   // (the review of items 20-27: LeftAt 0 read as "a day after leaving")
                     case "married": married++; break;
                     case "widowed": widowed++; break;
                     default: stayed++; break;

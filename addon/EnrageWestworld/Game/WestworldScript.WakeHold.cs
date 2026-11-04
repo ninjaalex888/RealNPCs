@@ -247,7 +247,7 @@ namespace EnrageWestworld.InGame
                 }
                 default:   // closeup, wave, mimic, notreal: someone near, gone up to
                 {
-                    Ped other = PickedOther(act, me) ?? OtherFor(act, me);   // the one the model named, else whoever is nearest
+                    Ped other = PickedOther(act, me) ?? OtherFor(act, me, true);   // the one the model named, else by nature (whom they feel most about, a tie, the nearest)
                     if (other == null)
                         return false;
                     Take(act);
@@ -478,7 +478,7 @@ namespace EnrageWestworld.InGame
         /// if they're here (the shadow's strongest lasting feeling and whom it's about), else the one they have the strongest tie
         /// with (warm or hostile), else the nearest, as before; act.OtherWhy says which. Why it reads true: a mind coming apart
         /// doesn't pick a stranger at random when someone it loves or hates is in reach.
-        private Ped OtherFor(WakeAct act, Ped me)
+        private Ped OtherFor(WakeAct act, Ped me, bool count = false)
         {
             Vector3 at = new Ped(act.Handle).Position;
             bool byNature = _cfg.WakeByNature && act.P != null && act.P.Id != null;
@@ -504,7 +504,8 @@ namespace EnrageWestworld.InGame
                     if (aboutId != null && id == aboutId)
                     {
                         act.OtherWhy = "the one they feel most about";
-                        _othersByFeeling++;
+                        if (count)
+                            _othersByFeeling++;   // (counted by the act that uses them, not the look that only asks whether anyone is near: the review of items 20-27)
                         return p;
                     }
                     int w = TieWarmthBetween(act.P.Id, id);
@@ -518,7 +519,8 @@ namespace EnrageWestworld.InGame
             if (tied != null)
             {
                 act.OtherWhy = tiedWarmth > 0 ? "their friend" : "someone they hold something against";
-                _othersByTie++;
+                if (count)
+                    _othersByTie++;
                 return tied;
             }
             act.OtherWhy = nearest != null ? "the nearest" : null;

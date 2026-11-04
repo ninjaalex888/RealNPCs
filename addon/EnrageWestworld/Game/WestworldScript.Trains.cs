@@ -152,6 +152,9 @@ namespace EnrageWestworld.InGame
             PostKind keeperKind = null;
             Ped stepDown = null;
             Ped leaverBody = null;
+            Resident back = _engine.ReturnerDue(town, gameNow);   // a neighbour who left, back on this train (item 22): their body picked by sex, their own model first (the review of items 20-27)
+            Ped backBody = null;
+            bool backSameModel = false;
             List<Resident> due = _engine.DeparturesDue(town, gameNow);
             Resident leaver = due.Count > 0 && _leaver == null ? due[0] : null;
             // the leaver already walking the town in a body of their own: that body if it's near the platform, else the name card
@@ -201,6 +204,14 @@ namespace EnrageWestworld.InGame
                 bool woman = !PED.IS_PED_MALE(h);
                 if (leaver != null && ownBody == null && leaverBody == null && woman == leaver.Woman)
                     leaverBody = p;   // (their own body near stands for them: the free ones are the arrival's)
+                else if (back != null && woman == back.Woman && (backBody == null || (!backSameModel && ENTITY.GET_ENTITY_MODEL(h) == back.Model)))
+                {
+                    // the returner's body: the same sex as theirs, and their own model whenever a free one is about (the review of items 20-27)
+                    if (backBody != null && stepDown == null)
+                        stepDown = backBody;
+                    backBody = p;
+                    backSameModel = ENTITY.GET_ENTITY_MODEL(h) == back.Model;
+                }
                 else if (stepDown == null)
                     stepDown = p;
             }
@@ -211,11 +222,10 @@ namespace EnrageWestworld.InGame
                 Resident holder = HolderAt(keeper, keeperKind);
                 SpeechCaption(holder != null ? holder.Name : keeperKind.Role, Trains.ArrivalLine(keeperKind.Role, town + "|" + now / 1000), keeper.Handle, 4500, false, true);
             }
-            Resident back = stepDown != null ? _engine.ReturnerDue(town, gameNow) : null;   // a neighbour who left, back on this train (item 22)
-            if (back != null)
-                arrival = StepBack(stepDown, back, town, gameNow);
+            if (back != null && backBody != null)
+                arrival = StepBack(backBody, back, town, gameNow);
             else if (stepDown != null)
-                arrival = StepDown(stepDown, town, gameNow);
+                arrival = StepDown(stepDown, town, gameNow);   // (a returner with no free body of their sex waits for another train)
             DeliverLetters(town, gameNow, "train");
             if (leaver != null && (ownBody ?? leaverBody) != null)
                 LeaverCast(leaver, ownBody ?? leaverBody, train, at, now, gameNow, ownBody != null);
@@ -230,6 +240,12 @@ namespace EnrageWestworld.InGame
         {
             int h = p.Handle;
             uint model = ENTITY.GET_ENTITY_MODEL(h);
+            bool changed = r.Model != 0 && r.Model != model;
+            if (changed)
+            {
+                r.Model = model;   // no body of their own model was free: the years away changed their look, and this is it from now on (the review of items 20-27)
+                r.Outfit = 0;      // the outfit noted before was the old model's
+            }
             UnbindOthers(r.Id);
             _resBind[h] = new ResBind { R = r, Model = model };
             if (r.Regular && r.Outfit > 0 && r.Model == model && _cfg.RegularsDress && _bridge.CanTellLooked)
@@ -255,10 +271,10 @@ namespace EnrageWestworld.InGame
                         _ticker.Push(kv.Value.R.Name + ", thinking", thought, "near", kv.Key);
                         _trainDoubleTakes++;
                         Log.Write("TRAIN " + town + ": " + kv.Value.R.Name + " does a double take at " + r.Name + "; thinks: " + thought);
-                        return r.Name + " (back from the west; " + kv.Value.R.Name + " saw)";
+                        return r.Name + " (back from the west" + (changed ? ", a changed look" : "") + "; " + kv.Value.R.Name + " saw)";
                     }
             }
-            return r.Name + " (back from the west)";
+            return r.Name + " (back from the west" + (changed ? ", a changed look" : "") + ")";
         }
 
         /// A free body by the platform becomes someone new to the town: kin of a resident here (one time in two, when there is one), else a newcomer.

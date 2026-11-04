@@ -19,13 +19,14 @@ namespace EnrageWestworld.InGame
         {
             public int Vehicle, Driver, StartedAt, BrokeAt, MendedAt, NextRead;
             public Vector3 At;
-            public bool Mended;
+            public bool Mended, FixedRead;   // FixedRead: the first reading after the mend has said whether the wheel is whole
             public WagonProbe Probe;
         }
 
         private WagonRun _wagon;
         private WagonProbe _wagonLast;
         private int _wagonProbes;
+        private Action _aWagon;
 
         /// The Testing row: the nearest ambient wagon off screen within 150 m, moving or standing, with a driver; null when it began.
         private string WagonProbeStart(int now)
@@ -90,11 +91,21 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
-        /// Tick04: the readings, the mend at forty seconds, the end at sixty; nothing when no probe is going.
+        /// Tick04: the readings, the mend at forty seconds, the end at sixty; nothing when no probe is going. Under its own Safe (the
+        /// review of items 20-27: the API's raw World.GetAllVehicles has the same silent failure mode as GetAllPeds).
         private void WagonProbeStep(int now)
         {
+            if (_wagon == null || now < _wagon.NextRead)
+                return;
+            if (_aWagon == null)
+                _aWagon = () => WagonProbeTick(_now);
+            Safe("wagon probe", _aWagon);
+        }
+
+        private void WagonProbeTick(int now)
+        {
             WagonRun r = _wagon;
-            if (r == null || now < r.NextRead)
+            if (r == null)
                 return;
             try
             {
@@ -139,9 +150,19 @@ namespace EnrageWestworld.InGame
                     standing++;
             }
             int since = now - (r.Mended ? r.MendedAt : r.BrokeAt);
+            // the wheel read here, a frame or more after the native that changed it (the game applies damage on its next update): the
+            // break counts once any reading says broken; the mend is judged by the first reading after it (the review of items 20-27)
+            bool wheelBroken = VEHICLE._IS_VEHICLE_WHEEL_DESTROYED(veh, r.Probe.Wheel);
+            if (!r.Mended)
+                r.Probe.Broke |= wheelBroken;
+            else if (!r.FixedRead)
+            {
+                r.FixedRead = true;
+                r.Probe.Fixed = !wheelBroken;
+            }
             r.Probe.Read(since, r.Mended, speed, stopped, driverIn, driverFleeing, standing, at.DistanceTo(r.At));
             Log.Detail("WAGON probe " + (r.Mended ? "after the mend " : "") + since / 1000 + " s: speed " + speed.ToString("0.0") + ", " + (stopped ? "standing" : "rolling") + ", wheel " +
-                       (VEHICLE._IS_VEHICLE_WHEEL_DESTROYED(veh, r.Probe.Wheel) ? "broken" : "whole") + ", the driver " + (driverIn ? "on the box" : "off it") + (driverFleeing ? " and running" : "") +
+                       (wheelBroken ? "broken" : "whole") + ", the driver " + (driverIn ? "on the box" : "off it") + (driverFleeing ? " and running" : "") +
                        ", " + standing + " standing within 30 m, " + (int)at.DistanceTo(r.At) + " m from the break");
             if (!r.Mended && since >= WagonProbe.WatchMs)
             {
@@ -149,7 +170,7 @@ namespace EnrageWestworld.InGame
                 r.Mended = true;
                 r.MendedAt = now;
                 r.Probe.Fixed = !VEHICLE._IS_VEHICLE_WHEEL_DESTROYED(veh, r.Probe.Wheel);
-                Log.Write("WAGON probe: mended (SET_VEHICLE_FIXED): the wheel reads " + (r.Probe.Fixed ? "whole" : "still broken") + "; watching " + WagonProbe.AfterMs / 1000 + " s more");
+                Log.Write("WAGON probe: mended (SET_VEHICLE_FIXED): the wheel reads " + (r.Probe.Fixed ? "whole" : "still broken") + " this frame (judged again at the next reading); watching " + WagonProbe.AfterMs / 1000 + " s more");
             }
             else if (r.Mended && since >= WagonProbe.AfterMs)
             {

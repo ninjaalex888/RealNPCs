@@ -99,7 +99,8 @@ namespace EnrageWestworld.Core
         /// The notice when someone who left comes back off a train.
         public static string BackNotice(string town, string name, long daysGone)
         {
-            return name + " stepped off the train in " + town + ", " + (daysGone <= 1 ? "a day" : Voice.Number((int)Math.Min(90, daysGone)) + " days") + " after leaving it. The west didn't take.";
+            string gone = daysGone > 365 ? Voice.Number((int)Math.Min(40, daysGone / 365)) + " years" : daysGone <= 1 ? "a day" : Voice.Number((int)Math.Min(90, daysGone)) + " days";   // (years: the epilogue's moved, back in 1907)
+            return name + " stepped off the train in " + town + ", " + gone + " after leaving it. The west didn't take.";
         }
 
         /// What a friend thinks, seeing them back: the double take.

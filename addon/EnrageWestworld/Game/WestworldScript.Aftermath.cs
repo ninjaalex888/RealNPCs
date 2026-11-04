@@ -150,7 +150,7 @@ namespace EnrageWestworld.InGame
             a.Second = friend != null ? second : null;
             a.LoserId = loserId;
             a.LoserName = loserName;
-            if (_cfg.GroupActs && friend != null && second != null && go.Who != null)
+            if (_cfg.GroupActs && friend != null && second != null && go.Who != null && (a.Loser == null || !_brawlOut.ContainsKey(a.Loser.Handle)))   // never on a man knocked out and held down: the knockout's watch would put him down again as they got him up (the review of items 20-27)
             {
                 // the first friend's mind, and the model's pick when it's on and the mind knows them (as the favours ask)
                 StagedMind sm = StagedMindOf(go.Who, null);

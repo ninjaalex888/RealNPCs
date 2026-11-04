@@ -56,6 +56,7 @@ namespace EnrageWestworld.InGame
             public string Second, Temper;
             public StagedAsk Ask;       // the mind's (and the model's) pick for the second step
             public bool Ran;            // they broke and ran: no mercy to speak of when the gun comes off them
+            public bool Blocked;        // their events blocked for a defy or a back-away (the game's own aimed-at response would retask them): unblocked when the plea ends (the review of items 20-27)
         }
 
         private sealed class PendingArrival
@@ -467,15 +468,21 @@ namespace EnrageWestworld.InGame
                 }
                 else if (p.Ran && now - p.LastAimedAt > 2500)
                 {
+                    PleaRelease(p);
                     _plea = null;   // they ran: the gun came off them by their own doing, no mercy in it
                 }
                 else if (now - p.LastAimedAt > 2500 && now - p.At > 3000)
                 {
+                    PleaRelease(p);
                     _plea = null;
                     if (ENTITY.GET_ENTITY_HEALTH(p.Ped.Handle) < p.Health - 5)
                         return;   // he shot them and they lived: that's no mercy
-                    string line = Pleas.Spared(p.Woman, p.Plea.Uncanny, p.Ped.Handle + "s");
-                    SayLater(200, p.Label, line, p.Ped.Handle, "relieved", p.Plea.Uncanny, p.Woman);
+                    if (p.Second != "defy" && p.Second != "back")
+                    {
+                        // one who defied him or backed off isn't grateful for the gun coming down; the mercy still counts (the review of items 20-27)
+                        string line = Pleas.Spared(p.Woman, p.Plea.Uncanny, p.Ped.Handle + "s");
+                        SayLater(200, p.Label, line, p.Ped.Handle, "relieved", p.Plea.Uncanny, p.Woman);
+                    }
                     if (_cfg.Deeds)
                     {
                         Vector3 pos = p.Ped.Position;
@@ -487,6 +494,7 @@ namespace EnrageWestworld.InGame
                 }
                 else if (now - p.At > 20000)
                 {
+                    PleaRelease(p);
                     _plea = null;
                 }
                 return;
@@ -589,6 +597,7 @@ namespace EnrageWestworld.InGame
             switch (stance)
             {
                 case "defy":
+                    PleaBlock(p);   // the game's aimed-at response would retask them the next frame
                     TASK.CLEAR_PED_TASKS(h, true, false);   // the hands come down
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 8000, 0f, 0f, 0f);
                     break;
@@ -598,6 +607,7 @@ namespace EnrageWestworld.InGame
                         Vector3 away = new Vector3(at.X - mp.X, at.Y - mp.Y, 0f);
                         away = Math.Abs(away.X) + Math.Abs(away.Y) < 0.1f ? new Vector3(1f, 0f, 0f) : away.Normalized;
                         Vector3 to = at + away * 4f;
+                        PleaBlock(p);
                         TASK.CLEAR_PED_TASKS(h, true, false);
                         TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 8000, 0, 51, 0);
                         TASK.TASK_GO_STRAIGHT_TO_COORD(h, to.X, to.Y, to.Z, 1.0f, 7000, ENTITY.GET_ENTITY_HEADING(h), 0.5f, 0);
@@ -615,6 +625,25 @@ namespace EnrageWestworld.InGame
             _gunpointSteps++;
             _gunpointLast = p.Plea.Name + ": " + stance + " (step " + stage + ")";
             Log.Write("GUNPOINT " + p.Plea.Name + " (" + (p.Temper ?? "plain") + "), step " + stage + ": " + stance + (p.Ask != null && p.Ask.Asked && stage == 2 ? " (the model's pick)" : "") + (line != null ? ": " + line : ""));
+        }
+
+        /// Their events blocked for a step of ours (defy, back), so the game's own aimed-at response doesn't retask them; and back
+        /// to the game when the plea ends, whichever way (the review of items 20-27).
+        private void PleaBlock(Pleading p)
+        {
+            if (p == null || p.Blocked || p.Ped == null || !p.Ped.Exists())
+                return;
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Ped.Handle, true);
+            p.Blocked = true;
+        }
+
+        private void PleaRelease(Pleading p)
+        {
+            if (p == null || !p.Blocked)
+                return;
+            p.Blocked = false;
+            if (p.Ped != null && p.Ped.Exists())
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Ped.Handle, false);
         }
 
         /// Was this ped begging when he died? (shot within half a minute of pleading)

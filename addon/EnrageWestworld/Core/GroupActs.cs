@@ -70,6 +70,7 @@ namespace EnrageWestworld.Core
             s.Add(1, null, null, "getup", 600);
             s.Add(0, Voice.Pick(seed + "|cw", "Come on. We'll see you home.", "Lean on me. " + a + "'s got you.", "That's it. One foot, then the other."), "mild");
             s.Beats.Add(new Beat(0, null, null, "leavewith") { To = 1 });
+            s.Beats.Add(new Beat(1, null, null, "leavewith") { To = 1 });   // and the man himself, beside A (both name B, so the Director's spot is the same point); without this beat only A walked (the review of items 20-27)
             s.Add(2, null, null, "walkaway", 800);
             return s;
         }

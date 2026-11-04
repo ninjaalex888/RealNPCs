@@ -1081,7 +1081,10 @@ namespace EnrageWestworld.InGame
                     Seen = seen, Begged = begged
                 };
                 string heldId, heldName;
-                if (LastingId(victim, out heldId, out heldName) && heldId != null)
+                ResBind heldBind;
+                if (!LastingId(victim, out heldId, out heldName) && _resBind.TryGetValue(h, out heldBind) && heldBind.R != null)
+                    heldId = heldBind.R.Id;   // a bound resident the people ledger marked dead first: LastingId answers false for the dead (the review of items 20-27)
+                if (heldId != null)
                     f.Held = Nemesis.Held(_store.WorldLog, heldId, gameMin);   // what they held against you before (nemesis memory past death; item 22)
                 if (!law && _rng.Next(100) < _cfg.StrangerReturnChance)
                     f.ReturnAt = gameMin + 1440 + _rng.Next(1440 * 5);

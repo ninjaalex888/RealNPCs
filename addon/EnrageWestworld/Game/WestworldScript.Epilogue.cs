@@ -33,7 +33,7 @@ namespace EnrageWestworld.InGame
                 Store arthur = Store.Load(arthurPath, Log.Write);
                 int year = 1907;
                 try { year = Math.Max(1907, CLOCK.GET_CLOCK_YEAR()); } catch { }
-                _epilogueCarried = Epilogue.CarryOver(arthur, _store, 0, year);
+                _epilogueCarried = Epilogue.CarryOver(arthur, _store, Bridge.Now(), year);   // on John's clock (0 put the carried people first in line to be dropped: the review of items 20-27)
                 Log.Write("EPILOGUE: " + _epilogueCarried);
             }
             catch (Exception ex)
@@ -68,8 +68,8 @@ namespace EnrageWestworld.InGame
                 MindWho w;
                 if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                     continue;
-                PersonState st = _store.Get(w.P);
-                if (!st.Has(Epilogue.Morgan) || st.Has(Epilogue.MorganSaid))
+                PersonState st = _store.Find(w.Id);   // never made here: everyone who remembers has a state from the carry (the review of items 20-27)
+                if (st == null || !st.Has(Epilogue.Morgan) || st.Has(Epilogue.MorganSaid))
                     continue;
                 Ped p = new Ped(h);
                 if (p.Position.DistanceTo(me.Position) > 15f || !NodInView(me, p))

@@ -110,7 +110,8 @@ namespace EnrageWestworld.Core
             r.LeftAt = 0;
             r.Fled = false;
             r.FledAt = 0;
-            r.ByTrain = true;
+            r.ByTrain = true;   // the ledger's arrival: with MetAt now, the town's index counts them as come on this train (the departure's -2 stood while they were away; the review of items 20-27)
+            r.MetAt = now;
             PersonState st = Store.Get(PersonOfResident(r));
             st.Mark("back:" + now);
             _trainReturns++;
