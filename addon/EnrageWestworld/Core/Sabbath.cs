@@ -26,6 +26,36 @@ namespace EnrageWestworld.Core
             return devotion == "Lapsed" || devotion == "Godless";
         }
 
+        /// Who keeps the Lord's day dry (roadmap 19, "less on a Sunday"; SIXDAY item 14): the Devout and the churchgoing
+        /// don't drink away bad news on a Sunday. Grief is another matter: a friend dead is mourned with a glass any day.
+        public static bool Keeps(string devotion)
+        {
+            return devotion == "Devout" || devotion == "Churchgoer";
+        }
+
+        /// Who judges a man drinking on a Sunday: the Devout alone (a Churchgoer looks the other way, and has looked the
+        /// other way at himself). Why it reads true: judgement is the pious's way of keeping the day for everybody.
+        public static bool Judges(string devotion)
+        {
+            return devotion == "Devout";
+        }
+
+        private static readonly string[] Judging =
+        {
+            "{who}. On the Sabbath. With the church not an hour emptied.",
+            "Six days the Lord gives a man for whiskey. {who} wants the seventh as well.",
+            "That's {who}, at the bar, and the bells barely done. I'll pray for him. I'll pray loud.",
+            "Bad news is no excuse. Sunday's Sunday, and {who} was raised to know it.",
+            "A glass on the Lord's day. {who}'s mother would walk out of that saloon and keep walking.",
+            "Lord, look at {who}. Then look away, as I'm trying to.",
+        };
+
+        /// What the Devout think, seeing him drink on a Sunday (first name filled in).
+        public static string JudgingThought(string drinkerFirst, string seed)
+        {
+            return Voice.Pick(seed + "|jd", Judging).Replace("{who}", drinkerFirst ?? "That one");
+        }
+
         private static readonly string[] Prayers =
         {
             "Forgive me Tuesday. You know the one.",
@@ -73,6 +103,7 @@ namespace EnrageWestworld.Core
             foreach (string l in Prayers) yield return l;
             foreach (string l in Lapsed) yield return l;
             foreach (string l in Godless) yield return l;
+            foreach (string l in Judging) yield return l.Replace("{who}", "Abner");
         }
     }
 }

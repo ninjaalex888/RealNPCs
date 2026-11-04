@@ -20,7 +20,7 @@ namespace EnrageWestworld.InGame
         private const int DrinkLookMs = 30000;
         private readonly Dictionary<string, long> _drinkers = new Dictionary<string, long>();   // id -> game minute they're sober again
         private readonly Dictionary<int, long> _drunkVoices = new Dictionary<int, long>();      // handle -> when their voice sobers (SET_PED_IS_DRUNK back off)
-        private int _nextDrink, _drinks, _drinkComforts, _drinkVoiceAt, _drinkVoice;
+        private int _nextDrink, _drinks, _drinkComforts, _drinkJudged, _drinkVoiceAt, _drinkVoice;
         private string _drinkLast, _drinkWhyNot;
         private Action _aDrinkVoice;
 
@@ -68,7 +68,8 @@ namespace EnrageWestworld.InGame
                 int ws;
                 bool good;
                 bool bad = InnerLife.WorryNow(c.Who.P, g / 1440, out wk, out ws, out good) && ws >= 3 && !good;
-                string w = Vices.DrinkWhy(_engine.GriefFor(c.Who.Id, 720), bad, wk, c.Who.Temper, c.Who.Woman, InnerLife.TradeGroup(c.Who.P.Trade) == "girl") ?? (test ? "badnews:trouble" : null);
+                string w = Vices.DrinkWhy(_engine.GriefFor(c.Who.Id, 720), bad, wk, c.Who.Temper, c.Who.Woman, InnerLife.TradeGroup(c.Who.P.Trade) == "girl",
+                                         InnerLife.Weekday == 0, c.Who.P.Devotion) ?? (test ? "badnews:trouble" : null);   // the Devout and the churchgoing keep the Lord's day dry (item 14)
                 if (w == null)
                     continue;
                 drinker = c;
@@ -113,6 +114,21 @@ namespace EnrageWestworld.InGame
             _drinkLast = drinker.Who.Name + " (" + drinkWhy + ")" + (test ? ", a test" : "");
             Log.Write("VICE drink: " + drinker.Who.Name + " drinks after " + (drinkWhy.StartsWith("grief:") ? "word of " + drinkWhy.Substring(6) + "'s death" : drinkWhy.StartsWith("loss:") ? "a death in the family (" + drinkWhy.Substring(5) + ")" : "bad news (" + drinkWhy.Substring(8) + ")") +
                       (stance ? ", the drinker's stance" : "") + "; thinks: " + thought + (test ? " (a test" + (skipped != null ? "; skipped: " + skipped : "") + ")" : ""));
+            // on a Sunday, the Devout in the room judge him for it (a thought; nothing said, nothing travels: roadmap 19, item 14)
+            if (InnerLife.Weekday == 0)
+            {
+                Candidate judge = people.Where(o => o != drinker && o.Who.Id != drinker.Who.Id && o.Who.P != null && Sabbath.Judges(o.Who.P.Devotion) &&
+                                                    o.Ped.Position.DistanceTo(drinker.Ped.Position) < 10f)
+                                        .OrderBy(o => o.Ped.Position.DistanceTo(drinker.Ped.Position)).FirstOrDefault();
+                if (judge != null)
+                {
+                    string judged = Sabbath.JudgingThought(Person.FirstOf(drinker.Who.Name), seed + "|" + judge.Who.Id);
+                    if (NodInView(me, judge.Ped))
+                        _ticker.Push(judge.Who.Name + ", thinking", judged, "near", judge.Ped.Handle);
+                    _drinkJudged++;
+                    Log.Write("VICE sabbath: " + judge.Who.Name + " (Devout) judges " + drinker.Who.Name + "'s Sunday drinking; thinks: " + judged);
+                }
+            }
             // a friend close by comes to say they're sorry
             Candidate friend = people.Where(o => o != drinker && o.Who.Id != drinker.Who.Id && o.Ped.Position.DistanceTo(drinker.Ped.Position) < 5f && TieWarmth(o.Who.Id, drinker.Who) > 0)
                                      .OrderBy(o => o.Ped.Position.DistanceTo(drinker.Ped.Position)).FirstOrDefault();
@@ -168,7 +184,7 @@ namespace EnrageWestworld.InGame
             if (!_cfg.Vices)
                 return "off ([Scenes] Vices)";
             long g = _store != null ? _store.LastGameMin : 0;
-            return _drinks + " took to drink this session (" + _drinkComforts + " with a friend's word); drinking now: " + _drinkers.Count(kv => kv.Value > g) +
+            return _drinks + " took to drink this session (" + _drinkComforts + " with a friend's word, " + _drinkJudged + " judged on a Sunday); drinking now: " + _drinkers.Count(kv => kv.Value > g) +
                    (_drinkLast != null ? "; last: " + _drinkLast : "") + (_drinkWhyNot != null ? "; the last look: " + _drinkWhyNot : "");
         }
     }

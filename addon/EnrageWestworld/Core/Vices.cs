@@ -22,6 +22,17 @@ namespace EnrageWestworld.Core
             return DrinkWhy(griefFor, worryEndedBadly, worryKind, temper);
         }
 
+        /// The same, on the Lord's day (roadmap 19, "less on a Sunday"; SIXDAY item 14): the Devout and the churchgoing don't
+        /// drink away bad news on a Sunday (Sabbath.Keeps); grief for a friend is mourned with a glass any day, and the rest
+        /// of the town is left to it, which is how it was.
+        public static string DrinkWhy(string griefFor, bool worryEndedBadly, string worryKind, string temper, bool woman, bool saloonWoman, bool sunday, string devotion)
+        {
+            string why = DrinkWhy(griefFor, worryEndedBadly, worryKind, temper, woman, saloonWoman);
+            if (why != null && sunday && !why.StartsWith("grief:") && !why.StartsWith("loss:") && Sabbath.Keeps(devotion))
+                return null;
+            return why;
+        }
+
         public static string DrinkWhy(string griefFor, bool worryEndedBadly, string worryKind, string temper)
         {
             if (griefFor != null)

@@ -191,6 +191,10 @@ NEW IN 0.7.19
   cane and cotton, the trapping lines); in 1907 the Food and Drugs Act and the Panic. The talk
   of the times and the lines about the year now stand behind the same switch: false, and none
   of it is thought or said. Not yet seen in game.
+- Vices and kindnesses, what was left (no new switch): the gambler who lost the rent comes to
+  you for his marker ($5) as the debtor does; the Devout and the churchgoing don't drink away
+  bad news on a Sunday (grief excepted), and a Devout in the room judges a Sunday drinker in a
+  thought; a friend of a man drinking away bad news stands the house a round, him first.
 - A kindness seen ([Encounters] KindnessSeen, on; KindnessSeenLiking, 5): the named people
   who see you do a kindness to someone else from within 12 m (a drink stood, money or a gift
   given, a debt paid, a hand up, a bully faced, a mercy shown) think better of you too, and

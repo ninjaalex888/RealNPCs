@@ -18,6 +18,8 @@ namespace EnrageWestworld.Core
         /// crisis: Interact.Mendable).
         public static bool Asks(string worry, int stage)
         {
+            if (worry == "cards")
+                return stage == 2 && Helps.Mend(worry) != null;   // the gambler borrows (roadmap 19; SIXDAY item 14): his marker, five dollars, through Helps' mend
             return worry != null && stage == 2 && Interact.Mendable(worry, stage) && (worry == "debt" || worry == "tooth" || worry == "savings");
         }
 
@@ -109,6 +111,9 @@ namespace EnrageWestworld.Core
                         case "tooth":
                             return Pick(seed, m + ", forgive me. This tooth wants a proper dentist, three dollars, and I haven't got it. Could you spare it?",
                                         m + ". I hate to ask. Three dollars for a dentist, and I'd stop walking the floor at night.");
+                        case "cards":
+                            return Pick(seed, m + ", I'll say it straight. I'm into a man for five dollars at cards, and the rent's due Monday. Could you see me right?",
+                                        m + ". Five dollars would clear my marker at the back table. I know how that sounds. I'm asking anyway.");
                         case "savings":
                             return Pick(seed, m + ", I'm five dollars short of a ticket out of here. I'd not ask a soul, only I'm asking you.",
                                         "Five dollars, " + Low(m) + ". That's all stands between me and the train west.");
@@ -122,6 +127,9 @@ namespace EnrageWestworld.Core
                         case "tooth":
                             return Pick(seed, m + ". This tooth's had me up three nights running. The barber would only make it worse.",
                                         "Can't eat, can't sleep, " + Low(m) + ". It's this tooth. I'd see a proper man for it, if I could.");
+                        case "cards":
+                            return Pick(seed, m + ". Ever hold a hand you'd have sworn was good? I held one Tuesday. The rent went with it.",
+                                        "There's a man at the back table holds my marker, " + Low(m) + ", and my landlady holds the other end of me.");
                         case "savings":
                             return Pick(seed, m + ". Been putting by for a ticket west the best part of a year. Never seem to get there.",
                                         "Ever wanted to be shut of a place, " + Low(m) + "? I've been saving to go. It comes slow.");
@@ -159,17 +167,17 @@ namespace EnrageWestworld.Core
 
         private static string Sum(string worry)
         {
-            return worry == "tooth" ? "$3" : worry == "savings" ? "$5" : "$11";
+            return worry == "tooth" ? "$3" : worry == "savings" || worry == "cards" ? "$5" : "$11";
         }
 
         private static string Mend(string worry)
         {
-            return worry == "tooth" ? "see a proper dentist" : worry == "savings" ? "make up your fare" : "clear the debt";
+            return worry == "tooth" ? "see a proper dentist" : worry == "savings" ? "make up your fare" : worry == "cards" ? "clear your marker" : "clear the debt";
         }
 
         private static string WorryWord(string worry)
         {
-            return worry == "tooth" ? "bad tooth" : worry == "savings" ? "saving for a ticket" : "debt";
+            return worry == "tooth" ? "bad tooth" : worry == "savings" ? "saving for a ticket" : worry == "cards" ? "marker at cards" : "debt";
         }
 
         private static string Pick(string seed, params string[] lines)
@@ -180,7 +188,7 @@ namespace EnrageWestworld.Core
         public static IEnumerable<string> AllLines()
         {
             foreach (string pick in new[] { "ask", "hint", "coin", "holdback" })
-                foreach (string worry in new[] { "debt", "tooth", "savings" })
+                foreach (string worry in new[] { "debt", "tooth", "savings", "cards" })
                     foreach (string who in new[] { null, "Hiram Cobb" })
                         foreach (string you in new[] { null, "Morgan" })
                             for (int i = 0; i < 6; i++)
