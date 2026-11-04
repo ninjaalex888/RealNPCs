@@ -278,8 +278,13 @@ namespace EnrageWestworld.Core
                         a.Thought = Pick(seed + "|nt", "Asking me what folk say about him. Odd.", "Does he know it's him they're talking of?", "Best tell him straight and be done.");
                     }
                     else
-                        a.Line = temper == "Cold" || temper == "Greedy" ? Pick(seed + "|cold", "Nothing I'd tell a stranger.", "News costs, mister.", "And why would you be wanting to know?", "Ask the paper. It's cheaper than me.")
+                    {
+                        // the times (Times.cs): what was in the papers, half the time, from anyone who'd tell a stranger anything
+                        string times = temper != "Cold" && temper != "Greedy" && Voice.Chance(seed + "|times", 50) ? Times.Opener(InnerLife.ClockYear, InnerLife.ClockMonth, seed + "|tm", null) : null;
+                        a.Line = times != null ? times
+                               : temper == "Cold" || temper == "Greedy" ? Pick(seed + "|cold", "Nothing I'd tell a stranger.", "News costs, mister.", "And why would you be wanting to know?", "Ask the paper. It's cheaper than me.")
                                : Pick(seed + "|none", "Quiet enough. Nothing worth the telling.", "Same as ever, mister.", "Not much happens here that you'd care about.", "Quiet as a church on Monday.", "The usual. Somebody owes somebody, somebody's sweet on somebody.");
+                    }
                     return a;
                 case "drink":
                     if (hostile)

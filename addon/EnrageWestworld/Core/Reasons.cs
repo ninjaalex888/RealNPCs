@@ -63,6 +63,7 @@ namespace EnrageWestworld.Core
             public bool MindDecides;   // the quarrel ladder plays the quarrel (MindLive, QuarrelLadder): MayFight leaves blows to it (Lex, 2026-10-30)
             public bool Strain;        // [Mind] MindTempers: what weighs on someone at once adds up (Strains; NIGHT3)
             public bool Variety = true;   // [Scenes] ReasonVariety: x:snap starts at 42, not 45, so gossip, a lift, a drunk and courting win turns (NIGHT4 fix 5; the old harnesses: on, as the game comes)
+            public bool MindTalks;       // [Mind] MindTalks: people talk to each other from what's on their minds (MindTalk.cs); the reason of last resort among people who know each other, ahead of small talk
         }
 
         /// For each woman in a fight, this percent of a man's chance (Lex, 2026-10-29: half as likely, until the mind decides it).
@@ -175,8 +176,8 @@ namespace EnrageWestworld.Core
                                         Why = ask ? "they've been courting long enough for one to ask" : "they're sweet on each other" };
                 }
                 if (tie.Warmth > 0)
-                    return new Reason { Kind = "smalltalk", Strength = 35, Why = "they're on good terms" };
-                return new Reason { Kind = where.Rumours ? "gossip" : "smalltalk", Strength = 30, Why = "they know each other" };
+                    return new Reason { Kind = where.MindTalks ? "mindtalk" : "smalltalk", Strength = 35, Why = "they're on good terms" + (where.MindTalks ? ", and " + a.Name + " has something on their mind" : "") };
+                return new Reason { Kind = where.MindTalks ? "mindtalk" : where.Rumours ? "gossip" : "smalltalk", Strength = 30, Why = "they know each other" };
             }
             Reason ab = Own(a, b, gameDay, where, mixed, twoMen), ba = Own(b, a, gameDay, where, mixed, twoMen);
             if (ba != null && (ab == null || ba.Strength > ab.Strength))
@@ -354,6 +355,11 @@ namespace EnrageWestworld.Core
             Reason court = Courtship(x, y, gameDay, where);
             if (court != null)
                 all.Add(court);
+            // what's on their mind, said to whoever is there (MindTalk.cs): a worry as it begins or grows, the times, the stranger, a
+            // plan, the town's talk, a need, the day. Below the trouble (a snap, a lift, a beggar) and gossip's 40, above small talk;
+            // the solitary bring it up half as often; a roll a pair and a day keeps the same two from talking it over every hour
+            if (where.MindTalks && x.Id != y.Id && Voice.Chance(PairKey(x, y) + gameDay + "mindtalk", x.Temper == "Cold" || x.Temper == "Greedy" ? 35 : 70))
+                all.Add(new Reason { Kind = "mindtalk", Strength = worry && stage <= 1 ? 39 : 37, Why = x.Name + " has something on their mind, and " + y.Name + " is there" });
             Reason best = null;
             foreach (Reason r in all)
                 if (best == null || r.Strength > best.Strength)

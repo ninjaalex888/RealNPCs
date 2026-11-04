@@ -240,6 +240,12 @@ namespace EnrageWestworld.Core
             return Voice.Chance(b.Id + "|manner", 55) ? "kind" : "cold";
         }
 
+        /// The answer to someone's trouble in this manner (kind, cold, sharp), for a talk built elsewhere (MindTalk).
+        public static string TroubleReply(string manner, string seed)
+        {
+            return Voice.Pick(seed + "tr", manner == "kind" ? KindToTrouble : manner == "cold" ? ColdToTrouble : SharpToTrouble);
+        }
+
         /// The exchange for this reason ("x:snap", "x:goodnews", "x:badnews", "x:quarrel", "x:sweet"): A is the one whose
         /// reason it is, B the other. aName and bName are what they go by in the lines. Null if it can't be made.
         public static Scene Make(string kind, Someone a, Someone b, string aName, string bName, long day, bool bAtWorst, SceneTie tie, string seed)

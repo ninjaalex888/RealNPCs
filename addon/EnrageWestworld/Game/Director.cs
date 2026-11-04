@@ -945,6 +945,15 @@ namespace EnrageWestworld.InGame
                 wait = Math.Max(wait, Act(l, b.Act, who, other, b.Ms));
             if (b.Voice != null)
                 Speech.SayTag(me.Handle, b.Voice, them.Handle);
+            if (b.Late != null)
+            {
+                // a line that may have been on its way as the scene began (the model wording an answer, MindTalk): taken as it plays
+                string late = null;
+                try { late = b.Late(); } catch (Exception ex) { Log.Detail("SCENE a late line failed (" + ex.Message + "): the written one"); }
+                if (!string.IsNullOrEmpty(late))
+                    b.Line = late;
+                b.Late = null;
+            }
             if (b.Line != null)
             {
                 Log.Write("SCENE   " + l.Names[who] + " (" + (int)me.Position.DistanceTo(new Ped(_player).Position) + " m from you, " +

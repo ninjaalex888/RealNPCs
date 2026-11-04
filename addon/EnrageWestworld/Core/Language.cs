@@ -40,6 +40,7 @@ namespace EnrageWestworld.Core
         public bool WithThought;             // Kind "pick": the thought as well as the choice, in one answer (Lex, 2026-10-31: what they think and do should agree)
         public int WakeStage;                // Kind "pick" for the waking (WakeOdd.PickOptions): their stage, 2 to 4, so the brief says what they have come to see
         public string Said, Mean;            // Kind "talk" (Language.Talk.cs): what he said to them, and what their answer means (the written line)
+        public string Speaker;               // Kind "talk" between two people (MindTalk): who spoke to them, in words ("your neighbour Garrett"); null: the player did
         // [Mind] LanguageVariety (Language.Variety.cs): one focus and a shape per ask, their thoughts lately, doubt only with cause
         public bool Variety;                 // the new rules apply (set by Language.Vary)
         public int Stage;                    // their waking stage, 0 to 4, for every kind (WakeStage above is the waking pick's own)

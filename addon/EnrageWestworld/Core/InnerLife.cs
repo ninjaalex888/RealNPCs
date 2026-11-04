@@ -36,6 +36,7 @@ namespace EnrageWestworld.Core
         /// Set by the game side from the clock: 0 Sunday .. 6 Saturday (-1 unknown), and the year (1907 in the epilogue).
         public static int Weekday = -1;
         public static int ClockYear = 1899;
+        public static int ClockMonth;   // 1 to 12 (0 unknown): what was in the papers by now (Times.cs)
 
         // ---- trade ----------------------------------------------------------------------------------
 
@@ -422,7 +423,9 @@ namespace EnrageWestworld.Core
             return when != null ? Pick(when, p, seed, told) : null;
         }
 
-        /// The year they're living in (1899, or 1907 in the epilogue).
+        /// The year they're living in (1899, or 1907 in the epilogue). The times' own lines (Times.cs) are said, not thought:
+        /// in the talks between people and when the news is asked (they run long for the ticker, and the life harness's
+        /// period rule reads Roosevelt and the telephone as 1907's).
         public static string EraLine(Person p, string seed, List<string> told)
         {
             return Pick(ClockYear >= 1900 ? Era1907 : Era1899, p, seed, told);

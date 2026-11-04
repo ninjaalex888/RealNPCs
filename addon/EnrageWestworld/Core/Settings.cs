@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 195;
+        public const int CurrentVersion = 196;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -114,6 +114,7 @@ namespace EnrageWestworld.Core
         public bool MindRescue = true;       // with MindLive: when someone awake begins their last words, someone near whom it moves (a friend, a kind stranger) may go to them and talk them down (Core/Rescue.cs; roadmap 3's other side; night 2026-10-29, item 6d; settings version 113); off, nobody steps in
         public int RescueChance = 60;        // with MindRescue: of the despairs where someone near is moved to go to them, this share in percent where they do (the rest hesitate too long); seeded (settings version 114)
         public bool MindMeetings = true;     // with MindLive: the street's chance meetings lean by the two's moods today and how much they want company (Core/Reasons.Mood.cs; roadmaps 18 and 30; night 2026-10-29, item 6e; settings version 115); off, by the reasons alone
+        public bool MindTalks = true;        // people talk to each other from what's on their minds: the worry they're living through, the times (the election, the war, the reservations, the new machines), the stranger, a plan, the town's talk, a need, the day; the other answers from their own nature, and with the AI model in its own words (Core/MindTalk.cs, Core/Times.cs; Lex, 2026-11-03; settings version 196)
         public bool MindChanceMeetings = true; // with MindLive: what a chance meeting near you is (a song, an argument, a trade, a tall tale ...) is chosen by the two people's minds: their tie, their day, their worry, drink and nature lean what the place allows, and with LanguagePicks the model may pick among the three likeliest (Core/Scenes.Minds.cs; NIGHT4 item 5's plan E; settings version 171); off, the roll by place, sex and age alone
         public bool ThoughtsAloud = true;   // with Language: a thought over someone near is said aloud in their own recorded voice when one of their remarks fits it (settings version 143)
         public bool LanguageVariety = true;   // with Language: each thought the model words gets one thing their mind goes to and a shape, their thoughts lately to steer clear of, and no doubting the world without cause (Core/Language.Variety.cs; settings version 159)
@@ -783,6 +784,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 196)
+                    log?.Invoke("Settings: new in this version: [Mind] MindTalks (on): people near you talk to each other from what's on their minds, the worry they're living through, the times they live in (the election, the war, the reservations, the new machines), the stranger, a plan, the town's talk; the other answers from their own nature, and with the AI model in its own words.");
                 if (s.SettingsVersion < 195)
                 {
                     // 2026-11-03 (Lex): the voices heard a little less far (6% shorter); the value as it came moves, a value of your own is kept
@@ -1128,6 +1131,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("MindRescue = " + B(MindRescue) + "   ; with MindLive on (West World): when someone fully awake begins to say their last words, someone near who is moved by it (a friend, or a kind stranger) may walk over and try to talk them down; a friend is heeded more often; false: nobody steps in");
             b.AppendLine("RescueChance = " + RescueChance + "   ; with MindRescue on: of the despairs where someone near is moved to step in, how often in percent they really do before it is too late (0-100); lower it to see more despair, raise it to see more people saved");
             b.AppendLine("MindMeetings = " + B(MindMeetings) + "   ; with MindLive on: what passes between two people who meet near you leans by the day they are having: two sore people come to words sooner than small talk, two glad ones the other way, and someone lonely stops for a word; false: by their reasons alone");
+            b.AppendLine("MindTalks = " + B(MindTalks) + "   ; people near you talk to each other from what's on their minds: the worry they're living through, the times they live in (the election, the war, the reservations, the new machines...), the stranger, a plan they carry, the town's talk, what they're short of, the day; the other answers from their own nature (kindly, coldly, sharply, and on the times from their own side of it), and with the AI model on, in its own words. No AI model needed");
             b.AppendLine("MindChanceMeetings = " + B(MindChanceMeetings) + "   ; with MindLive on: a chance meeting near you comes from the two people's minds (friends talk and sing, foes quarrel or turn their backs, the sore snap, money worries trade or ask a loan, drink tells tall tales); false: rolled by the place alone");
             b.AppendLine("Language = " + B(Language) + "   ; the AI MODEL (OLLAMA) switch at the top of the settings panel's Essentials page. With MindLive on, the mind's own thoughts, choices and answers are worded by a local language model running on your own PC (Ollama; nothing leaves the machine); every answer is checked for the period, the names and the length, and the written line shows whenever the model's won't do. RealNPCs turns it on by itself when it finds Ollama with the model at a start, unless you have chosen (LanguageChosen)");
             b.AppendLine("LanguageChosen = " + B(LanguageChosen) + "   ; set true by itself whenever you change Language (in the settings panel or in this file), or when Language is on at a start, so a Language you turned off stays off. While false and Language is off, each start asks Ollama at LanguageUrl in the background (a few seconds at most) whether it runs and holds LanguageModel, and if it does, turns Language on, once, with a notice");

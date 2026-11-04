@@ -38,7 +38,8 @@ namespace EnrageWestworld.Core
         public static string TalkBrief(LanguageRequest r)
         {
             int year = r != null && r.Year > 0 ? r.Year : 1899;
-            return "You write what one person says aloud, in " + year + ", in the American West and South, answering a man who has just spoken to them. " +
+            bool neighbour = r != null && !string.IsNullOrEmpty(r.Speaker);
+            return "You write what one person says aloud, in " + year + ", in the American West and South, answering " + (neighbour ? "someone they know who has just spoken to them. " : "a man who has just spoken to them. ") +
                    "One or two short sentences, " + MaxWords + " words at most, the way people of the time talked: plain words, no modern words or phrases, no poetry. " +
                    "Say exactly what you are told the answer means, no more and nothing else: if it accepts, accept; if it refuses, refuse; bring up nothing else. " +
                    "Use no names at all unless you are told his: not his, not your own, not your family's; call him mister, or nothing. Never mention video games, being in a story, or being written. " +
@@ -57,7 +58,10 @@ namespace EnrageWestworld.Core
             b.Append(".\n");
             if (!string.IsNullOrEmpty(r.TraitWords)) b.Append("Your nature: ").Append(r.TraitWords).Append(".\n");
             if (!string.IsNullOrEmpty(r.Mood)) b.Append("Your mood: ").Append(r.Mood).Append(".\n");
-            b.Append("The man speaking to you ").Append(string.IsNullOrEmpty(r.YouAs) ? "is a stranger: you don't know his name" : "is " + r.YouAs + "; you know his name").Append(".\n");
+            if (!string.IsNullOrEmpty(r.Speaker))
+                b.Append("The one speaking to you is ").Append(r.Speaker).Append(".\n");   // a neighbour, by name (MindTalk)
+            else
+                b.Append("The man speaking to you ").Append(string.IsNullOrEmpty(r.YouAs) ? "is a stranger: you don't know his name" : "is " + r.YouAs + "; you know his name").Append(".\n");
             if (!string.IsNullOrEmpty(r.Worry)) b.Append("Your trouble: ").Append(r.Worry).Append(".\n");
             b.Append(r.Said ?? "He says good day.").Append("\n");
             b.Append("Your answer means: ").Append(r.Mean ?? "a word back").Append("\n");

@@ -435,6 +435,9 @@ namespace EnrageWestworld.InGame
                 case "mindscene":
                     skipped = "the street's own timing and the person's choice changing first (the rests between the same two kept)";
                     return MindSceneTest(now);   // WestworldScript.MindScenes.cs
+                case "mindtalk":
+                    skipped = "the street's own timing, the reasons' turn-taking and the roll a pair and a day";
+                    return MindTalkTest(now, out said);   // WestworldScript.MindTalk.cs
                 case "wakestrange":
                     skipped = "the stage's roll, the hold's turn and, for stripping, its chance and the once-a-person mark";
                     {

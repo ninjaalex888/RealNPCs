@@ -859,6 +859,7 @@ namespace EnrageWestworld.InGame
             InnerLife.Weekday = CLOCK.GET_CLOCK_DAY_OF_WEEK();
             int year = CLOCK.GET_CLOCK_YEAR();
             InnerLife.ClockYear = IsJohn() && year < 1900 ? 1907 : year;
+            try { InnerLife.ClockMonth = GameDate.FromMinutes(Bridge.Now()).Month; } catch { InnerLife.ClockMonth = 0; }   // the month, for what was in the papers by now (Times.cs)
         }
 
         /// What the residents near you are living through, for the F7 dump.

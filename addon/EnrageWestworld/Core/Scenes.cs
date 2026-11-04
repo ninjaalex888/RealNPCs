@@ -19,6 +19,7 @@ namespace EnrageWestworld.Core
         public int Ms;           // extra pause after the beat
         public int To = -1;      // who it's said to or done at (-1: the other of A and B, or A for C)
         public bool Follows;     // Who and To name people, not places: when the Director's endfight swaps the cast by who won, this beat's Who and To swap with them and its line keeps its names (the ladder's beats, but the winner's and loser's own)
+        public Func<string> Late;   // the line as it's played, when it may still be on its way (the model wording an answer: MindTalk); null from it, the Line stands
 
         public Beat(int who, string line, string voice = null, string act = null, int ms = 0)
         {

@@ -240,6 +240,7 @@ namespace EnrageWestworld.InGame
                 Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance, Trouble = _cfg.TroubleWeight, WomenFight = _cfg.WomenInFights, MindDecides = LadderOn,
                 Strain = _cfg.MindLive && _cfg.MindTempers,
                 Variety = _cfg.ReasonVariety,
+                MindTalks = _cfg.MindTalks,   // people talk of what's on their minds (WestworldScript.MindTalk.cs)
                 Rumours = (!saloon || _cfg.SaloonGossip) && _engine.RumourPool(_placeTown, 1).Count > 0,
                 DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0
             };
@@ -663,6 +664,8 @@ namespace EnrageWestworld.InGame
                 }
                 return c;
             }
+            if (kind == MindTalk.Kind)
+                return MindTalkScene(first, second, doer, done, cast, seed, note);   // what's on the first one's mind, said to the second (WestworldScript.MindTalk.cs)
             if (kind.StartsWith("x:"))
             {
                 // an exchange written for the reason (Exchanges.cs): the second one's answer comes from their own state
