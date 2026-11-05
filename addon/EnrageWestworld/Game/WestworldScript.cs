@@ -236,6 +236,7 @@ namespace EnrageWestworld.InGame
 			PanelTimeStep();   // the world slowed while the settings panel is open, and back the moment it isn't (WestworldScript.PanelTime.cs)
 			if (!InWorld())
 			{
+				WorldQuietAway();   // no look read until a while after the world runs again (WestworldScript.WorldQuiet.cs)
 				TrystInTheDark();
 				SupperInTheDark();   // the supper invitation's dark, likewise (WestworldScript.Supper.cs)
 				if (_recordFates.Count > 0 && Game.IsLoading)

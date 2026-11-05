@@ -106,7 +106,7 @@ namespace EnrageWestworld.Core
         private static readonly string[] WarnNameless =
         {
             "Somebody in {town} has your name in his mouth, {you}, and not kindly. I'd keep my eyes open.",
-            "A word, {you}. There's a man in town grieving, and he blames you. I won't say who.",
+            "A word, {you}. There's somebody in town who blames you for something. I won't say who.",
             "Watch your back here a day or two. There's bad feeling about you, and I've heard it more than once.",
             "Don't stand with your back to the door tonight, {you}. There's talk.",
             "I'd not linger in {town} after dark, friend. There's somebody here who wants a word with you, and not with words.",

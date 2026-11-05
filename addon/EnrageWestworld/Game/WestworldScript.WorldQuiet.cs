@@ -80,8 +80,10 @@ namespace EnrageWestworld.InGame
                 return "the game paused";
             if (MISC.GET_MISSION_FLAG())
                 return "a story mission";
-            if (CAM.IS_SCREEN_FADED_OUT() || CAM.IS_SCREEN_FADING_OUT())
+            if (CAM.IS_SCREEN_FADING_IN() || CAM.IS_SCREEN_FADED_OUT())
                 return "the screen faded";
+            if (CAM.IS_SCREEN_FADING_OUT())
+                return "the screen fading";
             int you = Game.Player.Handle;
             if (PLAYER.IS_PLAYER_DEAD(you))
                 return "you're dead";
@@ -90,6 +92,15 @@ namespace EnrageWestworld.InGame
             if (!PLAYER.IS_PLAYER_CONTROL_ON(you))
                 return "your controls are taken";
             return null;
+        }
+
+        /// The world isn't running (a load, a pause, the screen faded out, you dead): Step returns before the tick, so this is
+        /// called from there; no look is read until LooksQuietMs after it comes back (the review of items 5-7: the gate never
+        /// saw those four).
+        private void WorldQuietAway()
+        {
+            QuietUntil(Game.GameTime + LooksQuietMs);
+            _worldQuietLast = Game.IsLoading ? "a load" : Game.IsPaused ? "the game paused" : Game.IsScreenFadedOut ? "the screen faded" : "you're dead";
         }
 
         /// No look read for `ms` from now: a load, a death or a long jump (SightsReset), or the long jump noticed here.

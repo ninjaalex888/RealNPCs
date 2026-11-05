@@ -200,10 +200,9 @@ namespace EnrageWestworld.Core
             "Evening, {o}. Turning in soon?" };
         private static readonly string[] HelloBackWords = { "{o}.", "And you, {o}.", "Well now, {o}.", "You're looking well, {o}.",
             "Glad to see you about, {o}.",
-            "Keeping well, {o}. And yourself?",
-            "Can't complain, {o}. Can't complain.",
+            "Well met, {o}.",
             "Didn't see you there, {o}.",
-            "Fine, {o}, fine. And you?" };
+            "Well, if it isn't {o}." };
         private static readonly string[] ByeWordsPool = { "I'll let you get on.", "Watch the road home.", "Give my best at home.", "Good day, then.",
             "Don't let me keep you.",
             "Remember me to your people.",

@@ -328,6 +328,12 @@ namespace EnrageWestworld.InGame
                 _thanksWalk = null;
                 what = "a walk-up to thank you";
             }
+            if (_friendWalk != null && _friendWalk.Ped != null && _friendWalk.Ped.Handle == h)
+            {
+                TASK.TASK_CLEAR_LOOK_AT(h);
+                _friendWalk = null;   // no gift at gunpoint (Run 3, item 7's review)
+                what = "a friend's walk-up to you";
+            }
             if (LonelyWaiting(h))
             {
                 TASK.TASK_CLEAR_LOOK_AT(h);

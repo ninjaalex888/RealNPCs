@@ -31,7 +31,8 @@ namespace EnrageWestworld.InGame
         /// when someone did.
         private bool ReturnerCast(int h, uint model, bool woman, string town, float d, long gameNow, int now)
         {
-            Resident r = Returners.Back(_store.Residents, town, model, woman, x => _resBind.Values.Any(v => v.R == x) || RegularGone(x, now), ReturnerPull);
+            Func<Resident, bool> busy = x => _resBind.Values.Any(v => v.R == x) || RegularGone(x, now);
+            Resident r = Returners.Back(_store.Residents, town, model, woman, busy, ReturnerPull);
             if (r == null)
                 return false;
             bool first = !r.HasOutfit;
@@ -43,17 +44,31 @@ namespace EnrageWestworld.InGame
                     _returnersWaiting++;
                     if (_returnerNoRoomTold.Add(town + "|" + model))
                         Log.Write("RETURNER waits: " + r.Name + " (" + (r.Trade ?? "a resident") + " of " + town + ") has no outfit of their own and none is left for their build there " +
-                                  "(ReturnersPerTown " + _cfg.ReturnersPerTown + ", or every preset worn); not back until one is (told once a session for this town and build)");
-                    return false;
+                                  "(ReturnersPerTown " + _cfg.ReturnersPerTown + ", or every preset worn); one already dressed comes back instead (told once a session for this town and build)");
+                    // the undressed one, never touched, would win every tie and hold the build up for good (the review of items 5-7): one
+                    // of those already dressed comes back in their stead
+                    r = Returners.Back(_store.Residents, town, model, woman, x => !x.HasOutfit || busy(x), ReturnerPull);
+                    if (r == null)
+                        return false;
+                    first = false;
                 }
-                r.Outfit = outfit;
-                r.HasOutfit = true;
+                else
+                {
+                    r.Outfit = outfit;
+                    r.HasOutfit = true;
+                }
             }
             int w = WatchEnter("returner dressed");
-            PED._EQUIP_META_PED_OUTFIT_PRESET(h, r.Outfit, false);   // the preset only: nothing of the body is read
-            PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
-            Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
-            WatchLeave(w);
+            try
+            {
+                PED._EQUIP_META_PED_OUTFIT_PRESET(h, r.Outfit, false);   // the preset only: nothing of the body is read
+                PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+                Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
+            }
+            finally
+            {
+                WatchLeave(w);   // the hang watch's depth kept, whatever the natives do (the review)
+            }
             _resBind[h] = new ResBind { R = r, Model = model };   // bound at once: ResidentOf's shortcut knows the body for whose it is
             r.Returns++;
             r.LastBodyAt = gameNow;

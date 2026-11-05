@@ -82,8 +82,9 @@ namespace EnrageWestworld.InGame
                                         .OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 int h = p.Handle;
-                if (!PED.IS_PED_HUMAN(h) || MayDirectWhyNot(p) != null || NotFree(h) || _director.Involves(h) || !NodInView(me, p))
-                    continue;
+                if (!PED.IS_PED_HUMAN(h) || MayDirectWhyNot(p) != null || NotFree(h) || _director.Involves(h) || !NodInView(me, p) ||
+                    PED.IS_PED_USING_ANY_SCENARIO(h) || AimedLately(h, now))
+                    continue;   // standing, not sat, leaning or at work, and not just aimed at (the review of items 5-7, as the lonely and the favours)
                 MindWho w = MindKnown(h, now);
                 if (w == null || w.Id == null || !_engine.CanRemember(w.Id) || AllyWarmth(p, w) < 2)
                     continue;   // a friend by the friend dot's rule only
@@ -92,20 +93,25 @@ namespace EnrageWestworld.InGame
                 Person who = w.P ?? _engine.Find(w.Id);
                 string trade = who != null ? who.Trade : null, group = InnerLife.TradeGroup(trade);
                 bool woman = !PED.IS_PED_MALE(h);
+                if (woman && (Natives.Night() || _engine.NowIndoors))
+                    continue;   // the period's rule the late thanks keep: a woman doesn't walk up to a man after dark or indoors
                 long day = g / 1440;
                 string seed = w.Id + "|" + day;
                 // what there is to bring: a danger to warn of, the news, a favour of their trade, a gift
                 string danger = null, warnKind = FriendDanger(w, g, out danger);
                 string news = FriendNews(seed);
                 string favour = FriendCalls.Favour(trade, group);
+                bool gun = FriendGun(me) != 0;
+                if (favour == "rounds" && !gun)
+                    favour = null;   // no gun to load: the gunsmith's favour waits, and they may come with something else (a day's seed kept them away: the review)
                 string kind = FriendCalls.Which(warnKind != null, news != null, favour, _cfg.FriendGifts, seed);
                 if (kind == null)
                     continue;
                 string detail = kind == FriendCalls.Warn ? (warnKind == "law" ? "law" : danger != null ? "named" : "nameless")
                               : kind == FriendCalls.Gift ? FriendCalls.GiftOf(group, woman, seed)
                               : kind == FriendCalls.Trade ? favour : null;
-                if ((detail == "rounds") && FriendGun(me) == 0)
-                    detail = kind == FriendCalls.Gift ? "coin" : null;   // no gun to load: a coin instead (the gunsmith's favour then waits)
+                if (detail == "rounds" && !gun)
+                    detail = "coin";   // cartridges with no gun to load: a coin instead
                 if (kind == FriendCalls.Trade && detail == null)
                     continue;
                 string you = _engine.KnowsYourName(w.Id) ? YourSurname() : null;
@@ -155,10 +161,11 @@ namespace EnrageWestworld.InGame
                 for (int i = _store.Deeds.Count - 1; i >= 0; i--)
                 {
                     Deed d = _store.Deeds[i];
-                    if (g - d.At > 2880)
-                        break;   // newest last: older ones can stop the look
-                    if (d.Town == _placeTown)
-                        return "law";
+                    if (d == null || g - d.At > 2880)
+                        continue;
+                    string grp = Minds.DeedGroup(d.Kind);
+                    if (d.Known && d.Town == _placeTown && (grp == "deed:violence" || grp == "deed:theft"))
+                        return "law";   // a known violence or theft of yours here in two days, the warnings' own rule: never a visit, a purchase or a kindness (the review)
                 }
             return null;
         }
@@ -294,6 +301,8 @@ namespace EnrageWestworld.InGame
 
         private string FriendCallTest(int now)
         {
+            if (!_cfg.FriendCalls)
+                return "off ([Scenes] FriendCalls)";
             if (_friendWalk != null)
                 return "a friend is already on the way";
             _nextFriendCall = 0;
