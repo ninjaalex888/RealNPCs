@@ -324,6 +324,7 @@ namespace EnrageWestworld.InGame
                 PatientAbort("the add-on stopped");
                 GrudgesAbort();      // someone walking up to have it out with you stops (their walk order cleared)
                 ThanksAbort();       // and someone walking over to thank you
+                FriendAbort();       // and a friend coming over (Run 3, item 7)
                 LonelyAbort();       // and someone lonely hoping for a word
                 EscortAbort();       // and someone you were seeing home
                 MeetAbort();         // and a letter's writer waiting to meet you (WestworldScript.Letters.cs)
@@ -1216,6 +1217,7 @@ namespace EnrageWestworld.InGame
             SightsAbort();
             GrudgesAbort();
             ThanksAbort();
+            FriendAbort();
             LonelyAbort();
             EscortAbort();
             MeetAbort();
@@ -1325,6 +1327,7 @@ namespace EnrageWestworld.InGame
             WagonProbeStep(now);  // the wagon wheel probe's readings, while one is going (WestworldScript.Wagon.cs; item 26)
             RegardStep(now);      // the town's regard of you in the "Around town" box (WestworldScript.Regard.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
+            FriendCallsStep(now);   // a friend comes over unasked: a warning, news, a gift, a favour (WestworldScript.FriendCalls.cs; Run 3, item 7)
             LonelyStep(now);    // someone lonely who knows you comes over (WestworldScript.Lonely.cs)
             FavourStep(now);    // someone in trouble comes to ask a favour (WestworldScript.Favours.cs)
             ChanceWaitStep(now);   // a chance meeting waiting on the model's pick (WestworldScript.ChanceMinds.cs)

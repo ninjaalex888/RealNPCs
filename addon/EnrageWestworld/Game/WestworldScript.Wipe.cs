@@ -98,6 +98,7 @@ namespace EnrageWestworld.InGame
             PatientAbort(why);
             GrudgesAbort();
             ThanksAbort();
+            FriendAbort();
             LonelyAbort();
             EscortAbort();
             MeetAbort();

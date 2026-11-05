@@ -69,6 +69,7 @@ namespace EnrageWestworld.Core
             { "favour", new Rule("favour", false, 40, 120, 0, 1440) },             // someone in trouble asks a favour: two game hours between, a person once a day (once a worry: the game side's rest) (NIGHT4 item 5)
             { "warn", new Rule("warn", false, 50, 90, 0, 1440) },                  // a witness or a warning: an hour and a half between, a person once a day (one danger warned of once a day: the game side's) (item 5's review)
             { "thanks", new Rule("thanks", false, 60, 90, 0, 1440) },              // someone you helped thanks you: an hour and a half between, a person once a day (NIGHT3)
+            { "friendcall", new Rule("friendcall", false, 40, 360, 0, 2880) },     // a friend comes over with something: six game hours between (about twelve real minutes), a friend once in two days (Run 3, item 7)
             { "kin", new Rule("kin", false, 100, 0, 1440, 10080) },                // one a town a game day; the same relative once a week
             { "callout", new Rule("callout", false, 40, 1440, 1440, 2880) },       // a noon callout: once a day at most
             { "preacher", new Rule("preacher", false, 35, 0, 1440, 2880) },       // a Sunday's street preacher: once a town a day, a person every two
@@ -105,7 +106,7 @@ namespace EnrageWestworld.Core
                 return r.KindRest;
             switch (r.Kind)
             {
-                case "grudge": case "lonely": case "favour": case "warn": case "thanks": case "fall": case "standup": case "round": case "drink": case "lift": case "patient": case "campfire":
+                case "grudge": case "lonely": case "favour": case "warn": case "thanks": case "friendcall": case "fall": case "standup": case "round": case "drink": case "lift": case "patient": case "campfire":
                     return (long)(r.KindRest * Math.Max(0.5f, Math.Min(1.25f, StoryRest)));
                 case "traveller":
                     return (long)(r.KindRest * Math.Max(0.6f, Math.Min(1f, StoryRest)));   // a man asking the way: sooner at most, never rarer
@@ -118,7 +119,7 @@ namespace EnrageWestworld.Core
         {
             switch (kind)
             {
-                case "grudge": case "lonely": case "favour": case "warn": case "thanks": case "fall": case "standup": case "round": case "drink": case "lift": case "patient":
+                case "grudge": case "lonely": case "favour": case "warn": case "thanks": case "friendcall": case "fall": case "standup": case "round": case "drink": case "lift": case "patient":
                 case "callout": case "kin":
                     return true;
                 default:

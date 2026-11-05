@@ -1240,6 +1240,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST law clears bodies: " + BodiesStatus());
 			Log.Write("TEST arthur: " + ArthurStatus());
 			Log.Write("TEST thanks: " + ThanksStatus());
+			Log.Write("TEST friend calls: " + FriendCallsStatus());
 			Log.Write("TEST lonely: " + LonelyStatus());
 			Log.Write("TEST favours: " + FavourStatus());
 			Log.Write("TEST warned: " + WarnStatus());

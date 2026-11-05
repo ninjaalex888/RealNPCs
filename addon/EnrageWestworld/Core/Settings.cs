@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 253;
+        public const int CurrentVersion = 254;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -401,6 +401,8 @@ namespace EnrageWestworld.Core
         public int StrainChance = 40;              // [Mind] stress that builds: percent they snap at someone who won't hit back (a coward always)
         public int BoldThieves = 25;   // with BeingWatched: percent of would-be thieves who try it with the law looking on, once a day each; the hothead, the greedy and the drunk half as likely again (Lex, 2026-10-31: "less realistic, more exciting"; settings version 163)
         public bool LateThanks = true;   // [Scenes] someone Arthur stood a drink, gave money or whose debt he settled comes over hours or days later and thanks him for it; the proud repay a debt (settings version 153; NIGHT3)
+        public bool FriendCalls = true;   // [Scenes] a friend in town comes over unasked now and then: a warning, the news, a small gift or a favour of their trade (Core/FriendCalls.cs; Run 3, item 7; settings version 254)
+        public bool FriendGifts = true;   // [Scenes] with FriendCalls: gifts and favours hand something over (a few cents, cartridges, a meal, a drink, the doctor's patching); off, friends bring words only
         public bool DoctorsPatient = true;   // [Scenes] someone goes to the doctor for what ails them, tells him, hears his word, and walks home (night 2026-10-28, item 14; widened 2026-10-29; settings version 90)
         public float ErrandPace = 2.0f;   // [Scenes] how fast people walk on errands for RealNPCs: 1 a walk, 2 brisk (was about 1-1.4), 3 a run (Lex, 2026-10-29)
         public bool LawChases = true;   // [Scenes] a lawman near runs down a pickpocket of ours and brings him down (Lex, 2026-10-29)
@@ -872,6 +874,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 254)
+                    log?.Invoke("Settings: new in this version: [Scenes] FriendCalls (on): a friend of yours in town comes over unasked with a warning, the news, a small gift or a favour of their trade; FriendGifts (on): what they hand over.");
                 if (s.SettingsVersion < 253)
                     log?.Invoke("Settings: new in this version: [World] Returners (off, in testing), ReturnersChance (35), ReturnersPerTown (12): someone who matters comes back unseen in a body of their own build, dressed as themselves each time; LooksReadDepth (1): the Testing row that reads the looks of the people near you.");
                 if (s.SettingsVersion < 252)
@@ -1644,7 +1648,9 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("WatchedLawMetres = " + F(WatchedLawMetres) + "   ; with BeingWatched on: a lawman this near, in metres, facing them with a clear sight, is watching (5-60)");
             b.AppendLine("WatchedRecklessChance = " + WatchedRecklessChance + "   ; percent of hot-tempered or drunk would-be troublemakers (a shove, a fight, a standoff, a callout) who go ahead anyway, one roll a day each (0-100)");
             b.AppendLine("WatchedChurchMetres = " + F(WatchedChurchMetres) + "   ; how near the church, in metres, counts as by the church on a Sunday morning (10-200)");
-            b.AppendLine("LateThanks = " + B(LateThanks) + "   ; people you were good to through the Talk menu (a drink, money, a debt paid, the doctor, a dentist or the fare paid for) may seek you out when they next see you, some hours or a few days on, and say what it meant to them (few for a drink, most for money, nearly all for a trouble mended); the proud pay back a debt they called a loan, days later; the cold, the seated and women after dark just nod");
+b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town (the friend dot's rule: a full bar, a kindness remembered, a trouble mended, someone you saved) comes over unasked now and then with a warning (someone here holds a grudge, or the law has been asking), the news, a small gift or a favour of their trade (the doctor looks you over, the gunsmith tops up your rounds, the barkeep stands a drink); about once in six game hours at most (some twelve real minutes), a friend once in two days");
+            b.AppendLine("FriendGifts = " + B(FriendGifts) + "   ; with FriendCalls: the gifts and favours hand something over (a few cents, a dozen cartridges for the gun you carry, a meal or a drink into your cores, the doctor's patching); false: friends bring a warning or the news only");
+                        b.AppendLine("LateThanks = " + B(LateThanks) + "   ; people you were good to through the Talk menu (a drink, money, a debt paid, the doctor, a dentist or the fare paid for) may seek you out when they next see you, some hours or a few days on, and say what it meant to them (few for a drink, most for money, nearly all for a trouble mended); the proud pay back a debt they called a loan, days later; the cold, the seated and women after dark just nod");
             b.AppendLine("ThanksAfterHours = " + ThanksAfterHours + "   ; with LateThanks on: game hours at least between a kindness and their thanks (0-72)");
             b.AppendLine("ThanksWithinDays = " + ThanksWithinDays + "   ; game days at most (1-14; the world remembers its last 400 happenings, so a drink may be forgotten sooner in a busy town)");
             b.AppendLine("ThanksDrinkChance = " + ThanksDrinkChance + "   ; percent who come to thank you for a drink you stood them (0-100)");

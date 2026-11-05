@@ -1218,6 +1218,13 @@ NEW IN 0.6.1
   spot: the drinkers are the ones at the bar of an evening, the churchgoers the ones in church on
   Sunday. Nobody walks across town for it, and a regular caught out of their hour thinks so.
   [World] Regulars, RegularsPerTown (30), RegularsDress, RegularsRoutines.
+- Friends come to you ([Scenes] FriendCalls, on; FriendGifts, on): a friend of yours in town walks
+  over now and then, unasked, with a warning (someone here holds a grudge, or the law has been
+  asking), the news, a small gift (a few cents, a dozen cartridges, something to eat) or a favour of
+  their trade (the doctor patches you up, the gunsmith tops up your rounds, the barkeep stands you a
+  drink, the store or a farm gives you something for the road). About once in six game hours at
+  most, a friend once in two days. FriendGifts off: words only. The Testing row "A friend comes
+  over" (TestFriendCallKey) brings the nearest friend at once.
 - (In testing, off as it comes) [World] Returners: someone who matters to RealNPCs (woken, met
   before, a worry at its worst) comes back unseen, 20 to 150 metres from you, in a body of their
   own build, dressed in an outfit of their own: given one the first time they come back, the same
@@ -1909,7 +1916,7 @@ in the file. The new ones:
             their real recorded voices; CrudeTalk (true): the game's crude remarks among them
             BeingWatched (true): the street's trouble waits while a lawman is looking (WatchedLawMetres
             25, WatchedRecklessChance 40, WatchedChurchMetres 60); BoldThieves (25): percent of thieves
-            who try it anyway; LonelyRegulars (true), LateThanks (true), ReasonThoughts (true)
+            who try it anyway; LonelyRegulars (true), LateThanks (true), FriendCalls (true), FriendGifts (true), ReasonThoughts (true)
             ReasonVariety (true): the street's scenes take turns, so fewer sharp words; ChanceFirst
             (true): chance meetings get their turn when nobody near has a strong reason, nearer you
             FavoursAsked (true, with MindLive): someone hard pressed for money may come and ask you,

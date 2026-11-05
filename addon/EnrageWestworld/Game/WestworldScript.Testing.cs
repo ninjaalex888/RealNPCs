@@ -315,6 +315,9 @@ namespace EnrageWestworld.InGame
                 case "looks:probe":
                     skipped = "nothing of its own: the world-quiet gate, the wait after a body is dressed and once a body a session at a depth all hold";
                     return LooksProbeTest(now, out said);   // WestworldScript.LooksProbe.cs (Run 3, item 5)
+                case "friendcall":
+                    skipped = "the look's wait, the storyteller, the roll and the pace (a friend once in two days); nothing handed over";
+                    return FriendCallTest(now);   // WestworldScript.FriendCalls.cs (Run 3, item 7)
                 case "events:probe":
                     skipped = "nothing: it only reads the game's event pool and writes to the log";
                     EventProbeStart(now);   // WestworldScript.Watch.cs
