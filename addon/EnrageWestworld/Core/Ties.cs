@@ -524,18 +524,34 @@ namespace EnrageWestworld.Core
         {
             "{other} never felt a thing. Some folks walk around asking to be robbed.",
             "Three dollars and a lucky rabbit's foot off {other}. Wasn't lucky for {other}.",
-            "Saw {other} patting {his} coat. Didn't look back. You never look back."
+            "Saw {other} patting {his} coat. Didn't look back. You never look back.",
+            "{other} kept the purse in the left pocket, loose. Two fingers and it was mine.",
+            "Passed {other} on the boardwalk after and tipped my hat. Never been so polite in my life.",
+            "{other}'s money bought my supper. Ate it slow, with one eye on the door.",
+            "Heard {other} asking at the store if anybody'd found a purse. Kept my hands flat on the counter.",
+            "Easy pickings, {other}. Then I saw {his} shoes, mended twice. Should have picked a fatter coat."
         };
         private static readonly string[] LiftDone =
         {
             "Had money this morning. Somewhere between here and the store it walked off.",
             "Somebody had a hand in my coat. I keep going over every face I passed.",
-            "Lost my money. Or it was took. Either way I'm a fool, and I'll eat beans till Saturday."
+            "Lost my money. Or it was took. Either way I'm a fool, and I'll eat beans till Saturday.",
+            "Turned my coat out three times on the bed. Lint and a button. Nothing else.",
+            "My mother's ring was in that purse, besides the money. The money I could stand to lose.",
+            "Keep a hand on my pocket in a crowd now. A fool's habit. A needful one.",
+            "Everybody I passed today looked like a thief. The preacher too, for a moment.",
+            "Told the deputy. He wrote nothing down. Asked if I'd looked in my other boot."
         };
         private static readonly string[] CaughtDid =
         {
             "{other} saw my face. Has to have. Best stay off that street a while.",
-            "Should've let {other} be. Should've picked an easier mark."
+            "Should've let {other} be. Should've picked an easier mark.",
+            "{other}'s grip on my wrist, like a trap on a rabbit. Wrist's still red.",
+            "{other} hollered thief so loud the horses shied. My ears are ringing with it yet.",
+            "Ran three streets from {other} till my lungs burned. Didn't even get the purse.",
+            "If {other} gives the sheriff my face, I'm finished in this town. Packed my bag, in case.",
+            "Thought {other} was dozing on that bench. Dozing with one hand ready, it turns out.",
+            "Can't stop looking at my own hand, the one {other} caught. Clumsy thing."
         };
         private static readonly string[] CaughtDone =
         {
@@ -573,7 +589,13 @@ namespace EnrageWestworld.Core
         private static readonly string[] AvoidDid =
         {
             "{other} saw me coming and found somewhere else to be. Good.",
-            "{other} won't look me in the eye now. Suits me."
+            "{other} won't look me in the eye now. Suits me.",
+            "{other} crossed to the far boardwalk the moment I stepped out. Left a sentence hanging, too.",
+            "Funny, how {other} finds a sudden need for the hardware store whenever I'm about.",
+            "{other} used to sit by the stove at the saloon. Sits by the door now. I took the stove.",
+            "Gave {other} a nod today, to see. {other} flinched like I'd thrown something.",
+            "{other} keeps clear of me. Part of me's proud of it. A smaller part isn't.",
+            "Took a drink where {other} drinks, just to see. {other} left the glass half full."
         };
         private static readonly string[] AvoidDone =
         {
@@ -609,7 +631,13 @@ namespace EnrageWestworld.Core
             "Counted the steps home. Two hundred, the long way. {other}."
         };
         // {other}: the one who fell (for the one who helped or walked past), or the one who helped or walked past
-        private static readonly string[] HelpDid = { "{other} took a fall and I helped {him} up. Glad I was there.", "Hope {other}'s mending. Went down hard." };
+        private static readonly string[] HelpDid = { "{other} took a fall and I helped {him} up. Glad I was there.", "Hope {other}'s mending. Went down hard.",
+            "Still got road dust on my sleeve from lifting {other}. Leaving it there a while.",
+            "{other} weighed next to nothing coming up off the ground. Worries me, that.",
+            "{other} kept saying sorry for falling. As if anybody falls on purpose.",
+            "Saw {other} limping past the church today. Wanted to ask after the knee. Didn't.",
+            "Felt ten feet tall after helping {other} up. Then felt foolish for feeling it.",
+            "{other} grabbed my coat coming up and tore a button off. Worth a button." };
         private static readonly string[] HelpDone = {
             "{other} picked me up when I fell. I owe {other} for that.",
             "{other} stopped. Plenty didn't.",
@@ -642,7 +670,13 @@ namespace EnrageWestworld.Core
             "{other}'s grip was warm. I was cold right through.",
             "Might bake for {other}. Might just say it again. Thank you."
         };
-        private static readonly string[] PassDid = { "{other} took a tumble. Not my affair.", "{other} looked at me like I'd done something. I hadn't." };
+        private static readonly string[] PassDid = { "{other} took a tumble. Not my affair.", "{other} looked at me like I'd done something. I hadn't.",
+            "Had a full sack on my shoulder when {other} went down. Couldn't set it in the mud. Could I?",
+            "{other} had people round in a minute. Didn't need me as well.",
+            "Keep telling myself somebody else stopped for {other}. Somebody did. I think.",
+            "{other} turned a shoulder to me at the post office. All this over one fall in the road.",
+            "Was late for the train. That's all it was. {other} can think what {other} likes.",
+            "If it'd been my own mother I'd have stopped. {other}'s not my mother." };
         private static readonly string[] PassDone = {
             "{other} stepped right past me. Me lying in the street.",
             "I won't forget {other} walking on by.",
@@ -676,7 +710,13 @@ namespace EnrageWestworld.Core
             "There's a kind of quiet that's a lie. {other}'s, walking by."
         };
         // standing up to a bully: {other} the one picked on (for the one who stepped in), or the one who stepped in; faced: the bully, or the one who faced him
-        private static readonly string[] DefendDid = { "Stood up for {other}. Hands shook after. Worth it.", "Couldn't stand by and watch it done to {other}." };
+        private static readonly string[] DefendDid = { "Stood up for {other}. Hands shook after. Worth it.", "Couldn't stand by and watch it done to {other}.",
+            "My voice cracked telling the bully to leave {other} be. Cracked like a boy's. Held my ground, though.",
+            "{other} thanked me with tears standing in both eyes. Didn't know where to look.",
+            "The bully's glare follows me down the street now. {other} sleeps easier. Fair trade.",
+            "Didn't think, just stepped between them. {other} would have done the same. I hope.",
+            "Still feel where my heart was banging when I stood up for {other}. Right under the collarbone.",
+            "Pa never stood up for anybody in his life. I stood up for {other}. That's one up on Pa." };
         private static readonly string[] DefendDone = {
             "{other} stepped in for me. Didn't have to.",
             "Owe {other}. Plain as that.",
@@ -709,62 +749,142 @@ namespace EnrageWestworld.Core
             "Keep thinking what would've happened without {other}. Don't like the picture.",
             "{other}'s voice was steady. Mine still isn't."
         };
-        private static readonly string[] FacedDid = { "Told {other} to his face. About time somebody did.", "{other} looked at me like murder. Let him." };
-        private static readonly string[] RoundDid = { "{other} drank my health tonight. Worth every cent.", "Stood {other} a drink. Felt like a rich man, for once.", "Stood the saloon a round. {other} thanked me twice." };
-        private static readonly string[] RoundDone = { "{other} stood me a drink. I'll remember that.", "Drank to {other}'s health. Meant it, too.", "{other} bought me a drink. And everyone else." };
+        private static readonly string[] FacedDid = { "Told {other} to his face. About time somebody did.", "{other} looked at me like murder. Let him.",
+            "{other} went red to the ears when I said it. Never seen that before. Liked it.",
+            "Hands steady till {other} walked off. Then they shook so I spilled my coffee.",
+            "{other} will want to get even. I'll not walk home the dark way for a while.",
+            "Somebody had to tell {other}. Wish it hadn't been me. Glad it was.",
+            "The whole street heard me tell {other} to quit. Two men have stood me a drink for it since.",
+            "{other} muttered something about my mother as he went. I'll let that go. This once." };
+        private static readonly string[] RoundDid = { "{other} drank my health tonight. Worth every cent.", "Stood {other} a drink. Felt like a rich man, for once.", "Stood the saloon a round. {other} thanked me twice.",
+            "{other} raised a glass to me across the room. Warmer than the whiskey, that.",
+            "My purse is lighter, and {other} grinned at me like I'd paid the rent.",
+            "Wonder if {other} will remember who stood the round, come morning. I will.",
+            "Coins I'd saved for boots, spent on {other} and the rest. The feet will wait.",
+            "{other} slapped my back so hard I spilled half my own glass." };
+        private static readonly string[] RoundDone = { "{other} stood me a drink. I'll remember that.", "Drank to {other}'s health. Meant it, too.", "{other} bought me a drink. And everyone else.",
+            "Whiskey on {other}'s coin. Went down smoother for being free.",
+            "Must stand {other} one back when my pay comes. Won't forget.",
+            "{other} bought for the room like a cattle baron. Wonder where the money came from.",
+            "First drink I didn't pay for in a month. {other}'s round. Made it last.",
+            "{other} looked so pleased to be thanked. Like nobody had thanked {other} in years." };
         private static readonly string[] SettledDid = { "Paid {other} every cent, out in the street where folks could see.", "{other} said it out loud: square. I'll sleep tonight.", "Owe {other} nothing now. Strange, how light a body feels.", "Square with {other}. Folks saw it done.", "{other} counted it twice. Let them. It's all there." };
         private static readonly string[] SettledDone = { "{other} paid me back. Every cent. I'd have bet the other way.", "Counted {other}'s money twice. All there.", "Didn't think I'd see that money again. {other} surprised me.", "{other} owes me nothing now. Strange, after all that.", "Took {other}'s coins in the street. Felt near sorry." };
         private static readonly string[] TownSettled = { "{a} paid {b} back in the street, every cent, with folks watching.", "Heard {a} squared up with {b} in front of half the town.", "{a} paid what was owed. {b} said so out loud. Good for {a}.", "{a} squared up with {b} where the whole street could watch.", "Money changed hands between {a} and {b} today. Square, they say." };
-        private static readonly string[] TownRound = { "{a} stood the whole saloon a round. Folks'll be friends with {a} till Sunday.", "{a} bought for the house, {b} says. Wish I'd been there.", "{a} bought the house a drink last night. {b} hasn't stopped saying so." };
-        private static readonly string[] FacedDone = { "{other} put {his} nose in my business. I won't forget it.", "{other}, playing the hero. In front of half the street." };
+        private static readonly string[] TownRound = { "{a} stood the whole saloon a round. Folks'll be friends with {a} till Sunday.", "{a} bought for the house, {b} says. Wish I'd been there.", "{a} bought the house a drink last night. {b} hasn't stopped saying so.",
+            "{b} was singing in the street at midnight. {a} stood the whole room a round, seems.",
+            "{a} bought drinks for the house, and {b} put away three on the strength of it.",
+            "Heard {a} stood a round. {b} says it was the good bottle, too, not the rotgut.",
+            "{a} must have come into money. Stood the saloon a round, {b} says, and paid in silver.",
+            "{b} raised a glass to {a} in the street this morning, an empty one. Must have been some round." };
+        private static readonly string[] FacedDone = { "{other} put {his} nose in my business. I won't forget it.", "{other}, playing the hero. In front of half the street.",
+            "{other} told me off like I was a dog at the table. In front of everybody.",
+            "Laughed it off when {other} spoke up. Laughed. Jaw's been tight ever since.",
+            "{other} will find out what it costs to shame a man in the street. Not today.",
+            "Saw {other} at the store, chin up like a rooster. Let {other} crow. Roosters end in the pot.",
+            "Who made {other} the sheriff? Nobody I know of.",
+            "Lay awake going over what {other} said. Every word sharper the second time." };
 
         private static readonly string[] CharityDid =
         {
             "{other} gave me money. Didn't even make me ask twice. There's good in folks yet.",
-            "Bread tonight, thanks to {other}. Swore I'd never ask. Swear a lot of things."
+            "Bread tonight, thanks to {other}. Swore I'd never ask. Swear a lot of things.",
+            "{other}'s dollar is folded small in my boot. Keep touching it to be sure.",
+            "{other} looked me in the eye, giving it. Didn't toss it. That's the part I keep.",
+            "Hot soup tonight for the first time this week. {other}'s coin. Belly's warm.",
+            "Stood a long while working up to ask {other}. Ten words. Took me an hour.",
+            "Wrote down what {other} gave me on a scrap of paper. So I can pay it back to the cent.",
+            "{other} gave and walked on without a sermon. I could have wept for that alone."
         };
         private static readonly string[] CharityDone =
         {
             "Gave {other} a dollar. Felt good, then foolish, then good again.",
-            "{other} looked so ashamed to ask. I know that look. Wore it myself, once."
+            "{other} looked so ashamed to ask. I know that look. Wore it myself, once.",
+            "{other}'s hand was cold as a pump handle when I put the coin in it.",
+            "Hope {other} spends it on food and not the bottle. Gave it anyhow. Can't follow a coin.",
+            "Saw {other} at the bakery after, buying a loaf. Glad. Relieved, too, to tell the truth.",
+            "Gave {other} more than I meant. Hand went in the pocket and came out generous.",
+            "They'd say at home I'm soft. Gave {other} the coin before I could talk myself out of it.",
+            "{other} said God bless. Haven't heard that said to me and meant in a long while."
         };
         private static readonly string[] ScornDid =
         {
             "Asked {other} for a nickel. Got told to work. I'd work, if there was work.",
-            "Won't ask {other} for anything again. Won't ask anybody. Rather go hungry."
+            "Won't ask {other} for anything again. Won't ask anybody. Rather go hungry.",
+            "{other} looked at my hand like it was something stuck to a boot.",
+            "Lay hungry all night. Kept hearing {other} say get work, in that voice.",
+            "{other} had a gold chain across the vest and couldn't spare a penny. I counted the links.",
+            "Asking {other} took everything I had left. Got nothing back but a look.",
+            "Should have known better than to ask {other}. That sort never looks down.",
+            "{other} said try the church. I'd tried the church. The church said try {other}'s sort."
         };
         private static readonly string[] ScornDone =
         {
             "{other} asked me for money, in the street. The nerve. ...Still thinking about it, though.",
-            "Should've given {other} something. A nickel's nothing. Too late now."
+            "Should've given {other} something. A nickel's nothing. Too late now.",
+            "Told {other} to find work. Said it the way Pa used to. Didn't like hearing him in my mouth.",
+            "If I give to {other}, I'll have every idler in the county at my door.",
+            "{other} didn't argue. Just nodded and went. That's what keeps nagging me.",
+            "Worked hard for every coin in my pocket. {other} could do the same.",
+            "Saw {other} still sitting by the depot at dusk. Went the other way round.",
+            "Spent the nickel {other} wanted on tobacco. It didn't taste right."
         };
         private static readonly string[] DrunkDid =
         {
             "Don't remember much past the third glass. Woke up with sawdust in my mouth. Did I call {other} out?",
-            "Folks keep grinning at me. Something about {other}, and the floor. I'll not ask."
+            "Folks keep grinning at me. Something about {other}, and the floor. I'll not ask.",
+            "Head like a split log. Somebody says I called {other} a cheat and fell over my own boots.",
+            "{other} has every right to be sore. Don't know what I said, so I can't even be sorry right.",
+            "Owe {other} an apology and the saloon a chair, I'm told. Can't afford either.",
+            "Saw {other} at the store and couldn't think whether to nod or run. Did neither. Stood there.",
+            "Swear off whiskey every time. This time {other} saw me on the floor. This time I mean it.",
+            "Bruise on my cheek the shape of a floorboard. {other} never laid a hand on me, they say."
         };
         private static readonly string[] DrunkDone =
         {
             "{other} wanted to fight me. Couldn't find his own feet. Almost felt sorry for him.",
-            "Poor {other}. Drink'll do that. Somebody ought to take that bottle away."
+            "Poor {other}. Drink'll do that. Somebody ought to take that bottle away.",
+            "{other} squared up, swung at the air and sat down hard. Didn't have to lift a finger.",
+            "{other} called me a cheat in front of the room. Drunk talk. Still stung a little.",
+            "Helped {other} up after and got a whiskey-breath thank you. Strange night.",
+            "{other} came by sober and couldn't look at me. Told him to forget it. He won't.",
+            "Everybody laughed at {other} on the floor. I didn't. Saw my father that way too often.",
+            "{other} will be back on the stool by Saturday. Some men can't leave it alone."
         };
 
         // the other one has died since
         private static readonly string[] DeadFoe =
         {
             "Last thing I ever gave {other} was trouble. Now {other}'s dead, and I can't take it back.",
-            "{other}'s in the ground, and I'm still angry. Angry at the dead. What does that make me?"
+            "{other}'s in the ground, and I'm still angry. Angry at the dead. What does that make me?",
+            "Called {other} a cheat in front of the store, the last time. Said it loud, and I can't take it back.",
+            "Angry at the dead, that's what I am. {other} took the quarrel into the ground.",
+            "Wished {other} gone, more than once. Now the wish has come true, and I can't take it back.",
+            "Angry at the dead. Felt it again today, passing the porch where {other} used to sit.",
+            "Spat in the road as {other} went by, that last week. The spit's long dry, and I can't take it back.",
+            "Angry at the dead, and ashamed of it. {other} never let me win an argument, and now never will."
         };
         private static readonly string[] DeadFriend =
         {
             "{other}'s dead. I keep turning round to tell {other} things.",
-            "Can't walk past where {other} used to stand. Go the long way now."
+            "Can't walk past where {other} used to stand. Go the long way now.",
+            "Saved the newspaper for {other}, like always. Then remembered. It's still folded on the chair.",
+            "I'd give a month's wages to hear {other} laugh once more. Even at me.",
+            "Wore the scarf {other} gave me. Didn't think it through. Had to sit down on the church step.",
+            "Nobody else knows how I take my coffee. {other} knew.",
+            "Heard a step on the porch and thought it was {other}. It was the wind and a loose board.",
+            "Said goodnight to {other} out loud tonight, to the dark. Felt foolish. Did it anyway."
         };
         private static readonly string[] DeadKnown =
         {
             "Talked with {other} only the other day. Now {other}'s gone. That's how quick it is.",
             "{other} nodded to me every morning for years. The street's a nod short now.",
-            "Heard {other} was buried Tuesday. Didn't know {other} well. Still took my hat off."
+            "Heard {other} was buried Tuesday. Didn't know {other} well. Still took my hat off.",
+            "{other} owed me nothing and I owed {other} nothing. Still, the corner's wrong without that face.",
+            "Never asked {other} a single real question. Now there's nobody to ask.",
+            "{other}'s window is dark tonight. I'd never noticed it lit till now.",
+            "{other} wasn't a friend, quite. Wasn't a stranger either. Don't know what to call the hollow.",
+            "Signed the book at {other}'s burying. Wrote my name very neat, as if it mattered."
         };
 
         /// A thought about someone they had a scene with lately, by first name; about their death if they've died since.
@@ -816,84 +936,165 @@ namespace EnrageWestworld.Core
         private static readonly string[] TownHostile =
         {
             "{a} and {b} were shouting at each other in the street. Half of {town} heard it.",
-            "{a} won't stand in the same room as {b} now. Ask either one why, you get a different story."
+            "{a} won't stand in the same room as {b} now. Ask either one why, you get a different story.",
+            "Loud words between {a} and {b} outside the post office. The postmaster shut his window on them.",
+            "Heard {a} call {b} a liar across the street. Loud. Wagons stopped.",
+            "{b} came into the store white with temper. {a} again, I'd wager.",
+            "{a} and {b} aren't speaking. Their families aren't either. That's how you know it's serious.",
+            "Whatever's between {a} and {b} has half of {town} taking sides already.",
+            "{a} spat when {b}'s name came up at the barber's. Just spat, and said nothing."
         };
 
         private static readonly string[] TownBlows =
         {
             "{a} and {b} came to blows. Over nothing, they say. It's never nothing.",
-            "Somebody pulled {a} off {b} before it got worse. Blood on the boardwalk."
+            "Somebody pulled {a} off {b} before it got worse. Blood on the boardwalk.",
+            "{a} and {b} rolled right under a wagon, fighting. The horses never even twitched.",
+            "{b}'s got a lip like a plum, and {a} can't close one hand. Some fight, that was.",
+            "Saw {a} and {b} slugging it out by the trough. Neither one's any good at it.",
+            "{a} and {b} went at it in the street. The barber came out with lather on his razor to watch.",
+            "{a} knocked {b} into the hitching rail, they say. Then {b} knocked {a} into it back.",
+            "The barbershop has money on whether {a} and {b} go another round by Sunday."
         };
 
         // {a} did it, {b} had it done to him
         private static readonly string[] TownRough =
         {
             "{a} grabbed {b} by the collar and put {b}'s face through the bar top. Barkeep's still picking up teeth.",
-            "Did you see what {a} did to {b}? Never seen a man move that fast with his hands full."
+            "Did you see what {a} did to {b}? Never seen a man move that fast with his hands full.",
+            "{a} put {b}'s head down on the bar like a man ringing a bell. Whole saloon heard it.",
+            "{a} slammed {b} into the bar and went back to drinking. Didn't even spill.",
+            "They say {a} bloodied {b}'s nose on the bar for one wrong word. One.",
+            "{a} had {b} by the scruff before anybody could blink. The bar top's got a dent in it now.",
+            "Since {a} did that to {b} at the bar, nobody leans on that end.",
+            "Heard {a} roughed up {b} at the saloon. {b} hasn't shown that face in there since."
         };
         private static readonly string[] TownCaught =
         {
             "{b} caught {a} with a hand in a coat pocket. In the open street. Some nerve.",
-            "Watch your pockets round {a}. {b} found out the hard way."
+            "Watch your pockets round {a}. {b} found out the hard way.",
+            "{b} turned round and found {a}'s fingers in a coat pocket. Grabbed the wrist and hollered.",
+            "Heard {b} chased {a} two streets over a purse. Didn't catch {a}, but everybody saw the face.",
+            "{a}'s a thief, {b} says. Caught at it on the boardwalk in the noon crowd.",
+            "The storekeeper keeps one eye on {a} since {b} caught those fingers.",
+            "{b} says {a} smiled while being caught. Smiled. I'll button my coat.",
+            "Everybody's patting their pockets round {a} since {b} raised the cry."
         };
         private static readonly string[] TownDrunk =
         {
             "{a} called {b} out, drunk as a lord, and went down like a felled tree before a fist was raised.",
-            "{a} wanted to fight {b}. Fought the floor instead. The floor won."
+            "{a} wanted to fight {b}. Fought the floor instead. The floor won.",
+            "{a} came at {b} on whiskey legs and swung at a post. Missed the post.",
+            "Heard {a} called {b} every name there is, then fell asleep sitting up.",
+            "{b} only stepped aside, and {a} went straight past into the spittoon.",
+            "{a} was so far gone, {b} got called out by the wrong name. Twice.",
+            "{b} sat {a} down on a bench and fetched water. Better than {a} deserved, maybe.",
+            "{a} wanted to fight {b} last night. This morning {a} can't recall {b}'s face."
         };
 
         private static readonly string[] TownCharity =
         {
             "{b} gave {a} money in the street, plain as day. Folks will be lining up now.",
-            "Saw {b} press a coin on {a}. Didn't think {b} had it in them."
+            "Saw {b} press a coin on {a}. Didn't think {b} had it in them.",
+            "{a} asked {b} for help and got a dollar. A whole dollar, they say.",
+            "{b} gave {a} a coin and didn't make a speech about it. Rare.",
+            "Saw {a} come out of the bakery with a loaf. {b}'s money, I'd guess.",
+            "{b} put money in {a}'s hand on the corner. Half the street watched, and none of us did the same.",
+            "Heard {b} gave {a} the price of a meal. Some will call it soft. Wish I'd done it.",
+            "{a} thanked {b} three times in the street. Three. Must have been the first kindness in a while."
         };
         private static readonly string[] TownScorn =
         {
             "{a} asked {b} for a nickel and got sent off like a stray dog.",
-            "{b} wouldn't spare {a} a penny. And {b} with a gold watch chain."
+            "{b} wouldn't spare {a} a penny. And {b} with a gold watch chain.",
+            "{a} held a hand out to {b} on the corner. {b} looked straight over it.",
+            "Heard {b} told {a} to find work. Where, {b} didn't say.",
+            "{b} turned {a} away at the door. Then sat down to a big supper, I'd bet.",
+            "{a} asked {b} for the price of bread and got a lecture on idleness.",
+            "Saw {a} walk off from {b} with eyes on the ground. Cost {b} nothing to be civil.",
+            "{b} says {a} would only drink it. Maybe. {a} looked hungry, not thirsty."
         };
 
         private static readonly string[] TownHelp =
         {
             "{b} took a fall in the street and {a} was there before anybody. Helped {b} right up.",
-            "Saw {a} pick {b} up out of the dirt. Dusted {b} off and all."
+            "Saw {a} pick {b} up out of the dirt. Dusted {b} off and all.",
+            "{b} went down hard by the trough, and {a} had a hand out before the water stopped slopping.",
+            "{a} walked {b} home after the fall, slow, arm in arm. Good to see.",
+            "Heard {a} carried {b}'s parcels home after that tumble. Didn't have to.",
+            "{a} stopped a wagon to help {b} up out of the road. Driver cursed. {a} paid it no mind.",
+            "{b} fell, and it was {a}, of all people, who stopped.",
+            "{a} got down in the dust for {b} without a thought for the good trousers."
         };
         private static readonly string[] TownPassby =
         {
             "{b} fell flat in the street and {a} walked right past. Folks noticed.",
-            "{a} stepped round {b} like a dropped hat. With half the street watching."
+            "{a} stepped round {b} like a dropped hat. With half the street watching.",
+            "{b} lay in the road a good minute while {a} walked by looking at the sky.",
+            "{b} fell right in front of {a}. {a} stepped over and kept on to the bank.",
+            "{b} was down in the mud, and {a} never broke stride. Plenty saw it.",
+            "{b} says {a} looked straight down and kept walking. {b} won't forget it, nor will I.",
+            "{b} took a tumble outside the store, and {a} just tipped a hat and walked on.",
+            "{b} got up alone, with {a} not ten feet off and walking away. Folk were sour about it all day."
         };
 
         private static readonly string[] TownWarm =
         {
             "{a} has been seen walking with {b}. Folks talk. Folks always talk.",
-            "{a} and {b}, stood close as two spoons. Give it a month."
+            "{a} and {b}, stood close as two spoons. Give it a month.",
+            "{a} bought ribbon on Friday. Sunday, {b} wore it. The whole pew noticed.",
+            "Saw {a} and {b} by the creek at dusk, talking low. Neither one saw me.",
+            "{b} blushed to the ears when {a}'s name came up at the well.",
+            "{a} has taken to shaving every morning. {b}'s the reason, the barber says.",
+            "{a} and {b} sat through the whole sermon holding hands under a hymnbook.",
+            "Wagers at the saloon say {a} and {b} will be married by harvest."
         };
 
         private static readonly string[] TownMadeUp =
         {
             "{a} and {b} made it up, would you credit it. Shook on it outside the store.",
             "{a} and {b} are on speaking terms again. Town's lost a good quarrel.",
-            "Saw {a} and {b} share a bench outside the store. A month ago they'd have shared a cell."
+            "Saw {a} and {b} share a bench outside the store. A month ago they'd have shared a cell.",
+            "{a} bought {b} a drink at the saloon. After all that. The barkeep nearly dropped the bottle.",
+            "{a} and {b} walked to church together Sunday. Folk nudged each other the whole service.",
+            "Heard {a} said sorry to {b} first. Never thought {a} would bend.",
+            "{a} and {b} laughing together at the feed store. Laughing! I had to look twice.",
+            "The quarrel between {a} and {b} is done, they say. The barber will miss it most."
         };
 
         // one of the two has died since: {a} is the one left, {b} the dead ({af}, {bf}: first names, said again)
         private static readonly string[] TownDeadFoe =
         {
             "Everybody knew {a} couldn't stand {b}. Now {bf}'s dead, and folks are careful what they say about it.",
-            "They say {b} never got over that business with {a}. Now {bf}'s buried, and {af} won't speak of it."
+            "They say {b} never got over that business with {a}. Now {bf}'s buried, and {af} won't speak of it.",
+            "{a} and {b} hadn't a kind word between them in years, and now {bf}'s dead. {af} went to the burying.",
+            "Years of feuding with {b}, and now {bf}'s dead. Folk watched {a} at the graveside.",
+            "{a} quarrelled with {b} every market day. Now {bf}'s buried, and {af} stands alone at the stall.",
+            "{a} and {b} fought over a fence line for years, and now {bf}'s dead. The fence is still standing.",
+            "{a} took a hat off as the coffin passed, they say. Feuded with {b} for years. Now {bf}'s buried.",
+            "Wonder if {a} sleeps easier now {bf}'s in the ground. {b} gave {af} no peace for years."
         };
         private static readonly string[] TownDeadWarm =
         {
             "{a} was sweet on {b}, and now {bf}'s gone. Somebody ought to look in on {af}.",
             "{a} and {b} were walking out, and now {bf}'s in the churchyard. {af} hasn't been seen since the burying.",
-            "Folk were picking a wedding hat for {a} and {b}. Now it's a black one, for {bf}."
+            "Folk were picking a wedding hat for {a} and {b}. Now it's a black one, for {bf}.",
+            "{a} put wildflowers on {b}'s grave again this morning. Every morning, they say.",
+            "{a} and {b} were all but promised, and now {bf}'s gone. {af} sits on the porch till dark.",
+            "Saw {a} at the store fingering ribbon in {b}'s colour. Didn't buy it. Just held it.",
+            "{a} was courting {b} all spring, and now {bf}'s gone. Who's to tell {af} to eat?",
+            "{a} still walks the creek path where {b} and {af} used to go. Alone, now."
         };
         private static readonly string[] TownDeadMended =
         {
             "{a} and {b} only just made it up, and now {bf}'s gone. Glad they got to, I suppose.",
             "{a} and {b} shook hands at last, and a week later {bf} was gone. The handshake's what {af} has left.",
-            "{a} buried {b} a friend. Six months back they weren't speaking. Strange, the timing."
+            "{a} buried {b} a friend. Six months back they weren't speaking. Strange, the timing.",
+            "Good thing {a} and {b} made peace in time. {af} helped carry the coffin and never once looked away.",
+            "{a} and {b} were friends again a bare month before {bf} died. A month of it, at least.",
+            "Heard {a} wept at {b}'s burying. A year ago {af} wouldn't cross the road for {bf}.",
+            "{a} keeps saying it was lucky, making up with {b} while there was still time. Keeps saying it.",
+            "Since {b} died, {a} talks of nothing but the day they shook hands. Glad of it, and grieving both."
         };
 
         /// The town's talk about a tie between two others, with both their full names; deadA/deadB: that one has died since.

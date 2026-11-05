@@ -119,6 +119,16 @@ namespace EnrageWestworld.Core
                     k.Crisis = k.Crisis.Concat(more[2]).ToArray();
                     k.Good = k.Good.Concat(more[3]).ToArray();
                     k.Bad = k.Bad.Concat(more[4]).ToArray();
+                    string[][] deep;
+                    if (DeepWorry.TryGetValue(k.Key, out deep) && deep.Length >= 5)
+                    {
+                        // ten more a stage (Run 3, item 6: "thousands more thoughts"; InnerLife.WorriesDeep.cs)
+                        k.Begin = k.Begin.Concat(deep[0]).ToArray();
+                        k.Worse = k.Worse.Concat(deep[1]).ToArray();
+                        k.Crisis = k.Crisis.Concat(deep[2]).ToArray();
+                        k.Good = k.Good.Concat(deep[3]).ToArray();
+                        k.Bad = k.Bad.Concat(deep[4]).ToArray();
+                    }
                 }
                 _worriesGrown = true;
             }

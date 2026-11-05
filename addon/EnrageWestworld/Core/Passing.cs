@@ -179,27 +179,63 @@ namespace EnrageWestworld.Core
 
         /// The words of the hello and the goodbye for the ticker, in our own words, never a transcript of the recording (Lex,
         /// 2026-10-29: "NPCs who know each other use their voicelines to say Hi and Goodbye"). {o}: the other's first name.
+        // the words by the hour, and back (pools since Run 3, item 6: "thousands more thoughts and voice lines")
+        private static readonly string[] HelloMorning = { "Morning, {o}.", "Morning to you, {o}.", "{o}. Fine morning.",
+            "Morning, {o}. Sleep well?",
+            "Coffee in you yet, {o}? You look half awake.",
+            "Any news this morning, {o}?",
+            "Morning, {o}. Where are you off to?",
+            "Morning, {o}. How's the household?" };
+        private static readonly string[] HelloAfternoon = { "Afternoon, {o}.", "How do, {o}.", "{o}. Been a while.",
+            "How's the world using you, {o}?",
+            "All well at your place, {o}?",
+            "Thought that was you, {o}.",
+            "Keeping out of trouble, {o}?",
+            "Well, {o}. How goes it?" };
+        private static readonly string[] HelloEvening = { "Evening, {o}.", "Evening, {o}. Long day?", "{o}. Getting dark early.",
+            "Evening, {o}. Headed home?",
+            "Taking the air, {o}?",
+            "Evening, {o}. Day's done, thank the Lord.",
+            "Had your supper yet, {o}?",
+            "Evening, {o}. Turning in soon?" };
+        private static readonly string[] HelloBackWords = { "{o}.", "And you, {o}.", "Well now, {o}.", "You're looking well, {o}.",
+            "Glad to see you about, {o}.",
+            "Keeping well, {o}. And yourself?",
+            "Can't complain, {o}. Can't complain.",
+            "Didn't see you there, {o}.",
+            "Fine, {o}, fine. And you?" };
+        private static readonly string[] ByeWordsPool = { "I'll let you get on.", "Watch the road home.", "Give my best at home.", "Good day, then.",
+            "Don't let me keep you.",
+            "Remember me to your people.",
+            "I'll see you Sunday, then.",
+            "Well. Back to it, I suppose.",
+            "I'll be getting along, then." };
+        private static readonly string[] ByeBackWords = { "And you.", "Good day.", "So long.", "Same to you.",
+            "Go with God.",
+            "Fare you well.",
+            "Likewise, I'm sure.",
+            "Look in on us sometime.",
+            "Safe home." };
+
         public static string HelloWords(int hour, string other, string seed)
         {
-            string w = hour >= 5 && hour < 12 ? Voice.Pick(seed + "|hw", "Morning, {o}.", "Morning to you, {o}.", "{o}. Fine morning.")
-                     : hour >= 18 && hour < 23 ? Voice.Pick(seed + "|hw", "Evening, {o}.", "Evening, {o}. Long day?", "{o}. Getting dark early.")
-                     : Voice.Pick(seed + "|hw", "Afternoon, {o}.", "How do, {o}.", "{o}. Been a while.");
-            return w.Replace("{o}", other ?? "friend");
+            string[] pool = hour >= 5 && hour < 12 ? HelloMorning : hour >= 18 && hour < 23 ? HelloEvening : HelloAfternoon;
+            return Voice.Pick(seed + "|hw", pool).Replace("{o}", other ?? "friend");
         }
 
         public static string HelloBack(string other, string seed)
         {
-            return Voice.Pick(seed + "|hb", "{o}.", "And you, {o}.", "Well now, {o}.", "You're looking well, {o}.").Replace("{o}", other ?? "friend");
+            return Voice.Pick(seed + "|hb", HelloBackWords).Replace("{o}", other ?? "friend");
         }
 
         public static string ByeWords(string seed)
         {
-            return Voice.Pick(seed + "|bw", "I'll let you get on.", "Watch the road home.", "Give my best at home.", "Good day, then.");
+            return Voice.Pick(seed + "|bw", ByeWordsPool);
         }
 
         public static string ByeBack(string seed)
         {
-            return Voice.Pick(seed + "|bb", "And you.", "Good day.", "So long.", "Same to you.");
+            return Voice.Pick(seed + "|bb", ByeBackWords);
         }
 
         public static IEnumerable<string> HelloLines()

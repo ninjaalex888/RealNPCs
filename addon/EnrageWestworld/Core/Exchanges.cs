@@ -79,32 +79,140 @@ namespace EnrageWestworld.Core
 
         // ---- the other one's answer -------------------------------------------------------------------------
 
-        private static readonly string[] KindToTrouble = { "Lord. I'm sorry, {a}. If there's anything at all.", "I'll say a prayer for it. For whatever that's worth.", "I didn't know, {a}. There's coffee on my stove whenever you want it.", "No offence taken. You've a weight on you, anybody can see it." };
-        private static readonly string[] ColdToTrouble = { "Everybody's got troubles.", "Well. Can't help you there.", "None of my affair. Good day.", "Then I'll leave you to it." };
-        private static readonly string[] SharpToTrouble = { "No call to bite my head off.", "Keep your troubles to yourself, then.", "I only said good morning. Choke on it, then.", "Try that tone on somebody who'll stand for it." };
-        private static readonly string[] SnapBack = { "Then don't ask.", "Off with you, then.", "Mind your own, {b}.", "Good. Then we're done talking." };
+        private static readonly string[] KindToTrouble = { "Lord. I'm sorry, {a}. If there's anything at all.", "I'll say a prayer for it. For whatever that's worth.", "I didn't know, {a}. There's coffee on my stove whenever you want it.", "No offence taken. You've a weight on you, anybody can see it.",
+            "All right, {a}. I'll not keep you. But I'll look in on you tomorrow.",
+            "Bite away, {a}. I've had days like yours. I'll still be here after.",
+            "I'll leave you be, {a}. Send word if you want company. Or soup.",
+            "That's all right, {a}. A hard week makes for hard words.",
+            "Easy, {a}. Nobody's against you here. Least of all me.",
+            "Go on, then. But if it gets heavier, you knock on my door. Any hour." };
+        private static readonly string[] ColdToTrouble = { "Everybody's got troubles.", "Well. Can't help you there.", "None of my affair. Good day.", "Then I'll leave you to it.",
+            "Suit yourself. I've my own to carry.",
+            "Then I won't trouble you with good manners again.",
+            "Hm. I'll ask somebody else how they're keeping, then.",
+            "Can't see what it has to do with me.",
+            "Well. I only stopped to be civil.",
+            "So be it. There's work waiting on me." };
+        private static readonly string[] SharpToTrouble = { "No call to bite my head off.", "Keep your troubles to yourself, then.", "I only said good morning. Choke on it, then.", "Try that tone on somebody who'll stand for it.",
+            "Your trouble's no excuse to bark at me.",
+            "Next time I'll cross the street and spare us both.",
+            "I asked kindly. You'll not get kindly twice.",
+            "We've all got troubles. Some of us manage manners as well.",
+            "Bark at your dog, not at me.",
+            "Then sit in it by yourself. See who stops next time." };
+        private static readonly string[] SnapBack = { "Then don't ask.", "Off with you, then.", "Mind your own, {b}.", "Good. Then we're done talking.",
+            "Suits me, {b}. Keep walking.",
+            "Fine. Go and be civil at somebody else.",
+            "Walk on, then, {b}. I never called you over.",
+            "Go on, {b}. Your road's that way.",
+            "Then go, {b}, and take your manners with you.",
+            "Fine. I'll do my suffering in private." };
 
-        private static readonly string[] KindToGood = { "That's the best thing I've heard all week, {a}.", "Ha! Good. Good for you. You've earned it.", "Well now! That calls for a drink, {a}, and I'm buying.", "I knew it'd come right, {a}. I said so at supper." };
-        private static readonly string[] ColdToGood = { "Huh. Lucky.", "Mm. Well. That's something.", "Good for you, I suppose.", "So long as you're pleased with it." };
-        private static readonly string[] SharpToGood = { "Some folks get all the luck.", "Well. Ain't that grand.", "You'll be insufferable for a month, then.", "Spare me the dancing, {a}. Some of us had a plain day." };
+        private static readonly string[] KindToGood = { "That's the best thing I've heard all week, {a}.", "Ha! Good. Good for you. You've earned it.", "Well now! That calls for a drink, {a}, and I'm buying.", "I knew it'd come right, {a}. I said so at supper.",
+            "Oh, {a}! I'm glad. I'm that glad I could shake your arm off.",
+            "Now there's news worth stopping in the street for.",
+            "Bless you, {a}. Wait till I tell them at home.",
+            "About time something went your way, {a}. Long past time.",
+            "I'm right glad for you. You've had a hard road to it.",
+            "Good! There's justice after all, now and again." };
+        private static readonly string[] ColdToGood = { "Huh. Lucky.", "Mm. Well. That's something.", "Good for you, I suppose.", "So long as you're pleased with it.",
+            "Hm. Fancy that.",
+            "That's your affair. Glad it suits you.",
+            "Fine, then. I'll hear the rest some other time.",
+            "Hm. Things turn, I suppose.",
+            "Glad to hear it. Now, I've errands.",
+            "Right. Good. Well, I'd best get on." };
+        private static readonly string[] SharpToGood = { "Some folks get all the luck.", "Well. Ain't that grand.", "You'll be insufferable for a month, then.", "Spare me the dancing, {a}. Some of us had a plain day.",
+            "And I suppose you'll be wanting me to cheer.",
+            "Lucky for you. Shame it wasn't somebody who'd earned it.",
+            "Mind the whole town doesn't hear you crowing, {a}.",
+            "Good for you. Some of us are still waiting on ours.",
+            "It won't last the month, {a}. Nothing good does.",
+            "Must be pleasant, having things fall your way, {a}." };
 
-        private static readonly string[] KindToBad = { "I'm so sorry, {a}. Truly.", "Come by tonight. You shouldn't sit alone with that.", "Oh, {a}. Here, sit down a minute. Sit.", "That's a hard blow. Anything you need, you've only to say it." };
-        private static readonly string[] ColdToBad = { "That's hard. That's how it goes.", "Well. Life's like that.", "It happens to everybody sooner or later.", "Hm. A pity. Can't be helped." };
-        private static readonly string[] SharpToBad = { "Told you how it'd go.", "Can't say I'm surprised.", "And what did you expect, {a}?", "You brought that on yourself, and you know it." };
+        private static readonly string[] KindToBad = { "I'm so sorry, {a}. Truly.", "Come by tonight. You shouldn't sit alone with that.", "Oh, {a}. Here, sit down a minute. Sit.", "That's a hard blow. Anything you need, you've only to say it.",
+            "Oh, {a}. I don't know what to say. I'm here, though.",
+            "You'll take supper with us tonight, {a}. I won't hear no.",
+            "I'll be by in the morning with what I can spare. And I'll stay a while.",
+            "That's cruel hard, {a}. You didn't deserve that.",
+            "Lean on me a minute, {a}. The street can look if it likes.",
+            "I'll tell the preacher. You'll not carry this by yourself." };
+        private static readonly string[] ColdToBad = { "That's hard. That's how it goes.", "Well. Life's like that.", "It happens to everybody sooner or later.", "Hm. A pity. Can't be helped.",
+            "Bad luck. Nothing to be done about it now.",
+            "Well. You'll manage. People do.",
+            "Sorry to hear it. I'll not keep you.",
+            "Hard. But you're not the first.",
+            "Hm. Somebody's always got it worse.",
+            "I've buried worse. You'll live." };
+        private static readonly string[] SharpToBad = { "Told you how it'd go.", "Can't say I'm surprised.", "And what did you expect, {a}?", "You brought that on yourself, and you know it.",
+            "I warned you, {a}. Nobody ever listens to a warning.",
+            "Well, don't stand there looking at me like I did it.",
+            "Should've thought of that sooner, {a}.",
+            "And now you'll want pity. Go and ask the preacher for it.",
+            "Half the town could have told you. Did you ask any of them?",
+            "Comfort? From me, {a}? I've none spare for this." };
 
         // ---- a quarrel, again ---------------------------------------------------------------------------------
 
-        private static readonly string[] QuarrelAgain = { "Still sore, {b}? I am.", "You've a nerve, standing there like nothing happened.", "Thought about what I said, {b}?", "Don't you cross the street on my account, {b}. Stand there and hear me." };
-        private static readonly string[] MakeUp = { "I was wrong, {a}. There. I said it.", "Let it go, {a}. It ain't worth what it's costing us.", "I've been sore a week over nothing, {a}. Let's be done with it.", "My hand's out, {a}. Take it or don't, but it's out." };
-        private static readonly string[] Accept = { "...Well. All right, then.", "Huh. All right. Buy me a drink and we'll call it square.", "...Fine. Fine. I was sick of it, too.", "Ah, give it here, {b}. Life's too short." };
-        private static readonly string[] Refuse = { "Wrong don't begin to cover it.", "Sorry don't mend a thing.", "Keep your hand, {b}. I know where it's been.", "A week late with that, and a dollar short." };
-        private static readonly string[] Stand = { "Step aside, {a}, or I'll put you aside.", "One more word, {a}. Just the one.", "Say it again, {a}, and say it closer.", "You want this settled, {a}? Here's as good a place as any." };
-        private static readonly string[] Dare = { "Not here. Not today.", "Another time, {b}. Count on it.", "I'll pick the day, {b}. Not you.", "Walk on, {b}. I've not forgotten and I won't." };
+        private static readonly string[] QuarrelAgain = { "Still sore, {b}? I am.", "You've a nerve, standing there like nothing happened.", "Thought about what I said, {b}?", "Don't you cross the street on my account, {b}. Stand there and hear me.",
+            "You. I've not forgotten, {b}. Not one word of it.",
+            "Got anything to say to me, {b}? Anything at all?",
+            "I've waited a week to see your face, {b}. Here it is.",
+            "Still telling folk your side of it, {b}? I hear things.",
+            "You owe me an apology, {b}, and I mean to stand here till I get it.",
+            "Here's {b}. Come to say the rest of it?" };
+        private static readonly string[] MakeUp = { "I was wrong, {a}. There. I said it.", "Let it go, {a}. It ain't worth what it's costing us.", "I've been sore a week over nothing, {a}. Let's be done with it.", "My hand's out, {a}. Take it or don't, but it's out.",
+            "We were both fools, {a}. Me the bigger one, maybe.",
+            "I miss our talks, {a}. I miss them more than I'm sore.",
+            "This town's too small to keep a quarrel in, {a}. Shake?",
+            "I said things I'd take back if I could. I'm taking them back, {a}.",
+            "Come by for coffee Sunday, {a}. We'll talk about anything but this.",
+            "I'll not let my temper cost me a friend, {a}. Not this time." };
+        private static readonly string[] Accept = { "...Well. All right, then.", "Huh. All right. Buy me a drink and we'll call it square.", "...Fine. Fine. I was sick of it, too.", "Ah, give it here, {b}. Life's too short.",
+            "...I've missed you, {b}. Don't tell anybody I said so.",
+            "Well. It took you long enough. All right.",
+            "You stubborn old mule. All right. Come here.",
+            "I'll shake. I'd sooner be your friend than right.",
+            "...That's handsome of you, {b}. I'll say the same.",
+            "Done, then. I'll not raise it again if you won't." };
+        private static readonly string[] Refuse = { "Wrong don't begin to cover it.", "Sorry don't mend a thing.", "Keep your hand, {b}. I know where it's been.", "A week late with that, and a dollar short.",
+            "You'll not talk your way round me this time, {b}.",
+            "You've always had words, {b}. I'll want more than words.",
+            "You're sorry now, {b}. You weren't sorry then.",
+            "I've heard you sorry before, {b}. It never lasted to Sunday.",
+            "No. Some things stay said.",
+            "I'm not in a forgiving way today, {b}. Ask me some other year." };
+        private static readonly string[] Stand = { "Step aside, {a}, or I'll put you aside.", "One more word, {a}. Just the one.", "Say it again, {a}, and say it closer.", "You want this settled, {a}? Here's as good a place as any.",
+            "You'll get no sorry out of me, {a}. Not one.",
+            "Keep on at me, {a}. I'll not stand here and take it twice.",
+            "I'm right here, {a}. I'm not hard to find.",
+            "Raise your voice to me again, {a}. Go on.",
+            "Mind how you talk to me in the street, {a}. I've a long memory.",
+            "You've said your piece, {a}. Now I'll say mine with my fists." };
+        private static readonly string[] Dare = { "Not here. Not today.", "Another time, {b}. Count on it.", "I'll pick the day, {b}. Not you.", "Walk on, {b}. I've not forgotten and I won't.",
+            "Not with the whole street watching. But soon, {b}.",
+            "You'll keep, {b}. I'm a patient sort.",
+            "There'll be a better day for it, {b}. A quieter one.",
+            "Enjoy your walk home, {b}. Look behind you now and then.",
+            "Not worth the fine, {b}. Not today.",
+            "The sheriff's watching, {b}. He won't always be." };
 
         // ---- sweethearts ----------------------------------------------------------------------------------------
 
-        private static readonly string[] SweetHello = { "There you are, {b}.", "Afternoon, {b}. You look well.", "I was hoping I'd pass you.", "Morning, {b}. I saved you the first of the apples." };
-        private static readonly string[] SweetBack = { "Were you, now?", "I took the long way round. Don't ask why.", "You'll make me blush in the street.", "Hush, {a}. Half the town's at the window." };
+        private static readonly string[] SweetHello = { "There you are, {b}.", "Afternoon, {b}. You look well.", "I was hoping I'd pass you.", "Morning, {b}. I saved you the first of the apples.",
+            "Well. There's the best thing I'll see all day.",
+            "I brought you something, {b}. Don't open it till you're home.",
+            "You've done something with your hair, {b}. Don't change it back.",
+            "Walk a little way with me, {b}? Only to the corner.",
+            "I thought about you at breakfast, {b}. And after.",
+            "I've been saving up things to tell you, {b}. Nothing important. All of it." };
+        private static readonly string[] SweetBack = { "Were you, now?", "I took the long way round. Don't ask why.", "You'll make me blush in the street.", "Hush, {a}. Half the town's at the window.",
+            "And here I'd thought you'd forgotten me, {a}.",
+            "Mind, {a}. The storekeeper's wife sees everything.",
+            "Hush now. Walk with me, then tell me again, softer.",
+            "I put on my good boots in case I saw you.",
+            "Go on with you, {a}. Say it again, though.",
+            "I'd hoped it would be you coming up the street." };
 
         // ---- the worrier and the real person at the other end (Links.cs): by the worry's stage, steered by its end ----
 
@@ -122,9 +230,35 @@ namespace EnrageWestworld.Core
             "Saturday. I swear it on my mother's grave."
         };
         // the one owed answers, by stage, from their own manner
-        private static readonly string[] OwedKind = { "No rush. Just don't forget it.", "...A week, then.", "Saturday it is. I'll come by the house for it." };
-        private static readonly string[] OwedCold = { "Mind you don't forget it.", "One week. I'll be counting.", "I'll hold you to it." };
-        private static readonly string[] OwedSharp = { "Soon ain't a day of the week.", "You said that last week.", "Don't swear. Pay." };
+        /// A line for this stage of a debt from a pool kept in stage order (0, 1, 2, 0, 1, 2...; Run 3, item 6 added two more of
+        /// each), chosen by the seed among that stage's own.
+        private static string StageLine(string[] pool, int st, string seed)
+        {
+            int n = System.Math.Max(1, (pool.Length - st + 2) / 3);
+            return pool[System.Math.Min(pool.Length - 1, st + 3 * (Voice.Hash(seed + "|owed" + st) % n))];
+        }
+
+        private static readonly string[] OwedKind = { "No rush. Just don't forget it.", "...A week, then.", "Saturday it is. I'll come by the house for it.",
+            "Whenever it suits. I know you're good for it.",
+            "A week. I'll not ask before then.",
+            "Saturday, then. Don't fret yourself sick over it.",
+            "Pay me when you're able. I'll not hound you.",
+            "Take the week. Take two if you need them.",
+            "Saturday. And if it's short, bring what you have." };
+        private static readonly string[] OwedCold = { "Mind you don't forget it.", "One week. I'll be counting.", "I'll hold you to it.",
+            "I'll note it down. Soon, you said.",
+            "A week. Not a day more.",
+            "Saturday. I'll be on your step at noon.",
+            "Mind it is soon.",
+            "One week. After that I come asking.",
+            "Then Saturday it is. Have it counted." };
+        private static readonly string[] OwedSharp = { "Soon ain't a day of the week.", "You said that last week.", "Don't swear. Pay.",
+            "You've been about to be paid since I've known you.",
+            "A week. And where's the money to come from in a week?",
+            "Leave your mother out of it. Bring the money.",
+            "Soon. Everybody's paid soon. Nobody's paid now.",
+            "You've had your week, and the one before it.",
+            "Swear on whatever you like. Saturday, or the mule." };
         private static readonly string[] Paid = { "Here. Eleven dollars, {b}. Count it.", "...Square, then. Square and glad of it." };
         // paid in the street (Tier 4): counted out where folks can see, the one who paid asks it said aloud, and it is
         private static readonly string[] PaidCount = { "...nine, ten, eleven. Eleven it is.", "Eight... nine... ten... eleven. Well, I'll be.", "Ten... and eleven. Every cent, and no bent ones.", "...ten, eleven. Eleven dollars, counted in the street." };
@@ -174,7 +308,7 @@ namespace EnrageWestworld.Core
                         string manner = Manner(b, false);
                         s.Add(1, fill(CallIn[st]), st == 0 ? "familiar" : "angry", "face").Add(0, fill(Owe[st]), st == 0 ? "mild" : "plead");
                         string[] back = manner == "kind" ? OwedKind : manner == "cold" ? OwedCold : OwedSharp;
-                        s.Add(1, fill(back[st]), manner == "sharp" ? "angry" : "mild", "walkaway");
+                        s.Add(1, fill(StageLine(back, st, seed)), manner == "sharp" ? "angry" : "mild", "walkaway");
                         s.Kind = "debt";
                         s.Doer = 1;   // B calls it in (the worrier A owes)
                     }
