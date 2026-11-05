@@ -117,7 +117,9 @@ namespace EnrageWestworld.InGame
             bool hasWall = DespairWall(ped, me, out wall, out dir);
             bool hasWater = _cfg.DespairWater && DespairWater(ped, me, out water, out waterDir);
             Vector3 drop = Vector3.Zero, dropDir = Vector3.Zero;
-            bool hasDrop = _cfg.DespairFall && DespairDrop(ped, me, out drop, out dropDir);   // a sheer drop near (Run 3, item 4)
+            string before = forced == null ? Despair.Method(act.P, armed, hasWall, hasWater, act.P.Id) : null;
+            bool mayFall = forced != null ? forced.StartsWith("fall") : before == "wall" || before == "knife";   // only those become a fall (Despair.Method)
+            bool hasDrop = _cfg.DespairFall && mayFall && DespairDrop(ped, me, out drop, out dropDir);   // a sheer drop near (Run 3, item 4): its reads only when it could matter
             string method = forced != null ? forced.Split(':')[0] : Despair.Method(act.P, armed, hasWall, hasWater, hasDrop, act.P.Id);
             if (method == "fall" && !hasDrop)
                 method = hasWall ? "wall" : hasWater ? "water" : "knife";

@@ -1039,7 +1039,7 @@ namespace EnrageWestworld.InGame
                 }
                 act.Phase = 4;
                 act.Sub = 0;
-                act.Until = now + (act.Method == "wall" ? 20000 : act.Method == "water" ? 40000 : act.Method == "fall" ? 40000 : 9000);
+                act.Until = now + (act.Method == "wall" ? 20000 : act.Method == "water" ? 40000 : act.Method == "fall" ? 46000 : 9000);
                 _selfHarmed.Add(h);   // theirs alone: never booked as the player's doing
                 if (!Spawner.IsOurs(h))
                 {
@@ -1283,14 +1283,15 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// The fall (Run 3, item 4): a walk to the edge, no hurry; at it they turn to look out and stand (Despair.FallPauseMs),
-        /// then walk off it, and the drop does the rest. If the game holds them at the edge for Despair.FallOverMs they're tipped
-        /// over it, as a stumble. Once they're three metres and more under the edge's ground, or the tip is given, phase 5: the
-        /// landing's moment, then gone if the drop left them breathing (phase 5's end, as every way). Never reached, they go limp
-        /// where they stand, as at the wall and the water.
         // the awake act's rest (Run 3, item 4; Lex: "more happening to them"): 120 s until 0.7.25
         private const int AwakeActGapMs = 75000;
 
+        /// The fall (Run 3, item 4, with its review's fixes): a walk to the edge, no hurry; at it they turn to look out and stand
+        /// (Despair.FallPauseMs), then walk off it, and the drop does the rest. If the game holds them at the edge for
+        /// Despair.FallOverMs they go limp and, once the body is loose, are tipped toward the drop, as a stumble, and watched
+        /// three seconds. Once they're past the edge and three metres and more under its ground, phase 5: the landing's moment,
+        /// then gone if the drop left them breathing (phase 5's end, as every way). Never reached, or tipped and still on the
+        /// edge, they go limp where they are, as at the wall and the water, and the log says which.
         private void DespairLedgeStart(WakeAct act, int now)
         {
             int h = act.Handle;
@@ -1307,16 +1308,19 @@ namespace EnrageWestworld.InGame
             act.NextStep = now + 200;
             Vector3 pos = ENTITY.GET_ENTITY_COORDS(h, true, true);
             float under = act.WallAt.Z - 1f - (pos.Z - 1f);   // how far under the edge's ground their feet are
-            if (under >= 3f)
+            float past = (pos.X - act.WallAt.X) * act.WallDir.X + (pos.Y - act.WallAt.Y) * act.WallDir.Y;   // how far beyond the edge, the way off
+            if (under >= 3f && past > 0f)
             {
+                // past the edge and well under it: over (a dip on the way, or an uphill walk to the edge, isn't: the review)
                 Log.Write("WAKE despair: " + act.Name + " went over the edge (" + under.ToString("0") + " m down and falling)");
                 act.Phase = 5;
                 act.PhaseUntil = now + Despair.FallLandMs;
+                act.Until = Math.Max(act.Until, act.PhaseUntil + 3000);
                 return;
             }
             if (act.Sub == 0)
             {
-                if (Flat(pos, act.WallAt) <= 0.9f)
+                if (Flat(pos, act.WallAt) <= 1.5f)   // the point is 0.75 m short of the drop: 1.5 m is at it
                 {
                     Vector3 far = act.WallAt + act.WallDir * 10f;
                     TASK.TASK_TURN_PED_TO_FACE_COORD(h, far.X, far.Y, far.Z, Despair.FallPauseMs);
@@ -1330,6 +1334,7 @@ namespace EnrageWestworld.InGame
                     PED.SET_PED_TO_RAGDOLL(h, 6000, 9000, 0, false, false, "");
                     act.Phase = 5;
                     act.PhaseUntil = now + 1200;
+                    act.Until = Math.Max(act.Until, act.PhaseUntil + 3000);
                 }
                 return;
             }
@@ -1344,14 +1349,36 @@ namespace EnrageWestworld.InGame
                 }
                 return;
             }
-            if (now - act.RunFrom >= Despair.FallOverMs)
+            if (act.Sub == 2)
             {
-                // the game held them at the edge (a ped won't walk off a drop it can see): over it, as a stumble
-                PED.SET_PED_TO_RAGDOLL(h, 5000, 8000, 0, false, false, "");
-                ENTITY.APPLY_FORCE_TO_ENTITY(h, 1, act.WallDir.X * 6f, act.WallDir.Y * 6f, 1f, 0f, 0f, 0f, 0, false, true, true, false, true);
-                Log.Write("WAKE despair: " + act.Name + " was held at the edge by the game; tipped over it");
+                if (now - act.RunFrom >= Despair.FallOverMs)
+                {
+                    // the game held them at the edge (a ped won't walk off a drop it can see): limp first, the push once the body is
+                    // loose (a push in the same frame as the ragdoll may find it still standing: the review)
+                    PED.SET_PED_TO_RAGDOLL(h, 5000, 8000, 0, false, false, "");
+                    act.Sub = 3;
+                    act.RunFrom = now;
+                }
+                return;
+            }
+            if (act.Sub == 3)
+            {
+                if (PED.IS_PED_RAGDOLL(h) || now - act.RunFrom >= 1000)
+                {
+                    ENTITY.APPLY_FORCE_TO_ENTITY(h, 1, act.WallDir.X * 6f, act.WallDir.Y * 6f, 1f, 0f, 0f, 0f, 0, false, true, true, false, true);
+                    Log.Write("WAKE despair: " + act.Name + " was held at the edge by the game; tipped toward the drop");
+                    act.Sub = 4;
+                    act.RunFrom = now;
+                }
+                return;
+            }
+            if (now - act.RunFrom >= 3000)
+            {
+                // three seconds and still on the edge (the check at the top catches the fall): limp there, said as it was
+                Log.Write("WAKE despair: " + act.Name + " was tipped but stayed on the edge (" + Math.Max(0f, under).ToString("0") + " m under it); went limp where they lay");
                 act.Phase = 5;
-                act.PhaseUntil = now + Despair.FallLandMs + 1000;
+                act.PhaseUntil = now + 1200;
+                act.Until = Math.Max(act.Until, act.PhaseUntil + 3000);
             }
         }
 
@@ -1397,19 +1424,27 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// A drop to step off (Run 3, item 4): in one of sixteen directions, walking ground at their own level from 1.5 m out
-        /// (never a rise or a step of more than a metre and a bit between reads), then a sheer step down of 3.5 m or more, with the
-        /// ground a step and a half past it Despair.FallDropMetres or more under their feet: a bluff, a ledge, a high bank. The
-        /// nearest such edge, two metres off at least, the player not on the line. The point is a metre above the last ground at
-        /// their level (the edge), the direction the way off. Every read is the game's own ground height into an 8-byte slot.
+        /// A drop to step off (Run 3, item 4, with its review's fixes): never from indoors; in one of sixteen directions, walking
+        /// ground from 1.5 m out (no rise or dip of more than half a metre between reads 0.75 m apart: a slope a person walks),
+        /// then a sheer step down of 3.5 m or more, with both reads past it Despair.FallDropMetres or more under the lip: a bluff,
+        /// a ledge, a high bank. Not where it lands in water (the river is the water's way, and a body landing in it swam), not
+        /// with the edge indoors, not with the player on the walk or below where they'd land, and not with anything knee-high on
+        /// the walk (a rail, a fence, a wall). The nearest such edge, two metres off at least. The point is a metre above the last
+        /// ground at their level (the edge), the direction the way off. Every read is the game's own ground height into an 8-byte
+        /// slot; the knee-high ray is cast only at the edges found, nearest first.
         private unsafe bool DespairDrop(Ped p, Ped me, out Vector3 at, out Vector3 dir)
         {
             at = dir = Vector3.Zero;
+            bool indoors = INTERIOR.GET_INTERIOR_FROM_ENTITY(p.Handle) != 0;
+            if (indoors)
+                return false;   // indoors: an upper floor reads as ground, and the street outside as a drop through the wall
             Vector3 pos = p.Position, mp = me.Position;
             float feet = DespairGround(pos.X, pos.Y, pos.Z + 1.5f);
             if (float.IsNaN(feet) || Math.Abs(feet - (pos.Z - 1f)) > 2.5f)
-                return false;   // no ground read under them, or they're on something the ground read doesn't see (a roof, a balcony)
-            float best = float.MaxValue;
+                return false;   // no ground read under them
+            var found = new List<KeyValuePair<float, int>>();   // how far, which way: the edges found, nearest tried first
+            var edges = new Vector3[16];
+            var ways = new Vector3[16];
             for (int i = 0; i < 16; i++)
             {
                 float a = i * 22.5f * (float)Math.PI / 180f, dx = -(float)Math.Sin(a), dy = (float)Math.Cos(a);
@@ -1422,27 +1457,55 @@ namespace EnrageWestworld.InGame
                         break;
                     if (last - g >= 3.5f)
                     {
-                        float g2 = DespairGround(gx + dx * 1.5f, gy + dy * 1.5f, feet + 3f);
-                        float under = feet - (float.IsNaN(g2) ? g : Math.Min(g, g2));
+                        float fx = gx + dx * 1.5f, fy = gy + dy * 1.5f;
+                        float g2 = DespairGround(fx, fy, feet + 3f);
+                        if (float.IsNaN(g2))
+                            g2 = g;
+                        float under = last - Math.Max(g, g2);   // from the lip down to the nearer of the two grounds past it: both deep
+                        float along = (mp.X - pos.X) * dx + (mp.Y - pos.Y) * dy, across = Math.Abs((mp.X - pos.X) * dy - (mp.Y - pos.Y) * dx);
+                        bool blocked = along > 0f && along < d + 4f && across < 2.5f;   // on the walk, or below where they'd come down
                         Vector3 edge = new Vector3(pos.X + dx * (d - 0.75f), pos.Y + dy * (d - 0.75f), last + 1f);
-                        // the player not on the line: not within 2 m of the walk to the edge
-                        Vector3 toMe = mp - pos, way = new Vector3(dx, dy, 0f);
-                        float along = toMe.X * dx + toMe.Y * dy, across = Math.Abs(toMe.X * dy - toMe.Y * dx);
-                        bool blocked = along > 0f && along < d && across < 2f;
-                        if (d >= 2f && under >= Despair.FallDropMetres && !blocked && d < best)
+                        if (d >= 2f && under >= Despair.FallDropMetres && !blocked && !DespairWet(gx, gy, g, last) && !DespairWet(fx, fy, g2, last) &&
+                            INTERIOR.GET_INTERIOR_AT_COORDS(edge.X, edge.Y, edge.Z) == 0)
                         {
-                            best = d;
-                            at = edge;
-                            dir = way;
+                            found.Add(new KeyValuePair<float, int>(d, i));
+                            edges[i] = edge;
+                            ways[i] = new Vector3(dx, dy, 0f);
                         }
                         break;
                     }
-                    if (Math.Abs(g - last) > 1.2f)
-                        break;   // a wall, a fence of rock, a steep rise: not ground to walk
+                    if (Math.Abs(g - last) > 0.5f)
+                        break;   // a step, a rock, a steep bank: not ground a person walks (1.2 m let a 58-degree slope and fences through: the review)
                     last = g;
                 }
             }
-            return best < float.MaxValue;
+            foreach (KeyValuePair<float, int> e in found.OrderBy(x => x.Key))
+            {
+                Vector3 edge = edges[e.Value], hit, normal;
+                Vector3 knee = new Vector3(pos.X, pos.Y, feet + 0.5f), kneeAtEdge = new Vector3(edge.X, edge.Y, edge.Z - 0.5f);
+                if (Natives.Probe(knee, kneeAtEdge, p.Handle, out hit, out normal))
+                    continue;   // a rail, a fence or a wall on the walk
+                at = edge;
+                dir = ways[e.Value];
+                return true;
+            }
+            return false;
+        }
+
+        /// Water at x, y above its ground: a landing in the river or a lake. Asked from the lip and from just over the ground,
+        /// since the game answers for the water surface near the height it's given.
+        private static unsafe bool DespairWet(float x, float y, float ground, float lip)
+        {
+            foreach (float z in new[] { lip, ground + 1f })
+            {
+                long slot = 0;   // an 8-byte slot for the out-parameter (the rule in CLAUDE.md)
+                if (!WATER.GET_WATER_HEIGHT(x, y, z, (float*)&slot))
+                    continue;
+                float wh = *(float*)&slot;
+                if (wh > ground - 0.5f && wh < lip + 1f)
+                    return true;
+            }
+            return false;
         }
 
         /// The game's ground height under x, y from z down; NaN when it reads none.
@@ -1540,6 +1603,10 @@ namespace EnrageWestworld.InGame
         {
             if (act.Method == "poison")
                 return act.Variant == "drink" ? "poison, drunk down" : "poison, slowly";
+            if (act.Method == "water")
+                return "walking into the water";
+            if (act.Method == "fall")
+                return "stepping off a high edge";
             return act.Method == "wall" ? "running at a wall" : act.Method == "knife" ? "a knife" : "a gun, " + (act.Weapon == null ? "their own" : Despair.Words(act.Weapon)) +
                    (act.Variant != null ? " (" + act.Variant + "'s way)" : "");
         }
@@ -1550,6 +1617,10 @@ namespace EnrageWestworld.InGame
             string their = act.P != null && act.P.Woman ? "her" : "his";
             if (act.Method == "poison")
                 return "with poison";
+            if (act.Method == "water")
+                return "walking into the water";
+            if (act.Method == "fall")
+                return "stepping off a high edge";
             return act.Method == "wall" ? "running headlong at a wall" : act.Method == "knife" ? "with a knife" : "with " + (act.Weapon == null ? "a gun of " + their + " own" : Despair.Words(act.Weapon));
         }
 
@@ -1612,7 +1683,9 @@ namespace EnrageWestworld.InGame
                 bool armed = WEAPON.IS_PED_ARMED(p.Handle, 4);
                 Vector3 w, d;
                 bool wall = DespairWall(p, me, out w, out d);
-                string method = Despair.Method(who, armed, wall, who.Id);
+                Vector3 wv, wd, dv, dd;
+                bool water = _cfg.DespairWater && DespairWater(p, me, out wv, out wd), drop = _cfg.DespairFall && DespairDrop(p, me, out dv, out dd);
+                string method = Despair.Method(who, armed, wall, water, drop, who.Id);
                 bool record = res == null && _bridge.RecordAt(p.Handle) != null, folk = res == null && !record;   // WakeIdentity knows records, townsfolk and residents
                 bool may = (res == null || res.PostId == null) && !st.Has(DespairMark);
                 string verdict = res != null && res.PostId != null ? "keeps a counter: never" : st.Has(DespairMark) ? "had their chance"

@@ -30,6 +30,7 @@ namespace EnrageWestworld.InGame
             public Ped Walker;               // the traveller who comes in from the dark (the NPC version)
             public uint WalkerModel;
             public string[] Tale;
+            public int TaleAt;               // which tale (Campfire.TaleIndex), picked with it: the answers follow the tale told
         }
 
         private CampfireRun _campfire;
@@ -60,6 +61,7 @@ namespace EnrageWestworld.InGame
             if (c.Joiner)
                 Spawner.Ready(c.WalkerModel);   // asked for now, so the walker is ready when the tale is
             c.Tale = Campfire.Tale(c.Seed);
+            c.TaleAt = Campfire.TaleIndex(c.Seed);   // the same moment, so a switch turned mid-fire can't pair one tale with another's answers
             _campfire = c;
             Log.Write("CAMPFIRE due: " + men + " men" + (c.Joiner ? ", a traveller to come in" : "") + (test ? " (a test)" : ""));
         }
@@ -254,7 +256,7 @@ namespace EnrageWestworld.InGame
                         {
                             Feed.Say("A man at the fire", c.Tale[c.Line], Speech.When(h, "mild", me.Handle), h, toYou: true);
                             if (c.Line < 3 && c.Sitters.Count > 1 && c.Sitters[1] != null && c.Sitters[1].Exists())
-                                Feed.Say("Another at the fire", Campfire.Answer(c.Line, c.Seed, Campfire.TaleIndex(c.Seed)), Speech.When(c.Sitters[1].Handle, c.Line == 1 ? "mock" : "mild", h), c.Sitters[1].Handle);
+                                Feed.Say("Another at the fire", Campfire.Answer(c.Line, c.Seed, c.TaleAt), Speech.When(c.Sitters[1].Handle, c.Line == 1 ? "mock" : "mild", h), c.Sitters[1].Handle);
                             c.Line++;
                             c.NextLineAt = now + 6000;
                             c.Phase = "telling";

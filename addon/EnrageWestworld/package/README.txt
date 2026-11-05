@@ -743,8 +743,8 @@ NEW IN 0.7.11
   wall or take a knife walk to the edge instead, stand and look out, and step off. The waking is
   tuned up as it comes: AwakeningShare 3 (was 2.25), AwakeningDays 3 (was 5), AwakeningDespair 65
   (was 50), and an awake person's act comes every 75 s, not 120: offline that is about one despair
-  ending every two hours of play once the first are awake (about seven hours in), where it was one
-  in four and a half. An ini on the old values is moved; values of your own are kept.
+  ending every two hours of play, averaged over forty hours (the first awake about seven hours in),
+  where it was one in four and a half. An ini on the old values is moved; values of your own are kept.
 - Brawls that grow. A fistfight draws people in a wave at a time, up to [Mind] BrawlMost (12)
   fighting: friends and grudges first, from up to BrawlJoinMetres (30) away, most of all in a
   saloon with drink in it. Those sitting or leaning get up to join. The sides balance, a man

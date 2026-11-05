@@ -49,7 +49,7 @@ namespace EnrageWestworld.Core
               "Down in the bayou the Cajuns call it feu follet. A little light over the water at night.",
               "It bobs along ahead of you like a lantern on a pole, and it keeps just out of reach.",
               "Follow it and it leads you into the deep water. The old women say it's a soul that can't rest.",
-              "Turn your pocket inside out and say a prayer, and it'll leave you be. So they tell it."),
+              "Stick a needle in a fence post: it has to pass through the eye before it can lead you off. So they tell it."),
             F("bellwitch", true,
               "There was a farm in Tennessee, the Bell place, where a voice talked to the family four years.",
               "It sang hymns and cursed and pulled the children's hair, and nobody ever laid eyes on it.",
@@ -62,8 +62,8 @@ namespace EnrageWestworld.Core
               "Folks who've heard it don't ride that road after dark. I don't, and I'm not ashamed to say it."),
             F("dutchman", false,
               "There was a Dutchman in Arizona with a gold mine nobody else could find.",
-              "When he lay dying he told a woman the way to it. She spent years looking and never found it.",
-              "Men still go up into those mountains with his directions in their heads. Some don't come down.",
+              "When he lay dying he told a woman the way to it. She hunted it one summer, then sold maps of it.",
+              "Men still go up into those mountains with his directions in their heads. None has found it.",
               "Some say the mountain doesn't want the gold found. I'd leave it lie."),
             F("tailypo", true,
               "An old man in the hills cut the tail off a varmint that came in his cabin, and ate it for supper.",
@@ -108,12 +108,14 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] Shiver = { "Hush, now. Not at this hour.", "Why'd you tell that one at night?", "I've the long walk home after this.",
                                                     "Don't. I've a cellar to go down in the morning." };
-        private static readonly string[] Scoff = { "Grown men telling ghost stories.", "And I'm the governor of New York.", "Somebody's been at the whiskey.",
+        private static readonly string[] Scoff = { "Ghost stories, at our age.", "And I'm the governor of New York.", "Somebody's been at the whiskey.",
                                                    "Every county's got one of those." };
-        private static readonly string[] Lean = { "And then what?", "Go on.", "My grandmother told that one, near enough.", "I've heard of that place." };
-        private static readonly string[] CloseShiver = { "Well. I'm for bed, and I'll leave a light burning.", "I'll not sleep tonight, and that's on you.",
+        private static readonly string[] ScoffTall = { "Tall talk, and taller every time it's told.", "And I'm the governor of New York.", "Somebody's been at the whiskey.",
+                                                       "Every county's got one of those." };   // at a legend or a tall one, not a ghost (the review)
+        private static readonly string[] Lean = { "And then what?", "Go on.", "My grandmother told that one, near enough.", "Is that a fact?" };
+        private static readonly string[] CloseShiver = { "Well. I'm for bed, and I'll leave a light burning.", "I'll not sleep tonight, and that's your doing.",
                                                          "Next time tell one about a mule." };
-        private static readonly string[] CloseScoff = { "Good story. Never tell it again.", "You ought to write for the papers.", "Huh. Pour me another." };
+        private static readonly string[] CloseScoff = { "A fine tale. I'll thank you not to tell it twice.", "You ought to write for the papers.", "Huh. Pour me another." };
         private static readonly string[] CloseLean = { "That's a good one. I'll tell it myself.", "Well. That'll keep me up.", "Huh. Who told you that?" };
 
         /// How the listener takes it: "shiver" (a coward, at an eerie tale), "scoff" (the hard and the hot), else "lean".
@@ -128,10 +130,15 @@ namespace EnrageWestworld.Core
             return "lean";
         }
 
-        /// The listener's word between two of the teller's lines.
+        /// The listener's word between two of the teller's lines: a ghost scoffed at as a ghost, a tall one as tall talk.
+        public static string Between(string taking, bool eerie, string seed)
+        {
+            return Voice.Pick(seed + "|bt", taking == "shiver" ? Shiver : taking == "scoff" ? (eerie ? Scoff : ScoffTall) : Lean);
+        }
+
         public static string Between(string taking, string seed)
         {
-            return Voice.Pick(seed + "|bt", taking == "shiver" ? Shiver : taking == "scoff" ? Scoff : Lean);
+            return Between(taking, true, seed);
         }
 
         /// The listener's last word.
@@ -145,7 +152,7 @@ namespace EnrageWestworld.Core
         {
             switch (line)
             {
-                case 0: return Voice.Pick(seed + "|fa0", "Here he goes. Not at night, Clem.", "Quiet, now. Let the man tell it.", "My mother told that one.");
+                case 0: return Voice.Pick(seed + "|fa0", "Here he goes. Not that one, not at night.", "Quiet, now. Let the man tell it.", "My mother told that one.");
                 case 1: return Voice.Pick(seed + "|fa1", "Hush.", "Go on.", "Throw another stick on.");
                 default: return Voice.Pick(seed + "|fa2", "Well.", "Keep the fire high tonight.", "Huh. Pour the man another.");
             }
@@ -154,8 +161,8 @@ namespace EnrageWestworld.Core
         /// Every line, for the tests.
         public static IEnumerable<string> AllLines()
         {
-            return All.SelectMany(t => t.Lines).Concat(Shiver).Concat(Scoff).Concat(Lean).Concat(CloseShiver).Concat(CloseScoff).Concat(CloseLean)
-                      .Concat(new[] { "Here he goes. Not at night, Clem.", "Quiet, now. Let the man tell it.", "My mother told that one.", "Hush.", "Go on.", "Throw another stick on.", "Well.",
+            return All.SelectMany(t => t.Lines).Concat(Shiver).Concat(Scoff).Concat(ScoffTall).Concat(Lean).Concat(CloseShiver).Concat(CloseScoff).Concat(CloseLean)
+                      .Concat(new[] { "Here he goes. Not that one, not at night.", "Quiet, now. Let the man tell it.", "My mother told that one.", "Hush.", "Go on.", "Throw another stick on.", "Well.",
                                       "Keep the fire high tonight.", "Huh. Pour the man another." }.Distinct());
         }
     }

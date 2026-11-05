@@ -230,7 +230,7 @@ namespace EnrageWestworld.Core
             {
                 s.Add(0, tale.Lines[i], i == 0 ? "chat" : null, i == 0 ? (c.Saloon ? "face" : null) : null, i == 0 ? 400 : 0);
                 if (i < tale.Lines.Length - 1 && (i == 0 || Voice.Chance(seed + "|between" + i, 50)))
-                    s.Add(1, Folklore.Between(taking, seed + i), answerVoice);
+                    s.Add(1, Folklore.Between(taking, tale.Eerie, seed + i), answerVoice);
             }
             s.Add(1, Folklore.Close(taking, seed), answerVoice);
             return s;
