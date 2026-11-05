@@ -131,8 +131,23 @@ namespace EnrageWestworld.InGame
             _watcher = null;
         }
 
-        private static int WatchEnter(string feature)
+        // the native call a looks read is in, and which piece of how many (the recognition plan, Stage 0c): the watch's line
+        // then says "inside testing > looks probe (guids, piece 3 of 11)"; set by Looks.Read, cleared on every enter and leave
+        private static volatile string _watchNative;
+        private static volatile int _watchPiece, _watchPieces;
+
+        internal static void WatchNative(string native, int piece, int pieces)
         {
+            _watchNative = native;
+            _watchPiece = piece;
+            _watchPieces = pieces;
+            _watchSince = Environment.TickCount;   // each call timed on its own: a hang is one call that never returns
+            _watchSeq++;
+        }
+
+        internal static int WatchEnter(string feature)
+        {
+            _watchNative = null;
             int d = _watchDepth;
             if (d < _watchAt.Length)
                 _watchAt[d] = feature;
@@ -147,8 +162,9 @@ namespace EnrageWestworld.InGame
             return d;
         }
 
-        private static void WatchLeave(int d)
+        internal static void WatchLeave(int d)
         {
+            _watchNative = null;
             _watchDepth = d;
             _watchSince = Environment.TickCount;
             _watchSeq++;
@@ -178,7 +194,10 @@ namespace EnrageWestworld.InGame
                     var path = new List<string>();
                     for (int i = 0; i < depth && i < _watchAt.Length; i++)
                         path.Add(_watchAt[i]);
-                    Log.Write("HANG watch: the game thread has been inside " + string.Join(" > ", path) + " for " + held / 1000 + " s (RealNPCs is the one holding it)");
+                    string native = _watchNative;
+                    int piece = _watchPiece, pieces = _watchPieces;
+                    string call = native == null ? "" : " (" + native + (pieces > 0 ? ", piece " + piece + " of " + pieces : "") + ")";
+                    Log.Write("HANG watch: the game thread has been inside " + string.Join(" > ", path) + call + " for " + held / 1000 + " s (RealNPCs is the one holding it)");
                 }
                 catch
                 {
@@ -1237,6 +1256,7 @@ namespace EnrageWestworld.InGame
             Natives.YieldToDying = Speech.YieldToDying = _cfg != null && _cfg.YieldToDying;   // the rule for the dying, read each tick ([World] YieldToDying; item 27)
             Safe("settings reload", _aIni);
             Safe("places", _aPlaces);
+            WorldQuietStep(now);   // whether a body's looks may be read now (WestworldScript.WorldQuiet.cs; Run 3, item 5), before a test row reads them
             TestingStep(now);   // a test asked for by its key or the panel (refused in a mission, with why)
             if (MISC.GET_MISSION_FLAG())
             {

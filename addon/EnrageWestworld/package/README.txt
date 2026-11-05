@@ -1218,6 +1218,16 @@ NEW IN 0.6.1
   spot: the drinkers are the ones at the bar of an evening, the churchgoers the ones in church on
   Sunday. Nobody walks across town for it, and a regular caught out of their hour thinks so.
   [World] Regulars, RegularsPerTown (30), RegularsDress, RegularsRoutines.
+- (In testing, off as it comes) [World] Returners: someone who matters to RealNPCs (woken, met
+  before, a worry at its worst) comes back unseen, 20 to 150 metres from you, in a body of their
+  own build, dressed in an outfit of their own: given one the first time they come back, the same
+  every time after. The woken no longer turn up in a stranger's body in plain sight.
+  ReturnersChance (35), ReturnersPerTown (12). enRAGE may take a dressed body for one of its own
+  people; the log's "CAST taken up by enRAGE" lines say when.
+- The Testing row "Read the looks of the people near you" (TestLooksProbeKey; [World]
+  LooksReadDepth 1-4): a careful read of the clothes of up to six people near you, one tier of the
+  game's calls at a time, refused while the world is quiet (a load, a fade, a death) and for a few
+  seconds after; lastread.txt in the RealNPCs folder names the body and call being read.
 - The street reacts to other people's fights ([Scenes] StreetReacts). The moments of a scene
   between other people (the fists flying, two men squaring up, a gun out, a man killed or
   knocked out) are raised as the game's own shocking events, so its crowd does what it does for
@@ -1841,7 +1851,7 @@ in the file. The new ones:
             tied up off the road, two men by them; HogtiedMenDraw (true; set false to turn it off):
             their leader may draw on you unprovoked as you come near (never bounty hunters)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
-            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), EventTrials (true), EventShows (true), TrainTime (true), TownLedger (true), ThinStreets (false), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+            Regulars (true), RegularsPerTown (30), RegularsDress (true), RegularsRoutines (true), Returners (false), ReturnersChance (35), ReturnersPerTown (12), LooksReadDepth (1), LetterReplies (true), WriteLetters (true), TownEvents (true), EventDances (true), EventElections (true), EventTrials (true), EventShows (true), TrainTime (true), TownLedger (true), ThinStreets (false), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
             Bravery (85, 0-100): how readily onlookers join a fistfight; never the game's own

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 252;
+        public const int CurrentVersion = 253;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -296,6 +296,10 @@ namespace EnrageWestworld.Core
         public bool Regulars = true;
         public int RegularsPerTown = 30;
         public bool RegularsDress = true;
+        public bool Returners = false;      // [World] a resident who matters (woken, a worry, met) comes back unseen in a body of their build, dressed in an outfit of their own (Core/Returners.cs; the recognition plan's Stage 1; Run 3, item 5; settings version 253); off until Lex has seen it: enRAGE may take a dressed body for one of its own
+        public int ReturnersChance = Core.Returners.ChanceAsBuilt;    // [World] percent of the unseen bodies the regulars' scan looks at that a returner is tried on first
+        public int ReturnersPerTown = Core.Returners.PerTownAsBuilt;  // [World] at most this many returners with an outfit in one town
+        public int LooksReadDepth = 1;      // [World] the Testing row "Read the looks of the people near you" only: 1 counts the pieces, 2 reads them, 3 their tints, 4 their kinds (the recognition plan's Stage 2)
         public bool RegularsRoutines = true;   // [World] the town keeps time: who a passer-by becomes follows the hour and the spot (the drinkers at the saloon of an evening, the churchgoers in church on Sunday morning, the early up at dawn, only the owls out at night); a new regular is made to fit the spot, and a regular out of their hour thinks so (Core/Routines.cs; roadmap 17; SIXDAY item 5a; settings version 211)
         public bool RumoursTravel = true;
         public bool Newspaper = true;
@@ -868,6 +872,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 253)
+                    log?.Invoke("Settings: new in this version: [World] Returners (off, in testing), ReturnersChance (35), ReturnersPerTown (12): someone who matters comes back unseen in a body of their own build, dressed as themselves each time; LooksReadDepth (1): the Testing row that reads the looks of the people near you.");
                 if (s.SettingsVersion < 252)
                     log?.Invoke("Settings: West World's waking is tuned up where it was as it came (more people wake, a stage every 3 days, despair 65%), and new in this version: [WestWorld] DespairFall (on): despair may end at the edge of a drop.");
                 if (s.SettingsVersion < 251)
@@ -1162,6 +1168,9 @@ namespace EnrageWestworld.Core
             WagonWheelChance = Math.Max(0, Math.Min(100, WagonWheelChance));
             AlmanacShare = Math.Max(0, Math.Min(200, AlmanacShare));
             TimesTalkShare = Math.Max(0, Math.Min(300, TimesTalkShare));
+            ReturnersChance = Math.Max(0, Math.Min(100, ReturnersChance));
+            ReturnersPerTown = Math.Max(1, Math.Min(40, ReturnersPerTown));
+            LooksReadDepth = Math.Max(1, Math.Min(4, LooksReadDepth));
             CampfireChance = Math.Max(0, Math.Min(100, CampfireChance));
             SupperChance = Math.Max(0, Math.Min(100, SupperChance));
             ExecutionChance = Math.Max(0, Math.Min(100, ExecutionChance));
@@ -1565,7 +1574,11 @@ namespace EnrageWestworld.Core
             b.AppendLine("Regulars = " + B(Regulars) + "   ; each town keeps its own ordinary people: the same names, faces and lives every time you're there, each going through something of their own");
             b.AppendLine("RegularsPerTown = " + RegularsPerTown + "   ; how many regulars a town keeps (5-80)");
             b.AppendLine("RegularsDress = " + B(RegularsDress) + "   ; regulars wear their own clothes each time you meet them (put on while nobody can see); off: they keep their names and lives, not their looks");
-            b.AppendLine("RegularsRoutines = " + B(RegularsRoutines) + "   ; the town keeps time: who a passer-by becomes follows the hour and the spot (the drinkers at the saloon of an evening, the churchgoers in church on Sunday morning, the early risers at dawn, only the night owls out late); nobody walks across town for it, and a regular caught out of their hour thinks so");
+b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing) someone who matters to RealNPCs (woken, a worry running, someone you've met) comes back unseen, 20 to 150 metres from you, in a body of their own build, dressed in an outfit of their own, the same each time; their first body keeps the game's clothes. With it on, the woken no longer turn up in a stranger's body in plain sight. enRAGE may take a dressed body for one of its own people: watch for a name over a returner that isn't theirs");
+            b.AppendLine("ReturnersChance = " + ReturnersChance + "   ; with Returners: percent of the unseen bodies the town regulars' scan looks at that a returner is tried on first (0-100)");
+            b.AppendLine("ReturnersPerTown = " + ReturnersPerTown + "   ; with Returners: at most this many returners with an outfit of their own in one town (1-40)");
+            b.AppendLine("LooksReadDepth = " + LooksReadDepth + "   ; the Testing row \"Read the looks of the people near you\" only (nothing else reads a body's clothes): 1 counts the pieces, 2 reads each piece, 3 adds its tints, 4 adds its kind");
+                        b.AppendLine("RegularsRoutines = " + B(RegularsRoutines) + "   ; the town keeps time: who a passer-by becomes follows the hour and the spot (the drinkers at the saloon of an evening, the churchgoers in church on Sunday morning, the early risers at dawn, only the night owls out late); nobody walks across town for it, and a regular caught out of their hour thinks so");
             b.AppendLine("RumoursTravel = " + B(RumoursTravel) + "   ; word of your deeds travels town to town and grows in the telling");
             b.AppendLine("Newspaper = " + B(Newspaper) + "   ; your deeds and the town talk turn up in enRAGE's newspapers");
             b.AppendLine("Letters = " + B(Letters) + "   ; letters wait for you at post offices (read them with ReaderKey)");

@@ -42,6 +42,55 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// enRAGE's own print of this body, "MODEL-HASH" (the probe row sets it beside its read; the same form at depth 4), or
+        /// null: none, or its read failed (it keeps those as "": the recognition plan's critic, point 6). enRAGE forgets its
+        /// prints at times, so one may go and come back.
+        public string PrintAt(int handle)
+        {
+            ResolveLooks();
+            if (_fpOfField == null)
+                return null;
+            try
+            {
+                IDictionary prints = _fpOfField.GetValue(Mod) as IDictionary;
+                string s = prints != null && prints.Contains(handle) ? prints[handle] as string : null;
+                return string.IsNullOrEmpty(s) ? null : s;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// How many bodies enRAGE holds a print of, and how many of them `ours` says are RealNPCs' (bound to its residents):
+        /// whether enRAGE's reads could ever tell RealNPCs' own people again (the critic's point 11).
+        public int PrintedAmong(Func<int, bool> ours, out int printed)
+        {
+            printed = 0;
+            ResolveLooks();
+            if (_fpOfField == null)
+                return 0;
+            int n = 0;
+            try
+            {
+                IDictionary prints = _fpOfField.GetValue(Mod) as IDictionary;
+                if (prints == null)
+                    return 0;
+                foreach (DictionaryEntry e in prints)
+                {
+                    if (string.IsNullOrEmpty(e.Value as string))
+                        continue;
+                    printed++;
+                    if (e.Key is int && ours((int)e.Key))
+                        n++;
+                }
+            }
+            catch
+            {
+            }
+            return n;
+        }
+
         private void ResolveLooks()
         {
             if (_looksResolved)

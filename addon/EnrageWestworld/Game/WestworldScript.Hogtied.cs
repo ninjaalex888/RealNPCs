@@ -225,6 +225,7 @@ namespace EnrageWestworld.InGame
             int ch = c.Handle;
             PED._EQUIP_META_PED_OUTFIT_PRESET(ch, h.R.Outfit, false);   // themselves, as the town knows them
             PED._UPDATE_PED_VARIATION(ch, false, true, true, true, false);
+            Dressed.Note(ch);   // not read for a while (Game/Dressed.cs)
             _resBind[ch] = new ResBind { R = h.R, Model = h.R.Model };
             _encounterPeds.Add(ch);
             StagedHold(c);

@@ -100,7 +100,7 @@ namespace EnrageWestworld.InGame
             // standing alone with [World] OwnLooks: someone met before in a body that looks exactly like this one is known in it
             // again (Game/Looks.cs, Store.ResidentByLook); with enRAGE running its own knowing by look is used and this never
             string look = null;
-            if (OwnLooksOn && where != null && Environment.TickCount - _looksQuietUntil >= 0)
+            if (OwnLooksOn && where != null && LooksReadable(_now) && Dressed.Settled(h))
             {
                 try
                 {
@@ -130,9 +130,10 @@ namespace EnrageWestworld.InGame
             }
             // someone who woke here before, of the same build, may turn up again in this body (not a town regular: they
             // come back only unseen and in their own clothes, from the regulars' scan; with OwnLooks, nor anyone known by
-            // their look, who is known only in a body that looks like theirs: the review of item 5)
-            // come back only unseen and in their own clothes, from the regulars' scan)
-            Resident back = _rng.Next(100) < 35
+            // their look, who is known only in a body that looks like theirs: the review of item 5); with [World] Returners on,
+            // the woken come back that way too, unseen and dressed as themselves, never in a stranger's body in plain sight
+            // (WestworldScript.Returners.cs; Run 3, item 5: kept as it was while Returners is off, as it comes)
+            Resident back = !ReturnersOn && _rng.Next(100) < 35
                 ? _store.Residents.FirstOrDefault(x => !x.Dead && !x.Fled && !x.Regular && x.Cast == null && x.Model == model && x.Woman == woman && x.Town == where && (!OwnLooksOn || x.Look == null) && _engine.StageOf(x.Id) > 0 && !_resBind.Values.Any(v => v.R == x))
                 : null;
             if (back != null)
@@ -161,8 +162,6 @@ namespace EnrageWestworld.InGame
         private int _ownLooksKnown, _ownLooksNew, _ownLooksUnread;
         private string _ownLooksLast;
         private bool _ownLooksFailed;
-        private int _looksQuietUntil;
-        private const int LooksQuietMs = 10000;   // no look trusted for 10 s after a load, a death or a long jump
 
         /// Knowing people by their look ourselves: standing alone, with [World] OwnLooks (with enRAGE, enRAGE's own).
         private bool OwnLooksOn { get { return _cfg != null && _cfg.OwnLooks && _bridge != null && !_bridge.Present; } }
@@ -210,8 +209,8 @@ namespace EnrageWestworld.InGame
                 if (!ENTITY.DOES_ENTITY_EXIST(h))
                 {
                     gone.Add(h);
-                    if (kv.Value.R.Regular)
-                        _regGoneAt[kv.Value.R.Id] = Game.GameTime;   // their body streamed out: not back on the next one (WestworldScript.Regulars.cs)
+                    if (kv.Value.R.Regular || kv.Value.R.HasOutfit)
+                        _regGoneAt[kv.Value.R.Id] = Game.GameTime;   // their body streamed out: not back on the next one (WestworldScript.Regulars.cs; a returner too)
                 }
                 else if (ENTITY.IS_ENTITY_DEAD(h))
                 {

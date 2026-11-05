@@ -232,6 +232,7 @@ namespace EnrageWestworld.InGame
             int h = c.Handle;
             PED._EQUIP_META_PED_OUTFIT_PRESET(h, e.R.Outfit, false);   // himself, as the town knows him
             PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+            Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
             _resBind[h] = new ResBind { R = e.R, Model = e.R.Model };
             _encounterPeds.Add(h);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
@@ -254,6 +255,7 @@ namespace EnrageWestworld.InGame
                 {
                     PED._EQUIP_META_PED_OUTFIT_PRESET(mh, e.BossR.Outfit, false);
                     PED._UPDATE_PED_VARIATION(mh, false, true, true, true, false);
+                    Dressed.Note(mh);   // not read for a while (Game/Dressed.cs)
                     _resBind[mh] = new ResBind { R = e.BossR, Model = e.BossR.Model };
                 }
                 m.GiveWeapon(eWeapon.RevolverCattleman, 60, eWeaponAttachPoint.PistolR, true);

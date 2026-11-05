@@ -175,6 +175,7 @@ namespace EnrageWestworld.InGame
                 Outfit = Math.Min(outfit, Outfits - 1);
                 PED._EQUIP_META_PED_OUTFIT_PRESET(h, Outfit, false);   // the preset only: the clothing-reading natives froze the game in 0.7.9
                 PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+                Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
             }
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             PED.SET_PED_KEEP_TASK(h, true);

@@ -872,7 +872,7 @@ namespace EnrageWestworld.InGame
             int h = act.Handle;
             act.St.Mark(StripMark);
             act.Stripped = true;
-            string before, after;
+            string before;
             DressOf(h, out before);
             var cats = new List<uint>();
             int n = PED._GET_NUM_COMPONENTS_IN_PED(h);
@@ -894,10 +894,10 @@ namespace EnrageWestworld.InGame
             foreach (uint c in cats)
                 Function.Call(RemoveTagFromMetaPed, h, c, 0);
             Function.Call(UpdatePedVariation, h, false, true, true, true, false);
-            string dress = DressOf(h, out after);
+            Dressed.Note(h);   // the body isn't read again while the game puts it together (the recognition plan, Stage 0b: the read after went)
             _strips++;
-            _stripLast = act.Name + " (" + (dress ?? "still dressed") + ")";
-            Log.Write("WAKE strip: " + act.Name + " takes every stitch off: " + cats.Count + " pieces (" + (before ?? "?") + ") -> " + (dress ?? "still dressed") + (after != null ? " (" + after + ")" : ""));
+            _stripLast = act.Name + " (" + cats.Count + " pieces off)";
+            Log.Write("WAKE strip: " + act.Name + " takes every stitch off: " + cats.Count + " pieces (" + (before ?? "?") + "); not read again after (a body just dressed isn't read)");
             Think(act, WakeOdd.ThoughtOf("strip", act.P.Id + "|strip"));
             // up to three who can see it, as at a naked man (Sights), with a thought of their own about it
             int seen = 0;

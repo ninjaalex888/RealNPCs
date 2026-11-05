@@ -363,6 +363,7 @@ namespace EnrageWestworld.InGame
             {
                 PED._EQUIP_META_PED_OUTFIT_PRESET(bh, res.Outfit, false);   // themselves, as the town knows them (a preset of their own build only)
                 PED._UPDATE_PED_VARIATION(bh, false, true, true, true, false);
+                Dressed.Note(bh);   // not read for a while (Game/Dressed.cs)
             }
             _engine.KeepResident(res, gameNow);
             _resBind[bh] = new ResBind { R = res, Model = model };

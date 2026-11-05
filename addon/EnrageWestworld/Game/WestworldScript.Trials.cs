@@ -96,6 +96,7 @@ namespace EnrageWestworld.InGame
             {
                 PED._EQUIP_META_PED_OUTFIT_PRESET(p.Handle, r.SpeakerOutfit, false);
                 PED._UPDATE_PED_VARIATION(p.Handle, false, true, true, true, false);
+                Dressed.Note(p.Handle);   // not read for a while (Game/Dressed.cs)
             }
             r.Cast.Add(p);
             r.Accused = p;

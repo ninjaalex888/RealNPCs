@@ -50,7 +50,10 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public bool HasCamp;          // where they live in the wilds, chosen once
         [DataMember(EmitDefaultValue = false)] public float CampX, CampY, CampZ;
         [DataMember(EmitDefaultValue = false)] public bool Regular;          // one of their town's regulars (Regulars.cs): met again and again, kept
-        [DataMember(EmitDefaultValue = false)] public int Outfit;            // a regular's outfit preset, put on whenever they're cast (read only when Regular or Cast)
+        [DataMember(EmitDefaultValue = false)] public int Outfit;            // their outfit preset, put on whenever they're cast: a regular's, the test cast's, a post's holder's, a returner's (Run 3, item 5); HasOutfit says it is set
+        [DataMember(EmitDefaultValue = false)] public bool HasOutfit;        // Outfit is theirs (0 is an outfit too): set at load for the dressed (Returners.MarkOutfits) and when a returner is given one
+        [DataMember(EmitDefaultValue = false)] public int Returns;           // bodies they've come back in, dressed as themselves (Run 3, item 5)
+        [DataMember(EmitDefaultValue = false)] public long LastBodyAt;       // game minute of the last body they came back in (Run 3, item 5)
         [DataMember(EmitDefaultValue = false)] public string Cast;           // one of the Testing page's test cast, by part (Core/TestCast.cs); null for everyone else
         [DataMember(EmitDefaultValue = false)] public string Origin;         // their people, as their name was chosen for (Core/Origins.cs); null for the plain American lists, and for everyone named before 2026-11-02 (they keep their names)
         [DataMember(EmitDefaultValue = false)] public string Look;          // the look of the body they were met in (Game/Looks.cs), so standing alone the same body is known for them again ([World] OwnLooks; night 2026-10-29, item 5); null for everyone met before, or with it off

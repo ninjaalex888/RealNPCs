@@ -491,6 +491,7 @@ namespace EnrageWestworld.InGame
 			TestCastClear("a save loaded");
 			WanderLaterClear();
 			SightsReset("a save loaded");
+			ReturnersLoaded();   // the dressed marked as having an outfit; the reads and dressings of the last load forgotten (WestworldScript.Returners.cs)
 			VicesReset();
 			BelowAbort("a save loaded");
 			PatientAbort("a save loaded");
@@ -566,6 +567,7 @@ namespace EnrageWestworld.InGame
 			Save();
 			try { VramReader.Stop(); } catch { }   // the VRAM gauge's reader thread (WestworldScript.Vram.cs)
 			WatchStop();   // our own threads ended before Script Hook unloads us (a reload froze waiting on one, 2026-10-31)
+			ReadMarks.Close();   // the looks probe's lastread.txt let go (Game/ReadMarks.cs)
 			Log.Write("Stopped.");
 		}
 
@@ -1303,6 +1305,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST story: " + StoryStatus());
 			Log.Write("TEST near: " + NearStatus());
 			Log.Write("TEST regulars: " + RegularsStatus());
+			Log.Write("TEST returners: " + ReturnersStatus());
 			MarkRegulars();
 			Log.Write("TEST ties: " + TiesStatus());
 			Log.Write("TEST reasons: " + ReasonsStatus() + "; " + Reasons.CourtStatus());
@@ -1336,6 +1339,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST grudges: " + GrudgesStatus());
 			Log.Write("TEST kin: " + KinStatus());
 			Log.Write("TEST own looks: " + OwnLooksStatus());
+			Log.Write("TEST looks probe: " + LooksProbeStatus());
 			Log.Write("TEST callout: " + CalloutStatus());
 			Log.Write("TEST visitor: " + VisitorStatus());
 			Log.Write("TEST traveller: " + TravellerStatus());

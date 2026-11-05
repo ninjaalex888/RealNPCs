@@ -179,7 +179,9 @@ namespace EnrageWestworld.Core
                 Resident drop = Residents.Where(x => x != r && !((x.PostId != null || x.HasCamp || x.Cast != null) && !x.Dead))
                     .OrderBy(x => WorrySeedOf != null && WorrySeedOf.ContainsValue(x.Id) ? 2 : x.Regular && !x.Dead ? 1 : 0)
                     .ThenBy(x => { PersonState s = Find(x.Id); return x.Regular && s != null && s.Sightings > 0 ? 1 : 0; })
-                    .ThenBy(x => { PersonState s = Find(x.Id); return s != null ? s.WakeStage : 0; }).ThenBy(x => x.TouchedAt).First();
+                    .ThenBy(x => { PersonState s = Find(x.Id); return s != null ? s.WakeStage : 0; }).ThenBy(x => x.TouchedAt).FirstOrDefault();
+                if (drop == null)
+                    break;   // nobody left who may be dropped: kept over the cap rather than throwing here (the recognition plan's critic, point 15)
                 Residents.Remove(drop);
                 People.Remove(drop.Id);
             }

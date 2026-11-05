@@ -376,6 +376,7 @@ namespace EnrageWestworld.InGame
             }
             PED._EQUIP_META_PED_OUTFIT_PRESET(h, res.Outfit, false);   // their own clothes, the same each time they come
             PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+            Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
             foreach (int old in _resBind.Where(kv => kv.Value.R == res).Select(kv => kv.Key).ToList())
                 _resBind.Remove(old);   // a body of theirs the game still has somewhere: a passer-by now
             res.Town = run.Town;

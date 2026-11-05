@@ -63,6 +63,7 @@ namespace EnrageWestworld.InGame
             {
                 PED._EQUIP_META_PED_OUTFIT_PRESET(h, preset, false);
                 PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+                Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
             }
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             TASK.TASK_STAND_STILL(h, 90000);

@@ -252,6 +252,7 @@ namespace EnrageWestworld.InGame
             {
                 PED._EQUIP_META_PED_OUTFIT_PRESET(h, r.Outfit, false);
                 PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+                Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
             }
             _engine.ReturnedByTrain(r, town, gameNow);
             _engine.KeepResident(r, gameNow);
@@ -325,6 +326,7 @@ namespace EnrageWestworld.InGame
             {   // a preset of their own build only, as the regulars' casting dresses them (the review of items 11-12)
                 PED._EQUIP_META_PED_OUTFIT_PRESET(h, r.Outfit, false);
                 PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+                Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
             }
             _leaver = r;
             _leaverHandle = h;

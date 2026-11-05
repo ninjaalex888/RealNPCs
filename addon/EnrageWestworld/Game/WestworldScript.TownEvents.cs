@@ -338,6 +338,7 @@ namespace EnrageWestworld.InGame
                 {
                     PED._EQUIP_META_PED_OUTFIT_PRESET(r.Fiddler.Handle, r.SpeakerOutfit, false);
                     PED._UPDATE_PED_VARIATION(r.Fiddler.Handle, false, true, true, true, false);
+                    Dressed.Note(r.Fiddler.Handle);   // not read for a while (Game/Dressed.cs)
                 }
                 r.Cast.Add(r.Fiddler);
                 if (r.SpeakerId != null)

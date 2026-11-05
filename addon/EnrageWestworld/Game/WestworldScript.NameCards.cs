@@ -529,12 +529,13 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// People whose identity the add-on writes onto a body: a town regular (dressed in their own outfit wherever they're cast)
-        /// and the test cast. Their name is theirs and wins over the one enRAGE gives the body by its look, which would be a new
-        /// one in every body they're cast into (Run 3, item 1's follow-up: enRAGE's name everywhere else).
+        /// People whose identity the add-on writes onto a body: a town regular (dressed in their own outfit wherever they're cast),
+        /// the test cast, and a returner once they've come back in their own outfit (Run 3, item 5). Their name is theirs and wins
+        /// over the one enRAGE gives the body by its look, which would be a new one in every body they're cast into (Run 3, item
+        /// 1's follow-up: enRAGE's name everywhere else).
         private static bool OursToKeep(Resident r)
         {
-            return r != null && (r.Regular || r.Cast != null);
+            return r != null && (r.Regular || r.Cast != null || (r.HasOutfit && r.Returns > 0));
         }
 
         /// Whether you know this resident by our name: talked, told their name, flirted, any contact, they spoke up to you,

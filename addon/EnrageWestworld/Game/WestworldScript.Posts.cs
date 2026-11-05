@@ -118,6 +118,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 PED._EQUIP_META_PED_OUTFIT_PRESET(h, kv.Value, false);
                 PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+                Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
                 _dressDue.Remove(h);
                 ResBind b;
                 Log.Write("OUTFIT probe: dressed " + (_resBind.TryGetValue(h, out b) ? b.R.Name : "someone") + " in preset " + kv.Value + ", out of sight");

@@ -38,8 +38,10 @@ namespace EnrageWestworld.InGame
         {
             if (_regBlips.Count > 0)
                 ExpireRegularBlips(now);
-            if (!_cfg.Regulars || _engine == null || _store == null)
-                return;
+            bool returners = ReturnersOn;
+            if ((!_cfg.Regulars && !returners) || _engine == null || _store == null)
+                return;   // one scan serves the regulars and the returners (Run 3, item 5): either keeps it going
+            CastTakenStep(now);   // our dressed bodies enRAGE has taken up since, logged once each (WestworldScript.Returners.cs)
             Ped me = Game.Player.Character;
             if (now >= _nextSeenSample)
             {
@@ -87,6 +89,13 @@ namespace EnrageWestworld.InGame
                     continue;
                 uint model = ENTITY.GET_ENTITY_MODEL(h);
                 bool woman = !PED.IS_PED_MALE(h);
+                if (returners && _rng.Next(100) < _cfg.ReturnersChance && ReturnerCast(h, model, woman, town, d, gameNow, now))
+                {
+                    cast++;   // someone who matters, back in their own clothes (WestworldScript.Returners.cs)
+                    continue;
+                }
+                if (!_cfg.Regulars)
+                    continue;   // the returners only
                 bool routines = _cfg.RegularsRoutines;
                 string spot = null;
                 int hour = 0, fit = -1;
@@ -133,6 +142,7 @@ namespace EnrageWestworld.InGame
                 {
                     PED._EQUIP_META_PED_OUTFIT_PRESET(h, r.Outfit, false);
                     PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+                    Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
                 }
                 cast++;
                 PersonState st = _store.Find(r.Id);

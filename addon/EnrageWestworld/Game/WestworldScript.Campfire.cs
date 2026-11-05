@@ -368,6 +368,7 @@ namespace EnrageWestworld.InGame
             {
                 PED._EQUIP_META_PED_OUTFIT_PRESET(h, outfit, false);
                 PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+                Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
             }
             _resBind[h] = new ResBind { R = r, Model = model };
             return r;
