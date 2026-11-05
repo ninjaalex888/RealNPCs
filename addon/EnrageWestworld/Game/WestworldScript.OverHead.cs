@@ -57,7 +57,7 @@ namespace EnrageWestworld.InGame
             {
                 _overHeadLaid = line;
                 _overHeadScale = scale;
-                List<string> parts = Draw.Wrap("\"" + line.Text.Trim().Trim('"') + "\"", scale, ThoughtWidth);
+                List<string> parts = Draw.Wrap("\"" + Translations.Of(line.Text.Trim()).Trim().Trim('"') + "\"", scale, ThoughtWidth);   // the player's translation, once a line (Run 3, item 8)
                 if (parts.Count > ThoughtLines)
                     parts = parts.Take(ThoughtLines - 1).Concat(new[] { Draw.Fit(string.Join(" ", parts.Skip(ThoughtLines - 1)), scale, ThoughtWidth) }).ToList();
                 _overHeadParts = parts;

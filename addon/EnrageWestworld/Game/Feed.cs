@@ -276,7 +276,7 @@ namespace EnrageWestworld.InGame
 						}
 					}
 					string sub = line.ToYou ? SubtitleRule.Text(true, played, line.OnShow == null && line.Group != null && line.Group == _voicedGroup, SubtitlesAllowed(),
-					                                            true, InView(line.Ped), line.Speaker, words, line.Part) : null;
+					                                            true, InView(line.Ped), line.Speaker, words, Translations.Of(line.Part)) : null;   // the written line in the player's translation (the game's recorded words as they are)
 					if (sub != null)
 					{
 						_subText = Clean(sub);
@@ -310,7 +310,7 @@ namespace EnrageWestworld.InGame
 			}
 			_ovrPed = ped;
 			_ovrMetres = metres;
-			string sub = (string.IsNullOrEmpty(speaker) ? "" : speaker + ": ") + "\"" + text.Trim() + "\"";
+			string sub = (string.IsNullOrEmpty(speaker) ? "" : speaker + ": ") + "\"" + Translations.Of(text.Trim()) + "\"";
 			_ovrText = Clean(sub);
 			_ovrFrom = now;
 			_ovrUntil = now + ms;
@@ -325,7 +325,7 @@ namespace EnrageWestworld.InGame
 			if (!SubtitlesOn || SubtitleMode == "off" || string.IsNullOrEmpty(text))
 				return false;
 			int now = Game.GameTime;
-			string sub = (string.IsNullOrEmpty(speaker) ? "" : speaker + ": ") + "\"" + text.Trim() + "\"";
+			string sub = (string.IsNullOrEmpty(speaker) ? "" : speaker + ": ") + "\"" + Translations.Of(text.Trim()) + "\"";
 			_subText = Clean(sub);
 			_subFrom = now;
 			_subUntil = now + ms;

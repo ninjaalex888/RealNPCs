@@ -90,7 +90,8 @@ namespace EnrageWestworld.InGame
             _scale = scale;
             _maxWidth = maxWidth;
             bool quoted = line.Kind == "near" || line.Kind == "thought" || line.Kind == "diary" || line.Kind == "scene";
-            string text = quoted ? "\"" + line.Text.Trim('"') + "\"" : line.Text;
+            string shown = Translations.Of(line.Text);   // the player's translation, once a line (Run 3, item 8)
+            string text = quoted ? "\"" + shown.Trim('"') + "\"" : shown;
 
             // a little too long: set it a touch smaller so it fits on the one line
             _drawScale = scale;

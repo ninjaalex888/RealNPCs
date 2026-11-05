@@ -584,6 +584,7 @@ namespace EnrageWestworld.InGame
 
         private void Hint(string text, int ms)
         {
+            text = Translations.Of(text);   // the player's own translation, when there is one (Run 3, item 8)
             _hint = text;
             _hintUntil = Game.GameTime + ms;
             if (!_cfg.Ticker)
@@ -1258,6 +1259,7 @@ namespace EnrageWestworld.InGame
             Natives.YieldToDying = Speech.YieldToDying = _cfg != null && _cfg.YieldToDying;   // the rule for the dying, read each tick ([World] YieldToDying; item 27)
             Safe("settings reload", _aIni);
             Safe("places", _aPlaces);
+            TranslationStep(now);   // the player's translation.txt read, and read again when it changes (WestworldScript.Translation.cs; Run 3, item 8)
             WorldQuietStep(now);   // whether a body's looks may be read now (WestworldScript.WorldQuiet.cs; Run 3, item 5), before a test row reads them
             TestingStep(now);   // a test asked for by its key or the panel (refused in a mission, with why)
             if (MISC.GET_MISSION_FLAG())

@@ -1218,6 +1218,14 @@ NEW IN 0.6.1
   spot: the drinkers are the ones at the bar of an evening, the churchgoers the ones in church on
   Sunday. Nobody walks across town for it, and a regular caught out of their hour thinks so.
   [World] Regulars, RegularsPerTown (30), RegularsDress, RegularsRoutines.
+- Your own translation ([Output] Translate, on): put translation.txt in the RealNPCs folder (beside
+  the saves): one line each, the English, a TAB, your translation, saved as UTF-8; # starts a note.
+  The English can keep RealNPCs' {slots} ({who}, {town}, {a}, {b}...); your translation puts them
+  where your language wants them. Read at the start and within ten seconds of saving. The bar, the
+  thoughts over heads, the subtitles and the hints show yours; the voices still speak English, and
+  the settings panel stays English. The Testing row "Write the translation template"
+  (TestTranslationTemplateKey) writes every line, each with a TAB after it, to
+  translation-template.txt there.
 - Friends come to you ([Scenes] FriendCalls, on; FriendGifts, on): a friend of yours in town walks
   over now and then, unasked, with a warning (someone here holds a grudge, or the law has been
   asking), the news, a small gift (a few cents, a dozen cartridges, something to eat) or a favour of
@@ -1916,7 +1924,7 @@ in the file. The new ones:
             their real recorded voices; CrudeTalk (true): the game's crude remarks among them
             BeingWatched (true): the street's trouble waits while a lawman is looking (WatchedLawMetres
             25, WatchedRecklessChance 40, WatchedChurchMetres 60); BoldThieves (25): percent of thieves
-            who try it anyway; LonelyRegulars (true), LateThanks (true), FriendCalls (true), FriendGifts (true), ReasonThoughts (true)
+            who try it anyway; LonelyRegulars (true), LateThanks (true), FriendCalls (true), FriendGifts (true), Translate (true), ReasonThoughts (true)
             ReasonVariety (true): the street's scenes take turns, so fewer sharp words; ChanceFirst
             (true): chance meetings get their turn when nobody near has a strong reason, nearer you
             FavoursAsked (true, with MindLive): someone hard pressed for money may come and ask you,

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 254;
+        public const int CurrentVersion = 255;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -438,6 +438,7 @@ namespace EnrageWestworld.Core
         public string NewsTo = "corner";
         public bool TownRegard = true;   // [Display] the town's regard of you in the "Around town" box: a line under the title while you're in a town (the standing, the killings known, the kindnesses) and an item on coming in and when it changes (the mood, who you know here is afraid or fond, the talk) (Core/TownRegard.cs; Lex, 2026-11-04; settings version 244)
         public string Subtitles = "game";   // game | ours | both | off (2026-10-28)
+        public bool Translate = true;   // [Output] translation.txt in the RealNPCs folder, when there is one, shows RealNPCs' lines in your language (Core/Translations.cs; Run 3, item 8; settings version 255)
         public bool UseGameFeed;
         public string TestKey = "F7";
         public string WarNewsTo = "feed";
@@ -874,6 +875,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 255)
+                    log?.Invoke("Settings: new in this version: [Output] Translate (on): translation.txt in the RealNPCs folder, when you make one, shows RealNPCs' lines in your language; the Testing row Write the translation template gives you every line to fill in.");
                 if (s.SettingsVersion < 254)
                     log?.Invoke("Settings: new in this version: [Scenes] FriendCalls (on): a friend of yours in town comes over unasked with a warning, the news, a small gift or a favour of their trade; FriendGifts (on): what they hand over.");
                 if (s.SettingsVersion < 253)
@@ -1718,7 +1721,8 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("[Output]");
             b.AppendLine("NewsTo = " + NewsTo + "   ; where news, rumours and what people elsewhere think of you go: corner (the \"Around town\" box, top right), ticker, or gamefeed (the game's own updates, top left)");
             b.AppendLine("TownRegard = " + B(TownRegard) + "   ; the town's regard of you in the Around town box: a line under its title while you're in a town (a killer here, a peacemaker, or nothing held against you; the killings of yours known this week and your kindnesses) and an item when you come into a town and whenever it changes (the town's mood, how many of the people you know here are afraid or fond of you, the talk that has reached the town); false: neither");
-            b.AppendLine("Subtitles = " + Subtitles + "   ; what people say to you, while their voice plays (their recorded words when known). The game draws its own white subtitle for any recorded line while its Subtitles option is on, and a mod can't stop that, so: game: RealNPCs' boxed subtitles only while the game's option is off (one set at a time); ours: RealNPCs' always (switch the game's off to see only these); both; off: none of RealNPCs'. Talk you only overhear (ScenesOnTicker) shows in the same box unless this is off");
+b.AppendLine("Translate = " + B(Translate) + "   ; a translation of your own: translation.txt in the RealNPCs folder (beside the saves), one line each: the English, a TAB, your translation (UTF-8; # starts a note; the English may keep the {slots}, and your translation puts them where your language wants). Read when the game starts and again within ten seconds of saving it. The bar, the thoughts over heads, the subtitles and the hints show it; the voices still say the English. The Testing row Write the translation template writes every line, ready to fill in, to translation-template.txt");
+                        b.AppendLine("Subtitles = " + Subtitles + "   ; what people say to you, while their voice plays (their recorded words when known). The game draws its own white subtitle for any recorded line while its Subtitles option is on, and a mod can't stop that, so: game: RealNPCs' boxed subtitles only while the game's option is off (one set at a time); ours: RealNPCs' always (switch the game's off to see only these); both; off: none of RealNPCs'. Talk you only overhear (ScenesOnTicker) shows in the same box unless this is off");
             b.AppendLine("UseGameFeed = " + B(UseGameFeed) + "   ; EXPERIMENTAL: the game's top-left toasts (same as NewsTo = gamefeed)");
             b.AppendLine("TestKey = " + TestKey + "   ; shows what the nearest person enRAGE knows thinks of you");
             b.AppendLine("WarNewsTo = " + WarNewsTo + "   ; where gang and faction news (wars, feuds, clashes, rivalries) is shown: feed (the game's own updates, top left), corner (the \"Around town\" box) or ticker");

@@ -1341,6 +1341,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST kin: " + KinStatus());
 			Log.Write("TEST own looks: " + OwnLooksStatus());
 			Log.Write("TEST looks probe: " + LooksProbeStatus());
+			Log.Write("TEST translation: " + TranslationStatus());
 			Log.Write("TEST callout: " + CalloutStatus());
 			Log.Write("TEST visitor: " + VisitorStatus());
 			Log.Write("TEST traveller: " + TravellerStatus());

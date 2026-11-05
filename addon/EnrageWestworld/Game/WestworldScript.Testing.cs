@@ -318,6 +318,9 @@ namespace EnrageWestworld.InGame
                 case "friendcall":
                     skipped = "the look's wait, the storyteller, the roll and the pace (a friend once in two days); nothing handed over";
                     return FriendCallTest(now);   // WestworldScript.FriendCalls.cs (Run 3, item 7)
+                case "translation:template":
+                    skipped = "nothing: it only writes a file";
+                    return TranslationTemplate(out said);   // WestworldScript.Translation.cs (Run 3, item 8)
                 case "events:probe":
                     skipped = "nothing: it only reads the game's event pool and writes to the log";
                     EventProbeStart(now);   // WestworldScript.Watch.cs
