@@ -179,6 +179,8 @@ namespace EnrageWestworld.Core
                 case "flirt": return Flirt(c, seed);
                 case "argue": return Argue(c, seed);
                 case "brawl": return Brawl(c, seed);
+                case "rematch": return Rematch.AgainScene(c, seed);   // the beaten man's plan (Core/Rematch.cs): a brawl of its own words
+                case "shake": return Rematch.ShakeScene(c, seed);     // his hand offered, taken or refused
                 case "propose": return Propose(c, seed);
                 case "cheat": return Cheat(c, seed);
                 case "debt": return Debt(c, seed);

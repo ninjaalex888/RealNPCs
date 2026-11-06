@@ -35,6 +35,7 @@ namespace EnrageWestworld.InGame
         private void OnFightOver(int winner, int loser)
         {
             WagersFightOver(winner, loser);   // the bets on it settle first, whatever the aftermath's switch (WestworldScript.Wagers.cs)
+            RematchFromFight(winner, loser);  // and the beaten man takes it his own way (WestworldScript.Plans.cs, Core/Rematch.cs)
             if (!_cfg.MindLive || !_cfg.Aftermath || winner == 0 || loser == 0)
                 return;
             int now = Game.GameTime;

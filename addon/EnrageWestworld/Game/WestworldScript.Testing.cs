@@ -315,6 +315,11 @@ namespace EnrageWestworld.InGame
                 case "looks:probe":
                     skipped = "nothing of its own: the world-quiet gate, the wait after a body is dressed and once a body a session at a depth all hold";
                     return LooksProbeTest(now, out said);   // WestworldScript.LooksProbe.cs (Run 3, item 5)
+                case "rematch":
+                    skipped = "the fight before it, the half day's rest and the plan's roll: the nearest two stand for the two who fought";
+                    if (!_cfg.Rematches)
+                        return "[Scenes] Rematches is off";
+                    return FireScene(new[] { "rematch", "avoid", "shake" }[_rematchTestTurn++ % 3], now, seed, out said);   // Core/Rematch.cs (FIVEDAY item 2)
                 case "wager":
                     skipped = "the fight's reason and rests, and each onlooker's roll to bet (everyone the mind knows near bets, for two minutes)";
                     return WagerTest(now, seed, out said);   // WestworldScript.Wagers.cs (FIVEDAY item 1)
@@ -711,7 +716,7 @@ namespace EnrageWestworld.InGame
             bool men = !a.Woman && !b.Woman;
             switch (kind)
             {
-                case "brawl":
+                case "brawl": case "rematch":
                     return men || _cfg.WomenInFights ? null : "it wants two men (WomenInFights is off)";   // any two (Lex, 2026-10-30)
                 case "rough": case "drunk": case "cheat": case "standoff":
                     return men ? null : "it wants two men";

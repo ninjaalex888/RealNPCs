@@ -117,6 +117,58 @@ namespace EnrageWestworld.InGame
         }
 
         /// Now and then, someone near with a plan thinks of it, over their head.
+        private int _rematchMade, _rematchLetLie, _rematchTestTurn;
+        private string _rematchLast;
+
+        /// From the Director (beside the aftermath): a fight between two of the street's people is over. The one left on the
+        /// ground takes it his own way (Core/Rematch.cs): a rematch, keeping clear, a handshake, or nothing; the plan waits
+        /// half a day, then the street's reasons lean to its scene when the two are next near each other (PlanLean).
+        private void RematchFromFight(int winner, int loser)
+        {
+            if (!PlansOn || !_cfg.Rematches || winner == 0 || loser == 0)
+                return;
+            try
+            {
+                int now = Game.GameTime;
+                MindWho w = MindKnown(winner, now), l = MindKnown(loser, now);
+                if (w == null || l == null || w.Id == null || l.Id == null || l.Src == null)
+                    return;   // the mind's: two it knows
+                Traits t = l.Traits ?? (l.Traits = _engine.Shadow.TraitsOf(l.Src));
+                bool woman = !PED.IS_PED_MALE(loser), againstWoman = !PED.IS_PED_MALE(winner);
+                SceneTie tie = _store.Ties.FirstOrDefault(x => x.Has(w.Id) && x.Has(l.Id));
+                int before = tie == null ? 0 : tie.Kind == "brawl" && _store.LastGameMin - tie.At < 60 ? tie.Warmth + 1 : tie.Warmth;   // the fight's own -1 taken back off
+                bool badly = _brawlOut.ContainsKey(loser) || _brawlFatal.Contains(loser);
+                string why;
+                string way = Rematch.Way(t, woman, before, badly, "rematch|" + l.Id + "|" + w.Id + "|" + _store.LastGameMin / 1440, out why);
+                if (way == Rematch.Again && (woman || againstWoman) && !_cfg.WomenInFights)
+                    way = Rematch.Shun;   // no rematch with a woman in it unless WomenInFights: he keeps clear instead
+                if (way == null)
+                {
+                    _rematchLetLie++;
+                    Log.Detail("REMATCH " + l.Name + " bears " + w.Name + " no grudge for the beating (" + why + ")");
+                    return;
+                }
+                string said = Plans.Add(_store.Plans, l.Id, l.Name, way, w.Id, w.Name, _placeTown, Rematch.Days, _store.LastGameMin);
+                if (said == null)
+                    return;
+                _rematchMade++;
+                _rematchLast = said;
+                Log.Write("REMATCH " + said + "; " + why + (badly ? "; beaten badly" : ""));
+            }
+            catch (Exception ex)
+            {
+                Log.Write("REMATCH failed: " + ex.Message);
+            }
+        }
+
+        private string RematchStatus()
+        {
+            if (!_cfg.Rematches)
+                return "off ([Scenes] Rematches)";
+            int open = PlansOn ? _store.Plans.Count(p => !p.Done && (p.Kind == Rematch.Again || p.Kind == Rematch.Shun || p.Kind == Rematch.Shake)) : 0;
+            return _rematchMade + " taken to heart this session, " + _rematchLetLie + " let lie; " + open + " open" + (_rematchLast != null ? "; the last: " + _rematchLast : "");
+        }
+
         private void PlanThink(Ped me, int now)
         {
             foreach (Plan p in _store.Plans.Where(x => !x.Done))
@@ -157,12 +209,17 @@ namespace EnrageWestworld.InGame
             Plan p = Plans.Active(_store.Plans, a.Id, b.Id);
             if (p == null)
                 return why;
+            bool fightPlan = p.Kind == Rematch.Again || p.Kind == Rematch.Shun || p.Kind == Rematch.Shake;
+            if (fightPlan && (!_cfg.Rematches || Plans.Resting(p, _store.LastGameMin)))
+                return why;   // a fight's plan: half a day's rest first (Core/Rematch.cs), and nothing with [Scenes] Rematches off
             bool holderIsB = p.HolderId == b.Id;
             string want = Plans.SceneFor(p.Kind);
+            if (p.Kind == Rematch.Shun)
+                holderIsB = !holderIsB;   // the avoid's A is the one kept clear of (the winner says his piece), B the one who goes
             if (why == null && p.Kind == "paydebt")
                 return null;   // the debt's own meetings (its worry's link) play the debtor's side; a plan only brings them together
             if (why == null)
-                return new Reason { Kind = want, Strength = 55, BFirst = holderIsB, Why = p.HolderName + " means to " + Plans.Words(p), Matter = p.Kind == "geteven" ? "honour" : p.Kind == "paydebt" ? "money" : null };
+                return new Reason { Kind = want, Strength = 55, BFirst = holderIsB, Why = p.HolderName + " means to " + Plans.Words(p), Matter = p.Kind == "geteven" || p.Kind == Rematch.Again ? "honour" : p.Kind == "paydebt" ? "money" : null };
             if (Plans.Settles(p.Kind, why.Kind))
             {
                 why.Strength += 20;   // the street was going there anyway: sooner

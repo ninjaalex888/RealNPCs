@@ -111,6 +111,7 @@ namespace EnrageWestworld.Core
             // ---- street scenes: the nearest named pair that fits plays it now (no tie or memory is noted for a test) --
             new Entry("scene:argue", "Street scenes", "An argument", "TestArgueKey", needs: "two named people within 16 m"),
             new Entry("scene:brawl", "Street scenes", "A fistfight", "TestBrawlKey", needs: "two named people within 16 m; women too with WomenInFights"),
+            new Entry("rematch", "Street scenes", "After a fight: rematch, clear off, handshake", "TestRematchKey", needs: "[Scenes] Rematches; two named people within 16 m (the nearest stand for the two who fought)"),
             new Entry("wager", "Street scenes", "A fistfight with bets on it", "TestWagerKey", needs: "[Scenes] BrawlWagers; two named people within 16 m to fight, and others the mind knows within 25 m of them (bets need one for each side within 9 m of each other)"),
             new Entry("scene:smalltalk", "Street scenes", "Small talk", "TestSmallTalkKey", needs: "two named people within 16 m"),
             new Entry("scene:gossip", "Street scenes", "Gossip", "TestGossipKey", needs: "two named people within 16 m"),

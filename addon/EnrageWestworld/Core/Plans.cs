@@ -38,6 +38,10 @@ namespace EnrageWestworld.Core
                 case "repay": return scene == "thanks" || scene == "round" || scene == "comfort";
                 case "paydebt": return scene == "debt" || scene == "x:debt";
                 case "court": return scene == "flirt" || scene == "court" || scene == "sweet" || scene == "propose" || scene == "x:sweet" || scene == "x:courting" || scene == "mend" || scene == "tiff";
+                // after a fight (Core/Rematch.cs): the rematch is a brawl; the shunning the street's avoid; the handshake mends or is refused
+                case Rematch.Again: return scene == "brawl" || scene == "argue" || scene == "x:quarrel";
+                case Rematch.Shun: return scene == "avoid";
+                case Rematch.Shake: return scene == "makeup" || scene == "brushoff" || scene == "apology";
                 default: return false;
             }
         }
@@ -50,6 +54,9 @@ namespace EnrageWestworld.Core
                 case "geteven": return "argue";
                 case "repay": return "thanks";
                 case "paydebt": return "debt";
+                case Rematch.Again: return "rematch";   // Scenes.Make: Rematch.AgainScene, a brawl of its own words
+                case Rematch.Shun: return "avoid";
+                case Rematch.Shake: return "shake";     // Scenes.Make: Rematch.ShakeScene
                 default: return "flirt";
             }
         }
@@ -62,6 +69,7 @@ namespace EnrageWestworld.Core
                 case "geteven": return "get even with " + t;
                 case "repay": return "thank " + t;
                 case "paydebt": return "pay " + t + " back";
+                case Rematch.Again: case Rematch.Shun: case Rematch.Shake: return Rematch.Words(p.Kind, t);
                 default: return "court " + t;
             }
         }
@@ -127,12 +135,36 @@ namespace EnrageWestworld.Core
             return said;
         }
 
+        /// A plan made from outside the ties' reading (the beaten man's after a fight, Core/Rematch.cs): the same rules as
+        /// Make's (one of a kind between the two at a time and not again straight after, two at most a person). Returns what
+        /// to log, or null when it wasn't made.
+        public static string Add(List<Plan> plans, string holder, string hName, string kind, string target, string tName, string town, int days, long now)
+        {
+            if (plans == null || holder == null || target == null || holder == target)
+                return null;
+            if (plans.Any(p => p.HolderId == holder && p.TargetId == target && (!p.Done || now - p.Made < 3 * 1440L)))
+                return null;   // something already between them in hand, or just settled
+            if (plans.Count(p => p.HolderId == holder && !p.Done) >= MostEach)
+                return null;
+            var np = new Plan { HolderId = holder, HolderName = hName, Kind = kind, TargetId = target, TargetName = tName, Town = town, Made = now, Due = now + days * 1440L };
+            plans.Add(np);
+            return hName + " means to " + Words(np) + " (" + days + " days)";
+        }
+
+        /// Whether a plan is still resting (the fight's plans wait half a day: "days later", not the same street).
+        public static bool Resting(Plan p, long now)
+        {
+            return p != null && (p.Kind == Rematch.Again || p.Kind == Rematch.Shun || p.Kind == Rematch.Shake) && now - p.Made < Rematch.RestMinutes;
+        }
+
         /// A thought of the plan's, as they go about the day.
         public static string Thought(Plan p, string seed)
         {
             string t = Person.FirstOf(p.TargetName ?? "him");
             switch (p.Kind)
             {
+                case Rematch.Again: case Rematch.Shun: case Rematch.Shake:
+                    return Rematch.Thought(p.Kind, t, seed);
                 case "geteven":
                     return Voice.Pick(seed, t + " thinks it's over. It isn't.", "I'll find " + t + ". Today, or tomorrow.", "Every time I close my eyes I see " + t + "'s face.",
                                       "Not letting " + t + " walk away from what he did.", "One of these days, " + t + ". One of these days.");
