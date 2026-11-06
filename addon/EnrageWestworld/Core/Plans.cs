@@ -151,6 +151,24 @@ namespace EnrageWestworld.Core
             return hName + " means to " + Words(np) + " (" + days + " days)";
         }
 
+        /// Whether the holder should go and find the target for this plan now: never a fight's plan while it rests or with
+        /// [Scenes] Rematches off, and never a shun (he means to keep clear: the avoid needs no walk; the review of Part 1).
+        public static bool Seekable(Plan p, long now, bool rematchesOn)
+        {
+            if (p == null || p.Done)
+                return false;
+            bool fight = p.Kind == Rematch.Again || p.Kind == Rematch.Shun || p.Kind == Rematch.Shake;
+            return !fight || (rematchesOn && p.Kind != Rematch.Shun && !Resting(p, now));
+        }
+
+        /// A fight's plan between these two, either way round, made in the last three days, done or not: one fight's
+        /// aftermath at a time between the same two (the review of Part 1: rematch after rematch, each tie a step colder).
+        public static bool FightPlanLately(List<Plan> plans, string a, string b, long now)
+        {
+            return plans != null && plans.Any(p => (p.Kind == Rematch.Again || p.Kind == Rematch.Shun || p.Kind == Rematch.Shake) && now - p.Made >= 0 && now - p.Made < 3 * 1440L &&
+                                                   ((p.HolderId == a && p.TargetId == b) || (p.HolderId == b && p.TargetId == a)));
+        }
+
         /// Whether a plan is still resting (the fight's plans wait half a day: "days later", not the same street).
         public static bool Resting(Plan p, long now)
         {

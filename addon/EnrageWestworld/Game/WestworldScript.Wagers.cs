@@ -43,7 +43,7 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<int> _wagerLooked = new HashSet<int>();
         private readonly List<WagerMan> _wagerOpen = new List<WagerMan>();
         private readonly List<WagerBet> _wagerBets = new List<WagerBet>();
-        private int _wagerFight = -1, _wagerNextAt, _wagerEndedAt, _wagerSureUntil;
+        private int _wagerFight = -1, _wagerNextAt, _wagerEndedAt, _wagerSureUntil, _wagerOffFight = -1;   // _wagerOffFight: bets called off on it, none struck again (the review)
         private int _wagerMade, _wagerPaid, _wagerSour, _wagerOwed, _wagerWelshed, _wagerOff, _wagerFights;
         private bool _wagerFailed;
         private string _wagerLast;
@@ -71,6 +71,8 @@ namespace EnrageWestworld.InGame
                     return;
                 }
                 _wagerEndedAt = 0;
+                if (_director.FightId == _wagerOffFight)
+                    return;   // its bets were called off: the same people don't bet on it twice
                 if (_director.FightId != _wagerFight)
                 {
                     WagersReset();
@@ -224,7 +226,9 @@ namespace EnrageWestworld.InGame
                 _wagerOff += _wagerBets.Count;
                 Log.Write("WAGER " + _wagerBets.Count + " bet(s) off: " + why);
             }
+            int off = _wagerFight;
             WagersReset();
+            _wagerOffFight = off;
         }
 
         private void WagersReset()
@@ -233,6 +237,8 @@ namespace EnrageWestworld.InGame
             _wagerOpen.Clear();
             _wagerBets.Clear();
             _wagerEndedAt = 0;
+            if (_wagerFight >= 0 && _wagerSureUntil != 0)
+                _wagerSureUntil = 0;   // the Testing row's window ends with its fight
             _wagerFight = -1;
         }
 

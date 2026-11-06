@@ -143,9 +143,9 @@ namespace EnrageWestworld.Core
             "{stake} on {him}, and I'll give odds.",
             "Who wants {stake} against {him}? Anybody?",
             "My money's on {him}. {stake}, right here.",
-            "{stake} on {him}. Look at the reach on him.",
+            "{stake} on {him}. Look at that reach.",
             "Put me down for {stake} on {him}.",
-            "{stake} {him} is the one on his feet when they're done.",
+            "{stake} says {him} is standing when they're done.",
             "I've seen {other} fight. {stake} on {him}.",
             "{stake} on {him}, and you can hold the money, {who}.",
         };
@@ -166,7 +166,7 @@ namespace EnrageWestworld.Core
         {
             "Pay up, {who}! Told you so!",
             "That's {stake} of yours in my pocket, {who}.",
-            "Never doubted him. Not for a second.",
+            "Never doubted it. Not for a second.",
             "Hand it over, {who}. A bet's a bet.",
             "What did I say? What did I say!",
             "{stake}, if you please, {who}. I'll drink to your health.",
@@ -186,10 +186,10 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] Sour =
         {
-            "He folded like a wet newspaper. Here's your money.",
+            "Folded like a wet newspaper. Here's your money.",
             "That was no fair fight, and you know it. Here.",
             "Take it. And stop grinning, {who}.",
-            "My last {stake}, and he drops like that.",
+            "My last {stake}, and down like that.",
             "I'd have done better throwing it in the river.",
             "Here. Don't spend it all at once, you vulture.",
         };
@@ -225,7 +225,7 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] Off =
         {
-            "Law broke it up. All bets off, then.",
+            "Nobody won that. All bets off, then.",
             "No winner, no money. Keep your {stake}.",
             "Well, that settles nothing. Bets are off.",
         };
@@ -254,7 +254,7 @@ namespace EnrageWestworld.Core
             if (line == null)
                 return null;
             string stake = Money(cents);
-            string s = line.Replace("{stake}", stake).Replace("{him}", him ?? "the big fellow").Replace("{other}", other ?? "the other one").Replace("{who}", who ?? "friend");
+            string s = line.Replace("{stake}", stake).Replace("{him}", him ?? "that one").Replace("{other}", other ?? "the other one").Replace("{who}", who ?? "friend");
             return s.Length > 0 ? char.ToUpperInvariant(s[0]) + s.Substring(1) : s;
         }
 

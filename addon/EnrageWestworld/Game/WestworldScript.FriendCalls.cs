@@ -21,7 +21,7 @@ namespace EnrageWestworld.InGame
         private sealed class FriendWalk
         {
             public Ped Ped;
-            public string Id, Name, Kind, Detail, Line, After;
+            public string Id, Name, Kind, Detail, Line, After, Mark;   // Mark: the fight talked over, kept once it's said (FriendCalls.TalkedMark)
             public int Until, SaidAt, Cents;
             public bool Test;
         }
@@ -125,8 +125,6 @@ namespace EnrageWestworld.InGame
                 string line = FriendCalls.Line(kind, detail, you, kind == FriendCalls.Fought ? fallen : danger, news, _placeTown, seed);
                 if (line == null)
                     continue;
-                if (kind == FriendCalls.Fought && !test)
-                    foughtMem.Told++;   // said to your face: they've talked it over with you now (once a fight)
                 if (!test)
                 {
                     Pacing.Note(_store.Pace, "friendcall", _placeTown, w.Id, g);
@@ -138,7 +136,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, walkMs, 0, 51, 0);
                 _friendWalk = new FriendWalk
                 {
-                    Ped = p, Id = w.Id, Name = w.Name ?? TalkName(p), Kind = kind, Detail = detail, Line = line, After = FriendCalls.After(kind, seed),
+                    Ped = p, Id = w.Id, Name = w.Name ?? TalkName(p), Kind = kind, Detail = detail, Line = line, After = FriendCalls.After(kind, seed), Mark = kind == FriendCalls.Fought && !test ? FriendCalls.TalkedMark(foughtMem) : null,
                     Cents = kind == FriendCalls.Gift && detail == "coin" ? FriendCalls.CentsOf(group, seed) : 0, Until = now + walkMs, Test = test
                 };
                 Log.Write("FRIEND " + _friendWalk.Name + " (" + (trade ?? "someone") + ") comes over with " + FriendWhat(kind, detail, _friendWalk.Cents) + " (" + (int)metres + " m)" +
@@ -155,7 +153,7 @@ namespace EnrageWestworld.InGame
         {
             fallen = null;
             PersonState st = _store.Find(friend.Id);
-            return st != null ? FriendCalls.FoughtMemory(st.Mind, g, out fallen) : null;
+            return st != null ? FriendCalls.FoughtMemory(st.Mind, g, out fallen, st.Told) : null;
         }
 
         /// What a friend would warn of, by what the mind knows: "grudge" (someone near mourns one you killed, or is still hot with
@@ -256,6 +254,17 @@ namespace EnrageWestworld.InGame
                     _friendKinds.TryGetValue(w.Kind, out c);
                     _friendKinds[w.Kind] = c + 1;
                     _friendLast = w.Name + ": " + w.Line + (w.Test ? " (a test)" : "");
+                    if (w.Mark != null)
+                    {
+                        PersonState fs = _store.Find(w.Id);
+                        if (fs != null)
+                        {
+                            if (fs.Told == null)
+                                fs.Told = new List<string>();
+                            if (!fs.Told.Contains(w.Mark))
+                                fs.Told.Add(w.Mark);   // talked it over with you: once a fight
+                        }
+                    }
                     Log.Write("FRIEND " + w.Name + " to your face: " + w.Line + (given != null ? " (" + given + ")" : w.Test && (w.Kind == FriendCalls.Gift || w.Kind == FriendCalls.Trade) ? " (a test: nothing handed over)" : ""));
                 }
                 else if (now > w.Until)

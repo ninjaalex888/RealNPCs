@@ -43,7 +43,7 @@ namespace EnrageWestworld.Core
                 "Next time I see {who}, {he} pays or {he} bleeds.", "{who} owes me money and a good deal more besides." } },
             { "welsh|diddone|chewing", new[] { "Can't look at {who} without thinking of that money.", "Told the whole saloon about {who}. Let {him} find credit now.",
                 "{who} acts like nothing happened. I remember." } },
-            { "welsh|diddone|letting", new[] { "{who} welshed on a bet once. I never trusted {him} with a dime after.", "Lost more to {who}'s welshing than I ever won off him." } },
+            { "welsh|diddone|letting", new[] { "{who} welshed on a bet once. I never trusted {him} with a dime after.", "Lost more to {who}'s welshing than I ever won off {him}." } },
             { "welsh|saw|fresh", new[] { "{a} wouldn't pay {b} the bet. Bad business, that.", "Saw {a} welsh on {b}. Wouldn't lend {a} a nickel now.",
                 "{a} and {b} over a bet. That'll come to blows yet." } },
             { "welsh|saw|chewing", new[] { "Still think about {a} welshing on {b}. A man shows himself." } },

@@ -469,7 +469,10 @@ namespace EnrageWestworld.InGame
             // when one can't be played the reason falls back (a fistfight, or words) or the pair is passed over
             // (blows between two where one is sat or leaning are had out in words, the matter kept: Reasons.Settle; NIGHT4 fix 1)
             string note;
-            string played = Reasons.Settle(kind, pr.Why.Fallback, k => TroubleCant(k, first, second, cast), out note);
+            bool rematch = kind == "rematch";   // a fight's plan (Core/Rematch.cs): every gate a brawl has holds for it (the review of Part 1)
+            string played = Reasons.Settle(rematch ? "brawl" : kind, pr.Why.Fallback, k => TroubleCant(k, first, second, cast), out note);
+            if (rematch && played == "brawl")
+                played = "rematch";
             if (note != null)
                 Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + note);
             if (played == null)
@@ -478,19 +481,20 @@ namespace EnrageWestworld.InGame
                 NotePairCant(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);   // passed over for a while: no more log lines, and its Take(4) slot goes to another pair
                 return false;
             }
-            bool asWords = played != kind && played == "argue" && (kind == "brawl" || kind == "rough");
+            bool asWords = played != kind && played == "argue" && (kind == "brawl" || kind == "rough" || kind == "rematch");
             kind = played;
-            if (cast.Off.Contains(kind) || (kind == "debt" && !_cfg.Debts) || (kind == "hosts" && cast.HostTier < 0) || (kind == "gossip" && cast.Rumours.Count == 0))
+            string gate = kind == "rematch" ? "brawl" : kind;
+            if (cast.Off.Contains(gate) || (kind == "debt" && !_cfg.Debts) || (kind == "hosts" && cast.HostTier < 0) || (kind == "gossip" && cast.Rumours.Count == 0))
                 return false;
-            if (_hush && by == null && !side && TownMood.Hushed(kind))
+            if (_hush && by == null && !side && TownMood.Hushed(gate))
             {
                 _hushHeld++;
                 Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + kind + " held back (the town is hushed)");
                 return false;   // the street's own trouble waits while the town is shaken (a mind's own pick still decides)
             }
-            if (!side && (by == null || Observed.Thieving(kind)) && WatchedHolds(kind, first, doer, second, me, seed, now))   // (a mind's own theft too: its words never say it's one)
+            if (!side && (by == null || Observed.Thieving(gate)) && WatchedHolds(gate, first, doer, second, me, seed, now))   // (a mind's own theft too: its words never say it's one)
                 return false;   // being watched: it waits for the law to look away (Core/Observed.cs); the pair's reason stays theirs
-            if (side && TroubleKinds.Contains(kind))
+            if (side && (TroubleKinds.Contains(gate) || rematch))
                 return false;
             Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);
             if (s == null || (side && !Director.Quiet(s)))

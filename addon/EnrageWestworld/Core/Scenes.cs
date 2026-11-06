@@ -298,7 +298,7 @@ namespace EnrageWestworld.Core
             new[] { "1", "You owe me two dollars since Easter, {a}.", "And you'll wait till the next one.", "No, I won't!" },
         };
 
-        private static readonly string[] BrawlWon = { "Stay down.", "That's for the weights.", "Next time I won't be so gentle.", "Anybody else?", "Now we understand each other.", "Get up and I'll put you down again.", "Remember that, next time you open your mouth.", "Somebody scrape that off the street." };
+        private static readonly string[] BrawlWon = { "Stay down.", "That's for what you said.", "Next time I won't be so gentle.", "Anybody else?", "Now we understand each other.", "Get up and I'll put you down again.", "Remember that, next time you open your mouth.", "Somebody scrape that off the street." };
         private static readonly string[] BrawlLost = { "Alright! Alright...", "This ain't over.", "Lucky punch.", "My tooth. You took my tooth.", "Leave off, leave off...", "You'll keep.", "I slipped. You saw me slip.", "Help me up, somebody." };
 
         public static Scene Brawl(SceneCast c, string seed)

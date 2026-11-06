@@ -90,8 +90,8 @@ namespace EnrageWestworld.Core
             new[] { "I've had a few days to think on it, {b}.", "Think harder. You'll lose the same way." },
         };
 
-        private static readonly string[] AgainWon = { "Now we're square.", "That's how it should've gone the first time.", "Tell them about that one, {b}." };
-        private static readonly string[] AgainLost = { "Twice. God help me, twice.", "Leave it, {a}. Just leave it.", "All right. You're the better man. Today." };
+        private static readonly string[] AgainWon = { "That settles it. For good, this time.", "Stay down. This is finished between us.", "Anybody want a third go? No?" };   // either may win it: no word of who won before
+        private static readonly string[] AgainLost = { "Enough. I'm finished with it.", "Leave it be. Just leave it be.", "All right. All right, it's yours." };
 
         /// A rematch: a brawl with its own words. Kind "brawl", so the tie, the memories and the aftermath are the brawl's.
         public static Scene AgainScene(SceneCast c, string seed)

@@ -65,7 +65,7 @@ namespace EnrageWestworld.InGame
         /// A holder near with the one their plan is about also near: they go to find them (once in two minutes).
         private void PlanSeek(Ped me, int now)
         {
-            foreach (Plan p in _store.Plans.Where(x => !x.Done))
+            foreach (Plan p in _store.Plans.Where(x => !x.Done && Plans.Seekable(x, _store.LastGameMin, _cfg.Rematches)))
             {
                 int h = PlanNearHandle(p.HolderId), t = h != 0 ? PlanNearHandle(p.TargetId) : 0;
                 if (h == 0 || t == 0)
@@ -100,7 +100,7 @@ namespace EnrageWestworld.InGame
             d = 0f;
             if (!PlansOn || holderId == null)
                 return null;
-            foreach (Plan p in _store.Plans.Where(x => !x.Done && x.HolderId == holderId))
+            foreach (Plan p in _store.Plans.Where(x => !x.Done && x.HolderId == holderId && Plans.Seekable(x, _store.LastGameMin, _cfg.Rematches)))
             {
                 int th = PlanNearHandle(p.TargetId);
                 if (th == 0)
@@ -116,7 +116,6 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
-        /// Now and then, someone near with a plan thinks of it, over their head.
         private int _rematchMade, _rematchLetLie, _rematchTestTurn;
         private string _rematchLast;
 
@@ -130,14 +129,18 @@ namespace EnrageWestworld.InGame
             try
             {
                 int now = Game.GameTime;
+                if (!ENTITY.DOES_ENTITY_EXIST(loser) || ENTITY.IS_ENTITY_DEAD(loser) || _brawlFatal.Contains(loser))
+                    return;   // killed in it: no plans (the review of Part 1)
                 MindWho w = MindKnown(winner, now), l = MindKnown(loser, now);
                 if (w == null || l == null || w.Id == null || l.Id == null || l.Src == null)
                     return;   // the mind's: two it knows
+                if (Plans.FightPlanLately(_store.Plans, l.Id, w.Id, _store.LastGameMin))
+                    return;   // the last fight between them still has its aftermath in hand, either way round
                 Traits t = l.Traits ?? (l.Traits = _engine.Shadow.TraitsOf(l.Src));
                 bool woman = !PED.IS_PED_MALE(loser), againstWoman = !PED.IS_PED_MALE(winner);
                 SceneTie tie = _store.Ties.FirstOrDefault(x => x.Has(w.Id) && x.Has(l.Id));
                 int before = tie == null ? 0 : tie.Kind == "brawl" && _store.LastGameMin - tie.At < 60 ? tie.Warmth + 1 : tie.Warmth;   // the fight's own -1 taken back off
-                bool badly = _brawlOut.ContainsKey(loser) || _brawlFatal.Contains(loser);
+                bool badly = _brawlOut.ContainsKey(loser);   // knocked cold
                 string why;
                 string way = Rematch.Way(t, woman, before, badly, "rematch|" + l.Id + "|" + w.Id + "|" + _store.LastGameMin / 1440, out why);
                 if (way == Rematch.Again && (woman || againstWoman) && !_cfg.WomenInFights)
@@ -169,6 +172,7 @@ namespace EnrageWestworld.InGame
             return _rematchMade + " taken to heart this session, " + _rematchLetLie + " let lie; " + open + " open" + (_rematchLast != null ? "; the last: " + _rematchLast : "");
         }
 
+        /// Now and then, someone near with a plan thinks of it, over their head.
         private void PlanThink(Ped me, int now)
         {
             foreach (Plan p in _store.Plans.Where(x => !x.Done))

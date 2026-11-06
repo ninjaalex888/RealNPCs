@@ -41,8 +41,8 @@ namespace EnrageWestworld.Core
             "Hit him back, you fool!", "Whoever wins buys the house a round!", "Look at them, flapping like hens.", "Ten more seconds and I'll be asleep.",
             "Ha! Right on the nose!", "That'll swell up pretty.", "Get him, get him... oh, you missed him.", "Somebody fetch a bucket for the loser." };
         private static readonly string[] FightFear = { "Somebody stop them!", "Lord, somebody pull them apart!", "Fetch the sheriff! They'll kill each other!", "Stop it! Stop it, there's blood on the boards!",
-            "Get the children inside!", "Somebody do something!", "He's going to hurt him bad. Please, somebody!", "Not his head! Not his head!",
-            "God have mercy, stop!", "Run for the marshal, quick!", "I can't watch this.", "Somebody grab his arms!" };
+            "Get the children inside!", "Somebody do something!", "Somebody's going to get hurt bad. Please!", "Not the head! Not the head!",
+            "God have mercy, stop!", "Run for the marshal, quick!", "I can't watch this.", "Somebody grab an arm!" };
         private static readonly string[] FightCold = { "Not again.", "Fools, the pair of them.", "Somebody get the law. I'm not getting in the middle.", "Fighting in the street like dogs.",
             "Whatever it's over, it isn't worth teeth.", "Go on and kill each other, then. Less noise after.", "Same as last Saturday.", "The doctor's going to do well out of this." };
 

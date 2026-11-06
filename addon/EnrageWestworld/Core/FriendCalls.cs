@@ -9,7 +9,7 @@
 //   a favour of their trade: the doctor looks you over (your health back), the gunsmith tops up your rounds, the barkeep
 //              stands you a drink (your stamina), the store, the butcher, the hotel or a farm something for the road;
 //   the fight: an ally who stood with you in a fight in the last week, and hasn't said a word of it to you since, comes to
-//              talk it over, and of a comrade who fell in it if they knew him (FIVEDAY item 4, [Encounters] AlliesRemember;
+//              talk it over, and of a comrade who fell in it if they knew him (FIVEDAY item 4, [Scenes] AlliesRemember;
 //              the first thing they bring when they have it: a shared danger is what they most want to speak of).
 // Words, a walk and a small hand-over only: no Talk row, verb or answer (Talk is frozen, 2026-11-04). The game side is
 // Game/WestworldScript.FriendCalls.cs ([Scenes] FriendCalls, FriendGifts). Plain C#; mindtest FriendCallsTest.
@@ -79,18 +79,25 @@ namespace EnrageWestworld.Core
             return kinds[0].Key;
         }
 
+        /// The mark kept in their state's Told list once they've talked a fight over with you (not the memory's own Told,
+        /// which counts their gossip: the review of Part 1).
+        public static string TalkedMark(MindMemory m)
+        {
+            return "allytalked:" + (m != null ? m.Key : "");
+        }
+
         /// The fight an ally stood in with you that they haven't talked over with you yet: their latest "ally:" memory (Sub
-        /// "defend", WestworldScript.Allies.cs) from two game hours to a week back with Told 0; and the first name of a comrade
+        /// "defend", WestworldScript.Allies.cs) from two game hours to a week back, not marked in `talked`; and the first name of a comrade
         /// who fell in it whom they knew (an "allyfell:" memory within three game hours of it), or null. Null for none.
-        public static MindMemory FoughtMemory(List<MindMemory> mind, long now, out string fallen)
+        public static MindMemory FoughtMemory(List<MindMemory> mind, long now, out string fallen, List<string> talked = null)
         {
             fallen = null;
             if (mind == null)
                 return null;
             MindMemory fought = null;
             foreach (MindMemory m in mind)
-                if (m != null && m.Sub == "defend" && m.Key != null && m.Key.StartsWith("ally:", StringComparison.Ordinal) && m.Told == 0 &&
-                    now - m.At >= FoughtAfterMinutes && now - m.At < FoughtDays * 1440L && (fought == null || m.At > fought.At))
+                if (m != null && m.Sub == "defend" && m.Key != null && m.Key.StartsWith("ally:", StringComparison.Ordinal) &&
+                    now - m.At >= FoughtAfterMinutes && now - m.At < FoughtDays * 1440L && (fought == null || m.At > fought.At) && (talked == null || !talked.Contains(TalkedMark(m))))
                     fought = m;
             if (fought == null)
                 return null;
@@ -209,18 +216,18 @@ namespace EnrageWestworld.Core
         private static readonly string[] FoughtWon =
         {
             "{you}. I keep thinking about that day. Glad you were there, and gladder we both walked away.",
-            "Haven't slept right since the shooting, {you}. But I'd stand there again, next to you.",
+            "Haven't slept right since that day, {you}. But I'd stand there again, next to you.",
             "Folks keep asking me about the fight. I tell them you never once backed up.",
             "My hands shook for an hour after, {you}. Yours didn't. I noticed.",
             "Never been in a scrape like that before. Don't intend to be again. But if there is one, call me.",
             "I owe you my skin, near enough. Or you owe me yours. Let's call it even, {you}.",
-            "Wife says I'm a fool for joining in. I told her I'd be a worse one if I hadn't.",
+            "My folks say I'm a fool for joining in. I'd be a worse one if I hadn't.",
             "Still find myself ducking at a loud noise. You'd think I'd seen a war.",
         };
         private static readonly string[] FoughtFell =
         {
             "I think of {who} every day, {you}. Stood with us and never got up.",
-            "Went to see {who}'s people. Didn't know what to say. Said he was brave. He was.",
+            "Went to see {who}'s people. Didn't know what to say. Said {who} was brave. True, too.",
             "It should've been me lying there and not {who}. I can't shake it.",
             "We walked out of that, you and me. {who} didn't. I don't blame you. Most days I don't.",
             "Lit a candle for {who} Sunday. Thought you'd want to know somebody did.",
