@@ -7,7 +7,10 @@
 //   the news:  the almanac's freshest story, told as theirs;
 //   a gift:    a few cents, a handful of cartridges for the gun you carry, or something to eat (by their means and trade);
 //   a favour of their trade: the doctor looks you over (your health back), the gunsmith tops up your rounds, the barkeep
-//              stands you a drink (your stamina), the store, the butcher, the hotel or a farm something for the road.
+//              stands you a drink (your stamina), the store, the butcher, the hotel or a farm something for the road;
+//   the fight: an ally who stood with you in a fight in the last week, and hasn't said a word of it to you since, comes to
+//              talk it over, and of a comrade who fell in it if they knew him (FIVEDAY item 4, [Encounters] AlliesRemember;
+//              the first thing they bring when they have it: a shared danger is what they most want to speak of).
 // Words, a walk and a small hand-over only: no Talk row, verb or answer (Talk is frozen, 2026-11-04). The game side is
 // Game/WestworldScript.FriendCalls.cs ([Scenes] FriendCalls, FriendGifts). Plain C#; mindtest FriendCallsTest.
 //
@@ -23,7 +26,9 @@ namespace EnrageWestworld.Core
 {
     public static class FriendCalls
     {
-        public const string Warn = "warn", News = "news", Gift = "gift", Trade = "trade";
+        public const string Warn = "warn", News = "news", Gift = "gift", Trade = "trade", Fought = "fought";
+        public const int FoughtDays = 7;        // a fight stood together this recent is still on an ally's mind to talk over
+        public const int FoughtAfterMinutes = 120;   // and not in the same breath as the fight itself (that's the ally's own word after it)
         public const int LookMs = 50000;        // a look for a friend every 50 s (x the storyteller's) in a town
         public const float Metres = 25f;        // a friend in view within this comes over
         public const int RoundsGiven = 12;      // cartridges in a gift or the gunsmith's favour
@@ -48,9 +53,11 @@ namespace EnrageWestworld.Core
 
         /// Which of the four they come with: weighed by what there is (a warning first when there is one), seeded so the same
         /// friend on the same day comes with the same thing. Null when they have nothing at all (no gifts allowed, nothing else).
-        public static string Which(bool warning, bool news, string favour, bool gifts, string seed)
+        public static string Which(bool warning, bool news, string favour, bool gifts, string seed, bool fought = false)
         {
             var kinds = new List<KeyValuePair<string, int>>();
+            if (fought)
+                kinds.Add(new KeyValuePair<string, int>(Fought, 180));   // most of the time (about 3 in 5 beside all four), the fight they stood in together comes first
             if (warning)
                 kinds.Add(new KeyValuePair<string, int>(Warn, 45));
             if (news)
@@ -70,6 +77,27 @@ namespace EnrageWestworld.Core
                 roll -= k.Value;
             }
             return kinds[0].Key;
+        }
+
+        /// The fight an ally stood in with you that they haven't talked over with you yet: their latest "ally:" memory (Sub
+        /// "defend", WestworldScript.Allies.cs) from two game hours to a week back with Told 0; and the first name of a comrade
+        /// who fell in it whom they knew (an "allyfell:" memory within three game hours of it), or null. Null for none.
+        public static MindMemory FoughtMemory(List<MindMemory> mind, long now, out string fallen)
+        {
+            fallen = null;
+            if (mind == null)
+                return null;
+            MindMemory fought = null;
+            foreach (MindMemory m in mind)
+                if (m != null && m.Sub == "defend" && m.Key != null && m.Key.StartsWith("ally:", StringComparison.Ordinal) && m.Told == 0 &&
+                    now - m.At >= FoughtAfterMinutes && now - m.At < FoughtDays * 1440L && (fought == null || m.At > fought.At))
+                    fought = m;
+            if (fought == null)
+                return null;
+            foreach (MindMemory m in mind)
+                if (m != null && m.Key != null && m.Key.StartsWith("allyfell:", StringComparison.Ordinal) && Math.Abs(m.At - fought.At) < 180 && m.Names != null && m.Names.Count > 0)
+                    fallen = m.Names[0];
+            return fought;
         }
 
         /// The gift itself: "coin" (cents by their means), "rounds" (those who carry a gun), "meal" (those who'd have bread to
@@ -177,6 +205,28 @@ namespace EnrageWestworld.Core
             "Wrapped you some of the good stuff. No charge. Eat it hot.",
         };
 
+        // the fight stood together: {you}, and {who} a comrade who fell in it (detail "fell"); "won" when nobody they knew fell
+        private static readonly string[] FoughtWon =
+        {
+            "{you}. I keep thinking about that day. Glad you were there, and gladder we both walked away.",
+            "Haven't slept right since the shooting, {you}. But I'd stand there again, next to you.",
+            "Folks keep asking me about the fight. I tell them you never once backed up.",
+            "My hands shook for an hour after, {you}. Yours didn't. I noticed.",
+            "Never been in a scrape like that before. Don't intend to be again. But if there is one, call me.",
+            "I owe you my skin, near enough. Or you owe me yours. Let's call it even, {you}.",
+            "Wife says I'm a fool for joining in. I told her I'd be a worse one if I hadn't.",
+            "Still find myself ducking at a loud noise. You'd think I'd seen a war.",
+        };
+        private static readonly string[] FoughtFell =
+        {
+            "I think of {who} every day, {you}. Stood with us and never got up.",
+            "Went to see {who}'s people. Didn't know what to say. Said he was brave. He was.",
+            "It should've been me lying there and not {who}. I can't shake it.",
+            "We walked out of that, you and me. {who} didn't. I don't blame you. Most days I don't.",
+            "Lit a candle for {who} Sunday. Thought you'd want to know somebody did.",
+            "{who} had a laugh you could hear across the street. Quiet without it now.",
+        };
+
         /// What they say as they come up. kind: Warn ("named", "nameless", "law" in detail), News (the news line in detail),
         /// Gift (the gift: "coin", "rounds", "meal"), Trade (the favour: "patch", "rounds", "drink", "meal").
         public static string Line(string kind, string detail, string you, string danger, string news, string town, string seed)
@@ -196,6 +246,9 @@ namespace EnrageWestworld.Core
                 case Trade:
                     pool = detail == "patch" ? TradePatch : detail == "rounds" ? TradeRounds : detail == "drink" ? TradeDrink : TradeMeal;
                     break;
+                case Fought:
+                    pool = detail == "fell" && danger != null ? FoughtFell : FoughtWon;
+                    break;
                 default:
                     return null;
             }
@@ -210,6 +263,7 @@ namespace EnrageWestworld.Core
             return Voice.Pick(seed + "|fca|" + kind,
                 kind == Warn ? new[] { "Said my piece. What he does with it is his business.", "Hope I wasn't too late with that.", "If anything happens to him now, it won't be for want of telling." }
               : kind == News ? new[] { "He didn't know. Glad I was the one to tell him.", "Good to have somebody to tell things to.", "He took it well. Better than I did." }
+              : kind == Fought ? new[] { "Needed to say that out loud to somebody who was there.", "Lighter for saying it. Not light. Lighter.", "Some things only two people know. Now we've both said so." }
               : new[] { "Felt good, that. Ought to do it more.", "He'd have done the same. More, likely.", "Owed him that and more. A start, anyway." });
         }
 
@@ -217,7 +271,7 @@ namespace EnrageWestworld.Core
         public static IEnumerable<string> AllLines()
         {
             return WarnNamed.Concat(WarnNameless).Concat(WarnLaw).Concat(NewsOpen).Concat(GiftCoin).Concat(GiftRounds).Concat(GiftMeal)
-                            .Concat(TradePatch).Concat(TradeRounds).Concat(TradeDrink).Concat(TradeMeal);
+                            .Concat(TradePatch).Concat(TradeRounds).Concat(TradeDrink).Concat(TradeMeal).Concat(FoughtWon).Concat(FoughtFell);
         }
     }
 }

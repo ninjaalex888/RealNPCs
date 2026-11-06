@@ -104,20 +104,29 @@ namespace EnrageWestworld.InGame
                 bool gun = FriendGun(me) != 0;
                 if (favour == "rounds" && !gun)
                     favour = null;   // no gun to load: the gunsmith's favour waits, and they may come with something else (a day's seed kept them away: the review)
-                string kind = FriendCalls.Which(warnKind != null, news != null, favour, _cfg.FriendGifts, seed);
+                string fallen = null;
+                MindMemory foughtMem = null;
+                if (_cfg.AlliesRemember)
+                    foughtMem = FriendFought(w, g, out fallen);
+                if (foughtMem == null)
+                    fallen = null;
+                string kind = FriendCalls.Which(warnKind != null, news != null, favour, _cfg.FriendGifts, seed, foughtMem != null);
                 if (kind == null)
                     continue;
                 string detail = kind == FriendCalls.Warn ? (warnKind == "law" ? "law" : danger != null ? "named" : "nameless")
                               : kind == FriendCalls.Gift ? FriendCalls.GiftOf(group, woman, seed)
-                              : kind == FriendCalls.Trade ? favour : null;
+                              : kind == FriendCalls.Trade ? favour
+                              : kind == FriendCalls.Fought ? (fallen != null ? "fell" : "won") : null;
                 if (detail == "rounds" && !gun)
                     detail = "coin";   // cartridges with no gun to load: a coin instead
                 if (kind == FriendCalls.Trade && detail == null)
                     continue;
                 string you = _engine.KnowsYourName(w.Id) ? YourSurname() : null;
-                string line = FriendCalls.Line(kind, detail, you, danger, news, _placeTown, seed);
+                string line = FriendCalls.Line(kind, detail, you, kind == FriendCalls.Fought ? fallen : danger, news, _placeTown, seed);
                 if (line == null)
                     continue;
+                if (kind == FriendCalls.Fought && !test)
+                    foughtMem.Told++;   // said to your face: they've talked it over with you now (once a fight)
                 if (!test)
                 {
                     Pacing.Note(_store.Pace, "friendcall", _placeTown, w.Id, g);
@@ -137,6 +146,16 @@ namespace EnrageWestworld.InGame
                 return null;
             }
             return _friendWhyNot = "no friend of yours is near, free and can see you";
+        }
+
+        /// A fight this friend stood in with you (the allies' "ally:" memory, Sub "defend": WestworldScript.Allies.cs) in the
+        /// last week, two game hours or more back, that they haven't talked over with you yet (Told 0); and a comrade who fell
+        /// in it whom they knew (their "allyfell:" memory within three game hours of it), or null. FIVEDAY item 4.
+        private MindMemory FriendFought(MindWho friend, long g, out string fallen)
+        {
+            fallen = null;
+            PersonState st = _store.Find(friend.Id);
+            return st != null ? FriendCalls.FoughtMemory(st.Mind, g, out fallen) : null;
         }
 
         /// What a friend would warn of, by what the mind knows: "grudge" (someone near mourns one you killed, or is still hot with
@@ -195,6 +214,7 @@ namespace EnrageWestworld.InGame
             {
                 case FriendCalls.Warn: return detail == "law" ? "a warning: the law has been asking" : "a warning: someone in town holds a grudge";
                 case FriendCalls.News: return "the news";
+                case FriendCalls.Fought: return detail == "fell" ? "the fight they stood in with you, and the one who fell in it" : "the fight they stood in with you";
                 case FriendCalls.Gift: return detail == "coin" ? "a gift of $" + (cents / 100.0).ToString("0.00") : detail == "rounds" ? "a gift of cartridges" : "something to eat";
                 default: return detail == "patch" ? "the doctor's favour: a look at your hurts" : detail == "rounds" ? "the gunsmith's favour: a box of rounds" : detail == "drink" ? "a drink on the house" : "something for the road";
             }

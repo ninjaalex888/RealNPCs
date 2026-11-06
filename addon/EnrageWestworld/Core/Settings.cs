@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 257;
+        public const int CurrentVersion = 258;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -352,6 +352,7 @@ namespace EnrageWestworld.Core
         public bool FightCrowds = false;   // off as it comes from settings version 182 (Lex, 2026-11-01: onlookers froze; "remove the feature that tells the NPCs to gather as a crowd") [Scenes] with MindLive: a crowd rings a street fight and cheers it on (the fearful keep away) (the NPC-life run, step 5; settings version 136)
         public bool BrawlWagers = true;   // [Scenes] with MindLive: people watching a fistfight bet on it among themselves, and settle after: paid, grumbled, owed or welshed on (Core/Wagers.cs; FIVEDAY item 1, settings version 256)
         public bool Rematches = true;   // [Scenes] with MindLive and MindPlans: the one beaten in a fistfight takes it his own way (a rematch, keeping clear, a handshake) days later (Core/Rematch.cs; FIVEDAY item 2, settings version 257)
+        public bool AlliesRemember = true;   // [Scenes] with FriendCalls: an ally who stood with you in a fight comes over within the week to talk it over, and of a comrade who fell in it (FIVEDAY item 4, settings version 258)
         public bool NightScenes = true;   // [Scenes] with MindLive: at night, a mugging by someone whose mind leans to it, and a drunk taken home by a friend (the NPC-life run, step 5; settings version 135)
         public bool Aftermath = true;   // [Scenes] with MindLive: after a street fight near you, a friend tends the one who went down and a lawman near has a word with the one left standing (the NPC-life run, Lex 2026-10-30; settings version 131)
         public float ChanceMeetMetres = 6f;   // [Scenes] two people this far apart may meet by chance, one walking over to the other (3.4, standing together, until settings version 134; Lex, 2026-10-30)
@@ -877,6 +878,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 258)
+                    log?.Invoke("Settings: new in this version: [Scenes] AlliesRemember (on): someone who stood with you in a fight comes over within the week to talk it over.");
                 if (s.SettingsVersion < 257)
                     log?.Invoke("Settings: new in this version: [Scenes] Rematches (on): the one beaten in a fistfight may, days later, want it again, keep clear of the winner, or offer his hand.");
                 if (s.SettingsVersion < 256)
@@ -1657,6 +1660,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("WatchedLawMetres = " + F(WatchedLawMetres) + "   ; with BeingWatched on: a lawman this near, in metres, facing them with a clear sight, is watching (5-60)");
             b.AppendLine("WatchedRecklessChance = " + WatchedRecklessChance + "   ; percent of hot-tempered or drunk would-be troublemakers (a shove, a fight, a standoff, a callout) who go ahead anyway, one roll a day each (0-100)");
             b.AppendLine("WatchedChurchMetres = " + F(WatchedChurchMetres) + "   ; how near the church, in metres, counts as by the church on a Sunday morning (10-200)");
+            b.AppendLine("AlliesRemember = " + B(AlliesRemember) + "   ; with [Scenes] FriendCalls on: someone who stood with you in a fight comes over within the week, the first time they see you after, to talk it over (and of anyone they knew who fell in it); once a fight");
 b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town (the friend dot's rule: a full bar, a kindness remembered, a trouble mended, someone you saved) comes over unasked now and then with a warning (someone here holds a grudge, or the law has been asking), the news, a small gift or a favour of their trade (the doctor looks you over, the gunsmith tops up your rounds, the barkeep stands a drink); about once in six game hours at most (some twelve real minutes), a friend once in two days");
             b.AppendLine("FriendGifts = " + B(FriendGifts) + "   ; with FriendCalls: the gifts and favours hand something over (a few cents, a dozen cartridges for the gun you carry, a meal or a drink into your cores, the doctor's patching); false: friends bring a warning or the news only");
                         b.AppendLine("LateThanks = " + B(LateThanks) + "   ; people you were good to through the Talk menu (a drink, money, a debt paid, the doctor, a dentist or the fare paid for) may seek you out when they next see you, some hours or a few days on, and say what it meant to them (few for a drink, most for money, nearly all for a trouble mended); the proud pay back a debt they called a loan, days later; the cold, the seated and women after dark just nod");
