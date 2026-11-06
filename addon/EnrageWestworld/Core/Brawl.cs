@@ -198,6 +198,7 @@ namespace EnrageWestworld.Core
 
         // ---- the words (all our own) ---------------------------------------------------------------------------------
 
+        // (the pools grew in FIVEDAY item 3: four to six lines each made a long brawl say the same thing twice)
         private static readonly string[] BreakUp =
         {
             "That's enough! Break it up, the lot of you!",
@@ -206,6 +207,16 @@ namespace EnrageWestworld.Core
             "Law here! Step apart or I'll do the parting myself!",
             "I said enough! Back off him, all of you!",
             "Not in my town. Break it up!",
+            "Apart! The next fist I see goes in irons!",
+            "You hear me? Stand off, or I start cracking heads!",
+            "This street's had its fill of you. Separate!",
+            "Drop your hands, or I'll drop you!",
+            "Every man still swinging spends the night with me!",
+            "Hold it! Hold it, I said!",
+            "In the name of the county, stand apart!",
+            "Lay off him! Now, damn you!",
+            "That's the last punch thrown today. Step back!",
+            "Whoever's got the most blood on him, I'm asking him first!",
         };
 
         private static readonly string[] LetOff =
@@ -214,6 +225,14 @@ namespace EnrageWestworld.Core
             "Walk away. I see you again today, you're mine.",
             "Count yourself lucky. Off with you.",
             "Wash the blood off and stay off my street.",
+            "Go on. And tell your wife why your shirt's torn.",
+            "I'll let it go this once. Once.",
+            "Go cool your head in the trough.",
+            "Get to the doctor's and keep out of trouble.",
+            "You're not worth the paperwork. Move along.",
+            "Shake hands or don't. Just do it somewhere else.",
+            "Next time it's a fine and a night inside.",
+            "Off you go. I've got your name now.",
         };
 
         private static readonly string[] Taken =
@@ -222,6 +241,14 @@ namespace EnrageWestworld.Core
             "Down you go. The judge can hear your side.",
             "I told you twice. That's the jail for you.",
             "Lie still. You've earned yourself a cell.",
+            "Wrists. Now. We're walking to the jail.",
+            "Fight me too, would you? Wrong man.",
+            "That's enough out of you for one day.",
+            "A night on the boards will cool you.",
+            "You can explain it to the circuit judge.",
+            "Stop struggling. You're only making it worse.",
+            "There. Trussed like a Christmas goose.",
+            "I warned you. Folks heard me warn you.",
         };
 
         private static readonly string[] Stops =
@@ -231,6 +258,15 @@ namespace EnrageWestworld.Core
             "Enough. I've had enough.",
             "Easy. Nobody's hurt.",
             "Fine. Fine.",
+            "Enough. I've no more fight in me.",
+            "Ask anybody, he swung first.",
+            "We were only settling something, sir.",
+            "No harm meant, Marshal.",
+            "I'm stepping back. See? Stepping back.",
+            "It's over. It's over.",
+            "Just a disagreement, is all.",
+            "He'll keep. I can wait.",
+            "My hands are down. Look.",
         };
 
         private static readonly string[] AtYouLines =
@@ -239,6 +275,14 @@ namespace EnrageWestworld.Core
             "You want some too, mister?",
             "Come here, you!",
             "That was my jaw you hit!",
+            "Who asked you in, stranger?",
+            "That one costs you, stranger!",
+            "Think you're clever? Come on, then!",
+            "Do that twice and see where it gets you!",
+            "Stranger thinks he's a fighting man!",
+            "You're next, big fellow!",
+            "Keep out of it! Or don't, and get some!",
+            "Mister, you just bought yourself a fight!",
         };
 
         public static string LawBreaksUp(string seed) { return BreakUp[Voice.Hash(seed + "|breakup") % BreakUp.Length]; }

@@ -280,25 +280,40 @@ namespace EnrageWestworld.Core
             return s;
         }
 
+        // A brawl's openings: who speaks first ("0" A, "1" B), the line, the other's answer, and the first one's last word as
+        // the blows start ("" for none). All our own words.
+        private static readonly string[][] BrawlOpenings =
+        {
+            new[] { "0", "Once more, {b}. Say it once more.", "I said your mother was a mule and your father knew it.", "" },
+            new[] { "0", "You've been cheating me on the weights all year.", "Prove it.", "I'll prove it on your face!" },
+            new[] { "1", "Get out of my way.", "Make me.", "Gladly." },
+            new[] { "0", "That was my seat, {b}.", "Didn't see you sitting in it.", "You'll see it on my knuckles!" },
+            new[] { "0", "You been talking about me, {b}?", "Only the true parts.", "Then here's something true!" },
+            new[] { "1", "Step on my boot again, {a}.", "Or what?", "Or this!" },
+            new[] { "0", "That's my money on the table, {b}.", "It was. Now it's mine.", "Like hell it is!" },
+            new[] { "0", "Keep clear of my sister, {b}.", "Your sister can choose for herself.", "She's chosen. Now you choose this!" },
+            new[] { "1", "You drink like a Methodist, {a}.", "And you fight like one, I'd wager.", "Let's find out!" },
+            new[] { "0", "Somebody cut my fence, {b}, and it was you.", "You know nothing.", "I know enough!" },
+            new[] { "0", "Laugh at me again, {b}. Go on.", "Ha.", "" },
+            new[] { "1", "You owe me two dollars since Easter, {a}.", "And you'll wait till the next one.", "No, I won't!" },
+        };
+
+        private static readonly string[] BrawlWon = { "Stay down.", "That's for the weights.", "Next time I won't be so gentle.", "Anybody else?", "Now we understand each other.", "Get up and I'll put you down again.", "Remember that, next time you open your mouth.", "Somebody scrape that off the street." };
+        private static readonly string[] BrawlLost = { "Alright! Alright...", "This ain't over.", "Lucky punch.", "My tooth. You took my tooth.", "Leave off, leave off...", "You'll keep.", "I slipped. You saw me slip.", "Help me up, somebody." };
+
         public static Scene Brawl(SceneCast c, string seed)
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
             Scene s = new Scene { Kind = "brawl", Fight = true, Summary = !c.AWoman && !c.BWoman ? "two men came to blows" : c.AWoman && c.BWoman ? "two women came to blows" : "a man and a woman came to blows" };
-            switch (Voice.Hash(seed) % 3)
-            {
-                case 0:
-                    s.Add(0, "Say that again, " + b + ". I dare you.", "angry", "face").Add(1, "I said your mother was a mule and your father knew it.", "angry")
-                     .Add(0, null, "angry", "fight", 9000);
-                    break;
-                case 1:
-                    s.Add(0, "You've been cheating me on the weights all year.", "angry", "face").Add(1, "Prove it.").Add(0, "I'll prove it on your face!", "angry", "fight", 9000);
-                    break;
-                default:
-                    s.Add(1, "Get out of my way.", "mild", "face").Add(0, "Make me.", "threat").Add(1, "Gladly.", "angry", "fight", 9000);
-                    break;
-            }
-            s.Add(0, null, null, "endfight").Add(0, Voice.Pick(seed + "w", "Stay down.", "That's for the weights.", "Next time I won't be so gentle."), "won")
-             .Add(1, Voice.Pick(seed + "l", "Alright! Alright...", "This ain't over.", "Lucky punch."), "mild", "walkaway");
+            // the opening words: who speaks first, then the answer, then the one who swings (A or B) says the last word as
+            // the blows start (FIVEDAY item 3: three of these became twelve, so two fights in an hour seldom open alike)
+            string[][] open = BrawlOpenings;
+            string[] o = open[(Voice.Hash(seed) & 0x7fffffff) % open.Length];
+            int first = o[0] == "1" ? 1 : 0;
+            s.Add(first, o[1].Replace("{a}", a).Replace("{b}", b), "angry", "face").Add(1 - first, o[2].Replace("{a}", a).Replace("{b}", b), "threat")
+             .Add(first, o[3].Length > 0 ? o[3].Replace("{a}", a).Replace("{b}", b) : null, "angry", "fight", 9000);
+            s.Add(0, null, null, "endfight").Add(0, Voice.Pick(seed + "w", BrawlWon), "won")
+             .Add(1, Voice.Pick(seed + "l", BrawlLost), "mild", "walkaway");
             return s;
         }
 
