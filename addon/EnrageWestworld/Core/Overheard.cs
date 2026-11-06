@@ -95,6 +95,9 @@ namespace EnrageWestworld.Core
                 case "debt": return a + " and " + t + " quarrelled over money";
                 case "settled": return a + " paid " + t + " what was owed";
                 case "cheat": return a + " and " + t + " fell out over cards";
+                case "welsh": return a + " wouldn't hand " + t + " the winnings from the fistfight";
+                case "wagerowed": return a + " still owes " + t + " the winnings from the fistfight";
+                case "wagerpaid": return a + " handed " + t + " the winnings from the fistfight";
                 case "feud": return a + " and " + t + " had their feud out";
                 case "flirt": case "sweet": case "courting": return a + " and " + t + " were sweet on each other";
                 case "propose": return a + " asked " + t + " to marry";

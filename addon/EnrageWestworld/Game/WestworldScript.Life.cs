@@ -56,6 +56,7 @@ namespace EnrageWestworld.InGame
             if (_after != null)
                 AftermathStep(me, now);   // what follows a fight: a friend tends the loser, the law has a word (WestworldScript.Aftermath.cs)
             BrawlStep(me, now);   // the law breaks up a brawl, a brawl comes at you, a gun drawn in one (WestworldScript.Brawl.cs)
+            WagersStep(me, now);  // the people watching a fight bet on it (WestworldScript.Wagers.cs; FIVEDAY item 1)
             if (_director.FightOver == null)
                 _director.FightOver = OnFightOver;
             if (_director.Shock == null)

@@ -64,6 +64,12 @@ namespace EnrageWestworld.Core
                     return -1;
                 case "rough": case "pickpocket": case "mugging":
                     return -2;   // a face into the bar, or a hand caught in a coat, isn't soon forgotten
+                case "welsh":
+                    return -2;   // a bet welshed on in front of the street (Core/Wagers.cs): a matter of honour
+                case "wagerowed":
+                    return -1;   // a lost bet owed till payday: a sore point until it's paid
+                case "wagerpaid":
+                    return 0;    // paid up, with or without a sour word: square
                 case "lift":
                     return 0;    // the mark never saw who: nothing between them that he knows of (the thief knows)
                 case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "help": case "defend": case "round": case "apology": case "settled":
@@ -121,7 +127,8 @@ namespace EnrageWestworld.Core
                    kind == "help" || kind == "passby" ||   // A helped B up, or walked past B
                    kind == "defend" || kind == "faced" ||  // A stood up for B; A faced B down
                    kind == "round" ||                      // A stood B a drink
-                   kind == "settled";                      // A paid B what was owed, in the street
+                   kind == "settled" ||                    // A paid B what was owed, in the street
+                   kind == "welsh" || kind == "wagerowed" || kind == "wagerpaid"; // A lost a bet to B: wouldn't pay, owes, or paid (Core/Wagers.cs)
         }
 
         public static SceneTie Note(List<SceneTie> all, string aId, string aName, string bId, string bName, string town, string kind, long now, string doer)

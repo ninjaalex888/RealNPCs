@@ -1893,7 +1893,8 @@ in the file. The new ones:
             MainScenesAtOnce (2): a second full scene 20 m or more from the first, words and walk-overs
             only (fights, rough handling and thefts stay one at a time); 1: one at a time,
             Aftermath (true): after a fight a friend tends the loser and the law has a word with the winner,
-            FightCrowds (true): a ring of onlookers around a fistfight, NightScenes (true): a mugging, a
+            FightCrowds (true): a ring of onlookers around a fistfight, BrawlWagers (true): onlookers bet on a
+            fistfight and settle after (paid, grumbled, owed or welshed), NightScenes (true): a mugging, a
             drunk taken home, HorseThieves (true), GangShootouts (true): rival gangs who meet fight it
             out, ShoutsCarry (true): shouts shouted the game's way, heard from farther off,
             Reactions (true): in a street scene the one spoken to reacts to the words by their

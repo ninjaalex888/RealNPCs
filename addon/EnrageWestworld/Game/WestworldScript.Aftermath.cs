@@ -34,6 +34,7 @@ namespace EnrageWestworld.InGame
         /// From the Director: a fight between two of the street's people is over.
         private void OnFightOver(int winner, int loser)
         {
+            WagersFightOver(winner, loser);   // the bets on it settle first, whatever the aftermath's switch (WestworldScript.Wagers.cs)
             if (!_cfg.MindLive || !_cfg.Aftermath || winner == 0 || loser == 0)
                 return;
             int now = Game.GameTime;

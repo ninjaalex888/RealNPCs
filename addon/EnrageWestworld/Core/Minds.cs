@@ -93,7 +93,10 @@ namespace EnrageWestworld.Core
                 case "brawl": case "rough": case "fight":
                     return "blows";
                 case "argue": case "cheat": case "debt": case "standoff": case "snap": case "envy": case "faced":
+                case "welsh": case "wagerowed":   // a bet on a fight welshed on, or owed (Core/Wagers.cs)
                     return "quarrel";
+                case "wagerpaid":
+                    return "talk";
                 case "brushoff": case "scorn": case "avoid": case "passby":
                     return "slight";
                 case "pickpocket": case "lift":
@@ -152,7 +155,8 @@ namespace EnrageWestworld.Core
         public static bool OneSided(string kind)
         {
             return kind == "rough" || kind == "pickpocket" || kind == "lift" || kind == "drunk" || kind == "charity" || kind == "scorn" || kind == "avoid" ||
-                   kind == "help" || kind == "passby" || kind == "defend" || kind == "faced" || kind == "round" || kind == "settled";
+                   kind == "help" || kind == "passby" || kind == "defend" || kind == "faced" || kind == "round" || kind == "settled" ||
+                   kind == "welsh" || kind == "wagerowed" || kind == "wagerpaid";   // a bet on a fight: the one who lost it first (Core/Wagers.cs)
         }
 
         /// How much it stays with someone, by group and by how they knew it.
