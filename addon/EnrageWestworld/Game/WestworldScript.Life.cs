@@ -481,10 +481,10 @@ namespace EnrageWestworld.InGame
                 return;
             List<Ped> pool = Peds.All().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
-                                                         ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres &&
+                                                         SideTalk.Unhurried(ENTITY.GET_ENTITY_SPEED(p.Handle)) && p.Position.DistanceTo(me.Position) < StreetMetres &&   // a stroller may stop to talk (FIVEDAY item 5; under 0.8 m/s before)
                                                          !Resting(p.Handle, now) && clear(p) && !NotFree(p.Handle)).ToList();   // not the waking (2026-10-31: a side quarrel took one mid-act), nor anyone another feature has
             Ped a = null, b = null;
-            float best = 3.4f;
+            float best = SideTalk.Clamp(_cfg.SideTalkMetres);   // within calling distance (Core/SideTalk.cs; 3.4 m before: in 3.9 hours of Lex's play, not one talk)
             for (int i = 0; i < pool.Count; i++)
                 for (int j = i + 1; j < pool.Count; j++)
                 {
@@ -514,6 +514,7 @@ namespace EnrageWestworld.InGame
             if (s == null || !Director.Quiet(s))
                 return;
             StartScene(s, new List<Ped> { a, b }, cast, seed, now, side: true);
+            _nextSide = now + SideTalk.GapMs;   // one new quiet talk at a time: the street lively, not a babble (FIVEDAY item 5)
         }
 
         /// A quiet talk's line: a subtitle only when it's near you, never the queue the scene's lines take (two talks at once

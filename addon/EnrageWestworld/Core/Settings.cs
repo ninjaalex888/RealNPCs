@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 258;
+        public const int CurrentVersion = 259;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -353,6 +353,7 @@ namespace EnrageWestworld.Core
         public bool BrawlWagers = true;   // [Scenes] with MindLive: people watching a fistfight bet on it among themselves, and settle after: paid, grumbled, owed or welshed on (Core/Wagers.cs; FIVEDAY item 1, settings version 256)
         public bool Rematches = true;   // [Scenes] with MindLive and MindPlans: the one beaten in a fistfight takes it his own way (a rematch, keeping clear, a handshake) days later (Core/Rematch.cs; FIVEDAY item 2, settings version 257)
         public bool AlliesRemember = true;   // [Scenes] with FriendCalls: an ally who stood with you in a fight comes over within the week to talk it over, and of a comrade who fell in it (FIVEDAY item 4, settings version 258)
+        public float SideTalkMetres = 5.5f;   // [Scenes] with ScenesAtOnce 2 or more: two people this far apart at most may stop and talk beside the scene (2.5-8; 3.4 before settings version 259, when the quiet talks almost never started; FIVEDAY item 5)
         public bool NightScenes = true;   // [Scenes] with MindLive: at night, a mugging by someone whose mind leans to it, and a drunk taken home by a friend (the NPC-life run, step 5; settings version 135)
         public bool Aftermath = true;   // [Scenes] with MindLive: after a street fight near you, a friend tends the one who went down and a lawman near has a word with the one left standing (the NPC-life run, Lex 2026-10-30; settings version 131)
         public float ChanceMeetMetres = 6f;   // [Scenes] two people this far apart may meet by chance, one walking over to the other (3.4, standing together, until settings version 134; Lex, 2026-10-30)
@@ -878,6 +879,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 259)
+                    log?.Invoke("Settings: the quiet talks beside the street's scene start now: two people within 5.5 m, standing or strolling, may stop and talk ([Scenes] SideTalkMetres, new; before, they had to stand still within 3.4 m and hardly ever did).");
                 if (s.SettingsVersion < 258)
                     log?.Invoke("Settings: new in this version: [Scenes] AlliesRemember (on): someone who stood with you in a fight comes over within the week to talk it over.");
                 if (s.SettingsVersion < 257)
@@ -1153,6 +1156,7 @@ namespace EnrageWestworld.Core
             BrawlFistsFatal = Math.Max(0, Math.Min(100, BrawlFistsFatal));
             BrawlJoinMetres = Math.Max(10f, Math.Min(60f, BrawlJoinMetres));
             BrawlCrowdMetres = Math.Max(10f, Math.Min(60f, BrawlCrowdMetres));
+            SideTalkMetres = SideTalk.Clamp(SideTalkMetres);
             BrawlLeastSeconds = Math.Max(15, Math.Min(120, BrawlLeastSeconds));
             BrawlJoinBoost = Math.Max(0, Math.Min(60, BrawlJoinBoost));
             BrawlOpeningBoost = Math.Max(0, Math.Min(60, BrawlOpeningBoost));
@@ -1689,6 +1693,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("FightCrowds = " + B(FightCrowds) + "   ; with MindLive on: while people trade blows, those within [Mind] BrawlCrowdMetres who aren't of a fearful nature walk over, stand round in a ring and cheer it on (up to 6 round two men, 16 round a brawl, in two rings); they go when it's over");
             b.AppendLine("BrawlWagers = " + B(BrawlWagers) + "   ; with MindLive on: people watching a fistfight between two of the street's people bet on it among themselves (words only, nobody walks over), up to three bets a fight; after it the one who backed the loser pays, pays with a sour word, says he'll owe it, or won't pay, and a welshed bet leaves bad blood between the two backers");
             b.AppendLine("Rematches = " + B(Rematches) + "   ; with MindLive and [Mind] MindPlans on: the one left on the ground after a fistfight takes it his own way, by his nature: half a game day or more later, when the two meet near you, a rematch (the hot and the proud), crossing the street to keep clear (the fearful), or his hand offered (the kind), taken or refused; most let it lie");
+            b.AppendLine("SideTalkMetres = " + F(SideTalkMetres) + "   ; with ScenesAtOnce 2 or more: the quiet talks beside the street's scene pair two people at most this far apart (2.5-8 m), both standing or strolling; 3.4 m and standing still before, and they almost never started");
             b.AppendLine("NightScenes = " + B(NightScenes) + "   ; with MindLive on, at night in town: someone short of money and honest with nobody (or a known thief) robs someone on their own, who hands it over or won't by their nature; and late, a drunk who goes down in the street is got up and taken home by a friend. Each at most once a town a night");
             b.AppendLine("Aftermath = " + B(Aftermath) + "   ; with MindLive on: after a street fight near you, a friend of the one who went down (or a kind soul who saw it) goes to see to him, and a lawman near has a word with the one left standing");
             b.AppendLine("ChanceMeetMetres = " + F(ChanceMeetMetres) + "   ; two people up to this far apart may meet by chance near you, one walking over to the other (2-12; 3.4 was standing together only)");
