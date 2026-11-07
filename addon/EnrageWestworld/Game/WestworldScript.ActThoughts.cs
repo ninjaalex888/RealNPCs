@@ -100,6 +100,37 @@ namespace EnrageWestworld.InGame
             return knows ? Person.FirstOf(o.Name) : null;
         }
 
+        private int _worryActThoughts;
+
+        /// When the act is one their worry leans to, its own thought (Core/WorryActs.cs; FIVEDAY item 7), seven times in ten, the
+        /// worry's {who} filled in; null otherwise (the act's own thought, as before).
+        private string WorryActThought(MindWho w, string act)
+        {
+            if (!_cfg.WorriesShown || w == null || w.P == null)
+                return null;
+            long day = _store.LastGameMin / 1440;
+            string wk;
+            int ws;
+            bool wg;
+            if (!InnerLife.WorryNow(w.P, day, out wk, out ws, out wg) || ws >= 3 || WorryActs.Lean(wk, ws, act) <= 0f)
+                return null;
+            string seed = w.Id + "|" + act + "|" + _store.LastGameMin / 60;
+            if (!Voice.Chance(seed + "|worryact", 70))
+                return null;
+            string line = WorryActs.Thought(wk, act, seed);
+            if (line == null)
+                return null;
+            if (line.Contains("{who}"))
+            {
+                string who = InnerLife.WorryFill(w.P, day, "{who}");
+                if (string.IsNullOrEmpty(who) || who.Contains("{"))
+                    return null;
+                line = line.Replace("{who}", Person.FirstOf(who) ?? who);
+            }
+            _worryActThoughts++;
+            return line;
+        }
+
         /// An act their own mind chose has begun (MindActOn; a get-up's from S1Send once they're up): the thought that goes with
         /// it, over their head, when the caps let it. `why`: the choice's why (the need it serves); `retry`, `model`: the choice
         /// was tried again a minute on, or the model's own thought came with it.
@@ -125,7 +156,7 @@ namespace EnrageWestworld.InGame
                     return;
                 }
                 string who = ActThoughts.SlotOf(a.Kind) == "{who}" ? ActWhoOf(w, a.About) : null;
-                string line = _engine.ActThought(w.P, a.Kind, why0 ?? w.ChoiceWhy, who, w.Id + "|" + a.Kind + "|" + _store.LastGameMin / 60);
+                string line = WorryActThought(w, a.Kind) ?? _engine.ActThought(w.P, a.Kind, why0 ?? w.ChoiceWhy, who, w.Id + "|" + a.Kind + "|" + _store.LastGameMin / 60);   // a worry's own thought first (FIVEDAY item 7)
                 if (line == null)
                 {
                     ActThoughtHeld("nothing left for them today");

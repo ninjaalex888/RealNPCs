@@ -404,6 +404,17 @@ namespace EnrageWestworld.InGame
                 Last = w.Choice, Recent = w.Recent, Now = g, TradeGroup = tg, Works = tg != "gentry" && !(w.P.Woman && tg == "town"), WorkPlace = tg == "girl" ? "saloon" : null, Woman = w.P.Woman, SaloonGirl = tg == "girl",
                 Plan = PlansOn ? _store.Plans.FirstOrDefault(p => !p.Done && p.HolderId == w.Id)?.Kind : null   // a plan leans the day (WestworldScript.Plans.cs)
             };
+            if (_cfg.WorriesShown)
+            {
+                string wk;
+                int ws;
+                bool wg;
+                if (InnerLife.WorryNow(w.P, g / 1440, out wk, out ws, out wg))
+                {
+                    c.Worry = wk;   // and the worry bends it too (Core/WorryActs.cs; FIVEDAY item 7)
+                    c.WorryStage = ws;
+                }
+            }
             FeltAt best;
             float left;
             if (_engine.Shadow.Strongest(w.Id, g, out best, out left))
