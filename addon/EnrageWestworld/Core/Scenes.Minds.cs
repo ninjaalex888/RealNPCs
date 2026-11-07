@@ -67,8 +67,8 @@ namespace EnrageWestworld.Core
             if (c.Saloon && twoMen)
                 w.Add(new KeyValuePair<string, int>("cheat", 10));
             w.Add(new KeyValuePair<string, int>("debt", 7));
-            if (mixed && !c.Saloon && !c.Night)
-                w.Add(new KeyValuePair<string, int>("temperance", 4));   // a temperance woman puts the pledge to a man (Core/Temperance.cs; FIVEDAY item 12)
+            if (mixed && !c.Saloon && !c.Night && c.Town != null)
+                w.Add(new KeyValuePair<string, int>("temperance", 4));   // (in a town: "those doors" are a saloon's; the Part 3 review)   // a temperance woman puts the pledge to a man (Core/Temperance.cs; FIVEDAY item 12)
             if (c.Payday && mixed && !c.Saloon)
                 w.Add(new KeyValuePair<string, int>("wages", 14));
             if (c.Rumours.Count > 0)
@@ -121,7 +121,6 @@ namespace EnrageWestworld.Core
                 {
                     Lean(d, "haggle", 60 + 30 * press);
                     if (m.Worry == "cards") Lean(d, "cheat", 40);
-                    if (m.Worry == "drink") Lean(d, "temperance", 60);   // the man she'd stop
                     mine.Add(m.Worry + " worry");
                 }
                 else if (m.Worry == "feud")
@@ -132,6 +131,7 @@ namespace EnrageWestworld.Core
                 else if (m.Worry == "drink")
                 {
                     Lean(d, "song", 30); Lean(d, "talltale", 20);
+                    Lean(d, "temperance", 60);   // the drinker she'd stop (the scene makes the man the drinker) (FIVEDAY item 12; the Part 3 review: it sat in the money branch and never fired)
                     mine.Add("the drink");
                 }
                 else if (m.Worry == "courting")

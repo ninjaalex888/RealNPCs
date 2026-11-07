@@ -4,7 +4,7 @@
 // the "Around town" box when you come into a town that has something posted. On the board: what the town has posted
 // (dances, elections, the circuit judge, a hanging, the show, a prize fight), the weddings that have been announced,
 // enRAGE's funerals, and the town's standing days: Saturday's wages and Sunday's service. Shivarees aren't on it: they
-// come as a surprise. Behind [World] NoticeBoard.
+// come as a surprise; nor a prize fight, kept from the marshal (the Part 3 review). Behind [World] NoticeBoard.
 //
 // Why it reads true: in 1899 a town's board stood by the post office or the general store, with bills for the dance, the
 // sale and the show, notice of a funeral, the court's sitting. People planned the week by it. Plain C#, no game; all
@@ -37,7 +37,7 @@ namespace EnrageWestworld.Core
             {
                 foreach (TownEvent e in s.Events)
                 {
-                    if (e == null || !e.Posted || e.Done || e.Kind == Shivaree.Kind || e.Until < now || e.At > until)
+                    if (e == null || !e.Posted || e.Done || e.Kind == Shivaree.Kind || e.Kind == PrizeFight.Kind || e.Until < now || e.At > until)
                         continue;
                     list.Add(new Notice { At = e.At, Town = e.Town, Kind = e.Kind, Text = EventText(e) });
                 }
@@ -77,7 +77,6 @@ namespace EnrageWestworld.Core
                 case "trial": return "the circuit judge sits" + (e.AName != null ? ": " + e.AName + " to answer for " + (e.Extra ?? "a killing") : "");
                 case "gallows": return "a hanging" + (e.AName != null ? ": " + e.AName : "");
                 case "show": return "the Wild West show" + (e.AName != null ? ", " + e.AName : "");
-                case PrizeFight.Kind: return "a prize fight out back of the saloon (word of mouth)" + (e.AName != null && e.BName != null ? ": " + e.AName + " and " + e.BName : "");
                 default: return (e.Title ?? e.Kind ?? "something").ToLowerInvariant();
             }
         }

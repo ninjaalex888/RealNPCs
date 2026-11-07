@@ -79,7 +79,9 @@ namespace EnrageWestworld.Core
                 case "carried": case "thanks":
                     return 1;    // got home on a friend's arm
                 case "makeup":
-                    return 2;   // a quarrel mended counts for more than one more kind word
+                    return 2;
+                case "bout":
+                    return 1;   // a fair fight out back, done: respect a step (Core/PrizeFight.cs)   // a quarrel mended counts for more than one more kind word
                 case "smalltalk": case "gossip": case "haggle": case "hosts": case "brushoff": case "avoid": case "mindtalk": case "introduced":   // (introduced: made known to each other by the player, Core/Verbs.cs)
                     return 0;
                 default:
@@ -391,6 +393,8 @@ namespace EnrageWestworld.Core
             "Small thing {other} did. Biggest thing all week.",
             "Next time someone's down, I'll do as {other} did."
         };
+
+        private static readonly string[] Bout = { "{other} hits harder than they say. Fair fight, though.", "Stood up to {other} out back. Neither of us shamed.", "{other} shook my hand after, for all the blood.", "Fought {other} for money. Got a bit of respect for my trouble.", "I'll buy {other} a drink one day. Not today. Jaw's sore." };
 
         private static readonly string[] MadeUp =
         {
@@ -933,7 +937,7 @@ namespace EnrageWestworld.Core
                                  : t.Kind == "faced" ? (did ? FacedDid : FacedDone) : t.Kind == "round" ? (did ? RoundDid : RoundDone) : t.Kind == "settled" ? (did ? SettledDid : SettledDone) : (did ? DrunkDid : DrunkDone);
                 return Pronouns(Voice.Pick(seed + "trouble", trouble).Replace("{other}", Person.FirstOf(t.Other(id))), otherWoman ?? OtherIsWoman(t, id));
             }
-            string[] pool = t.Kind == "brawl" ? Blows : t.Kind == "debt" ? Money : t.Kind == "makeup" ? MadeUp : t.Kind == "brushoff" ? Shrugged
+            string[] pool = t.Kind == "bout" ? Bout : t.Kind == "brawl" ? Blows : t.Kind == "debt" ? Money : t.Kind == "makeup" ? MadeUp : t.Kind == "brushoff" ? Shrugged
                           : t.Kind == "comfort" || t.Kind == "cheer" || t.Kind == "apology" ? Kindness : t.Warmth < 0 ? Quarrel : Romantic(t.Kind) ? Sweet : Known;
             return Pronouns(Voice.Pick(seed + "tie", pool).Replace("{other}", Person.FirstOf(t.Other(id))), otherWoman ?? OtherIsWoman(t, id));
         }

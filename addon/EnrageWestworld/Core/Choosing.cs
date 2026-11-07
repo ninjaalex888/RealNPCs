@@ -265,7 +265,7 @@ namespace EnrageWestworld.Core
             s += StressLoad.Lean(c.Coping, d.Id);   // broken by the week's load: the habit bends the day (FIVEDAY item 17)
             s += WorryActs.Lean(c.Worry, c.WorryStage, d.Id);   // a worry bends the day, for everyone who carries one (FIVEDAY item 7)
             if (c.Payday)
-                s += Payday.Lean(c.Weekday, c.Hour, c.Works, d.Id);   // the week's pay in their pocket (FIVEDAY item 11)
+                s += Payday.Lean(c.Weekday, c.Hour, c.Works && !c.SaloonGirl, d.Id);   // (a saloon girl's busiest afternoon: her work isn't stopped; the Part 3 review)   // the week's pay in their pocket (FIVEDAY item 11)
             if (c.Mood == "glad" && (d.Id == "talk" || d.Id == "stroll" || d.Id == "greet"))
                 s += 0.08f;
             s -= d.Effort * (n != null ? 0.3f + n[NeedState.Rest] : 0.3f);   // effort weighs more on the tired

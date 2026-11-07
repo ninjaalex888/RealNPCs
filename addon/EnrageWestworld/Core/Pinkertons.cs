@@ -81,7 +81,7 @@ namespace EnrageWestworld.Core
         public static string Warning(string you, string talked, string seed)
         {
             string w = talked != null
-                ? Voice.Pick(seed + "|wn", "{you}, a Pinkerton man was in town asking after you. {who} told him plenty.", "There was a detective here yesterday, {you}, asking about you. {who} talked. I didn't.")
+                ? Voice.Pick(seed + "|wn", "{you}, a Pinkerton man was in town asking after you. {who} told him plenty.", "There was a detective here lately, {you}, asking about you. {who} talked. I didn't.")
                 : Voice.Pick(seed + "|ww", "{you}. A man from the Pinkerton agency was asking about you. Nobody told him a thing, as far as I know.", "Watch yourself, {you}. A city man in a bowler hat was asking after a man of your description.");
             return w.Replace("{you}", you ?? "friend").Replace("{who}", talked ?? "somebody");
         }

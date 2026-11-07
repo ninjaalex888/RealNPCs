@@ -55,7 +55,8 @@ namespace EnrageWestworld.Core
         private static readonly string[] Later = { "Later. I'll bring it home tonight. I swear it.", "In front of the whole street? Later.", "After one drink. One." };
         private static readonly string[] Refuse = { "It's my money. I sweated for it.", "Go home. I'll be along.", "Not now, I said." };
         private static readonly string[] Thanks = { "That's the rent, then.", "Bless you. Come home early.", "There. That's the week saved." };
-        private static readonly string[] Bitter = { "Half. Again.", "I'll be waiting up. You'll hear about it.", "Every Saturday the same." };
+        private static readonly string[] Bitter = { "I'll be waiting up. You'll hear about it.", "Every Saturday the same.", "Go on, then. I know where to find you." };
+        private static readonly string[] BitterHalf = { "Half. Again.", "Half won't feed us to Friday.", "Every Saturday the same." };
 
         /// The wages scene: kind "wages" (no tie: it's between two who already know where they stand), A the woman.
         public static Scene Wages(SceneCast c, string seed)
@@ -67,11 +68,11 @@ namespace EnrageWestworld.Core
             Scene s = new Scene { Kind = "wages", Summary = "a woman met a man at the saloon door for his pay" };
             s.Add(asker, null, null, "approach", 200)
              .Add(asker, Fill(ask[0], a, b), "mild", "face")
-             .Add(asker, Fill(ask[1], a, b), how < 65 ? "mild" : "angry");
+             .Add(asker, Fill(ask[1], a, b), "mild");   // (not angry before he's answered: the Part 3 review)
             if (how < 35)
                 s.Add(man, Pick(AllOf, seed + "|all"), "mild").Add(asker, Pick(Thanks, seed + "|th"), "thanks", "walkaway");
             else if (how < 65)
-                s.Add(man, Pick(HalfOf, seed + "|half"), "mild").Add(asker, Pick(Bitter, seed + "|bi"), "angry", "walkaway");
+                s.Add(man, Pick(HalfOf, seed + "|half"), "mild").Add(asker, Pick(BitterHalf, seed + "|bi"), "angry", "walkaway");
             else if (how < 85)
                 s.Add(man, Pick(Later, seed + "|later"), "mild", "walkaway").Add(asker, Pick(Bitter, seed + "|bl"), "angry");
             else

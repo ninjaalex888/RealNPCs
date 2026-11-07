@@ -151,7 +151,7 @@ namespace EnrageWestworld.InGame
                         Speech.SayAny(p.Handle, Speech.Cheer, 0);
                     break;
                 default:
-                    bool there = now - r.Since >= 60000;
+                    bool there = true;   // each beat waits on him within 50 m, so reaching the end is having stood through it (the Part 3 review: the minute's test missed nineteen in twenty)
                     _engine.FinishEvent(e, there, g);
                     if (there) _eventsAttended++;
                     foreach (Ped p in r.Cast)

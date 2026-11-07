@@ -153,7 +153,7 @@ namespace EnrageWestworld.InGame
             if (r.Step >= 1 && r.Step <= 7 && d < 25f && _eventPrompt == null)
                 PromptSet(PrizeFight.Kind, e, 12000);
             // the law, after a tip-off
-            if (r.Grumbled && now - r.Looked >= FightTipMs)
+            if (r.Grumbled && now - r.Looked >= FightTipMs && r.Step < 8)   // (a bout already over isn't raided: the Part 3 review)
             {
                 SpeechCaption("The lookout", PrizeFight.RaidLine(e.Id), r.Fiddler.Handle, 4000, false, false);
                 Speech.SayAny(r.Fiddler.Handle, Speech.Scared, 0);
@@ -189,12 +189,13 @@ namespace EnrageWestworld.InGame
                         SpeechCaption(Person.FirstOf(w == 0 ? e.BName : e.AName) ?? "The loser", PrizeFight.LostLine(e, w, e.Id), lost.Handle, 4000, false, false);
                     r.Step = 8;
                     r.NextCall = now + 7000;
+                    PromptClear();   // the hat's closed: no bet on a known winner (the Part 3 review)
                     Log.Write("EVENT prizefight " + e.Town + ": " + (w == 0 ? e.AName : e.BName) + " won (" + (int)(ha * 100) + "% / " + (int)(hb * 100) + "% left)");
                 }
                 else if (now >= r.NextCall && d < 50f)
                 {
                     r.NextCall = now + 6000 + _rng.Next(1500);   // a shout every six or seven seconds while they fight
-                    Ped crowd = r.Cast[3 + _rng.Next(Math.Max(1, r.Cast.Count - 3))];
+                    Ped crowd = r.Cast.Where(p => !r.Performers.Contains(p) && p != r.Fiddler && !IsDeadOrGone(p)).OrderBy(p => _rng.Next()).FirstOrDefault() ?? r.Fiddler;   // the ring only (the Part 3 review: the fighters move in the list)
                     Speech.SayAny(crowd.Handle, Speech.Cheer, a.Handle);
                     SpeechCaption("Someone in the ring", PrizeFight.RingLine(e, e.Id + "|" + now / 6000), crowd.Handle, 3500, false, false);
                 }
@@ -276,6 +277,11 @@ namespace EnrageWestworld.InGame
             }
             else if (part.Contains("bet:") && !part.Contains("tipped"))
                 Hint("Your dollar stays in the hat.", 3000);
+            else if (part.Contains("bet:"))
+                Hint("Your dollar went with the hat when the law came.", 3000);
+            foreach (Ped f in r.Performers)
+                if (f != null)
+                    _fighterStart.Remove(f.Handle);
             foreach (Ped p in r.Cast)
                 WanderLater(p.Handle, now + 1500 + _rng.Next(6000));
             _fightLast = e.Town + ": " + e.Outcome;
@@ -290,6 +296,11 @@ namespace EnrageWestworld.InGame
                 return;
             if (what == "betA" || what == "betB")
             {
+                if (r.Step >= 3)
+                {
+                    Hint("The hat's closed once they're at it.", 2500);   // no bets once the bout is on (the Part 3 review)
+                    return;
+                }
                 int cash = MONEY._MONEY_GET_CASH_BALANCE();
                 if (cash < PrizeFight.StakeCents)
                 {

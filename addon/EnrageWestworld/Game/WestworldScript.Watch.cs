@@ -1276,7 +1276,9 @@ namespace EnrageWestworld.InGame
         {
             public List<int> Handles = new List<int>();
             public HashSet<int> Dead = new HashSet<int>();
-            public HashSet<int> Quiet = new HashSet<int>(), Leaned = new HashSet<int>();   // keeping quiet about it, and leaned on with a gun (Core/WitnessChoice.cs; FIVEDAY item 14)
+            public HashSet<int> Quiet = new HashSet<int>(), Leaned = new HashSet<int>();
+            public Dictionary<int, int> AimSince = new Dictionary<int, int>();   // a witness under your aim since (game ms): leaning takes a held aim (the Part 3 review)
+            public int MadeAt;   // keeping quiet about it, and leaned on with a gun (Core/WitnessChoice.cs; FIVEDAY item 14)
             public Vector3 Body;       // a killing nobody saw: where the body lies, watched a while for someone coming upon it
             public int Victim, WatchUntil;
         }
@@ -1310,6 +1312,7 @@ namespace EnrageWestworld.InGame
             if (e.Handles.Count > 0)
             {
                 _deedEyes[d.Id] = e;
+                e.MadeAt = Game.GameTime;
                 if (_cfg.WitnessesChoose)
                     WitnessesChoose(d, e, victim != 0 ? victim : except);
             }
@@ -1357,7 +1360,7 @@ namespace EnrageWestworld.InGame
                 {
                     d.Witnesses = alive;
                     if (alive == 0)
-                        Log.Write("DEED " + d.Kind + " " + Deeds.Place(d) + ": everyone who saw it is dead now");
+                        Log.Write("DEED " + d.Kind + " " + Deeds.Place(d) + ": everyone who saw it is dead now, or keeping quiet");
                 }
             }
         }
@@ -1401,11 +1404,25 @@ namespace EnrageWestworld.InGame
         private void WitnessesLeanedOn(Deed d, DeedEyes e)
         {
             Ped me = Game.Player.Character;
+            int now = Game.GameTime;
+            if (now - e.MadeAt < 10000 || PED.IS_PED_IN_COMBAT(me.Handle, 0))
+                return;   // the sweep right after the deed, or a fight still going, isn't leaning on anyone (the Part 3 review)
             foreach (int h in e.Handles)
             {
                 if (e.Dead.Contains(h) || e.Quiet.Contains(h) || e.Leaned.Contains(h) || !ENTITY.DOES_ENTITY_EXIST(h) ||
                     !PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, h) || ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(me.Position) > 25f)
+                {
+                    e.AimSince.Remove(h);
                     continue;
+                }
+                int since;
+                if (!e.AimSince.TryGetValue(h, out since))
+                {
+                    e.AimSince[h] = now;
+                    continue;
+                }
+                if (now - since < 1500)
+                    continue;   // a held aim, a second and a half
                 e.Leaned.Add(h);
                 MindWho w = MindKnown(h, Game.GameTime);
                 Traits t = w != null && w.Src != null ? (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))) : null;

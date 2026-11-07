@@ -94,7 +94,7 @@ namespace EnrageWestworld.Core
                 string wonId = w == 0 ? e.AId : e.BId, wonName = w == 0 ? e.AName : e.BName, lostId = w == 0 ? e.BId : e.AId, lostName = w == 0 ? e.BName : e.AName;
                 if (wonId != null && lostId != null)
                 {
-                    Ties.Note(Store.Ties, wonId, wonName, lostId, lostName, e.Town, "makeup", now);   // a fair fight, done: respect, not a grudge
+                    Ties.Note(Store.Ties, wonId, wonName, lostId, lostName, e.Town, "bout", now);   // a fair fight, done: respect a step, not a grudge (the Part 3 review: "makeup" made friends at once and said sorry)
                     if (Cfg.Minds)
                         foreach (bool won in new[] { true, false })
                         {

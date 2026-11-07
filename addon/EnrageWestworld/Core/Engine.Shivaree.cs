@@ -69,7 +69,7 @@ namespace EnrageWestworld.Core
                     }, now);
                 }
             if (attended)
-                foreach (Resident r in Store.Residents.Where(r => r.Regular && !r.Dead && r.Town == e.Town).Take(8))
+                foreach (Resident r in Store.Residents.Where(r => r.Regular && !r.Dead && r.Town == e.Town).OrderBy(r => Voice.Hash(r.Id + "|" + e.Id)).Take(8))   // eight of the town's, by the night (the Part 3 review: always the same first eight)
                 {
                     PersonState st = MindOf(r.Id, r.Name);
                     if (st != null)

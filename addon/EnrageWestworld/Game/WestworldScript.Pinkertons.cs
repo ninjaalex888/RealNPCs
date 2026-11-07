@@ -25,7 +25,7 @@ namespace EnrageWestworld.InGame
             public Vector3 At;
             public Ped Man;
             public List<int> Asked = new List<int>();
-            public int Step, Since, NextAt, Health, Target, Lied, Told, Shrugged, LeaveAt;
+            public int Step, Since, NextAt, Health, Target, Lied, Told, Shrugged, LeaveAt, WalkAt, WalkSent;
             public bool Test;
         }
 
@@ -136,8 +136,6 @@ namespace EnrageWestworld.InGame
             Vector3 at;
             if (!EncounterSpot(me, 25f, 45f, out at))
                 return _pinkWhyNot = "nowhere out of view for him to come from";
-            if (!test)
-                Pacing.Note(_store.Pace, "pinkerton", _placeTown, null, g);
             _pink = new PinkRun { Town = _placeTown, DeedKind = kind ?? "a test", Seed = _placeTown + "|" + g, Model = Spawner.ModelFor("Saint Denis", false, PinkModelPick), At = at, Since = now, NextAt = now, Test = test };
             Log.Write("PINKERTON coming to " + _placeTown + " to ask after you (your " + (kind ?? "test") + " known here)" + (test ? " (a test)" : ""));
             return _pinkWhyNot = null;
@@ -165,6 +163,8 @@ namespace EnrageWestworld.InGame
                 if (p == null)
                     return;
                 r.Man = p;
+                if (!r.Test)
+                    Pacing.Note(_store.Pace, "pinkerton", r.Town, null, Bridge.Now());   // the town's rest taken once he's there (the Part 3 review: a lost spawn used it up)
                 r.Health = ENTITY.GET_ENTITY_HEALTH(p.Handle);
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, true);
                 r.Since = now;
@@ -203,6 +203,7 @@ namespace EnrageWestworld.InGame
                 }
                 r.Target = next;
                 r.Step = 0;
+                r.WalkAt = r.WalkSent = now;
                 TASK.TASK_GO_TO_ENTITY(r.Man.Handle, next, 30000, 1.6f, 1.0f, 0f, 0);
                 return;
             }
@@ -222,8 +223,17 @@ namespace EnrageWestworld.InGame
                 case 0:   // walking up
                     if (r.Man.Position.DistanceTo(ENTITY.GET_ENTITY_COORDS(t, true, true)) > 2.4f)
                     {
-                        if (now - r.Since > 200000)
-                            PinkLeave(r, now, "he never reached them");
+                        if (now - r.WalkAt > 30000)
+                        {
+                            r.Asked.Add(t);   // they walked on: he tries the next (the Part 3 review)
+                            r.Target = 0;
+                            Log.Write("PINKERTON never reached " + name + "; he tries another");
+                        }
+                        else if (now - r.WalkSent > 8000)
+                        {
+                            r.WalkSent = now;
+                            TASK.TASK_GO_TO_ENTITY(r.Man.Handle, t, 30000, 1.6f, 1.0f, 0f, 0);   // after them again, where they've got to
+                        }
                         return;
                     }
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(r.Man.Handle, t, 9000, 0f, 0f, 0f);

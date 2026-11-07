@@ -54,7 +54,7 @@ namespace EnrageWestworld.Core
         /// The morning's word about town.
         public static string Morning(TownEvent e, bool attended)
         {
-            return Fill(attended ? "They banged pans for {a} and {b} till past midnight, the stranger among them. {a} paid for a round at the saloon."
+            return Fill(attended ? "They banged pans for {a} and {b} till half past ten, the stranger among them. {a} paid for a round at the saloon."
                                  : "They gave {a} and {b} a proper shivaree last night. Pans, a cowbell, the lot. {a} stood the crowd a round.", e);
         }
 

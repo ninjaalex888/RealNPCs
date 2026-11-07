@@ -64,7 +64,7 @@ namespace EnrageWestworld.Core
             "Shoot me, then. Everyone'll know why.",
             "You can't put a bullet in the whole town.",
             "I saw what I saw. Put that away.",
-            "Go on. The marshal will hear it from my widow if not from me.",
+            "Go on. The marshal will hear it from my family if not from me.",
         };
 
         public static string SilentLine(string seed) { return Pick(Silent, seed + "|s"); }

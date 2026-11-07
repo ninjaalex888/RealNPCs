@@ -32,7 +32,8 @@ namespace EnrageWestworld.Core
         private static readonly string[] Slink = { "...I was only passing.", "Another day, ma'am. Another day.", "Spare me the look, ma'am." };
         private static readonly string[] Swear = { "You're right. Not today. Not today.", "Give me the card. Quick, before I think.", "One day dry. I'll try one day." };
         private static readonly string[] Home = { "...All right. Home, then.", "You'll not let go of my arm, will you?", "Lead on. I'm too tired to argue." };
-        private static readonly string[] HerAfter = { "God keep you.", "One saved is one more than yesterday.", "We'll be here again Saturday.", "I'll pray for him all the same." };
+        private static readonly string[] HerAfter = { "God keep you.", "One saved is one more than yesterday.", "Bless you. Saturday's the hardest. Remember that." };   // after he swears off
+        private static readonly string[] HerRebuffed = { "We'll be here again Saturday.", "I'll pray for him all the same.", "The Lord is patient. So am I." };   // after a jeer or a slink
 
         /// The scene: kind "temperance", A the woman (whichever side she's on), B the man. Outcome by the seed: jeer 35,
         /// slink 30, swear off 20, home on her arm 15.
@@ -47,9 +48,9 @@ namespace EnrageWestworld.Core
             s.Add(her, null, null, "approach", 200)
              .Add(her, Pick(Plea, seed + "|plea").Replace("{b}", b), "mild", "face");
             if (how < 35)
-                s.Add(him, Pick(Jeer, seed + "|j"), "mock", "walkaway").Add(her, Pick(HerAfter, seed + "|a"), "mild");
+                s.Add(him, Pick(Jeer, seed + "|j"), "mock", "walkaway").Add(her, Pick(HerRebuffed, seed + "|a"), "mild");
             else if (how < 65)
-                s.Add(him, Pick(Slink, seed + "|s"), "mild", "walkaway").Add(her, Pick(HerAfter, seed + "|a"), "mild");
+                s.Add(him, Pick(Slink, seed + "|s"), "mild", "walkaway").Add(her, Pick(HerRebuffed, seed + "|a"), "mild");
             else if (how < 85)
                 s.Add(him, Pick(Swear, seed + "|w"), "thanks").Add(her, Pick(HerAfter, seed + "|a"), "thanks", "walkaway").Add(him, null, null, "walkaway");
             else
@@ -66,7 +67,7 @@ namespace EnrageWestworld.Core
         {
             foreach (string l in Plea)
                 yield return l.Replace("{b}", "Amos");
-            foreach (string[] pool in new[] { Jeer, Slink, Swear, Home, HerAfter })
+            foreach (string[] pool in new[] { Jeer, Slink, Swear, Home, HerAfter, HerRebuffed })
                 foreach (string l in pool)
                     yield return l;
         }
