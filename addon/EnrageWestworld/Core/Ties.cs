@@ -23,6 +23,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public int Stage;             // how far a story between them has gone (follow-up scenes)
         [DataMember(EmitDefaultValue = false)] public string Doer;           // for trouble one did to the other (rough, pickpocket, lift, drunk): who did it
         [DataMember(EmitDefaultValue = false)] public bool Courted;          // they were sweethearts (a flirt, sweet words, a proposal): a quarrel since leaves them at odds (Scenes.Mend)
+        [DataMember(EmitDefaultValue = false)] public long FrightAt;         // both saw the player kill, then (Core/SharedFright.cs; FIVEDAY item 22)
         [DataMember(EmitDefaultValue = false)] public string Crime;          // the latest theft between them (pickpocket, lift, mugging), kept when a later scene moves Kind on (the criminal class reads it: Core/Criminals.cs; the review of items 15-19)
         [DataMember(EmitDefaultValue = false)] public long CrimeAt;          // when
         [DataMember(EmitDefaultValue = false)] public string CrimeDoer;      // who did it
@@ -81,7 +82,9 @@ namespace EnrageWestworld.Core
                 case "makeup":
                     return 2;
                 case "bout":
-                    return 1;   // a fair fight out back, done: respect a step (Core/PrizeFight.cs)   // a quarrel mended counts for more than one more kind word
+                    return 1;
+                case "fright":
+                    return 1;   // both saw him kill: fear seeks company (Core/SharedFright.cs)   // a fair fight out back, done: respect a step (Core/PrizeFight.cs)   // a quarrel mended counts for more than one more kind word
                 case "smalltalk": case "gossip": case "haggle": case "hosts": case "brushoff": case "avoid": case "mindtalk": case "introduced":   // (introduced: made known to each other by the player, Core/Verbs.cs)
                     return 0;
                 default:
@@ -393,6 +396,8 @@ namespace EnrageWestworld.Core
             "Small thing {other} did. Biggest thing all week.",
             "Next time someone's down, I'll do as {other} did."
         };
+
+        private static readonly string[] Fright = { "{other} saw it too. We don't speak of it, except to each other.", "Only {other} knows what that was like. Only {other}.", "{other} and I stood there while it happened. That's a thing between us now.", "I look for {other} in the street these days. I don't know why.", "{other} was there. I'm glad of it, God forgive me." };
 
         private static readonly string[] Bout = { "{other} hits harder than they say. Fair fight, though.", "Stood up to {other} out back. Neither of us shamed.", "{other} shook my hand after, for all the blood.", "Fought {other} for money. Got a bit of respect for my trouble.", "I'll buy {other} a drink one day. Not today. Jaw's sore." };
 
@@ -937,7 +942,7 @@ namespace EnrageWestworld.Core
                                  : t.Kind == "faced" ? (did ? FacedDid : FacedDone) : t.Kind == "round" ? (did ? RoundDid : RoundDone) : t.Kind == "settled" ? (did ? SettledDid : SettledDone) : (did ? DrunkDid : DrunkDone);
                 return Pronouns(Voice.Pick(seed + "trouble", trouble).Replace("{other}", Person.FirstOf(t.Other(id))), otherWoman ?? OtherIsWoman(t, id));
             }
-            string[] pool = t.Kind == "bout" ? Bout : t.Kind == "brawl" ? Blows : t.Kind == "debt" ? Money : t.Kind == "makeup" ? MadeUp : t.Kind == "brushoff" ? Shrugged
+            string[] pool = t.Kind == "fright" ? Fright : t.Kind == "bout" ? Bout : t.Kind == "brawl" ? Blows : t.Kind == "debt" ? Money : t.Kind == "makeup" ? MadeUp : t.Kind == "brushoff" ? Shrugged
                           : t.Kind == "comfort" || t.Kind == "cheer" || t.Kind == "apology" ? Kindness : t.Warmth < 0 ? Quarrel : Romantic(t.Kind) ? Sweet : Known;
             return Pronouns(Voice.Pick(seed + "tie", pool).Replace("{other}", Person.FirstOf(t.Other(id))), otherWoman ?? OtherIsWoman(t, id));
         }

@@ -406,7 +406,8 @@ namespace EnrageWestworld.InGame
             };
             c.Payday = _cfg.Payday;
             c.Coping = _engine.BrokenWay(w.Id, g / 1440);
-            c.Survivor = SurvivorWayOf(w);   // (FIVEDAY item 21; null with SurvivorsChanged off)   // a breakdown's habit (FIVEDAY item 17; null with StressBuilds off)
+            c.Survivor = SurvivorWayOf(w);
+            c.Fright = _cfg.SharedFright && FrightPartnerNear(w.Id);   // (FIVEDAY item 22)   // (FIVEDAY item 21; null with SurvivorsChanged off)   // a breakdown's habit (FIVEDAY item 17; null with StressBuilds off)
             if (_cfg.WorriesShown)
             {
                 string wk;

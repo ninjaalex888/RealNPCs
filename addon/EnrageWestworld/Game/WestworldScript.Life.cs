@@ -514,12 +514,50 @@ namespace EnrageWestworld.InGame
             cast.Off.Add("debt");
             Scene s = !cast.AWoman && !cast.BWoman && Director.OldModel(a) && Director.OldModel(b) && !cast.Off.Contains("smalltalk") && Voice.Chance(seed + "|olddays", 45)
                 ? Scenes.OldDays(cast, seed) : Scenes.Choose(cast, seed, true);
+            if (_cfg.SharedFright && FrightBetween(a.Handle, b.Handle, now) && Voice.Chance(seed + "|fright", SharedFright.TalkChance))
+            {
+                s = SharedFright.Make(cast, seed);   // both saw you kill: that's what they talk of (FIVEDAY item 22)
+                _frightTalks++;
+            }
             if (s != null && (!Director.Quiet(s) || TroubleKinds.Contains(s.Kind) || s.Kind == "hosts" || s.Kind == "pickpocket" || s.Kind == "debt"))
                 s = cast.Off.Contains("smalltalk") ? null : Scenes.SmallTalk(cast, seed);   // a talk beside is words only
             if (s == null || !Director.Quiet(s))
                 return;
             if (StartScene(s, new List<Ped> { a, b }, cast, seed, now, side: true))
                 _nextSide = Math.Max(_nextSide, now + SideTalk.GapMs);   // one new quiet talk at a time, never sooner than the storyteller's own gap (FIVEDAY item 5; the review)
+        }
+
+        private int _frightTalks;
+
+        /// Both saw the player kill, these two weeks (SceneTie.FrightAt; FIVEDAY item 22).
+        private bool FrightBetween(int ha, int hb, int now)
+        {
+            MindWho wa = MindKnown(ha, now), wb = MindKnown(hb, now);
+            if (wa == null || wb == null || wa.Id == null || wb.Id == null)
+                return false;
+            long g = _store.LastGameMin;
+            return _store.Ties.Any(t => t.Has(wa.Id) && t.Has(wb.Id) && SharedFright.Fresh(t, g));
+        }
+
+        /// One who shares the fright with someone about now (the mind's near list).
+        private bool FrightPartnerNear(string id)
+        {
+            if (id == null)
+                return false;
+            long g = _store.LastGameMin;
+            foreach (SceneTie t in _store.Ties)
+            {
+                if (!t.Has(id) || !SharedFright.Fresh(t, g))
+                    continue;
+                string other = t.OtherId(id);
+                foreach (int h in _mindNear)
+                {
+                    MindWho o;
+                    if (_mindWho.TryGetValue(h, out o) && o.Id == other)
+                        return true;
+                }
+            }
+            return false;
         }
 
         /// A quiet talk's line: a subtitle only when it's near you, never the queue the scene's lines take (two talks at once

@@ -94,6 +94,7 @@ namespace EnrageWestworld.Core
                 case "callout": return a + " called " + t + " out";
                 case "debt": return a + " and " + t + " quarrelled over money";
                 case "settled": return a + " paid " + t + " what was owed";
+                case "fright": return a + " and " + t + " stood together after the killing, white as sheets";
                 case "bout": return a + " and " + t + " fought out back for money, and shook on it";
                 case "cheat": return a + " and " + t + " fell out over cards";
                 case "welsh": return a + " wouldn't hand " + t + " the winnings from the fistfight";

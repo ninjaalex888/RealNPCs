@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
         public bool Works = true;             // a working trade: the day's work is a duty, not only a want (gentry and ladies: false)
         public string WorkPlace;              // where their work is, if it's somewhere work is otherwise improper (a barkeep's saloon)
         public bool Woman, SaloonGirl;        // a respectable woman of 1899 didn't drink or play cards in a saloon; the saloon's own women did
+        public bool Fright;                   // one they saw the player kill with is about (Core/SharedFright.cs), with [Mind] SharedFright
         public string Survivor;               // the way a wrong of the player's left them (Core/Survivors.cs: geteven, standing, broken), with [Mind] SurvivorsChanged; else null
         public string Coping;                 // a breakdown's habit this week (Core/StressLoad.cs: drink, pray, grave, temper, train), with [Mind] StressBuilds; else null
         public string Plan;                   // a plan they carry over these days (Plans.cs: geteven, repay, paydebt, court), or null
@@ -263,6 +264,7 @@ namespace EnrageWestworld.Core
                 s -= 0.1f;   // sore: less for company (a friend is still sought: greet stays)
             if (c.Plan != null)
                 s += PlanLean(c.Plan, d.Id);
+            s += SharedFright.Lean(c.Fright, d.Id);   // they keep clear of him together (FIVEDAY item 22)
             s += Survivors.Lean(c.Survivor, d.Id);   // a wrong of his: the broken keep clear of the street (FIVEDAY item 21)
             s += StressLoad.Lean(c.Coping, d.Id);   // broken by the week's load: the habit bends the day (FIVEDAY item 17)
             s += WorryActs.Lean(c.Worry, c.WorryStage, d.Id);   // a worry bends the day, for everyone who carries one (FIVEDAY item 7)

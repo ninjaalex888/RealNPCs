@@ -513,6 +513,24 @@ namespace EnrageWestworld.Core
                 }, now);
                 Detail("MIND " + (w.Name ?? w.Id) + " saw you: " + d.Kind + " (" + m.Strength + ", " + st.Mind.Count + " kept)");
             }
+            if (Cfg.SharedFright && SharedFright.IsKilling(d.Kind))
+            {
+                // shared fright (FIVEDAY item 22): every two of the first six who saw it are tied by it
+                var saw = watchers.Where(x => x != null && x.Id != null && x.Id != "player" && x.Id != d.VictimId).GroupBy(x => x.Id).Select(x => x.First()).Take(SharedFright.MostWitnesses).ToList();
+                int pairs = 0;
+                for (int i = 0; i < saw.Count; i++)
+                    for (int j = i + 1; j < saw.Count; j++)
+                    {
+                        SceneTie t = Ties.Note(Store.Ties, saw[i].Id, saw[i].Name, saw[j].Id, saw[j].Name, d.Town, SharedFright.Kind, now);
+                        if (t != null)
+                        {
+                            t.FrightAt = now;
+                            pairs++;
+                        }
+                    }
+                if (pairs > 0)
+                    Log("FRIGHT " + pairs + " pairs of those who saw your " + d.Kind + " are tied by it");
+            }
         }
 
         /// A death RealNPCs noted: whoever had a tie or a worry link with them hears of it an hour or a few later (a

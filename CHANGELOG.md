@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Shared fright** (`[Mind] SharedFright`, on; settings version 274; FIVEDAY item 22). Two people who both saw you kill are now tied by it. The tie between them warms a step, and for two weeks they keep clear of you together when both are about. When the street's quiet talk falls to the two of them, it's about that three times in four, low-voiced: "You were there. You saw it." "Don't. Not here."
+
 - **Survivors come back changed** (`[Mind] SurvivorsChanged`, on; settings version 273; FIVEDAY item 21). Someone you beat or robbed and left alive now comes back changed, a day on, by who they are:
   - The angry with friends bring up to two of them when they call you out. The friends back them up in words and fight with them.
   - The bold have more standing for having faced you.
