@@ -1276,6 +1276,7 @@ namespace EnrageWestworld.InGame
         {
             public List<int> Handles = new List<int>();
             public HashSet<int> Dead = new HashSet<int>();
+            public HashSet<int> Quiet = new HashSet<int>(), Leaned = new HashSet<int>();   // keeping quiet about it, and leaned on with a gun (Core/WitnessChoice.cs; FIVEDAY item 14)
             public Vector3 Body;       // a killing nobody saw: where the body lies, watched a while for someone coming upon it
             public int Victim, WatchUntil;
         }
@@ -1307,7 +1308,11 @@ namespace EnrageWestworld.InGame
                     e.Handles.Add(h);
             }
             if (e.Handles.Count > 0)
+            {
                 _deedEyes[d.Id] = e;
+                if (_cfg.WitnessesChoose)
+                    WitnessesChoose(d, e, victim != 0 ? victim : except);
+            }
             if (_deedEyes.Count > 40)
                 _deedEyes.Remove(_deedEyes.Keys.First());
         }
@@ -1345,7 +1350,9 @@ namespace EnrageWestworld.InGame
                 foreach (int h in e.Handles)
                     if (!e.Dead.Contains(h) && ENTITY.DOES_ENTITY_EXIST(h) && ENTITY.IS_ENTITY_DEAD(h))
                         e.Dead.Add(h);
-                int alive = e.Handles.Count - e.Dead.Count;
+                if (_cfg.WitnessesChoose)
+                    WitnessesLeanedOn(d, e);
+                int alive = e.Handles.Count(h => !e.Dead.Contains(h) && !e.Quiet.Contains(h));   // those who'd tell: alive, and not keeping quiet
                 if (alive < d.Witnesses)
                 {
                     d.Witnesses = alive;
@@ -1353,6 +1360,80 @@ namespace EnrageWestworld.InGame
                         Log.Write("DEED " + d.Kind + " " + Deeds.Place(d) + ": everyone who saw it is dead now");
                 }
             }
+        }
+
+        private int _witnessQuiet, _witnessLeaned, _witnessDefied;
+
+        /// Each witness the mind knows chooses, once: tell it, or keep quiet out of fear of him or loyalty to him.
+        private void WitnessesChoose(Deed d, DeedEyes e, int victim)
+        {
+            try
+            {
+                int now = Game.GameTime;
+                long g = Bridge.Now();
+                MindWho vw = victim != 0 ? MindKnown(victim, now) : null;
+                foreach (int h in e.Handles)
+                {
+                    MindWho w = MindKnown(h, now);
+                    if (w == null || w.Id == null || w.Src == null)
+                        continue;   // nobody the mind knows tells, as before
+                    Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
+                    bool afraid = FeltAboutYou(w.Id, "fear", g) >= 0.3f;
+                    bool fond = AllyWarmth(new Ped(h), w) >= 2;
+                    bool victimFriend = vw != null && vw.Id != null && LadderWarmth(w.Id, vw.Id) >= 1;
+                    int pct;
+                    string why = WitnessChoice.Keeps(t, afraid, fond, victimFriend, d.Id + "|" + w.Id, out pct);
+                    if (why == null)
+                        continue;
+                    e.Quiet.Add(h);
+                    _witnessQuiet++;
+                    Log.Write("WITNESS " + w.Name + " saw your " + d.Kind + " " + Deeds.Place(d) + " and keeps quiet (" + why + ", " + pct + "%)");
+                    _ticker.Push(w.Name + ", thinking", WitnessChoice.QuietThought(why, d.Id + "|" + w.Id), "near", h);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Write("WITNESS choosing failed: " + ex.Message);
+            }
+        }
+
+        /// A gun on a witness within the hour of it: the frightened swear silence, the rest defy him and tell it sooner.
+        private void WitnessesLeanedOn(Deed d, DeedEyes e)
+        {
+            Ped me = Game.Player.Character;
+            foreach (int h in e.Handles)
+            {
+                if (e.Dead.Contains(h) || e.Quiet.Contains(h) || e.Leaned.Contains(h) || !ENTITY.DOES_ENTITY_EXIST(h) ||
+                    !PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, h) || ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(me.Position) > 25f)
+                    continue;
+                e.Leaned.Add(h);
+                MindWho w = MindKnown(h, Game.GameTime);
+                Traits t = w != null && w.Src != null ? (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))) : null;
+                string name = w != null && w.Name != null ? w.Name : TalkName(new Ped(h));
+                int pct;
+                if (WitnessChoice.GivesIn(t, d.Id + "|" + h + "|gun", out pct))
+                {
+                    e.Quiet.Add(h);
+                    _witnessLeaned++;
+                    SpeechCaption(name, WitnessChoice.SilentLine(d.Id + "|" + h), h, 3500, true);
+                    Speech.SayAny(h, Speech.Scared, me.Handle);
+                    Log.Write("WITNESS " + name + ", at gunpoint, swears to have seen nothing (" + pct + "% to give in)");
+                }
+                else
+                {
+                    _witnessDefied++;
+                    SpeechCaption(name, WitnessChoice.DefiantLine(d.Id + "|" + h), h, 3500, true);
+                    long g = Bridge.Now();
+                    if (d.TalkAt > g + 10)
+                        d.TalkAt = g + 10;   // they'll tell it now, and sooner for the gun
+                    Log.Write("WITNESS " + name + ", at gunpoint, defies you; the talk starts sooner (" + (100 - pct) + "% to defy)");
+                }
+            }
+        }
+
+        private string WitnessStatus()
+        {
+            return !_cfg.WitnessesChoose ? "off ([World] WitnessesChoose)" : _witnessQuiet + " kept quiet of their own accord this session, " + _witnessLeaned + " gave in at gunpoint, " + _witnessDefied + " defied you";
         }
 
         /// Someone within 20 m of a body nobody saw fall, with him within 30 m of it and in their sight: they saw him there.
