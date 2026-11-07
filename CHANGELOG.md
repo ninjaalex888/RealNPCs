@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Three whistles** (`[World] MineWhistle`, on; settings version 280; FIVEDAY item 28). Rarely, the mine whistle at Annesburg blows three times: about eight times in a game year, never within three weeks of the last. One or two of the town's men are killed below, a miner first. They're named, never shown, and mourned like anyone (their friends hear of it, and the wake is kept).
+  - If you're in Annesburg, you hear it. People near you run for the pithead (when its spot is recorded), a wife waits on the names, and the names come up from the shaft. Then comes anger at the company, and the hat goes round for the widows.
+  - Away, the word reaches you.
+  - A Testing row sets one off now.
+
 - **The wake** (`[World] Wakes`, on; settings version 279; FIVEDAY item 27). The night after a death in a town, or the night before one of enRAGE's funerals, the neighbours now sit up with the dead from eight to two. The Around town box tells you once a night (lamps in every window, neighbours at the door with covered dishes), and half the street's quiet talks that night are of the dead. In West World, one of the waking near you swears the dead one moved. It plays outside and in talk, since interiors are out of reach.
 
 - **Mourning and graves visited** (`[World] Mourning`, on; settings version 278; FIVEDAY item 26). For three weeks after a friend's death, people mourn:

@@ -1277,6 +1277,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST sunday: " + SundayStatus());
 			Log.Write("TEST mourning: " + MourningStatus());
 			Log.Write("TEST wakes: " + WakesStatus());
+			Log.Write("TEST mine: " + MineStatusLine());
 			Log.Write("TEST tie gossip: " + _engine.TieGossipStatus());
 			Log.Write("TEST shared fright: " + (_cfg.SharedFright ? _store.Ties.Count(t => SharedFright.Fresh(t, _store.LastGameMin)) + " pairs tied by a killing they both saw (these two weeks); " + _frightTalks + " of their quiet talks this session" : "off ([Mind] SharedFright)"));
 			Log.Write("TEST while away: " + (!_cfg.WhileAway ? "off ([World] WhileAway)" : _awayTold + " told this session" + (_awayLast != null ? "; the last: " + _awayLast : "") + "; " + _store.TownLastAbout.Count + " towns remembered"));

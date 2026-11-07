@@ -1084,6 +1084,22 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Three whistles (FIVEDAY item 28, 2026-11-06; `[World] MineWhistle`; settings version 280)
+
+Core/MineWhistle.cs:
+- `Today(day, lastDay, out minute)`: a 4% roll a day, a gap of 21 days or more, between 07:00 and 17:00.
+- `Victims(town, seed)`: one man, or two 35% of the time. Men who aren't held, a miner first, then a regular.
+- The lines: whistle, waiting, anger, names, collection, away.
+
+Core/Engine.MineWhistle.cs: `MineDaily`, from DailyTick, books `Store.Counts["mine:due"]`; `MineTick`, from WorldTick, calls `MineAccidentNow` at that minute. Each death goes through `NoteDied(new DeathEntry { Kind = "resident", How = "the mine", By = "unknown" })`, so friends hear of it and mourning, the wake and What you missed follow. It also adds to the ledger's DeathsOther, makes a toast, and sets `LastMine`. Game/WestworldScript.MineWhistle.cs: `MineStep` stages a fresh LastMine (within 2 game hours) once, out of doors in Annesburg, in five beats:
+- the caption;
+- up to 6 free peds within 60 m sent by nav mesh to the "pithead" spot within 400 m, wandering after 60 s;
+- a woman's waiting thought;
+- the names in the box;
+- a man's anger, and the collection in the box.
+
+Testing row `mine`. F7 `TEST mine:`. mindtest `MineWhistleTest` (`mine`). Not built: a whistle sound (no proven sound), and the rewind for `mine:lastday`.
+
 ## The wake (FIVEDAY item 27, 2026-11-06; `[World] Wakes`; settings version 279)
 
 Core/WakeNight.cs:

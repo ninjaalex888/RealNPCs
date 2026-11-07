@@ -286,6 +286,17 @@ namespace EnrageWestworld.InGame
                         said = "Marks probe: " + _marksProbeLast + ". Note which ones read as hurt, for [Mind] LastingMarksGait and LastingMarksPack.";
                         return null;
                     }
+                case "mine":
+                    {
+                        skipped = "the day's roll and the three weeks between";
+                        if (!_cfg.MineWhistle)
+                            return "off ([World] MineWhistle)";
+                        string why = _engine.MineAccidentNow(Bridge.Now(), true);
+                        if (why != null)
+                            return why;
+                        said = "Three whistles at Annesburg: " + string.Join(", ", _engine.LastMine.Names) + " killed below" + (_placeTown == MineWhistle.Town ? "; watch the street" : " (word reaches you; be in Annesburg to see it staged)");
+                        return null;
+                    }
                 case "pinkerton":
                     {
                         skipped = "a violent deed of yours known here this week, the day's roll, the hour and the five days' rest";

@@ -510,6 +510,7 @@ namespace EnrageWestworld.Core
             Store.LastWorldTickAt = now;
             WakeTick(now);
             DeedTalkTick(now);
+            MineTick(now);        // the mine's booked minute come: three whistles (Engine.MineWhistle.cs; FIVEDAY item 28)
             TieGossipTick(now);   // word of his deeds along the town's ties (Engine.TieGossip.cs; FIVEDAY item 23)
             AvengerTick(now);
             ReplyTick(now);   // letters answered and written, landing (Engine.Letters.cs)
@@ -923,6 +924,7 @@ namespace EnrageWestworld.Core
                 DebtTick(now);
             GoalTick(now);
             EventsDaily(now);   // the dances posted on Thursdays (Engine.Events.cs)
+            MineDaily(now);         // a day's roll for the mine at Annesburg (Engine.MineWhistle.cs; FIVEDAY item 28)
             StressDaily(now);       // the week's load: who breaks today, and how (Engine.Stress.cs; FIVEDAY item 17), before the leavers
             DeparturesDaily(now);   // who leaves on the train today, and yesterday's leavers gone (Engine.Trains.cs)
             LedgersDaily(now);   // the towns' ledgers read, the month's mention (Engine.Ledgers.cs)
