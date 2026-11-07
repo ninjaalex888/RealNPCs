@@ -1084,6 +1084,16 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## The wake (FIVEDAY item 27, 2026-11-06; `[World] Wakes`; settings version 279)
+
+Core/WakeNight.cs:
+- `NightOf(diedAt)`: the day of the death, or the next day for a death after 18:00.
+- `Tonight(now)`: before 02:00 still counts as yesterday's night.
+- `Due(store, town, now)`: residents dead with NightOf equal to tonight.
+- `Talk(cast, dead, seed)`: a three-beat "smalltalk" scene with quiet acts. Also `Box` and `OddThought`.
+
+The class is named WakeNight to keep clear of the Awakening's waking. Game/WestworldScript.WakeNight.cs: `WakeNightStep` runs every 15 s from 20:00 to 02:00 in a town. `WakesHere` adds enRAGE's funerals due tomorrow whose plot is in the town (`Places.TownAt(p.Pos)`). It puts the box item once a night a town. In West World it gives one OddThought a night to a waking person (`StageOf` ≥ 1) within 30 m. The side talk (Life.cs) plays `WakeNight.Talk` 50% of the time while a wake is due here (`WakeTonightFirst`). F7 `TEST wakes:`. mindtest `WakeNightTest` (`wakes`).
+
 ## Mourning and graves visited (FIVEDAY item 26, 2026-11-06; `[World] Mourning`; settings version 278)
 
 Core/Mourning.cs:

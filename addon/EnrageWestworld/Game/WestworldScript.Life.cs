@@ -514,6 +514,12 @@ namespace EnrageWestworld.InGame
             cast.Off.Add("debt");
             Scene s = !cast.AWoman && !cast.BWoman && Director.OldModel(a) && Director.OldModel(b) && !cast.Off.Contains("smalltalk") && Voice.Chance(seed + "|olddays", 45)
                 ? Scenes.OldDays(cast, seed) : Scenes.Choose(cast, seed, true);
+            string wakeFor = WakeTonightFirst();
+            if (wakeFor != null && Voice.Chance(seed + "|wake", WakeNight.TalkChance))
+            {
+                s = WakeNight.Talk(cast, wakeFor, seed);   // the night they sit up with the dead: that's what they talk of (FIVEDAY item 27)
+                _wakeTalks++;
+            }
             if (_cfg.SharedFright && FrightBetween(a.Handle, b.Handle, now) && Voice.Chance(seed + "|fright", SharedFright.TalkChance))
             {
                 s = SharedFright.Make(cast, seed);   // both saw you kill: that's what they talk of (FIVEDAY item 22)

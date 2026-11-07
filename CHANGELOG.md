@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The wake** (`[World] Wakes`, on; settings version 279; FIVEDAY item 27). The night after a death in a town, or the night before one of enRAGE's funerals, the neighbours now sit up with the dead from eight to two. The Around town box tells you once a night (lamps in every window, neighbours at the door with covered dishes), and half the street's quiet talks that night are of the dead. In West World, one of the waking near you swears the dead one moved. It plays outside and in talk, since interiors are out of reach.
+
 - **Mourning and graves visited** (`[World] Mourning`, on; settings version 278; FIVEDAY item 26). For three weeks after a friend's death, people mourn:
   - Their days go quieter: home, prayer and the church, not the cards or the saloon. Offline at 7 pm, 11% chose home, prayer or church before and 38% now; the cards, the saloon or showing off went from 22% to 4%.
   - They have their own thoughts of the dead, and neighbours near them hush for it.
