@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The town moves on while you're away** (`[World] WhileAway`, on; settings version 271; FIVEDAY item 19). Ride back into a town after two game days or more and you hear what you missed. The Around town box gets a "What you missed" item, and someone near who knows you thinks about telling you. It covers up to five things, the weightiest first: deaths, weddings, a hanging, the election's winner, the trial's verdict, who left on the train, a new face at a counter, the show, the dance, the prize fight's winner, and someone taken to drink or always at the church. It starts counting from your first visit to each town after updating.
+
 - **Peak and end** (`[Mind] PeakEnd`, on; settings version 270; FIVEDAY item 18). A meeting with you is now remembered by its strongest moment and how it ended, not by how long it went on. A meeting means what someone feels about you, with no more than a quarter hour between. A long friendly talk ended by a shove is remembered as the shove, and a bad meeting put right at the end is remembered for both.
 
 - **Stress that builds, to a breaking point** (`[Mind] StressBuilds`, on; settings version 269; FIVEDAY item 17). Until now strain lasted a day: someone snapped only when two troubles landed at once. Now a week's troubles add up, person by person: a friend's death, a death seen, a beating, a theft, quarrels, and a worry that's deepening or at its worst. Past their breaking point, which comes lower for the anxious and higher for the steady, a person breaks in a way that fits them, and the habit stays a week:

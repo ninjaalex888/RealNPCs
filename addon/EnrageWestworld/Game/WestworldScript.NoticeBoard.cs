@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
+using RDR2;
+using RDR2.Native;
 
 namespace EnrageWestworld.InGame
 {
@@ -62,13 +64,23 @@ namespace EnrageWestworld.InGame
         /// Into a town: what it has posted, in the box, once a town a game day.
         private void NoticeBoardStep(int now)
         {
-            if (_cfg == null || !_cfg.NoticeBoard || _store == null || now < _nextNoticeLook)
+            if (_cfg == null || (!_cfg.NoticeBoard && !_cfg.WhileAway) || _store == null || now < _nextNoticeLook)
                 return;
             _nextNoticeLook = now + 5000;
+            long gNow = Bridge.Now();
             if (_placeTown == _noticeTown)
+            {
+                if (_placeTown != null)
+                    _store.TownLastAbout[_placeTown] = gNow;   // about town still (FIVEDAY item 19)
                 return;
+            }
             _noticeTown = _placeTown;
             if (_placeTown == null)
+                return;
+            if (_cfg.WhileAway)
+                WhileAwayCame(_placeTown, gNow);
+            _store.TownLastAbout[_placeTown] = gNow;
+            if (!_cfg.NoticeBoard)
                 return;
             if (_aNotices == null)
                 _aNotices = () =>
@@ -86,6 +98,50 @@ namespace EnrageWestworld.InGame
                     Log.Write("NOTICES " + _noticeTown + ": " + box);
                 };
             Safe("notice board", _aNotices);
+        }
+
+        private int _awayTold;
+        private string _awayLast;
+
+        /// Back in a town after two game days or more: what he missed, in the box, and a neighbour's thought of telling him
+        /// (FIVEDAY item 19; Core/WhileAway.cs).
+        private void WhileAwayCame(string town, long g)
+        {
+            try
+            {
+                long last;
+                if (!_store.TownLastAbout.TryGetValue(town, out last) || g - last < WhileAway.AwayMinutes)
+                    return;   // never here before (nothing to have missed), or not long gone
+                List<AwayNews> news = WhileAway.Gather(_store, town, last, g);
+                string box = WhileAway.Box(town, last, g, news);
+                if (box == null)
+                    return;
+                _awayTold++;
+                _awayLast = box;
+                NewsPush("What you missed", box, "away");
+                Log.Write("AWAY " + box);
+                AwayNews first = news.FirstOrDefault(n => n.Thought != null);
+                if (first == null)
+                    return;
+                int now = Game.GameTime;
+                foreach (int h in _mindNear)
+                {
+                    MindWho w;
+                    if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                        continue;
+                    PersonState st = _store.Find(w.Id);
+                    if (st == null || !Knowing.Met(st))
+                        continue;   // someone who knows him
+                    string line = first.Thought.Replace(" He ", " " + (w.P != null && _engine.KnowsYourName(w.Id) ? YourSurname() : "He") + " ");
+                    _ticker.Push((w.Name ?? "Someone") + ", thinking", line, "near", h);
+                    Log.Write("AWAY " + w.Name + " thinks: " + line);
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Write("AWAY failed: " + ex.Message);
+            }
         }
 
         private string NoticeBoardStatus()

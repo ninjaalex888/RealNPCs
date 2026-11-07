@@ -30,6 +30,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, Reverie> Reveries = new Dictionary<string, Reverie>();
         [DataMember(EmitDefaultValue = false)] public List<Avenger> Avengers = new List<Avenger>();
         [DataMember(EmitDefaultValue = false)] public List<Wedding> Weddings = new List<Wedding>();
+        [DataMember(EmitDefaultValue = false)] public Dictionary<string, long> TownLastAbout = new Dictionary<string, long>();   // town -> the game minute he was last about it (TownVisits is when he last came in) (Core/WhileAway.cs; FIVEDAY item 19)
         [DataMember(EmitDefaultValue = false)] public List<Breakdown> Breakdowns = new List<Breakdown>();   // who broke under the week's load, and how (Core/StressLoad.cs; FIVEDAY item 17)
         [DataMember(EmitDefaultValue = false)] public List<Transfer> Transfers = new List<Transfer>();
         [DataMember(EmitDefaultValue = false)] public List<Debt> Debts = new List<Debt>();
@@ -296,7 +297,9 @@ namespace EnrageWestworld.Core
                     }
             }
             n += Fallen.RemoveAll(f => f.At > cut);
-            n += Breakdowns.RemoveAll(b => b.Day * 1440 > cut);   // a breakdown after the cut hasn't happened (FIVEDAY item 17)
+            n += Breakdowns.RemoveAll(b => b.Day * 1440 > cut);
+            foreach (string t in TownLastAbout.Where(kv => kv.Value > cut).Select(kv => kv.Key).ToList())
+                TownLastAbout[t] = cut;   // he was last about the town no later than the cut (FIVEDAY item 19)   // a breakdown after the cut hasn't happened (FIVEDAY item 17)
             foreach (string id in Reveries.Where(kv => kv.Value.DiedAt > cut).Select(kv => kv.Key).ToList())
             {
                 Reveries.Remove(id);
@@ -613,6 +616,7 @@ namespace EnrageWestworld.Core
             if (Replies == null) Replies = new List<Reply>();
             if (Events == null) Events = new List<TownEvent>();
             if (Breakdowns == null) Breakdowns = new List<Breakdown>();
+            if (TownLastAbout == null) TownLastAbout = new Dictionary<string, long>();
             if (TownLedgers == null) TownLedgers = new Dictionary<string, TownLedger>();
             if (KinGrudges == null) KinGrudges = new List<KinGrudge>();
             KinGrudges.RemoveAll(k => k == null || (k.Done && LastGameMin - k.DoneAt > 30 * 1440L));   // the done ones kept a month (the review of item 14)
