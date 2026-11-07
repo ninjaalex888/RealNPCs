@@ -27,8 +27,8 @@ namespace EnrageWestworld.Core
                 foreach (KeyValuePair<string, PersonState> kv in Store.People)
                 {
                     PersonState st = kv.Value;
-                    if (st == null)
-                        continue;
+                    if (st == null || !Present(kv.Key))
+                        continue;   // (the dead and the gone pass nothing on)
                     bool saw = st.SawDeeds.Contains(d.Id);
                     if (saw || st.KnownDeeds.Contains(d.Id))
                         known[kv.Key] = new TieHeard { Id = kv.Key, DeedId = d.Id, At = d.At + 60, Hops = saw ? 0 : 1 };   // (the talk's own start: an hour on)
@@ -36,7 +36,7 @@ namespace EnrageWestworld.Core
                 foreach (TieHeard th in Store.TieHeard)
                     if (th.DeedId == d.Id)
                         known[th.Id] = th;
-                List<TieHeard> told = TieGossip.Spread(d.Id, d.Town, known, Store.Ties, now, id => id != d.VictimId && Store.Find(id) != null && !id.StartsWith("player"), budget);
+                List<TieHeard> told = TieGossip.Spread(d.Id, d.Town, known, Store.Ties, now, id => id != d.VictimId && Store.Find(id) != null && !id.StartsWith("player") && Present(id), budget);
                 foreach (TieHeard h in told)
                 {
                     PersonState st = Store.Find(h.Id);
@@ -52,6 +52,15 @@ namespace EnrageWestworld.Core
             }
             if (Store.TieHeard.Count > TieGossip.Kept)
                 Store.TieHeard.RemoveRange(0, Store.TieHeard.Count - TieGossip.Kept);
+        }
+
+        /// Alive and still in town: not dead, not gone west or fled (the Part 4 review: the dead were told, and told others).
+        private bool Present(string id)
+        {
+            if (HasDied(id))
+                return false;
+            Resident r = Store.FindResident(id);
+            return r == null || (!r.Left && !r.Fled && !r.Dead);
         }
 
         /// The thought of one told along a tie in the last two days, once a deed: who told them, and the version they got.

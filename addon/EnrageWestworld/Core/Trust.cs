@@ -26,15 +26,15 @@ namespace EnrageWestworld.Core
         public static bool IsWrong(string deedKind) { return deedKind != null && Wrongs.Contains(deedKind); }
 
         /// The latest wrong of his done to this person within the window, or null.
-        public static Deed LastWrong(List<Deed> deeds, string id, long now)
+        public static Deed LastWrong(List<Deed> deeds, string id, long now, string name = null)
         {
             if (deeds == null || id == null)
                 return null;
             for (int i = deeds.Count - 1; i >= 0; i--)
             {
                 Deed d = deeds[i];
-                if (d != null && d.VictimId == id && IsWrong(d.Kind) && now - d.At >= 0 && now - d.At <= WindowDays * 1440L)
-                    return d;
+                if (d != null && (d.VictimId == id || (name != null && d.VictimId == null && d.Detail == name)) && IsWrong(d.Kind) && now - d.At >= 0 && now - d.At <= WindowDays * 1440L)
+                    return d;   // (a robbery's victim is in its Detail by name, as CalloutsYou.MatterOf reads it: the Part 4 review)
             }
             return null;
         }

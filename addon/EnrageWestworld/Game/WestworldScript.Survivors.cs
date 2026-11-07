@@ -17,12 +17,12 @@ namespace EnrageWestworld.InGame
         private int _survivorNextLook, _survivorThoughts, _survivorFriendsBrought;
 
         /// The way a wrong of yours left this person, a day or more on, or null (none, or they let it lie).
-        private string SurvivorWay(string id, Traits t, string temper)
+        private string SurvivorWay(string id, Traits t, string temper, string name = null)
         {
             if (_cfg == null || !_cfg.SurvivorsChanged || id == null || _store == null)
                 return null;
             long g = Bridge.Now();
-            Deed wrong = Trust.LastWrong(_store.Deeds, id, g);
+            Deed wrong = Trust.LastWrong(_store.Deeds, id, g, name);
             if (wrong == null || g - wrong.At < Survivors.AfterMinutes)
                 return null;
             return Survivors.Way(t, temper, id + "|" + (wrong.Id ?? wrong.At.ToString()));
@@ -33,14 +33,14 @@ namespace EnrageWestworld.InGame
             if (w == null || w.Id == null)
                 return null;
             Traits t = w.Traits ?? (w.Src != null ? (w.Traits = _engine.Shadow.TraitsOf(w.Src)) : null);
-            return SurvivorWay(w.Id, t, w.P != null ? w.P.Personality : null);
+            return SurvivorWay(w.Id, t, w.P != null ? w.P.Personality : null, w.Name);
         }
 
         private string SurvivorWayOf(Ped p, Someone who)
         {
             MindWho w = MindKnown(p.Handle, Game.GameTime);
             Traits t = w != null ? (w.Traits ?? (w.Src != null ? (w.Traits = _engine.Shadow.TraitsOf(w.Src)) : null)) : null;
-            return SurvivorWay(who.Id, t, who.Temper);
+            return SurvivorWay(who.Id, t, who.Temper, who.Name);
         }
 
         /// Up to two of their friends near (warm ties), free and on their feet, to come with them.

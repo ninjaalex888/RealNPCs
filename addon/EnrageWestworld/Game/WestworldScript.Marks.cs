@@ -16,7 +16,7 @@ namespace EnrageWestworld.InGame
     {
         private readonly HashSet<string> _marksToldToday = new HashSet<string>();
         private readonly Dictionary<int, string> _marksShown = new Dictionary<int, string>();   // ped -> id, the body marked this session
-        private int _marksNextLook, _marksThoughts, _marksLooked, _marksProbe;
+        private int _marksNextLook, _marksThoughts, _marksLooked, _marksProbe, _marksProbed;
         private string _marksProbeLast;
 
         private void MarksStep(int now)
@@ -35,7 +35,7 @@ namespace EnrageWestworld.InGame
                     MindWho w;
                     if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                         continue;
-                    Deed wrong = Trust.LastWrong(_store.Deeds, w.Id, g);
+                    Deed wrong = Trust.LastWrong(_store.Deeds, w.Id, g, w.Name);
                     bool marked = wrong != null && LastingMarks.Shows(wrong.Kind, g - wrong.At);
                     string shown;
                     if (_marksShown.TryGetValue(h, out shown) && !marked)
@@ -71,7 +71,7 @@ namespace EnrageWestworld.InGame
                         if (fh == h || !_mindWho.TryGetValue(fh, out f) || f.Id == null || !friends.Contains(f.Id) || !_marksToldToday.Add("f|" + f.Id + "|" + w.Id + "|" + day))
                             continue;
                         string you = _engine.KnowsYourName(f.Id) ? YourSurname() : null;
-                        _ticker.Push((f.Name ?? "Someone") + ", thinking", LastingMarks.FriendThought(Person.FirstOf(w.Name), you, f.Id + "|" + day), "near", fh);
+                        _ticker.Push((f.Name ?? "Someone") + ", thinking", LastingMarks.FriendThought(Person.FirstOf(w.Name), you, f.Id + "|" + day, wrong.Kind == "assault"), "near", fh);
                         _marksThoughts++;
                         Log.Write("MARKS " + f.Name + " names you for " + w.Name + "'s " + wrong.Kind);
                         return;
@@ -85,10 +85,19 @@ namespace EnrageWestworld.InGame
         {
             int best = 0;
             float bd = 15f;
+            if (_marksProbed != 0 && ENTITY.DOES_ENTITY_EXIST(_marksProbed))
+            {
+                PED._CLEAR_PED_DESIRED_LOCO_FOR_MODEL(_marksProbed);   // the last one tried, put back (the Part 4 review)
+                PED.CLEAR_PED_BLOOD_DAMAGE(_marksProbed);
+            }
+            _marksProbed = 0;
             foreach (int h in _mindNear)
             {
                 if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                     continue;
+                Ped hp = new Ped(h);
+                if (MayDirectWhyNot(hp) != null || NotFree(h) || _director.Involves(h) || _staged.Contains(h))
+                    continue;   // never someone in a scene, an encounter or held (the Part 4 review)
                 float d = ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(me.Position);
                 if (d < bd)
                 {
@@ -97,13 +106,14 @@ namespace EnrageWestworld.InGame
                 }
             }
             if (best == 0)
-                return "nobody named within 15 m to try it on";
+                return "nobody named and free within 15 m to try it on";
             int i = _marksProbe++;
             string gait = LastingMarks.Gaits[i % LastingMarks.Gaits.Length], pack = LastingMarks.Packs[i % LastingMarks.Packs.Length];
             PED.CLEAR_PED_BLOOD_DAMAGE(best);
             PED._SET_PED_DESIRED_LOCO_FOR_MODEL(best, gait);
             PED.APPLY_PED_DAMAGE_PACK(best, pack, 60f, 1f);
             TASK.TASK_WANDER_STANDARD(best, 10f, 10);   // walking, so the gait shows
+            _marksProbed = best;
             _marksProbeLast = "gait \"" + gait + "\", damage pack \"" + pack + "\" on " + TalkName(new Ped(best));
             Log.Write("MARKS probe " + (i + 1) + ": " + _marksProbeLast);
             return null;

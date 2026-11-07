@@ -92,7 +92,7 @@ namespace EnrageWestworld.InGame
             if (!LastingId(new Ped(ped), out id, out name) || id == null)
                 return delta;
             long g = Bridge.Now();
-            Deed wrong = Trust.LastWrong(_store.Deeds, id, g);
+            Deed wrong = Trust.LastWrong(_store.Deeds, id, g, name);
             if (wrong == null)
                 return delta;
             MindWho w = MindKnown(ped, Game.GameTime);

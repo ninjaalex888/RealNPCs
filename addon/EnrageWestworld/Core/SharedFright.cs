@@ -15,7 +15,7 @@ namespace EnrageWestworld.Core
         public const string Kind = "fright";
         public const long LastsMinutes = 14 * 1440;   // two weeks of it between them
         public const int TalkChance = 75;             // of their quiet talks, this many in a hundred are about it
-        public const int MostWitnesses = 6;           // pairs among the first six who saw it (fifteen at most)
+        public const int MostWitnesses = 4;           // pairs among the first four who saw it (six at most; the Part 4 review: fifteen a killing crowded the ties out)
 
         private static readonly HashSet<string> Killings = new HashSet<string> { "kill", "murder", "lawkill", "namedkill" };
         public static bool IsKilling(string deedKind) { return deedKind != null && Killings.Contains(deedKind); }
@@ -28,7 +28,7 @@ namespace EnrageWestworld.Core
             new[] { "Have you slept?", "Not a wink. You?", "I keep the lamp lit now." },
             new[] { "He looked right at me after. Did he look at you?", "Couldn't say. I kept my eyes on my boots.", "Good. Don't ever." },
             new[] { "Should we tell somebody?", "Tell them what? They know who.", "Then we keep our heads down." },
-            new[] { "I'm glad it was you there with me. I'd not want to carry it alone.", "Nor I.", "Walk me home tonight?" },
+            new[] { "I'm glad it was you there with me. I'd not want to carry it alone.", "Nor I.", "Stay near me a while?" },
             new[] { "The way he fell. I keep hearing it.", "Hush. Somebody's listening.", "Nobody listens to us. That's what saved us." },
             new[] { "My hands still shake. Look.", "Mine too. Hide them in your pockets.", "Like that?" },
             new[] { "If he comes back this way...", "We go inside. Both of us. We don't wait.", "Agreed." },

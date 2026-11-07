@@ -60,9 +60,9 @@ namespace EnrageWestworld.Core
                         if (m.Sub == "friend") friendDeaths++;
                         else if (m.Sub == "seen") seen++;
                     }
-                    else if (m.Role == "done" && m.Kind == "blows") blows++;
+                    else if (Taken(m) && m.Kind == "blows") blows++;
                     else if (m.Role == "done" && m.Kind == "theft") thefts++;
-                    else if (m.Role == "done" && (m.Kind == "quarrel" || m.Kind == "slight")) words++;
+                    else if (Taken(m) && (m.Kind == "quarrel" || m.Kind == "slight")) words++;
                 }
                 if (friendDeaths > 0) { load += 40 * Math.Min(2, friendDeaths); parts.Add(friendDeaths > 1 ? "two deaths of friends" : "a friend's death"); }
                 if (seen > 0) { load += 25; parts.Add("a death seen"); }
@@ -81,6 +81,12 @@ namespace EnrageWestworld.Core
                 if (w > 0) { load += w; parts.Add("a worry (" + w + ")"); }
             }
             return load;
+        }
+
+        /// Taken by them: done to them, or a two-sided fight or quarrel they were in (Role null; the idiom of Needs.cs).
+        private static bool Taken(MindMemory m)
+        {
+            return m.Role == "done" || (m.How == "did" && m.Role == null);
         }
 
         /// Where they break: 70 as built, lower for the anxious and the angry, higher for the self-controlled and the
@@ -135,7 +141,7 @@ namespace EnrageWestworld.Core
 
         private static readonly Dictionary<string, string[]> BreakLines = new Dictionary<string, string[]>
         {
-            { Drink, new[] { "One more, and then one more, until none of it is there.", "I'll drink till the week's gone. All of it.", "Nobody asks a man at the bar what's wrong. That's the bar's kindness." } },
+            { Drink, new[] { "One more, and then one more, until none of it is there.", "I'll drink till the week's gone. All of it.", "Nobody at a bar asks what's wrong. That's its one kindness." } },
             { Pray, new[] { "I can't carry it. Lord, You'll have to.", "On my knees is the only place left to go.", "I've nothing left but prayer, and I'm not sure of that." } },
             { Grave, new[] { "I keep walking out to the grave. I don't know what I'm waiting for.", "I talk to the dead more than the living now.", "The stone doesn't answer. I go back anyway." } },
             { Temper, new[] { "Everything at home sets my teeth on edge.", "She asked a simple thing and I shouted the house down. I'm not proud of it.", "It all comes out at the wrong people. Always the ones at home." } },

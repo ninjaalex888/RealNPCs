@@ -132,7 +132,7 @@ namespace EnrageWestworld.InGame
                     PersonState st = _store.Find(w.Id);
                     if (st == null || !Knowing.Met(st))
                         continue;   // someone who knows him
-                    string line = first.Thought.Replace(" He ", " " + (w.P != null && _engine.KnowsYourName(w.Id) ? YourSurname() : "He") + " ");
+                    string line = first.Thought;   // (he, as the thought has it: the surname swap missed more than it caught; the Part 4 review)
                     _ticker.Push((w.Name ?? "Someone") + ", thinking", line, "near", h);
                     Log.Write("AWAY " + w.Name + " thinks: " + line);
                     break;

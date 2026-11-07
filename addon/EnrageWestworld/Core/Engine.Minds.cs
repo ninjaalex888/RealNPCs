@@ -524,6 +524,12 @@ namespace EnrageWestworld.Core
                 for (int i = 0; i < saw.Count; i++)
                     for (int j = i + 1; j < saw.Count; j++)
                     {
+                        SceneTie had = Store.Ties.FirstOrDefault(x => x.Has(saw[i].Id) && x.Has(saw[j].Id));
+                        if (had != null && had.FrightAt > 0 && now - had.FrightAt < 1440)
+                        {
+                            had.FrightAt = now;   // another killing the same day: the same fright, not a warmer tie (the Part 4 review)
+                            continue;
+                        }
                         SceneTie t = Ties.Note(Store.Ties, saw[i].Id, saw[i].Name, saw[j].Id, saw[j].Name, d.Town, SharedFright.Kind, now);
                         if (t != null)
                         {

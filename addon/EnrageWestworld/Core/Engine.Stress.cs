@@ -26,7 +26,7 @@ namespace EnrageWestworld.Core
         /// The load of one person now, and their breaking point (for the daily weighing and F7).
         public int StressOf(Resident r, long now, out int point, out List<string> parts)
         {
-            point = 0;
+            point = int.MaxValue;   // (nobody breaks on a load nobody keeps)
             parts = new List<string>();
             PersonState st = r != null ? Store.Find(r.Id) : null;
             if (st == null)
@@ -47,6 +47,8 @@ namespace EnrageWestworld.Core
             {
                 if (r == null || r.Id == null || r.Dead || r.Left || r.Fled || r.Town == null || r.Name == null)
                     continue;
+                if (Store.Find(r.Id) == null)
+                    continue;   // no mind kept for them: no load to weigh (the Part 4 review: their 0 met a 0 point and every one broke)
                 if (Store.Breakdowns.Any(b => b.Id == r.Id && day - b.Day < StressLoad.AgainDays))
                     continue;
                 int point;

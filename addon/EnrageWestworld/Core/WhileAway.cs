@@ -34,12 +34,12 @@ namespace EnrageWestworld.Core
             {
                 if (r == null || r.Town != town || r.Name == null)
                     continue;
-                if (r.Dead && r.DiedAt > since && r.DiedAt <= now)
+                if (r.Dead && r.DiedAt > since && r.DiedAt <= now && !s.Deeds.Any(d => d != null && SharedFright.IsKilling(d.Kind) && (d.VictimId == r.Id || d.Detail == r.Name)))   // (not one he killed himself: the Part 4 review)
                     list.Add(new AwayNews { At = r.DiedAt, Weight = 50, Text = r.Name + " died while you were gone. There's a fresh grave.", Thought = "Does he know about " + Person.FirstOf(r.Name) + "? Somebody ought to tell him." });
                 else if (r.Left && r.LeftAt > since && r.LeftAt <= now)
                     list.Add(new AwayNews { At = r.LeftAt, Weight = 30, Text = r.Name + " took the train out and isn't coming back, they say.", Thought = Person.FirstOf(r.Name) + " left on the train. He won't have heard." });
                 else if (r.PostId != null && r.TookOverAt > since && r.TookOverAt <= now)
-                    list.Add(new AwayNews { At = r.TookOverAt, Weight = 25, Text = "There's a new face at the " + (r.Trade ?? "counter") + ": " + r.Name + (r.KinOf != null ? ", " + r.KinOf + "'s " + (r.Kin ?? "kin") : "") + ".", Thought = null });
+                    list.Add(new AwayNews { At = r.TookOverAt, Weight = 25, Text = "There's a new face behind the counter" + (r.Trade != null ? " (the " + r.Trade + ")" : "") + ": " + r.Name + (r.KinOf != null ? ", " + r.KinOf + "'s " + (r.Kin ?? "kin") : "") + ".", Thought = null });
             }
             foreach (Wedding w in s.Weddings)
                 if (w != null && w.Done && w.Town == town && w.At > since && w.At <= now)

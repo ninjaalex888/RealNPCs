@@ -115,7 +115,7 @@ namespace EnrageWestworld.InGame
                 return null;
             string seed = w.Id + "|" + act + "|" + _store.LastGameMin / 60;
             string line = null;
-            if (_stressToldBreak.Add(w.Id + "|" + day))
+            if (_stressToldBreak.Add(w.Id + "|" + way))   // once a breakdown this session (the Part 4 review: it came back each day of the week)
                 line = StressLoad.BreakThought(way, seed);
             else if (StressLoad.Lean(way, act) > 0f && Voice.Chance(seed + "|stressact", 70))
                 line = StressLoad.ActThought(way, act, seed);

@@ -61,8 +61,8 @@ namespace EnrageWestworld.Core
         private static readonly Dictionary<string, string[]> Thoughts = new Dictionary<string, string[]>
         {
             { Broken, new[] { "Every tall man in a hat is him, these days.", "I go round by the back now. Quicker anyhow.", "I keep thinking of the ground coming up. I don't sleep.", "Don't look at him. Don't give him a reason.", "I was different before. I don't know where that went." } },
-            { Standing, new[] { "He knocked me down. I got up. Folks saw that part.", "They buy me drinks now. Funny what a beating gets you.", "I looked him in the eye after. I'll not forget that, and neither will he.", "Took the worst he had. Still standing.", "Folks nod to me different now." } },
-            { GetEven, new[] { "Next time it won't be just me.", "I've told the boys. They know his face.", "He'll have three of us to deal with. See how he likes it.", "Let him come round here again. We're ready." } },
+            { Standing, new[] { "He knocked me down. I got up. Folks saw that part.", "Folks treat me different now. Funny what a beating gets you.", "I looked him in the eye after. I'll not forget that, and neither will he.", "Took the worst he had. Still standing.", "Folks nod to me different now." } },
+            { GetEven, new[] { "Next time it won't be just me.", "I've told my people. They know his face.", "He'll have three of us to deal with. See how he likes it.", "Let him come round here again. We're ready." } },
         };
 
         private static readonly Dictionary<string, string[]> FriendThoughts = new Dictionary<string, string[]>

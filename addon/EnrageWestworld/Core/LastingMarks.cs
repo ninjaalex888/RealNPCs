@@ -45,13 +45,14 @@ namespace EnrageWestworld.Core
             "That's the one did {n}'s face. Look at him.", "{you}. He's the one put {n} on the ground.", "Him. {n} still can't walk right because of him.",
             "{n}'s limping, and there goes the man who did it.", "Look at {you}, strolling like nothing happened. {n} can barely stand.",
         };
+        private static readonly string[] FriendNamesShove = { "{you}. He's the one put {n} on the ground.", "There's the man who knocked {n} down in the street.", "{n} is still sore about it. And there he goes." };   // a knocking down: no limp to speak of
 
         public static string OwnThought(string seed) { return Voice.Pick(seed + "|mk", Own); }
 
         /// A friend near you naming you for it: {n} the one hurt, {you} what they call you ("that stranger" when they don't know your name).
-        public static string FriendThought(string hurt, string you, string seed)
+        public static string FriendThought(string hurt, string you, string seed, bool beating = true)
         {
-            return Voice.Pick(seed + "|mf", FriendNames).Replace("{n}", hurt ?? "my friend").Replace("{you}", you ?? "That stranger");
+            return Voice.Pick(seed + "|mf", beating ? FriendNames : FriendNamesShove).Replace("{n}", hurt ?? "my friend").Replace("{you}", you ?? "That stranger");
         }
 
         public static IEnumerable<string> AllLines()
@@ -59,6 +60,7 @@ namespace EnrageWestworld.Core
             foreach (string l in Own) yield return l;
             foreach (string l in FriendNames) yield return l.Replace("{n}", "Hank").Replace("{you}", "Morgan");
             foreach (string l in FriendNames) yield return l.Replace("{n}", "Hank").Replace("{you}", "That stranger");
+            foreach (string l in FriendNamesShove) yield return l.Replace("{n}", "Hank").Replace("{you}", "That stranger");
         }
     }
 }
