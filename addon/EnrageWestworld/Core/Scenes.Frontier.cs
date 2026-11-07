@@ -259,17 +259,18 @@ namespace EnrageWestworld.Core
             {
                 string item = c.PaperItems[Voice.Hash(seed + "item") % c.PaperItems.Count].Trim();
                 string low = item.ToLowerInvariant();
-                s.Add(0, "Listen to this. It says here: \"" + item.TrimEnd('.') + ".\"", "news", "face");
+                string read = "\"" + item.TrimEnd('.') + ".\"";   // how they open it (FIVEDAY item 6: one way became six)
+                s.Add(0, Voice.Pick(seed + "open", "Listen to this. It says here: ", "Look here. ", "Paper says: ", "Here's one for you. ", "Would you credit it? ", "Hear this, " + b + ". ") + read, "news", "face");
                 // "without a shot fired" is good news, and a story from this very town wasn't somewhere else
                 bool here = c.Town != null && low.Contains(c.Town.ToLowerInvariant());
                 bool violent = (low.Contains("shot") || low.Contains("killed") || low.Contains("dead") || low.Contains("murder")) &&
                                !low.Contains("without a shot") && !low.Contains("not a shot") && !low.Contains("no shot");
                 if (violent)
-                    s.Add(1, Voice.Pick(seed + "v", "What's this world coming to?", here ? "Right here in town, too." : "Thank God it wasn't here.", "Lord have mercy."), "shame");
+                    s.Add(1, Voice.Pick(seed + "v", "What's this world coming to?", here ? "Right here in town, too." : "Thank God it wasn't here.", "Lord have mercy.", "I don't know as I want to hear the rest.", "Some mother's son, that was.", here ? "I knew something was wrong, the way folks were talking." : "That's two days' ride. Not far enough.", "And they call this a civilized country."), "shame");
                 else if (low.Contains("rob") || low.Contains("stole") || low.Contains("theft"))
-                    s.Add(1, Voice.Pick(seed + "r", "Serves the bank right.", "Lock your doors tonight.", "Wasn't me, before you ask."), "respond");
+                    s.Add(1, Voice.Pick(seed + "r", "Serves the bank right.", "Lock your doors tonight.", "Wasn't me, before you ask.", "They'll never catch them. They never do.", "I keep my money in a can under the floor. Always have.", "Somebody's eating well tonight.", "Hang the lot of them, I say."), "respond");
                 else
-                    s.Add(1, Voice.Pick(seed + "g", "Well, I'll be.", "Huh. Some decency left after all.", "Don't believe everything you read."), "respond");
+                    s.Add(1, Voice.Pick(seed + "g", "Well, I'll be.", "Huh. Some decency left after all.", "Don't believe everything you read.", "Who writes these things, I wonder?", "Read it again. Slower.", "Well, there's a thing to tell at supper.", "My father would never have believed it."), "respond");
                 if (c.PlayerNear && (low.Contains("stranger") || low.Contains("man in a") || low.Contains("tall man") || low.Contains("answering to")))
                     s.Add(1, Voice.Pick(seed + "near", "...Says he wore a hat like that one.", "Hey. Ain't that—"), "weird", "lookplayer")
                      .Add(0, Voice.Pick(seed + "np", "Keep reading. Don't look up.", "Hush."), "scared");

@@ -366,7 +366,7 @@ namespace EnrageWestworld.Core
         public static List<string> Gossip(string rumour, string town, string seed)
         {
             string r = Grammar.SoftLower(rumour.TrimEnd('.'));
-            switch (Voice.Hash(seed) % 4)
+            switch ((Voice.Hash(seed) & 0x7fffffff) % 12)   // four frames until FIVEDAY item 6
             {
                 case 0:
                     return new List<string> { "You hear? " + Grammar.UpperFirst(r) + ".", Voice.Pick(seed + "b", "No!", "Lord.", "Huh. Can't say I'm surprised."), "That's what they're saying" + (town != null ? " in " + town : "") + "." };
@@ -374,6 +374,22 @@ namespace EnrageWestworld.Core
                     return new List<string> { "Word is " + r + ".", "Who told you that?", Voice.Pick(seed + "c", "Everybody's telling it.", "Fella who saw it.", "Never you mind who.") };
                 case 2:
                     return new List<string> { "They say " + r + ".", Voice.Pick(seed + "d", "I heard it different.", "I heard worse."), "Well. It grows every time somebody tells it." };
+                case 4:
+                    return new List<string> { "Don't tell a soul, but " + r + ".", Voice.Pick(seed + "e", "Not a word from me.", "Who else knows?", "I knew it. I just knew it."), "Half the county, by now." };
+                case 5:
+                    return new List<string> { "My cousin swears " + r + ".", Voice.Pick(seed + "f", "Your cousin swears to a good many things.", "Which cousin?"), "The one with the good eyes." };
+                case 6:
+                    return new List<string> { "Heard the latest? " + Grammar.UpperFirst(r) + ".", Voice.Pick(seed + "g", "Heard it at breakfast.", "Go on. Go on.", "Not another word, I'll faint."), "That's the whole of it, so far." };
+                case 7:
+                    return new List<string> { "I'd not tell just anybody, but " + r + ".", Voice.Pick(seed + "h", "You've told everybody.", "Then why tell me?"), "You're not just anybody." };
+                case 8:
+                    return new List<string> { "The barber says " + r + ".", Voice.Pick(seed + "i", "The barber says plenty.", "And he'd know."), "He hears it all, with the razor at their throats." };
+                case 9:
+                    return new List<string> { Grammar.UpperFirst(r) + ". In broad daylight, they say.", Voice.Pick(seed + "j", "Somebody ought to do something.", "Not in this town, surely."), "This town, of all places." };
+                case 10:
+                    return new List<string> { "You'll never guess. " + Grammar.UpperFirst(r) + ".", Voice.Pick(seed + "k", "I'd have guessed.", "Never in a hundred years."), "Nobody would have." };
+                case 11:
+                    return new List<string> { "I had it from the postmaster's wife: " + r + ".", Voice.Pick(seed + "l", "Then it's gospel.", "Then it's halfway round the county."), "By supper it'll be all the way round." };
                 default:
                     return new List<string> { Grammar.UpperFirst(r) + ". Swear to God.", "You're making that up.", "Ask anybody." };
             }

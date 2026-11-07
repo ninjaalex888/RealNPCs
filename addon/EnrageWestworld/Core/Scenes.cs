@@ -246,36 +246,55 @@ namespace EnrageWestworld.Core
             return s;
         }
 
+        // The street's everyday quarrels (Argue): who|voice|act|line, a "walkaway:" beat for the one walking off. All our own words.
+        private static readonly string[][] Arguments =
+        {
+            new[] { "0|mild|face|You owe me an apology, {b}.", "1|||I owe you not one thing.", "0|angry||You told the whole street my business!", "1|angry||Then keep your business quieter!", "0|||One of these days...", "1|stare||One of these days what?", "0|||walkaway:" },
+            new[] { "0|mild|face|Where's my two dollars, {b}?", "1|||I said Friday.", "0|angry||It IS Friday!", "1|||...Next Friday.", "0|angry||You're a weasel, {b}. A weasel in a hat.", "1|||walkaway:" },
+            new[] { "0|angry|face|I saw you with my {spouse}.", "1|||We were talking.", "0|angry||Talk with your hands a lot, do you?", "1|||Ask {spouseobj} yourself, if you're so sure.", "0|angry|walkaway|I will!" },
+            new[] { "0|mild|face|Your dog dug up my whole garden.", "1|||Ain't my dog.", "0|||It follows you home every night!", "1|no||Lots of things follow me home. Don't make 'em mine.", "0|angry|walkaway|Insufferable." },
+            new[] { "0||face|You said this yesterday.", "1|||I never said it before in my life.", "0|angry||Word for word, {b}! Same words!", "1|mild||...You feeling all right?", "0||walkaway|No. No, I don't think I am." },
+            new[] { "0|mild|face|That's my spot.", "1|||Didn't see it marked as yours.", "0|angry||You'll see my boot on you in a minute.", "1|threat||Try it.", "0|mild|walkaway|...Not worth it." },
+            new[] { "0|angry|face|You turned the ditch onto your side again, {b}.", "1|||My corn's thirsty too.", "0|angry||Then let it go thirsty on its own side!", "1|stare||Say that at the water meeting.", "0|angry|walkaway|I will, and louder." },
+            new[] { "0|mild|face|I'd like my saw back, {b}.", "1|||What saw?", "0|angry||The one in your barn with my mark burned on the handle.", "1|mild||...I meant to bring it Sunday.", "0|angry||Two Sundays have come and gone.", "1|||walkaway:" },
+            new[] { "0|angry|face|You moved that piece when I looked away.", "1|||I did no such thing.", "0|||Eleven years I've played you. I know your cheating face.", "1|stare||Then why do you keep sitting down with me?", "0|mild|walkaway|...Nobody else will." },
+            new[] { "0|angry|face|Your horse bit mine at the rail, {b}.", "1|||Your horse looked at him wrong.", "0|||A horse can't look wrong at another horse.", "1|no||Ask mine.", "0|angry|walkaway|You're an impossible man." },
+            new[] { "0|angry|face|You weighed me two pounds and gave me one.", "1|||The scale says two.", "0|angry||Then your scale lies like its owner.", "1|threat||Take your trade elsewhere.", "0|angry|walkaway|There is no elsewhere! That's the whole trouble!" },
+            new[] { "0|angry|face|Did you tell the church I'd been drinking?", "1|||I told one person.", "0|angry||In this town one person is the church!", "1|no||Then don't drink.", "0|angry|walkaway|Of all the..." },
+            new[] { "0|angry|face|Your hogs were in my potatoes again.", "1|||Fence is yours to mend.", "0|angry||It stood fine till your hogs leaned on it!", "1|no||Hogs lean. It's their nature.", "0|threat|walkaway|Then it's their nature to end up bacon." },
+            new[] { "0|angry|face|You voted that fool in for sheriff.", "1|||Better a fool than a thief.", "0|angry||He's my cousin!", "1|stare||I know. That's why I said thief.", "0|angry||walkaway:" },
+            new[] { "0|mild|face|Your fiddle kept the whole street up, {b}.", "1|||That was music.", "0|||That was a cat in a flour sack.", "1|no||You've no ear, that's your trouble.", "0|angry|walkaway|I've two, and they're both sore." },
+            new[] { "0|angry|face|You took my good sheet off the line.", "1|||It's mine.", "0|angry||Mine has the blue thread in the corner!", "1|mild||...So it has.", "0|mild|walkaway|Bring it round tonight, then." },
+            new[] { "0|angry|face|My father fought at Shiloh while yours sat home.", "1|||My father had one leg.", "0|||He had it before the war and after.", "1|threat||Leave my father out of it.", "0|mild|walkaway|...Fine. Fine." },
+            new[] { "0|mild|face|Where's the almanac I lent you?", "1|||Lent it to my brother.", "0|angry||It wasn't yours to lend!", "1|||He's family. That makes it half his.", "0|angry|walkaway|That makes no sense at all." },
+            new[] { "0|angry|face|You spat on my boot, {b}.", "1|||The wind took it.", "0|angry||There's no wind!", "1|no||There was a little.", "0|threat|walkaway|Next time I'll take it as meant." },
+            new[] { "0|angry|face|You still owe me two days' hauling.", "1|||You broke my wheel.", "0|angry||That wheel was rotten when you handed it me!", "1|||Then haul with a better one.", "0|angry|walkaway|You'll pay, {b}. One way or the other." },
+            new[] { "0|angry|face|I staked that claim in March, {b}.", "1|||Your stake fell over.", "0|angry||You kicked it over!", "1|stare||Prove it.", "0|angry|walkaway|At the land office, I will." },
+            new[] { "0|angry|face|Your boy blacked my boy's eye.", "1|||Your boy called him a name first.", "0|||What name?", "1|||I'll not say it in the street.", "0|mild|walkaway|...That does sound like my boy." },
+            new[] { "0|mild|face|Rent was Saturday, {b}.", "1|||And I'll have it Saturday.", "0|angry||LAST Saturday!", "1|mild||Was it? Time does get on.", "0|threat|walkaway|So will your trunk, out the window." },
+            new[] { "0|angry|face|You've been drawing water from my well.", "1|||It's the town's well.", "0|angry||It's on my land!", "1|no||The water was here before your land was.", "0|angry|walkaway|That isn't how land works!" },
+        };
+
         public static Scene Argue(SceneCast c, string seed)
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
             Scene s = new Scene { Kind = "argue", Summary = "a shouting match in the street" };
-            switch (Voice.Hash(seed) % 6)
+            // the street's quarrels, picked by the seed (FIVEDAY item 6: six of them became twenty-four; the ride test
+            // had the same argument heard again in a third of an hour's scenes). Each beat is who|voice|act|line; a "walkaway:"
+            // beat with no words is the one walking off.
+            string[] script = Arguments[(Voice.Hash(seed) & 0x7fffffff) % Arguments.Length];
+            string spouse = c.BWoman || c.AWoman ? "husband" : "wife", spouseObj = c.AWoman ? "him" : "her";
+            foreach (string beat in script)
             {
-                case 0:
-                    s.Add(0, "You owe me an apology, " + b + ".", "mild", "face").Add(1, "I owe you nothing.").Add(0, "You told the whole street my business!", "angry")
-                     .Add(1, "Then keep your business quieter!", "angry").Add(0, "One of these days...").Add(1, "One of these days what?", "stare").Add(0, null, null, "walkaway");
-                    break;
-                case 1:
-                    s.Add(0, "Where's my two dollars, " + b + "?", "mild", "face").Add(1, "I said Friday.").Add(0, "It IS Friday!", "angry").Add(1, "...Next Friday.")
-                     .Add(0, "You're a weasel, " + b + ". A weasel in a hat.", "angry").Add(1, null, null, "walkaway");
-                    break;
-                case 2:
-                    s.Add(0, "I saw you with my " + (c.BWoman ? "husband" : (c.AWoman ? "husband" : "wife")) + ".", "angry", "face").Add(1, "We were talking.")
-                     .Add(0, "Talk with your hands a lot, do you?", "angry").Add(1, "Ask " + (c.AWoman ? "him" : "her") + " yourself, if you're so sure.").Add(0, "I will!", "angry", "walkaway");
-                    break;
-                case 3:
-                    s.Add(0, "Your dog dug up my whole garden.", "mild", "face").Add(1, "Ain't my dog.").Add(0, "It follows you home every night!")
-                     .Add(1, "Lots of things follow me home. Don't make 'em mine.", "no").Add(0, "Insufferable.", "angry", "walkaway");
-                    break;
-                case 4:
-                    s.Add(0, "You said this yesterday.", null, "face").Add(1, "I never said it before in my life.").Add(0, "Word for word, " + b + "! Same words!", "angry")
-                     .Add(1, "...You feeling all right?", "mild").Add(0, "No. No, I don't think I am.", null, "walkaway");
-                    break;
-                default:
-                    s.Add(0, "That's my spot.", "mild", "face").Add(1, "Don't see your name on it.").Add(0, "You'll see my boot on you in a minute.", "angry")
-                     .Add(1, "Try it.", "threat").Add(0, "...Not worth it.", "mild", "walkaway");
-                    break;
+                string[] p = beat.Split(new[] { '|' }, 4);
+                int who = p[0] == "1" ? 1 : 0;
+                string voice = p[1].Length > 0 ? p[1] : null, act = p[2].Length > 0 ? p[2] : null, line = p[3];
+                if (line == "walkaway:")
+                {
+                    s.Add(who, null, voice, "walkaway");
+                    continue;
+                }
+                s.Add(who, line.Replace("{a}", a).Replace("{b}", b).Replace("{spouse}", spouse).Replace("{spouseobj}", spouseObj), voice, act);
             }
             return s;
         }
@@ -376,24 +395,49 @@ namespace EnrageWestworld.Core
                               "One more saloon I can't go back to. Getting to be a short list.", "Cold out here. Colder with empty pockets.");
         }
 
+        // The debt called in: the creditor's opening, the debtor's answer, the sum, the debtor's five; then how it ends
+        // (who|voice|act|line). All our own words.
+        private static readonly string[][] DebtOpenings =
+        {
+            new[] { "{b}. You know why I'm here.", "I need more time.", "You had time. {amount} dollars, {b}.", "I got five. Take five." },
+            new[] { "There you are, {b}. I've looked all over town.", "I was coming to see you.", "Sure you were. {amount} dollars.", "Here's five. It's what I have." },
+            new[] { "{b}. The note's come due.", "Harvest's late. Everybody's is.", "The note don't care about harvests. {amount} dollars.", "Five. I can manage five." },
+            new[] { "Don't walk off, {b}. We've business.", "Not here. Not in the street.", "Here suits me fine. {amount} dollars.", "Five's all I carry. Here." },
+            new[] { "Morning, {b}. Recall what day it is?", "Is it Thursday already?", "{amount} dollars' worth of Thursday.", "Five. That's all there is in the house." },
+            new[] { "{b}, I've been a patient man. That's over.", "Give me one more week.", "I gave you four. {amount} dollars.", "I'll give you five now. Every cent I've got." },
+        };
+
+        private static readonly string[][] DebtEndings =
+        {
+            new[] { "0|threat||Five now. The rest by Sunday. Or I take the mule.", "1|mild||...Sunday.", "0|||walkaway:" },
+            new[] { "0|angry||Five dollars don't cover the interest.", "0||shove|", "1|scared||All right! Sunday! On my mother's life!" },
+            new[] { "0|mild|walkaway|...Keep it. Buy your kids some shoes. But this is the last time, {b}.", "1|thanks||God bless you. God bless you." },
+            new[] { "0|threat||Five's a start. Saturday for the rest, and I'll bring the deputy.", "1|mild||Saturday.", "0|||walkaway:" },
+            new[] { "0|angry||I'll take the five, and your saddle with it.", "1|scared||Not the saddle! It was my father's!", "0|angry|walkaway|Then find the money." },
+            new[] { "0|mild||Five. And you'll work off the rest at my place, Mondays.", "1|mild||...Mondays. All right.", "0|||walkaway:" },
+            new[] { "0|angry||Five, then. But the whole town hears what you are.", "1|scared||Please. Don't do that.", "0|||walkaway:" },
+            new[] { "0|mild||Five now, five a week, till it's done. Shake on it.", "1|thanks||Done. Thank you. I mean it.", "0|||walkaway:" },
+        };
+
         public static Scene Debt(SceneCast c, string seed)
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
             int amount = 10 + Voice.Hash(seed + "amt") % 8 * 5;
             Scene s = new Scene { Kind = "debt", Doer = 0, Amount = amount, Summary = "a man called in a debt of " + amount + " dollars" };   // A calls it in
-            s.Add(0, b + ". You know why I'm here.", "mild", "approach").Add(1, "I need more time.", "scared").Add(0, "You had time. " + Grammar.UpperFirst(Voice.Number(amount)) + " dollars, " + b + ".")
-             .Add(1, "I got five. Take five.", "scared");
-            switch (Voice.Hash(seed) % 3)
+            // the calling in (FIVEDAY item 6: one opening became six, three endings eight; the creditor is A, and the debtor
+            // always offers five, which every ending answers)
+            string[] o = DebtOpenings[(Voice.Hash(seed + "open") & 0x7fffffff) % DebtOpenings.Length];
+            Func<string, string> fill = x => x.Replace("{b}", b).Replace("{a}", a).Replace("{amount}", Grammar.UpperFirst(Voice.Number(amount)));
+            s.Add(0, fill(o[0]), "mild", "approach").Add(1, fill(o[1]), "scared").Add(0, fill(o[2])).Add(1, fill(o[3]), "scared");
+            foreach (string beat in DebtEndings[(Voice.Hash(seed) & 0x7fffffff) % DebtEndings.Length])
             {
-                case 0:
-                    s.Add(0, "Five now. The rest by Sunday. Or I take the mule.", "threat").Add(1, "...Sunday.", "mild").Add(0, null, null, "walkaway");
-                    break;
-                case 1:
-                    s.Add(0, "Five dollars don't cover the interest.", "angry").Add(0, null, null, "shove").Add(1, "Alright! Sunday! I swear on my mother!", "scared");
-                    break;
-                default:
-                    s.Add(0, "...Keep it. Buy your kids some shoes. But this is the last time, " + b + ".", "mild", "walkaway").Add(1, "God bless you. God bless you.", "thanks");
-                    break;
+                string[] p = beat.Split(new[] { '|' }, 4);
+                int who = p[0] == "1" ? 1 : 0;
+                string voice = p[1].Length > 0 ? p[1] : null, act = p[2].Length > 0 ? p[2] : null, line = p[3];
+                if (line == "walkaway:")
+                    s.Add(who, null, voice, "walkaway");
+                else
+                    s.Add(who, line.Length > 0 ? fill(line) : null, voice, act);
             }
             return s;
         }
