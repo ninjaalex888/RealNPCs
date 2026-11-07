@@ -1084,6 +1084,20 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Sunday, properly (FIVEDAY item 25, 2026-11-06; `[World] SundayMorning`; settings version 277)
+
+Core/Sunday.cs:
+- `Lean(weekday, hour, devotion, act)`: from 8 to 10, church +0.35 for the Devout, +0.22 for Churchgoers, +0.04 for the Lapsed, 0 for the Godless, 0.1 when unknown. From 12 to 14: eat +0.12, greet +0.1, talk +0.06, work -0.1.
+- The hymns are titles only, all from before 1899.
+- `Subject(killing, theft, death, drink)` takes the gravest first; also `AfterThought` and `DinnerLine`.
+
+`ChoiceContext.Devotion` is set in Mind.cs, with "Churchgoer" when unknown. Choosing has its own private `Sunday(c)`, so the class is named in full there. Game/WestworldScript.Sunday.cs: `SundayStep` runs every 10 s on a Sunday, out of doors in a town in `Churches` and within 70 m of the church.
+- 9:30-11:30: a hymn caption (`SpeechCaption` with no ped and no voice), a game quarter hour between.
+- After 11:30: one churchgoer within 30 m a look thinks over the sermon, once each a Sunday.
+- 12-14: the dinner box item, once a town a Sunday.
+
+`SermonSubject(town, g)` reads the store for the week: known killings or thefts in the town, a resident dead, a drink breakdown. F7 `TEST sunday:`. mindtest `SundayTest` (`sunday`).
+
 ## Lasting marks (FIVEDAY item 24, 2026-11-06; `[Mind] LastingMarks`, `LastingMarksLook` off, `LastingMarksGait`, `LastingMarksPack`; settings version 276)
 
 Core/LastingMarks.cs: `Days(kind)` is 4 for an assault and 1 for a shove; `Shows(kind, minutesSince)`. Candidates: `Gaits` (the injured_* locomotion archetypes) and `Packs`. The file also has the person's own thoughts and a friend's naming thought ({n}, {you}, else "That stranger"). Game/WestworldScript.Marks.cs: `MarksStep` runs every 3 s over `_mindNear` and finds the mark through `Trust.LastWrong`. Within 25 m it gives the person's own thought once a day, or a friend's in `_mindNear` once a day a pair, one a look. With `LastingMarksLook` on it applies `PED._SET_PED_DESIRED_LOCO_FOR_MODEL(h, gait)` and `PED.APPLY_PED_DAMAGE_PACK(h, pack, 60 or 25, 1)` once a session a body; `_CLEAR_PED_DESIRED_LOCO_FOR_MODEL` runs when the mark is gone. The signatures were read from refs/ScriptHookRDRNetAPI.dll by reflection; the effect in game is unproven. Testing row `marks` (Tools) calls `MarksProbe`: the next gait and pack on the nearest named person within 15 m, set wandering so the gait shows. F7 `TEST marks:`. mindtest `LastingMarksTest` (`marks`).

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Sunday, properly** (`[World] SundayMorning`, on; settings version 277; FIVEDAY item 25). The whole Sunday morning now plays out:
+  - From eight the town's believers make for the church, the devout most. Offline, 42% choose the nine o'clock service, where 19% did before.
+  - From half past nine, near the church, you hear the hymn from the street; the hymns are old, and only their names are used.
+  - The sermon is on the town's week: a killing known there, a theft, a death among them, or someone gone to drink. The churchgoers think it over afterwards ("The reverend preached on the Sixth Commandment. Everybody knew who he meant.").
+  - From noon, dinner on the grounds is in the Around town box, and neighbours linger to eat and talk.
+
 - **Lasting marks** (`[Mind] LastingMarks`, on; `LastingMarksLook`, off; settings version 276; FIVEDAY item 24). Someone you beat now carries it for days: four after a beating, one after a knocking down. When you're about, they think of it ("Every step, I feel where he put his boot."), and a friend of theirs near you names you for it ("That's the one did Hank's face. Look at him.").
   - Showing it on the body, as an injured gait and bruising, sits behind `LastingMarksLook`, off until you've tried the probe. The game's names for these aren't proven, so the Testing row "A beating's marks" tries the next gait and damage pack on the nearest named person each press and says which.
   - Set the ones that read in `LastingMarksGait` and `LastingMarksPack`.

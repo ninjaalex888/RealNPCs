@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 276;
+        public const int CurrentVersion = 277;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -372,6 +372,7 @@ namespace EnrageWestworld.Core
         public bool Temperance = true;   // [Scenes] by day, a temperance woman asks a drinker in the street to sign the pledge (Core/Temperance.cs; FIVEDAY item 12, settings version 264)
         public bool EventShivarees = true;   // [World] with TownEvents: the night after a wedding in town, the couple's friends raise a din until the groom stands them a round (Core/Shivaree.cs; FIVEDAY item 13, settings version 265)
         public bool WhileAway = true;   // [World] back in a town after two game days, what you missed: the box's "While you were away" and a neighbour's thought (Core/WhileAway.cs; FIVEDAY item 19, settings version 271)
+        public bool SundayMorning = true;   // [World] Sunday properly: the believers walk to the service, the hymn heard from the street, a sermon on the town's week talked over after, dinner on the grounds (Core/Sunday.cs; FIVEDAY item 25, settings version 277)
         public bool NoticeBoard = true;   // [World] the week ahead on one board: a "Notice board" page in the reader, and what a town has posted in the Around town box as you come in (Core/NoticeBoard.cs; FIVEDAY item 16, settings version 268)
         public bool WitnessesChoose = true;   // [World] each witness to your violence the mind knows tells it or keeps quiet (fear of you, loyalty to you); a gun on one within the hour leans on them (Core/WitnessChoice.cs; FIVEDAY item 14, settings version 266)
         public bool NightScenes = true;   // [Scenes] with MindLive: at night, a mugging by someone whose mind leans to it, and a drunk taken home by a friend (the NPC-life run, step 5; settings version 135)
@@ -899,6 +900,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 277)
+                    log?.Invoke("Settings: new in this version: [World] SundayMorning (on): Sunday properly, the service and the dinner after.");
                 if (s.SettingsVersion < 276)
                     log?.Invoke("Settings: new in this version: [Mind] LastingMarks (on): a beating's marks worn for days; LastingMarksLook (off) until the probe is seen.");
                 if (s.SettingsVersion < 275)
@@ -1768,6 +1771,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("Temperance = " + B(Temperance) + "   ; by day in the street: a temperance woman asks a drinker before the saloon doors to sign the pledge; he jeers, slinks off, swears off for the day, or is taken home on her arm. The pious start it oftener, and a man whose worry is the drink is the one she stops");
             b.AppendLine("EventShivarees = " + B(EventShivarees) + "   ; with TownEvents on: the night after a wedding in a town, from nine, the couple's friends gather with pans and a cowbell and shout for the groom until he comes out and stands them a round; there a minute, the regulars think better of you for it");
             b.AppendLine("WhileAway = " + B(WhileAway) + "   ; back in a town after two game days or more: what happened while you were gone (deaths, weddings, who left on the train, a new face at a counter, the dance, the trial, the hanging, the election you missed), in the Around town box, and someone near who knows you thinks of telling you");
+            b.AppendLine("SundayMorning = " + B(SundayMorning) + "   ; Sunday properly: from eight the town's believers make for the church (the devout most); from half past nine near the church you hear the hymn; the sermon is on the town's week (a killing, a theft, a death, the drink) and the churchgoers think it over after; from noon, dinner on the grounds");
             b.AppendLine("NoticeBoard = " + B(NoticeBoard) + "   ; what is posted for the coming seven days, gathered on one board: a Notice board page in the reader (each town by day: dances, elections, the circuit judge, hangings, the show, prize fights, announced weddings, funerals, Saturday wages and Sunday service), and as you come into a town, what it has posted, in the Around town box (once a town a day)");
             b.AppendLine("WitnessesChoose = " + B(WitnessesChoose) + "   ; each witness to your violence whom RealNPCs knows chooses: tell it, or keep quiet out of fear of you or loyalty to you (the law-abiding, the honest and a friend of the victim tell); if nobody who saw it will tell, the town never learns it was you. Within the hour, a gun on a witness leans on them: the frightened swear they saw nothing, the proud tell it sooner");
             b.AppendLine("NightScenes = " + B(NightScenes) + "   ; with MindLive on, at night in town: someone short of money and honest with nobody (or a known thief) robs someone on their own, who hands it over or won't by their nature; and late, a drunk who goes down in the street is got up and taken home by a friend. Each at most once a town a night");
