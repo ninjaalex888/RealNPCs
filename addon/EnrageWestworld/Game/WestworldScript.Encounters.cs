@@ -949,6 +949,8 @@ namespace EnrageWestworld.InGame
         {
             if (_pink != null)
                 EndPinkerton(why);
+            if (_graveWalk != null)
+                EndGraveWalk(why);
             if (_crying != null)
                 EndCrying(why);
             if (_hermit != null)

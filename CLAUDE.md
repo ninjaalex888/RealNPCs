@@ -1084,6 +1084,20 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Mourning and graves visited (FIVEDAY item 26, 2026-11-06; `[World] Mourning`; settings version 278)
+
+Core/Mourning.cs:
+- `MournOf(mind, now, out dead, out deadId)`: the latest "death" memory with Sub "friend", within 21 days of when word reached them (`Math.Max(At, DueAt)`).
+- `Lean(mourning, act)`: home +0.12, pray +0.12, church +0.06, showoff -0.25, cards -0.2, saloon -0.12, greet -0.08.
+- `GraveHour`: Sunday from 13 to 17.
+- The pools: their own thoughts, the hush, at the grave, at the grave of one he killed, and on seeing him.
+
+Game/WestworldScript.Mourning.cs: `MourningStep` runs every 10 s over `_mindNear`, one action a look:
+- On a Sunday afternoon, a free mourner within 40 m is held. They walk to `Spots.Nearest(cemetery)` if it's within 150 m, or kneel in place when within 60 m of the church. Then comes the kneel scenario for 30 s and their grave thought. `MournsYourKill` marks his victim; within 10 m, they see him. One walk at a time, and `EndEncounters` ends it.
+- Otherwise, their own thought within 30 m once a day, or a neighbour within 8 m hushed once a day a pair.
+
+`ChoiceContext.Mourning` is set in Mind.cs. F7 `TEST mourning:`. mindtest `MourningTest` (`mourning`). Not built: "neighbours lowering their voices" as the street's scenes speaking lower (a thought carries it), and mourning dress.
+
 ## Sunday, properly (FIVEDAY item 25, 2026-11-06; `[World] SundayMorning`; settings version 277)
 
 Core/Sunday.cs:

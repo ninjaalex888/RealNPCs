@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
         public bool Works = true;             // a working trade: the day's work is a duty, not only a want (gentry and ladies: false)
         public string WorkPlace;              // where their work is, if it's somewhere work is otherwise improper (a barkeep's saloon)
         public bool Woman, SaloonGirl;        // a respectable woman of 1899 didn't drink or play cards in a saloon; the saloon's own women did
+        public bool Mourning;                 // a friend's death these three weeks (Core/Mourning.cs), with [World] Mourning
         public string Devotion;               // Devout, Churchgoer, Lapsed, Godless (the person's), for Sunday's lean with [World] SundayMorning; else null
         public bool Fright;                   // one they saw the player kill with is about (Core/SharedFright.cs), with [Mind] SharedFright
         public string Survivor;               // the way a wrong of the player's left them (Core/Survivors.cs: geteven, standing, broken), with [Mind] SurvivorsChanged; else null
@@ -265,6 +266,7 @@ namespace EnrageWestworld.Core
                 s -= 0.1f;   // sore: less for company (a friend is still sought: greet stays)
             if (c.Plan != null)
                 s += PlanLean(c.Plan, d.Id);
+            s += Mourning.Lean(c.Mourning, d.Id);   // mourning: quieter days (FIVEDAY item 26)
             if (c.Devotion != null)
                 s += EnrageWestworld.Core.Sunday.Lean(c.Weekday, c.Hour, c.Devotion, d.Id);   // the walk to the service, the dinner after (FIVEDAY item 25)
             s += SharedFright.Lean(c.Fright, d.Id);   // they keep clear of him together (FIVEDAY item 22)

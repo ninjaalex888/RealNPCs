@@ -1333,6 +1333,7 @@ namespace EnrageWestworld.InGame
             NoticeBoardStep(now); // into a town: what it has posted, in the box (WestworldScript.NoticeBoard.cs; FIVEDAY item 16)
             RegardStep(now);      // the town's regard of you in the "Around town" box (WestworldScript.Regard.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
+            MourningStep(now);      // mourning: quieter thoughts, hushed neighbours, the grave on a Sunday afternoon (WestworldScript.Mourning.cs; FIVEDAY item 26)
             SundayStep(now);        // a Sunday by the church: the hymn, the sermon talked over, dinner on the grounds (WestworldScript.Sunday.cs; FIVEDAY item 25)
             MarksStep(now);         // the marks of a beating of yours, worn for days (WestworldScript.Marks.cs; FIVEDAY item 24)
             SurvivorsStep(now);     // a friend of one you beat thinks of what it did to them (WestworldScript.Survivors.cs; FIVEDAY item 21)

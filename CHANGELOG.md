@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Mourning and graves visited** (`[World] Mourning`, on; settings version 278; FIVEDAY item 26). For three weeks after a friend's death, people mourn:
+  - Their days go quieter: home, prayer and the church, not the cards or the saloon. Offline at 7 pm, 11% chose home, prayer or church before and 38% now; the cards, the saloon or showing off went from 22% to 4%.
+  - They have their own thoughts of the dead, and neighbours near them hush for it.
+  - On a Sunday afternoon one walks to the grave and kneels, using the game's own graveside kneel. The grave is the town's recorded cemetery spot, or the churchyard where none is recorded.
+  - At the grave of someone you killed, if you come near, they know you.
+
 - **Sunday, properly** (`[World] SundayMorning`, on; settings version 277; FIVEDAY item 25). The whole Sunday morning now plays out:
   - From eight the town's believers make for the church, the devout most. Offline, 42% choose the nine o'clock service, where 19% did before.
   - From half past nine, near the church, you hear the hymn from the street; the hymns are old, and only their names are used.
