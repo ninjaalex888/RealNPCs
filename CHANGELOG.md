@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **A stalker on horseback who rides** (`[Stalkers] StalkerRides`, on; settings version 286; FIVEDAY item 32c; README 13). A mounted stalker used to sit his horse watching and get down to do anything else. Now he stays in the saddle to follow you at a distance and to ride in close and back out round you when you stand still. He pulls up a horse's length short when he rushes you, falls back to sixty metres when you move, and rides off when he flees.
+  - The follow, circle and rush use the go-to-entity the allies already ride with, which is proven to drive the horse. The flee and the fall-back give the game's smart flee from the saddle, which isn't proven. So every ride is checked: if the horse hasn't moved three metres in five seconds, he gets down and does it on foot as before.
+  - Offline: of the stalker's eleven modes, a mounted one now gets down for 3, where before it was 8.
+  - A Testing row, "A stalker on horseback now", sends one.
+
 - **Kin take up a wrong one townsman did another** (`[Scenes] KinTownWrongs`, on, with KinGrudges; settings version 285; FIVEDAY item 32b; README 20). When one townsman beats or robs another, two times in five a man of the victim's family (a brother, father, son, cousin or uncle) comes to town five to nine days later. If the one who did it is near you, the kin walks up to him, says who he is and where he rode in from, and has it out. The man answers by his nature: hard words, a walk-off, an apology, or blows between two hot-tempered men. A notice names them.
   - Before, only your own wrongs brought the kin, and a townsman's wrongs were taken up only by friends who happened to be near. Offline, of 200 beatings and thefts on people with a brother, 70 now bring him to town (before: none).
   - A Testing row, "Kin come for a townsman who beat theirs", books one due now between two people near you.

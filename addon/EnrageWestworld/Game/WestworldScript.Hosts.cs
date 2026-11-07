@@ -540,7 +540,8 @@ namespace EnrageWestworld.InGame
             _stalkerIsTest = test;
             _stalker = new Stalker(f, label, woman, _cfg);
             _stalker.AtCamp = atCamp;
-            _stalker.Mounted = !atCamp && _cfg.StalkerHorse > 0 && _rng.Next(100) < (f != null && f.Held != null ? Math.Min(100, _cfg.StalkerHorse * 2) : _cfg.StalkerHorse);   // on horseback now and then (SIXDAY item 19); a revenant with a grudge from before rides out twice as often (item 22)
+            _stalker.Mounted = !atCamp && (_stalkerForceMounted || _cfg.StalkerHorse > 0 && _rng.Next(100) < (f != null && f.Held != null ? Math.Min(100, _cfg.StalkerHorse * 2) : _cfg.StalkerHorse));   // on horseback now and then (the Testing row forces one: FIVEDAY item 32c) (SIXDAY item 19); a revenant with a grudge from before rides out twice as often (item 22)
+            _stalkerForceMounted = false;
             _stalkerPendingUntil = now + 25000;
             Log.Write("STALKER begins: " + label + (f != null ? " (killed " + (f.Town ?? f.Zone ?? "somewhere") + ")" : " (a stranger)") + (test ? " (key)" : "") +
                       (atCamp ? ", at your camp" : _stalker.Mounted ? ", on horseback" : "") + ", game time " + Clock(Bridge.Now()));
@@ -549,6 +550,7 @@ namespace EnrageWestworld.InGame
         }
 
         private int _campRevenants;
+        private bool _stalkerForceMounted;   // the Testing row's: the next stalker on horseback (FIVEDAY item 32c)
 
         /// At a fire of a night, out of the towns, on foot and still: a campfire (the game's own models, the hermits' list) within
         /// 6 m between nine and four.

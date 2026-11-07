@@ -1084,6 +1084,26 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## A stalker on horseback who rides (FIVEDAY item 32c, 2026-11-07; `[Stalkers] StalkerRides`; settings version 286)
+
+`Core/StalkerRide.Way(mode, ridesOn)`:
+- Stare, Lurk, Watched: "sit".
+- Follow, Circle, Rush: "ride".
+- Flee, Retreat: "rideoff".
+- Hide, Act, Still: "dismount".
+- With the switch off, everything but sit is "dismount", as before.
+
+`Stuck(moved, arrived)` is under 3 m in `CheckMs` (5 s) without arriving.
+
+In Game/Stalker.cs, the think's mounted block reads `way`. For ride and rideoff it tracks `_rideFrom` and `_rideCheckAt`. When stuck, way becomes dismount and the old Dismount path runs.
+- Circle: mounted, `TASK_GO_TO_ENTITY` every 3 s at radius 9 or 13 by turns.
+- Rush: go-to-entity at 6 m every 1.5 s, stopping short at 8 m.
+- Follow: go-to-entity at `StalkerFollowMetres` every 2.5 s.
+- `StartFleeMounted`: with the switch, a smart flee from the saddle with no dismount.
+- `StartRetreat`: mounted, a smart flee to 60 m. The Retreat case goes to Lurk at 45 m or when its time is up.
+
+Hosts: `_stalkerForceMounted` (the Testing row `stalkerhorse`) forces the next stalker mounted. mindtest `StalkerRideTest` (`ride`).
+
 ## Kin take up a townsman's wrong (FIVEDAY item 32b, 2026-11-07; `[Scenes] KinTownWrongs`; settings version 285)
 
 `KinGrudge` gains `DoerId`, `DoerName` (saved, EmitDefaultValue false; mindtest round trip). `Engine.KinTownDaily` runs in the daily tick (with KinGrudges and KinTownWrongs). It reads the ties from the last day with `KinGrudges.TownWrong` (rough, pickpocket; never brawl) and a Doer that isn't the player. Each victim is taken once (PersonState mark `kintown`), at 40%, with `KinGrudges.Takes` (a man of the family). Wrong "town:<kind>". `KinDue(town, now, doerNear)` skips a grudge with a DoerId unless `doerNear(id)`, so the walk-up to you never takes one. Game (WestworldScript.KinGrudges.cs): the look tries yours first, then a townsman's with `KinDoerNear` (a named man by id within 60 m of you, free). `KinGrudgeCast(..., doer)` casts the body as before and sends it to him (`_kinDoer`). `KinDoerStep` runs each tick: within 3 m and the Director free, it plays `Grudges.Confront` with `KinGrudges.TownIntro` inserted as beat 1. Blows come only from a sharp manner with a hot temper, not hushed, not watched by the law. Then KinDone and a Kin notice. Lost or out of time: done. A mission or EndEncounters: `KinLater`. Testing row `kintown` (Engine `KinTownTest`). mindtest `KinTownWrongsTest` (`kintown`).

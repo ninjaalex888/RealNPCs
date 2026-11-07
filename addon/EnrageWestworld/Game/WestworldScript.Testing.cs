@@ -231,6 +231,13 @@ namespace EnrageWestworld.InGame
                     _stalkerRequested = true;   // the stalker's own path (WestworldScript.Hosts.cs), which says so itself
                     skipped = "the roll and the wait between rolls";
                     return null;
+                case "stalkerhorse":   // the next stalker on horseback (FIVEDAY item 32c)
+                    if (_stalker != null)
+                        return "a stalker is out already";
+                    _stalkerForceMounted = true;
+                    _stalkerRequested = true;
+                    skipped = "the roll, the wait between rolls and the horseback percent";
+                    return null;
                 case "wake":
                     _wakeRequested = true;   // the person you face, one stage (WestworldScript.Awakening.cs)
                     skipped = "nothing: it needs someone a few steps in front of you";

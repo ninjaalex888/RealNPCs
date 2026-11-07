@@ -31,6 +31,9 @@ namespace EnrageWestworld.InGame
         /// sitting and watching is done on foot (the modes' orders are a walker's), so he gets down the first time he moves.
         /// AtCamp: a revenant come to the edge of your firelight (just past the light, standing and staring; never mounted).
         public bool Mounted, AtCamp;
+        private int _rideCheckAt;          // the next check that a ride in the saddle is moving (FIVEDAY item 32c)
+        private Vector3 _rideFrom;
+        private float _rideRadius = StalkerRide.CloseMetres;
         private Ped _horse;
         private uint _horseModel;
         private int _horseTries, _dismountAt, _dismountAskAt, _dismountAsks;
@@ -256,7 +259,31 @@ namespace EnrageWestworld.InGame
             if (active)
                 _stillSince = now;
             bool close = _mode == Mode.Circle || _mode == Mode.Retreat || _mode == Mode.Rush || _mode == Mode.Act;   // he chose to be near: no "caught" flight
-            if (Mounted && _mode != Mode.Stare && _mode != Mode.Lurk && _mode != Mode.Watched)
+            string way = Mounted ? StalkerRide.Way(_mode.ToString(), _cfg.StalkerRides) : null;   // what the saddle does in this mode (FIVEDAY item 32c)
+            if (way == "ride" || way == "rideoff")
+            {
+                // every five seconds: moved at least three metres, or arrived; else down he gets and does it on foot
+                if (_rideCheckAt == 0)
+                {
+                    _rideFrom = me;
+                    _rideCheckAt = now + StalkerRide.CheckMs;
+                }
+                else if (now >= _rideCheckAt)
+                {
+                    float moved = me.DistanceTo(_rideFrom);
+                    bool arrived = way == "ride" && dist <= _rideRadius + 3f;
+                    _rideFrom = me;
+                    _rideCheckAt = now + StalkerRide.CheckMs;
+                    if (StalkerRide.Stuck(moved, arrived))
+                    {
+                        Log.Write("STALKER " + Label + " doesn't move on horseback (" + _mode + ", " + moved.ToString("0.0") + " m in 5 s): he gets down");
+                        way = "dismount";
+                    }
+                }
+            }
+            else
+                _rideCheckAt = 0;
+            if (Mounted && way == "dismount")
             {
                 Dismount(now);   // anything but sitting and watching is done on foot: the dismount gets this think to itself and holds the orders 3.5 s (the review of items 15-19: a move order the same tick overrode it)
                 return;
@@ -337,7 +364,14 @@ namespace EnrageWestworld.InGame
                         StartRetreat(player, now);
                         break;
                     }
-                    if (now >= _nextOrder)
+                    if (now >= _nextOrder && Mounted)
+                    {
+                        // in the saddle: in to nine metres, out to thirteen, by turns, so the horse keeps moving round you (FIVEDAY item 32c)
+                        _nextOrder = now + 3000;
+                        _rideRadius = _rideRadius == StalkerRide.CloseMetres ? StalkerRide.CloseFar : StalkerRide.CloseMetres;
+                        TASK.TASK_GO_TO_ENTITY(h, player.Handle, -1, _rideRadius, 1.8f, 0f, 0);
+                    }
+                    else if (now >= _nextOrder)
                     {
                         _nextOrder = now + 1000;
                         CircleStep(player);
@@ -360,7 +394,7 @@ namespace EnrageWestworld.InGame
                         StartRetreat(player, now);
                         break;
                     }
-                    if (_modeUntil == 0 && dist < 3.5f)
+                    if (_modeUntil == 0 && dist < (Mounted ? StalkerRide.RushStop : 3.5f))
                     {
                         // stops a few steps short, face to face: he never lays a hand on you
                         TASK.CLEAR_PED_TASKS(h, true, false);
@@ -372,6 +406,12 @@ namespace EnrageWestworld.InGame
                     }
                     else if (_modeUntil > 0 && now > _modeUntil)
                         StartRetreat(player, now);
+                    else if (_modeUntil == 0 && now >= _nextOrder && Mounted)
+                    {
+                        _nextOrder = now + 1500;   // rides straight at you, and pulls up short (FIVEDAY item 32c)
+                        _rideRadius = StalkerRide.RushMetres;
+                        TASK.TASK_GO_TO_ENTITY(h, player.Handle, -1, _rideRadius, 3f, 0f, 0);
+                    }
                     else if (_modeUntil == 0 && now >= _nextOrder)
                     {
                         _nextOrder = now + 700;
@@ -380,7 +420,7 @@ namespace EnrageWestworld.InGame
                     break;
 
                 case Mode.Retreat:
-                    if (me.DistanceTo(_goal) < 3f || now > _modeUntil)
+                    if (Mounted ? dist >= StalkerRide.RetreatDone || now > _modeUntil : me.DistanceTo(_goal) < 3f || now > _modeUntil)
                     {
                         _mode = Mode.Lurk;
                         _modeUntil = now + 30000 + _rng.Next(30000);
@@ -419,7 +459,13 @@ namespace EnrageWestworld.InGame
                         Face(player, true);
                         break;
                     }
-                    if (now >= _nextOrder)
+                    if (now >= _nextOrder && Mounted)
+                    {
+                        _nextOrder = now + 2500;   // keeps his distance on horseback (FIVEDAY item 32c)
+                        _rideRadius = _cfg.StalkerFollowMetres;
+                        TASK.TASK_GO_TO_ENTITY(h, player.Handle, -1, _rideRadius, dist > 60f ? 2f : 1.2f, 0f, 0);
+                    }
+                    else if (now >= _nextOrder)
                     {
                         _nextOrder = now + 2500;
                         Vector3 goal = pp + (me - pp).Normalized * _cfg.StalkerFollowMetres;
@@ -608,6 +654,17 @@ namespace EnrageWestworld.InGame
         /// The player moved: run back out to 45-70 m, behind cover if there is any.
         private void StartRetreat(Ped player, int now)
         {
+            if (Mounted && _cfg.StalkerRides)
+            {
+                // he falls back on horseback to sixty metres and sits his horse again from forty-five (FIVEDAY item 32c)
+                _mode = Mode.Retreat;
+                _modeUntil = now + 20000;
+                _rideCheckAt = 0;
+                TASK.CLEAR_PED_TASKS(_ped.Handle, true, false);
+                TASK.TASK_SMART_FLEE_PED(_ped.Handle, player.Handle, StalkerRide.RetreatSafe, -1, 0, 3f, 0);
+                Log.Write("STALKER " + Label + " wheels his horse and falls back");
+                return;
+            }
             bool hidden;
             Vector3 spot = CoverSpot(player, out hidden);
             _mode = Mode.Retreat;
@@ -661,6 +718,17 @@ namespace EnrageWestworld.InGame
 
         private void StartFleeMounted(Ped player)
         {
+            if (Mounted && _cfg.StalkerRides)
+            {
+                // he rides off (FIVEDAY item 32c): the smart flee given from the saddle; the ride check gets him down if it doesn't take
+                _mode = Mode.Flee;
+                _fleeSince = Game.GameTime;
+                _rideCheckAt = 0;
+                TASK.CLEAR_PED_TASKS(_ped.Handle, true, false);
+                TASK.TASK_SMART_FLEE_PED(_ped.Handle, player.Handle, 120f, -1, 0, 3f, 0);
+                Log.Write("STALKER " + Label + " rides off");
+                return;
+            }
             if (Mounted)
                 Dismount(Game.GameTime);   // he runs on foot: the horse is left
             StartFlee(player);
