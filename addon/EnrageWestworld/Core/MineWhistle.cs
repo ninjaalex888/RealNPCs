@@ -32,9 +32,10 @@ namespace EnrageWestworld.Core
         }
 
         /// Who's killed: one or two of the town's men, a miner first, a regular next; never more than two.
-        public static List<Resident> Victims(IEnumerable<Resident> town, string seed)
+        public static List<Resident> Victims(IEnumerable<Resident> town, string seed, System.Func<string, bool> inSight = null)
         {
-            var men = town.Where(r => r != null && !r.Dead && !r.Left && !r.Fled && !r.Woman && r.Held == null && r.Name != null)
+            // never a counter keeper (no successor below), the test cast, or a man walking about near you now (the Part 5 review)
+            var men = town.Where(r => r != null && !r.Dead && !r.Left && !r.Fled && !r.Woman && r.Held == null && r.Name != null && r.PostId == null && r.Cast == null && (inSight == null || !inSight(r.Id)))
                           .OrderByDescending(r => (r.Trade != null && r.Trade.ToLowerInvariant().Contains("miner") ? 2 : 0) + (r.Regular ? 1 : 0))
                           .ThenBy(r => Voice.Hash(seed + r.Id)).ToList();
             int n = Voice.Chance(seed + "|two", 35) ? 2 : 1;

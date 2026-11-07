@@ -2,6 +2,7 @@
 // the 4% and the three weeks' gap) and books the minute; the world tick, at that minute, takes the one or two and records
 // their deaths through NoteDied (the friends hear of it, the mourning and the wake follow), and the ledger counts them.
 // The game side reads LastMine to stage it when the player is in Annesburg; away, a toast. Behind [World] MineWhistle.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,6 +17,9 @@ namespace EnrageWestworld.Core
     public partial class Engine
     {
         public MineAccident LastMine { get; private set; }
+
+        /// The game's: whether this resident has a living body near the player now (one walking the street can't die below). Null offline.
+        public Func<string, bool> ResidentInSight;
         private int _minesSession;
 
         private void MineDaily(long now)
@@ -46,7 +50,7 @@ namespace EnrageWestworld.Core
         /// The accident itself (the Testing row's too): the names, the deaths, the ledger, the word away.
         public string MineAccidentNow(long now, bool test)
         {
-            List<Resident> dead = MineWhistle.Victims(Store.Residents.Where(r => r.Town == MineWhistle.Town), "mine|" + now);
+            List<Resident> dead = MineWhistle.Victims(Store.Residents.Where(r => r.Town == MineWhistle.Town), "mine|" + now, ResidentInSight);
             if (dead.Count == 0)
                 return "no men of Annesburg known to RealNPCs to be below";
             Store.Counts["mine:lastday"] = (int)(now / 1440);

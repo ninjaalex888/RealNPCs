@@ -104,6 +104,7 @@ namespace EnrageWestworld.InGame
             m.ShotsNear = nowMs >= _momentShotAt && nowMs - _momentShotAt < 8000;
             if (_cfg.MoreMoments)
             {
+                m.More = true;
                 // FIVEDAY item 32e: the storm, the horse bolting, a scene of ours they're at (the theft is read in ThoughtNow, by id)
                 m.Storm = w == "storm";
                 if (m.Doing == "riding")

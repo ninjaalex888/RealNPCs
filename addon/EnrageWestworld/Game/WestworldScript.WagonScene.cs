@@ -31,6 +31,7 @@ namespace EnrageWestworld.InGame
             public int Other, OtherAt, DownAt;              // a passer-by who stops (FIVEDAY item 32d): his handle, when he turned aside; when the driver got down
             public bool OtherTried, OtherSet, RodePast;      // looked for one already; he set it; you rode on first
             public string OtherName;
+            public int OtherDownAt, OtherDownAsks;
         }
 
         private WagonSceneRun _wagonScene;
@@ -340,10 +341,19 @@ namespace EnrageWestworld.InGame
                 return false;
             if (PED.IS_PED_ON_MOUNT(r.Other))
             {
-                if (now - r.OtherAt > 4000)
+                // down off his horse (the stalker's dismount, by hash): asked every five seconds, three times, then he rides on
+                // (the Part 5 review: the old reset re-asked every tick and kept the walk's time from running out)
+                if (now >= r.OtherDownAt)
                 {
-                    Function.Call(0x48E92D3DDE23C23A, r.Other, 0, 0, 0, 0, 0);   // down off his horse (the stalker's dismount, by hash)
-                    r.OtherAt = now - WagonWheel.OtherWalkMs + 8000;   // a few seconds more to get down
+                    if (r.OtherDownAsks >= 3)
+                    {
+                        WagonOtherRelease(r, "he never got down off his horse");
+                        r.OtherTried = true;
+                        return false;
+                    }
+                    Function.Call(0x48E92D3DDE23C23A, r.Other, 0, 0, 0, 0, 0);
+                    r.OtherDownAsks++;
+                    r.OtherDownAt = now + 5000;
                 }
                 return false;
             }

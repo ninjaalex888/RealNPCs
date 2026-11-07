@@ -33,6 +33,7 @@ namespace EnrageWestworld.Core
         // last hour and a half (a theft tie on them); a storm; at a scene of ours ("ring": in a brawl's ring, "execution":
         // near one on the road, not in it)
         public bool Spooked, Robbed, Storm;
+        public bool More;       // [Mind] MoreMoments on: the women's fist lines and how-you-look's own pools (the Part 5 review: they ran with it off)
         public string AtScene;
     }
 
@@ -107,7 +108,7 @@ namespace EnrageWestworld.Core
                 pool = AwakeFight;
                 what = "fight:awake";
             }
-            else if (m.Woman && (what == "fightyou:fists" || what == "fight:fists"))
+            else if (m.More && m.Woman && (what == "fightyou:fists" || what == "fight:fists"))
             {
                 pool = WomanFists;   // a woman's own, where the fist pools are a man's (FIVEDAY item 32e)
                 what += ":woman";
@@ -184,7 +185,7 @@ namespace EnrageWestworld.Core
             if (what == null)
                 return null;
             string line;
-            if (what == "youlook" && YouLookOwn.ContainsKey(m.YouLook) && Voice.Chance(seed + "|ylo", 50))
+            if (what == "youlook" && m.More && YouLookOwn.ContainsKey(m.YouLook) && Voice.Chance(seed + "|ylo", 50))
                 line = Pick(YouLookOwn[m.YouLook], seed + "|yl", told);   // its own pool, half the time (FIVEDAY item 32e)
             else if (what == "youlook")
             {

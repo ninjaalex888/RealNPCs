@@ -15,6 +15,19 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
+        /// Whether this resident has a living body bound near the player now (within 200 m).
+        private bool ResidentBodyNear(string id)
+        {
+            if (id == null)
+                return false;
+            Ped me = Game.Player.Character;
+            foreach (KeyValuePair<int, ResBind> kv in _resBind)
+                if (kv.Value.R != null && kv.Value.R.Id == id && ENTITY.DOES_ENTITY_EXIST(kv.Key) && !ENTITY.IS_ENTITY_DEAD(kv.Key) && me != null &&
+                    new Ped(kv.Key).Position.DistanceTo(me.Position) < 200f)
+                    return true;
+            return false;
+        }
+
         private sealed class ResBind
         {
             public Resident R;

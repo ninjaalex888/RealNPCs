@@ -64,6 +64,8 @@ namespace EnrageWestworld.InGame
                 int clock = (int)(g % 1440), hour = clock / 60;
                 if (_sundayDone.Count > 300)
                     _sundayDone.Clear();
+                if (g < _sundayHymnAt)
+                    _sundayHymnAt = 0;   // an earlier save loaded (the Part 5 review)
                 if (clock >= Sunday.HymnFromMin && clock < Sunday.HymnToMin && g - _sundayHymnAt >= 15)
                 {
                     _sundayHymnAt = g;

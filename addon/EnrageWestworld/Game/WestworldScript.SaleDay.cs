@@ -57,6 +57,11 @@ namespace EnrageWestworld.InGame
 
         private void SaleDayStep(int now)
         {
+            if (_sale != null && (_cfg == null || !_cfg.SaleDay))
+            {
+                EndSaleDay("[World] SaleDay switched off");   // (the Part 5 review: held men kept held)
+                return;
+            }
             if (_cfg == null || !_cfg.SaleDay || _store == null)
                 return;
             if (_sale != null)
@@ -210,8 +215,7 @@ namespace EnrageWestworld.InGame
             if (r == null)
                 return;
             foreach (Ped p in r.Men)
-                if (p.Exists())
-                    StagedLetGo(p, true);
+                StagedLetGo(p, true);   // even one who's gone: off _staged (the Part 5 review)
             if (why != null)
                 Log.Write("SALEDAY over (" + why + ")");
         }

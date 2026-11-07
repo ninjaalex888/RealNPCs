@@ -39,13 +39,18 @@ namespace EnrageWestworld.InGame
 
         private void MourningStep(int now)
         {
-            if (_cfg == null || !_cfg.Mourning || _store == null || _placeTown == null)
-                return;
             if (_graveWalk != null)
             {
-                GraveStep(now);
+                // a walk in hand: advanced out of town too, and let go if the switch went off (the Part 5 review: a held mourner
+                // kept blocked events when you left town mid-walk)
+                if (_cfg == null || !_cfg.Mourning)
+                    EndGraveWalk("[World] Mourning switched off");
+                else
+                    GraveStep(now);
                 return;
             }
+            if (_cfg == null || !_cfg.Mourning || _store == null || _placeTown == null)
+                return;
             if (now < _mourningNextLook || _mindNear.Count == 0)
                 return;
             _mourningNextLook = now + 10000;
@@ -142,8 +147,8 @@ namespace EnrageWestworld.InGame
         {
             GraveWalk gw = _graveWalk;
             _graveWalk = null;
-            if (gw != null && gw.P != null && gw.P.Exists())
-                StagedLetGo(gw.P, true);
+            if (gw != null && gw.P != null)
+                StagedLetGo(gw.P, true);   // even one who's gone: off _staged (the Part 5 review)
         }
 
         private string MourningStatus()

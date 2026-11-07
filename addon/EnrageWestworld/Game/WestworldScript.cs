@@ -519,6 +519,7 @@ namespace EnrageWestworld.InGame
 				IntelFor = IntelFor,
 				FolkDead = (string key) => _bridge != null && _bridge.FolkDead(key)
 			};
+			_engine.ResidentInSight = ResidentBodyNear;   // the mine never takes a man who's walking near you (the Part 5 review)
 		}
 
 		/// 0.6 renamed the add-on (enRAGE Westworld became RealNPCs). Copies the old data folder (saves, diaries, voice files,

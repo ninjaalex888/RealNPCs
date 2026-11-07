@@ -1524,6 +1524,8 @@ namespace EnrageWestworld.Core
         public void EnsureLink(Person p)
         {
             long now = Store.LastGameMin, day = now > 0 ? now / 1440 : -1;
+            if (Cfg != null && !Cfg.GamblersBorrow)
+                Store.Links.RemoveAll(l => l.Kind == "cards");   // switched off: the lenders go too, their scenes and thoughts with them (the Part 5 review)
             if (p == null || p.Home == null || day < 0 || !Lasting(p.Id))
                 return;
             Person w = WorrySelfOf(p);   // the worry and its link are the resident's, once enRAGE has taken them up (NIGHT3 For Lex 9a)

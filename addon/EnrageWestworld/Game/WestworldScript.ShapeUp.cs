@@ -39,6 +39,11 @@ namespace EnrageWestworld.InGame
 
         private void ShapeUpStep(int now)
         {
+            if (_shape != null && (_cfg == null || !_cfg.ShapeUp))
+            {
+                EndShapeUp("[World] ShapeUp switched off");   // (the Part 5 review: held men kept held)
+                return;
+            }
             if (_cfg == null || !_cfg.ShapeUp || _store == null)
                 return;
             if (_shape != null)
@@ -153,8 +158,7 @@ namespace EnrageWestworld.InGame
             if (r == null)
                 return;
             foreach (Ped p in r.Men)
-                if (p.Exists())
-                    StagedLetGo(p, true);
+                StagedLetGo(p, true);   // even one who's gone: off _staged (the Part 5 review)
             if (why != null)
                 Log.Write("SHAPEUP over (" + why + ")");
         }

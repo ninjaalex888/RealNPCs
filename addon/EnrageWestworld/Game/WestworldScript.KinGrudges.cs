@@ -41,7 +41,11 @@ namespace EnrageWestworld.InGame
                 Safe("kingrudge", _aKinGrudgeWalk);
             }
             if (_kinDoer != null)
-                Safe("kingrudge", () => KinDoerStep(Game.Player.Character, _now));   // a townsman's grudge on its way (FIVEDAY item 32b)
+            {
+                if (_aKinDoer == null)
+                    _aKinDoer = () => KinDoerStep(Game.Player.Character, _now);   // made once (no allocation a tick: the Part 5 review)
+                Safe("kingrudge", _aKinDoer);   // a townsman's grudge on its way (FIVEDAY item 32b)
+            }
             if (now < _nextKinGrudge)
                 return;
             _nextKinGrudge = now + KinGrudgeLookMs;
@@ -214,6 +218,7 @@ namespace EnrageWestworld.InGame
         }
 
         private KinDoerWalk _kinDoer;
+        private Action _aKinDoer;
         private int _kinDoerHad;
 
         /// The man who did it, by id, among the named people near you (within 60 m of you, free to be directed), else null.
@@ -250,6 +255,8 @@ namespace EnrageWestworld.InGame
             if (!w.Kin.Exists() || w.Kin.IsDead || !w.Doer.Exists() || w.Doer.IsDead || now > w.Until)
             {
                 _kinDoer = null;
+                if (w.Kin.Exists() && !w.Kin.IsDead)
+                    PED.SET_PED_KEEP_TASK(w.Kin.Handle, false);
                 _engine.KinDone(w.K, "never reached " + (w.K.DoerName ?? "him"), Bridge.Now());
                 return;
             }
@@ -282,7 +289,10 @@ namespace EnrageWestworld.InGame
             if (w == null)
                 return;
             if (w.Kin != null && w.Kin.Exists())
+            {
+                PED.SET_PED_KEEP_TASK(w.Kin.Handle, false);
                 TASK.CLEAR_PED_TASKS(w.Kin.Handle, true, false);
+            }
             _engine.KinLater(w.K, why, Bridge.Now());
         }
 

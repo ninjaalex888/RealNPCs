@@ -154,7 +154,7 @@ namespace EnrageWestworld.Core
                         Proper = c => c.Place != "store" && c.InTown && c.StoreNear && c.Weekday != 0 && c.Hour >= 7 && c.Hour < 20,
                         Suits = t => 0.06f * T(t, Traits.Order) },
             new Doing { Id = "church", Words = "goes to church", Serves = N(0, 0.1f, 0, 0, 0.1f, 0.3f, 0.15f, 1f), Effort = 0.15f, Risk = 0f,
-                        Proper = c => c.Place != "church" && c.InTown && c.ChurchNear && (c.Weekday == 0 && c.Hour >= 9 && c.Hour < 12 || (c.Weekday == 0 || c.Weekday == 3) && c.Hour >= 18 && c.Hour < 21),   // the morning service, the Sunday evening service, the Wednesday prayer meeting (the review)
+                        Proper = c => c.Place != "church" && c.InTown && c.ChurchNear && (c.Weekday == 0 && c.Hour >= 8 && c.Hour < 12 ||   /* from eight on a Sunday: the walk to the nine o'clock service (the Part 5 review: Sunday.Lean's eight o'clock lean had nothing to lean on) */ (c.Weekday == 0 || c.Weekday == 3) && c.Hour >= 18 && c.Hour < 21),   // the morning service, the Sunday evening service, the Wednesday prayer meeting (the review)
                         Suits = t => 0.3f * T(t, Traits.Piety) + 0.05f * T(t, Traits.Deference) },
             new Doing { Id = "greet", Words = "has a word with a friend", Serves = N(0, 0, 0, 0, 0.05f, 0.8f, 0.25f, 0.1f), Effort = 0.05f, Risk = 0f,
                         Proper = c => c.TiesNear > 0 && (c.Place != "church" || c.Weekday == 0 && c.Hour >= 11 && c.Hour < 14),

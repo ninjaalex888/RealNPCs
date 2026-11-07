@@ -34,6 +34,7 @@ namespace EnrageWestworld.InGame
         private int _rideCheckAt;          // the next check that a ride in the saddle is moving (FIVEDAY item 32c)
         private Vector3 _rideFrom;
         private float _rideRadius = StalkerRide.CloseMetres;
+        private bool _rideStuck;           // the ride check got him down: what he was at goes on on foot
         private Ped _horse;
         private uint _horseModel;
         private int _horseTries, _dismountAt, _dismountAskAt, _dismountAsks;
@@ -278,6 +279,7 @@ namespace EnrageWestworld.InGame
                     {
                         Log.Write("STALKER " + Label + " doesn't move on horseback (" + _mode + ", " + moved.ToString("0.0") + " m in 5 s): he gets down");
                         way = "dismount";
+                        _rideStuck = true;
                     }
                 }
             }
@@ -286,6 +288,16 @@ namespace EnrageWestworld.InGame
             if (Mounted && way == "dismount")
             {
                 Dismount(now);   // anything but sitting and watching is done on foot: the dismount gets this think to itself and holds the orders 3.5 s (the review of items 15-19: a move order the same tick overrode it)
+                if (_rideStuck)
+                {
+                    // the horse wouldn't go: the flee or the fall-back he was at goes on, on foot (the Part 5 review: no handler
+                    // gave him a foot order again, and he stood by the horse until the mode timed out)
+                    _rideStuck = false;
+                    if (_mode == Mode.Flee)
+                        StartFlee(player);
+                    else if (_mode == Mode.Retreat)
+                        StartRetreat(player, now);
+                }
                 return;
             }
             if (_horse != null && !Mounted && now - _dismountAt > 6000 && _horse.Exists() && !ENTITY.IS_ENTITY_ON_SCREEN(_horse.Handle))

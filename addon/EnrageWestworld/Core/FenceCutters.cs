@@ -46,7 +46,7 @@ namespace EnrageWestworld.Core
 
         private static bool Cattle(Resident r) { return r.Trade != null && (r.Trade.Contains("ranch") || r.Trade.Contains("cow") || r.Trade.Contains("drover") || r.Trade.Contains("cattle")); }
 
-        private static bool Fit(Resident r) { return r != null && !r.Woman && !r.Dead && r.Held == null && r.Id != null; }
+        private static bool Fit(Resident r) { return r != null && !r.Woman && !r.Dead && !r.Left && !r.Fled && r.Held == null && r.Id != null; }   // (not a man gone by train: the Part 5 review)
 
         /// Whose wire, and whom he blames, of a town's people: a farmer first, and the man he's already at odds with in a
         /// feud (feudWith: the worrier's id to his neighbour's id), else a ranch man, else any other man. False if the

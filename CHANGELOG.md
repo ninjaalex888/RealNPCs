@@ -39,7 +39,7 @@
   - A Testing row cuts one in the town you're in now.
 
 - **Sale day at the Valentine stockyards** (`[World] SaleDay`, on; settings version 282; FIVEDAY item 30). On Tuesdays from ten to half past one, with the stockyards spot recorded and you near it, the named men about the pens gather to the auctioneer. He calls three lots (four in the autumn sale, September to November), two buyers bid on each, and the boldest gets it.
-  - One sale in five (two in five in the autumn glut) ends with a lot nobody wants. It goes for half its worth, and its rancher is ruined: his thought, a neighbour's, the price in the Around town box, and the debt worry for a week (with WorriesShown).
+  - One sale in five (two in five in the autumn glut) ends with a lot nobody wants. It goes for half its worth, and its rancher is ruined: his thought, a neighbour's, the price in the Around town box, and, with WorriesShown and no worry of his own, the debt worry bending his days for a week. That worry is kept for the session only, so it's gone when you reload.
   - Everyone who was there carries the day into the afternoon. From one o'clock the drovers drink their pay (offline, 37% of working men by a saloon at three go in, against none before), and the ruined man drinks too (23%).
   - Why it reads true: a year's work sold in a minute, in public. A loss weighs more than the same gain, so one bad lot outweighs the good ones. Money that comes all at once goes all at once.
   - A Testing row starts one now.
