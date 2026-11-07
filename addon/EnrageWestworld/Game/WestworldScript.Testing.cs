@@ -277,6 +277,15 @@ namespace EnrageWestworld.InGame
                         said = what;
                         return null;
                     }
+                case "prizefight":
+                    {
+                        skipped = "the night's hour, the six days between and the roll: two minutes from now, here";
+                        string what = _engine.PrizeFightTest(_placeTown, Bridge.Now());
+                        if (what.StartsWith("off") || what.StartsWith("no "))
+                            return what;
+                        said = what;
+                        return null;
+                    }
                 case "show":
                     {
                         string what = _engine.ShowTest(_placeTown, Bridge.Now());

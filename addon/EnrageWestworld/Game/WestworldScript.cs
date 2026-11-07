@@ -1267,6 +1267,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST rings: " + RingStatus());
 			Log.Write("TEST wagers: " + WagersStatus());
 			Log.Write("TEST rematches: " + RematchStatus());
+			Log.Write("TEST prize fights: " + PrizeFightStatus());
 			Log.Write("TEST horse thieves: " + HorseStatus());
 			Log.Write("TEST plans: " + PlansStatus());
 			Log.Write("TEST perf: " + PerfStatus() + "; Core compiled ahead: " + _prejitStatus);

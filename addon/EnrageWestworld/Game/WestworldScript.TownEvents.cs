@@ -34,6 +34,7 @@ namespace EnrageWestworld.InGame
             public readonly List<Ped> Deputies = new List<Ped>();
             public readonly List<Ped> Performers = new List<Ped>();   // the Wild West show's riders
             public int Witnesses;
+            public int FightAt;                   // the prize fight: when the bout began (WestworldScript.PrizeFight.cs)
             public bool Asked;                    // the judge asked the stranger by the door
             public string Told;                   // what he told the court (guilty, innocent, none)
             public readonly Dictionary<int, int> Health = new Dictionary<int, int>();
@@ -97,6 +98,8 @@ namespace EnrageWestworld.InGame
                 BeginGallows(e, now);
             else if (e.Kind == "show" && _cfg.EventShows)
                 BeginShow(e, now);
+            else if (e.Kind == PrizeFight.Kind && _cfg.EventPrizeFights)
+                BeginPrizeFight(e, now);   // WestworldScript.PrizeFight.cs (FIVEDAY item 10)
         }
 
         /// The dance staged: outside the saloon he came out of here, else behind the camera, 20-35 m off.
@@ -176,6 +179,11 @@ namespace EnrageWestworld.InGame
             if (r.E.Kind == "gallows")
             {
                 GallowsStep(r, now);
+                return;
+            }
+            if (r.E.Kind == PrizeFight.Kind)
+            {
+                PrizeFightStep(r, now);
                 return;
             }
             if (r.E.Kind == "show")

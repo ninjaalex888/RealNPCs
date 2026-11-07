@@ -20,6 +20,8 @@ namespace EnrageWestworld.Core
                 ElectionsDaily(now, today);
             if (Cfg.EventShows)
                 ShowsDaily(now, today);
+            if (Cfg.EventPrizeFights)
+                PrizeFightsDaily(now, today);   // a fight out back of the saloon tonight (Core/Engine.PrizeFight.cs; FIVEDAY item 10)
             int weekday = InnerLife.Weekday;
             if (weekday < 0)
                 return;   // the clock's weekday unknown: no scheduling
@@ -190,6 +192,8 @@ namespace EnrageWestworld.Core
                 GallowsDone(e, now, false);
             else if (e.Kind == "show")
                 ShowOver(e, now, false);
+            else if (e.Kind == PrizeFight.Kind)
+                PrizeFightOver(e, now, false);
         }
 
         /// What a dance leaves: the regulars' ties and memories (and, attended, their thought of the player who came).
@@ -251,6 +255,8 @@ namespace EnrageWestworld.Core
                 GallowsDone(e, now, attended);
             else if (e.Kind == "show")
                 ShowOver(e, now, attended);
+            else if (e.Kind == PrizeFight.Kind)
+                PrizeFightOver(e, now, attended);
         }
 
         /// Shots or a gun pointed broke it up: nothing comes of it, and the town remembers who fired.

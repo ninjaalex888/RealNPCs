@@ -40,7 +40,7 @@ namespace EnrageWestworld.InGame
             _eventPrompt = kind;
             _eventPromptFor = e;
             _eventPromptUntil = Game.GameTime + ms;
-            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : ": the cell");
+            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : ": the cell");
         }
 
         private void PromptClear()
@@ -613,6 +613,7 @@ namespace EnrageWestworld.InGame
                 case "testify": menu.Rows = Trials.TestifyRows(); menu.Title = "To the court:"; break;
                 case "swear": menu.Rows = Trials.SwearRows(); menu.Title = "The sheriff's man:"; break;
                 case "show": menu.Rows = Shows.Rows(_eventPromptFor); menu.Title = "At the show:"; break;
+                case PrizeFight.Kind: menu.Rows = PrizeFight.Rows(_eventPromptFor); menu.Title = "Out back, the fight:"; break;
                 default: menu.Rows = Trials.BreakoutRows(_eventPromptFor.AName); menu.Title = Person.FirstOf(_eventPromptFor.AName) + " is in the cell:"; break;
             }
             _eventMenu = menu;
@@ -667,6 +668,8 @@ namespace EnrageWestworld.InGame
                 BreakoutDo(e, now);
             if (m.Mode == "show" && row.Id != "show:watch")
                 ShowChoice(r, e, row.Id.Substring("show:".Length), now);   // WestworldScript.Shows.cs
+            if (m.Mode == PrizeFight.Kind && row.Id != "fight:watch")
+                PrizeFightChoice(r, e, row.Id.Substring("fight:".Length), now);   // WestworldScript.PrizeFight.cs
         }
 
         /// Each frame with the reader closed: the menu's box, or the prompt's line.
