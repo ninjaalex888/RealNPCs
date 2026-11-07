@@ -286,6 +286,19 @@ namespace EnrageWestworld.InGame
                         said = "Marks probe: " + _marksProbeLast + ". Note which ones read as hurt, for [Mind] LastingMarksGait and LastingMarksPack.";
                         return null;
                     }
+                case "saleday":
+                    {
+                        skipped = "Tuesday's hours and once a week";
+                        if (!_cfg.SaleDay)
+                            return "off ([World] SaleDay)";
+                        if (_sale != null)
+                            return "one is going on now";
+                        string why = SaleDayLook(Game.GameTime, true);
+                        if (why != null)
+                            return why;
+                        said = "The men gather to the auctioneer at the pens; the first lot in fifteen seconds";
+                        return null;
+                    }
                 case "shapeup":
                     {
                         skipped = "the dawn hour and once a day";

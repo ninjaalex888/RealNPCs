@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Sale day at the Valentine stockyards** (`[World] SaleDay`, on; settings version 282; FIVEDAY item 30). On Tuesdays from ten to half past one, with the stockyards spot recorded and you near it, the named men about the pens gather to the auctioneer. He calls three lots (four in the autumn sale, September to November), two buyers bid on each, and the boldest gets it.
+  - One sale in five (two in five in the autumn glut) ends with a lot nobody wants. It goes for half its worth, and its rancher is ruined: his thought, a neighbour's, the price in the Around town box, and the debt worry for a week (with WorriesShown).
+  - Everyone who was there carries the day into the afternoon. From one o'clock the drovers drink their pay (offline, 37% of working men by a saloon at three go in, against none before), and the ruined man drinks too (23%).
+  - Why it reads true: a year's work sold in a minute, in public. A loss weighs more than the same gain, so one bad lot outweighs the good ones. Money that comes all at once goes all at once.
+  - A Testing row starts one now.
+
 - **The shape-up at the Saint Denis wharf** (`[World] ShapeUp`, on; settings version 281; FIVEDAY item 29). At dawn in Saint Denis, with the wharf spot recorded and you near it, the named men about the wharf now crowd round the foreman and he picks his gang: about half, the steadier first.
   - The picked think of the wage and go to work.
   - The passed-over think of the shame and drift to the saloon from seven in the morning. Offline, 39% of them went in by ten, where none did before.

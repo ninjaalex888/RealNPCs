@@ -1084,6 +1084,18 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Sale day (FIVEDAY item 30, 2026-11-07; `[World] SaleDay`; settings version 282)
+
+Core/SaleDay.cs:
+- `Now(weekday, minute)` (Tuesday 10:00-13:30), `Autumn(month)` (9-11), `Lots` (3, autumn 4).
+- `Ruinous(seed, month)`: the last lot, 20% (autumn 40%).
+- `Price` ($30-42 a head, ruinous $14-20) and `Head` (20-80).
+- `Winner(bidders)`: 0.5 assertiveness + 0.3 risk - 0.2 anxiety, plus luck.
+- `Lean(mood, hour)`: from 13:00; paid: saloon +0.2, drink +0.12, cards +0.1, work -0.15; ruined: drink +0.22, saloon +0.12, showoff -0.15, greet -0.08, work -0.1.
+- `Word(n)` (numbers as said, for the bids) and the lines.
+
+Choosing's saloon Proper also takes `c.SaleMood != null && c.Hour >= 13`. Game/WestworldScript.SaleDay.cs runs every 5 s in Valentine. With the "stockyards" spot within 80 m, it holds up to 8 named, free men within 70 m of it (at least 4: the auctioneer, the rancher, two bidders) and walks them to an arc before the first. After 15 s, each lot runs: the opening, the under-bidder at price - 2 (none on a ruinous lot), the winner at the price, then knocked down. The first lot's buyer thinks of it. A ruinous last lot marks the rancher in `_saleRuinedOn` with his thought. Then `FinishSale` writes the box's summary (NewsPush), puts everyone there in `_salePaid` for the day, adds a drover's thought and, if ruined, a neighbour's. `SaleMoodToday` gives ChoiceContext.SaleMood ("ruined" before "paid"). `RuinedThisWeek` gives the debt worry at stage 1 when no other worry is on (Mind.cs, under WorriesShown). Both are kept for the session only. Testing row `saleday`. F7 `TEST sale day:`. mindtest `SaleDayTest` (`saleday`).
+
 ## The shape-up (FIVEDAY item 29, 2026-11-06; `[World] ShapeUp`; settings version 281)
 
 Core/ShapeUp.cs:
