@@ -286,6 +286,19 @@ namespace EnrageWestworld.InGame
                         said = "Marks probe: " + _marksProbeLast + ". Note which ones read as hurt, for [Mind] LastingMarksGait and LastingMarksPack.";
                         return null;
                     }
+                case "shapeup":
+                    {
+                        skipped = "the dawn hour and once a day";
+                        if (!_cfg.ShapeUp)
+                            return "off ([World] ShapeUp)";
+                        if (_shape != null)
+                            return "one is going on now";
+                        string why = ShapeUpLook(Game.GameTime, true);
+                        if (why != null)
+                            return why;
+                        said = "The men crowd the wharf; the foreman picks his gang in twenty seconds";
+                        return null;
+                    }
                 case "mine":
                     {
                         skipped = "the day's roll and the three weeks between";

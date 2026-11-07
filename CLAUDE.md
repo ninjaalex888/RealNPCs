@@ -1084,6 +1084,17 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## The shape-up (FIVEDAY item 29, 2026-11-06; `[World] ShapeUp`; settings version 281)
+
+Core/ShapeUp.cs:
+- `Hour` (05:00-06:30).
+- `Pick(men, seed)`: half of them, at least 1, by 0.5 order + 0.3 deference + 0.2 self-control, plus a little luck.
+- `Bitter(men, picked, seed)`: the passed-over man with the highest anger + 0.5 assertiveness - 0.4 self-control, if over 0.6, 60% of the time.
+- `Lean(passedOver)`: saloon +0.2, drink +0.15, cards +0.08, work -0.25.
+- The lines.
+
+Choosing's saloon Proper now also takes `c.PassedOver && c.Hour >= 7`. Game/WestworldScript.ShapeUp.cs runs every 5 s in Saint Denis. With the "wharf" spot within 80 m it holds up to 8 named, free men within 70 m of the spot (the first is the foreman) and walks them to a ring on it. After 20 s comes the call. The picked and passed-over thoughts go to the first three. `_passedOver` is kept per session and read in Mind.cs as `ChoiceContext.PassedOver`. A bitter man trades words with the last picked, and `Plans.Add(Rematch.Again)` follows when MindPlans is on. Everyone is let go 9 s later, or when anything breaks it, and `EndEncounters` ends it. Testing row `shapeup`. F7 `TEST shape-up:`. mindtest `ShapeUpTest` (`shapeup`).
+
 ## Three whistles (FIVEDAY item 28, 2026-11-06; `[World] MineWhistle`; settings version 280)
 
 Core/MineWhistle.cs:

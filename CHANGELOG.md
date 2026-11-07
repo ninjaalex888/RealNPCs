@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **The shape-up at the Saint Denis wharf** (`[World] ShapeUp`, on; settings version 281; FIVEDAY item 29). At dawn in Saint Denis, with the wharf spot recorded and you near it, the named men about the wharf now crowd round the foreman and he picks his gang: about half, the steadier first.
+  - The picked think of the wage and go to work.
+  - The passed-over think of the shame and drift to the saloon from seven in the morning. Offline, 39% of them went in by ten, where none did before.
+  - The angriest of the passed-over may have it out with the last man picked: hard words at once, and a rematch plan between them (with MindPlans). Offline, this happens on 42% of mornings.
+  - A Testing row starts one now.
+
 - **Three whistles** (`[World] MineWhistle`, on; settings version 280; FIVEDAY item 28). Rarely, the mine whistle at Annesburg blows three times: about eight times in a game year, never within three weeks of the last. One or two of the town's men are killed below, a miner first. They're named, never shown, and mourned like anyone (their friends hear of it, and the wake is kept).
   - If you're in Annesburg, you hear it. People near you run for the pithead (when its spot is recorded), a wife waits on the names, and the names come up from the shaft. Then comes anger at the company, and the hat goes round for the widows.
   - Away, the word reaches you.

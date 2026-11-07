@@ -409,7 +409,8 @@ namespace EnrageWestworld.InGame
             c.Survivor = SurvivorWayOf(w);
             c.Fright = _cfg.SharedFright && FrightPartnerNear(w.Id);
             string mournDead, mournId;
-            c.Mourning = Mourns(w, g, out mournDead, out mournId);   // (FIVEDAY item 26)
+            c.Mourning = Mourns(w, g, out mournDead, out mournId);
+            c.PassedOver = PassedOverToday(w.Id);   // (FIVEDAY item 29)   // (FIVEDAY item 26)
             c.Devotion = _cfg.SundayMorning && w.P != null ? w.P.Devotion ?? "Churchgoer" : null;   // (FIVEDAY item 25)   // (FIVEDAY item 22)   // (FIVEDAY item 21; null with SurvivorsChanged off)   // a breakdown's habit (FIVEDAY item 17; null with StressBuilds off)
             if (_cfg.WorriesShown)
             {
