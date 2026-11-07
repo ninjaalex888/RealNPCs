@@ -60,6 +60,7 @@ namespace EnrageWestworld.Core
             new Entry("prizefight", "People", "A prize fight out back (in 2 min here)", "TestPrizeFightKey", needs: "[World] TownEvents, EventPrizeFights; a town with two of its regulars of a fighting temper (men, 18-48); you've been out of its saloon for the spot behind it"),
             new Entry("shivaree", "People", "A shivaree (in 2 min here)", "TestShivareeKey", needs: "[World] TownEvents, EventShivarees; a town with a man and a woman among its regulars to stand for the couple"),
             new Entry("marks", "Tools", "A beating's marks: try the next gait and bruising", "TestMarksKey", needs: "a named person within 15 m (each press the next pair; the log says which)"),
+            new Entry("fence", "People", "Fence cutters: a wire found cut here (now)", "TestFenceKey", needs: "[World] FenceCutters; a town with two men known to RealNPCs (the row counts you as near last night)"),
             new Entry("saleday", "People", "Sale day at the stockyards (now)", "TestSaleDayKey", needs: "[World] SaleDay; Valentine, the stockyards spot recorded and within 80 m, four named men about it"),
             new Entry("shapeup", "People", "The shape-up at the wharf (now)", "TestShapeUpKey", needs: "[World] ShapeUp; Saint Denis, the wharf spot recorded and within 80 m, three named men about it"),
             new Entry("mine", "People", "Three whistles at the mine (now)", "TestMineKey", needs: "[World] MineWhistle; men of Annesburg known to RealNPCs (two die); in Annesburg to see it staged"),

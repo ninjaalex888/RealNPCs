@@ -66,7 +66,9 @@ namespace EnrageWestworld.Core
                 case "rough": case "pickpocket": case "mugging":
                     return -2;   // a face into the bar, or a hand caught in a coat, isn't soon forgotten
                 case "welsh":
-                    return -2;   // a bet welshed on in front of the street (Core/Wagers.cs): a matter of honour
+                    return -2;
+                case "fencecut":
+                    return -2;   // his wire cut in the night, and his neighbour's name on it (Core/FenceCutters.cs; FIVEDAY item 31): Doer is the one who blames   // a bet welshed on in front of the street (Core/Wagers.cs): a matter of honour
                 case "wagerowed":
                     return -1;   // a lost bet owed till payday: a sore point until it's paid
                 case "wagerpaid":
@@ -930,6 +932,8 @@ namespace EnrageWestworld.Core
         {
             if (otherDead)
                 return Pronouns(Voice.Pick(seed + "tdead", t.Warmth < 0 ? DeadFoe : t.Warmth > 0 ? DeadFriend : DeadKnown).Replace("{other}", Person.FirstOf(t.Other(id))), otherWoman ?? OtherIsWoman(t, id));
+            if (t.Kind == "fencecut")   // the one who blames, and the one blamed (Core/FenceCutters.cs; FIVEDAY item 31)
+                return t.Did(id) ? FenceCutters.AccuserThought(Person.FirstOf(t.Other(id)), seed) : FenceCutters.AccusedThought(Person.FirstOf(t.Other(id)), seed);
             if (t.Kind == "avoid" && t.Doer != null)
                 return Pronouns(Voice.Pick(seed + "avoid", t.Did(id) ? AvoidDid : AvoidDone).Replace("{other}", Person.FirstOf(t.Other(id))), otherWoman ?? OtherIsWoman(t, id));
             if (Trouble(t.Kind) && t.Doer != null)
@@ -1122,6 +1126,8 @@ namespace EnrageWestworld.Core
                 string[] dead = t.Kind == "makeup" ? TownDeadMended : Romantic(t.Kind) ? TownDeadWarm : TownDeadFoe;
                 return Voice.Pick(seed + "ttd", dead).Replace("{af}", Person.FirstOf(left)).Replace("{bf}", Person.FirstOf(gone)).Replace("{a}", left).Replace("{b}", gone);
             }
+            if (t.Kind == "fencecut")   // (FIVEDAY item 31) {a} the one who blames
+                return FenceCutters.TownLine(t.Doer == t.B ? t.BName : t.AName, t.Doer == t.B ? t.AName : t.BName, seed);
             string[] pool = t.Kind == "brawl" ? TownBlows : t.Kind == "makeup" ? TownMadeUp : Romantic(t.Kind) ? TownWarm
                           : t.Kind == "rough" ? TownRough : t.Kind == "pickpocket" ? TownCaught : t.Kind == "drunk" ? TownDrunk
                           : t.Kind == "charity" ? TownCharity : t.Kind == "scorn" ? TownScorn : t.Kind == "help" ? TownHelp : t.Kind == "passby" ? TownPassby : t.Kind == "round" ? TownRound : t.Kind == "settled" ? TownSettled : TownHostile;

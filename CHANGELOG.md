@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Fence cutters** (`[World] FenceCutters`, on; settings version 283; FIVEDAY item 31). About once a fortnight, a homesteader in an open-range town (Valentine, Strawberry, Rhodes, Emerald Ranch, Blackwater, Armadillo, Tumbleweed) finds his wire cut at first light. He blames the cattleman: his feud neighbour if he has one, else a ranch man of the town.
+  - Their tie goes two steps colder. With MindPlans he means to get even, so the feud climbs into the quarrels and fights the ties already drive. Both men think of it, and the town talks of it. Offline, a pair one quarrel apart goes from -1 to -3.
+  - He's right two times in three. The third time it was drifters cutting through for water. If you were near the town that night, the Around town box says what you saw, so you know what he doesn't. If you're in the town that morning, the box has his word.
+  - Why it reads true: wire was cut at night by men nobody saw, so a wrong with no face takes the face of an old grudge (the fundamental attribution error, with confirmation bias on top).
+  - A Testing row cuts one in the town you're in now.
+
 - **Sale day at the Valentine stockyards** (`[World] SaleDay`, on; settings version 282; FIVEDAY item 30). On Tuesdays from ten to half past one, with the stockyards spot recorded and you near it, the named men about the pens gather to the auctioneer. He calls three lots (four in the autumn sale, September to November), two buyers bid on each, and the boldest gets it.
   - One sale in five (two in five in the autumn glut) ends with a lot nobody wants. It goes for half its worth, and its rancher is ruined: his thought, a neighbour's, the price in the Around town box, and the debt worry for a week (with WorriesShown).
   - Everyone who was there carries the day into the afternoon. From one o'clock the drovers drink their pay (offline, 37% of working men by a saloon at three go in, against none before), and the ruined man drinks too (23%).

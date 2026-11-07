@@ -1084,6 +1084,16 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Fence cutters (FIVEDAY item 31, 2026-11-07; `[World] FenceCutters`; settings version 283)
+
+Core/FenceCutters.cs:
+- `Today(day, lastDay)`: 12% a day, never within 6 days; found 06:00-07:30.
+- `Pair(town, feudWith)`: a man farmer first (else a non-ranch man), blaming his feud link's other end first, else a ranch/cow/drover man, else any other man. Never a woman, the dead or the held.
+- `WereDrifters` (35%) and `Night` (22-05).
+- The lines: the box's word, what you saw (ranch or drifters), both sides' thoughts, the town's talk.
+
+Engine.FenceCutters.cs works like the mine: `FenceDaily` books `fence:due` in Store.Counts, and `FenceTick` calls `FenceCutNow(now, town, test)`. That tries the towns in seeded order and notes the tie kind "fencecut" (Ties.Effect -2, Doer = the homesteader, the one who blames). With MindPlans and warmth <= -2, it adds an explicit `Plans.Add(geteven)` from him to the blamed man: the ties' own get-even plans run from the wronged to the Doer, the wrong way round here. It keeps `LastFence`. Ties.Thought and TownThought have a "fencecut" branch (accuser, accused, the town). Game/WestworldScript.FenceCutters.cs runs every 10 s. At night in a fence town it marks `_fenceNight[town]` = the morning's day. On a new LastFence, if you were near that town that night, the box gets `SawLine`; if you're in the town, it gets `FoundLine`. Testing row `fence` (in your town, marking last night as near). F7 `TEST fence cutters:`. mindtest `FenceCuttersTest` (`fence`).
+
 ## Sale day (FIVEDAY item 30, 2026-11-07; `[World] SaleDay`; settings version 282)
 
 Core/SaleDay.cs:

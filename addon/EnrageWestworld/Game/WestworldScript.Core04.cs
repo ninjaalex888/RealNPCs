@@ -1333,6 +1333,7 @@ namespace EnrageWestworld.InGame
             NoticeBoardStep(now); // into a town: what it has posted, in the box (WestworldScript.NoticeBoard.cs; FIVEDAY item 16)
             RegardStep(now);      // the town's regard of you in the "Around town" box (WestworldScript.Regard.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
+            FenceStep(now);         // what you saw of the fence cutters, and the town's word (WestworldScript.FenceCutters.cs; FIVEDAY item 31)
             SaleDayStep(now);       // Tuesday's sale at the Valentine stockyards (WestworldScript.SaleDay.cs; FIVEDAY item 30)
             ShapeUpStep(now);       // the dawn shape-up on the Saint Denis waterfront (WestworldScript.ShapeUp.cs; FIVEDAY item 29)
             MineStep(now);          // three whistles at Annesburg, staged when you're there (WestworldScript.MineWhistle.cs; FIVEDAY item 28)

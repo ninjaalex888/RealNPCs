@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 282;
+        public const int CurrentVersion = 283;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -372,6 +372,7 @@ namespace EnrageWestworld.Core
         public bool Temperance = true;   // [Scenes] by day, a temperance woman asks a drinker in the street to sign the pledge (Core/Temperance.cs; FIVEDAY item 12, settings version 264)
         public bool EventShivarees = true;   // [World] with TownEvents: the night after a wedding in town, the couple's friends raise a din until the groom stands them a round (Core/Shivaree.cs; FIVEDAY item 13, settings version 265)
         public bool WhileAway = true;   // [World] back in a town after two game days, what you missed: the box's "What you missed" and a neighbour's thought (Core/WhileAway.cs; FIVEDAY item 19, settings version 271)
+        public bool FenceCutters = true;   // [World] now and then a homesteader of the open range finds his wire cut and blames the cattleman, and their feud climbs; near that night, you saw who it was (Core/FenceCutters.cs; FIVEDAY item 31, settings version 283)
         public bool SaleDay = true;   // [World] Tuesdays at the Valentine stockyards: the auction, the bids, sometimes a rancher ruined by the price, and the drovers drinking their pay (Core/SaleDay.cs; FIVEDAY item 30, settings version 282)
         public bool ShapeUp = true;   // [World] at dawn on the Saint Denis waterfront the foreman picks his gang from the crowd; the passed-over drift to the saloon, and one may take it out on the last man picked (Core/ShapeUp.cs; FIVEDAY item 29, settings version 281)
         public bool MineWhistle = true;   // [World] rarely, three whistles at the Annesburg mine: one or two of its men killed below, off screen; the town runs to the pithead, the names, the grief, the collection (Core/MineWhistle.cs; FIVEDAY item 28, settings version 280)
@@ -905,6 +906,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 283)
+                    log?.Invoke("Settings: new in this version: [World] FenceCutters (on): wire cut in the night, and a feud that climbs.");
                 if (s.SettingsVersion < 282)
                     log?.Invoke("Settings: new in this version: [World] SaleDay (on): Tuesday's auction at the Valentine stockyards.");
                 if (s.SettingsVersion < 281)
@@ -1786,6 +1789,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("Temperance = " + B(Temperance) + "   ; by day in the street: a temperance woman asks a drinker before the saloon doors to sign the pledge; he jeers, slinks off, swears off for the day, or is taken home on her arm. The pious start it oftener, and a man whose worry is the drink is the one she stops");
             b.AppendLine("EventShivarees = " + B(EventShivarees) + "   ; with TownEvents on: the night after a wedding in a town, from nine, the couple's friends gather with pans and a cowbell and shout for the groom until he comes out and stands them a round; there a minute, the regulars think better of you for it");
             b.AppendLine("WhileAway = " + B(WhileAway) + "   ; back in a town after two game days or more: what happened while you were gone (deaths, weddings, who left on the train, a new face at a counter, the dance, the trial, the hanging, the election you missed), in the Around town box, and someone near who knows you thinks of telling you");
+            b.AppendLine("FenceCutters = " + B(FenceCutters) + "   ; about once in a fortnight, a homesteader in an open-range town (Valentine, Strawberry, Rhodes, Emerald Ranch, Blackwater, Armadillo, Tumbleweed) finds his wire cut at first light and blames the cattleman, his feud neighbour first: their tie goes two steps colder, toward the quarrels and fights. A third of the time it was drifters. If you were near the town that night, the Around town box says what you saw");
             b.AppendLine("SaleDay = " + B(SaleDay) + "   ; Tuesdays from ten to half past one in Valentine, with the stockyards spot recorded and you near it, the named men about the pens gather to the auctioneer: three lots called and bid on (four in the autumn sale), one in five sold so low its rancher is ruined (the debt worry for a week, with WorriesShown), and those who were there drink their pay from one");
             b.AppendLine("ShapeUp = " + B(ShapeUp) + "   ; from five to half past six in Saint Denis, with the wharf spot recorded and you near it, the named men about it crowd the wharf and the foreman picks his gang; the picked go to work, the passed-over to the saloon for the day, and a bitter one may have it out with the last man picked (a rematch plan, with MindPlans)");
             b.AppendLine("MineWhistle = " + B(MineWhistle) + "   ; rarely (a day in twenty-five, never within three weeks of the last), the mine whistle at Annesburg blows three times: one or two of the town's men are killed below, named, never shown, and mourned like anyone. In Annesburg you hear it, people run for the pithead, the names come up, and the hat goes round; away, the word reaches you");

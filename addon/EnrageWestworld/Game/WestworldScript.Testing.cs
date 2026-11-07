@@ -286,6 +286,20 @@ namespace EnrageWestworld.InGame
                         said = "Marks probe: " + _marksProbeLast + ". Note which ones read as hurt, for [Mind] LastingMarksGait and LastingMarksPack.";
                         return null;
                     }
+                case "fence":
+                    {
+                        skipped = "the day's roll and the six days between";
+                        if (!_cfg.FenceCutters)
+                            return "off ([World] FenceCutters)";
+                        if (_placeTown == null)
+                            return "stand in a town first (its men are the ones it picks)";
+                        string why = _engine.FenceCutNow(Bridge.Now(), _placeTown, true);
+                        if (why != null)
+                            return why;
+                        _fenceNight[_placeTown] = Bridge.Now() / 1440;   // as if you'd been near last night: the sighting shows
+                        said = "A wire found cut at " + _placeTown + "; the box has the word, and what you saw";
+                        return null;
+                    }
                 case "saleday":
                     {
                         skipped = "Tuesday's hours and once a week";
