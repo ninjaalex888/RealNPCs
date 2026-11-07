@@ -844,6 +844,7 @@ namespace EnrageWestworld.Core
                 return;
             w.Done = true;
             w.Attended = attended;
+            BookShivaree(w, now);   // the night after: the couple's friends with their pans (Core/Engine.Shivaree.cs; FIVEDAY item 13)
             a = a ?? Store.Affairs.FirstOrDefault(x => x.AId == w.AId && x.BName == w.BName);
             if (a != null && a.Active && a.Stage < 5)
             {

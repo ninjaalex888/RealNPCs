@@ -100,6 +100,8 @@ namespace EnrageWestworld.InGame
                 BeginShow(e, now);
             else if (e.Kind == PrizeFight.Kind && _cfg.EventPrizeFights)
                 BeginPrizeFight(e, now);   // WestworldScript.PrizeFight.cs (FIVEDAY item 10)
+            else if (e.Kind == Shivaree.Kind && _cfg.EventShivarees)
+                BeginShivaree(e, now);   // WestworldScript.Shivaree.cs (FIVEDAY item 13)
         }
 
         /// The dance staged: outside the saloon he came out of here, else behind the camera, 20-35 m off.
@@ -184,6 +186,11 @@ namespace EnrageWestworld.InGame
             if (r.E.Kind == PrizeFight.Kind)
             {
                 PrizeFightStep(r, now);
+                return;
+            }
+            if (r.E.Kind == Shivaree.Kind)
+            {
+                ShivareeStep(r, now);
                 return;
             }
             if (r.E.Kind == "show")

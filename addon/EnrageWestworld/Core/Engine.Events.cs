@@ -194,6 +194,8 @@ namespace EnrageWestworld.Core
                 ShowOver(e, now, false);
             else if (e.Kind == PrizeFight.Kind)
                 PrizeFightOver(e, now, false);
+            else if (e.Kind == Shivaree.Kind)
+                ShivareeOver(e, now, false);
         }
 
         /// What a dance leaves: the regulars' ties and memories (and, attended, their thought of the player who came).
@@ -257,6 +259,8 @@ namespace EnrageWestworld.Core
                 ShowOver(e, now, attended);
             else if (e.Kind == PrizeFight.Kind)
                 PrizeFightOver(e, now, attended);
+            else if (e.Kind == Shivaree.Kind)
+                ShivareeOver(e, now, attended);
         }
 
         /// Shots or a gun pointed broke it up: nothing comes of it, and the town remembers who fired.
