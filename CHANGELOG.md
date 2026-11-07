@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Kin take up a wrong one townsman did another** (`[Scenes] KinTownWrongs`, on, with KinGrudges; settings version 285; FIVEDAY item 32b; README 20). When one townsman beats or robs another, two times in five a man of the victim's family (a brother, father, son, cousin or uncle) comes to town five to nine days later. If the one who did it is near you, the kin walks up to him, says who he is and where he rode in from, and has it out. The man answers by his nature: hard words, a walk-off, an apology, or blows between two hot-tempered men. A notice names them.
+  - Before, only your own wrongs brought the kin, and a townsman's wrongs were taken up only by friends who happened to be near. Offline, of 200 beatings and thefts on people with a brother, 70 now bring him to town (before: none).
+  - A Testing row, "Kin come for a townsman who beat theirs", books one due now between two people near you.
+
 - **A gambler borrows from a man of his town** (`[Mind] GamblersBorrow`, on; settings version 284; FIVEDAY item 32a; README 19). The cards worry now has a real lender, like a debt has its creditor: a man of the gambler's town, a friend first. The two meet in the street over it as it goes on.
   - He asks for ten dollars, then five to win it back, then begs. A kind man lends, a cold one won't, and a hothead snaps at him (offline, across the seven tempers: 28% lend, 42% refuse, 28% snap).
   - At the end he pays it back where the street can see, or it's called in and never paid. The lender thinks of it too: his own lines, where before an unknown link kind fell to the courting ones.

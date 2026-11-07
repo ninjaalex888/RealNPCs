@@ -925,6 +925,7 @@ namespace EnrageWestworld.Core
                 DebtTick(now);
             GoalTick(now);
             EventsDaily(now);   // the dances posted on Thursdays (Engine.Events.cs)
+            KinTownDaily(now);      // a family takes up a wrong one townsman did another (Engine.KinGrudges.cs; FIVEDAY item 32b)
             FenceDaily(now);        // a day's roll for the fence cutters (Engine.FenceCutters.cs; FIVEDAY item 31)
             MineDaily(now);         // a day's roll for the mine at Annesburg (Engine.MineWhistle.cs; FIVEDAY item 28)
             StressDaily(now);       // the week's load: who breaks today, and how (Engine.Stress.cs; FIVEDAY item 17), before the leavers

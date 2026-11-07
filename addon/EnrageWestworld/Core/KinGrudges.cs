@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public bool Done;
         [DataMember(EmitDefaultValue = false)] public long DoneAt;
         [DataMember(EmitDefaultValue = false)] public string How;        // said to your face, never reached you, never found you
+        [DataMember(EmitDefaultValue = false)] public string DoerId, DoerName;   // a townsman who did the wrong (FIVEDAY item 32b; [Scenes] KinTownWrongs): the kin come for him, not you; null for yours
     }
 
     public static class KinGrudges
@@ -36,6 +37,27 @@ namespace EnrageWestworld.Core
         public const int DueLeastDays = 5, DueMostDays = 9;   // "a week later"
         public const int WaitsDays = 7;                        // after the due day, a week to find you in one of the two towns
         public const string Mark = "kin";                      // once for each person wronged (PersonState.Mark)
+        public const string TownMark = "kintown";              // once for each person wronged by a townsman (FIVEDAY item 32b)
+        public const int TownChance = 40;                      // percent: a family hears and sends a man (friends near take most of these up)
+
+        /// The wrongs between townsfolk a family takes up (FIVEDAY item 32b): a beating, a hand in the pocket. Grudges.Wrongs
+        /// has the words for both.
+        public static bool TownWrong(string tieKind) { return tieKind == "rough" || tieKind == "pickpocket"; }
+
+        /// The kin's first words to the townsman, before the friends' confrontation lines (who he is, from where).
+        public static string TownIntro(KinGrudge k, string seed)
+        {
+            string first = Person.FirstOf(k.VictimName ?? "my kin"), rel = k.Relation ?? "kin";
+            return k.Town != null && Voice.Chance(seed + "|ti", 50)
+                ? Voice.Pick(seed + "|tf", "I'm " + first + "'s " + rel + ". Rode in from " + k.Town + " for this.", "Name's " + Person.FirstOf(k.Name) + ". " + first + "'s " + rel + ", from " + k.Town + ".")
+                : Voice.Pick(seed + "|tn", "I'm " + first + "'s " + rel + ". You'll have heard of me by now.", "Take a good look. I'm " + first + "'s " + rel + ", and I rode a long way.");
+        }
+
+        /// The notice after (you saw it, or were near).
+        public static string TownNotice(KinGrudge k, string town)
+        {
+            return k.Name + ", " + Person.FirstOf(k.VictimName ?? "someone") + "'s " + (k.Relation ?? "kin") + ", came to " + (town ?? "town") + " and had it out with " + (k.DoerName ?? "the man") + ".";
+        }
 
         /// Whether this wrong of the player's is one a family takes up: never a killing (the avengers ride for those), never
         /// a wrong on the dead.
@@ -147,6 +169,12 @@ namespace EnrageWestworld.Core
 
         public static IEnumerable<string> AllLines()
         {
+            for (int i = 0; i < 8; i++)
+            {
+                var tk = new KinGrudge { VictimName = "Amos Teale", Relation = i % 2 == 0 ? "brother" : "cousin", Name = "Hiram Teale", Town = i < 4 ? "Strawberry" : null, DoerName = "Seth Cornwallis" };
+                yield return TownIntro(tk, "k" + i);
+                yield return TownNotice(tk, "Valentine");
+            }
             foreach (string temper in new[] { "Hothead", "Proud", "Cold", null })
                 for (int i = 0; i < 3; i++)
                 {

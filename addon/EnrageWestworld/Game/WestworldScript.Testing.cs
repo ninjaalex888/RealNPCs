@@ -497,6 +497,20 @@ namespace EnrageWestworld.InGame
                         _nextKinGrudge = 0;
                         return null;
                     }
+                case "kintown":   // a townsman's grudge due now (FIVEDAY item 32b)
+                    {
+                        Ped me0 = Game.Player.Character;
+                        List<Candidate> near = ReasonCandidates(me0, now, true).Where(c => c.Who != null && c.Who.Id != null && c.Ped.Position.DistanceTo(me0.Position) < 30f)
+                                                                               .OrderBy(c => c.Ped.Position.DistanceTo(me0.Position)).ToList();
+                        Candidate victim = near.FirstOrDefault(c => Resident.IsResident(c.Who.Id));
+                        Candidate doer = near.FirstOrDefault(c => c != victim && !c.Who.Woman);
+                        string what = _engine.KinTownTest(victim != null ? victim.Who.Id : null, doer != null ? doer.Who.Id : null, doer != null ? doer.Who.Name : null, _placeTown, Bridge.Now());
+                        if (what.StartsWith("no"))
+                            return what;
+                        said = what;
+                        _nextKinGrudge = 0;
+                        return null;
+                    }
                 case "grudge:you":
                     {
                         string gy;

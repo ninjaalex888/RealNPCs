@@ -40,6 +40,8 @@ namespace EnrageWestworld.InGame
                     };
                 Safe("kingrudge", _aKinGrudgeWalk);
             }
+            if (_kinDoer != null)
+                Safe("kingrudge", () => KinDoerStep(Game.Player.Character, _now));   // a townsman's grudge on its way (FIVEDAY item 32b)
             if (now < _nextKinGrudge)
                 return;
             _nextKinGrudge = now + KinGrudgeLookMs;
@@ -59,6 +61,16 @@ namespace EnrageWestworld.InGame
                 return;
             long g = Bridge.Now();
             KinGrudge k = _engine.KinDue(_placeTown, g);
+            if (k == null && _cfg.KinTownWrongs && _kinDoer == null)
+            {
+                // a townsman's grudge, when the man who did it is near you (FIVEDAY item 32b)
+                k = _engine.KinDue(_placeTown, g, id => KinDoerNear(id, me) != null);
+                if (k != null)
+                {
+                    KinGrudgeCast(k, me, now, g, KinDoerNear(k.DoerId, me));
+                    return;
+                }
+            }
             if (k == null)
                 return;
             KinGrudgeCast(k, me, now, g);
@@ -67,7 +79,7 @@ namespace EnrageWestworld.InGame
         /// The kin's body: his own if he already walks this town (cast before and still about, free to be sent), else a free
         /// unseen man 30-120 m off, made a resident of his town and bound to the name (any other body with his name let go
         /// first: one body with the name); then the walk up. A kin who died since (the resident's record) comes no more.
-        private void KinGrudgeCast(KinGrudge k, Ped me, int now, long g)
+        private void KinGrudgeCast(KinGrudge k, Ped me, int now, long g, Ped doer = null)
         {
             Ped body = null;
             Resident res = k.CastId != null ? _store.FindResident(k.CastId) : null;
@@ -127,6 +139,19 @@ namespace EnrageWestworld.InGame
                 fresh = true;
             }
             int handle = body.Handle;
+            if (doer != null)
+            {
+                // a townsman's grudge: he goes to the man who did it, not to you (KinDoerStep has it out when he's there)
+                PED.SET_PED_KEEP_TASK(handle, true);
+                TASK.CLEAR_PED_TASKS(handle, true, false);
+                TASK.TASK_GO_TO_ENTITY(handle, doer.Handle, KinGrudgeWalkMs, 2.0f, 1.6f, 0f, 0);
+                _kinDoer = new KinDoerWalk { Kin = body, Doer = doer, K = k, Until = now + KinGrudgeWalkMs };
+                _kinGrudgeCasts++;
+                _kinGrudgeLast = k.Name + " (" + Person.FirstOf(k.VictimName ?? "?") + "'s " + k.Relation + ") for " + k.DoerName + " in " + _placeTown;
+                Log.Write("KIN GRUDGE: " + k.Name + " (" + Person.FirstOf(k.VictimName ?? "?") + "'s " + k.Relation + ", " + (k.Temper ?? "plain") + ") walks up to " + k.DoerName + " in " + _placeTown +
+                          ", " + (int)body.Position.DistanceTo(doer.Position) + " m off (" + (fresh ? "a body cast" : "his own body") + ")");
+                return;
+            }
             // the kin had the surname from the one wronged, if they knew it
             Person victim = _engine.KinPerson(k.VictimId);
             PersonState vst = victim != null ? _store.Get(victim) : null;
@@ -179,11 +204,93 @@ namespace EnrageWestworld.InGame
                 _engine.KinDone(k, how ?? "never reached you", Bridge.Now());
         }
 
+        // ---- a townsman's grudge (FIVEDAY item 32b; [Scenes] KinTownWrongs) ----------------------------------------------
+
+        private sealed class KinDoerWalk
+        {
+            public Ped Kin, Doer;
+            public KinGrudge K;
+            public int Until;
+        }
+
+        private KinDoerWalk _kinDoer;
+        private int _kinDoerHad;
+
+        /// The man who did it, by id, among the named people near you (within 60 m of you, free to be directed), else null.
+        private Ped KinDoerNear(string id, Ped me)
+        {
+            if (id == null)
+                return null;
+            foreach (int h in _mindNear)
+            {
+                MindWho w;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id != id || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                    continue;
+                Ped p = new Ped(h);
+                if (p.Position.DistanceTo(me.Position) > 60f || MayDirectWhyNot(p) != null || NotFree(h) || _director.Involves(h) || PED.IS_PED_ON_MOUNT(h))
+                    return null;
+                return p;
+            }
+            return null;
+        }
+
+        /// Every tick while the kin walks: at the man's side (within 3 m), the friends' confrontation with the kin's own
+        /// first words (who he is, from where); the man answers by his manner. Done once said; lost or out of time: done
+        /// too (the man was found and slipped him); called off by a mission: again tomorrow.
+        private void KinDoerStep(Ped me, int now)
+        {
+            KinDoerWalk w = _kinDoer;
+            if (w == null)
+                return;
+            if (MISC.GET_MISSION_FLAG())
+            {
+                EndKinDoer("a mission began");
+                return;
+            }
+            if (!w.Kin.Exists() || w.Kin.IsDead || !w.Doer.Exists() || w.Doer.IsDead || now > w.Until)
+            {
+                _kinDoer = null;
+                _engine.KinDone(w.K, "never reached " + (w.K.DoerName ?? "him"), Bridge.Now());
+                return;
+            }
+            if (w.Kin.Position.DistanceTo(w.Doer.Position) > 3f || _director.Busy)
+                return;
+            _kinDoer = null;
+            MindWho dw;
+            Someone doerWho = _mindWho.TryGetValue(w.Doer.Handle, out dw) ? new Someone { Id = dw.Id, Name = dw.Name, Temper = dw.P != null ? dw.P.Personality : null } : new Someone { Id = w.K.DoerId, Name = w.K.DoerName };
+            string seed = "kintown|" + w.K.Id;
+            string manner = Exchanges.Manner(doerWho, false);
+            bool hot = w.K.Temper == "Hothead" || w.K.Temper == "Proud" || doerWho.Temper == "Hothead" || doerWho.Temper == "Proud";
+            SceneCast cast = BuildCast(w.Kin, w.Doer, null, _placeKind == "saloon", me, now, seed);
+            bool blows = manner == "sharp" && hot && !cast.BWoman && !cast.Off.Contains("brawl") && !_hush && !(_cfg.BeingWatched && LawWatching(w.Kin, w.Doer) != null);
+            string wrong = w.K.Wrong != null && w.K.Wrong.StartsWith("town:", StringComparison.Ordinal) ? w.K.Wrong.Substring(5) : "rough";
+            Scene s = Grudges.Confront(cast, seed, wrong, Person.FirstOf(w.K.VictimName ?? "my kin"), manner, blows);
+            s.Beats.Insert(1, new Beat(0, KinGrudges.TownIntro(w.K, seed), "angry", null));   // who he is, before the wrong
+            s.Summary = "a man's kin came to town and had it out with the one who wronged him";
+            StartScene(s, new List<Ped> { w.Kin, w.Doer }, cast, seed, now, false);
+            _engine.KinDone(w.K, "had it out with " + (w.K.DoerName ?? "him"), Bridge.Now());
+            _kinDoerHad++;
+            Feed.Notice("Kin", KinGrudges.TownNotice(w.K, _placeTown));
+            Log.Write("KIN GRUDGE: " + w.K.Name + " confronts " + w.K.DoerName + " for " + Person.FirstOf(w.K.VictimName ?? "?") + " (" + manner + (blows ? ", blows" : "") + ")");
+        }
+
+        /// The walk called off by something outside the story: the grudge stands, again tomorrow (Engine.KinLater).
+        private void EndKinDoer(string why)
+        {
+            KinDoerWalk w = _kinDoer;
+            _kinDoer = null;
+            if (w == null)
+                return;
+            if (w.Kin != null && w.Kin.Exists())
+                TASK.CLEAR_PED_TASKS(w.Kin.Handle, true, false);
+            _engine.KinLater(w.K, why, Bridge.Now());
+        }
+
         private string KinGrudgesStatus()
         {
             if (_engine == null || _store == null)
                 return "not loaded";
-            return _engine.KinStatus(Bridge.Now()) + "; " + _kinGrudgeCasts + " cast, " + _kinGrudgeSaid + " said this session" + (_kinGrudgeLast != null ? "; last: " + _kinGrudgeLast : "") +
+            return _engine.KinStatus(Bridge.Now()) + "; " + _kinGrudgeCasts + " cast, " + _kinGrudgeSaid + " said this session, " + _kinDoerHad + " had it out with a townsman" + (_kinGrudgeLast != null ? "; last: " + _kinGrudgeLast : "") +
                    (_grudgeWalk != null && _grudgeWalk.Kin != null ? "; " + _grudgeWalk.Name + " is coming up to you now" : "");
         }
     }

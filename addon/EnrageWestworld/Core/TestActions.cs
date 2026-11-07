@@ -108,6 +108,7 @@ namespace EnrageWestworld.Core
             new Entry("grudge", "People", "A friend takes up a wrong", "TestGrudgeKey", needs: "a friend of someone wronged in the last 3 days, near the one who did it"),
             new Entry("kingrudge", "People", "Kin come about a wrong (the nearest known resident's)", "TestKinGrudgeKey", needs: "[Scenes] KinGrudges; a town; a known resident within 20 m with a man among their kin"),
             new Entry("grudge:you", "People", "Someone grieving one you killed", "TestGrudgeYouKey", needs: "in town, someone within 20 m whose friend you killed this week"),
+            new Entry("kintown", "People", "Kin come for a townsman who beat theirs (now)", "TestKinTownKey", needs: "[Scenes] KinGrudges, KinTownWrongs; a known resident within 30 m with a man among their kin, and another named man near"),
             new Entry("kin", "People", "Kin of someone you know walks up", "TestKinKey", needs: "in a town where someone you have dealt with has kin, and a passer-by in view within 18 m, unnamed, whom RealNPCs may direct"),
             new Entry("drink", "People", "Someone drinks away bad news", "TestDrinkKey", needs: "a saloon, a named person within 15 m"),
             new Entry("round", "People", "Someone stands the house a drink", "TestRoundKey", needs: "a saloon, two named people within 6 m of each other"),

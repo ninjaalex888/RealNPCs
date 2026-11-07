@@ -66,8 +66,54 @@ namespace EnrageWestworld.Core
                 " in " + (k.DueAt - now) / 1440 + " days: you " + k.WrongWord);
         }
 
-        /// The kin due in this town now (the one wronged's town or their own), not yet done; one past its week lapses.
-        public KinGrudge KinDue(string town, long now)
+        /// A wrong between townsfolk in the last day (a beating, a hand in a pocket: KinGrudges.TownWrong) on a known
+        /// living person with a man among their family: two times in five a man of theirs comes about it, five to nine days
+        /// on, for the one who did it (FIVEDAY item 32b; with [Scenes] KinGrudges and KinTownWrongs). Once for each person
+        /// wronged (TownMark), whether or not anyone comes. From the daily tick. Returns how many were made.
+        public int KinTownDaily(long now)
+        {
+            if (Cfg == null || !Cfg.KinGrudges || !Cfg.KinTownWrongs)
+                return 0;
+            int made = 0;
+            foreach (SceneTie t in Store.Ties.ToList())
+            {
+                if (!KinGrudges.TownWrong(t.Kind) || t.Doer == null || t.Doer == "player" || now - t.At < 0 || now - t.At > 1440)
+                    continue;
+                string victimId = t.OtherId(t.Doer);
+                Person p = KinPerson(victimId);
+                if (p == null || !p.IsAlive)
+                    continue;
+                PersonState st = Store.Get(p);
+                if (st == null || st.Has(KinGrudges.TownMark))
+                    continue;
+                st.Mark(KinGrudges.TownMark);
+                if (!Voice.Chance(victimId + "|kintown|" + t.At, KinGrudges.TownChance))
+                    continue;
+                if (st.Family == null)
+                    st.Family = Family.For(p);
+                Relative rel = KinGrudges.Takes(st.Family);
+                string town = t.Town ?? p.Home;
+                if (rel == null || town == null)
+                    continue;
+                var k = new KinGrudge
+                {
+                    Id = Ids.New(), VictimId = p.Id, VictimName = p.Name, VictimTown = town, Wrong = "town:" + t.Kind, WrongWord = t.Kind == "rough" ? "beat him" : "robbed him", At = t.At,
+                    DueAt = KinGrudges.Due(t.At, p.Id + "|" + rel.Name), Name = rel.Name, Relation = rel.Relation, Town = rel.Town, Temper = KinGrudges.TemperOf(rel.Name),
+                    DoerId = t.Doer, DoerName = t.Doer == t.A ? t.AName : t.BName
+                };
+                if (Store.KinGrudges == null)
+                    Store.KinGrudges = new List<KinGrudge>();
+                Store.KinGrudges.Add(k);
+                _kinMade++;
+                made++;
+                Log("KIN GRUDGE: " + rel.Name + " (" + Person.FirstOf(p.Name) + "'s " + rel.Relation + ") will come to " + town + " in " + (k.DueAt - now) / 1440 + " days for " + k.DoerName + ", who " + k.WrongWord);
+            }
+            return made;
+        }
+
+        /// The kin due in this town now (the one wronged's town or their own), not yet done; one past its week lapses. A
+        /// townsman's grudge (DoerId) only when doerNear says he's about (else it waits its week); with none, only yours.
+        public KinGrudge KinDue(string town, long now, Func<string, bool> doerNear = null)
         {
             if (Cfg == null || !Cfg.KinGrudges || town == null || Store.KinGrudges == null)
                 return null;
@@ -80,6 +126,8 @@ namespace EnrageWestworld.Core
                     KinDone(k, "never found you", now);
                     continue;
                 }
+                if (k.DoerId != null && (doerNear == null || !doerNear(k.DoerId)))
+                    continue;   // a townsman's: only when he's about (FIVEDAY item 32b)
                 if (k.VictimTown == town || k.Town == town)
                     return k;
             }
@@ -135,6 +183,36 @@ namespace EnrageWestworld.Core
             _kinMade++;
             Log("KIN GRUDGE (a test): " + rel.Name + " (" + Person.FirstOf(p.Name) + "'s " + rel.Relation + ", " + (k.Temper ?? "plain") + ") due in " + town + " now");
             return rel.Name + ", " + Person.FirstOf(p.Name) + "'s " + rel.Relation + " (" + (k.Temper ?? "plain") + "), is due in " + town + " now; the look comes within fifteen seconds";
+        }
+
+        /// A Testing row (FIVEDAY item 32b): the victim's kinsman due here now for a townsman who beat them a week ago;
+        /// no mark set. What was made, or why not ("no ...").
+        public string KinTownTest(string victimId, string doerId, string doerName, string town, long now)
+        {
+            if (Cfg == null || !Cfg.KinGrudges || !Cfg.KinTownWrongs)
+                return "no: [Scenes] KinGrudges or KinTownWrongs is off";
+            Person p = KinPerson(victimId);
+            if (p == null || doerId == null)
+                return "no two named people near (a known resident to be wronged, and another man to have done it)";
+            if (town == null)
+                return "no town here";
+            PersonState st = Store.Get(p);
+            if (st.Family == null)
+                st.Family = Family.For(p);
+            Relative rel = KinGrudges.Takes(st.Family);
+            if (rel == null)
+                return "no man among " + p.Name + "'s kin (" + string.Join(", ", st.Family.Select(r => r.Relation)) + ")";
+            if (Store.KinGrudges == null)
+                Store.KinGrudges = new List<KinGrudge>();
+            var k = new KinGrudge
+            {
+                Id = Ids.New(), VictimId = p.Id, VictimName = p.Name, VictimTown = town, Wrong = "town:rough", WrongWord = "beat him", At = now - 7 * 1440L, DueAt = now,
+                Name = rel.Name, Relation = rel.Relation, Town = rel.Town, Temper = KinGrudges.TemperOf(rel.Name), DoerId = doerId, DoerName = doerName
+            };
+            Store.KinGrudges.Add(k);
+            _kinMade++;
+            Log("KIN GRUDGE (a test): " + rel.Name + " (" + Person.FirstOf(p.Name) + "'s " + rel.Relation + ") due in " + town + " now for " + doerName);
+            return rel.Name + ", " + Person.FirstOf(p.Name) + "'s " + rel.Relation + ", is due in " + town + " now for " + doerName + "; he comes within fifteen seconds";
         }
 
         /// For the F7 dump.
