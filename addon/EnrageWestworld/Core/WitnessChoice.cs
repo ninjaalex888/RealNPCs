@@ -8,7 +8,7 @@
 //
 // Why it reads true (the psychologist's lens): a bystander's report weighs its cost against the duty: fear of reprisal
 // silences, loyalty silences, a tie to the victim and respect for the law speak up; intimidation works on the anxious and
-// backfires on the proud (reactance). In 1899 whoever saw a killing in a small town was marked, and knew it.
+// backfires on the proud (reactance). In 1899 whoever saw a killing where everyone knew everyone was marked by it.
 // Plain C#, no game; all words original. mindtest WitnessChoiceTest.
 using System;
 
