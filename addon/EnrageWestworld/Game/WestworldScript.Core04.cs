@@ -480,6 +480,9 @@ namespace EnrageWestworld.InGame
             Paper overheard = OverheardPaper();   // what went on near you this last day (WestworldScript.Overheard.cs)
             if (overheard != null)
                 papers.Add(overheard);
+            Paper board = NoticeBoardPaper();   // what's posted for the week, before "Who's who" (WestworldScript.NoticeBoard.cs; FIVEDAY item 16)
+            if (board != null)
+                papers.Add(board);
             if (_cfg != null && _cfg.WhosWho && _store != null)
             {
                 // the people you've met, last among the papers, made now and never kept (Core/WhosWho.cs); for everyone, its
@@ -1327,6 +1330,7 @@ namespace EnrageWestworld.InGame
             EpilogueStep(now);   // the epilogue: one who remembers a man called Morgan (WestworldScript.Epilogue.cs)
             PlaceMemoryStep(now); // places hold memories; known by your horse and your habits (WestworldScript.PlaceMemory.cs)
             WagonProbeStep(now);  // the wagon wheel probe's readings, while one is going (WestworldScript.Wagon.cs; item 26)
+            NoticeBoardStep(now); // into a town: what it has posted, in the box (WestworldScript.NoticeBoard.cs; FIVEDAY item 16)
             RegardStep(now);      // the town's regard of you in the "Around town" box (WestworldScript.Regard.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             PinkertonsStep(now);    // a Pinkerton man asks the town after you (WestworldScript.Pinkertons.cs; FIVEDAY item 15)
