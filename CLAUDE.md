@@ -1084,6 +1084,27 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## More moments (FIVEDAY item 32e, 2026-11-07; `[Mind] MoreMoments`; settings version 288)
+
+`Moment` gains `Spooked`, `Robbed`, `Storm` and `AtScene` ("ring" or "execution").
+
+`Moments.Loudest`: a "spooked" rider, after the fight kinds and before your aim.
+
+`Quiet`:
+- "robbed" and "scene:ring"/"scene:execution" come before youlook;
+- "riding:rain" (riding, rain, not indoors) and "storm" (outdoors, not driving) come before the activities.
+- Pulls: robbed 40, the scenes 38, storm 34, riding:rain 31.
+
+`Thought`: a woman in a fistfight takes `WomanFists`, source "...:woman". `Ambient`: youlook takes `YouLookOwn[state]` half the time. `Words` tells the model each new one.
+
+Game (WestworldScript.Moments.cs, with the switch):
+- `Storm` is the engine's weather "storm".
+- `Spooked` is `PED.IS_PED_FLEEING(PED.GET_MOUNT(h))`.
+- `AtScene` is "ring" for `_ring` members, "execution" within 40 m of `_exec.Captive`, not the captive or his men.
+- `Robbed` is `RobbedLately(id)`: a tie with a Crime on them by another, under 90 game minutes, read in ThoughtNow.
+
+mindtest `MoreMomentsTest` (`moments2`).
+
 ## Someone else pulls up at the wagon (FIVEDAY item 32d, 2026-11-07; `[Encounters] WagonOthersStop`; settings version 287)
 
 Core/WagonWheel.cs has the constants and words:

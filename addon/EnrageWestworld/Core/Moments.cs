@@ -29,6 +29,11 @@ namespace EnrageWestworld.Core
         public bool ShotsNear;  // gunfire close by in the last few seconds
         public bool YouNear, YouArmed, YouAiming, YouMounted, YouWanted;
         public string YouLook;  // how you look beside them: naked, bloodied, undressed, drunk, filthy, soaked; null ordinary
+        // FIVEDAY item 32e ([Mind] MoreMoments): their horse bolting under them; their purse lifted or taken off them in the
+        // last hour and a half (a theft tie on them); a storm; at a scene of ours ("ring": in a brawl's ring, "execution":
+        // near one on the road, not in it)
+        public bool Spooked, Robbed, Storm;
+        public string AtScene;
     }
 
     public static class Moments
@@ -66,6 +71,8 @@ namespace EnrageWestworld.Core
                         return "hurt";
                     break;
             }
+            if (m.Spooked && m.Doing == "riding")
+                return "spooked";   // the horse bolting under them (FIVEDAY item 32e)
             if (m.YouAiming)
                 return "aimed";
             if (m.ShotsNear)
@@ -100,6 +107,11 @@ namespace EnrageWestworld.Core
                 pool = AwakeFight;
                 what = "fight:awake";
             }
+            else if (m.Woman && (what == "fightyou:fists" || what == "fight:fists"))
+            {
+                pool = WomanFists;   // a woman's own, where the fist pools are a man's (FIVEDAY item 32e)
+                what += ":woman";
+            }
             else
                 pool = PoolOf(what, g);
             if (pool == null || pool.Length == 0)
@@ -118,12 +130,20 @@ namespace EnrageWestworld.Core
                 return null;
             if (m.Doing == "hurt" || m.Doing == "down")
                 return m.Doing;   // the trouble over: still hurt, still on the ground, a thought of it among the rest
+            if (m.Robbed)
+                return "robbed";   // their purse gone (FIVEDAY item 32e)
+            if (m.AtScene == "ring" || m.AtScene == "execution")
+                return "scene:" + m.AtScene;
             if (m.YouNear && m.YouLook != null && Sights.States.Contains(m.YouLook))
                 return "youlook";
             if (m.Drunk)
                 return "drunk";
             if (m.Armed && m.Doing != "riding")
                 return "armed";
+            if (m.Doing == "riding" && m.Rain && !m.Indoors)
+                return m.Storm ? "storm" : "riding:rain";   // weather in the saddle (FIVEDAY item 32e)
+            if (m.Storm && !m.Indoors && m.Doing != "driving")
+                return "storm";
             switch (m.Doing)
             {
                 case "riding": case "driving": case "swimming": case "drinking": case "eating": case "smoking": case "working": case "resting": case "running":
@@ -142,8 +162,10 @@ namespace EnrageWestworld.Core
         {
             switch (quiet)
             {
-                case "hurt": case "down": return 40;
-                case "youlook": return 38;
+                case "hurt": case "down": case "robbed": return 40;
+                case "scene:ring": case "scene:execution": case "youlook": return 38;
+                case "storm": return 34;
+                case "riding:rain": return 31;
                 case "drunk": return 36;
                 case "armed": return 34;
                 case "riding": case "driving": case "drinking": case "smoking": case "swimming": return 30;
@@ -162,7 +184,9 @@ namespace EnrageWestworld.Core
             if (what == null)
                 return null;
             string line;
-            if (what == "youlook")
+            if (what == "youlook" && YouLookOwn.ContainsKey(m.YouLook) && Voice.Chance(seed + "|ylo", 50))
+                line = Pick(YouLookOwn[m.YouLook], seed + "|yl", told);   // its own pool, half the time (FIVEDAY item 32e)
+            else if (what == "youlook")
             {
                 Sights.Look look = Sights.For(m.YouLook, p != null ? p.Personality : null, null, seed, p != null && p.Woman);
                 line = look != null ? look.Thought : null;
@@ -221,6 +245,18 @@ namespace EnrageWestworld.Core
                 w.Add("the stranger beside them has a gun in hand");
             if (m.YouNear && m.YouLook != null)
                 w.Add("the stranger beside them looks " + m.YouLook);
+            if (m.Spooked && m.Doing == "riding")
+                w.Add("their horse has spooked and is bolting");
+            if (m.Robbed)
+                w.Add("their purse was just stolen");
+            if (m.AtScene == "ring")
+                w.Add("in the crowd round a fistfight");
+            else if (m.AtScene == "execution")
+                w.Add("watching men about to execute someone by the road");
+            if (m.Storm && !m.Indoors)
+                w.Add("a thunderstorm");
+            else if (m.Rain && !m.Indoors && m.Doing == "riding")
+                w.Add("rain on them in the saddle");
             if (m.Drunk)
                 w.Add("drunk");
             if (m.Armed && m.Doing != "fighting" && m.Doing != "fighting-you")
@@ -289,6 +325,11 @@ namespace EnrageWestworld.Core
                 yield return l;
             foreach (string l in AwakeFight)
                 yield return l;
+            foreach (string l in WomanFists)
+                yield return l;
+            foreach (string[] pool in YouLookOwn.Values)
+                foreach (string l in pool)
+                    yield return l;
         }
 
         public static IEnumerable<string> Kinds { get { return ByGroup.Keys.Concat(Shared.Keys); } }
@@ -300,6 +341,27 @@ namespace EnrageWestworld.Core
             "Something's broke in me. Keep swinging anyway.", "Every breath's a knife now. Make the next one count.",
             "He's winning. Doesn't mean he's won.", "Legs going. Don't let them. Not yet.",
             "I can taste it. Salt and copper. Never liked the taste.", "One more. I've got one more in me. Maybe two."
+        };
+
+        // a woman in a fistfight (FIVEDAY item 32e): her own, where the fist pools think as a man does
+        private static readonly string[] WomanFists =
+        {
+            "Pull my hair, will you. Then I'll have your eyes.", "Skirts in the mud. Ma would die. Ma isn't here.",
+            "Nobody thinks a woman can hit. Let's settle that.", "Nails, knees, anything. A fair fight is a man's luxury.",
+            "Keep his hands off my throat. Everything else heals.", "They'll talk about this at church for a year. Good.",
+            "I've wrung chickens' necks every Sunday of my life. Come here.", "My hat's gone and my temper with it.",
+            "Hold on to the rail. Don't let him put you on the ground.", "Lord forgive me, but I mean to hurt him."
+        };
+
+        // how you look beside them, their own pools by your state (FIVEDAY item 32e; half the time, else the sight reactions')
+        private static readonly Dictionary<string, string[]> YouLookOwn = new Dictionary<string, string[]>
+        {
+            { "naked", new[] { "Not a stitch on him. In broad day. In {town}.", "Look at the sky. Look at the sky and not at him.", "I'll be telling this at supper, and nobody will believe it.", "A man walks about like that, he's either mad or past caring." } },
+            { "undressed", new[] { "Half dressed in the street. Some folk keep no house at all.", "Shirt off in town like it's the river. Brazen.", "Somebody give that man a coat before the preacher sees." } },
+            { "bloodied", new[] { "That's not his blood. Lord, I hope that's not his blood.", "Blood to the elbows and calm as Sunday.", "Whatever he's come from, I'd sooner never hear the story.", "Don't stare. Men like that notice a stare." } },
+            { "drunk", new[] { "Smell of whiskey off him from here.", "Weaving like a fence in a gale. Steady, mister.", "Drunk before noon. Well, it's his liver." } },
+            { "filthy", new[] { "Mud to the hat. Been sleeping in a ditch, by the look.", "A bath costs two bits in {town}. He could afford it, surely.", "Stand downwind of that one, if you can find downwind." } },
+            { "soaked", new[] { "Wet through. Fell in the river or walked through it.", "Dripping on the boards like a dog in from the rain.", "He'll catch his death, dressed in a river like that." } }
         };
 
         // the awake (stage two and up) in a fight: the fight real enough, the rest in doubt
@@ -539,6 +601,25 @@ namespace EnrageWestworld.Core
             { "running", new[] {
                 "Late. Late again. She'll have my hide.", "Run, and the whole town wonders what's chasing you.",
                 "Lungs burning. Should've taken the horse.", "Nearly there. Nearly there. Why do I always say nearly." } },
+            // FIVEDAY item 32e: the new moments
+            { "spooked", new[] {
+                "Whoa! Whoa, damn you! Whoa!", "She's bolting. Hold on. Just hold on.", "Snake, or a shot, or nothing at all. Stop, girl. Stop.",
+                "Reins, knees, anything. Don't come off. Don't come off.", "Lord, the branches. Keep your head down.", "If she throws me here, I'll lie here till spring." } },
+            { "robbed", new[] {
+                "My purse. My purse is gone. When did it go.", "Every pocket, twice. It's gone. Somebody's got it.", "That fellow who bumped me. That fellow.",
+                "A week's money. Gone in a crowd in {town}.", "I'll not tell her. I'll make it up somehow first.", "Watched my coat all morning. Stopped watching once." } },
+            { "scene:ring", new[] {
+                "Hit him! Go on, hit him!", "Two bits on the big one. Don't let me down.", "Blood on the boards already. Good fight.",
+                "Somebody'll fetch the law in a minute. Till then, watch.", "Don't get too close. The last one swung wild into the crowd.", "Haven't seen a fight this good since harvest." } },
+            { "scene:execution", new[] {
+                "They're going to kill him. Right there, by the road.", "Don't look. Don't look and keep walking.", "Somebody ought to do something. Somebody with a gun.",
+                "Kin business, that is. You don't put your nose in kin business.", "His hands are tied. A man with tied hands. God help him.", "If I ride on, did I see it? I didn't see it." } },
+            { "riding:rain", new[] {
+                "Rain down my collar and into my boots. Fine. Fine.", "Hat brim's a waterfall. Can't see the road for it.", "Horse hates it. I hate it. We're agreed.",
+                "Slicker's at home on the peg, where it does the most good.", "Mud to the fetlocks. Slow going.", "Every drop finds the one place the coat doesn't cover." } },
+            { "storm", new[] {
+                "Lightning over the hills. Count. One. Two. Close.", "Thunder like a train in the sky. Get indoors.", "Don't stand under the tree. Don't stand under the tree.",
+                "Horses won't settle in this. Neither will I.", "God's angry about something tonight. Hope it isn't me.", "That one struck near. I felt it in my teeth." } },
             { "standing", new[] {
                 "Waiting. Always waiting on somebody in {town}.", "Stand here long enough and somebody will want something.",
                 "Nothing to do and all day to do it in.", "Watching the sky. It's doing more than I am.",

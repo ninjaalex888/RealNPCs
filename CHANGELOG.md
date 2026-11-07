@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **More of the moment in what people think** (`[Mind] MoreMoments`, on; settings version 288; FIVEDAY item 32e; roadmap's moments still to do). New moments:
+  - a horse bolting under its rider (loud: thought before anything else);
+  - a purse lifted, picked or taken in the last hour and a half (they know it's gone even when they never saw who);
+  - standing in a fistfight's ring;
+  - being near an execution by the road;
+  - rain on them in the saddle;
+  - a thunderstorm out of doors.
+  - Women in a fistfight think their own lines where the fist pools were a man's. How you look beside them has pools of its own, half the time.
+  - Not built: the hat lost. No read of a hat is proven, and the clothes reads are held back.
+  - Offline, of people read riding or walking with a fifth in rain, 14% now think of one of the new moments (before, none).
+
 - **Someone else pulls up at the broken wagon** (`[Encounters] WagonOthersStop`, on, with WagonWheel; settings version 287; FIVEDAY item 32d; README 32). Twenty-five seconds after the driver is down beside his wagon and you haven't put your shoulder to it, or once you've ridden on, six wagons in ten get a passer-by: the nearest free man on the road, on foot or on horseback, turns aside to it. He offers a hand (he says so if he saw you ride past) and sets the wheel with the driver. Then the driver thanks him and drives on, and the helper thinks of it. If you get there first, he goes on his way.
   - Why it reads true: on an empty road the bystander effect runs backwards. With nobody else to leave it to, the one passing feels the whole duty. And a norm broken in plain sight (your riding past) makes the next man keener to keep it.
   - Offline: of 1,000 wagons left standing, 58% now get someone else (before: none).

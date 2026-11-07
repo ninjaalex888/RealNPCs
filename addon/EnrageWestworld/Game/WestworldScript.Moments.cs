@@ -102,6 +102,21 @@ namespace EnrageWestworld.InGame
             m.FightNear = Math.Max(0, _momentFights - (inCombat ? 1 : 0));
             m.BodyNear = _momentBodies > 0;
             m.ShotsNear = nowMs >= _momentShotAt && nowMs - _momentShotAt < 8000;
+            if (_cfg.MoreMoments)
+            {
+                // FIVEDAY item 32e: the storm, the horse bolting, a scene of ours they're at (the theft is read in ThoughtNow, by id)
+                m.Storm = w == "storm";
+                if (m.Doing == "riding")
+                {
+                    int mount = PED.GET_MOUNT(h);
+                    m.Spooked = mount != 0 && ENTITY.DOES_ENTITY_EXIST(mount) && PED.IS_PED_FLEEING(mount);
+                }
+                if (_ring.Contains(h))
+                    m.AtScene = "ring";
+                else if (_exec != null && _exec.Captive != null && _exec.Captive.Exists() && h != _exec.Captive.Handle && !_exec.Men.Exists(x => x != null && x.Handle == h) &&
+                         ped.Position.DistanceTo(_exec.Captive.Position) < 40f)
+                    m.AtScene = "execution";
+            }
             return m;
         }
 
@@ -162,6 +177,8 @@ namespace EnrageWestworld.InGame
             {
                 Log.Detail("MOMENT " + key + " couldn't be read: " + ex.Message);
             }
+            if (m != null && _cfg.MoreMoments && p != null && p.Id != null)
+                m.Robbed = RobbedLately(p.Id);   // (FIVEDAY item 32e)
             if (m != null && Moments.Urgent(m))
             {
                 string src;
@@ -179,6 +196,17 @@ namespace EnrageWestworld.InGame
                 look = Look(me, d);
             look.Now = m;
             return otherwise(look);
+        }
+
+        /// A theft on them in the last ninety game minutes (a pickpocket, a mugging, a lift: they know the purse is gone,
+        /// whether or not they saw who), by the store's ties (FIVEDAY item 32e).
+        private bool RobbedLately(string id)
+        {
+            long g = Bridge.Now();
+            foreach (SceneTie t in _store.Ties)
+                if (t.Crime != null && t.CrimeDoer != null && t.CrimeDoer != id && t.Has(id) && g - t.CrimeAt >= 0 && g - t.CrimeAt < 90)
+                    return true;
+            return false;
         }
 
         private string MomentsStatus()
