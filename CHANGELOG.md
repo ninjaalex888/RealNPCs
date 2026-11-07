@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Peak and end** (`[Mind] PeakEnd`, on; settings version 270; FIVEDAY item 18). A meeting with you is now remembered by its strongest moment and how it ended, not by how long it went on. A meeting means what someone feels about you, with no more than a quarter hour between. A long friendly talk ended by a shove is remembered as the shove, and a bad meeting put right at the end is remembered for both.
+
 - **Stress that builds, to a breaking point** (`[Mind] StressBuilds`, on; settings version 269; FIVEDAY item 17). Until now strain lasted a day: someone snapped only when two troubles landed at once. Now a week's troubles add up, person by person: a friend's death, a death seen, a beating, a theft, quarrels, and a worry that's deepening or at its worst. Past their breaking point, which comes lower for the anxious and higher for the steady, a person breaks in a way that fits them, and the habit stays a week:
   - drinks the nights away;
   - prays at the church;

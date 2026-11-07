@@ -22,6 +22,7 @@ namespace EnrageWestworld.Core
         public string DoerId;
         public bool Masked;       // the face hid it (Display: masked or turned), so the thought may say the mask too (night 2026-10-28)
         public string Urge;       // what it made them want to do (Appraisal's urge), for the shadow's choosing (night 2026-10-28, item 5)
+        public bool Faded;        // a meeting's moment that was neither its peak nor its end, faded once (Core/PeakEnd.cs; FIVEDAY item 18)
         public string Why;        // what happened (Appraisal's event kind: shove, theft, death, kindness...), for a thought that names its cause (the no-model run, item 6g); memory only
     }
 

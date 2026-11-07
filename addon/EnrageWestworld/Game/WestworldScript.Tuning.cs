@@ -38,6 +38,7 @@ namespace EnrageWestworld.InGame
             TownMood.HushHours = _cfg.HushHours;
             TownMood.CityHushHours = _cfg.HushHoursSaintDenis;
             Reasons.StrainChance = _cfg.StrainChance;
+            PeakEnd.On = _cfg.PeakEnd;   // (FIVEDAY item 18)
         }
     }
 }

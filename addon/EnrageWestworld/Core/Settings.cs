@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 269;
+        public const int CurrentVersion = 270;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -355,6 +355,7 @@ namespace EnrageWestworld.Core
         public bool Rematches = true;   // [Scenes] with MindLive and MindPlans: the one beaten in a fistfight takes it his own way (a rematch, keeping clear, a handshake) days later (Core/Rematch.cs; FIVEDAY item 2, settings version 257)
         public bool AlliesRemember = true;   // [Scenes] with FriendCalls: an ally who stood with you in a fight comes over within the week to talk it over, and of a comrade who fell in it (FIVEDAY item 4, settings version 258)
         public float SideTalkMetres = SideTalk.Metres;   // [Scenes] with ScenesAtOnce 2 or more: two people this far apart at most may stop and talk beside the scene (2.5-8; 3.4 before settings version 259, when the quiet talks almost never started; FIVEDAY item 5)
+        public bool PeakEnd = true;   // [Mind] a meeting with you is remembered by its strongest moment and how it ended, not its length (Core/PeakEnd.cs; FIVEDAY item 18, settings version 270)
         public bool StressBuilds = true;   // [Mind] a week's load adds up (deaths, beatings, quarrels, thefts, a worry); past their breaking point a person breaks in their own way and the habit stays a week (Core/StressLoad.cs; FIVEDAY item 17, settings version 269)
         public bool WorriesShown = true;   // [Mind] with MindLive and MindActs: the worry a person carries leans what they choose to do, and the thought over their head says so when they act on it (Core/WorryActs.cs; FIVEDAY item 7, settings version 260)
         public bool VoicedEncounters = true;   // [Mind] with VoicedDialogue and the voice server: the encounters' and walk-ups' lines (a friend's visit, a warning, a campfire, a traveller, a callout, a bet...) said in the speaker's own cloned voice instead of a recorded remark picked by tone, one every 5 s at most (FIVEDAY item 8, settings version 261)
@@ -889,6 +890,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 270)
+                    log?.Invoke("Settings: new in this version: [Mind] PeakEnd (on): a meeting with you is remembered by its peak and its end.");
                 if (s.SettingsVersion < 269)
                     log?.Invoke("Settings: new in this version: [Mind] StressBuilds (on): a week's load adds up to a breaking point, and each breaks in their own way.");
                 if (s.SettingsVersion < 268)
@@ -1725,6 +1728,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("BrawlWagers = " + B(BrawlWagers) + "   ; with MindLive on: people watching a fistfight between two of the street's people bet on it among themselves (words only, nobody walks over), up to three bets a fight; after it the one who backed the loser pays, pays with a sour word, says he'll owe it, or won't pay, and a welshed bet leaves bad blood between the two backers");
             b.AppendLine("Rematches = " + B(Rematches) + "   ; with MindLive and [Mind] MindPlans on: the one left on the ground after a fistfight takes it his own way, by his nature: half a game day or more later, when the two meet near you, a rematch (the hot and the proud), crossing the street to keep clear (the fearful), or his hand offered (the kind), taken or refused; most let it lie");
             b.AppendLine("SideTalkMetres = " + F(SideTalkMetres) + "   ; with ScenesAtOnce 2 or more: the quiet talks beside the street's scene pair two people at most this far apart (2.5-8 m), both standing or strolling; 3.4 m and standing still before, and they almost never started");
+            b.AppendLine("PeakEnd = " + B(PeakEnd) + "   ; a meeting with you (what they feel about you, no more than a quarter hour between) is remembered by its strongest moment and how it ended, not by how long it went on: a long friendly talk ended by a shove is remembered as the shove; the moments between fade to a quarter");
             b.AppendLine("StressBuilds = " + B(StressBuilds) + "   ; a week's troubles add up, person by person: a friend's death, a death seen, a beating, a theft, quarrels, a worry at its worst. Past their breaking point (lower for the anxious, higher for the steady) someone breaks, once in three weeks, in a way that fits them, and it stays a week: drinks the nights away, prays at the church, can't keep from the grave, takes it out on those at home, or takes the train");
             b.AppendLine("WorriesShown = " + B(WorriesShown) + "   ; with MindLive and MindActs on: the worry each person carries this week leans what they do (a debtor keeps to his work and away from the cards, a parent with a feverish child goes home and prays, a toothache rests and reaches for the whiskey, a dry spell keeps an eye on the sky), most at its worst, and the thought over their head says why");
             b.AppendLine("VoicedEncounters = " + B(VoicedEncounters) + "   ; with [Mind] VoicedDialogue on and the voice server running: what people say to you or near you in the encounters and walk-ups (a friend's visit, a warning, a campfire, a traveller, a callout at you, a bet on a fight) is said in their own cloned voice, matching the words, instead of a recorded remark picked by its tone; at most one such line every 5 seconds, so the graphics card isn't crowded. Off: the recorded remarks, as before");

@@ -60,6 +60,7 @@ namespace EnrageWestworld.Core
         public int EventsQueued { get; private set; }
         public int EventsDropped { get; private set; }
         public int FeelingsNoted { get; private set; }
+        public int PeaksFaded { get; private set; }   // a meeting's middle moments faded by the peak-end rule (Core/PeakEnd.cs)
 
         /// A happening for the mind to appraise; capped (the oldest goes). Never throws.
         public void Queue(Happening e)
@@ -116,6 +117,7 @@ namespace EnrageWestworld.Core
             }
             list.Add(new FeltAt { Kind = k, Intensity = f.Intensity, At = now, About = f.About, AboutId = f.AboutId, DoerId = f.DoerId, Masked = f.Shows == "masked" || f.Shows == "turned", Urge = f.Urge, Why = f.Why });
             FeelingsNoted++;
+            PeaksFaded += PeakEnd.Apply(list, now);   // a meeting with him remembered by its peak and its end (FIVEDAY item 18)
             if (OnFeel != null)
                 OnFeel(id);
         }

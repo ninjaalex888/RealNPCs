@@ -1272,6 +1272,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST witnesses: " + WitnessStatus());
 			Log.Write("TEST pinkertons: " + PinkertonsStatus());
 			Log.Write("TEST notices: " + NoticeBoardStatus());
+			Log.Write("TEST peak-end: " + (_cfg.PeakEnd ? _engine.Shadow.PeaksFaded + " moments of meetings with you faded this session (neither the peak nor the end)" : "off ([Mind] PeakEnd)"));
 			Log.Write("TEST stress: " + _engine.StressStatus(Bridge.Now()) + "; " + _stressThoughts + " of its thoughts shown");
 			Log.Write("TEST horse thieves: " + HorseStatus());
 			Log.Write("TEST plans: " + PlansStatus());
