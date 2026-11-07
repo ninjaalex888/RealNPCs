@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Gossip that travels along ties** (`[Mind] TieGossip`, on; settings version 275; FIVEDAY item 23). Inside a town, word of your violence and your thieving now moves person to person along the ties the street made. The friends of someone who knows hear it the next day, and anyone else they're tied to the day after, a little more bent at each telling. Whoever hears it thinks of who told them and what they got ("Abner swears a gunman nobody knew beat Eli Pike half to death..."). Offline, in a town of 30: 10 know by the first day, 19 by the second, 26 by the third and 29 by the fourth; before, it stayed at the 6 who saw it or were told that day. A week on, the talk is done.
+
 - **Shared fright** (`[Mind] SharedFright`, on; settings version 274; FIVEDAY item 22). Two people who both saw you kill are now tied by it. The tie between them warms a step, and for two weeks they keep clear of you together when both are about. When the street's quiet talk falls to the two of them, it's about that three times in four, low-voiced: "You were there. You saw it." "Don't. Not here."
 
 - **Survivors come back changed** (`[Mind] SurvivorsChanged`, on; settings version 273; FIVEDAY item 21). Someone you beat or robbed and left alive now comes back changed, a day on, by who they are:

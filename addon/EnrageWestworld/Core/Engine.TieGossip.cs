@@ -1,0 +1,93 @@
+// Gossip that travels along ties, the engine's part (FIVEDAY item 23; Core/TieGossip.cs). Each world tick (half a game
+// hour), for each deed of the player's known in its town this week: who knows it (those who saw it, those the talk or a
+// rumour reached, those already told along a tie), and one step of the spread along the town's ties (TieGossip.Spread).
+// The newly told know the deed (KnownDeeds: what they say to his face, their diaries) and think of who told them
+// (TieGossipCandidate, in the resident's and the record's thoughts). Behind [Mind] TieGossip.
+using System.Collections.Generic;
+using System.Linq;
+
+namespace EnrageWestworld.Core
+{
+    public partial class Engine
+    {
+        private int _tieGossipTold;
+
+        private void TieGossipTick(long now)
+        {
+            if (Cfg == null || !Cfg.TieGossip || !Cfg.Minds)
+                return;
+            var recent = Store.Deeds.Where(d => d != null && d.Known && !d.Unseen && d.Town != null && d.Id != null && now - d.At >= 0 && now - d.At <= TieGossip.WindowDays * 1440L && d.Weight >= 12 &&
+                                                (Minds.DeedGroup(d.Kind) == "deed:violence" || Minds.DeedGroup(d.Kind) == "deed:theft")).ToList();
+            if (recent.Count == 0)
+                return;
+            int budget = TieGossip.MostPerTick;
+            foreach (Deed d in recent)
+            {
+                var known = new Dictionary<string, TieHeard>();
+                foreach (KeyValuePair<string, PersonState> kv in Store.People)
+                {
+                    PersonState st = kv.Value;
+                    if (st == null)
+                        continue;
+                    bool saw = st.SawDeeds.Contains(d.Id);
+                    if (saw || st.KnownDeeds.Contains(d.Id))
+                        known[kv.Key] = new TieHeard { Id = kv.Key, DeedId = d.Id, At = d.At + 60, Hops = saw ? 0 : 1 };   // (the talk's own start: an hour on)
+                }
+                foreach (TieHeard th in Store.TieHeard)
+                    if (th.DeedId == d.Id)
+                        known[th.Id] = th;
+                List<TieHeard> told = TieGossip.Spread(d.Id, d.Town, known, Store.Ties, now, id => id != d.VictimId && Store.Find(id) != null && !id.StartsWith("player"), budget);
+                foreach (TieHeard h in told)
+                {
+                    PersonState st = Store.Find(h.Id);
+                    if (!st.KnownDeeds.Contains(d.Id))
+                        st.KnownDeeds.Add(d.Id);
+                    Store.TieHeard.Add(h);
+                    _tieGossipTold++;
+                    Detail("GOSSIP " + h.Id + " heard of your " + d.Kind + " from " + (h.FromName ?? h.FromId) + " (hop " + h.Hops + ", fidelity " + TieGossip.Fidelity(h.Hops) + ")");
+                }
+                budget -= told.Count;
+                if (budget <= 0)
+                    break;
+            }
+            if (Store.TieHeard.Count > TieGossip.Kept)
+                Store.TieHeard.RemoveRange(0, Store.TieHeard.Count - TieGossip.Kept);
+        }
+
+        /// The thought of one told along a tie in the last two days, once a deed: who told them, and the version they got.
+        private Minds.Candidate TieGossipCandidate(Person p, PersonState st, string seed, long now)
+        {
+            if (Cfg == null || !Cfg.TieGossip || p == null || st == null)
+                return null;
+            TieHeard th = null;
+            for (int i = Store.TieHeard.Count - 1; i >= 0; i--)
+                if (Store.TieHeard[i].Id == p.Id)
+                {
+                    th = Store.TieHeard[i];
+                    break;
+                }
+            if (th == null || now - th.At > 2 * 1440 || st.Has("tg:" + th.DeedId))
+                return null;
+            Deed d = Store.Deeds.FirstOrDefault(x => x.Id == th.DeedId);
+            if (d == null)
+                return null;
+            return new Minds.Candidate
+            {
+                Source = "heard:tie", Pull = 36 + Minds.Jitter(seed, "tiegossip", 6),
+                Make = () =>
+                {
+                    var r = new TownRumour { Id = th.Id + "|" + th.DeedId, DeedId = d.Id, Origin = d.Town, Town = d.Town, Fidelity = TieGossip.Fidelity(th.Hops), Hops = th.Hops };
+                    string line = TieGossip.Thought(Person.FirstOf(th.FromName), Rumours.Version(r, d, Player, PlayerNameKnownIn(d.Town)), seed);
+                    if (line != null)
+                        st.Mark("tg:" + th.DeedId);
+                    return line;
+                }
+            };
+        }
+
+        public string TieGossipStatus()
+        {
+            return Cfg == null || !Cfg.TieGossip ? "off ([Mind] TieGossip)" : _tieGossipTold + " told along a tie this session; " + Store.TieHeard.Count + " kept";
+        }
+    }
+}

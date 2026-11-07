@@ -278,6 +278,9 @@ namespace EnrageWestworld.Core
             Deed d = st.KnownDeeds.Count > 0 ? Store.Deeds.LastOrDefault(x => st.KnownDeeds.Contains(x.Id)) : null;
             if (d != null)
                 extra.Add(new Minds.Candidate { Source = "enrage:deed", Pull = 32 + j("deed"), Make = () => Deeds.Thought(p, d, Voice.YouPrivate(p, you, true), seed) });
+            Minds.Candidate tg = TieGossipCandidate(p, st, seed, now);   // told along a tie (FIVEDAY item 23)
+            if (tg != null)
+                extra.Add(tg);
             Hearsay h = st.Heard.LastOrDefault();
             if (h != null)
                 extra.Add(new Minds.Candidate { Source = "enrage:heard", Pull = 26 + j("heard"), Make = () => Voice.HearsayThought(p, Person.FirstOf(h.FromName), h.Text, h.FromWoman, you, seed) });

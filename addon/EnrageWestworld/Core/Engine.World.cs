@@ -510,6 +510,7 @@ namespace EnrageWestworld.Core
             Store.LastWorldTickAt = now;
             WakeTick(now);
             DeedTalkTick(now);
+            TieGossipTick(now);   // word of his deeds along the town's ties (Engine.TieGossip.cs; FIVEDAY item 23)
             AvengerTick(now);
             ReplyTick(now);   // letters answered and written, landing (Engine.Letters.cs)
             EventsTick(now);  // a town's event that passed with nobody there (Engine.Events.cs)
@@ -1342,6 +1343,9 @@ namespace EnrageWestworld.Core
                     more.Add(new Minds.Candidate { Source = "rescued", Pull = 55, Make = () => saved });
                 // the town's rumours and the player's fame (the same seed: its reality roll came out no above)
                 more.Add(new Minds.Candidate { Source = "heard:rumour", Pull = 20 + Minds.Jitter(seed, "rumour", 8), Make = () => StrangerThought(seed, p.Home, p.Woman, false) });
+                Minds.Candidate tg = TieGossipCandidate(p, st, seed, Store.LastGameMin);   // told along a tie (FIVEDAY item 23)
+                if (tg != null)
+                    more.Add(tg);
                 Minds.Choice c = Think(p, st, hour, seed, look, more);
                 if (c != null)
                     return c.Text;
