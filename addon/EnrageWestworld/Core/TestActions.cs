@@ -59,6 +59,7 @@ namespace EnrageWestworld.Core
             new Entry("trial", "People", "The circuit judge (a regular held; again: starts in 2 min)", "TestTrialKey", needs: "[World] TownEvents, EventTrials; a town with a living man among its regulars (the dead man is made up); the row again moves the trial, then the hanging, to two minutes from now"),
             new Entry("prizefight", "People", "A prize fight out back (in 2 min here)", "TestPrizeFightKey", needs: "[World] TownEvents, EventPrizeFights; a town with two of its regulars of a fighting temper (men, 18-48); you've been out of its saloon for the spot behind it"),
             new Entry("shivaree", "People", "A shivaree (in 2 min here)", "TestShivareeKey", needs: "[World] TownEvents, EventShivarees; a town with a man and a woman among its regulars to stand for the couple"),
+            new Entry("pinkerton", "People", "A Pinkerton asks the town after you (now)", "TestPinkertonKey", needs: "[Encounters] Pinkertons; a town, with one of its people the mind knows within 50 m"),
             new Entry("show", "People", "The Wild West show (posted here; again: starts in 2 min)", "TestShowKey", needs: "[World] TownEvents, EventShows; a town; your most-told deed if one has travelled, else a test legend"),
             new Entry("musing", "People", "A stranger says something strange", "TestMusingKey", needs: "someone 3-14 m off"),
             new Entry("glitch", "People", "A stranger glitches", "TestGlitchKey", needs: "someone 3-16 m off"),

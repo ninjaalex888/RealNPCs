@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 266;
+        public const int CurrentVersion = 267;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -239,6 +239,7 @@ namespace EnrageWestworld.Core
         public int TravellerChance = 20;
         public bool WagonWheel = true;    // [Encounters] a wagon ahead of you on the road loses a wheel (roadmap 32; Core/WagonWheel.cs; settings version 245)
         public int WagonWheelChance = 20;
+        public bool Pinkertons = true;    // [Encounters] by day in a town where a violent deed of yours is known this week, now and then a Pinkerton man asks its people after you; friends lie, the afraid talk, and a friend warns you after (Core/Pinkertons.cs; FIVEDAY item 15, settings version 267)
         public bool Campfires = true;     // [Encounters] strangers at a campfire at night in the wilds (night 2026-10-28, item 14; settings version 90)
         public int CampfireChance = 15;
         public bool VoiceBelow = true;    // [Encounters] West World: late at night in a saloon, a muffled plea from under the boards and the barkeep's thoughts (night 2026-10-28, item 14; settings version 90)
@@ -886,6 +887,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 267)
+                    log?.Invoke("Settings: new in this version: [Encounters] Pinkertons (on): a Pinkerton man asks the town after you where your violence is known.");
                 if (s.SettingsVersion < 266)
                     log?.Invoke("Settings: new in this version: [World] WitnessesChoose (on): witnesses to your violence tell it or keep quiet, and can be leaned on with a gun.");
                 if (s.SettingsVersion < 265)
@@ -1558,6 +1561,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("TravellerChance = " + TravellerChance + "   ; percent on each roll, seven in the morning to seven at night, once a day at most");
             b.AppendLine("WagonWheel = " + B(WagonWheel) + "   ; by day on the roads (06:00-20:00), once a day: a wagon ahead of you, out of view, loses a wheel and stops, the driver down beside it; within 25 m he calls to you. On foot within 3 m of the wagon for three seconds you set the wheel with him (his thanks, his liking for you up, and he drives on); ride past and once you're 40 m gone he calls after you to send word: reach any town within thirty game minutes and it's sent. Nothing is spawned: the wagon is the game's own, handed back");
             b.AppendLine("WagonWheelChance = " + WagonWheelChance + "   ; percent on each encounter roll (0 to 100)");
+            b.AppendLine("Pinkertons = " + B(Pinkertons) + "   ; by day in a town where a violent deed of yours is known from the past week, now and then (at most once a town in five days) a man from the Pinkerton agency walks in and asks two or three of its people after you: your friends lie for you, those afraid of you tell him, the rest shrug; a friend comes over later to warn you and says who talked");
             b.AppendLine("Campfires = " + B(Campfires) + "   ; at night in the wilds, two or three men round a fire off the road call you over for coffee and a tale; now and then a traveller walks in from the dark");
             b.AppendLine("CampfireChance = " + CampfireChance + "   ; percent on each roll, eight in the evening to four, with ten game hours between fires");
             b.AppendLine("VoiceBelow = " + B(VoiceBelow) + "   ; West World: late at night in a saloon, a muffled plea from under the boards behind the bar; the barkeep says it's the pipes, and his thoughts say otherwise; once a night a town");

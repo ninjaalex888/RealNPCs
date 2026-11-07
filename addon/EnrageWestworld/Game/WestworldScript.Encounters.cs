@@ -947,6 +947,8 @@ namespace EnrageWestworld.InGame
         /// Ends whatever encounter is running (a mission started, the add-on is stopping).
         private void EndEncounters(string why)
         {
+            if (_pink != null)
+                EndPinkerton(why);
             if (_crying != null)
                 EndCrying(why);
             if (_hermit != null)

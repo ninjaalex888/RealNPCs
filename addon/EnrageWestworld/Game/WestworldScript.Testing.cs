@@ -277,6 +277,17 @@ namespace EnrageWestworld.InGame
                         said = what;
                         return null;
                     }
+                case "pinkerton":
+                    {
+                        skipped = "a violent deed of yours known here this week, the day's roll, the hour and the five days' rest";
+                        if (!_cfg.Pinkertons)
+                            return "off ([Encounters] Pinkertons)";
+                        string why = PinkertonLook(Game.Player.Character, Game.GameTime, true);
+                        if (why != null)
+                            return why;
+                        said = "a man in a city suit is walking in from out of view to ask after you";
+                        return null;
+                    }
                 case "shivaree":
                     {
                         skipped = "the wedding before it and the night's hour: two minutes from now, here";

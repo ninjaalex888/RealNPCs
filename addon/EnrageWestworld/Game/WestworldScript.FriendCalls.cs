@@ -113,7 +113,7 @@ namespace EnrageWestworld.InGame
                 string kind = FriendCalls.Which(warnKind != null, news != null, favour, _cfg.FriendGifts, seed, foughtMem != null);
                 if (kind == null)
                     continue;
-                string detail = kind == FriendCalls.Warn ? (warnKind == "law" ? "law" : danger != null ? "named" : "nameless")
+                string detail = kind == FriendCalls.Warn ? (warnKind == "law" ? "law" : warnKind == "pinkerton" ? "pinkerton" : danger != null ? "named" : "nameless")
                               : kind == FriendCalls.Gift ? FriendCalls.GiftOf(group, woman, seed)
                               : kind == FriendCalls.Trade ? favour
                               : kind == FriendCalls.Fought ? (fallen != null ? "fell" : "won") : null;
@@ -123,6 +123,13 @@ namespace EnrageWestworld.InGame
                     continue;
                 string you = _engine.KnowsYourName(w.Id) ? YourSurname() : null;
                 string line = FriendCalls.Line(kind, detail, you, kind == FriendCalls.Fought ? fallen : danger, news, _placeTown, seed);
+                if (kind == FriendCalls.Warn && warnKind == "pinkerton")
+                {
+                    line = Pinkertons.Warning(you, danger, seed);   // who talked, or that nobody did
+                    PinkVisit pv = PinkToWarn(_placeTown, g);
+                    if (pv != null && !test)
+                        pv.Warned = true;
+                }
                 if (line == null)
                     continue;
                 if (!test)
@@ -162,6 +169,12 @@ namespace EnrageWestworld.InGame
         private string FriendDanger(MindWho friend, long g, out string danger)
         {
             danger = null;
+            PinkVisit pv = _cfg.Pinkertons ? PinkToWarn(_placeTown, g) : null;
+            if (pv != null)
+            {
+                danger = pv.Talked;
+                return "pinkerton";   // a Pinkerton man asked after you here: said first, the freshest danger (FIVEDAY item 15)
+            }
             foreach (int oh in _mindNear)
             {
                 MindWho o;
