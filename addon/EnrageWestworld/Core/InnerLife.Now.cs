@@ -659,6 +659,11 @@ namespace EnrageWestworld.Core
                 "Made me look at the dime in my own pocket a while.",
                 "Preacher talks of kindness every Sunday. {b} just went and did it.",
                 "Stood straighter after, {a} did. Funny what a dollar does to a spine.", } },
+            { "temperance", new[] {
+                "Temperance woman had a man by the sleeve outside the saloon. Brave, or foolish.", "Pledge cards on the boardwalk again. Half the men cross the street.",
+                "Pledge put to a man right there in the street. I'd have run.", "Somebody ought to sign. Not me. Somebody.",
+                "Those ladies will pray the paint off the saloon door one day.", "Saw a man slink off from the temperance woman like a scolded dog.",
+                "Can't fault the ladies' aim. That one needed it.", "Bread money, she said. She's not wrong.", } },
             { "scorn", new[] {
                 "{b} turned {a} away cold. Could've spared a nickel. Could I have? Maybe.",
                 "{b} sent {a} off like a stray dog. Ugly to watch.",

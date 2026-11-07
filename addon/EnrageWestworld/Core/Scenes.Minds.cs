@@ -67,6 +67,8 @@ namespace EnrageWestworld.Core
             if (c.Saloon && twoMen)
                 w.Add(new KeyValuePair<string, int>("cheat", 10));
             w.Add(new KeyValuePair<string, int>("debt", 7));
+            if (mixed && !c.Saloon && !c.Night)
+                w.Add(new KeyValuePair<string, int>("temperance", 4));   // a temperance woman puts the pledge to a man (Core/Temperance.cs; FIVEDAY item 12)
             if (c.Payday && mixed && !c.Saloon)
                 w.Add(new KeyValuePair<string, int>("wages", 14));
             if (c.Rumours.Count > 0)
@@ -119,6 +121,7 @@ namespace EnrageWestworld.Core
                 {
                     Lean(d, "haggle", 60 + 30 * press);
                     if (m.Worry == "cards") Lean(d, "cheat", 40);
+                    if (m.Worry == "drink") Lean(d, "temperance", 60);   // the man she'd stop
                     mine.Add(m.Worry + " worry");
                 }
                 else if (m.Worry == "feud")
@@ -167,6 +170,7 @@ namespace EnrageWestworld.Core
             if (m.Pious >= MindTraitAt)
             {
                 Lean(d, "cheat", -60); Lean(d, "pickpocket", -60); Lean(d, "brawl", -40); Lean(d, "flirt", -30); Lean(d, "paper", 30); Lean(d, "smalltalk", 20); Lean(d, "song", 20);
+                Lean(d, "temperance", 80);   // the pious take up the cause
                 mine.Add("pious");
             }
             why.Add((m.Name ?? "one") + (mine.Count > 0 ? " " + string.Join(", ", mine) : " even"));
@@ -259,6 +263,8 @@ namespace EnrageWestworld.Core
                 case "brawl": return "come to blows with " + o;
                 case "propose": return "ask " + o + " to marry you";
                 case "cheat": return "call " + o + " out for cheating at cards";
+                case "temperance": return "ask " + o + " to sign the pledge";
+                case "wages": return "ask " + o + " for the week's pay";
                 case "gossip": return "trade the town's news with " + o;
                 case "hosts": return "wonder aloud with " + o + " about this town";
                 case "smalltalk": return "pass the time of day with " + o;

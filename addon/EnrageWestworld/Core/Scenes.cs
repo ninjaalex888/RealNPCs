@@ -182,6 +182,7 @@ namespace EnrageWestworld.Core
                 case "brawl": return Brawl(c, seed);
                 case "rematch": return Rematch.AgainScene(c, seed);   // the beaten man's plan (Core/Rematch.cs): a brawl of its own words
                 case "shake": return Rematch.ShakeScene(c, seed);     // his hand offered, taken or refused
+                case "temperance": return Temperance.Make(c, seed);   // the pledge put to a drinker (Core/Temperance.cs)
                 case "wages": return c.AWoman != c.BWoman ? Payday.Wages(c, seed) : null;   // payday: a woman meets a man for his pay (Core/Payday.cs)
                 case "propose": return Propose(c, seed);
                 case "cheat": return Cheat(c, seed);
