@@ -60,7 +60,10 @@ namespace EnrageWestworld.InGame
             if (_director.FightOver == null)
                 _director.FightOver = OnFightOver;
             if (Feed.CloneVoice == null)
-                Feed.CloneVoice = VoiceEncounterLine;   // the encounters' and walk-ups' words in their own voices (WestworldScript.Voiced.cs; FIVEDAY item 8)
+            {
+                Feed.CloneVoice = VoiceEncounterLine;
+                Feed.CloneState = VoiceEncounterState;
+            }   // the encounters' and walk-ups' words in their own voices (WestworldScript.Voiced.cs; FIVEDAY item 8)
             if (_director.Shock == null)
                 _director.Shock = StreetShock;   // the street reacts to the scene's moments as the game's own crowd would (WestworldScript.Street.cs)
             if (_director.FightLeftLoose == null)
@@ -515,8 +518,8 @@ namespace EnrageWestworld.InGame
                 s = cast.Off.Contains("smalltalk") ? null : Scenes.SmallTalk(cast, seed);   // a talk beside is words only
             if (s == null || !Director.Quiet(s))
                 return;
-            StartScene(s, new List<Ped> { a, b }, cast, seed, now, side: true);
-            _nextSide = now + SideTalk.GapMs;   // one new quiet talk at a time: the street lively, not a babble (FIVEDAY item 5)
+            if (StartScene(s, new List<Ped> { a, b }, cast, seed, now, side: true))
+                _nextSide = Math.Max(_nextSide, now + SideTalk.GapMs);   // one new quiet talk at a time, never sooner than the storyteller's own gap (FIVEDAY item 5; the review)
         }
 
         /// A quiet talk's line: a subtitle only when it's near you, never the queue the scene's lines take (two talks at once
@@ -1049,7 +1052,7 @@ namespace EnrageWestworld.InGame
 
         private void SceneSay(string label, string line, bool uncanny, bool woman, int ped)
         {
-            Feed.Say(label, line, null, ped);   // the director plays the speakers' own recorded lines
+            Feed.Say(label, line, null, ped, noClone: true);   // the director plays the speakers' own recorded lines (and VoiceSaid below their cloned voice: never Feed's too)
             VoiceSaid(ped, label, line, false);   // and with VoicedDialogue, our words in their own voice within VoiceMetres (WestworldScript.Voiced.cs)
             // and on the ticker as it is said, while the scene is within earshot (Lex, 2026-10-29: he couldn't tell a woman had stepped in)
             if (_cfg.ScenesOnTicker && _cfg.Ticker && ped != 0 && ENTITY.DOES_ENTITY_EXIST(ped) && ENTITY.GET_ENTITY_COORDS(ped, true, true).DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)

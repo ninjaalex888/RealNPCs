@@ -16,8 +16,8 @@ namespace EnrageWestworld.Core
 {
     public static class SideTalk
     {
-        /// The farthest apart two may be ([Scenes] SideTalkMetres, 5.5; 3.4 until settings 259).
-        public const float Metres = 5.5f;
+        /// The farthest apart two may be ([Scenes] SideTalkMetres, 4.5 as it comes since the review of Part 2: 5.5 read as a talk shouted across the street; 3.4 until settings 259).
+        public const float Metres = 4.5f;
 
         /// The fastest either may be moving: a stroll, not a hurry (1.3 m/s; 0.8 until settings 259).
         public const float StrollSpeed = 1.3f;

@@ -385,7 +385,7 @@ namespace EnrageWestworld.Core
                 case 8:
                     return new List<string> { "The barber says " + r + ".", Voice.Pick(seed + "i", "The barber says plenty.", "And he'd know."), "He hears it all, with the razor at their throats." };
                 case 9:
-                    return new List<string> { Grammar.UpperFirst(r) + ". In broad daylight, they say.", Voice.Pick(seed + "j", "Somebody ought to do something.", "Not in this town, surely."), "This town, of all places." };
+                    return new List<string> { Grammar.UpperFirst(r) + ". Saw it with my own eyes, near enough.", Voice.Pick(seed + "j", "Near enough isn't seeing.", "Whose eyes, then?"), "My cousin's. Same thing." };
                 case 10:
                     return new List<string> { "You'll never guess. " + Grammar.UpperFirst(r) + ".", Voice.Pick(seed + "k", "I'd have guessed.", "Never in a hundred years."), "Nobody would have." };
                 case 11:

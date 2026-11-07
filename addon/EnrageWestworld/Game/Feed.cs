@@ -18,6 +18,8 @@ namespace EnrageWestworld.InGame
 			// The speaker's recorded voice, played as the subtitle appears. If it returns the words the
 			// recording says, those are shown instead, and the add-on's own line goes to Thinking.
 			public Func<string> OnShow;
+			public int ClonedAt;       // when its voice was asked (0: not cloned), for the wait
+			public bool NoClone;       // its voice is the caller's own (a scene line, asked as it was queued)
 
 			public string Speaker;
 
@@ -153,10 +155,13 @@ namespace EnrageWestworld.InGame
 		/// Asked as a line said by someone near shows: says our words in their cloned voice and answers true when it will
 		/// (WestworldScript.Voiced.cs sets it; null: never). (ped, speaker, the whole line, said to you)
 		public static Func<int, string, string, bool, bool> CloneVoice;
+		/// How that voice is going (ped): 1 playing or done, 0 still being made, -1 failed (the recorded remark then plays).
+		public static Func<int, int> CloneState;
 		private static object _clonedGroup;
+		private const int CloneWaitMs = 3500, ClonePollMs = 250;   // the subtitle waits this long at most for the voice (as SpeechCaption's VoiceCaptionWaitMs)
 
 		/// ahead: the player asked for it (a flirt), so it goes before everything already waiting, in the order given.
-		public static void Say(string speaker, string text, Func<string> onShow = null, int ped = 0, bool toYou = false, bool ahead = false)
+		public static void Say(string speaker, string text, Func<string> onShow = null, int ped = 0, bool toYou = false, bool ahead = false, bool noClone = false)
 		{
 			object group = new object();
 			foreach (string item in Split(text, 150))
@@ -173,7 +178,8 @@ namespace EnrageWestworld.InGame
 					Spoken = true,
 					Ped = ped,
 					Ahead = ahead,
-					ToYou = toYou
+					ToYou = toYou,
+					NoClone = noClone
 				});
 				onShow = null;
 			}
@@ -252,22 +258,44 @@ namespace EnrageWestworld.InGame
 					// it takes the line, the game's recorded remark picked by tone is dropped, so the mouth says what the subtitle
 					// says (Lex, 2026-10-29: the recorded lines "don't exactly match up"); a long line's later parts go with it
 					bool cloned = false;
-					if (line.Ped != 0 && CloneVoice != null && line.Full != null)
+					if (line.ClonedAt != 0)
+					{
+						// its voice was asked: show it when the voice starts, at most CloneWaitMs on; the recorded remark if it failed
+						int st = -1;
+						try { st = CloneState != null ? CloneState(line.Ped) : -1; } catch { st = -1; }
+						if (st == 0 && gameTime - line.ClonedAt < CloneWaitMs)
+						{
+							_again = line;
+							_nextAt = gameTime + ClonePollMs;
+							return;
+						}
+						cloned = st >= 0;   // playing, or late: the words go up anyway, the voice under them
+						if (!cloned)
+							_clonedGroup = null;
+					}
+					else if (line.Ped != 0 && !line.NoClone && CloneVoice != null && line.Full != null)
 					{
 						if (line.Group != null && ReferenceEquals(line.Group, _clonedGroup))
 							cloned = true;
 						else
 						{
+							bool asked = false;
 							try
 							{
-								cloned = CloneVoice(line.Ped, line.Speaker, line.Full, line.ToYou);
+								asked = CloneVoice(line.Ped, line.Speaker, line.Full, line.ToYou);
 							}
 							catch (Exception ex)
 							{
 								Log.Write("Voice (cloned): " + ex.Message);
 							}
-							if (cloned)
+							if (asked)
+							{
 								_clonedGroup = line.Group;
+								line.ClonedAt = gameTime;
+								_again = line;   // wait for the voice before the words and the next line
+								_nextAt = gameTime + ClonePollMs;
+								return;
+							}
 						}
 					}
 					if (cloned)

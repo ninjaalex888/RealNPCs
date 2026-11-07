@@ -96,7 +96,7 @@ namespace EnrageWestworld.Core
                 "Played checkers at the store all evening. Won twice. Remember both.",
                 "Slept from dark to dawn without a dream in it. Woke hungry.",
                 "Barkeep's dog still wags at me. Barkeep doesn't. Fair trade.", },
-                new[] { "Wife packed my things. Didn't shout. I'd rather she'd shouted.", "Drank the money for the doctor. The children were well, so it didn't matter. It mattered.", "Back on the stool by the window. Same stool. Like I never left it.",
+                new[] { "Found my things packed by the door. No shouting. I'd rather there'd been shouting.", "Drank the money for the doctor. The children were well, so it didn't matter. It mattered.", "Back on the stool by the window. Same stool. Like I never left it.",
                 "Woke in the alley behind the bar with a dog licking my face.",
                 "Used the pledge card as a spill to light a cigar. Watched myself do it.",
                 "Pawned my coat in May. Swore I'd fetch it back before fall. Fall's here.",

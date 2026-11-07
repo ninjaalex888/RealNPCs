@@ -353,7 +353,7 @@ namespace EnrageWestworld.Core
         public bool BrawlWagers = true;   // [Scenes] with MindLive: people watching a fistfight bet on it among themselves, and settle after: paid, grumbled, owed or welshed on (Core/Wagers.cs; FIVEDAY item 1, settings version 256)
         public bool Rematches = true;   // [Scenes] with MindLive and MindPlans: the one beaten in a fistfight takes it his own way (a rematch, keeping clear, a handshake) days later (Core/Rematch.cs; FIVEDAY item 2, settings version 257)
         public bool AlliesRemember = true;   // [Scenes] with FriendCalls: an ally who stood with you in a fight comes over within the week to talk it over, and of a comrade who fell in it (FIVEDAY item 4, settings version 258)
-        public float SideTalkMetres = 5.5f;   // [Scenes] with ScenesAtOnce 2 or more: two people this far apart at most may stop and talk beside the scene (2.5-8; 3.4 before settings version 259, when the quiet talks almost never started; FIVEDAY item 5)
+        public float SideTalkMetres = SideTalk.Metres;   // [Scenes] with ScenesAtOnce 2 or more: two people this far apart at most may stop and talk beside the scene (2.5-8; 3.4 before settings version 259, when the quiet talks almost never started; FIVEDAY item 5)
         public bool WorriesShown = true;   // [Mind] with MindLive and MindActs: the worry a person carries leans what they choose to do, and the thought over their head says so when they act on it (Core/WorryActs.cs; FIVEDAY item 7, settings version 260)
         public bool VoicedEncounters = true;   // [Mind] with VoicedDialogue and the voice server: the encounters' and walk-ups' lines (a friend's visit, a warning, a campfire, a traveller, a callout, a bet...) said in the speaker's own cloned voice instead of a recorded remark picked by tone, one every 5 s at most (FIVEDAY item 8, settings version 261)
         public bool EventPrizeFights = true;   // [World] with TownEvents: now and then two of a town's men fight for a purse out back of the saloon at night, the word going round that afternoon (Core/PrizeFight.cs; FIVEDAY item 10, settings version 262)
@@ -889,7 +889,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 260)
                     log?.Invoke("Settings: new in this version: [Mind] WorriesShown (on): the worry people carry now shows in what they do, and their thoughts say why.");
                 if (s.SettingsVersion < 259)
-                    log?.Invoke("Settings: the quiet talks beside the street's scene start now: two people within 5.5 m, standing or strolling, may stop and talk ([Scenes] SideTalkMetres, new; before, they had to stand still within 3.4 m and hardly ever did).");
+                    log?.Invoke("Settings: the quiet talks beside the street's scene start now: two people within 4.5 m, standing or strolling, may stop and talk ([Scenes] SideTalkMetres, new; before, they had to stand still within 3.4 m and hardly ever did).");
                 if (s.SettingsVersion < 258)
                     log?.Invoke("Settings: new in this version: [Scenes] AlliesRemember (on): someone who stood with you in a fight comes over within the week to talk it over.");
                 if (s.SettingsVersion < 257)

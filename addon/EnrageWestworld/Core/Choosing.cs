@@ -74,6 +74,15 @@ namespace EnrageWestworld.Core
             Run[0] = 1;
         }
 
+        /// Whether they did this within the last `minutes` game minutes.
+        public bool Within(string id, long now, long minutes)
+        {
+            for (int k = 0; k < 3; k++)
+                if (Id[k] == id && now - At[k] >= 0 && now - At[k] < minutes)
+                    return true;
+            return false;
+        }
+
         public void Clear()
         {
             for (int k = 0; k < 3; k++)
@@ -119,7 +128,7 @@ namespace EnrageWestworld.Core
             new Doing { Id = "stroll", Words = "takes a stroll", Serves = N(0, 0, 0, 0, 0, 0.15f, 0, 0.2f), Effort = 0.1f, Risk = 0.02f, Proper = c => !c.Indoors && c.Weather != "storm" && (c.Hour >= 7 && c.Hour < 21), Suits = t => 0.12f * T(t, Traits.Curiosity) + 0.06f * T(t, Traits.Risk) },
             new Doing { Id = "eat", Words = "goes for something to eat", Serves = N(0.9f), Effort = 0.1f, Risk = 0f, Proper = c => c.Place != "church" && (Meal(c.Hour) || c.Place == "saloon" || c.Place == "hotel" || c.Place == "home"), Suits = t => 0f },
             new Doing { Id = "rest", Words = "sits down to rest", Serves = N(0, 0.6f, 0.1f), Effort = 0f, Risk = 0f, Proper = c => c.Hour < 19 || c.Place == "home" || !c.InTown, Suits = t => -0.08f * T(t, Traits.Order) },   // of an evening in a town, rest is at home
-            new Doing { Id = "home", Words = "heads home", Serves = N(0.5f, 0.9f, 0.6f, 0, 0.5f, 0, 0, 0.1f), Effort = 0.15f, Risk = 0f, Proper = c => c.Place != "home" && c.InTown && (c.Hour >= 19 || c.Hour < 6 || (c.Worry == "fever" && c.WorryStage >= 1 && c.WorryStage < 3)), Suits = t => 0.1f * T(t, Traits.Order) - 0.06f * T(t, Traits.Sociability) },   // supper and bed; any hour for a parent with a child sick at home (FIVEDAY item 7)
+            new Doing { Id = "home", Words = "heads home", Serves = N(0.5f, 0.9f, 0.6f, 0, 0.5f, 0, 0, 0.1f), Effort = 0.15f, Risk = 0f, Proper = c => c.Place != "home" && c.InTown && (c.Hour >= 19 || c.Hour < 6 || (c.Worry == "fever" && c.WorryStage >= 1 && c.WorryStage < 3 && !(c.Recent != null && c.Recent.Within("home", c.Now, 720)))), Suits = t => 0.1f * T(t, Traits.Order) - 0.06f * T(t, Traits.Sociability) },   // supper and bed; any hour for a parent with a child sick at home (FIVEDAY item 7)
             new Doing { Id = "shelter", Words = "looks for a roof overhead", Serves = N(0, 0.1f, 1f), Effort = 0.1f, Risk = 0f, Proper = c => !c.Indoors && (c.Weather == "rain" || c.Weather == "storm" || c.Weather == "snow" || c.Weather == "dust"), Suits = t => 0.06f * T(t, Traits.Anxiety) },
             new Doing { Id = "work", Words = "gets on with the work", Serves = N(0, 0, 0, 0.9f, 0, 0, 0.2f, 0.2f), Effort = 0.35f, Risk = 0.02f, Proper = c => c.Weekday != 0 && c.Hour >= 7 && c.Hour < 18 && (c.Place != "church" && c.Place != "saloon" || c.WorkPlace != null && c.WorkPlace == c.Place), Suits = t => 0.15f * T(t, Traits.Order) + 0.05f * T(t, Traits.SelfControl) },
             new Doing { Id = "drink", Words = "has a drink", Serves = N(0, 0.1f, 0.1f, -0.1f, 0, 0.3f, 0, 0, 1f), Effort = 0.05f, Risk = 0.05f, Proper = c => (!c.Woman || c.SaloonGirl) && c.Place == "saloon" && !Sunday(c), Suits = t => -0.12f * T(t, Traits.SelfControl) - 0.1f * T(t, Traits.Piety) + 0.05f * T(t, Traits.Sociability) },
@@ -251,7 +260,7 @@ namespace EnrageWestworld.Core
                 s -= 0.1f;   // sore: less for company (a friend is still sought: greet stays)
             if (c.Plan != null)
                 s += PlanLean(c.Plan, d.Id);
-                s += WorryActs.Lean(c.Worry, c.WorryStage, d.Id);   // a worry bends the day (FIVEDAY item 7)
+            s += WorryActs.Lean(c.Worry, c.WorryStage, d.Id);   // a worry bends the day, for everyone who carries one (FIVEDAY item 7)
             if (c.Mood == "glad" && (d.Id == "talk" || d.Id == "stroll" || d.Id == "greet"))
                 s += 0.08f;
             s -= d.Effort * (n != null ? 0.3f + n[NeedState.Rest] : 0.3f);   // effort weighs more on the tired

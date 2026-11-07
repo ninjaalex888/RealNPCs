@@ -299,7 +299,8 @@ namespace EnrageWestworld.InGame
 
         private readonly Dictionary<string, int> _voiceAskedRecent = new Dictionary<string, int>();   // handle|line -> when asked (TickCount)
         private const int VoiceEncounterGapMs = 5000;   // one encounter line cloned every 5 s at most, on top of the server's own queue (VoiceMostJobs)
-        private int _voiceEncounterAt = int.MinValue / 2, _voiceEncounterAsked, _voiceEncounterSpaced;
+        private int _voiceEncounterAt, _voiceEncounterAsked, _voiceEncounterSpaced;
+        private bool _voiceEncounterEver;   // none voiced yet this session (TickCount wraps: no int.MinValue start; the review of Part 2)
 
         /// Feed's hook (FIVEDAY item 8): a line an encounter, a walk-up or a scene's beat queued for someone near, when it shows:
         /// said in their own voice by the voice server with [Mind] VoicedEncounters and VoicedDialogue on, at most once in 5 s
@@ -309,7 +310,7 @@ namespace EnrageWestworld.InGame
             if (_cfg == null || !_cfg.VoicedEncounters || !_cfg.VoicedDialogue || !_voiceReady)
                 return false;
             int now = Environment.TickCount;
-            if (now - _voiceEncounterAt < VoiceEncounterGapMs)
+            if (_voiceEncounterEver && now - _voiceEncounterAt < VoiceEncounterGapMs)
             {
                 _voiceEncounterSpaced++;
                 return false;
@@ -318,8 +319,29 @@ namespace EnrageWestworld.InGame
             if (j == null)
                 return false;
             _voiceEncounterAt = now;
+            _voiceEncounterEver = true;
             _voiceEncounterAsked++;
+            _voiceEncounterJob[ped] = j;
             return true;
+        }
+
+        private readonly Dictionary<int, VoiceJob> _voiceEncounterJob = new Dictionary<int, VoiceJob>();
+
+        /// Feed's second hook (the review of Part 2): how a cloned line's voice is going: 1 playing or done, 0 still being
+        /// made, -1 failed or dropped (Feed then falls back to the recorded remark).
+        private int VoiceEncounterState(int ped)
+        {
+            VoiceJob j;
+            if (!_voiceEncounterJob.TryGetValue(ped, out j) || j == null)
+                return -1;
+            if (j.Played || j.PlayedAt != 0)
+                return 1;
+            if (j.Over)
+            {
+                _voiceEncounterJob.Remove(ped);
+                return -1;
+            }
+            return 0;
         }
 
         private bool VoiceMayAsk(int h, out string why)

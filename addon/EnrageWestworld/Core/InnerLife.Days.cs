@@ -202,8 +202,7 @@ namespace EnrageWestworld.Core
                 "Hauled water for the garden all afternoon. Sky's clear as glass and twice as useless.",
                 "Thursday night and the saloon's half full. Folks pacing themselves for Saturday.", };
 
-        // midweek: the three days' lines in one pool, so a whole town doesn't share four lines on a Tuesday
-        private static readonly string[] Midweek = Tuesday.Concat(Wednesday).Concat(Thursday).ToArray();
+        // midweek: each day its own pool again since FIVEDAY item 9 (sixteen lines each, several naming their day; the review)
 
         private static readonly string[] Friday = { "Rent's due tomorrow. Counting it again doesn't make it more.", "Friday. Wages tonight, if the foreman's sober. Rent tomorrow, whether or not.", "End of the week and the jar's lighter than the week was long.",
             "Friday, and every man in town walking an inch taller.", "Fish on Friday for the Catholics. Beans for the rest of us.", "Foreman's late with the pay. Every man on the job watching the road.", "Last day of the week. My back feels every one of them.",
@@ -244,7 +243,7 @@ namespace EnrageWestworld.Core
         {
             string[] need = hour >= 5 && hour < 8 ? Breakfast : hour >= 11 && hour < 14 ? Midday : hour >= 17 && hour < 20 ? Supper
                           : hour >= 21 ? LateNight : hour < 4 ? SmallHours : null;
-            string[] day = hour < 7 || hour >= 21 ? null : weekday == 0 ? Sunday : weekday == 1 ? Monday : weekday >= 2 && weekday <= 4 ? Midweek : weekday == 5 ? Friday : weekday == 6 ? Saturday : null;
+            string[] day = hour < 7 || hour >= 21 ? null : weekday == 0 ? Sunday : weekday == 1 ? Monday : weekday == 2 ? Tuesday : weekday == 3 ? Wednesday : weekday == 4 ? Thursday : weekday == 5 ? Friday : weekday == 6 ? Saturday : null;
             if (need != null && day != null)
                 return Voice.Chance(seed + "wd", 50) ? need : day;
             return need ?? day;
@@ -259,7 +258,7 @@ namespace EnrageWestworld.Core
             "Men selling their farms to chase gold in the Klondike. Gold or frostbite. Mostly frostbite.",
             "Fella rode a bicycle down the street in {town}. Horses lost their minds. So did I.",
             "War in the Philippines now. Never heard of the place a year ago. Now it's in the paper every day.",
-            "Boers fighting the British down in Africa now. Paper calls it a war of farmers. Good luck to the farmers.", "Everybody's buying a bicycle back East. Can't sit a horse, so they sit a wheel.", "McKinley's face in the paper again. Looks like a man who's never been hungry.", "Doctor in Saint Denis has a machine that sees your bones. Wouldn't let him look at mine.", "Old soldier at the store still fighting the war between the states. Over the cracker box, mostly.", 
+            "Talk of the Boers and the British coming to blows down in Africa. Good luck to the farmers.", "Everybody's buying a bicycle back East. Can't sit a horse, so they sit a wheel.", "McKinley's face in the paper again. Looks like a man who's never been hungry.", "Doctor in Saint Denis has a machine that sees your bones. Wouldn't let him look at mine.", "Old soldier at the store still fighting the war between the states. Over the cracker box, mostly.", 
             "Railroad's coming everywhere. Soon a man won't be able to get lost if he tries.", "Heard a phonograph at the hall. A dead man singing out of a horn. Gave me a turn."
         };
 

@@ -258,11 +258,11 @@ namespace EnrageWestworld.Core
             new[] { "0|angry|face|You turned the ditch onto your side again, {b}.", "1|||My corn's thirsty too.", "0|angry||Then let it go thirsty on its own side!", "1|stare||Say that at the water meeting.", "0|angry|walkaway|I will, and louder." },
             new[] { "0|mild|face|I'd like my saw back, {b}.", "1|||What saw?", "0|angry||The one in your barn with my mark burned on the handle.", "1|mild||...I meant to bring it Sunday.", "0|angry||Two Sundays have come and gone.", "1|||walkaway:" },
             new[] { "0|angry|face|You moved that piece when I looked away.", "1|||I did no such thing.", "0|||Eleven years I've played you. I know your cheating face.", "1|stare||Then why do you keep sitting down with me?", "0|mild|walkaway|...Nobody else will." },
-            new[] { "0|angry|face|Your horse bit mine at the rail, {b}.", "1|||Your horse looked at him wrong.", "0|||A horse can't look wrong at another horse.", "1|no||Ask mine.", "0|angry|walkaway|You're an impossible man." },
+            new[] { "0|angry|face|Your horse bit mine at the rail, {b}.", "1|||Your horse looked at him wrong.", "0|||A horse can't look wrong at another horse.", "1|no||Ask mine.", "0|angry|walkaway|There's no talking to you." },
             new[] { "0|angry|face|You weighed me two pounds and gave me one.", "1|||The scale says two.", "0|angry||Then your scale lies like its owner.", "1|threat||Take your trade elsewhere.", "0|angry|walkaway|There is no elsewhere! That's the whole trouble!" },
             new[] { "0|angry|face|Did you tell the church I'd been drinking?", "1|||I told one person.", "0|angry||In this town one person is the church!", "1|no||Then don't drink.", "0|angry|walkaway|Of all the..." },
             new[] { "0|angry|face|Your hogs were in my potatoes again.", "1|||Fence is yours to mend.", "0|angry||It stood fine till your hogs leaned on it!", "1|no||Hogs lean. It's their nature.", "0|threat|walkaway|Then it's their nature to end up bacon." },
-            new[] { "0|angry|face|You voted that fool in for sheriff.", "1|||Better a fool than a thief.", "0|angry||He's my cousin!", "1|stare||I know. That's why I said thief.", "0|angry||walkaway:" },
+            new[] { "0|angry|face|Your people put that fool in for sheriff.", "1|||Better a fool than a thief.", "0|angry||He's my cousin!", "1|stare||I know. That's why I said thief.", "0|angry||walkaway:" },
             new[] { "0|mild|face|Your fiddle kept the whole street up, {b}.", "1|||That was music.", "0|||That was a cat in a flour sack.", "1|no||You've no ear, that's your trouble.", "0|angry|walkaway|I've two, and they're both sore." },
             new[] { "0|angry|face|You took my good sheet off the line.", "1|||It's mine.", "0|angry||Mine has the blue thread in the corner!", "1|mild||...So it has.", "0|mild|walkaway|Bring it round tonight, then." },
             new[] { "0|angry|face|My father fought at Shiloh while yours sat home.", "1|||My father had one leg.", "0|||He had it before the war and after.", "1|threat||Leave my father out of it.", "0|mild|walkaway|...Fine. Fine." },
@@ -283,7 +283,7 @@ namespace EnrageWestworld.Core
             // had the same argument heard again in a third of an hour's scenes). Each beat is who|voice|act|line; a "walkaway:"
             // beat with no words is the one walking off.
             string[] script = Arguments[(Voice.Hash(seed) & 0x7fffffff) % Arguments.Length];
-            string spouse = c.BWoman || c.AWoman ? "husband" : "wife", spouseObj = c.AWoman ? "him" : "her";
+            string spouse = c.AWoman ? "husband" : "wife", spouseObj = c.AWoman ? "him" : "her";   // the speaker's own spouse (the review of Part 2)
             foreach (string beat in script)
             {
                 string[] p = beat.Split(new[] { '|' }, 4);
@@ -403,8 +403,8 @@ namespace EnrageWestworld.Core
             new[] { "There you are, {b}. I've looked all over town.", "I was coming to see you.", "Sure you were. {amount} dollars.", "Here's five. It's what I have." },
             new[] { "{b}. The note's come due.", "Harvest's late. Everybody's is.", "The note don't care about harvests. {amount} dollars.", "Five. I can manage five." },
             new[] { "Don't walk off, {b}. We've business.", "Not here. Not in the street.", "Here suits me fine. {amount} dollars.", "Five's all I carry. Here." },
-            new[] { "Morning, {b}. Recall what day it is?", "Is it Thursday already?", "{amount} dollars' worth of Thursday.", "Five. That's all there is in the house." },
-            new[] { "{b}, I've been a patient man. That's over.", "Give me one more week.", "I gave you four. {amount} dollars.", "I'll give you five now. Every cent I've got." },
+            new[] { "{b}. You know what day this is.", "Payday? Already?", "{amount} dollars' worth of payday.", "Five. That's all there is in the house." },
+            new[] { "{b}, I've been patient. That's over.", "Give me one more week.", "I gave you four. {amount} dollars.", "I'll give you five now. Every cent I've got." },
         };
 
         private static readonly string[][] DebtEndings =
