@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **Stress that builds, to a breaking point** (`[Mind] StressBuilds`, on; settings version 269; FIVEDAY item 17). Until now strain lasted a day: someone snapped only when two troubles landed at once. Now a week's troubles add up, person by person: a friend's death, a death seen, a beating, a theft, quarrels, and a worry that's deepening or at its worst. Past their breaking point, which comes lower for the anxious and higher for the steady, a person breaks in a way that fits them, and the habit stays a week:
+  - drinks the nights away;
+  - prays at the church;
+  - keeps going back to the grave;
+  - takes it out on those at home (a married man with a temper; the domestic dispute picks him first, and he snaps at whoever's near);
+  - takes the train the next day.
+
+  Each way has its own thoughts. The same person breaks at most once in three weeks.
+
 - **The notice board** (`[World] NoticeBoard`, on; settings version 268; FIVEDAY item 16). Until now each of a town's days was posted on its own as it came: a toast for a dance, a clipping for an election or the show's bill. Now they're gathered on one board. The reader has a new page, "Notice board", listing what's coming in the next seven days, the town you're in first and then each town by day: dances, elections, the circuit judge and hangings, the Wild West show, prize fights, announced weddings, enRAGE's funerals, and the town's Saturday wages and Sunday service. And when you come into a town that has something posted, the Around town box says so, once a town a day. Shivarees are left off, since they come as a surprise.
 
 - **Pinkertons asking** (`[Encounters] Pinkertons`, on; settings version 267; FIVEDAY item 15, from roadmap.md's idea bank: "a man in a bowler asks regulars about the player"). By day in a town where a violent deed of yours is known from the past week, now and then (a town's day in four, at most once a town in five days) a man in a city suit walks in from out of view and asks two or three of the town's people near you after "a man of your description". Your friends lie for you, those afraid of you tell him, the law-minded tell him too, the rest shrug. He thanks the last and walks off. Afterwards a friend who comes over warns you that he was asking, and names whoever talked. A Testing row sends one now.

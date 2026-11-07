@@ -922,6 +922,7 @@ namespace EnrageWestworld.Core
                 DebtTick(now);
             GoalTick(now);
             EventsDaily(now);   // the dances posted on Thursdays (Engine.Events.cs)
+            StressDaily(now);       // the week's load: who breaks today, and how (Engine.Stress.cs; FIVEDAY item 17), before the leavers
             DeparturesDaily(now);   // who leaves on the train today, and yesterday's leavers gone (Engine.Trains.cs)
             LedgersDaily(now);   // the towns' ledgers read, the month's mention (Engine.Ledgers.cs)
             GhostsDaily(now);   // the ghosts of a week ago gone; the waking's talk of the reload ends (Engine.Ghosts.cs)

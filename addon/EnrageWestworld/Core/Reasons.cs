@@ -32,6 +32,7 @@ namespace EnrageWestworld.Core
         public Func<string, bool> HeardOf;   // whether word of this death (by the dead one's id) has reached them; null: not asked
         public bool Known;        // known lately for a face in the bar or a hand in a coat
         public bool Bent;         // of the criminal class: a theft to their name this month (Core/Criminals.cs; SIXDAY item 16), set by the game side
+        public string Broke;      // a breakdown's habit this week (Core/StressLoad.cs; FIVEDAY item 17): "temper" snaps as if strained twice over
         public string Shamed;     // slighted, had words or beaten in the last four hours and not answered it ("slighted", "had words", "beaten"), else null (NIGHT3: displaced aggression)
     }
 
@@ -280,6 +281,12 @@ namespace EnrageWestworld.Core
                 (y.Temper == "Coward" || Voice.Chance(x.Id + y.Id + gameDay + "strain", StrainChance)))
             {
                 List<string> strains = Strains(x, gameDay);
+                if (x.Broke == StressLoad.Temper)
+                {
+                    strains.Add("a week too heavy to carry");   // broken by the week's load, the temper way: as strained as two troubles at once (FIVEDAY item 17)
+                    if (strains.Count < 2)
+                        strains.Add("no patience left");
+                }
                 if (strains.Count >= 2)
                 {
                     int bump = 4 * (strains.Count - 1);

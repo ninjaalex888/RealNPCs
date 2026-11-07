@@ -100,7 +100,29 @@ namespace EnrageWestworld.InGame
             return knows ? Person.FirstOf(o.Name) : null;
         }
 
-        private int _worryActThoughts;
+        private int _worryActThoughts, _stressThoughts;
+        private readonly HashSet<string> _stressToldBreak = new HashSet<string>();   // id|day: the breakdown's own thought said once (this session)
+
+        /// Broken by the week's load (Core/StressLoad.cs; FIVEDAY item 17): the breakdown's own thought first, once, then when the
+        /// act is the habit's, its thought seven times in ten; null otherwise.
+        private string StressActThought(MindWho w, string act)
+        {
+            if (w == null || w.Id == null)
+                return null;
+            long day = _store.LastGameMin / 1440;
+            string way = _engine.BrokenWay(w.Id, day);
+            if (way == null)
+                return null;
+            string seed = w.Id + "|" + act + "|" + _store.LastGameMin / 60;
+            string line = null;
+            if (_stressToldBreak.Add(w.Id + "|" + day))
+                line = StressLoad.BreakThought(way, seed);
+            else if (StressLoad.Lean(way, act) > 0f && Voice.Chance(seed + "|stressact", 70))
+                line = StressLoad.ActThought(way, act, seed);
+            if (line != null)
+                _stressThoughts++;
+            return line;
+        }
 
         /// When the act is one their worry leans to, its own thought (Core/WorryActs.cs; FIVEDAY item 7), seven times in ten, the
         /// worry's {who} filled in; null otherwise (the act's own thought, as before).
@@ -156,7 +178,7 @@ namespace EnrageWestworld.InGame
                     return;
                 }
                 string who = ActThoughts.SlotOf(a.Kind) == "{who}" ? ActWhoOf(w, a.About) : null;
-                string line = WorryActThought(w, a.Kind) ?? _engine.ActThought(w.P, a.Kind, why0 ?? w.ChoiceWhy, who, w.Id + "|" + a.Kind + "|" + _store.LastGameMin / 60);   // a worry's own thought first (FIVEDAY item 7)
+                string line = StressActThought(w, a.Kind) ?? WorryActThought(w, a.Kind) ?? _engine.ActThought(w.P, a.Kind, why0 ?? w.ChoiceWhy, who, w.Id + "|" + a.Kind + "|" + _store.LastGameMin / 60);   // a worry's own thought first (FIVEDAY item 7)
                 if (line == null)
                 {
                     ActThoughtHeld("nothing left for them today");

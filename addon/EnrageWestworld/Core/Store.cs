@@ -30,6 +30,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, Reverie> Reveries = new Dictionary<string, Reverie>();
         [DataMember(EmitDefaultValue = false)] public List<Avenger> Avengers = new List<Avenger>();
         [DataMember(EmitDefaultValue = false)] public List<Wedding> Weddings = new List<Wedding>();
+        [DataMember(EmitDefaultValue = false)] public List<Breakdown> Breakdowns = new List<Breakdown>();   // who broke under the week's load, and how (Core/StressLoad.cs; FIVEDAY item 17)
         [DataMember(EmitDefaultValue = false)] public List<Transfer> Transfers = new List<Transfer>();
         [DataMember(EmitDefaultValue = false)] public List<Debt> Debts = new List<Debt>();
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, int> Counts = new Dictionary<string, int>();
@@ -295,6 +296,7 @@ namespace EnrageWestworld.Core
                     }
             }
             n += Fallen.RemoveAll(f => f.At > cut);
+            n += Breakdowns.RemoveAll(b => b.Day * 1440 > cut);   // a breakdown after the cut hasn't happened (FIVEDAY item 17)
             foreach (string id in Reveries.Where(kv => kv.Value.DiedAt > cut).Select(kv => kv.Key).ToList())
             {
                 Reveries.Remove(id);
@@ -610,6 +612,7 @@ namespace EnrageWestworld.Core
             if (Avengers == null) Avengers = new List<Avenger>();
             if (Replies == null) Replies = new List<Reply>();
             if (Events == null) Events = new List<TownEvent>();
+            if (Breakdowns == null) Breakdowns = new List<Breakdown>();
             if (TownLedgers == null) TownLedgers = new Dictionary<string, TownLedger>();
             if (KinGrudges == null) KinGrudges = new List<KinGrudge>();
             KinGrudges.RemoveAll(k => k == null || (k.Done && LastGameMin - k.DoneAt > 30 * 1440L));   // the done ones kept a month (the review of item 14)

@@ -99,6 +99,8 @@ namespace EnrageWestworld.InGame
                             w = pool[j];
                     }
                     float score = d - (w != null ? 20f : 0f);
+                    if (_engine.BrokenWay(m.Who.Id, Bridge.Now() / 1440) == StressLoad.Temper)
+                        score -= 25f;   // broken by the week's load, the temper way: he's the one it comes out of (FIVEDAY item 17)
                     if (score - DomInViewMetres >= best)
                         continue;
                     if (NodInView(me, m.Ped))

@@ -1084,6 +1084,25 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Stress that builds (FIVEDAY item 17, 2026-11-06; `[Mind] StressBuilds`; settings version 269)
+
+Core/StressLoad.cs:
+- `Load(mind, now, worryStage, out parts)` counts the week's `PersonState.Mind` memories, using `Math.Max(At, DueAt)` so a death only counts once word has reached them. Weights: death friend 40 (at most 2); death seen 25; blows with Role done 20 (at most 2); theft with Role done 15; a quarrel or slight with Role done 8 (at most 3). It adds the worry calendar for each of the last 7 days: deepening 3, at its worst 6, gone wrong 10.
+- `BreakingPoint(traits)` is 70 - 12 anxiety - 4 anger + 8 self-control + 4 order, clamped to 40-110.
+- `Way(traits, person, grieving, married, canLeave, seed)` is a weighted pick. Drink falls with self-control and is lower for women. Pray goes by piety and devotion. Grave only when grieving. Temper only for a married man, by anger. Train only when free to leave.
+- Also `Lean(way, act)`, the break and act thoughts, and `Lasting` (7 days).
+
+Core/Engine.Stress.cs:
+- `StressDaily` runs in DailyTick before DeparturesDaily. It covers every resident alive in a town with a PersonState, none who broke in the last 21 days, and appends a `Breakdown` to `Store.Breakdowns` (cap 300; a rewind drops those after the cut).
+- `BrokenWay(id, day)` is read by the game side:
+  - `ChoiceContext.Coping` and Choosing's lean;
+  - `StressActThought` before the worry's, with the break thought once a day a session, then the habit's at 70%;
+  - `Someone.Broke`: "temper" counts as two strains in the snap rule;
+  - the domestic dispute's man search scores him 25 m nearer.
+- `LeavesBroken`: the train the day after (LeavesOn's why "couldn't bear the town any longer").
+
+F7 `TEST stress:`. mindtest `StressLoadTest` (`stress`). Offline, a town of 2,000 in a week: 1.7% break (drink 15, pray 11, grave 5, temper 3, of 34). Before: nobody, and only 0.1% had two troubles the same day to snap with. Not built: the graveside kneel at a real grave (item 26 brings graves); a breakdown for people the store has no mind for.
+
 ## The notice board (FIVEDAY item 16, 2026-11-06; `[World] NoticeBoard`; settings version 268)
 
 Core/NoticeBoard.cs has three entry points. `Gather(store, now, weekday, towns, extra)` collects the posted events from `Store.Events` (`Posted`, not `Done`, never `Shivaree.Kind`, ending after now and starting within 7 days) and the weddings with `Announced` (not `Done`). It adds `extra`, the game side's enRAGE funerals from `_bridge.Plans()` with Kind funeral, placed in a town by `Places.TownAt(p.Pos)`. When the weekday is known it also adds the standing days for the given towns: Saturday wages at `Payday.FromHour` and Sunday service at 10. `Body` builds the reader page: the town you're in first, a town with only standing days left off unless you're in it, and each day's notices in one sentence. `Box` gives the Around town item for a town, without the standing days, or null. Game/WestworldScript.NoticeBoard.cs: `NoticeBoardPaper` adds the reader page before "Who's who" in Core04's reader open; it is made each time and never kept in the store. `NoticeBoardStep` runs every 5 s; on a change of town it pushes the box item once a town a game day (`NewsPush` "The board in <town>"). F7 `TEST notices:`. mindtest `NoticeBoardTest` (`board`). Not built: sale day (item 30, which will add itself here) and posting the board onto enRAGE's papers.

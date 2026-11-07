@@ -19,6 +19,8 @@ namespace EnrageWestworld.Core
         {
             if (r == null || r.Id == null || r.Dead || r.Fled || r.Left || r.Held != null || r.PostId != null || r.Town == null || day < 0)
                 return null;   // (a counter keeper keeps his counter: the post's own records are not ours to send west; the review of item 14)
+            if (LeavesBroken(r, day))
+                return StressLoad.TrainWhy;   // broken by the week's load, they take the train the day after (FIVEDAY item 17)
             Person p = PersonOfResident(r);
             if (p == null)
                 return null;
