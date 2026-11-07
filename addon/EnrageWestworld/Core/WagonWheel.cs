@@ -186,6 +186,47 @@ namespace EnrageWestworld.Core
                 "Fine. Ride on. But tell " + t + " I'm out here, before dark if you can.");
         }
 
+        // ---- someone else pulls up (FIVEDAY item 32d; README 32; [Encounters] WagonOthersStop) ------------------------------
+        // A passer-by on the road stops for the wagon when you haven't: twenty-five seconds after the driver is down beside it
+        // and you've not put your shoulder to it, or once you've ridden on. Six wagons in ten get one; the rest wait on you
+        // or the smith.
+        //
+        // Why it reads true: on an empty road the bystander effect runs backwards. With nobody else to leave it to, the one
+        // who passes feels the whole of the duty, and most stop. One who rode past first makes the next more likely to stop
+        // and to say so, because a norm broken in sight is a norm made plain.
+        public const int OtherAfterMs = 25000;     // after the driver is down and you've not helped
+        public const int OtherChance = 60;         // percent of wagons someone else stops for
+        public const float OtherFrom = 25f, OtherTo = 90f;   // how far off the passer-by is when he turns aside
+        public const float OtherThere = 4.5f;      // at the wagon
+        public const int OtherWalkMs = 45000;      // he gives it up if he's not there in this long
+
+        public static bool OtherStops(string seed) { return Voice.Chance(seed + "|other", OtherChance); }
+
+        /// The passer-by's offer as he comes up; with you having ridden past, he says so.
+        public static string OtherOffer(bool youRodePast, string seed)
+        {
+            return youRodePast
+                ? Voice.Pick(seed + "|op", "Saw a fellow ride right by you. Well, I'm not him. Where do you want me?", "That rider never even slowed. Here, let me get under it.")
+                : Voice.Pick(seed + "|oo", "Wheel off? I'll take the weight. Say when.", "Hold up, I'm coming. Seen enough wagons in the ditch to know how this goes.", "Need another back? I've got one, and it's not doing anything.");
+        }
+
+        /// The driver's answer to the one who stopped.
+        public static string DriverToOther(string seed)
+        {
+            return Voice.Pick(seed + "|od", "Bless you. Take the corner there, and lift when I say.", "Thank God. Get your shoulder under the bed, there.", "You're a Christian. Right, on three.");
+        }
+
+        /// The thought of one who stopped, after.
+        public static string OtherAfter(bool youRodePast, string seed)
+        {
+            return youRodePast
+                ? Voice.Pick(seed + "|oa", "Some men ride by. I was raised not to.", "Whoever that rider was, I hope his own wheel holds.")
+                : Voice.Pick(seed + "|ob", "Late now, but the man's on his way. That's worth an hour.", "Wheel's on. Hands are filthy. I feel better than I did this morning.");
+        }
+
+        /// The end's word when a passer-by set it (for the log and F7).
+        public static string OtherSetIt(string otherName) { return (otherName ?? "a passer-by") + " stopped and set it with him"; }
+
         /// The thought of one who rode past.
         public static string PassedBy(string seed)
         {
@@ -205,6 +246,9 @@ namespace EnrageWestworld.Core
                 yield return PassedBy("s" + i);
                 yield return LiftWords("s" + i);
                 yield return WordSent("Valentine", "s" + i);
+                yield return OtherOffer(i % 2 == 0, "s" + i);
+                yield return DriverToOther("s" + i);
+                yield return OtherAfter(i % 2 == 0, "s" + i);
             }
         }
     }

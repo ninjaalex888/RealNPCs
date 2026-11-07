@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 286;
+        public const int CurrentVersion = 287;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -202,6 +202,7 @@ namespace EnrageWestworld.Core
         public int StalkerChance = 35;         // 20 until settings version 161: about once in 45 minutes of play, was about once in three hours
         public int StalkerNearbyMetres = 60;
         public bool StalkerStrangers = true;
+        public bool WagonOthersStop = true;   // [Encounters] with WagonWheel: someone else on the road may pull up for the wagon when you haven't helped, and set the wheel with the driver (FIVEDAY item 32d, settings version 287)
         public bool StalkerRides = true;      // [Stalkers] a mounted stalker stays in the saddle to follow, come in close and ride off; checked, and down on foot if the horse doesn't go (Core/StalkerRide.cs; FIVEDAY item 32c, settings version 286)
         public int StalkerHorse = 35;          // percent of stalkers who appear on horseback and sit the horse watching; they get down to move (SIXDAY item 19; settings version 235)
         public bool RevenantsAtCamp = true;    // with West World: someone you killed, due back (or due within two days), comes to the edge of your firelight when you sit at a fire of a night out of the towns (SIXDAY item 19)
@@ -909,6 +910,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 287)
+                    log?.Invoke("Settings: new in this version: [Encounters] WagonOthersStop (on): someone else may stop for the broken wagon.");
                 if (s.SettingsVersion < 286)
                     log?.Invoke("Settings: new in this version: [Stalkers] StalkerRides (on): a stalker on horseback rides, follows, comes in close and rides off.");
                 if (s.SettingsVersion < 285)
@@ -1623,6 +1626,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Travellers = " + B(Travellers) + "   ; by day on the roads, a man on foot waves you down and asks the way to the nearest town; greet him, or stop a moment, and he finds his way");
             b.AppendLine("TravellerChance = " + TravellerChance + "   ; percent on each roll, seven in the morning to seven at night, once a day at most");
             b.AppendLine("WagonWheel = " + B(WagonWheel) + "   ; by day on the roads (06:00-20:00), once a day: a wagon ahead of you, out of view, loses a wheel and stops, the driver down beside it; within 25 m he calls to you. On foot within 3 m of the wagon for three seconds you set the wheel with him (his thanks, his liking for you up, and he drives on); ride past and once you're 40 m gone he calls after you to send word: reach any town within thirty game minutes and it's sent. Nothing is spawned: the wagon is the game's own, handed back");
+            b.AppendLine("WagonOthersStop = " + B(WagonOthersStop) + "   ; with WagonWheel on: twenty-five seconds after the driver is down beside his wagon with no help from you, or once you ride on, six wagons in ten get a passer-by who turns aside, offers a hand and sets the wheel with him (he says so if you rode past)");
             b.AppendLine("WagonWheelChance = " + WagonWheelChance + "   ; percent on each encounter roll (0 to 100)");
             b.AppendLine("Pinkertons = " + B(Pinkertons) + "   ; by day in a town where a violent deed of yours is known from the past week, now and then (at most once a town in five days) a man from the Pinkerton agency walks in and asks two or three of its people after you: your friends lie for you, those afraid of you tell him, the rest shrug; a friend comes over later to warn you and says who talked");
             b.AppendLine("Campfires = " + B(Campfires) + "   ; at night in the wilds, two or three men round a fire off the road call you over for coffee and a tale; now and then a traveller walks in from the dark");

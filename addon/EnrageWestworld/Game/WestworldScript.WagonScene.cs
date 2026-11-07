@@ -28,10 +28,13 @@ namespace EnrageWestworld.InGame
             public Vector3 At;
             public string DriverName, DriverId, Town, Seed;
             public bool Called, Test, Helped, Word, Ours;   // Ours: the driver's events are ours (blocked) until the end
+            public int Other, OtherAt, DownAt;              // a passer-by who stops (FIVEDAY item 32d): his handle, when he turned aside; when the driver got down
+            public bool OtherTried, OtherSet, RodePast;      // looked for one already; he set it; you rode on first
+            public string OtherName;
         }
 
         private WagonSceneRun _wagonScene;
-        private int _wagonScenes, _wagonHelped, _wagonWords, _wagonPassed;
+        private int _wagonScenes, _wagonHelped, _wagonWords, _wagonPassed, _wagonOthers;
         private string _wagonSceneLast;
 
         private string WagonSceneNotNow(bool test = false)
@@ -156,6 +159,8 @@ namespace EnrageWestworld.InGame
             Vector3 at = ENTITY.GET_ENTITY_COORDS(r.Vehicle, true, true);
             float d = me.Position.DistanceTo(at);
             bool driverIn = PED.IS_PED_IN_VEHICLE(r.Driver, r.Vehicle, false);
+            if ((r.Phase == "down" || r.Phase == "passed") && _cfg.WagonOthersStop && WagonOtherStep(r, me, at, now))
+                return;   // someone else set it (FIVEDAY item 32d)
             switch (r.Phase)
             {
                 case "broken":
@@ -171,6 +176,7 @@ namespace EnrageWestworld.InGame
                         {
                             r.Phase = "down";
                             r.PhaseAt = now;
+                            r.DownAt = now;
                             r.At = at;
                             WagonDriverStand(r, now);
                             Log.Write("WAGON scene: the wagon stands and the driver is down beside it, " + (int)d + " m from you");
@@ -201,6 +207,8 @@ namespace EnrageWestworld.InGame
                             {
                                 r.Phase = "lifting";
                                 r.PhaseAt = now;
+                                if (r.Other != 0 && !r.OtherSet)
+                                    WagonOtherRelease(r, "you got there first");
                                 TASK.CLEAR_PED_TASKS(r.Driver, true, false);
                                 TASK.TASK_TURN_PED_TO_FACE_COORD(r.Driver, at.X, at.Y, at.Z, 3000);
                                 string lift = WagonWheel.LiftWords(r.Seed);
@@ -215,6 +223,7 @@ namespace EnrageWestworld.InGame
                         {
                             r.Phase = "passed";
                             r.PhaseAt = now;
+                            r.RodePast = true;
                             r.WordAskedAt = Bridge.Now();
                             string word = WagonWheel.DriverSendWord(r.Town, r.Seed);
                             SpeechCaption(WagonDriverLabel(r), word, r.Driver, 5000, true, true);
@@ -275,6 +284,112 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// Someone else pulls up (FIVEDAY item 32d; [Encounters] WagonOthersStop). Twenty-five seconds after the driver is down
+        /// with no help from you, or once you've ridden on: six wagons in ten, the nearest free grown man 25-90 m from the wagon,
+        /// not in a vehicle and nobody's (no mission, story or scene of ours), turns aside to it (the go-to-entity, on foot or
+        /// mounted). At the wagon: down off his horse if he's on one, his offer (he says so if you rode past), the driver's
+        /// answer, the lift and the mend, the driver's thanks, the helper's thought; then the mended phase takes the driver back
+        /// to the box. True when he set it (the step is done this tick). You putting your shoulder to it first sends him on.
+        private bool WagonOtherStep(WagonSceneRun r, Ped me, Vector3 at, int now)
+        {
+            if (r.Other == 0)
+            {
+                if (r.OtherTried || now - r.DownAt < WagonWheel.OtherAfterMs && !r.RodePast)
+                    return false;
+                r.OtherTried = true;
+                if (!r.Test && !WagonWheel.OtherStops(r.Seed))
+                {
+                    Log.Detail("WAGON scene: nobody else on the road stops for him");
+                    return false;
+                }
+                float best = WagonWheel.OtherTo;
+                Ped pick = null;
+                foreach (Ped p in Peds.All())
+                {
+                    int h = p.Handle;
+                    if (h == me.Handle || h == r.Driver || !p.Exists() || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h) || !IsGrownUp(p) || !PED.IS_PED_MALE(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false))
+                        continue;
+                    float d = p.Position.DistanceTo(at);
+                    if (d < WagonWheel.OtherFrom || d >= best || ENTITY.IS_ENTITY_A_MISSION_ENTITY(h) || Natives.StoryModel(p) || _director.Involves(h) || _staged.Contains(h) || !MayDirect(p) || NotFree(h))
+                        continue;
+                    pick = p;
+                    best = d;
+                }
+                if (pick == null)
+                {
+                    Log.Detail("WAGON scene: nobody free on the road to stop for him");
+                    return false;
+                }
+                r.Other = pick.Handle;
+                r.OtherAt = now;
+                MindWho ow;
+                r.OtherName = _mindWho.TryGetValue(r.Other, out ow) ? ow.Name : null;
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(r.Other, true);
+                TASK.CLEAR_PED_TASKS(r.Other, true, false);
+                TASK.TASK_GO_TO_ENTITY(r.Other, r.Vehicle, WagonWheel.OtherWalkMs, WagonWheel.OtherThere - 1f, 1.6f, 0f, 0);
+                Log.Write("WAGON scene: " + (r.OtherName ?? "a passer-by") + " " + (int)best + " m off turns aside to the wagon" + (PED.IS_PED_ON_MOUNT(r.Other) ? " on horseback" : "") + (r.RodePast ? " (you rode on)" : ""));
+                return false;
+            }
+            if (!ENTITY.DOES_ENTITY_EXIST(r.Other) || ENTITY.IS_ENTITY_DEAD(r.Other) || now - r.OtherAt > WagonWheel.OtherWalkMs + 15000)
+            {
+                WagonOtherRelease(r, "he never got there");
+                return false;
+            }
+            Vector3 oa = ENTITY.GET_ENTITY_COORDS(r.Other, true, true);
+            if (r.OtherSet || oa.DistanceTo(at) > WagonWheel.OtherThere + 1.5f)
+                return false;
+            if (PED.IS_PED_ON_MOUNT(r.Other))
+            {
+                if (now - r.OtherAt > 4000)
+                {
+                    Function.Call(0x48E92D3DDE23C23A, r.Other, 0, 0, 0, 0, 0);   // down off his horse (the stalker's dismount, by hash)
+                    r.OtherAt = now - WagonWheel.OtherWalkMs + 8000;   // a few seconds more to get down
+                }
+                return false;
+            }
+            // there, on foot: the offer, the answer, the lift (six seconds: the mended phase does the rest)
+            r.OtherSet = true;
+            string label = r.OtherName != null ? Person.FirstOf(r.OtherName) : "A passer-by";
+            TASK.TASK_TURN_PED_TO_FACE_COORD(r.Other, at.X, at.Y, at.Z, 3000);
+            SpeechCaption(label, WagonWheel.OtherOffer(r.RodePast, r.Seed), r.Other, 4000);
+            SpeechCaption(WagonDriverLabel(r), WagonWheel.DriverToOther(r.Seed), r.Driver, 3500, false, true);
+            VEHICLE.SET_VEHICLE_FIXED(r.Vehicle);
+            SpeechCaption(WagonDriverLabel(r), WagonWheel.DriverThanks(r.Seed + "|o"), r.Driver, 4500, false, true);
+            _ticker.Push(label + ", thinking", WagonWheel.OtherAfter(r.RodePast, r.Seed), "near", r.Other);
+            _wagonOthers++;
+            Log.Write("WAGON scene: " + WagonWheel.OtherSetIt(r.OtherName));
+            r.Phase = "mended";
+            r.PhaseAt = now;
+            WagonOtherRelease(r, null);
+            return true;
+        }
+
+        /// Lets the passer-by go again (his events and tasks his own once more); `why` in the log if he never helped.
+        private void WagonOtherRelease(WagonSceneRun r, string why)
+        {
+            int h = r.Other;
+            if (h == 0)
+                return;
+            if (!r.OtherSet)
+                r.Other = 0;
+            try
+            {
+                if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h))
+                {
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+                    if (!r.OtherSet)
+                        TASK.CLEAR_PED_TASKS(h, true, false);
+                    else
+                        TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // on his way again
+                }
+            }
+            catch
+            {
+            }
+            if (why != null)
+                Log.Detail("WAGON scene: the passer-by gave it up (" + why + ")");
+        }
+
         /// The driver kept beside his wagon while it stands (the game's own would wander): his events ours, a stand-still.
         private void WagonDriverStand(WagonSceneRun r, int now)
         {
@@ -301,6 +416,8 @@ namespace EnrageWestworld.InGame
         private void WagonSceneEnd(WagonSceneRun r, string why, bool mended)
         {
             _wagonScene = null;
+            if (r.Other != 0 && !r.OtherSet)
+                WagonOtherRelease(r, why);
             try
             {
                 if (ENTITY.DOES_ENTITY_EXIST(r.Driver) && !ENTITY.IS_ENTITY_DEAD(r.Driver))
@@ -313,18 +430,21 @@ namespace EnrageWestworld.InGame
                 }
                 if (mended && ENTITY.DOES_ENTITY_EXIST(r.Vehicle))
                     VEHICLE.SET_VEHICLE_FIXED(r.Vehicle);
+                // set by a passer-by while you were far off: the scene ends at once, so the driver is sent back to the box here (FIVEDAY item 32d)
+                if (r.OtherSet && ENTITY.DOES_ENTITY_EXIST(r.Vehicle) && ENTITY.DOES_ENTITY_EXIST(r.Driver) && !ENTITY.IS_ENTITY_DEAD(r.Driver) && !PED.IS_PED_IN_VEHICLE(r.Driver, r.Vehicle, false))
+                    TASK.TASK_ENTER_VEHICLE(r.Driver, r.Vehicle, 20000, -1, 1f, 1, 0);
             }
             catch
             {
             }
-            _wagonSceneLast = (r.Helped ? "you set the wheel" : r.Word ? "you sent word" : r.Called ? "you rode on" : "nobody came") + " (" + why + ")";
+            _wagonSceneLast = (r.Helped ? "you set the wheel" : r.OtherSet ? WagonWheel.OtherSetIt(r.OtherName) : r.Word ? "you sent word" : r.Called ? "you rode on" : "nobody came") + " (" + why + ")";
             Log.Write("WAGON scene over: " + _wagonSceneLast + " after " + (Game.GameTime - r.StartedAt) / 1000 + " s");
         }
 
         private string WagonSceneStatus()
         {
             return (_cfg.WagonWheel ? "on (" + _cfg.WagonWheelChance + "% a roll)" : "off ([Encounters] WagonWheel)") + "; this session " + _wagonScenes + " wagons lost a wheel, " + _wagonHelped + " set by you, " +
-                   _wagonWords + " word sent, " + _wagonPassed + " ridden past" + (_wagonScene != null ? "; one standing now (" + _wagonScene.Phase + ")" : "") + (_wagonSceneLast != null ? "; last: " + _wagonSceneLast : "");
+                   _wagonWords + " word sent, " + _wagonPassed + " ridden past, " + _wagonOthers + " set by a passer-by" + (_wagonScene != null ? "; one standing now (" + _wagonScene.Phase + ")" : "") + (_wagonSceneLast != null ? "; last: " + _wagonSceneLast : "");
         }
     }
 }

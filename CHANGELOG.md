@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Someone else pulls up at the broken wagon** (`[Encounters] WagonOthersStop`, on, with WagonWheel; settings version 287; FIVEDAY item 32d; README 32). Twenty-five seconds after the driver is down beside his wagon and you haven't put your shoulder to it, or once you've ridden on, six wagons in ten get a passer-by: the nearest free man on the road, on foot or on horseback, turns aside to it. He offers a hand (he says so if he saw you ride past) and sets the wheel with the driver. Then the driver thanks him and drives on, and the helper thinks of it. If you get there first, he goes on his way.
+  - Why it reads true: on an empty road the bystander effect runs backwards. With nobody else to leave it to, the one passing feels the whole duty. And a norm broken in plain sight (your riding past) makes the next man keener to keep it.
+  - Offline: of 1,000 wagons left standing, 58% now get someone else (before: none).
+
 - **A stalker on horseback who rides** (`[Stalkers] StalkerRides`, on; settings version 286; FIVEDAY item 32c; README 13). A mounted stalker used to sit his horse watching and get down to do anything else. Now he stays in the saddle to follow you at a distance and to ride in close and back out round you when you stand still. He pulls up a horse's length short when he rushes you, falls back to sixty metres when you move, and rides off when he flees.
   - The follow, circle and rush use the go-to-entity the allies already ride with, which is proven to drive the horse. The flee and the fall-back give the game's smart flee from the saddle, which isn't proven. So every ride is checked: if the horse hasn't moved three metres in five seconds, he gets down and does it on foot as before.
   - Offline: of the stalker's eleven modes, a mounted one now gets down for 3, where before it was 8.

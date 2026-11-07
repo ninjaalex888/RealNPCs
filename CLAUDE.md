@@ -1084,6 +1084,21 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Someone else pulls up at the wagon (FIVEDAY item 32d, 2026-11-07; `[Encounters] WagonOthersStop`; settings version 287)
+
+Core/WagonWheel.cs has the constants and words:
+- `OtherAfterMs` 25 s; `OtherStops` (60%, seeded by the scene; always on the Testing row).
+- `OtherFrom`/`OtherTo` 25-90 m; `OtherThere` 4.5 m; `OtherWalkMs` 45 s.
+- `OtherOffer(youRodePast)`, `DriverToOther`, `OtherAfter`, `OtherSetIt`.
+
+WestworldScript.WagonScene.cs:
+- The run gains `Other`, `OtherAt`, `DownAt`, `OtherTried`, `OtherSet`, `RodePast`, `OtherName`.
+- In "down" or "passed", `WagonOtherStep` looks once, after 25 s in "down" or at once after you ride past. It takes the nearest free grown man 25-90 m from the wagon, not in a vehicle, not a mission or story ped, nobody's scene. It blocks his events and sends him with go-to-entity on the wagon.
+- At 6 m, mounted: the dismount by hash, and a few seconds more to get down.
+- On foot, there: the captions, `SET_VEHICLE_FIXED`, the driver's thanks, the helper's thought. Phase goes to "mended", whose step takes the driver back to the box, and the helper is released to wander.
+- Your lift first releases him. `WagonSceneEnd` releases him too, and when he set it, re-tasks the driver onto the box (the far-off end comes at once).
+- F7 counts "set by someone else". mindtest `WagonOthersTest` (`wagonothers`).
+
 ## A stalker on horseback who rides (FIVEDAY item 32c, 2026-11-07; `[Stalkers] StalkerRides`; settings version 286)
 
 `Core/StalkerRide.Way(mode, ridesOn)`:
