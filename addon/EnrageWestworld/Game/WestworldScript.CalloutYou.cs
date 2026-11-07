@@ -19,6 +19,7 @@ namespace EnrageWestworld.InGame
             public string Phase = "walk";   // walk, face, wait, fight, gone
             public Ped P;
             public Someone W;
+            public List<Ped> Friends = new List<Ped>();   // a survivor's friends who came with them (Core/Survivors.cs; FIVEDAY item 21)
             public string Matter, Seed, Ending;
             public int StartedAt, NextAt, FacedAt;
             public bool Test;
@@ -98,6 +99,8 @@ namespace EnrageWestworld.InGame
                 string m = CalloutsYou.MatterOf(c.Who.Id, c.Who.Name, c.Who.Temper, c.Who.Drunk, c.Who.P != null ? c.Who.P.Home : null, c.Who.P, st, _store.Deeds, g);
                 if (m == null)
                     continue;
+                if ((m == "hurt" || m == "robbed") && SurvivorWayOf(c.Ped, c.Who) == Survivors.Broken)
+                    continue;   // broken by it: they never come at you (FIVEDAY item 21)
                 best = c;
                 matter = m;
                 bestD = d;
@@ -120,6 +123,16 @@ namespace EnrageWestworld.InGame
             }
             var cy = new CallYou { P = best.Ped, W = best.Who, Matter = matter, Seed = best.Who.Id + "|you|" + g / 60, StartedAt = now, NextAt = now, Test = test };
             StagedHold(cy.P);
+            if ((matter == "hurt" || matter == "robbed") && SurvivorWayOf(best.Ped, best.Who) == Survivors.GetEven)
+                foreach (Ped f in SurvivorFriends(best.Ped, best.Who, me))
+                {
+                    StagedHold(f);
+                    TASK.TASK_GO_TO_ENTITY(f.Handle, me.Handle, 30000, 3.0f, 1.8f, 0f, 0);   // the friends come along, a step behind
+                    cy.Friends.Add(f);
+                    _survivorFriendsBrought++;
+                }
+            if (cy.Friends.Count > 0)
+                Log.Write("ENCOUNTER callyou: " + cy.Friends.Count + " of " + best.Who.Name + "'s friends come with them (getting even)");
             _callYou = cy;
             StoryEncounterStarted("callyou", bestD, test);
             _cyStarted++;
@@ -213,6 +226,11 @@ namespace EnrageWestworld.InGame
                     Feed.Say(c.W.Name, CalloutsYou.Face(c.Matter, c.Seed), Speech.When(h, "angry", me.Handle), h, toYou: true);
                     _ticker.Push(c.W.Name + ", thinking", CalloutsYou.Thought(c.Seed), "near", h);
                     NoteTheirThought(h, now);
+                    foreach (Ped f in c.Friends.Where(x => x.Exists() && !x.IsDead).Take(1))
+                    {
+                        MindWho fw = MindKnown(f.Handle, now);
+                        Feed.Say(fw != null && fw.Name != null ? fw.Name : TalkName(f), Survivors.BackingLine(Person.FirstOf(c.W.Name), c.Seed), Speech.When(f.Handle, "threat", me.Handle), f.Handle, toYou: true);
+                    }
                     uint gun = WEAPON.GET_BEST_PED_WEAPON(h, false, false);
                     bool armed = gun != 0 && gun != Natives.Hash("WEAPON_UNARMED");
                     c.Ending = CalloutsYou.Ending(c.W.Temper, c.W.Drunk, c.Matter, armed, _cfg.CalloutsArthurDraw, c.Seed);
@@ -277,6 +295,15 @@ namespace EnrageWestworld.InGame
                 c.Outcome = "they put up their fists";
             }
             TASK.TASK_COMBAT_PED(h, me.Handle, 0, 16);
+            foreach (Ped f in c.Friends)
+                if (f.Exists() && !f.IsDead)
+                {
+                    _staged.Remove(f.Handle);
+                    PED.SET_PED_KEEP_TASK(f.Handle, false);
+                    MakeHostile(f, now);   // they came at you with them: self-defence too
+                    BrawlFists(f.Handle);
+                    TASK.TASK_COMBAT_PED(f.Handle, me.Handle, 0, 16);
+                }
             c.FacedAt = now;
             c.Phase = "fight";
             c.NextAt = now + 1000;
@@ -295,6 +322,10 @@ namespace EnrageWestworld.InGame
                 : (Action)null);
             if (c.P != null && c.Phase != "fight")
                 StagedLetGo(c.P, true);
+            if (c.Phase != "fight")
+                foreach (Ped f in c.Friends)
+                    if (f.Exists())
+                        StagedLetGo(f, true);
             _cyLast = (c.W != null ? c.W.Name : "?") + " called you out over " + CalloutsYou.Over(c.Matter) + ": " + why + (c.Test ? " (a test)" : "");
             Log.Write("ENCOUNTER callyou: over (" + why + ")");
         }

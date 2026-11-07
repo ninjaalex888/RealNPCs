@@ -405,7 +405,8 @@ namespace EnrageWestworld.InGame
                 Plan = PlansOn ? _store.Plans.FirstOrDefault(p => !p.Done && p.HolderId == w.Id)?.Kind : null   // a plan leans the day (WestworldScript.Plans.cs)
             };
             c.Payday = _cfg.Payday;
-            c.Coping = _engine.BrokenWay(w.Id, g / 1440);   // a breakdown's habit (FIVEDAY item 17; null with StressBuilds off)
+            c.Coping = _engine.BrokenWay(w.Id, g / 1440);
+            c.Survivor = SurvivorWayOf(w);   // (FIVEDAY item 21; null with SurvivorsChanged off)   // a breakdown's habit (FIVEDAY item 17; null with StressBuilds off)
             if (_cfg.WorriesShown)
             {
                 string wk;

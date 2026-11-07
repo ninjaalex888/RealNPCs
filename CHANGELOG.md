@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Survivors come back changed** (`[Mind] SurvivorsChanged`, on; settings version 273; FIVEDAY item 21). Someone you beat or robbed and left alive now comes back changed, a day on, by who they are:
+  - The angry with friends bring up to two of them when they call you out. The friends back them up in words and fight with them.
+  - The bold have more standing for having faced you.
+  - The timid and the cowards are broken by it. They never come at you, and they keep clear of you and off the street.
+  - The rest let it lie.
+
+  Their thoughts say which, and so do a friend's near them. Offline: 27% broken, 21% get even, 20% stand taller, 31% let it lie.
+
 - **Trust lost fast, won slow** (`[Mind] TrustSlow`, on; settings version 272; FIVEDAY item 20). A shove, a beating, a robbery or a theft of yours now takes three greetings' worth off that person's liking at once. For 60 game days after, your greetings count for less with them: a fifth the day after, with the rest coming back over three weeks. The forgiving come round sooner and the unforgiving later, and each kindness since helps. Offline, a friend at a full bar whom you then knock down takes seven daily hellos to come back (five for the forgiving, eight for the unforgiving). Anyone you never wronged still fills in three hellos.
 
 - **The town moves on while you're away** (`[World] WhileAway`, on; settings version 271; FIVEDAY item 19). Ride back into a town after two game days or more and you hear what you missed. The Around town box gets a "What you missed" item, and someone near who knows you thinks about telling you. It covers up to five things, the weightiest first: deaths, weddings, a hanging, the election's winner, the trial's verdict, who left on the train, a new face at a counter, the show, the dance, the prize fight's winner, and someone taken to drink or always at the church. It starts counting from your first visit to each town after updating.

@@ -178,7 +178,7 @@ namespace EnrageWestworld.InGame
                     return;
                 }
                 string who = ActThoughts.SlotOf(a.Kind) == "{who}" ? ActWhoOf(w, a.About) : null;
-                string line = StressActThought(w, a.Kind) ?? WorryActThought(w, a.Kind) ?? _engine.ActThought(w.P, a.Kind, why0 ?? w.ChoiceWhy, who, w.Id + "|" + a.Kind + "|" + _store.LastGameMin / 60);   // a worry's own thought first (FIVEDAY item 7)
+                string line = SurvivorActThought(w, a.Kind) ?? StressActThought(w, a.Kind) ?? WorryActThought(w, a.Kind) ?? _engine.ActThought(w.P, a.Kind, why0 ?? w.ChoiceWhy, who, w.Id + "|" + a.Kind + "|" + _store.LastGameMin / 60);   // a worry's own thought first (FIVEDAY item 7)
                 if (line == null)
                 {
                     ActThoughtHeld("nothing left for them today");
