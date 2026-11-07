@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Lasting marks** (`[Mind] LastingMarks`, on; `LastingMarksLook`, off; settings version 276; FIVEDAY item 24). Someone you beat now carries it for days: four after a beating, one after a knocking down. When you're about, they think of it ("Every step, I feel where he put his boot."), and a friend of theirs near you names you for it ("That's the one did Hank's face. Look at him.").
+  - Showing it on the body, as an injured gait and bruising, sits behind `LastingMarksLook`, off until you've tried the probe. The game's names for these aren't proven, so the Testing row "A beating's marks" tries the next gait and damage pack on the nearest named person each press and says which.
+  - Set the ones that read in `LastingMarksGait` and `LastingMarksPack`.
+
 - **Gossip that travels along ties** (`[Mind] TieGossip`, on; settings version 275; FIVEDAY item 23). Inside a town, word of your violence and your thieving now moves person to person along the ties the street made. The friends of someone who knows hear it the next day, and anyone else they're tied to the day after, a little more bent at each telling. Whoever hears it thinks of who told them and what they got ("Abner swears a gunman nobody knew beat Eli Pike half to death..."). Offline, in a town of 30: 10 know by the first day, 19 by the second, 26 by the third and 29 by the fourth; before, it stayed at the 6 who saw it or were told that day. A week on, the talk is done.
 
 - **Shared fright** (`[Mind] SharedFright`, on; settings version 274; FIVEDAY item 22). Two people who both saw you kill are now tied by it. The tie between them warms a step, and for two weeks they keep clear of you together when both are about. When the street's quiet talk falls to the two of them, it's about that three times in four, low-voiced: "You were there. You saw it." "Don't. Not here."

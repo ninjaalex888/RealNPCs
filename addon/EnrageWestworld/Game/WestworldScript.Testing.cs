@@ -277,6 +277,15 @@ namespace EnrageWestworld.InGame
                         said = what;
                         return null;
                     }
+                case "marks":
+                    {
+                        skipped = "a beating of yours: it's tried on whoever is nearest";
+                        string why = MarksProbe(Game.Player.Character);
+                        if (why != null)
+                            return why;
+                        said = "Marks probe: " + _marksProbeLast + ". Note which ones read as hurt, for [Mind] LastingMarksGait and LastingMarksPack.";
+                        return null;
+                    }
                 case "pinkerton":
                     {
                         skipped = "a violent deed of yours known here this week, the day's roll, the hour and the five days' rest";

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 275;
+        public const int CurrentVersion = 276;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -355,6 +355,10 @@ namespace EnrageWestworld.Core
         public bool Rematches = true;   // [Scenes] with MindLive and MindPlans: the one beaten in a fistfight takes it his own way (a rematch, keeping clear, a handshake) days later (Core/Rematch.cs; FIVEDAY item 2, settings version 257)
         public bool AlliesRemember = true;   // [Scenes] with FriendCalls: an ally who stood with you in a fight comes over within the week to talk it over, and of a comrade who fell in it (FIVEDAY item 4, settings version 258)
         public float SideTalkMetres = SideTalk.Metres;   // [Scenes] with ScenesAtOnce 2 or more: two people this far apart at most may stop and talk beside the scene (2.5-8; 3.4 before settings version 259, when the quiet talks almost never started; FIVEDAY item 5)
+        public bool LastingMarks = true;   // [Mind] one you beat carries it for days: their thoughts of it, a friend naming you (Core/LastingMarks.cs; FIVEDAY item 24, settings version 276)
+        public bool LastingMarksLook = false;   // [Mind] ... and shows it: the gait and the bruising below (off until the probe row has been seen in game)
+        public string LastingMarksGait = "injured_general";   // [Mind] the game's gait for the marked (the probe row's candidates; empty: none)
+        public string LastingMarksPack = "SCR_Torture";   // [Mind] the game's damage pack for the marked (the probe row's candidates; empty: none)
         public bool TieGossip = true;   // [Mind] word of your deeds moves along the town's ties: friends tomorrow, others the day after, bent at each telling (Core/TieGossip.cs; FIVEDAY item 23, settings version 275)
         public bool SharedFright = true;   // [Mind] two who both saw you kill are tied by it: their tie warms, they keep clear of you together, and their quiet talks are of it (Core/SharedFright.cs; FIVEDAY item 22, settings version 274)
         public bool SurvivorsChanged = true;   // [Mind] one you beat or robbed comes back changed: with friends to get even, with standing for having faced you, or broken and keeping clear (Core/Survivors.cs; FIVEDAY item 21, settings version 273)
@@ -895,6 +899,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 276)
+                    log?.Invoke("Settings: new in this version: [Mind] LastingMarks (on): a beating's marks worn for days; LastingMarksLook (off) until the probe is seen.");
                 if (s.SettingsVersion < 275)
                     log?.Invoke("Settings: new in this version: [Mind] TieGossip (on): word of your deeds travels along the town's ties.");
                 if (s.SettingsVersion < 274)
@@ -1212,6 +1218,8 @@ namespace EnrageWestworld.Core
             // stalker hours: the stalker day still runs 05:00 to 05:00; day hours stay in daylight, night hours cross midnight
             StalkerEveryMinutes = Math.Max(1, Math.Min(120, StalkerEveryMinutes));
             StalkerBlackOutfit = Math.Max(-1, Math.Min(200, StalkerBlackOutfit));
+            LastingMarksGait = (LastingMarksGait ?? "").Trim();   // (FIVEDAY item 24)
+            LastingMarksPack = (LastingMarksPack ?? "").Trim();
             StalkerBlackModel = string.IsNullOrWhiteSpace(StalkerBlackModel) ? "a_m_o_sdupperclass_01" : StalkerBlackModel.Trim().ToLowerInvariant();
             StalkerNearbyMetres = Math.Max(20, Math.Min(150, StalkerNearbyMetres));
             // stalker distances, kept in a sensible order so one odd value can't break him
@@ -1743,6 +1751,10 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("BrawlWagers = " + B(BrawlWagers) + "   ; with MindLive on: people watching a fistfight between two of the street's people bet on it among themselves (words only, nobody walks over), up to three bets a fight; after it the one who backed the loser pays, pays with a sour word, says he'll owe it, or won't pay, and a welshed bet leaves bad blood between the two backers");
             b.AppendLine("Rematches = " + B(Rematches) + "   ; with MindLive and [Mind] MindPlans on: the one left on the ground after a fistfight takes it his own way, by his nature: half a game day or more later, when the two meet near you, a rematch (the hot and the proud), crossing the street to keep clear (the fearful), or his hand offered (the kind), taken or refused; most let it lie");
             b.AppendLine("SideTalkMetres = " + F(SideTalkMetres) + "   ; with ScenesAtOnce 2 or more: the quiet talks beside the street's scene pair two people at most this far apart (2.5-8 m), both standing or strolling; 3.4 m and standing still before, and they almost never started");
+            b.AppendLine("LastingMarks = " + B(LastingMarks) + "   ; someone you beat carries it for days (a beating four, a knocking down one): when you're about they think of it, and those fond of them name you for it");
+            b.AppendLine("LastingMarksLook = " + B(LastingMarksLook) + "   ; ... and their body shows it: the gait and the bruising below (off as it comes: the names aren't proven; the Testing row \"A beating's marks\" tries each)");
+            b.AppendLine("LastingMarksGait = " + LastingMarksGait + "   ; the game's gait for the marked, from the probe: injured_general, injured_left_leg, injured_right_leg, injured_torso, injured_left_arm, injured_right_arm (empty: none)");
+            b.AppendLine("LastingMarksPack = " + LastingMarksPack + "   ; the game's damage pack for the marked, from the probe (empty: none)");
             b.AppendLine("TieGossip = " + B(TieGossip) + "   ; inside a town, word of your violence and your thieving moves person to person along the ties the street made: the friends of someone who knows hear it the next day, anyone else they're tied to the day after, a little more bent at each telling; who heard it thinks of who told them. A week on, the talk is done");
             b.AppendLine("SharedFright = " + B(SharedFright) + "   ; two people who both saw you kill are tied by it: the tie between them warms, for two weeks they keep clear of you together when both are about, and when the street's quiet talk falls to the two of them it is mostly about that, low-voiced");
             b.AppendLine("SurvivorsChanged = " + B(SurvivorsChanged) + "   ; someone you beat or robbed and left alive comes back changed, a day on, by who they are: angry and with friends, they bring up to two of them when they call you out (and they fight with them); the bold have more standing for having faced you; the timid are broken by it, never come at you, keep clear and stay home; their thoughts and their friends' say which");
