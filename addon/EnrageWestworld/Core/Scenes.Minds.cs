@@ -66,7 +66,7 @@ namespace EnrageWestworld.Core
                 w.Add(new KeyValuePair<string, int>("propose", 3));
             if (c.Saloon && twoMen)
                 w.Add(new KeyValuePair<string, int>("cheat", 10));
-            w.Add(new KeyValuePair<string, int>("debt", c.Payday ? 18 : 7));   // the creditors know when the money is about (Core/Payday.cs)
+            w.Add(new KeyValuePair<string, int>("debt", 7));
             if (c.Payday && mixed && !c.Saloon)
                 w.Add(new KeyValuePair<string, int>("wages", 14));
             if (c.Rumours.Count > 0)

@@ -2,8 +2,7 @@
 // chair. Debts are called in, and wives wait at the saloon door"). In 1899 most hands, labourers and clerks were paid on
 // Saturday, many at noon when the week's work stopped. From noon till eight on a Saturday in town, the working people's
 // day bends to the money in their pockets: the saloon, the card table, the store and a drink pull harder, the work less
-// (Choosing); the debts are called in in the street more often, the creditors knowing when the money's about; and a new
-// street scene, the wages: a woman stops a man on his way to the saloon for the week's money before it's gone (Scenes),
+// (Choosing); and a new street scene, the wages: a woman stops a man on his way to the saloon for the week's money before it's gone (Scenes),
 // and comes away with all of it, half, a promise or nothing, as the seed falls. Who she is to him (a wife,
 // a sister, a landlady) the words leave unsaid; only what the money is for.
 //
