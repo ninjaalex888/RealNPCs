@@ -162,6 +162,8 @@ namespace EnrageWestworld.InGame
                         }
                     }
                     RecordEvent("deed:" + d.Kind, "player", "you", vid, vname, pos, Game.Player.Character.Handle, except, victim, d.Unseen ? "unseen" : null);
+                    if (victim != 0)
+                        TrustWronged(d, victim);   // one wrong undoes three kindnesses (WestworldScript.GreetLiking.cs; FIVEDAY item 20)
                 });
             if (!_cfg.Minds || d == null || Minds.DeedGroup(d.Kind) == null || MISC.GET_MISSION_FLAG())
                 return;   // not during a story mission: its people are the story's

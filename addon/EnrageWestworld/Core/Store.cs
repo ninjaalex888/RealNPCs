@@ -31,6 +31,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<Avenger> Avengers = new List<Avenger>();
         [DataMember(EmitDefaultValue = false)] public List<Wedding> Weddings = new List<Wedding>();
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, long> TownLastAbout = new Dictionary<string, long>();   // town -> the game minute he was last about it (TownVisits is when he last came in) (Core/WhileAway.cs; FIVEDAY item 19)
+        [DataMember(EmitDefaultValue = false)] public Dictionary<string, int> Mends = new Dictionary<string, int>();   // "id|wrong" -> kindnesses since that wrong of his (Core/Trust.cs; FIVEDAY item 20)
         [DataMember(EmitDefaultValue = false)] public List<Breakdown> Breakdowns = new List<Breakdown>();   // who broke under the week's load, and how (Core/StressLoad.cs; FIVEDAY item 17)
         [DataMember(EmitDefaultValue = false)] public List<Transfer> Transfers = new List<Transfer>();
         [DataMember(EmitDefaultValue = false)] public List<Debt> Debts = new List<Debt>();
@@ -616,6 +617,8 @@ namespace EnrageWestworld.Core
             if (Replies == null) Replies = new List<Reply>();
             if (Events == null) Events = new List<TownEvent>();
             if (Breakdowns == null) Breakdowns = new List<Breakdown>();
+            if (Mends == null) Mends = new Dictionary<string, int>();
+            if (Mends.Count > 500) Mends.Clear();   // (kindnesses since a wrong: losing them only slows a mending)
             if (TownLastAbout == null) TownLastAbout = new Dictionary<string, long>();
             if (TownLedgers == null) TownLedgers = new Dictionary<string, TownLedger>();
             if (KinGrudges == null) KinGrudges = new List<KinGrudge>();

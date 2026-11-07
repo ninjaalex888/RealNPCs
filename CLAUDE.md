@@ -1084,6 +1084,22 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Trust lost fast, won slow (FIVEDAY item 20, 2026-11-06; `[Mind] TrustSlow`; settings version 272)
+
+Core/Trust.cs:
+- `IsWrong(kind)`: shove, assault, robbery, theft, horsetheft and kidnap, the deeds done to the living.
+- `LastWrong(deeds, id, now)`: by `Deed.VictimId`, within 60 days.
+- `ForgiveDays(traits)`: 21 - 6 compassion - 4 trust + 6 anger, clamped to 5-42.
+- `Factor(traits, minutesSince, kindSince)`: 0.2 + 0.8 × min(1, days / forgive), plus 0.06 per kindness since × 21 / forgive, capped at 1.
+- `MendKey`: id|wrong-id, kept in `Store.Mends`.
+
+Game/WestworldScript.GreetLiking.cs:
+- `TrustedDelta` scales GreetLiking's delta for someone you wronged; the id is found through `LastingId`, the same id the deed's VictimId takes in NoteDeedMinds. Each greeting is counted toward the mending.
+- `TrustWronged`, called from NoteDeedMinds when the deed has a living victim, takes `Trust.Undoes` 3 × GreetLiking off enRAGE's liking through `LikeMore` (clamped at 0).
+- The existing hold, no gain while fear or anger is 40 or more, stays.
+
+F7 is in `TEST greet liking:`. mindtest `TrustTest` (`trust`). Not built: our own Affection's gains (they come from many places; the bar is what Lex asked about), and threats at gunpoint as a wrong (no deed records a threat).
+
 ## The town moves on while you're away (FIVEDAY item 19, 2026-11-06; `[World] WhileAway`; settings version 271)
 
 Core/WhileAway.cs: `Gather(store, town, since, now)` collects, from the store, in the town since the last visit, with weights:

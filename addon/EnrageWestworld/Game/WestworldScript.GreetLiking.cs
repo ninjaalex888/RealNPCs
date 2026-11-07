@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using EnrageWestworld.Core;
+using RDR2;
 using RDR2.Native;
 
 namespace EnrageWestworld.InGame
@@ -62,6 +63,9 @@ namespace EnrageWestworld.InGame
                 }
                 on[1]++;   // hellos today, for the log
                 int delta = _cfg.GreetLiking;   // every greeting in full (Lex: "each greet gives 25% fondness boost for now")
+                string wrongNote = null;
+                if (_cfg.TrustSlow)
+                    delta = TrustedDelta(ped, delta, out wrongNote);   // someone you wronged: less, until time and kindness bring them back (FIVEDAY item 20)
                 _bridge.LikeMore(ac.Id, delta);
                 if (on[1] <= 1)
                     _greetLiked++;
@@ -69,11 +73,61 @@ namespace EnrageWestworld.InGame
                     _greetLikedAgain++;
                 string name = FolkShown(ac) ?? ac.Id;
                 _greetLikeLast = name + " +" + delta + (on[1] > 1 ? " (hello " + on[1] + " today)" : "");
-                Log.Detail("GREET " + name + " likes you " + delta + " more for the greeting" + (on[1] > 1 ? " (hello " + on[1] + " today)" : "") + (like > 0f ? " (was " + (int)like + ")" : ""));
+                Log.Detail("GREET " + name + " likes you " + delta + " more for the greeting" + (on[1] > 1 ? " (hello " + on[1] + " today)" : "") + (like > 0f ? " (was " + (int)like + ")" : "") + (wrongNote != null ? " (" + wrongNote + ")" : ""));
             }
             catch (Exception ex)
             {
                 Log.Detail("GREET the fondness couldn't be raised: " + ex.Message);
+            }
+        }
+
+        private int _trustSlowed, _trustUndone;
+
+        /// A kindness's worth to someone you wronged (Core/Trust.cs): the full delta with nothing between you; else scaled by the
+        /// days since and the kindnesses since, and the kindness counted toward the mending.
+        private int TrustedDelta(int ped, int delta, out string note)
+        {
+            note = null;
+            string id, name;
+            if (!LastingId(new Ped(ped), out id, out name) || id == null)
+                return delta;
+            long g = Bridge.Now();
+            Deed wrong = Trust.LastWrong(_store.Deeds, id, g);
+            if (wrong == null)
+                return delta;
+            MindWho w = MindKnown(ped, Game.GameTime);
+            Traits t = w != null && w.Src != null ? (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))) : null;
+            string key = Trust.MendKey(id, wrong);
+            int since;
+            _store.Mends.TryGetValue(key, out since);
+            float f = Trust.Factor(t, g - wrong.At, since);
+            _store.Mends[key] = since + 1;
+            int d = (int)Math.Round(delta * f);
+            if (d < delta)
+            {
+                _trustSlowed++;
+                note = "your " + wrong.Kind + " " + ((g - wrong.At) / 1440) + " days ago: " + (int)(f * 100) + "% of it, kindness " + (since + 1) + " since, forgiving in " + Trust.ForgiveDays(t) + " days";
+            }
+            return d;
+        }
+
+        /// A wrong of his just done to someone enRAGE knows: one wrong undoes three kindnesses on the bar, at once (FIVEDAY item 20).
+        private void TrustWronged(Deed d, int victim)
+        {
+            if (_cfg == null || !_cfg.TrustSlow || _cfg.GreetLiking <= 0 || d == null || victim == 0 || !Trust.IsWrong(d.Kind))
+                return;
+            try
+            {
+                FolkRef ac = _bridge.AcquaintanceAt(victim);
+                if (ac == null || ac.Id == null)
+                    return;
+                _bridge.LikeMore(ac.Id, -Trust.Undoes * _cfg.GreetLiking);
+                _trustUndone++;
+                Log.Write("TRUST " + (FolkShown(ac) ?? ac.Id) + ": your " + d.Kind + " undoes " + Trust.Undoes + " greetings' worth (-" + Trust.Undoes * _cfg.GreetLiking + ")");
+            }
+            catch (Exception ex)
+            {
+                Log.Detail("TRUST the bar couldn't be lowered: " + ex.Message);
             }
         }
 
@@ -95,7 +149,8 @@ namespace EnrageWestworld.InGame
         {
             return _cfg.GreetLiking <= 0 ? "off ([Encounters] GreetLiking)"
                 : "+" + _cfg.GreetLiking + " on every greeting (a friend at " + _cfg.AlliesLiking + "); " + _greetLiked + " first greetings of a day counted, " + _greetLikedAgain + " repeats, " +
-                  _greetLikeHeld + " held (afraid or angry)" + (_greetLikeLast != null ? "; last: " + _greetLikeLast : "");
+                  _greetLikeHeld + " held (afraid or angry)" + (_greetLikeLast != null ? "; last: " + _greetLikeLast : "") +
+                  (_cfg.TrustSlow ? "; trust: " + _trustSlowed + " counted for less (a wrong of yours), " + _trustUndone + " wrongs undid three greetings" : "; trust off ([Mind] TrustSlow)");
         }
     }
 }
