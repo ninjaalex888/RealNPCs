@@ -59,6 +59,8 @@ namespace EnrageWestworld.InGame
             WagersStep(me, now);  // the people watching a fight bet on it (WestworldScript.Wagers.cs; FIVEDAY item 1)
             if (_director.FightOver == null)
                 _director.FightOver = OnFightOver;
+            if (Feed.CloneVoice == null)
+                Feed.CloneVoice = VoiceEncounterLine;   // the encounters' and walk-ups' words in their own voices (WestworldScript.Voiced.cs; FIVEDAY item 8)
             if (_director.Shock == null)
                 _director.Shock = StreetShock;   // the street reacts to the scene's moments as the game's own crowd would (WestworldScript.Street.cs)
             if (_director.FightLeftLoose == null)

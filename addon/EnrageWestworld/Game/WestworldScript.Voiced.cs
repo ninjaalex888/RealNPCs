@@ -277,6 +277,9 @@ namespace EnrageWestworld.InGame
             string key = handle + "|" + text;
             if (key == _voiceRecentKey && now - _voiceRecentAt < 8000)
                 return null;   // the same line passed on twice (a scene line both captioned and heard)
+            int askedAt;
+            if (_voiceAskedRecent.TryGetValue(key, out askedAt) && now - askedAt < 15000)
+                return null;   // asked already for any of the lines lately (a scene's line asked as it's queued, then again as Feed shows it: FIVEDAY item 8)
             string why;
             if (!VoiceMayAsk(handle, out why))
                 return null;
@@ -286,8 +289,37 @@ namespace EnrageWestworld.InGame
                 _voiceRecentKey = key;
                 _voiceRecentAt = now;
                 _voiceSaidAsked++;
+                if (_voiceAskedRecent.Count > 64)
+                    foreach (string old in _voiceAskedRecent.Where(kv => now - kv.Value >= 15000).Select(kv => kv.Key).ToList())
+                        _voiceAskedRecent.Remove(old);
+                _voiceAskedRecent[key] = now;
             }
             return j;
+        }
+
+        private readonly Dictionary<string, int> _voiceAskedRecent = new Dictionary<string, int>();   // handle|line -> when asked (TickCount)
+        private const int VoiceEncounterGapMs = 5000;   // one encounter line cloned every 5 s at most, on top of the server's own queue (VoiceMostJobs)
+        private int _voiceEncounterAt = int.MinValue / 2, _voiceEncounterAsked, _voiceEncounterSpaced;
+
+        /// Feed's hook (FIVEDAY item 8): a line an encounter, a walk-up or a scene's beat queued for someone near, when it shows:
+        /// said in their own voice by the voice server with [Mind] VoicedEncounters and VoicedDialogue on, at most once in 5 s
+        /// (more would crowd the card while the game runs); true when it was asked for.
+        private bool VoiceEncounterLine(int ped, string speaker, string text, bool toYou)
+        {
+            if (_cfg == null || !_cfg.VoicedEncounters || !_cfg.VoicedDialogue || !_voiceReady)
+                return false;
+            int now = Environment.TickCount;
+            if (now - _voiceEncounterAt < VoiceEncounterGapMs)
+            {
+                _voiceEncounterSpaced++;
+                return false;
+            }
+            VoiceJob j = VoiceSaid(ped, speaker, text, toYou);
+            if (j == null)
+                return false;
+            _voiceEncounterAt = now;
+            _voiceEncounterAsked++;
+            return true;
         }
 
         private bool VoiceMayAsk(int h, out string why)

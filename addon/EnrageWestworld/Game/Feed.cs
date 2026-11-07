@@ -150,6 +150,11 @@ namespace EnrageWestworld.InGame
 				_again = null;
 		}
 
+		/// Asked as a line said by someone near shows: says our words in their cloned voice and answers true when it will
+		/// (WestworldScript.Voiced.cs sets it; null: never). (ped, speaker, the whole line, said to you)
+		public static Func<int, string, string, bool, bool> CloneVoice;
+		private static object _clonedGroup;
+
 		/// ahead: the player asked for it (a flirt), so it goes before everything already waiting, in the order given.
 		public static void Say(string speaker, string text, Func<string> onShow = null, int ped = 0, bool toYou = false, bool ahead = false)
 		{
@@ -243,7 +248,34 @@ namespace EnrageWestworld.InGame
 					int ms = line.Ms;
 					string words = null;
 					bool played = false;
-					if (line.OnShow != null)
+					// our own words in the speaker's cloned voice (the voice server; FIVEDAY item 8, [Mind] VoicedEncounters): when
+					// it takes the line, the game's recorded remark picked by tone is dropped, so the mouth says what the subtitle
+					// says (Lex, 2026-10-29: the recorded lines "don't exactly match up"); a long line's later parts go with it
+					bool cloned = false;
+					if (line.Ped != 0 && CloneVoice != null && line.Full != null)
+					{
+						if (line.Group != null && ReferenceEquals(line.Group, _clonedGroup))
+							cloned = true;
+						else
+						{
+							try
+							{
+								cloned = CloneVoice(line.Ped, line.Speaker, line.Full, line.ToYou);
+							}
+							catch (Exception ex)
+							{
+								Log.Write("Voice (cloned): " + ex.Message);
+							}
+							if (cloned)
+								_clonedGroup = line.Group;
+						}
+					}
+					if (cloned)
+					{
+						played = true;
+						_voicedGroup = line.Group;
+					}
+					else if (line.OnShow != null)
 					{
 						try
 						{
