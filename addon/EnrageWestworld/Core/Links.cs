@@ -30,7 +30,7 @@ namespace EnrageWestworld.Core
         /// The worries that have a real person at the other end.
         public static bool Linkable(string kind)
         {
-            return kind == "debt" || kind == "feud" || kind == "courting";
+            return kind == "debt" || kind == "feud" || kind == "courting" || kind == "cards";   // cards: the man the gambler borrows from (FIVEDAY item 32a; [Mind] GamblersBorrow)
         }
 
         /// Whether `id` is this link's worrier: the id itself, or the resident whose worry they live on with since enRAGE took
@@ -77,7 +77,7 @@ namespace EnrageWestworld.Core
             List<SceneTie> mine = ties.Where(t => t.Has(p.Id)).OrderByDescending(t => t.At).ToList();
             foreach (SceneTie t in mine)
             {
-                bool fits = kind == "debt" ? t.Kind == "debt" : kind == "feud" ? t.Warmth < 0 : Ties.Sweethearts(t);
+                bool fits = kind == "debt" ? t.Kind == "debt" : kind == "feud" ? t.Warmth < 0 : kind == "cards" ? t.Warmth > 0 : Ties.Sweethearts(t);   // a gambler borrows from a friend first
                 Resident known = fits ? fit.FirstOrDefault(r => t.Has(r.Id)) : null;
                 if (known != null)
                     return known;
@@ -136,6 +136,17 @@ namespace EnrageWestworld.Core
         private static readonly string[] CourtedYes = { "Said yes to {name}. Felt like jumping a creek.", "Said yes to {name}. Everybody at church already knew. Everybody always knows.", "Walking out with {name} Sunday. Mother's pleased. Mother's suspicious. Both.", "Told {name} yes. Been smiling at the stove all evening like a fool." };
         private static readonly string[] CourtedNo = { "Had to tell {name} no. Kind as I could. Still felt cruel.", "Told {name} no. {name} took it quietly. Made it worse.", "Said no to {name} and went home and cried. Don't know why. It was the right answer.", "{name} will hear my no from the whole town by Sunday. Wish I could have spared that." };
 
+        // cards: the one a gambler borrows from (FIVEDAY item 32a)
+        private static readonly string[] Lender =
+        {
+            "{name} asked me for money again. Said it was the rent. It's the cards.",
+            "Lent {name} ten dollars. Sorry before the coins were cold.",
+            "{name} won't meet my eye since I said no to the loan.",
+            "Saw {name} at the back table with money that might be mine."
+        };
+        private static readonly string[] LenderPaid = { "{name} paid me back, every cent. Didn't think I'd live to see it.", "{name} says the cards are done with. I'd like to believe it." };
+        private static readonly string[] LenderStiffed = { "{name} owes me and walks the other side of the street now.", "That's the last money {name} gets from me. A lesson, and I paid for it." };
+
         /// What the one at the other end thinks about it, by the worrier's first name, as the worry goes on and ends.
         public static string OtherThought(WorryLink l, long gameDay, string seed)
         {
@@ -146,6 +157,7 @@ namespace EnrageWestworld.Core
             {
                 case "debt": pool = stage < 3 ? Owed : good ? OwedPaid : OwedTook; break;
                 case "feud": pool = stage < 3 ? Neighbour : good ? NeighbourMended : NeighbourBitter; break;
+                case "cards": pool = stage < 3 ? Lender : good ? LenderPaid : LenderStiffed; break;   // (FIVEDAY item 32a)
                 default: pool = stage < 3 ? Courted : good ? CourtedYes : CourtedNo; break;
             }
             return Voice.Pick(seed + "lk", pool).Replace("{name}", Person.FirstOf(l.Name));
@@ -154,7 +166,7 @@ namespace EnrageWestworld.Core
         /// Every line, for the tests.
         public static IEnumerable<string> AllLines()
         {
-            return Owed.Concat(OwedPaid).Concat(OwedTook).Concat(Neighbour).Concat(NeighbourMended).Concat(NeighbourBitter).Concat(Courted).Concat(CourtedYes).Concat(CourtedNo);
+            return Owed.Concat(OwedPaid).Concat(OwedTook).Concat(Neighbour).Concat(NeighbourMended).Concat(NeighbourBitter).Concat(Courted).Concat(CourtedYes).Concat(CourtedNo).Concat(Lender).Concat(LenderPaid).Concat(LenderStiffed);
         }
     }
 }

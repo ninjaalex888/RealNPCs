@@ -152,6 +152,7 @@ namespace EnrageWestworld.Core
             new Entry("scene:x:sweet", "Street scenes", "Sweethearts", "TestSweetKey", needs: "a named man and woman within 16 m"),
             new Entry("scene:x:debt", "Street scenes", "A debt called in", "TestDebtKey", needs: "two named people within 16 m"),
             new Entry("scene:x:feud", "Street scenes", "A feud flares", "TestFeudKey", needs: "two named people within 16 m"),
+            new Entry("scene:x:cards", "Street scenes", "A gambler asks a man for a loan", "TestGamblerLoanKey", needs: "[Mind] GamblersBorrow; a named man whose worry is the cards (or who has a lender), and another within 16 m"),
             new Entry("scene:x:courting", "Street scenes", "A courting worry, face to face", "TestCourtingKey", needs: "a named man and woman within 16 m"),
             // ---- tools ---------------------------------------------------------------------------------------------
             new Entry("showminds", "Tools", "Show minds (a card over people near you)", "TestShowMindsKey", "Ctrl+F2"),   // on and off for the session (Lex, 2026-10-27)

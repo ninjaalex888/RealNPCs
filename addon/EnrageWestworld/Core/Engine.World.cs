@@ -1533,7 +1533,7 @@ namespace EnrageWestworld.Core
             long arc = InnerLife.ArcFor(w.Id, day);
             if (worried)
                 Store.Links.RemoveAll(l => l.Id == w.Id && l.Arc == arc && l.Kind != kind);   // a link for a worry they no longer have (a worry kind added in an update)
-            if (!worried || !Links.Linkable(kind))
+            if (!worried || !Links.Linkable(kind) || kind == "cards" && !Cfg.GamblersBorrow)   // a gambler's lender only with [Mind] GamblersBorrow (FIVEDAY item 32a)
                 return;
             if (Links.Of(Store.Links, w.Id, kind, arc) != null)
                 return;

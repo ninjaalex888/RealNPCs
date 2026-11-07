@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **A gambler borrows from a man of his town** (`[Mind] GamblersBorrow`, on; settings version 284; FIVEDAY item 32a; README 19). The cards worry now has a real lender, like a debt has its creditor: a man of the gambler's town, a friend first. The two meet in the street over it as it goes on.
+  - He asks for ten dollars, then five to win it back, then begs. A kind man lends, a cold one won't, and a hothead snaps at him (offline, across the seven tempers: 28% lend, 42% refuse, 28% snap).
+  - At the end he pays it back where the street can see, or it's called in and never paid. The lender thinks of it too: his own lines, where before an unknown link kind fell to the courting ones.
+  - Offline, 3% of a town's men carry the cards worry on a given day, and each now has a lender to meet (before, none did).
+  - A Testing row, "A gambler asks a man for a loan", plays it.
+
 - **Fence cutters** (`[World] FenceCutters`, on; settings version 283; FIVEDAY item 31). About once a fortnight, a homesteader in an open-range town (Valentine, Strawberry, Rhodes, Emerald Ranch, Blackwater, Armadillo, Tumbleweed) finds his wire cut at first light. He blames the cattleman: his feud neighbour if he has one, else a ranch man of the town.
   - Their tie goes two steps colder. With MindPlans he means to get even, so the feud climbs into the quarrels and fights the ties already drive. Both men think of it, and the town talks of it. Offline, a pair one quarrel apart goes from -1 to -3.
   - He's right two times in three. The third time it was drifters cutting through for water. If you were near the town that night, the Around town box says what you saw, so you know what he doesn't. If you're in the town that morning, the box has his word.

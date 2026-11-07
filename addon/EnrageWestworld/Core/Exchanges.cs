@@ -277,6 +277,19 @@ namespace EnrageWestworld.Core
         private static readonly string[] Shake = { "I'll shake on it if you will, {b}. Fence and all.", "Aye. I will. It's been a long, stupid summer." };
         private static readonly string[] Done = { "There's no more talking between us, {b}.", "Suits me." };
 
+        // cards: A (the gambler) asks B for a loan, by stage; B lends, refuses cold, or snaps (FIVEDAY item 32a)
+        private static readonly string[] Borrow =
+        {
+            "{b}, a word. I'm a little short till Saturday. Ten dollars would see me right.",
+            "{b}, I know I asked before. The cards turned on me. Five more and I'll win it back.",
+            "{b}, they'll have the roof off my head. I need it tonight. I don't beg, and I'm begging."
+        };
+        private static readonly string[] Lend = { "Here. Saturday, mind.", "This is the last of it, {a}. I mean that.", "Take it. And stay away from that table." };
+        private static readonly string[] LendCold = { "I don't lend at cards, {a}. Not to anyone.", "I'm no bank, {a}.", "You'll have to find it somewhere else." };
+        private static readonly string[] LendSharp = { "Lend you money for faro? Go home, {a}.", "You owe half the street already.", "Beg somebody who doesn't know you." };
+        private static readonly string[] Repaid = { "Every dollar, {b}, and my thanks. I'm done with the cards.", "Glad to see it, {a}. Gladder than the money." };
+        private static readonly string[] Stiffed = { "Saturday came and went, {a}. Three of them.", "I'll have it. I just need one good night." };
+
         // courting: A courts B; B warms to it only if it will end well
         private static readonly string[] Court =
         {
@@ -352,6 +365,36 @@ namespace EnrageWestworld.Core
                         s.Add(0, fill(end[0]), good ? "flatter" : "shame", "face").Add(1, fill(end[1]), good ? "cheer" : "sorry");
                         s.Kind = good ? "propose" : "brushoff";
                         s.Doer = good ? -1 : 1;   // B says no
+                    }
+                    break;
+                case "cards":   // the gambler asks his lender (FIVEDAY item 32a): lent, refused cold, or snapped at; then paid back or not
+                    if (stage < 3)
+                    {
+                        string manner = Manner(b, false);
+                        s.Add(0, fill(Borrow[st]), st == 2 ? "plead" : "mild", "face");
+                        if (manner == "kind")
+                        {
+                            s.Add(1, fill(Lend[st]), "mild");
+                            s.Kind = "help";
+                            s.Doer = 1;   // B helps A out
+                        }
+                        else
+                        {
+                            s.Add(1, fill((manner == "cold" ? LendCold : LendSharp)[st]), manner == "cold" ? "mild" : "angry", "walkaway");
+                            s.Kind = manner == "cold" ? "brushoff" : "snap";
+                        }
+                    }
+                    else if (good)
+                    {
+                        s.Add(0, fill(Repaid[0]), "relieved", "face").Add(1, fill(Repaid[1]), "cheer");
+                        s.Kind = "settled";
+                        s.Doer = 0;   // A paid B what was owed
+                    }
+                    else
+                    {
+                        s.Add(1, fill(Stiffed[0]), "angry", "face").Add(0, fill(Stiffed[1]), "plead", "walkaway");
+                        s.Kind = "debt";
+                        s.Doer = 1;   // B calls it in
                     }
                     break;
                 default:
@@ -459,7 +502,7 @@ namespace EnrageWestworld.Core
             return MoreLines().Concat(Hello).Concat(Snap.Values).Concat(GoodNews.Values).Concat(BadNews.Values).Concat(KindToTrouble).Concat(ColdToTrouble).Concat(SharpToTrouble)
                 .Concat(SnapBack).Concat(KindToGood).Concat(ColdToGood).Concat(SharpToGood).Concat(KindToBad).Concat(ColdToBad).Concat(SharpToBad)
                 .Concat(QuarrelAgain).Concat(MakeUp).Concat(Accept).Concat(Refuse).Concat(Stand).Concat(Dare).Concat(SweetHello).Concat(SweetBack)
-                .Concat(CallIn).Concat(Owe).Concat(OwedKind).Concat(OwedCold).Concat(OwedSharp).Concat(Paid).Concat(PaidCount).Concat(PaidAsk).Concat(PaidWitness).Concat(PaidLast).Concat(Mule).Concat(Fence).Concat(Shake).Concat(Done).Concat(Court).Concat(CourtWarm).Concat(CourtCool).Concat(Yes).Concat(No);
+                .Concat(CallIn).Concat(Owe).Concat(OwedKind).Concat(OwedCold).Concat(OwedSharp).Concat(Paid).Concat(PaidCount).Concat(PaidAsk).Concat(PaidWitness).Concat(PaidLast).Concat(Mule).Concat(Fence).Concat(Shake).Concat(Done).Concat(Borrow).Concat(Lend).Concat(LendCold).Concat(LendSharp).Concat(Repaid).Concat(Stiffed).Concat(Court).Concat(CourtWarm).Concat(CourtCool).Concat(Yes).Concat(No);
         }
 
         /// The worry kinds every reason needs lines for, for the tests.

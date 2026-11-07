@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 283;
+        public const int CurrentVersion = 284;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -359,6 +359,7 @@ namespace EnrageWestworld.Core
         public bool LastingMarksLook = false;   // [Mind] ... and shows it: the gait and the bruising below (off until the probe row has been seen in game)
         public string LastingMarksGait = "injured_general";   // [Mind] the game's gait for the marked (the probe row's candidates; empty: none)
         public string LastingMarksPack = "SCR_Torture";   // [Mind] the game's damage pack for the marked (the probe row's candidates; empty: none)
+        public bool GamblersBorrow = true;   // [Mind] a gambler at the worst of his cards borrows from a man of his town (a friend first), who lends, refuses or snaps; paid back or never (Links, Exchanges.MakeLinked; FIVEDAY item 32a, settings version 284)
         public bool TieGossip = true;   // [Mind] word of your deeds moves along the town's ties: friends tomorrow, others the day after, bent at each telling (Core/TieGossip.cs; FIVEDAY item 23, settings version 275)
         public bool SharedFright = true;   // [Mind] two who both saw you kill are tied by it: their tie warms, they keep clear of you together, and their quiet talks are of it (Core/SharedFright.cs; FIVEDAY item 22, settings version 274)
         public bool SurvivorsChanged = true;   // [Mind] one you beat or robbed comes back changed: with friends to get even, with standing for having faced you, or broken and keeping clear (Core/Survivors.cs; FIVEDAY item 21, settings version 273)
@@ -906,6 +907,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 284)
+                    log?.Invoke("Settings: new in this version: [Mind] GamblersBorrow (on): a gambler borrows from a man of his town.");
                 if (s.SettingsVersion < 283)
                     log?.Invoke("Settings: new in this version: [World] FenceCutters (on): wire cut in the night, and a feud that climbs.");
                 if (s.SettingsVersion < 282)
@@ -1776,6 +1779,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("LastingMarksLook = " + B(LastingMarksLook) + "   ; ... and their body shows it: the gait and the bruising below (off as it comes: the names aren't proven; the Testing row \"A beating's marks\" tries each)");
             b.AppendLine("LastingMarksGait = " + LastingMarksGait + "   ; the game's gait for the marked, from the probe: injured_general, injured_left_leg, injured_right_leg, injured_torso, injured_left_arm, injured_right_arm (empty: none)");
             b.AppendLine("LastingMarksPack = " + LastingMarksPack + "   ; the game's damage pack for the marked, from the probe (empty: none)");
+            b.AppendLine("GamblersBorrow = " + B(GamblersBorrow) + "   ; a townsman whose worry is the cards borrows from another man of his town, a friend first: they meet in the street over it as it goes on (he lends, refuses, or snaps at him), and at the end it's paid back where the street can see, or called in and never paid. The lender thinks of it too");
             b.AppendLine("TieGossip = " + B(TieGossip) + "   ; inside a town, word of your violence and your thieving moves person to person along the ties the street made: the friends of someone who knows hear it the next day, anyone else they're tied to the day after, a little more bent at each telling; who heard it thinks of who told them. A week on, the talk is done");
             b.AppendLine("SharedFright = " + B(SharedFright) + "   ; two people who both saw you kill are tied by it: the tie between them warms, for two weeks they keep clear of you together when both are about, and when the street's quiet talk falls to the two of them it is mostly about that, low-voiced");
             b.AppendLine("SurvivorsChanged = " + B(SurvivorsChanged) + "   ; someone you beat or robbed and left alive comes back changed, a day on, by who they are: angry and with friends, they bring up to two of them when they call you out (and they fight with them); the bold have more standing for having faced you; the timid are broken by it, never come at you, keep clear and stay home; their thoughts and their friends' say which");

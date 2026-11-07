@@ -316,7 +316,7 @@ namespace EnrageWestworld.Core
                     list.Add(new Concern
                     {
                         Kind = "link:" + l.Kind, Stage = -1, Urgency = 0.4f,
-                        Words = l.Kind == "debt" ? who + "'s debt to them" : l.Kind == "feud" ? who + "'s quarrel with them" : l.Kind == "courting" ? who + "'s courting" : who + "'s trouble"
+                        Words = l.Kind == "debt" ? who + "'s debt to them" : l.Kind == "feud" ? who + "'s quarrel with them" : l.Kind == "courting" ? who + "'s courting" : l.Kind == "cards" ? who + "'s card debts" : who + "'s trouble"
                     });
                 }
             if (p.Goals != null)
