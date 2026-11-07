@@ -57,6 +57,7 @@ namespace EnrageWestworld.Core
         public string Town;
         public bool Saloon;
         public bool Night;
+        public bool Payday;          // Saturday afternoon, the week's pay out ([Scenes] Payday; Core/Payday.cs)
         public float Trouble = 1f;   // [Scenes] TroubleWeight: the brawl's and the argument's share of a chance meeting scaled by it
         public bool ArgueCapped = true;   // [Scenes] ChanceFirst: the argument's share scaled by the weight up to 1.5 only, the brawl's by all of it (NIGHT4 fix 7: at 5, argue was half of all chance meetings)
         public bool WomenFight;      // [Scenes] WomenInFights: a brawl with a woman in it, at half the share for each woman (Lex, 2026-10-29)
@@ -181,6 +182,7 @@ namespace EnrageWestworld.Core
                 case "brawl": return Brawl(c, seed);
                 case "rematch": return Rematch.AgainScene(c, seed);   // the beaten man's plan (Core/Rematch.cs): a brawl of its own words
                 case "shake": return Rematch.ShakeScene(c, seed);     // his hand offered, taken or refused
+                case "wages": return c.AWoman != c.BWoman ? Payday.Wages(c, seed) : null;   // payday: a woman meets a man for his pay (Core/Payday.cs)
                 case "propose": return Propose(c, seed);
                 case "cheat": return Cheat(c, seed);
                 case "debt": return Debt(c, seed);

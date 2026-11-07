@@ -939,7 +939,7 @@ namespace EnrageWestworld.InGame
             long g = Bridge.Now();
             SceneCast cast = new SceneCast
             {
-                AWoman = !PED.IS_PED_MALE(a.Handle), BWoman = !PED.IS_PED_MALE(b.Handle), Town = _placeTown, Saloon = saloon, Night = Natives.Night(), Trouble = _cfg.TroubleWeight, ArgueCapped = _cfg.ChanceFirst, WomenFight = _cfg.WomenInFights,
+                AWoman = !PED.IS_PED_MALE(a.Handle), BWoman = !PED.IS_PED_MALE(b.Handle), Town = _placeTown, Saloon = saloon, Night = Natives.Night(), Payday = _cfg.Payday && _placeTown != null && Payday.Now(InnerLife.Weekday, CLOCK.GET_CLOCK_HOURS()), Trouble = _cfg.TroubleWeight, ArgueCapped = _cfg.ChanceFirst, WomenFight = _cfg.WomenInFights,
                 HostTier = TownHostTier(), HasCrowd = crowd != null, CWoman = crowd != null && !PED.IS_PED_MALE(crowd.Handle), OldTimer = Director.OldModel(a),
                 PlayerNear = a.Position.DistanceTo(me.Position) < 12f,
                 Names = SceneNames(a, b, crowd),

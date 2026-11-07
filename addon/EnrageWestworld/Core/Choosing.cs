@@ -30,6 +30,7 @@ namespace EnrageWestworld.Core
         public string Plan;                   // a plan they carry over these days (Plans.cs: geteven, repay, paydebt, court), or null
         public string Worry;                  // the worry they carry this week (InnerLife.Worries: debt, fever, son...), with [Mind] WorriesShown; else null
         public int WorryStage;                // its stage: 0 begun, 1 deepening, 2 at its worst, 3 over (Core/WorryActs.cs)
+        public bool Payday;                   // [Scenes] Payday on: Saturday afternoon's pull applies (Core/Payday.cs)
         // night 2026-10-28 (item 5, the shadow): who is in sight
         public int TiesNear;                  // people in sight they have a warm tie with (a word or a nod to one of them)
         public bool FoeNear;                  // someone in sight they have a hostile tie with (stepping clear)
@@ -261,6 +262,8 @@ namespace EnrageWestworld.Core
             if (c.Plan != null)
                 s += PlanLean(c.Plan, d.Id);
             s += WorryActs.Lean(c.Worry, c.WorryStage, d.Id);   // a worry bends the day, for everyone who carries one (FIVEDAY item 7)
+            if (c.Payday)
+                s += Payday.Lean(c.Weekday, c.Hour, c.Works, d.Id);   // the week's pay in their pocket (FIVEDAY item 11)
             if (c.Mood == "glad" && (d.Id == "talk" || d.Id == "stroll" || d.Id == "greet"))
                 s += 0.08f;
             s -= d.Effort * (n != null ? 0.3f + n[NeedState.Rest] : 0.3f);   // effort weighs more on the tired

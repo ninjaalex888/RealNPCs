@@ -404,6 +404,7 @@ namespace EnrageWestworld.InGame
                 Last = w.Choice, Recent = w.Recent, Now = g, TradeGroup = tg, Works = tg != "gentry" && !(w.P.Woman && tg == "town"), WorkPlace = tg == "girl" ? "saloon" : null, Woman = w.P.Woman, SaloonGirl = tg == "girl",
                 Plan = PlansOn ? _store.Plans.FirstOrDefault(p => !p.Done && p.HolderId == w.Id)?.Kind : null   // a plan leans the day (WestworldScript.Plans.cs)
             };
+            c.Payday = _cfg.Payday;
             if (_cfg.WorriesShown)
             {
                 string wk;
