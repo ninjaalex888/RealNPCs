@@ -53,6 +53,36 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        // ---- the photographer's window, 1907 (FIVEDAY R26; Core/Relics.cs) ----
+        private int _relicNextLook, _relicsShown;
+        private readonly Dictionary<string, long> _relicDay = new Dictionary<string, long>();
+
+        /// Every ten seconds in Saint Denis or Blackwater in 1907: within 25 m of the photographer at his counter, once a town a
+        /// day, his window in the Around town box.
+        private void RelicStep(int now)
+        {
+            if (_cfg == null || !_cfg.Relics || _placeTown == null || now < _relicNextLook || !Relics.Now(Voice.NowYear) || System.Array.IndexOf(Relics.Towns, _placeTown) < 0)
+                return;
+            _relicNextLook = now + 10000;
+            long day = Bridge.Now() / 1440, d;
+            if (_relicDay.TryGetValue(_placeTown, out d) && d == day)
+                return;
+            Ped me = Game.Player.Character;
+            foreach (Ped p in Peds.All())
+            {
+                if (p.IsDead || p.Position.DistanceTo(me.Position) > 25f)
+                    continue;
+                PostKind pk = PostKindOf(p);
+                if (pk == null || pk.Kind != MemorialPhoto.Kind)
+                    continue;
+                _relicDay[_placeTown] = day;
+                _relicsShown++;
+                Notice(_placeTown, Relics.Window(_placeTown + "|" + day), "news");
+                Log.Write("RELICS the photographer's window at " + _placeTown);
+                return;
+            }
+        }
+
         // ---- the editor's readers (FIVEDAY R14; Core/Editor.cs) ----
         private int _editNextLook, _editThoughts;
 

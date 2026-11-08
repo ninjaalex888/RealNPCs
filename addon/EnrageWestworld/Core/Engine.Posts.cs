@@ -157,6 +157,15 @@ namespace EnrageWestworld.Core
             return dead != null ? Telegraph.DeathLine(dead.Name, dead.Town, seed) : null;
         }
 
+        /// The photographer's thought of the relic trade, in 1907 (FIVEDAY R26), or null.
+        private string RelicThought(Post post, Resident r, string seed)
+        {
+            if (Cfg == null || !Cfg.Relics || post == null || !Relics.Now(Voice.NowYear))
+                return null;
+            PostKind k = Posts.Of(post.Model);
+            return k != null && k.Kind == MemorialPhoto.Kind ? Relics.Thought(seed) : null;
+        }
+
         /// The photographer's thought of the dead of his town these ten days, or null (not the photographer, the switch off,
         /// a quiet spell). Only the town's own people (residents and townsfolk), never a stranger's body.
         private string PhotographerThought(Post post, Resident r, string seed)
@@ -194,6 +203,9 @@ namespace EnrageWestworld.Core
                 string wire = TelegraphThought(post, r, near, seed);   // what came over the wire (FIVEDAY R15)
                 if (wire != null)
                     extra.Add(new Minds.Candidate { Source = "post:telegraph", Pull = Telegraph.Pull + Minds.Jitter(seed, "tel", 6), Make = () => wire });
+                string relic = RelicThought(post, r, seed);   // 1907: the outlaws for sale (FIVEDAY R26)
+                if (relic != null)
+                    extra.Add(new Minds.Candidate { Source = "post:relics", Pull = Relics.Pull + Minds.Jitter(seed, "rel", 6), Make = () => relic });
                 string plates = PhotographerThought(post, r, seed);   // the dead he's photographed (FIVEDAY R11)
                 if (plates != null)
                     extra.Add(new Minds.Candidate { Source = "post:photographer", Pull = MemorialPhoto.Pull + Minds.Jitter(seed, "pho", 6), Make = () => plates });

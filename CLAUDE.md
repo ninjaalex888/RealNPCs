@@ -1092,6 +1092,16 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## Relics (FIVEDAY R26, 2026-11-08; `[World] Relics`; settings version 315)
+
+Core/Relics.cs: `Now(year)` (1907 on), `Towns` (the photographers'), `Thought`, `Window`.
+
+Engine.Posts' `RelicThought`: a "post:relics" candidate (pull 40) for PostKind "photographer" when `Voice.NowYear` is 1907 or later.
+
+`RelicStep` (WestworldScript.DriftPoster.cs): every 10 s in those towns in 1907, with the photographer within 25 m, once a town a day, `Notice` with the window.
+
+mindtest `RelicsTest` (`relics`).
+
 ## The boy who remembers (FIVEDAY R25, 2026-11-08; `[World] BoyRemembers`; settings version 314)
 
 Core/Epilogue.cs: `WasBoy(Resident)` (a man aged 8-15 in 1899 by BornYear), `BoyThought`, `BoyAsks`.
