@@ -1092,6 +1092,10 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## A fais do-do (FIVEDAY R22, 2026-11-08; `[World] EventFaisDoDo`; settings version 311)
+
+A `FestivalKind` "faisdodo": Lagras, every Saturday, 20:00-23:30, the mainstreet spot, six beats, `Couple`. In `FestivalOver`, a Couple kind notes a "flirt" between AId and BId instead of the cheer and envy. Testing row `faisdodo`. mindtest FestivalsTest's checks.
+
 ## A brass band funeral (FIVEDAY R21, 2026-11-08; `[World] EventBrassFuneral`; settings version 310)
 
 A `FestivalKind` "brassfuneral" with `OnDeath`: Saint Denis, 15:00-17:00, the cemetery spot, {d} the dead (Extra).

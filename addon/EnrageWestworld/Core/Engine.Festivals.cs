@@ -17,6 +17,7 @@ namespace EnrageWestworld.Core
                 case "fourth": return Cfg.EventFourth;
                 case "mardigras": return Cfg.EventMardiGras;
                 case "brassfuneral": return Cfg.EventBrassFuneral;
+                case "faisdodo": return Cfg.EventFaisDoDo;
                 default: return false;
             }
         }
@@ -86,6 +87,11 @@ namespace EnrageWestworld.Core
             e.Outcome = attended ? "attended" : "away";
             var regs = Store.Residents.Where(r => r.Town == e.Town && r.Regular && !r.Dead && r.Id != e.AId && r.Id != e.BId).OrderBy(r => Voice.Hash(r.Id + "|" + e.Id)).ToList();
             Resident friend = regs.FirstOrDefault(r => !r.Woman), rival = regs.FirstOrDefault(r => r.Woman);
+            if (f != null && f.Couple && e.AId != null && e.BId != null)
+            {
+                Ties.Note(Store.Ties, e.AId, e.AName, e.BId, e.BName, e.Town, "flirt", now);   // courting, under every aunt's eye (R22)
+                friend = rival = null;
+            }
             if (e.AId != null && friend != null)
                 Ties.Note(Store.Ties, friend.Id, friend.Name, e.AId, e.AName, e.Town, "cheer", now);
             if (e.BId != null && rival != null)

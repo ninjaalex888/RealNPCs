@@ -21,6 +21,7 @@ namespace EnrageWestworld.Core
         public int FromMin, ToMin, Affection = 3;
         public Func<int, int, int, bool> On;        // (year, month, day): the festival's date (null for one booked by a death)
         public bool OnDeath;                         // booked the day after a named death in its town ({d} the dead; R21)
+        public bool Couple;                          // its man and woman come away courting (a "flirt" between them), not cheered and envied (R22)
         public string[] Beats;                       // the staged lines in order ({m} a man's prize, {w} a woman's)
         public string ManPrize, WomanPrize;         // what the named winners win, or null
         public string Posted, Morning;              // {t} the town, {m} {w} the winners
@@ -103,6 +104,26 @@ namespace EnrageWestworld.Core
                     "[parasols and handkerchiefs in the air, the whole street behind the band, and nobody sad]" },
                 Posted = "The society buries {d} tomorrow at three, with the band. All who knew him are asked to walk.",
                 Morning = "They buried {d} with the band yesterday, and the second line went on till dark."
+            },
+            // A fais do-do in Lagras (R22, [World] EventFaisDoDo): every Saturday night, eight till half past eleven, the bayou's
+            // dance: a fiddle and an accordion, waltzes and two-steps on the boards, the gumbo pot, the babies put to sleep in the
+            // back room ("fais do-do", go to sleep, is what the mothers sang), and a young couple of the village dancing every
+            // dance together, who come away courting. Why it reads true: the weekly dance was the bayou's whole social world, the
+            // place courtship was done in public, under every aunt's eye (the chaperone as institution), and for that, safely.
+            new FestivalKind
+            {
+                Kind = "faisdodo", Title = "A fais do-do", Spot = "mainstreet", Towns = new[] { "Lagras" }, FromMin = 20 * 60, ToMin = 23 * 60 + 30, Affection = 2,
+                On = (y, m, d) => Calendar.Weekday(y, m, d) == 6,
+                Beats = new[] {
+                    "[a fiddle and an accordion strike up, and the boards start to thump]",
+                    "[a waltz, slow, the old couples first, then everybody]",
+                    "[the babies carried to the back room and sung to sleep: fais do-do, fais do-do]",
+                    "Look at {m} and {w}. Every dance together. Somebody tell her mother.",
+                    "[a two-step, fast, the gumbo pot passed round, somebody's uncle on the spoons]",
+                    "[the last waltz, and the lamps turned down]" },
+                ManPrize = "every dance with her", WomanPrize = "every dance with him", Couple = true,
+                Posted = "Fais do-do in Lagras Saturday night: the fiddle, the accordion, gumbo for all.",
+                Morning = "At the fais do-do in Lagras, {m} and {w} danced every dance together. The aunts are talking."
             },
         };
 

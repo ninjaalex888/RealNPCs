@@ -6,6 +6,10 @@
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
   - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Display] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
 
+- **A fais do-do in Lagras** (`[World] EventFaisDoDo`, on, with TownEvents; settings version 311; FIVEDAY reserve R22). Every Saturday night in Lagras, from eight till half past eleven, the bayou's dance: a fiddle and an accordion, waltzes and two-steps on the boards, the gumbo pot passed round, the babies carried to the back room and sung to sleep ("fais do-do"). A young couple of the village dance every dance together, and come away courting; the aunts are talking by morning.
+  - Why it reads true: the weekly dance was the bayou's whole social world, where courtship was done in public, under every aunt's eye, and so safely.
+  - A Testing row, "A fais do-do", stages one.
+
 - **A brass band funeral in Saint Denis** (`[World] EventBrassFuneral`, on, with TownEvents; settings version 310; FIVEDAY reserve R21). The day after a named death in Saint Denis, from three till five, posted the day before, from the cemetery spot (else near you):
   - the society's brass band leading the dirge out, its men in black sashes behind the dead;
   - the hymn at the graveside, with the trombone carrying the tune;
