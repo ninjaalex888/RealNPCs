@@ -307,6 +307,19 @@ namespace EnrageWestworld.InGame
                         said = "A wire found cut at " + _placeTown + "; the box has the word, and what you saw";
                         return null;
                     }
+                case "quilt":   // FIVEDAY R8
+                    {
+                        skipped = "Tuesday and Thursday afternoons, standing still, once a town a day";
+                        if (!_cfg.QuiltingBee)
+                            return "off ([Scenes] QuiltingBee)";
+                        if (_quiltLines != null)
+                            return "you're hearing it now";
+                        string why = QuiltLook(Game.GameTime, true);
+                        if (why != null)
+                            return why;
+                        said = "Through the window, the quilting bee (the ticker)";
+                        return null;
+                    }
                 case "foreclosure":   // FIVEDAY R3
                     {
                         skipped = "the bank worry's bad end today, the hours, once a town a day";

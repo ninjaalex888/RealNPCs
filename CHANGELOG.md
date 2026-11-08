@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **The quilting bee, overheard** (`[Scenes] QuiltingBee`, on; settings version 296; FIVEDAY reserve R8). On Tuesday and Thursday afternoons, stand still on foot by a town's church steps (the church hall's window is open) and for half a minute the ticker carries "Through the window": the needles and the kettle, then the town's goings-on of the last three days by name, as the women tell them (who quarrelled, who's courting, who came to blows). Their own talk runs between, and a word about you by what the town knows of you: feared, warm, or a stranger to them. Once a town a day.
+  - Why it reads true: the quilting bee held a small town's social knowledge, and gossip is how a town keeps its norms. They're candid because they don't know you can hear.
+  - Offline: half a minute tells you two of the town's goings-on by name and what it thinks of you. A Testing row, "Overhear the quilting bee", plays it.
+
 - **A barn raising** (`[World] EventBarnRaisings`, on, with TownEvents; settings version 295; FIVEDAY reserve R7). From March to October, now and then a farm family in a country town has its barn raised by the neighbours on a Saturday from nine, posted ahead. It plays at the town's corral spot, else near you: the call, the bents going up on the pike poles, the dinner on trestles, the family's thanks.
   - If two townsmen are at odds, the foreman puts them on the same beam. They bicker, and then the beam has to go up: six times in ten it mends the feud (a makeup), and the rest they fall out again.
   - The neighbours who came are warmer to the family, and the regulars to you if you were there.

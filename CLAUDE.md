@@ -1084,6 +1084,19 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## The quilting bee (FIVEDAY R8, 2026-11-07; `[Scenes] QuiltingBee`; settings version 296)
+
+Core/QuiltingBee.cs:
+- `Now(weekday, minute)`: Tue/Thu 13:00-16:30.
+- `Lines(ties, killsKnown, kindnesses, seed)`: the opening, up to 2 tie lines each followed by `Talk` (else a filler), then `OfYou` (feared when kills exceed kindnesses, warm when there are kindnesses, else the stranger).
+
+WestworldScript.QuiltingBee.cs:
+- Looks every second in a town during the hours, once a town a day (`_quiltDay`).
+- You on foot within 25 m of the churchsteps spot, still for 6 s.
+- The tie lines are `Ties.TalkOf(_store.Ties, town)` from the last 3 days via `Ties.TownThought`; the kills and kindnesses come from `Engine.StandingOf`.
+- The lines go to the ticker as "Through the window", one each 7 s. Nothing is spawned or directed.
+- Testing row `quilt`. F7 `TEST quilting bee:`. mindtest `QuiltingBeeTest` (`quilt`).
+
 ## A barn raising (FIVEDAY R7, 2026-11-07; `[World] EventBarnRaisings`; settings version 295)
 
 Core/BarnRaising.cs:
