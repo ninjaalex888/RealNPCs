@@ -414,6 +414,7 @@ namespace EnrageWestworld.InGame
             c.SaleMood = SaleMoodToday(w.Id);   // (FIVEDAY item 30)
             bool backslid;
             c.Saved = _engine.SavedNow(w.Id, g / 1440, out backslid);   // (FIVEDAY R4)
+            c.Sick = _engine.SickNow(w.Id);   // (FIVEDAY R9)
             c.Devotion = _cfg.SundayMorning && w.P != null ? w.P.Devotion ?? "Churchgoer" : null;   // (FIVEDAY item 25)   // (FIVEDAY item 22)   // (FIVEDAY item 21; null with SurvivorsChanged off)   // a breakdown's habit (FIVEDAY item 17; null with StressBuilds off)
             if (_cfg.WorriesShown)
             {

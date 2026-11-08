@@ -28,6 +28,7 @@ namespace EnrageWestworld.Core
         public string WorkPlace;              // where their work is, if it's somewhere work is otherwise improper (a barkeep's saloon)
         public bool Woman, SaloonGirl;        // a respectable woman of 1899 didn't drink or play cards in a saloon; the saloon's own women did
         public bool PassedOver;               // passed over at the docks' shape-up today (Core/ShapeUp.cs), with [World] ShapeUp
+        public bool Sick;                     // down with the town's fever (Core/Fever.cs), with [World] Fever
         public bool Saved;                    // saved at a camp meeting these two weeks (Core/Revival.cs), with [World] EventRevivals
         public string SaleMood;               // at Valentine's sale today (Core/SaleDay.cs): paid or ruined, with [World] SaleDay; else null
         public bool Mourning;                 // a friend's death these three weeks (Core/Mourning.cs), with [World] Mourning
@@ -137,7 +138,7 @@ namespace EnrageWestworld.Core
             new Doing { Id = "stroll", Words = "takes a stroll", Serves = N(0, 0, 0, 0, 0, 0.15f, 0, 0.2f), Effort = 0.1f, Risk = 0.02f, Proper = c => !c.Indoors && c.Weather != "storm" && (c.Hour >= 7 && c.Hour < 21), Suits = t => 0.12f * T(t, Traits.Curiosity) + 0.06f * T(t, Traits.Risk) },
             new Doing { Id = "eat", Words = "goes for something to eat", Serves = N(0.9f), Effort = 0.1f, Risk = 0f, Proper = c => c.Place != "church" && (Meal(c.Hour) || c.Place == "saloon" || c.Place == "hotel" || c.Place == "home"), Suits = t => 0f },
             new Doing { Id = "rest", Words = "sits down to rest", Serves = N(0, 0.6f, 0.1f), Effort = 0f, Risk = 0f, Proper = c => c.Hour < 19 || c.Place == "home" || !c.InTown, Suits = t => -0.08f * T(t, Traits.Order) },   // of an evening in a town, rest is at home
-            new Doing { Id = "home", Words = "heads home", Serves = N(0.5f, 0.9f, 0.6f, 0, 0.5f, 0, 0, 0.1f), Effort = 0.15f, Risk = 0f, Proper = c => c.Place != "home" && c.InTown && (c.Hour >= 19 || c.Hour < 6 || (c.Worry == "fever" && c.WorryStage >= 1 && c.WorryStage < 3 && !(c.Recent != null && c.Recent.Within("home", c.Now, 720)))), Suits = t => 0.1f * T(t, Traits.Order) - 0.06f * T(t, Traits.Sociability) },   // supper and bed; any hour for a parent with a child sick at home (FIVEDAY item 7)
+            new Doing { Id = "home", Words = "heads home", Serves = N(0.5f, 0.9f, 0.6f, 0, 0.5f, 0, 0, 0.1f), Effort = 0.15f, Risk = 0f, Proper = c => c.Place != "home" && c.InTown && (c.Sick || c.Hour >= 19 || c.Hour < 6 || (c.Worry == "fever" && c.WorryStage >= 1 && c.WorryStage < 3 && !(c.Recent != null && c.Recent.Within("home", c.Now, 720)))), Suits = t => 0.1f * T(t, Traits.Order) - 0.06f * T(t, Traits.Sociability) },   // supper and bed; any hour for a parent with a child sick at home (FIVEDAY item 7)
             new Doing { Id = "shelter", Words = "looks for a roof overhead", Serves = N(0, 0.1f, 1f), Effort = 0.1f, Risk = 0f, Proper = c => !c.Indoors && (c.Weather == "rain" || c.Weather == "storm" || c.Weather == "snow" || c.Weather == "dust"), Suits = t => 0.06f * T(t, Traits.Anxiety) },
             new Doing { Id = "work", Words = "gets on with the work", Serves = N(0, 0, 0, 0.9f, 0, 0, 0.2f, 0.2f), Effort = 0.35f, Risk = 0.02f, Proper = c => c.Weekday != 0 && c.Hour >= 7 && c.Hour < 18 && (c.Place != "church" && c.Place != "saloon" || c.WorkPlace != null && c.WorkPlace == c.Place), Suits = t => 0.15f * T(t, Traits.Order) + 0.05f * T(t, Traits.SelfControl) },
             new Doing { Id = "drink", Words = "has a drink", Serves = N(0, 0.1f, 0.1f, -0.1f, 0, 0.3f, 0, 0, 1f), Effort = 0.05f, Risk = 0.05f, Proper = c => (!c.Woman || c.SaloonGirl) && c.Place == "saloon" && !Sunday(c), Suits = t => -0.12f * T(t, Traits.SelfControl) - 0.1f * T(t, Traits.Piety) + 0.05f * T(t, Traits.Sociability) },
@@ -270,6 +271,7 @@ namespace EnrageWestworld.Core
             if (c.Plan != null)
                 s += PlanLean(c.Plan, d.Id);
             s += ShapeUp.Lean(c.PassedOver, d.Id);   // passed over at the wharf: the saloon (FIVEDAY item 29)
+            s += Fever.Lean(c.Sick, d.Id);   // the fever: home to bed (FIVEDAY R9)
             s += Revival.Lean(c.Saved, d.Id);   // saved at the camp meeting: away from the saloon and the cards, toward church (FIVEDAY R4)
             s += SaleDay.Lean(c.SaleMood, c.Hour, d.Id);   // sale day: the drovers drink their pay, the ruined man drinks (FIVEDAY item 30)
             s += Mourning.Lean(c.Mourning, d.Id);   // mourning: quieter days (FIVEDAY item 26)

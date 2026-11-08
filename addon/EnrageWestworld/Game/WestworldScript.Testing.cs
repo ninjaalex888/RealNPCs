@@ -307,6 +307,18 @@ namespace EnrageWestworld.InGame
                         said = "A wire found cut at " + _placeTown + "; the box has the word, and what you saw";
                         return null;
                     }
+                case "fever":   // FIVEDAY R9
+                    {
+                        skipped = "the rare day's roll and the ninety days between";
+                        Ped me0 = Game.Player.Character;
+                        Candidate near = ReasonCandidates(me0, now, true).Where(c => c.Who != null && c.Who.Id != null && Resident.IsResident(c.Who.Id) && c.Ped.Position.DistanceTo(me0.Position) < 20f)
+                                                                         .OrderBy(c => c.Ped.Position.DistanceTo(me0.Position)).FirstOrDefault();
+                        string what = _engine.FeverTest(_placeTown, near != null ? near.Who.Id : null, Bridge.Now());
+                        if (what.StartsWith("off") || what.StartsWith("no"))
+                            return what;
+                        said = what;
+                        return null;
+                    }
                 case "quilt":   // FIVEDAY R8
                     {
                         skipped = "Tuesday and Thursday afternoons, standing still, once a town a day";

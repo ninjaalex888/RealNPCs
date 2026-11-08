@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Fever in town** (`[World] Fever` and `FeverDeaths`, both on; settings version 297; FIVEDAY reserve R9). Rarely (a town in about a hundred and fifty a day, ninety days apart), diphtheria, typhoid or scarlet fever breaks out in a town. Each day it passes along the warm ties of its residents (friends, sweethearts, the neighbours who visit), one tie in twenty-five a day.
+  - The sick keep to home for about a week, at any hour, and think of it. People near you in that town think of the fear.
+  - At three sick, the board of health posts a quarantine (the box). When nobody's sick it's over, and the box says what it cost.
+  - With FeverDeaths, one in twelve of the sick dies of it, named and mourned like anyone (the wake, the grave).
+  - Why it reads true: a disease that spreads by kindness, along the visits and the shared pew, turns every friend's call into a gamble.
+  - Offline, an outbreak through a town of sixty takes about twelve sick and one or two dead and lasts up to six weeks, with the quarantine posted in three outbreaks in five. A sick townsman at noon goes home 96% of the time (before: no fever). A Testing row, "A fever starts in this town", starts one.
+
 - **The quilting bee, overheard** (`[Scenes] QuiltingBee`, on; settings version 296; FIVEDAY reserve R8). On Tuesday and Thursday afternoons, stand still on foot by a town's church steps (the church hall's window is open) and for half a minute the ticker carries "Through the window": the needles and the kettle, then the town's goings-on of the last three days by name, as the women tell them (who quarrelled, who's courting, who came to blows). Their own talk runs between, and a word about you by what the town knows of you: feared, warm, or a stranger to them. Once a town a day.
   - Why it reads true: the quilting bee held a small town's social knowledge, and gossip is how a town keeps its norms. They're candid because they don't know you can hear.
   - Offline: half a minute tells you two of the town's goings-on by name and what it thinks of you. A Testing row, "Overhear the quilting bee", plays it.

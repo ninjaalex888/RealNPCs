@@ -1084,6 +1084,23 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Fever in town (FIVEDAY R9, 2026-11-07; `[World] Fever`, `FeverDeaths`; settings version 297)
+
+Core/Fever.cs:
+- `Starts` (7 in 1,000 a town-day, 90 days apart), `Catches` (4% a warm tie a day, residents of the same town only).
+- `SickDays` (6-9), `Dies` (8%, FeverDeaths), `Name`.
+- `Lean`: home +0.6; work and saloon -0.5; drink and cards -0.4; church and greet -0.3; store -0.2.
+- The lines, `Quarantine`, `Over`.
+
+Engine.Fever.cs, `FeverDaily` (the daily tick), all in Store.Counts:
+- The sick whose days are up: "had:" or, with FeverDeaths, NoteDied (How "the fever"), counted in "feverdead:<town>".
+- The spread over `Store.Ties` with Warmth > 0, to residents of the same town who aren't sick or recovered.
+- Per town: an end (toast, the keys cleared, "feverlast:"), the quarantine at 3 sick ("quarantine:"), or a start (`FeverStart`: an index case not recovered).
+- Recovered keys older than a year are dropped.
+- `SickNow` feeds ChoiceContext.Sick (Mind.cs). The home Proper is open at any hour with Sick. `FeverIn` and `FeverTest` too.
+
+Game (WestworldScript.Fever.cs): every 20 s in a fever town, one named person near thinks of it, the sick of their own sickness. Testing row `fever` (the nearest resident within 20 m first). F7 `TEST fever:`. mindtest `FeverTest` (`fever`).
+
 ## The quilting bee (FIVEDAY R8, 2026-11-07; `[Scenes] QuiltingBee`; settings version 296)
 
 Core/QuiltingBee.cs:
