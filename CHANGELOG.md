@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **A sheriff's sale in the street** (`[World] Foreclosures`, on; settings version 291; FIVEDAY reserve R3). On the first day a resident's worry over the bank ends badly, one time in four, the bank sells them up in public. From ten till two, with the town's bankdoor (or mainstreet) spot recorded and you near, the sheriff's man calls the street together and sells three of their things: the plough, the milch cow, the parlour organ.
+  - The neighbours bid low. Two sales in five, not one of them will bid against the family, and the bank's man takes each lot.
+  - The family watches if they're near, and thinks of it.
+  - While a lot is called, J buys it back for them, once a sale: the family's thanks and a kindness the whole street sees. Half of these families still leave on the train after, as before.
+  - Why it reads true: the 1890s were the farm-mortgage decade the Farmers' Alliance came out of. A public sale was shame for the family and fear for every neighbour holding a note at the same bank, and a refusal to bid was a protest a whole town could make without a word.
+  - Offline, a town of sixty residents has about twelve a game year (before: none). A Testing row, "A sheriff's sale in the street", stages one.
+
 - **The slate at the store** (`[Scenes] StoreSlate`, on; settings version 290; FIVEDAY reserve R2). When you're at the store, now and then one of the town's people goes up to the counter and asks to put it on the slate. What they owe is their own this week, more with debt, the cards, the bank or the drink on their mind, and nothing for the well-off.
   - The keeper chalks it up, asks for something on account first, or says the slate's full and it's cash from now on. That's by what's owed and his own manner.
   - Refused, they think of the shame in front of the store. For ten seconds, J (the event key) lets you pay what they owe from your own pocket: their thanks, the keeper's, and a kindness seen by everyone near.

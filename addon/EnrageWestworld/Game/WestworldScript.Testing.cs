@@ -307,6 +307,19 @@ namespace EnrageWestworld.InGame
                         said = "A wire found cut at " + _placeTown + "; the box has the word, and what you saw";
                         return null;
                     }
+                case "foreclosure":   // FIVEDAY R3
+                    {
+                        skipped = "the bank worry's bad end today, the hours, once a town a day";
+                        if (!_cfg.Foreclosures)
+                            return "off ([World] Foreclosures)";
+                        if (_fore != null)
+                            return "a sale is going on now";
+                        string why = ForeclosureLook(Game.GameTime, true);
+                        if (why != null)
+                            return why;
+                        said = "The sheriff's man calls the street together; J while a lot is called buys it back";
+                        return null;
+                    }
                 case "slate":   // FIVEDAY R2
                     {
                         skipped = "the third of the time, the ninety seconds between, once a day each, the week's own debt";

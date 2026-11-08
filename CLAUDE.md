@@ -1084,6 +1084,23 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## A sheriff's sale (FIVEDAY R3, 2026-11-07; `[World] Foreclosures`; settings version 291)
+
+Core/Foreclosure.cs:
+- `SoldUp(worry, stage, good)`: "bank", stage 3, not good.
+- `Public` (25%), `NeighboursRefuse` (40%), `Hour` (10:00-14:00).
+- `Thing` and `PriceCents` ($2-8), `Rows`, the lines.
+
+`Engine.ForeclosureToday(town, day)`: a resident of the town, not dead, gone, held, a counter keeper or the test cast. Their worry today is SoldUp, it's the first day of that stage (yesterday's stage under 3, or a new arc), and `Public` holds.
+
+WestworldScript.Foreclosure.cs:
+- Every 10 s in a town in the hours. Asked once a town a day (`_foreToday` cache), once a town a day (`_foreDone`).
+- The "bankdoor" spot, else "mainstreet", within 80 m of you. Up to 7 named people within 60 m are held with StagedHold; the first is a man, the hammer. The family's own body, if near, is only turned to watch.
+- Beats: gather 15 s, the opening, then 3 lots (call, then a bid or the silence, then sold). Each call sets `PromptSet(Foreclosure.Kind, TownEvent{AId family, Extra = the thing, Count = cents}, 12 s)`.
+- The Trials EventKey menu has a Foreclosure case. "foreclosure:buy" calls `ForeclosureBuy`: once a sale, the cash, the hammer's line, the family's thanks, RecordEvent "charity", LikeMore 25.
+- The end: a neighbour's thought, NewsPush, everyone let go (StagedLetGo).
+- Switch off or EndEncounters ends it. Testing row `foreclosure` (the first resident near is the family). mindtest `ForeclosureTest` (`foreclosure`).
+
 ## The slate at the store (FIVEDAY R2, 2026-11-07; `[Scenes] StoreSlate`; settings version 290)
 
 Core/Slate.cs:

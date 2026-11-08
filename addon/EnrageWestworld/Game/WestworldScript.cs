@@ -1283,6 +1283,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST sale day: " + SaleDayStatus());
 			Log.Write("TEST drummers: " + DrummerStatus());
 			Log.Write("TEST slate: " + SlateStatus());
+			Log.Write("TEST foreclosures: " + ForeclosureStatus());
 			Log.Write("TEST fence cutters: " + _engine.FenceStatus() + "; " + _fenceSaw + " seen by you this session");
 			Log.Write("TEST tie gossip: " + _engine.TieGossipStatus());
 			Log.Write("TEST shared fright: " + (_cfg.SharedFright ? _store.Ties.Count(t => SharedFright.Fresh(t, _store.LastGameMin)) + " pairs tied by a killing they both saw (these two weeks); " + _frightTalks + " of their quiet talks this session" : "off ([Mind] SharedFright)"));

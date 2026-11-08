@@ -40,7 +40,7 @@ namespace EnrageWestworld.InGame
             _eventPrompt = kind;
             _eventPromptFor = e;
             _eventPromptUntil = Game.GameTime + ms;
-            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : ": the cell");
+            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == Foreclosure.Kind ? ": buy it back for them" : ": the cell");
         }
 
         private void PromptClear()
@@ -614,6 +614,7 @@ namespace EnrageWestworld.InGame
                 case "swear": menu.Rows = Trials.SwearRows(); menu.Title = "The sheriff's man:"; break;
                 case "show": menu.Rows = Shows.Rows(_eventPromptFor); menu.Title = "At the show:"; break;
                 case PrizeFight.Kind: menu.Rows = PrizeFight.Rows(_eventPromptFor); menu.Title = "Out back, the fight:"; break;
+                case Foreclosure.Kind: menu.Rows = Foreclosure.Rows(_eventPromptFor.Extra, _eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "The sheriff's sale:"; break;   // (FIVEDAY R3)
                 case Slate.Kind: menu.Rows = Slate.Rows(_eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "At the counter:"; break;   // (FIVEDAY R2)
                 default: menu.Rows = Trials.BreakoutRows(_eventPromptFor.AName); menu.Title = Person.FirstOf(_eventPromptFor.AName) + " is in the cell:"; break;
             }
@@ -669,6 +670,11 @@ namespace EnrageWestworld.InGame
                 BreakoutDo(e, now);
             if (m.Mode == "show" && row.Id != "show:watch")
                 ShowChoice(r, e, row.Id.Substring("show:".Length), now);   // WestworldScript.Shows.cs
+            if (m.Mode == Foreclosure.Kind && row.Id == "foreclosure:buy")
+            {
+                ForeclosureBuy(e);   // WestworldScript.Foreclosure.cs (FIVEDAY R3)
+                return;
+            }
             if (m.Mode == Slate.Kind && row.Id == "slate:pay")
             {
                 SlatePay(e);   // WestworldScript.Slate.cs (FIVEDAY R2)

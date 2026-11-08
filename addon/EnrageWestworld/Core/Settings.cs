@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 290;
+        public const int CurrentVersion = 291;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -380,6 +380,7 @@ namespace EnrageWestworld.Core
         public bool KinTownWrongs = true;   // [Scenes] with KinGrudges: a family takes up a beating or a theft one townsman did another; a man of theirs comes to town a week on and has it out with him (Engine.KinTownDaily; FIVEDAY item 32b, settings version 285)
         public bool FenceCutters = true;   // [World] now and then a homesteader of the open range finds his wire cut and blames the cattleman, and their feud climbs; near that night, you saw who it was (Core/FenceCutters.cs; FIVEDAY item 31, settings version 283)
         public bool SaleDay = true;   // [World] Tuesdays at the Valentine stockyards: the auction, the bids, sometimes a rancher ruined by the price, and the drovers drinking their pay (Core/SaleDay.cs; FIVEDAY item 30, settings version 282)
+        public bool Foreclosures = true;   // [World] the day a resident's worry over the bank ends badly, the sheriff's sale of their goods at the bank's door; the neighbours bid low or won't bid at all, and J buys a lot back (Core/Foreclosure.cs; FIVEDAY R3, settings version 291)
         public bool Drummers = true;   // [World] with TrainTime: one man in three off a train is a drummer, a travelling salesman who calls on the store's keeper with his pitch and leaves in two days (Core/Drummers.cs; FIVEDAY R1, settings version 289)
         public bool ShapeUp = true;   // [World] at dawn on the Saint Denis waterfront the foreman picks his gang from the crowd; the passed-over drift to the saloon, and one may take it out on the last man picked (Core/ShapeUp.cs; FIVEDAY item 29, settings version 281)
         public bool MineWhistle = true;   // [World] rarely, three whistles at the Annesburg mine: one or two of its men killed below, off screen; the town runs to the pithead, the names, the grief, the collection (Core/MineWhistle.cs; FIVEDAY item 28, settings version 280)
@@ -913,6 +914,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 291)
+                    log?.Invoke("Settings: new in this version: [World] Foreclosures (on): the sheriff's sale in the street when the bank takes a family's place.");
                 if (s.SettingsVersion < 290)
                     log?.Invoke("Settings: new in this version: [Scenes] StoreSlate (on): credit at the store's counter, and J to pay someone's slate.");
                 if (s.SettingsVersion < 289)
@@ -1818,6 +1821,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("KinTownWrongs = " + B(KinTownWrongs) + "   ; with KinGrudges on: when one townsman beats or robs another, two times in five the victim's brother, father, son, cousin or uncle comes to town five to nine days on, and if the one who did it is near you, walks up to him and has it out (words, a walk-off, an apology, or blows between two hot-tempered men)");
             b.AppendLine("FenceCutters = " + B(FenceCutters) + "   ; about once in a fortnight, a homesteader in an open-range town (Valentine, Strawberry, Rhodes, Emerald Ranch, Blackwater, Armadillo, Tumbleweed) finds his wire cut at first light and blames the cattleman, his feud neighbour first: their tie goes two steps colder, toward the quarrels and fights. A third of the time it was drifters. If you were near the town that night, the Around town box says what you saw");
             b.AppendLine("SaleDay = " + B(SaleDay) + "   ; Tuesdays from ten to half past one in Valentine, with the stockyards spot recorded and you near it, the named men about the pens gather to the auctioneer: three lots called and bid on (four in the autumn sale), one in five sold so low its rancher is ruined (the debt worry for a week, with WorriesShown), and those who were there drink their pay from one");
+            b.AppendLine("Foreclosures = " + B(Foreclosures) + "   ; the day a resident's worry over the bank ends badly, from ten till two, with the bankdoor (or mainstreet) spot recorded and you near: the sheriff's man sells their things in the street, three lots; the neighbours bid low, or two times in five won't bid at all; while a lot is called, J buys it back for the family, once a sale");
             b.AppendLine("Drummers = " + B(Drummers) + "   ; with TrainTime on: one man in three who steps down off a train is a drummer for a far city's firm, with a line of goods; near the store with him in town, he walks over to its keeper with his pitch, and the keeper orders, haggles or sends him off; in two days he's gone on the train");
             b.AppendLine("ShapeUp = " + B(ShapeUp) + "   ; from five to half past six in Saint Denis, with the wharf spot recorded and you near it, the named men about it crowd the wharf and the foreman picks his gang; the picked go to work, the passed-over to the saloon for the day, and a bitter one may have it out with the last man picked (a rematch plan, with MindPlans)");
             b.AppendLine("MineWhistle = " + B(MineWhistle) + "   ; rarely (a day in twenty-five, never within three weeks of the last), the mine whistle at Annesburg blows three times: one or two of the town's men are killed below, named, never shown, and mourned like anyone. In Annesburg you hear it, people run for the pithead, the names come up, and the hat goes round; away, the word reaches you");

@@ -63,6 +63,7 @@ namespace EnrageWestworld.Core
             new Entry("marks", "Tools", "A beating's marks: try the next gait and bruising", "TestMarksKey", needs: "a named person within 15 m (each press the next pair; the log says which)"),
             new Entry("fence", "People", "Fence cutters: a wire found cut here (now)", "TestFenceKey", needs: "[World] FenceCutters; a town with two men known to RealNPCs (the row counts you as near last night)"),
             new Entry("saleday", "People", "Sale day at the stockyards (now)", "TestSaleDayKey", needs: "[World] SaleDay; Valentine, the stockyards spot recorded and within 80 m, four named men about it"),
+            new Entry("foreclosure", "People", "A sheriff's sale in the street (now)", "TestForeclosureKey", needs: "[World] Foreclosures; a town with its bankdoor or mainstreet spot recorded and within 80 m, a named resident near for the family and three others about"),
             new Entry("slate", "People", "Someone asks for credit at the store (now)", "TestSlateKey", needs: "[Scenes] StoreSlate; the store's keeper within 25 m of you, and a named person within 18 m of him (refused, so J shows)"),
             new Entry("drummer", "People", "A drummer calls at the store (now)", "TestDrummerKey", needs: "[World] Drummers; a town's store keeper within 60 m of you, and a named man near to stand for the drummer"),
             new Entry("shapeup", "People", "The shape-up at the wharf (now)", "TestShapeUpKey", needs: "[World] ShapeUp; Saint Denis, the wharf spot recorded and within 80 m, three named men about it"),
