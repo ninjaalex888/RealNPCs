@@ -1092,6 +1092,16 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## The claim agent (FIVEDAY R24, 2026-11-08; `[World] ClaimAgents`; settings version 313)
+
+Core/ClaimAgent.cs:
+- `Kind(DeathEntry)`: "company" for How "the mine"; "insurance" for a Saint Denis death By another or the player; residents and folk only.
+- `Widow(seed)`: signs 40%, lawyer 30%, collection 30%. `Visit`, `End`.
+
+`Engine.ClaimAgentsDaily` (in Engine.Fever.cs, the daily tick): a death 3-9 days old with no "claim:<id>" gets the visit toast and that key; the next day, the end toast.
+
+mindtest `ClaimAgentTest` (`claim`).
+
 ## Grinding season (FIVEDAY R23, 2026-11-08; `[World] GrindingSeason`; settings version 312)
 
 Core/Grinding.cs:

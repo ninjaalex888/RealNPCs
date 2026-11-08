@@ -89,6 +89,39 @@ namespace EnrageWestworld.Core
                 Store.Counts.Remove(k);
         }
 
+        /// The claim agent and the widow (FIVEDAY R24; Core/ClaimAgent.cs): from the daily tick, the deaths three days old that
+        /// bring an agent (the mine's, a killing in Saint Denis): the visit in the box, and the next day the widow's end. Once a
+        /// death (Store.Counts "claim:<id>": the day of the visit). Returns how many visits.
+        public int ClaimAgentsDaily(long now)
+        {
+            if (Cfg == null || !Cfg.ClaimAgents)
+                return 0;
+            long day = now / 1440;
+            int visits = 0;
+            foreach (DeathEntry d in Store.Deaths)
+            {
+                string kind = ClaimAgent.Kind(d);
+                if (kind == null || d.Id == null)
+                    continue;
+                int visited = Store.Count(ClaimAgent.Prefix + d.Id);
+                long since = day - d.At / 1440;
+                if (visited == 0 && since >= ClaimAgent.AfterDays && since < ClaimAgent.AfterDays + 7)
+                {
+                    Store.Counts[ClaimAgent.Prefix + d.Id] = (int)day;
+                    Push(new Toast { Kind = "life", Title = ShortTown(d.Town), Weight = 30, Text = ClaimAgent.Visit(kind, d.Name, d.Town) });
+                    Log("CLAIM " + kind + " agent to " + d.Name + "'s widow at " + d.Town);
+                    visits++;
+                }
+                else if (visited > 0 && day - visited == 1)
+                {
+                    string choice = ClaimAgent.Widow(d.Id);
+                    Push(new Toast { Kind = "life", Title = ShortTown(d.Town), Weight = 30, Text = ClaimAgent.End(choice, d.Name) });
+                    Log("CLAIM " + d.Name + "'s widow: " + choice);
+                }
+            }
+            return visits;
+        }
+
         private void FallSick(Resident r, long day, string how)
         {
             Store.Counts[Fever.SickPrefix + r.Id] = (int)day;

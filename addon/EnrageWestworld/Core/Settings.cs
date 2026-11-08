@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 312;
+        public const int CurrentVersion = 313;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -402,6 +402,7 @@ namespace EnrageWestworld.Core
         public bool EditorSides = true;   // [World] each town's paper's editor adds his word to your deeds in print, in his slant (law and order, the people's, business), and readers near you agree or argue (Core/Editor.cs; FIVEDAY R14, settings version 302)
         public bool DriftingPosters = true;   // [World] the bill outside the sheriff's describes you as the town's rumour has it, true or bent out of shape, and people near hold you up against it (Core/DriftPoster.cs; FIVEDAY R13, settings version 301)
         public bool DimeNovels = true;   // [World] your most-told deed written up as a dime novel (a lurid title in the box), and a month of people near you thinking of having read it (Core/DimeNovel.cs; FIVEDAY R12, settings version 300)
+        public bool ClaimAgents = true;   // [World] three days after a mine death or a killing in Saint Denis, the claim agent calls on the widow; she signs, refuses, or the town takes up a collection (Core/ClaimAgent.cs; FIVEDAY R24, settings version 313)
         public bool Fever = true;   // [World] rarely, a fever goes through a town along its warm ties: the sick keep to home a week, a quarantine is posted at three, and with FeverDeaths one in twelve dies (Core/Fever.cs; FIVEDAY R9, settings version 297)
         public bool FeverDeaths = true;   // [World] with Fever: one in twelve of the sick dies of it, mourned like anyone
         public bool MineWhistle = true;   // [World] rarely, three whistles at the Annesburg mine: one or two of its men killed below, off screen; the town runs to the pithead, the names, the grief, the collection (Core/MineWhistle.cs; FIVEDAY item 28, settings version 280)
@@ -938,6 +939,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 313)
+                    log?.Invoke("Settings: new in this version: [World] ClaimAgents (on): the claim agent and the widow.");
                 if (s.SettingsVersion < 312)
                     log?.Invoke("Settings: new in this version: [World] GrindingSeason (on): grinding season in the cane, and its ball.");
                 if (s.SettingsVersion < 311)
@@ -1909,6 +1912,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("EditorSides = " + B(EditorSides) + "   ; when one of your deeds is printed, the town's paper's editor adds his word in his own slant (Saint Denis and Rhodes law and order, Valentine and Strawberry the people's, Blackwater and Armadillo business); for two days someone near you there who read it agrees or argues by temper");
             b.AppendLine("DriftingPosters = " + B(DriftingPosters) + "   ; in a town your deed's rumour has reached, the first time each day: the bill outside the sheriff's as it reads there (true where the telling's faithful, a thing wrong further out, wild when it's been passed along), in the box; and someone near now and then holds you up against it");
             b.AppendLine("DimeNovels = " + B(DimeNovels) + "   ; when your most-told deed has been talked of in two towns or more, on a Monday some New York hack writes it up: a dime novel in the store windows (the box has its lurid title), once a deed, sixty days apart; for thirty days people near you think of having read it, by their temper");
+            b.AppendLine("ClaimAgents = " + B(ClaimAgents) + "   ; three days after a man dies at the Annesburg mine, the company's claim agent calls on his widow with fifty dollars and a paper; after a killing in Saint Denis, the insurance man. The box tells it, and the next day what she did: signed, sent him away for a lawyer, or the town took up a collection");
             b.AppendLine("Fever = " + B(Fever) + "   ; rarely (a town in about a hundred and fifty a day, ninety days apart), a fever breaks out in a town and passes along its warm ties, one in seven a tie a day, among its residents: the sick keep to home about a week and think of it; at three sick the board of health posts a quarantine; it's over when nobody's sick, and the box says what it cost");
             b.AppendLine("FeverDeaths = " + B(FeverDeaths) + "   ; with Fever on: one in twelve of the sick dies of it, named and mourned like anyone (the wake, the grave). Off: they all get up again");
             b.AppendLine("MineWhistle = " + B(MineWhistle) + "   ; rarely (a day in twenty-five, never within three weeks of the last), the mine whistle at Annesburg blows three times: one or two of the town's men are killed below, named, never shown, and mourned like anyone. In Annesburg you hear it, people run for the pithead, the names come up, and the hat goes round; away, the word reaches you");
