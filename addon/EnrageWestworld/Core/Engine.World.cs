@@ -45,6 +45,12 @@ namespace EnrageWestworld.Core
             WEffect(new EnrageEffect { PersonId = id, Kind = "history", Text = text });
         }
 
+        /// Whether this town's paper had an editorial on you these two days (its readers' thoughts; FIVEDAY R14).
+        public bool EditorialFresh(string town, long now)
+        {
+            return Cfg != null && Cfg.EditorSides && town != null && Editor.Reading(now / 1440, Store.Count(Editor.Prefix + town));
+        }
+
         public void QueueLetter(Paper p)
         {
             if (p == null || !Cfg.Letters)
@@ -646,7 +652,13 @@ namespace EnrageWestworld.Core
                 if (item != null)
                 {
                     d.Printed = true;
-                    Requests.Add(new WorldRequest { Kind = "paper", Text = item, Town = d.Town ?? Rumours.NearestTown(d.X, d.Y) });
+                    string paperTown = d.Town ?? Rumours.NearestTown(d.X, d.Y);
+                    if (Cfg.EditorSides && paperTown != null)
+                    {
+                        item += " " + Editor.Editorial(paperTown, d.Id);   // the editor's word, in his slant (FIVEDAY R14)
+                        Store.Counts[Editor.Prefix + paperTown] = day;
+                    }
+                    Requests.Add(new WorldRequest { Kind = "paper", Text = item, Town = paperTown });
                 }
             }
         }

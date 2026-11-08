@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 301;
+        public const int CurrentVersion = 302;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -390,6 +390,7 @@ namespace EnrageWestworld.Core
         public bool Foreclosures = true;   // [World] the day a resident's worry over the bank ends badly, the sheriff's sale of their goods at the bank's door; the neighbours bid low or won't bid at all, and J buys a lot back (Core/Foreclosure.cs; FIVEDAY R3, settings version 291)
         public bool Drummers = true;   // [World] with TrainTime: one man in three off a train is a drummer, a travelling salesman who calls on the store's keeper with his pitch and leaves in two days (Core/Drummers.cs; FIVEDAY R1, settings version 289)
         public bool ShapeUp = true;   // [World] at dawn on the Saint Denis waterfront the foreman picks his gang from the crowd; the passed-over drift to the saloon, and one may take it out on the last man picked (Core/ShapeUp.cs; FIVEDAY item 29, settings version 281)
+        public bool EditorSides = true;   // [World] each town's paper's editor adds his word to your deeds in print, in his slant (law and order, the people's, business), and readers near you agree or argue (Core/Editor.cs; FIVEDAY R14, settings version 302)
         public bool DriftingPosters = true;   // [World] the bill outside the sheriff's describes you as the town's rumour has it, true or bent out of shape, and people near hold you up against it (Core/DriftPoster.cs; FIVEDAY R13, settings version 301)
         public bool DimeNovels = true;   // [World] your most-told deed written up as a dime novel (a lurid title in the box), and a month of people near you thinking of having read it (Core/DimeNovel.cs; FIVEDAY R12, settings version 300)
         public bool Fever = true;   // [World] rarely, a fever goes through a town along its warm ties: the sick keep to home a week, a quarantine is posted at three, and with FeverDeaths one in twelve dies (Core/Fever.cs; FIVEDAY R9, settings version 297)
@@ -925,6 +926,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 302)
+                    log?.Invoke("Settings: new in this version: [World] EditorSides (on): the town papers' editors take a side.");
                 if (s.SettingsVersion < 301)
                     log?.Invoke("Settings: new in this version: [World] DriftingPosters (on): the bills describe you as the rumours do.");
                 if (s.SettingsVersion < 300)
@@ -1862,6 +1865,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("Foreclosures = " + B(Foreclosures) + "   ; the day a resident's worry over the bank ends badly, from ten till two, with the bankdoor (or mainstreet) spot recorded and you near: the sheriff's man sells their things in the street, three lots; the neighbours bid low, or two times in five won't bid at all; while a lot is called, J buys it back for the family, once a sale");
             b.AppendLine("Drummers = " + B(Drummers) + "   ; with TrainTime on: one man in three who steps down off a train is a drummer for a far city's firm, with a line of goods; near the store with him in town, he walks over to its keeper with his pitch, and the keeper orders, haggles or sends him off; in two days he's gone on the train");
             b.AppendLine("ShapeUp = " + B(ShapeUp) + "   ; from five to half past six in Saint Denis, with the wharf spot recorded and you near it, the named men about it crowd the wharf and the foreman picks his gang; the picked go to work, the passed-over to the saloon for the day, and a bitter one may have it out with the last man picked (a rematch plan, with MindPlans)");
+            b.AppendLine("EditorSides = " + B(EditorSides) + "   ; when one of your deeds is printed, the town's paper's editor adds his word in his own slant (Saint Denis and Rhodes law and order, Valentine and Strawberry the people's, Blackwater and Armadillo business); for two days someone near you there who read it agrees or argues by temper");
             b.AppendLine("DriftingPosters = " + B(DriftingPosters) + "   ; in a town your deed's rumour has reached, the first time each day: the bill outside the sheriff's as it reads there (true where the telling's faithful, a thing wrong further out, wild when it's been passed along), in the box; and someone near now and then holds you up against it");
             b.AppendLine("DimeNovels = " + B(DimeNovels) + "   ; when your most-told deed has been talked of in two towns or more, on a Monday some New York hack writes it up: a dime novel in the store windows (the box has its lurid title), once a deed, sixty days apart; for thirty days people near you think of having read it, by their temper");
             b.AppendLine("Fever = " + B(Fever) + "   ; rarely (a town in about a hundred and fifty a day, ninety days apart), a fever breaks out in a town and passes along its warm ties, one in seven a tie a day, among its residents: the sick keep to home about a week and think of it; at three sick the board of health posts a quarantine; it's over when nobody's sick, and the box says what it cost");

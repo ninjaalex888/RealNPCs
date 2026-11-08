@@ -53,11 +53,35 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        // ---- the editor's readers (FIVEDAY R14; Core/Editor.cs) ----
+        private int _editNextLook, _editThoughts;
+
+        /// Every forty seconds in a town whose paper ran an editorial on you these two days: someone named near who read it
+        /// agrees or argues, by temper.
+        private void EditorStep(int now)
+        {
+            if (_cfg == null || !_cfg.EditorSides || _engine == null || _placeTown == null || now < _editNextLook)
+                return;
+            _editNextLook = now + 40000;
+            if (!_engine.EditorialFresh(_placeTown, Bridge.Now()))
+                return;
+            long day = Bridge.Now() / 1440;
+            foreach (int h in _mindNear)
+            {
+                MindWho w;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || !Voice.Chance(w.Id + "|ed|" + day, 50))
+                    continue;
+                _ticker.Push((w.Name ?? "Someone") + ", thinking", Editor.Reader(Minds.TemperGroup(w.P.Personality), w.Id + "|" + day), "near", h);
+                _editThoughts++;
+                break;
+            }
+        }
+
         private string PosterStatus()
         {
             if (_cfg == null || !_cfg.DriftingPosters)
                 return "off ([World] DriftingPosters)";
-            return _postersShown + " bills shown this session";
+            return _postersShown + " bills shown this session; " + _editThoughts + " readers of an editorial on you";
         }
     }
 }

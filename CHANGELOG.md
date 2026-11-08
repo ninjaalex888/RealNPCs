@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **The editor takes a side** (`[World] EditorSides`, on; settings version 302; FIVEDAY reserve R14). Every town's paper has its editor and his line:
+  - law and order (Saint Denis, Rhodes): hang the man, the sheriff must act;
+  - the people's (Valentine, Strawberry, Annesburg): ask who the real thieves are;
+  - business (Blackwater, Armadillo): capital won't settle where lead flies.
+  - When one of your deeds is printed, the editor adds his word in that slant. For two days, someone near you in that town who read it agrees, or argues with the paper (the bold and the cold do).
+  - Why it reads true: 1899's town papers were partisan by trade. The framing decided whether a killing was a crime or rough justice, and readers took it as fact or as "the editor" by their own lean.
+
 - **Posters that drift from the rumours** (`[World] DriftingPosters`, on; settings version 301; FIVEDAY reserve R13). In a town your deed's rumour has reached, the first time each day, the box has the bill outside the sheriff's as it reads there.
   - It's true where the telling is still faithful: your name, a big man, a dark coat.
   - One thing is wrong further out: a gray coat, a white horse, one more dead.
