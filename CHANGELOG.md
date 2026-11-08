@@ -6,6 +6,9 @@
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
   - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Output] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
 
+- **The boy who remembers (1907)** (`[World] BoyRemembers`, on, with EpilogueCarries; settings version 314; FIVEDAY reserve R25). In John's 1907, a carried-over man who was a boy of eight to fifteen in '99 and met Arthur remembers him as a boy remembers a man: the dollar outside the store, the reins of the bay horse, the way he stood with his thumbs in his belt. If John comes within six metres, the young man asks him aloud, once, whether he knew a man called Morgan.
+  - Why it reads true: an admired grown-up becomes the template a boy measures himself against for years, and the memory keeps the man's best and loses the rest.
+
 - **The claim agent and the widow** (`[World] ClaimAgents`, on; settings version 313; FIVEDAY reserve R24). Three days after a man dies at the Annesburg mine, the company's claim agent calls on his widow with fifty dollars and a paper, "in full settlement". After a killing in Saint Denis, the insurance man calls instead, to ask about the policy rather than about her. The box tells it, and the next day what she did: signed (four in ten), sent him away and wrote to a lawyer (three in ten), or the town took up a collection so she needn't sign (three in ten).
   - Why it reads true: the companies settled for what a grieving family would take, timing the visit for when grief was rawest. The collection is the town closing ranks.
 

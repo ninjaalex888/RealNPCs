@@ -1092,6 +1092,14 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## The boy who remembers (FIVEDAY R25, 2026-11-08; `[World] BoyRemembers`; settings version 314)
+
+Core/Epilogue.cs: `WasBoy(Resident)` (a man aged 8-15 in 1899 by BornYear), `BoyThought`, `BoyAsks`.
+
+WestworldScript.Epilogue.cs `EpilogueLook`: for one who remembers Morgan (the carry's mark), a carried-over boy (`_store.FindResident`) thinks `BoyThought` in place of `MorganThought`. Within 6 m he says `BoyAsks` aloud, once (the same `MorganSaid` mark).
+
+mindtest `BoyRemembersTest` (`boy`).
+
 ## The claim agent (FIVEDAY R24, 2026-11-08; `[World] ClaimAgents`; settings version 313)
 
 Core/ClaimAgent.cs:

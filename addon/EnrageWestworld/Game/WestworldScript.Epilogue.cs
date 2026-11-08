@@ -76,13 +76,22 @@ namespace EnrageWestworld.InGame
                     continue;
                 st.Mark(Epilogue.MorganSaid);
                 TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 4000, 0, 51, 0);
-                string thought = Epilogue.MorganThought(w.Id + "|" + now / 60000);
+                Resident boy = _cfg.BoyRemembers ? _store.FindResident(w.Id) : null;
+                bool wasBoy = Epilogue.WasBoy(boy);
+                string thought = wasBoy ? Epilogue.BoyThought(w.Id + "|" + now / 60000) : Epilogue.MorganThought(w.Id + "|" + now / 60000);   // a boy's memory is a boy's (FIVEDAY R25)
+                if (wasBoy && p.Position.DistanceTo(me.Position) <= 6f)
+                {
+                    SpeechCaption(Person.FirstOf(w.Name) ?? "A young man", Epilogue.BoyAsks(w.Id), h, 6000, true);   // he says it aloud, once
+                    _boysAsked++;
+                }
                 _ticker.Push(w.Name + ", thinking", thought, "near", h);
                 _morganThoughts++;
                 Log.Write("EPILOGUE " + w.Name + " remembers a man called Morgan; thinks: " + thought);
                 return;   // one a look
             }
         }
+
+        private int _boysAsked;
 
         private string EpilogueStatus()
         {
