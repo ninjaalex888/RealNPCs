@@ -1084,6 +1084,16 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## The undertaker's week (FIVEDAY R10, 2026-11-07; `[Mind] UndertakerKnows`; settings version 298)
+
+Core/UndertakerWeek.cs (the body's carry is Core/Undertaker.cs, a different class):
+- `Cause(DeathEntry)`: fever, mine, rope, you (By player), self, gun (any How), unknown.
+- `Thought(weekDead, seed)`: a busy week (3+ dead) 35% of the time; you as trade (2+ by the player) 40%; else a dead man named by cause.
+
+Engine.Posts.cs `UndertakerThought(post, r, seed)`: only for PostKind "undertaker" with the switch. It reads Store.Deaths in his town (r.Town, else the post's) from the last 7 days, not himself, newest first. In PostThought, with Minds it's a "post:undertaker" candidate at pull 45 (+ jitter); without Minds it's taken half the time.
+
+mindtest `UndertakerWeekTest` (`undertaker`).
+
 ## Fever in town (FIVEDAY R9, 2026-11-07; `[World] Fever`, `FeverDeaths`; settings version 297)
 
 Core/Fever.cs:

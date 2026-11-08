@@ -124,6 +124,20 @@ namespace EnrageWestworld.Core
             return r == null || r.PostId == null ? null : Store.Posts.FirstOrDefault(x => x.Id == r.PostId);
         }
 
+        /// The undertaker's thought of his town's dead this week, or null (not the undertaker, the switch off, a quiet week).
+        private string UndertakerThought(Post post, Resident r, string seed)
+        {
+            if (Cfg == null || !Cfg.UndertakerKnows || post == null || r == null)
+                return null;
+            PostKind k = Posts.Of(post.Model);
+            if (k == null || k.Kind != UndertakerWeek.Kind)
+                return null;
+            long now = Store.LastGameMin;
+            List<DeathEntry> week = Store.Deaths.Where(d => d != null && d.Town == (r.Town ?? k.Town) && now - d.At >= 0 && now - d.At < UndertakerWeek.Days * 1440L && d.Id != r.Id)
+                                                .OrderByDescending(d => d.At).ToList();
+            return UndertakerWeek.Thought(week, seed);
+        }
+
         /// What someone keeping a post is thinking: their counter, the one before them, the player; else like anyone else.
         public string PostThought(Resident r, bool near, int hour, string seed, InnerLife.PlayerLook look = null)
         {
@@ -140,6 +154,9 @@ namespace EnrageWestworld.Core
                 var extra = new List<Minds.Candidate>();
                 if (counter != null)
                     extra.Add(new Minds.Candidate { Source = fresh ? "post:new" : hurt ? "post:shot" : "post", Pull = (fresh || hurt ? 50 : 30) + Minds.Jitter(seed, "post", 6), Make = () => counter });
+                string tables = UndertakerThought(post, r, seed);   // the week's dead on his table (FIVEDAY R10)
+                if (tables != null)
+                    extra.Add(new Minds.Candidate { Source = "post:undertaker", Pull = UndertakerWeek.Pull + Minds.Jitter(seed, "und", 6), Make = () => tables });
                 return ResidentThought(PersonOfResident(r), hour, seed, look, extra);
             }
             if (!fresh && !hurt && Store.LastGameMin > 0 && Voice.Chance(seed + "pw", 25))
@@ -149,6 +166,9 @@ namespace EnrageWestworld.Core
                 if (w != null)
                     return w;
             }
+            string und = UndertakerThought(post, r, seed);
+            if (und != null && Voice.Chance(seed + "|und", 50))
+                return und;   // the week's dead (FIVEDAY R10)
             string t = post != null ? Posts.Thought(r, post, Posts.Of(post.Model), near, st != null ? st.Sightings : 0, Store.LastGameMin, seed) : null;
             return t ?? ResidentThought(PersonOfResident(r), hour, seed, look);
         }

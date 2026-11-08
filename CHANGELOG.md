@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **The undertaker thinks of the week's dead** (`[Mind] UndertakerKnows`, on; settings version 298; FIVEDAY reserve R10). The undertaker at his counter (Rhodes, Armadillo) thinks of his town's dead of the last seven days, by name and by how they died: the fever's closed box, what the mine sent up, the rope's mark, the lead dug out for the sheriff, the one who did it himself, or the one you sent him. A busy week is a thought of its own, and when you've killed twice or more, he thinks of you as trade. In a quiet week, his trade's thoughts as before.
+  - Why it reads true: he handles every death, so he keeps the town's real count, and his gallows humour is how a man stands measuring his neighbours.
+  - Offline: in a week with deaths in his town, every one of his counter thoughts names the dead, the week or you (before: his trade's thoughts only).
+
 - **Fever in town** (`[World] Fever` and `FeverDeaths`, both on; settings version 297; FIVEDAY reserve R9). Rarely (a town in about a hundred and fifty a day, ninety days apart), diphtheria, typhoid or scarlet fever breaks out in a town. Each day it passes along the warm ties of its residents (friends, sweethearts, the neighbours who visit), one tie in twenty-five a day.
   - The sick keep to home for about a week, at any hour, and think of it. People near you in that town think of the fear.
   - At three sick, the board of health posts a quarantine (the box). When nobody's sick it's over, and the box says what it cost.
