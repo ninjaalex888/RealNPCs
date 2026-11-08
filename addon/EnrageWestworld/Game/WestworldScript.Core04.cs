@@ -1340,6 +1340,7 @@ namespace EnrageWestworld.InGame
             EditorStep(now);        // the readers of an editorial on you (WestworldScript.DriftPoster.cs; FIVEDAY R14)
             PosterStep(now);        // the bill outside the sheriff's, as the rumour has it (WestworldScript.DriftPoster.cs; FIVEDAY R13)
             NovelStep(now);         // people near you who've read the dime novel (WestworldScript.DimeNovel.cs; FIVEDAY R12)
+            DryStep(now);           // 1907: a town dry by local option (WestworldScript.Fever.cs; FIVEDAY R27)
             GrindStep(now);         // the grinding season's thoughts (WestworldScript.Fever.cs; FIVEDAY R23)
             FeverStep(now);         // fever in town: the thoughts near you (WestworldScript.Fever.cs; FIVEDAY R9)
             BalladStep(now);        // a murder ballad from the next fire (WestworldScript.MurderBallad.cs; FIVEDAY R20)

@@ -6,6 +6,9 @@
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
   - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Output] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
 
+- **Going dry (1907)** (`[World] GoingDry`, on; settings version 316; FIVEDAY reserve R27). In John's 1907 the temperance women have won the local-option vote in Rhodes and Strawberry. The saloon still pours under the counter, but the law-abiding and the devout keep out (offline, a man at 8 pm in town goes to the saloon 11% -> 5%), named people near think of the town gone dry, and the box shows the notice on the saloon door the first time you come in each day.
+  - Why it reads true: a law against a habit doesn't end the habit, it sorts people. The conscientious obey, the rest learn where to knock.
+
 - **Relics: the old outlaws for sale (1907)** (`[World] Relics`, on; settings version 315; FIVEDAY reserve R26). In John's 1907, the photographers of Saint Denis and Blackwater think of the trade in the old outlaws: cabinet cards of dead bandits laid out on a door, an old man paid a dollar to pose with a Winchester, the hanging postcards that sell best. Near the studio, once a town a day, the box shows the window, where one face is one you'd know.
   - Why it reads true: the West was sold as nostalgia while it was still dying. For a man who outlived his time, finding his past at ten cents a card is grief for a world rather than a person.
 

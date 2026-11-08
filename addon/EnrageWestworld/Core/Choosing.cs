@@ -28,6 +28,7 @@ namespace EnrageWestworld.Core
         public string WorkPlace;              // where their work is, if it's somewhere work is otherwise improper (a barkeep's saloon)
         public bool Woman, SaloonGirl;        // a respectable woman of 1899 didn't drink or play cards in a saloon; the saloon's own women did
         public bool PassedOver;               // passed over at the docks' shape-up today (Core/ShapeUp.cs), with [World] ShapeUp
+        public bool Dry;                      // in a town dry by local option (Core/GoingDry.cs, 1907), with [World] GoingDry
         public bool Grinding;                 // working the cane grinding (Core/Grinding.cs), with [World] GrindingSeason
         public bool Sick;                     // down with the town's fever (Core/Fever.cs), with [World] Fever
         public bool Saved;                    // saved at a camp meeting these two weeks (Core/Revival.cs), with [World] EventRevivals
@@ -272,6 +273,7 @@ namespace EnrageWestworld.Core
             if (c.Plan != null)
                 s += PlanLean(c.Plan, d.Id);
             s += ShapeUp.Lean(c.PassedOver, d.Id);   // passed over at the wharf: the saloon (FIVEDAY item 29)
+            s += GoingDry.Lean(c.Dry, T(t, Traits.Deference), T(t, Traits.Piety), d.Id);   // a dry town: the law-abiding keep from the blind tiger (FIVEDAY R27)
             s += Grinding.Lean(c.Grinding, c.Hour, d.Id);   // the grinding: the mill's pace, into the night (FIVEDAY R23)
             s += Fever.Lean(c.Sick, d.Id);   // the fever: home to bed (FIVEDAY R9)
             s += Revival.Lean(c.Saved, d.Id);   // saved at the camp meeting: away from the saloon and the cards, toward church (FIVEDAY R4)

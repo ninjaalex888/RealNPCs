@@ -1092,6 +1092,16 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## Going dry (FIVEDAY R27, 2026-11-08; `[World] GoingDry`; settings version 316)
+
+Core/GoingDry.cs: `Dry(town, year)` (Rhodes and Strawberry, 1907 on), `Lean(dry, deference, piety, act)` (negative on "saloon" and "drink" only), `Thought`, `Door`.
+
+`ChoiceContext.Dry`, set in WestworldScript.Mind.cs from `_placeTown` and `Voice.NowYear`; Choosing adds the lean.
+
+`DryStep` (WestworldScript.Fever.cs): every 30 s in a dry town, the door's notice once a town a day, else a 40% chance a named person near thinks of it.
+
+mindtest `GoingDryTest` (`goingdry`), with the offline measure.
+
 ## Relics (FIVEDAY R26, 2026-11-08; `[World] Relics`; settings version 315)
 
 Core/Relics.cs: `Now(year)` (1907 on), `Towns` (the photographers'), `Thought`, `Window`.

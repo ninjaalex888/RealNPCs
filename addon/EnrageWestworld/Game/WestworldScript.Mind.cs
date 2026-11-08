@@ -415,6 +415,7 @@ namespace EnrageWestworld.InGame
             bool backslid;
             c.Saved = _engine.SavedNow(w.Id, g / 1440, out backslid);   // (FIVEDAY R4)
             c.Sick = _engine.SickNow(w.Id);   // (FIVEDAY R9)
+            c.Dry = _cfg.GoingDry && GoingDry.Dry(_placeTown, Voice.NowYear);   // (FIVEDAY R27)
             c.Grinding = _cfg.GrindingSeason && Grinding.Works(_placeTown, tg, InnerLife.ClockMonth, InnerLife.ClockDay);   // (FIVEDAY R23)
             c.Devotion = _cfg.SundayMorning && w.P != null ? w.P.Devotion ?? "Churchgoer" : null;   // (FIVEDAY item 25)   // (FIVEDAY item 22)   // (FIVEDAY item 21; null with SurvivorsChanged off)   // a breakdown's habit (FIVEDAY item 17; null with StressBuilds off)
             if (_cfg.WorriesShown)

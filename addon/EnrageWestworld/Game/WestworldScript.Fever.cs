@@ -2,6 +2,7 @@
 // fever going through it: one of the named people near thinks of it, a sick one of his or her sickness (they're keeping to
 // home: ChoiceContext.Sick), anyone else of the town's fear. The quarantine notice and the end's word come from the engine's
 // toasts. Nothing is spawned or directed. Behind [World] Fever.
+using System.Collections.Generic;
 using EnrageWestworld.Core;
 using RDR2;
 using RDR2.Native;
@@ -57,6 +58,35 @@ namespace EnrageWestworld.InGame
                     continue;
                 _ticker.Push((w.Name ?? "Someone") + ", thinking", Grinding.Thought(w.Id + "|" + day), "near", h);
                 _grindThoughts++;
+                break;
+            }
+        }
+
+        // ---- a dry town (FIVEDAY R27; Core/GoingDry.cs) ----
+        private int _dryNextLook, _dryThoughts;
+        private readonly Dictionary<string, long> _dryDoorDay = new Dictionary<string, long>();
+
+        /// Every thirty seconds in a dry town in 1907: the saloon door's notice in the box once a day, and a named person near
+        /// thinking of the town gone dry.
+        private void DryStep(int now)
+        {
+            if (_cfg == null || !_cfg.GoingDry || _placeTown == null || now < _dryNextLook || !GoingDry.Dry(_placeTown, Voice.NowYear))
+                return;
+            _dryNextLook = now + 30000;
+            long day = Bridge.Now() / 1440, d;
+            if (!_dryDoorDay.TryGetValue(_placeTown, out d) || d != day)
+            {
+                _dryDoorDay[_placeTown] = day;
+                Notice(_placeTown, GoingDry.Door(_placeTown, _placeTown + "|" + day), "news");
+                return;
+            }
+            foreach (int h in _mindNear)
+            {
+                MindWho w;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || !Voice.Chance(w.Id + "|dry|" + day, 40))
+                    continue;
+                _ticker.Push((w.Name ?? "Someone") + ", thinking", GoingDry.Thought(w.Id + "|" + day), "near", h);
+                _dryThoughts++;
                 break;
             }
         }
