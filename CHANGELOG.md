@@ -2,10 +2,18 @@
 
 ## Unreleased
 
+- **Posters that drift from the rumours** (`[World] DriftingPosters`, on; settings version 301; FIVEDAY reserve R13). In a town your deed's rumour has reached, the first time each day, the box has the bill outside the sheriff's as it reads there.
+  - It's true where the telling is still faithful: your name, a big man, a dark coat.
+  - One thing is wrong further out: a gray coat, a white horse, one more dead.
+  - It's wild once the story has been passed along enough: seven foot, a scar, twice the dead, a name that isn't yours.
+  - Now and then someone near holds you up against it ("Poster says seven foot. He's not seven foot.").
+  - Why it reads true: each retelling levels the detail and sharpens the drama (serial reproduction), so a town's picture of a man is the story it has heard, not the man.
+  - Offline: across tellings from 0 to 100 fidelity, 21% of bills name you rightly (before: no bill of ours).
+
 - **Dime novels about you** (`[World] DimeNovels`, on; settings version 300; FIVEDAY reserve R12). When your most-told deed has been talked of in two towns or more, some New York hack writes it up. A dime novel turns up in the store windows on a Monday, and the box has its lurid title ("ARTHUR MORGAN, THE SCOURGE OF VALENTINE; or, Forty Men in the Snow"). Once a deed, sixty days apart.
   - For thirty days, people near you in town think of having read it. The bold admire it, the fearful believe every word, the cold scoff at it, the rest are tickled, and a few think the man himself looks smaller than the woodcut.
   - Why it reads true: real outlaws read about themselves in the dime novels, and a legend outruns its man. The town reacts to the story, not the person, and the original is always a let-down.
-  - A Testing row, "A dime novel about you", publishes one (a test deed if none has travelled, never added to your deeds).
+  - A Testing row, "Publish a dime novel of your deeds", publishes one (a test deed if none has travelled, never added to your deeds).
 
 - **Memorial photographs** (`[Mind] MemorialPhotos`, on; settings version 299; FIVEDAY reserve R11). In Saint Denis and Blackwater, the photographer at his counter thinks of the memorial portraits he made of the town's dead these ten days, by name: posed among the family on a brace, eyes painted on the plate, a hand on the Bible. A busy spell gets a thought of its own. A mourner there thinks of the photograph that came about a time in three (in place of a mourning thought).
   - Why it reads true: the memorial photograph was often the only likeness a poor family ever had of its dead, and keeping them present is how grief settles rather than ends.

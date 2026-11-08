@@ -1291,6 +1291,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST quilting bee: " + QuiltStatus());
 			Log.Write("TEST fever: " + FeverGameStatus());
 			Log.Write("TEST dime novels: " + NovelStatus());
+			Log.Write("TEST posters: " + PosterStatus());
 			Log.Write("TEST fence cutters: " + _engine.FenceStatus() + "; " + _fenceSaw + " seen by you this session");
 			Log.Write("TEST tie gossip: " + _engine.TieGossipStatus());
 			Log.Write("TEST shared fright: " + (_cfg.SharedFright ? _store.Ties.Count(t => SharedFright.Fresh(t, _store.LastGameMin)) + " pairs tied by a killing they both saw (these two weeks); " + _frightTalks + " of their quiet talks this session" : "off ([Mind] SharedFright)"));
