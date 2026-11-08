@@ -26,7 +26,15 @@ namespace EnrageWestworld.Core
         public static readonly string[] Towns = { "Valentine", "Strawberry", "Rhodes", "Blackwater", "Annesburg", "Armadillo" };
 
         /// Whether Thursday posts a box social for this Saturday: the first Saturday of the month (day of month 1-7 then).
-        public static bool PostsToday(int weekday, int dayOfMonth) { return weekday == PostWeekday && dayOfMonth >= 1 && dayOfMonth + 2 <= 7; }
+        public static bool PostsToday(int weekday, int dayOfMonth, int daysInMonth = 31)
+        {
+            if (weekday != PostWeekday || dayOfMonth < 1)
+                return false;
+            int saturday = dayOfMonth + 2;
+            if (saturday > daysInMonth)
+                saturday -= daysInMonth;   // Thursday the 29th-31st posts the next month's first Saturday (the R1-R6 review)
+            return saturday >= 1 && saturday <= 7;
+        }
 
         /// The box's maker and the two who'll bid for it, of a town's regulars: a young woman; two young men (the one she
         /// likes the better first, by an existing warm tie, else by the seed). False if the town hasn't the three.

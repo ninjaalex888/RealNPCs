@@ -12,7 +12,7 @@ namespace EnrageWestworld.Core
 
         private void BoxSocialDaily(long now)
         {
-            if (Cfg == null || !Cfg.TownEvents || !Cfg.EventBoxSocials || Store.Events == null || !BoxSocial.PostsToday(InnerLife.Weekday, InnerLife.ClockDay))
+            if (Cfg == null || !Cfg.TownEvents || !Cfg.EventBoxSocials || Store.Events == null || !BoxSocial.PostsToday(InnerLife.Weekday, InnerLife.ClockDay, InnerLife.ClockMonth >= 1 && InnerLife.ClockMonth <= 12 ? System.DateTime.DaysInMonth(InnerLife.ClockYear, InnerLife.ClockMonth) : 31))
                 return;
             long day = now / 1440;
             foreach (string town in BoxSocial.Towns)

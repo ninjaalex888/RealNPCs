@@ -250,6 +250,8 @@ namespace EnrageWestworld.Core
                 if (r != null && r.Left && r.LeftAt > cut)
                 {
                     r.Left = false;   // the train they took after the cut hasn't left yet (Core/Trains.cs)
+                    if (Drummers.Is(r.Trade))
+                        Counts[Drummers.CountPrefix + r.Id] = (int)(cut / 1440 + 1);   // a drummer's stay re-booked: he leaves again tomorrow (the R1-R6 review)
                     r.LeftAt = 0;
                     r.Fled = false;
                     r.FledAt = 0;

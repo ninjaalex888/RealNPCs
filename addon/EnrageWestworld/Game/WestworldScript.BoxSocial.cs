@@ -109,6 +109,7 @@ namespace EnrageWestworld.InGame
             float d = me.Position.DistanceTo(r.At);
             if (d > 120f || g >= e.Until)
             {
+                PromptClear();
                 bool stayed = now - r.Since >= 60000;
                 _engine.FinishEvent(e, stayed, g);
                 if (stayed) _eventsAttended++;
@@ -145,6 +146,7 @@ namespace EnrageWestworld.InGame
                         break;
                     }
                 case 5:
+                    PromptClear();   // sold: no more bids (the R1-R6 review)
                     SpeechCaption("The auctioneer", BoxSocial.Sold(_boxYou, seed), r.Fiddler.Handle, 4000);
                     if (_boxYou)
                     {
@@ -172,8 +174,11 @@ namespace EnrageWestworld.InGame
         /// J while they bid: fifty cents over the high bid, from your pocket; the next beat sells it to you.
         private void BoxSocialBid(TownEvent e)
         {
-            if (e == null || e.Kind != BoxSocial.Kind || _boxYou || _eventRun == null || _eventRun.E != e)
+            if (e == null || e.Kind != BoxSocial.Kind || _boxYou || _eventRun == null || _eventRun.E != e || e.Done || _eventRun.ReleaseAt > 0 || _eventRun.Step > 5)
+            {
+                Hint("The box is sold.", 2500);   // (the R1-R6 review: a bid after the sale took the cash for nothing)
                 return;
+            }
             int bid = _boxHigh + BoxSocial.YouOverCents;
             if (MONEY._MONEY_GET_CASH_BALANCE() < bid)
             {
@@ -182,6 +187,7 @@ namespace EnrageWestworld.InGame
             }
             MONEY._MONEY_DECREMENT_CASH_BALANCE(bid);
             _boxYou = true;
+            e.Part = "you";   // yours from the moment you pay: whatever ends the run, the end has it
             _boxBought++;
             SpeechCaption("You", Slate.Dollars(bid) + ".", Game.Player.Character.Handle, 2000, false, false);
             Log.Write("EVENT boxsocial " + e.Town + ": you bid " + Slate.Dollars(bid) + " for " + e.AName + "'s box");

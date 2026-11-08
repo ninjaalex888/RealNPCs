@@ -97,7 +97,7 @@ namespace EnrageWestworld.Core
             if (Cfg == null || !Cfg.ReturningNeighbours || town == null)
                 return null;
             foreach (Resident r in Store.Residents)
-                if (r != null && r.Left && !r.Dead && r.Town == town && r.Name != null && now - r.LeftAt >= Trains.ReturnAfterDays * 1440L && Voice.Chance(r.Id + "|back|" + now / 1440, Trains.ReturnChance))
+                if (r != null && r.Left && !r.Dead && r.Town == town && r.Name != null && !Drummers.Is(r.Trade) && now - r.LeftAt >= Trains.ReturnAfterDays * 1440L && Voice.Chance(r.Id + "|back|" + now / 1440, Trains.ReturnChance))
                     return r;
             return null;
         }

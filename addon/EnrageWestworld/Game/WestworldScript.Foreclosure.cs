@@ -92,13 +92,13 @@ namespace EnrageWestworld.InGame
                     fam = _store.FindResident(w.Id);   // the Testing row: the first resident near stands for the family
                     if (fam != null)
                     {
-                        run.Family = new Ped(h);
+                        run.Family = ForeFamilyBody(h);
                         continue;
                     }
                 }
                 if (fam != null && w.Id == fam.Id)
                 {
-                    run.Family = new Ped(h);
+                    run.Family = ForeFamilyBody(h);
                     continue;
                 }
                 Ped p = new Ped(h);
@@ -128,6 +128,14 @@ namespace EnrageWestworld.InGame
             _foreRuns++;
             Log.Write("FORECLOSURE " + fam.Name + "'s goods sold in " + _placeTown + " (" + run.Men.Count + " about" + (run.Family != null ? ", the family watching" : "") + (run.Refuse ? ", the neighbours won't bid" : "") + ")" + (test ? " (a test)" : ""));
             return _foreWhyNot = null;
+        }
+
+        /// The family's body, only when it's ours to direct (the R1-R6 review: an enRAGE-driven record or a ped in a scene of
+        /// ours had its tasks wiped); else none, and the sale runs without them watching.
+        private Ped ForeFamilyBody(int h)
+        {
+            Ped p = new Ped(h);
+            return MayDirectWhyNot(p) == null && !NotFree(h) && !_director.Involves(h) && !_staged.Contains(h) ? p : null;
         }
 
         private void ForeclosureBeat(int now)
@@ -188,6 +196,8 @@ namespace EnrageWestworld.InGame
                     r.NextAt = now + 5000;
                     break;
                 default:  // sold
+                    if (_eventPrompt == Foreclosure.Kind)
+                        PromptClear();   // sold: no buying it back now (the R1-R6 review)
                     if (!r.Refuse)
                         SpeechCaption(label, Foreclosure.SoldLine(r.Seed + lot), hammer.Handle, 3000);
                     if (lot == 0 && r.Family != null && r.Family.Exists())
@@ -211,7 +221,7 @@ namespace EnrageWestworld.InGame
         private void ForeclosureBuy(TownEvent e)
         {
             ForeRun r = _fore;
-            if (e == null || e.Kind != Foreclosure.Kind || r == null || r.Bought)
+            if (e == null || e.Kind != Foreclosure.Kind || r == null || r.Bought || !ReferenceEquals(e, _foreAsk))
                 return;
             if (MONEY._MONEY_GET_CASH_BALANCE() < e.Count)
             {
