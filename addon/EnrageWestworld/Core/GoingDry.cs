@@ -39,7 +39,8 @@ namespace EnrageWestworld.Core
             "On the saloon door at {t}: CLOSED BY ORDER under local option. The piano is playing inside.",
             "{t} is dry by law. The saloon calls itself a reading room now. Nobody in it is reading." };
 
-        public static string Thought(string seed) { return Voice.Pick(seed + "|dt", Thoughts); }
+        /// A dry town's thought; "my wife says" only from a man (the review).
+        public static string Thought(string seed, bool woman) { return woman ? Voice.Pick(seed + "|dt", Thoughts[0], Thoughts[1], Thoughts[2], Thoughts[3]) : Voice.Pick(seed + "|dt", Thoughts); }
         public static string Door(string town, string seed) { return Voice.Pick(seed + "|dd", Doors).Replace("{t}", town ?? "town"); }
 
         public static IEnumerable<string> AllLines()

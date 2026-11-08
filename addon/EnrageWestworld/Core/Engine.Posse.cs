@@ -18,8 +18,15 @@ namespace EnrageWestworld.Core
 
         private void PosseDaily(long now)
         {
-            if (Cfg == null || !Cfg.PosseRides)
+            if (Cfg == null)
                 return;
+            if (!Cfg.PosseRides)
+            {
+                // switched off: any posse out is dropped quietly, so nothing waits in the save for the switch (the review)
+                foreach (string k in Store.Counts.Keys.Where(k => k.StartsWith(PosseRides.Prefix, StringComparison.Ordinal) || k.StartsWith(PosseRides.ManPrefix, StringComparison.Ordinal) || k.StartsWith("possekind:", StringComparison.Ordinal)).ToList())
+                    Store.Counts.Remove(k);
+                return;
+            }
             foreach (string key in Store.Counts.Keys.Where(k => k.StartsWith(PosseRides.Prefix, StringComparison.Ordinal)).ToList())
             {
                 int rode = Store.Counts[key];
@@ -73,12 +80,15 @@ namespace EnrageWestworld.Core
         private void PosseBack(string town, int rode, long now)
         {
             string seed = town + "|" + rode, what = Store.Count("possekind:" + town) == 1 ? "the killing" : "the robbery";
-            List<string> manKeys = Store.Counts.Keys.Where(k => k.StartsWith(PosseRides.ManPrefix, StringComparison.Ordinal) && Store.Counts[k] == rode).ToList();
+            // this town's riders only: two towns' posses can ride out in the same tick, with the same minute (the review)
+            List<string> manKeys = Store.Counts.Keys.Where(k => k.StartsWith(PosseRides.ManPrefix, StringComparison.Ordinal) && Store.Counts[k] == rode)
+                                       .Where(k => { Resident x = Store.FindResident(k.Substring(PosseRides.ManPrefix.Length)); return x == null || x.Town == town; }).ToList();
             List<Resident> men = manKeys.Select(k => Store.FindResident(k.Substring(PosseRides.ManPrefix.Length))).Where(r => r != null && r.Town == town).ToList();
             string outcome = PosseRides.Outcome(seed), deadName = null;
             if (outcome == "dead")
             {
-                Resident v = men.Where(r => !r.Dead && !r.Left && !r.Fled).OrderBy(r => Voice.Hash(seed + "|" + r.Id)).FirstOrDefault();
+                Resident v = men.Where(r => !r.Dead && !r.Left && !r.Fled && r.Cast == null)   // never one walking in the world now (the review)
+                             .OrderBy(r => Voice.Hash(seed + "|" + r.Id)).FirstOrDefault();
                 if (v == null)
                     outcome = "lost";
                 else

@@ -101,8 +101,11 @@ namespace EnrageWestworld.Core
             foreach (DeathEntry d in Store.Deaths)
             {
                 string kind = ClaimAgent.Kind(d);
-                if (kind == null || d.Id == null)
+                if (kind == null || d.Id == null || Store.Count(ClaimAgent.Prefix + "told:" + d.Id) > 0)
                     continue;
+                Resident dr = Store.FindResident(d.Id);
+                if (dr != null && dr.Woman)
+                    continue;   // the lines are a widow's (the review)
                 int visited = Store.Count(ClaimAgent.Prefix + d.Id);
                 long since = day - d.At / 1440;
                 if (visited == 0 && since >= ClaimAgent.AfterDays && since < ClaimAgent.AfterDays + 7)
@@ -112,8 +115,10 @@ namespace EnrageWestworld.Core
                     Log("CLAIM " + kind + " agent to " + d.Name + "'s widow at " + d.Town);
                     visits++;
                 }
-                else if (visited > 0 && day - visited == 1)
+                else if (visited > 0 && day - visited >= 1)
                 {
+                    Store.Counts.Remove(ClaimAgent.Prefix + d.Id);
+                    Store.Counts[ClaimAgent.Prefix + "told:" + d.Id] = 1;   // a day or more on, once: a skipped midnight never loses it (the review)
                     string choice = ClaimAgent.Widow(d.Id);
                     Push(new Toast { Kind = "life", Title = ShortTown(d.Town), Weight = 30, Text = ClaimAgent.End(choice, d.Name) });
                     Log("CLAIM " + d.Name + "'s widow: " + choice);

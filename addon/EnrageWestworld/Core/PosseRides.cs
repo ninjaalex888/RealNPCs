@@ -40,7 +40,7 @@ namespace EnrageWestworld.Core
         /// Whether a resident rides with it: a townsman, free, keeping no counter, not a coward.
         public static bool Rides(Resident r, string town)
         {
-            return r != null && !r.Woman && r.Town == town && !r.Dead && !r.Left && !r.Fled && r.Held == null && r.PostId == null && r.Name != null && r.Personality != "Coward";
+            return r != null && !r.Woman && r.Town == town && !r.Dead && !r.Left && !r.Fled && r.Held == null && r.PostId == null && r.Cast == null && r.Name != null && r.Personality != "Coward";   // (Cast: not one walking in the world now)
         }
 
         /// The men who ride: up to Size of the town's residents who fit, in an order fixed by the deed.
@@ -87,7 +87,8 @@ namespace EnrageWestworld.Core
             return Fill(Voice.Pick(seed + "|pb", pool), town, what, null, 0, deadName);
         }
 
-        public static string WaitingThought(string seed) { return Voice.Pick(seed + "|pw", Waiting); }
+        /// The town's thought while they're out; "my husband rode out" only from a woman (the review).
+        public static string WaitingThought(string seed, bool woman) { return woman ? Voice.Pick(seed + "|pw", Waiting) : Voice.Pick(seed + "|pw", Waiting[1], Waiting[2]); }
 
         public static IEnumerable<string> AllLines()
         {

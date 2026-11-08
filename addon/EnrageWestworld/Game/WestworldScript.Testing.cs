@@ -408,7 +408,7 @@ namespace EnrageWestworld.InGame
                             if (!_mindWho.TryGetValue(h, out mw) || mw.Id == null || mw.P == null || !Resident.IsResident(mw.Id) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || new Ped(h).Position.DistanceTo(me.Position) > WantedWhich.NearMetres)
                                 continue;
                             Resident rr = _store.FindResident(mw.Id);
-                            if (rr == null || rr.Dead || rr.Left || rr.Fled || rr.Held != null)
+                            if (rr == null || rr.Dead || rr.Left || rr.Fled || rr.Held != null || rr.PostId != null)
                                 continue;
                             _wantedTestFor = rr.Id;
                             _store.Counts.Remove(WantedWhich.Key(rr.Id));
@@ -429,7 +429,7 @@ namespace EnrageWestworld.InGame
                             if (!_mindWho.TryGetValue(h, out mw) || mw.Id == null || !Resident.IsResident(mw.Id) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                                 continue;
                             Resident rr = _store.FindResident(mw.Id);
-                            if (rr == null || rr.Town != _placeTown || rr.Dead || rr.Left || rr.Fled || rr.Held != null)
+                            if (rr == null || rr.Town != _placeTown || rr.Dead || rr.Left || rr.Fled || rr.Held != null || rr.PostId != null)
                                 continue;
                             _engine.PostReward(rr.Id);
                             if (_engine.RewardIn(_placeTown) == null)

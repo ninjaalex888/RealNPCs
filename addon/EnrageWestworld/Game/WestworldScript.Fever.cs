@@ -85,7 +85,7 @@ namespace EnrageWestworld.InGame
                 MindWho w;
                 if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || !Voice.Chance(w.Id + "|dry|" + day, 40))
                     continue;
-                _ticker.Push((w.Name ?? "Someone") + ", thinking", GoingDry.Thought(w.Id + "|" + day), "near", h);
+                _ticker.Push((w.Name ?? "Someone") + ", thinking", GoingDry.Thought(w.Id + "|" + day, w.P != null && w.P.Woman), "near", h);
                 _dryThoughts++;
                 break;
             }

@@ -39,7 +39,7 @@ namespace EnrageWestworld.InGame
                 if (mw.Id != _wantedTestFor && (!InnerLife.WorryNow(mw.P, day, out worry, out stage, out good) || !WantedWhich.OnThePoster(worry, stage)))
                     continue;
                 Resident r = _store.FindResident(mw.Id);
-                if (r == null || r.Dead || r.Left || r.Fled || r.Held != null)
+                if (r == null || r.Dead || r.Left || r.Fled || r.Held != null || r.PostId != null)   // (a keeper's counter would keep them; the review)
                     continue;
                 if (seen == 0)
                 {
@@ -63,11 +63,19 @@ namespace EnrageWestworld.InGame
         /// The J menu's choice: turn them in, warn them, buy the ticket, or leave it.
         private void WantedChoice(TownEvent e, string what)
         {
-            if (e == null || e.Kind != WantedWhich.Kind || what == "leave")
+            if (e == null || e.Kind != WantedWhich.Kind)
                 return;
             Resident r = _store.FindResident(e.AId);
             if (r == null || r.Left || r.Fled || r.Dead)
                 return;
+            if (what == "train" && MONEY._MONEY_GET_CASH_BALANCE() < WantedWhich.TicketCents)
+                return;   // not settled: the choice comes back (the review)
+            if (what == "leave")
+            {
+                _store.Counts[WantedWhich.Key(r.Id)] = WantedWhich.Settled;   // left be: never asked again (the review: J came back every two seconds)
+                _wantedAsk = null;
+                return;
+            }
             int now = Game.GameTime, h = _wantedAskWho;
             bool there = h != 0 && ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h);
             _store.Counts[WantedWhich.Key(r.Id)] = WantedWhich.Settled;
@@ -91,8 +99,6 @@ namespace EnrageWestworld.InGame
             }
             else if (what == "train")
             {
-                if (MONEY._MONEY_GET_CASH_BALANCE() < WantedWhich.TicketCents)
-                    return;
                 MONEY._MONEY_DECREMENT_CASH_BALANCE(WantedWhich.TicketCents);
                 if (there)
                     SpeechCaption(first, WantedWhich.TrainLine(r.Id), h, 6000, true, false);

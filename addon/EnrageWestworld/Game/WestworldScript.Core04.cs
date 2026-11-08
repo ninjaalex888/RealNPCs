@@ -311,6 +311,7 @@ namespace EnrageWestworld.InGame
             PassingAbort();
             TestCastClear("the add-on stopped");
             WanderLaterClear();
+            PosseProbeAbort();   // the mounted probe's men let go (FIVEDAY R32; the review)
             SightsReset("shutdown");
             try
             {

@@ -105,17 +105,17 @@ namespace EnrageWestworld.Core
         // and if John comes within six metres, he says it aloud, once: the question every boy who outgrew a hero asks a stranger
         // who stands the same way. Why it reads true: an admired adult in childhood becomes a template a boy measures himself
         // against for years (identification, the idealised model), and the memory keeps the man's best and loses the rest.
-        public const int BoyFrom = 8, BoyTo = 15;
+        public const int BoyFrom = 8, BoyTo = 20;   // to twenty: residents are made adults (18 on), so the youngest of '99 are the lads who knew him (the review of R23-R32)
 
-        /// Whether this person was a boy in 1899 (a man, born 1884 to 1891).
+        /// Whether this person was young in 1899 (a man, born 1879 to 1891: a boy or a green lad).
         public static bool WasBoy(Resident r) { return r != null && !r.Woman && r.BornYear > 0 && 1899 - r.BornYear >= BoyFrom && 1899 - r.BornYear <= BoyTo; }
 
         public static string BoyThought(string seed)
         {
             return Voice.Pick(seed + "|boy",
-                "Morgan gave me a dollar once, outside the store, and told me to buy something that wasn't candy. I bought candy.",
+                "Morgan gave me a dollar once, outside the store, and told me not to drink it. I drank it.",
                 "I used to stand the way Morgan stood. Thumbs in the belt. Pa laughed at me for a year.",
-                "That man has Morgan's way of looking at a town. I was eleven. I've been looking for it since.",
+                "That man has Morgan's way of looking at a town. I was green as grass then. I've been looking for it since.",
                 "I wanted to ride with Morgan when I grew up. Then I grew up.",
                 "Morgan let me hold his reins once. Bay horse. I can still smell the leather.");
         }
@@ -123,8 +123,8 @@ namespace EnrageWestworld.Core
         public static string BoyAsks(string seed)
         {
             return Voice.Pick(seed + "|boya",
-                "Mister? You wouldn't have known a man called Morgan? Arthur Morgan. He came through here when I was a boy.",
-                "Excuse me. You put me in mind of a man I knew as a boy. Morgan. You wouldn't be kin?",
+                "Mister? You wouldn't have known a man called Morgan? Arthur Morgan. He came through here when I was young.",
+                "Excuse me. You put me in mind of a man I knew when I was young. Morgan. You wouldn't be kin?",
                 "Sorry to stare. There was a man called Morgan, years back. He was good to me. You stand like him.");
         }
 

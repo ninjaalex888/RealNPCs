@@ -27,9 +27,9 @@ namespace EnrageWestworld.InGame
             foreach (int h in _mindNear)
             {
                 MindWho mw;
-                if (!_mindWho.TryGetValue(h, out mw) || mw.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || !Voice.Chance(mw.Id + "|posse|" + day, 35))
+                if (!_mindWho.TryGetValue(h, out mw) || mw.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || _store.Counts.ContainsKey(PosseRides.ManKey(mw.Id)) || !Voice.Chance(mw.Id + "|posse|" + day, 35))
                     continue;
-                _ticker.Push((mw.Name ?? "Someone") + ", thinking", PosseRides.WaitingThought(mw.Id + "|" + day), "near", h);
+                _ticker.Push((mw.Name ?? "Someone") + ", thinking", PosseRides.WaitingThought(mw.Id + "|" + day, mw.P != null && mw.P.Woman), "near", h);
                 _posseThoughts++;
                 break;
             }
@@ -132,6 +132,27 @@ namespace EnrageWestworld.InGame
             }
             Log.Write("PROBE posse: done");
             _probe = null;
+        }
+
+        /// A reload or the script stopping: the probe's men let go (the review).
+        private void PosseProbeAbort()
+        {
+            PosseProbe pr = _probe;
+            _probe = null;
+            if (pr == null)
+                return;
+            for (int i = 0; i < pr.Count; i++)
+            {
+                if (pr.Men[i] == null)
+                    continue;
+                int h = pr.Men[i].Handle;
+                _staged.Remove(h);
+                if (ENTITY.DOES_ENTITY_EXIST(h))
+                {
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+                    TASK.CLEAR_PED_TASKS(h, true, false);
+                }
+            }
         }
 
         private string PosseStatus()

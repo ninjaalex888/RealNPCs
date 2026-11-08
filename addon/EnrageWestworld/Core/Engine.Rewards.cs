@@ -15,7 +15,7 @@ namespace EnrageWestworld.Core
             if (Cfg == null || !Cfg.NeighbourReward || id == null || !Resident.IsResident(id))
                 return;
             Resident r = Store.FindResident(id);
-            if (r == null || r.Dead || r.Left || r.Fled || r.Held != null || r.Town == null)
+            if (r == null || r.Dead || r.Left || r.Fled || r.Held != null || r.PostId != null || r.Town == null)   // (PostId: a keeper's counter would keep them; the review)
                 return;
             int today = (int)(Store.LastGameMin / 1440), day;
             if (Store.Counts.TryGetValue(NeighbourReward.DayKey(id), out day) && NeighbourReward.Live(day, today))
@@ -80,6 +80,7 @@ namespace EnrageWestworld.Core
                 r.Fled = true;
                 r.FledAt = now;
             }
+            Store.Counts["gone:" + r.Id] = 1;   // never back by the train (Engine.ReturnerDue; the review)
             Log("GONE " + r.Name + " from " + r.Town + " for good: " + why);
         }
     }
