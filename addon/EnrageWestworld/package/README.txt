@@ -2006,9 +2006,12 @@ in the file. The new ones:
             (0-12; 0 never, as it comes, for a livelier world; 2 and 1 for a short quiet). Someone beaten to death in a brawl, a Testing row's own trouble (your
             own killings still hush, but not of the test's own people), and brawls, roughs and
             standoffs never hush it; a brawler shot or cut in the fight is a killing and does.
-[Output]    NewsTo = corner | ticker | gamefeed
+[Output]    NewsTo = corner | ticker | gamefeed | off
                 corner: the "Around town" box (default); ticker: the ticker;
-                gamefeed: the game's own updates, top left
+                gamefeed: the game's own updates, top left; off: no Around town box at all
+                (on the settings panel's UI page as "The Around town box, top right")
+[Display]   AroundTownStaysSeconds = 30: how long the box keeps the town's regard of you up after
+                you come into a town or it changes (0: the whole time you're in a town)
             WarNewsTo (feed | corner | ticker): where gang and faction news goes (feed, the default:
                 the game's own updates, top left)
             TerritoryNews (true): enRAGE's territory changes go there too. enRAGE also prints

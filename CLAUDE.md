@@ -1084,6 +1084,14 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## The Around town box, less of it (players, 2026-11-07; settings version 306)
+
+- `Settings.NewsRoute` returns "off" for `NewsTo = off`. `NewsPush` drops everything then, and the standing regard draw is off.
+- The panel's NewsTo choice gains "off" and a plain label. AroundTownStaysSeconds and TownRegard sit beside it on the UI page.
+- `_regardSince` (WestworldScript.Regard.cs) resets when the regard line changes or the town does. NewsFrame's standing regard draws only within `AroundTownStaysSeconds` of it (0 is always, the 2026-11-04 behaviour).
+- Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
+- mindtest `AroundTownTest` (`aroundtown`).
+
 ## The festivals: the county fair (FIVEDAY R17, 2026-11-07; `[World] EventFair`; settings version 305)
 
 Core/Festivals.cs:

@@ -19,7 +19,7 @@ namespace EnrageWestworld.InGame
         private const float RegardMetres = 120f;   // about town (Lex, 2026-11-04: the count within 40 m read too small)
         private const int RegardLookMost = 80;
         private string _regardLine, _regardKey, _regardTown, _regardLast;   // _regardLast: the whole of the latest item (the standing box shows it)
-        private int _nextRegard, _regardPushed;
+        private int _nextRegard, _regardPushed, _regardSince;   // _regardSince: when the regard line last came up or changed (the box's stay)
         private long _regardPushedAt;
         private Action _aRegard;
 
@@ -51,7 +51,10 @@ namespace EnrageWestworld.InGame
             string standing = _engine.StandingOf(town, g, out kills, out kindnesses);
             TownLedger ledger = _engine.LedgerOf(town);
             string mood = ledger != null ? ledger.Mood : null;
-            _regardLine = TownRegard.Line(town, standing, kills, kindnesses);
+            string line = TownRegard.Line(town, standing, kills, kindnesses);
+            if (line != _regardLine || town != _regardTown)
+                _regardSince = now;   // up again for AroundTownStaysSeconds
+            _regardLine = line;
             string key = TownRegard.Key(town, standing, kills, kindnesses, mood);
             bool newTown = town != _regardTown;
             if (key == _regardKey || (!newTown && g - _regardPushedAt < TownRegard.PushGapMinutes))

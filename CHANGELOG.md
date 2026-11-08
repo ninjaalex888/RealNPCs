@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **The Around town box, less of it** (players' finding, 2026-11-07: "How do I disable the window in the top right corner? I couldn't find it anywhere in the settings menu"; settings version 306).
+  - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
+  - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Display] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
+
 - **The county fair** (`[World] EventFair`, on, with TownEvents; settings version 305; FIVEDAY reserve R17). At Valentine on the third Saturday of September, from eleven till two, at the stockyards spot (else near you), posted the day before. The bunting and the cornet; the livestock judged, and a townsman's prize beast named; the blue ribbon for pies to a townswoman, and a rival's sour face; the greasy pig.
   - A neighbour is warmer to the prize man, a rival woman envies the ribbon, and being there warms the regulars to you. The morning has who won, and whose cousins the judges were.
   - Why it reads true: the fair was the county's yearly show of itself, and a ribbon was status the whole county saw.

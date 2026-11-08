@@ -16,7 +16,7 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private const string NewsTitle = "Around town";
-        private const int NewsQueueMax = 6;
+        private const int NewsQueueMax = 4;   // (6 before 2026-11-07: players found the box up too much)
 
         private sealed class NewsItem
         {
@@ -35,8 +35,8 @@ namespace EnrageWestworld.InGame
         private void NewsPush(string label, string text, string kind)
         {
             text = text != null ? text.Trim() : string.Empty;
-            if (text.Length == 0)
-                return;
+            if (text.Length == 0 || (_cfg != null && _cfg.NewsRoute == "off"))
+                return;   // NewsTo = off: no Around town box at all
             if ((_newsShown != null && _newsShown.Text == text) || _newsQueue.Any(n => n.Text == text))
                 return;
             _newsQueue.Add(new NewsItem { Label = label, Text = text, Quoted = kind == "thought" || kind == "diary" });
@@ -55,7 +55,10 @@ namespace EnrageWestworld.InGame
         {
             int since = _newsLastFrame == 0 ? 0 : now - _newsLastFrame;
             _newsLastFrame = now;
-            bool standing = _cfg != null && _cfg.TownRegard && _regardLine != null;   // in a town the box stays up with the regard line (Lex, 2026-11-04: "show at all times while within that town")
+            // in a town the box stays up with the regard line (Lex, 2026-11-04: "show at all times while within that town"), since
+            // 2026-11-07 for AroundTownStaysSeconds after you come in or it changes (players: the box was up too much; 0 as before)
+            bool standing = _cfg != null && _cfg.TownRegard && _regardLine != null && _cfg.NewsRoute != "off" &&
+                            (_cfg.AroundTownStaysSeconds <= 0 || now - _regardSince < _cfg.AroundTownStaysSeconds * 1000);
             if (_newsShown == null && _newsQueue.Count == 0 && !standing)
                 return;
             if (PanelOpen || _reader.Open || !TickerVisible(now))
@@ -77,7 +80,7 @@ namespace EnrageWestworld.InGame
                 _newsQueue.RemoveAt(0);
                 _newsLines = null;
                 _newsShownAt = now;
-                _newsUntil = now + Math.Min(16000, 7000 + _newsShown.Text.Length * 45);
+                _newsUntil = now + Math.Min(12000, 5500 + _newsShown.Text.Length * 38);   // (7 s + 45 ms a letter, to 16 s, before 2026-11-07)
             }
             DrawNews(now);
         }

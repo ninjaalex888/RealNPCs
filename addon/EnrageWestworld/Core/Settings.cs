@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 305;
+        public const int CurrentVersion = 306;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -490,6 +490,7 @@ namespace EnrageWestworld.Core
 
         // [Output]
         public string NewsTo = "corner";
+        public int AroundTownStaysSeconds = 30;   // [Display] the regard line keeps the box up this long after arriving or a change (0: always while in a town); players found the box up too much (2026-11-07; settings version 306)
         public bool TownRegard = true;   // [Display] the town's regard of you in the "Around town" box: a line under the title while you're in a town (the standing, the killings known, the kindnesses) and an item on coming in and when it changes (the mood, who you know here is afraid or fond, the talk) (Core/TownRegard.cs; Lex, 2026-11-04; settings version 244)
         public string Subtitles = "game";   // game | ours | both | off (2026-10-28)
         public bool Translate = true;   // [Output] translation.txt in the RealNPCs folder, when there is one, shows RealNPCs' lines in your language (Core/Translations.cs; Run 3, item 8; settings version 255)
@@ -547,6 +548,8 @@ namespace EnrageWestworld.Core
             get
             {
                 string n = (NewsTo ?? "corner").Trim().ToLowerInvariant();
+                if (n == "off")
+                    return "off";   // no Around town box at all (players, 2026-11-07: "How do I disable the window in the top right corner?")
                 if (n != "ticker" && n != "gamefeed")
                     n = "corner";
                 if (UseGameFeed && n == "ticker")
@@ -929,6 +932,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 306)
+                    log?.Invoke("Settings: new in this version: the Around town box stays up 30 seconds after you come into a town, not the whole time ([Display] AroundTownStaysSeconds; 0 as before), shows each item a little shorter, and [Output] NewsTo = off turns it off.");
                 if (s.SettingsVersion < 305)
                     log?.Invoke("Settings: new in this version: [World] EventFair (on): the county fair at Valentine in September.");
                 if (s.SettingsVersion < 304)
@@ -1930,7 +1935,8 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("AmbientFlirtSeconds = " + AmbientFlirtSeconds + "   ; at most one flirt between strangers this often");
             b.AppendLine();
             b.AppendLine("[Output]");
-            b.AppendLine("NewsTo = " + NewsTo + "   ; where news, rumours and what people elsewhere think of you go: corner (the \"Around town\" box, top right), ticker, or gamefeed (the game's own updates, top left)");
+            b.AppendLine("NewsTo = " + NewsTo + "   ; where news, rumours and what people elsewhere think of you go: corner (the \"Around town\" box, top right), ticker, gamefeed (the game's own updates, top left), or off (no Around town box at all)");
+            b.AppendLine("AroundTownStaysSeconds = " + AroundTownStaysSeconds + "   ; how long the Around town box keeps the town's regard of you up after you come into a town or it changes (seconds; 0: the whole time you're in a town, as before 2026-11-07)");
             b.AppendLine("TownRegard = " + B(TownRegard) + "   ; the town's regard of you in the Around town box: a line under its title while you're in a town (a killer here, a peacemaker, or nothing held against you; the killings of yours known this week and your kindnesses) and an item when you come into a town and whenever it changes (the town's mood, how many of the people you know here are afraid or fond of you, the talk that has reached the town); false: neither");
 b.AppendLine("Translate = " + B(Translate) + "   ; a translation of your own: translation.txt in the RealNPCs folder (beside the saves), one line each: the English, a TAB, your translation (UTF-8; # starts a note; the English may keep the {slots}, and your translation puts them where your language wants). Read when the game starts and again within ten seconds of saving it. The bar, the thoughts over heads, the subtitles and the hints show it; the voices still say the English. The Testing row Write the translation template writes every line, ready to fill in, to translation-template.txt");
                         b.AppendLine("Subtitles = " + Subtitles + "   ; what people say to you, while their voice plays (their recorded words when known). The game draws its own white subtitle for any recorded line while its Subtitles option is on, and a mod can't stop that, so: game: RealNPCs' boxed subtitles only while the game's option is off (one set at a time); ours: RealNPCs' always (switch the game's off to see only these); both; off: none of RealNPCs'. Talk you only overhear (ScenesOnTicker) shows in the same box unless this is off");
