@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Drummers on the train** (`[World] Drummers`, on, with TrainTime; settings version 289; FIVEDAY reserve R1). One man in three who steps down off a train is now a drummer: a travelling salesman for a far city's firm, with a line of goods (hardware, dry goods, cigars, notions, stoves, barbed wire, sewing machines, canned goods). The box says he's at the hotel.
+  - When you're near the store with him in town, he walks over to its keeper with his pitch. The keeper orders, haggles or sends him off by his own manner, and the drummer thinks of it after. An order makes the Around town box.
+  - He thinks a drummer's thoughts (the hotel beds, the sample case, the next town), is never one of the regulars, and is gone on the train in two days.
+  - Why it reads true: the drummer was a small town's news from outside, and its storekeeper's order from him decided what the town could buy for a season. He lived on being told no, and it shows.
+  - Offline: of 1,000 men off a train, 35% are drummers (before: none). A Testing row, "A drummer calls at the store", plays the call.
+
 - **More of the moment in what people think** (`[Mind] MoreMoments`, on; settings version 288; FIVEDAY item 32e; roadmap's moments still to do). New moments:
   - a horse bolting under its rider (loud: thought before anything else);
   - a purse lifted, picked or taken in the last hour and a half (they know it's gone even when they never saw who);

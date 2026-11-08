@@ -88,6 +88,7 @@ namespace EnrageWestworld.Core
                 "Bread and a cold potato. Ate it at ten. Hungry till six.",
                 "Lost a fingernail to a crate this morning. Foreman said mind the crates.",
                 "Union man talked to some of us behind the shed. Didn't sign. Thought about it all shift." } },
+            { "drummer", Drummers.Thoughts },   // (FIVEDAY R1)
             { "card", new[] {
                 "Luck runs like a river. Mine's dry upstream.", "Man across the table blinks when he bluffs. Tonight I will own his watch.", "One more hand. One more hand and I'll walk away. Same as last night.",
                 "Never play a man who's drinking water.", "Dealt a pair of sixes. Sixes are a poor man's promise.", "Owe the house more than I'll admit. Ace in the hole will fix that.",
@@ -1000,6 +1001,7 @@ namespace EnrageWestworld.Core
         {
             string t = (trade ?? string.Empty).ToLowerInvariant();
             if (t.Contains("soldier")) return "soldier";
+            if (t.Contains("drummer")) return "drummer";   // a travelling salesman off the train (FIVEDAY R1)
             if (t.Contains("lawman")) return "law";
             if (t.Contains("farm")) return "farm";
             if (t.Contains("old")) return "old";

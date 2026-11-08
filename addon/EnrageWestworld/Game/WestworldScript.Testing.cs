@@ -307,6 +307,19 @@ namespace EnrageWestworld.InGame
                         said = "A wire found cut at " + _placeTown + "; the box has the word, and what you saw";
                         return null;
                     }
+                case "drummer":   // FIVEDAY R1: a named man near stands for the drummer, with a ware for the test
+                    {
+                        skipped = "the train, the one-in-three, the once a day each";
+                        if (!_cfg.Drummers)
+                            return "off ([World] Drummers)";
+                        if (_drum != null)
+                            return "a drummer is at the store now";
+                        string why = DrummerLook(Game.GameTime, true);
+                        if (why != null)
+                            return why;
+                        said = "He walks over to the store's keeper with his pitch";
+                        return null;
+                    }
                 case "saleday":
                     {
                         skipped = "Tuesday's hours and once a week";

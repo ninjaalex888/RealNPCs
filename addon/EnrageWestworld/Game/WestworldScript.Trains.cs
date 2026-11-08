@@ -288,6 +288,15 @@ namespace EnrageWestworld.InGame
             Resident r = _engine.MeetResident(model, woman, town, ResidentTrade(p, woman), seed, gameNow);
             if (r == null)
                 return null;
+            if (_cfg.Drummers && !woman && Drummers.Comes(seed))
+            {
+                // a drummer (FIVEDAY R1): his goods, his firm, two days at the hotel; never a regular
+                _engine.DrummerArrived(r, town, gameNow);
+                _engine.KeepResident(r, gameNow);
+                _resBind[h] = new ResBind { R = r, Model = model };
+                _trainNewcomers++;
+                return r.Name + " (a drummer in " + Drummers.WareOf(r.Trade) + ")";
+            }
             Resident kinOf = null;
             string relation = null;
             List<Resident> here = _store.Residents.Where(x => x.Regular && !x.Dead && !x.Fled && x.Town == town && x.Id != r.Id && x.Name != null).ToList();

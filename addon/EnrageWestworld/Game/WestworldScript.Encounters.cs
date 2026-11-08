@@ -957,6 +957,8 @@ namespace EnrageWestworld.InGame
                 EndSaleDay(why);
             if (_kinDoer != null)
                 EndKinDoer(why);
+            if (_drum != null)
+                EndDrummer(why);
             if (_crying != null)
                 EndCrying(why);
             if (_hermit != null)

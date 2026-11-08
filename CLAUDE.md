@@ -1084,6 +1084,22 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Drummers on the train (FIVEDAY R1, 2026-11-07; `[World] Drummers`; settings version 289)
+
+Core/Drummers.cs:
+- `Comes` (35%), `Ware`, `Trade` ("a drummer in <ware>", `Is`, `WareOf`), `Firm(seed)` (a surname, & Sons/Brothers/& Company, of a FarTowns city).
+- `Outcome(manner)`: kind order, cold haggle, sharp no.
+- The pitch, answer, after and notice lines; `Thoughts`. InnerLife's TradeGroup maps "drummer" to its own ByTrade pool.
+
+Engine.Drummers.cs:
+- `DrummerArrived`: trade, From the firm's city, ByTrain, not Regular, `Store.Counts["drummer:<id>"]` = day + 2, a toast.
+- `DrummersDaily` (the daily tick): due ones get Left, Fled and their times, quietly.
+
+Game:
+- WestworldScript.Trains `StepDown`: a man and `Comes` makes him a drummer, and returns before the kin/regular path.
+- WestworldScript.Drummers.cs runs every 10 s in a town. It finds a PostKind "store" keeper within 60 m of you and a bound drummer of the town within 80 m of him, free, once a day each (`_drumCalledDay`, session). It blocks his events and goes to the keeper with go-to-entity. At 2.6 m: the turn, the pitch, the answer by `Exchanges.Manner` of the keeper (his holder's temper), the thought, and NewsPush on an order. Then he's let go to wander.
+- Switch off mid-walk, or EndEncounters, ends the walk. Testing row `drummer`: any bound named man near stands for him, unchanged. F7 `TEST drummers:`. mindtest `DrummersTest` (`drummers`).
+
 ## More moments (FIVEDAY item 32e, 2026-11-07; `[Mind] MoreMoments`; settings version 288)
 
 `Moment` gains `Spooked`, `Robbed`, `Storm` and `AtScene` ("ring" or "execution").
