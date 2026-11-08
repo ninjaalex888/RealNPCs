@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 298;
+        public const int CurrentVersion = 299;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -362,6 +362,7 @@ namespace EnrageWestworld.Core
         public string LastingMarksGait = "injured_general";   // [Mind] the game's gait for the marked (the probe row's candidates; empty: none)
         public string LastingMarksPack = "SCR_Torture";   // [Mind] the game's damage pack for the marked (the probe row's candidates; empty: none)
         public bool MoreMoments = true;   // [Mind] more of the moment in thoughts: a horse bolting, a purse lifted, rain in the saddle, a storm, the brawl's ring and an execution's onlookers; women's own fist lines; how you look, pools of its own (Core/Moments.cs; FIVEDAY item 32e, settings version 288)
+        public bool MemorialPhotos = true;   // [Mind] Saint Denis and Blackwater: the photographer thinks of the memorial portraits of the town's dead, and mourners of the photograph that came (Core/MemorialPhoto.cs; FIVEDAY R11, settings version 299)
         public bool UndertakerKnows = true;   // [Mind] the undertaker thinks of the week's dead of his town by name and cause, a busy week, and you as trade (Core/Undertaker.cs; FIVEDAY R10, settings version 298)
         public bool GamblersBorrow = true;   // [Mind] a gambler at the worst of his cards borrows from a man of his town (a friend first), who lends, refuses or snaps; paid back or never (Links, Exchanges.MakeLinked; FIVEDAY item 32a, settings version 284)
         public bool TieGossip = true;   // [Mind] word of your deeds moves along the town's ties: friends tomorrow, others the day after, bent at each telling (Core/TieGossip.cs; FIVEDAY item 23, settings version 275)
@@ -922,6 +923,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 299)
+                    log?.Invoke("Settings: new in this version: [Mind] MemorialPhotos (on): memorial photographs of the dead.");
                 if (s.SettingsVersion < 298)
                     log?.Invoke("Settings: new in this version: [Mind] UndertakerKnows (on): the undertaker thinks of the week's dead.");
                 if (s.SettingsVersion < 297)
@@ -1825,6 +1828,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("LastingMarksGait = " + LastingMarksGait + "   ; the game's gait for the marked, from the probe: injured_general, injured_left_leg, injured_right_leg, injured_torso, injured_left_arm, injured_right_arm (empty: none)");
             b.AppendLine("LastingMarksPack = " + LastingMarksPack + "   ; the game's damage pack for the marked, from the probe (empty: none)");
             b.AppendLine("MoreMoments = " + B(MoreMoments) + "   ; more of the moment in what people think: their horse bolting under them, their purse lifted or taken in the last hour and a half, rain on them in the saddle, a thunderstorm, standing in a fistfight's ring or near an execution by the road; women in a fistfight think their own lines; and how you look beside them has pools of its own");
+            b.AppendLine("MemorialPhotos = " + B(MemorialPhotos) + "   ; in Saint Denis and Blackwater: the photographer at his counter thinks of the memorial portraits he made of the town's dead these ten days, by name, and a mourner there now and then thinks of the photograph that came");
             b.AppendLine("UndertakerKnows = " + B(UndertakerKnows) + "   ; the undertaker (Rhodes, Armadillo) thinks of his town's dead of the last week by name and by how they died: the fever, the mine, the rope, a gun, by their own hand, or by you; a busy week; and, when you've killed twice or more, you as trade");
             b.AppendLine("GamblersBorrow = " + B(GamblersBorrow) + "   ; a townsman whose worry is the cards borrows from another man of his town, a friend first: they meet in the street over it as it goes on (he lends, refuses, or snaps at him), and at the end it's paid back where the street can see, or called in and never paid. The lender thinks of it too");
             b.AppendLine("TieGossip = " + B(TieGossip) + "   ; inside a town, word of your violence and your thieving moves person to person along the ties the street made: the friends of someone who knows hear it the next day, anyone else they're tied to the day after, a little more bent at each telling; who heard it thinks of who told them. A week on, the talk is done");

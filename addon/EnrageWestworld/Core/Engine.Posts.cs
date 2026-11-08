@@ -138,6 +138,21 @@ namespace EnrageWestworld.Core
             return UndertakerWeek.Thought(week, seed);
         }
 
+        /// The photographer's thought of the dead of his town these ten days, or null (not the photographer, the switch off,
+        /// a quiet spell). Only the town's own people (residents and townsfolk), never a stranger's body.
+        private string PhotographerThought(Post post, Resident r, string seed)
+        {
+            if (Cfg == null || !Cfg.MemorialPhotos || post == null || r == null)
+                return null;
+            PostKind k = Posts.Of(post.Model);
+            if (k == null || k.Kind != MemorialPhoto.Kind)
+                return null;
+            long now = Store.LastGameMin;
+            List<DeathEntry> dead = Store.Deaths.Where(d => d != null && d.Town == (r.Town ?? k.Town) && (d.Kind == "resident" || d.Kind == "folk") && now - d.At >= 0 && now - d.At < MemorialPhoto.Days * 1440L && d.Id != r.Id)
+                                                .OrderByDescending(d => d.At).ToList();
+            return MemorialPhoto.Thought(dead, seed);
+        }
+
         /// What someone keeping a post is thinking: their counter, the one before them, the player; else like anyone else.
         public string PostThought(Resident r, bool near, int hour, string seed, InnerLife.PlayerLook look = null)
         {
@@ -157,6 +172,9 @@ namespace EnrageWestworld.Core
                 string tables = UndertakerThought(post, r, seed);   // the week's dead on his table (FIVEDAY R10)
                 if (tables != null)
                     extra.Add(new Minds.Candidate { Source = "post:undertaker", Pull = UndertakerWeek.Pull + Minds.Jitter(seed, "und", 6), Make = () => tables });
+                string plates = PhotographerThought(post, r, seed);   // the dead he's photographed (FIVEDAY R11)
+                if (plates != null)
+                    extra.Add(new Minds.Candidate { Source = "post:photographer", Pull = MemorialPhoto.Pull + Minds.Jitter(seed, "pho", 6), Make = () => plates });
                 return ResidentThought(PersonOfResident(r), hour, seed, look, extra);
             }
             if (!fresh && !hurt && Store.LastGameMin > 0 && Voice.Chance(seed + "pw", 25))
@@ -166,9 +184,9 @@ namespace EnrageWestworld.Core
                 if (w != null)
                     return w;
             }
-            string und = UndertakerThought(post, r, seed);
+            string und = UndertakerThought(post, r, seed) ?? PhotographerThought(post, r, seed);
             if (und != null && Voice.Chance(seed + "|und", 50))
-                return und;   // the week's dead (FIVEDAY R10)
+                return und;   // the week's dead (FIVEDAY R10, R11)
             string t = post != null ? Posts.Thought(r, post, Posts.Of(post.Model), near, st != null ? st.Sightings : 0, Store.LastGameMin, seed) : null;
             return t ?? ResidentThought(PersonOfResident(r), hour, seed, look);
         }

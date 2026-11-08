@@ -93,7 +93,8 @@ namespace EnrageWestworld.InGame
                     }
                     if (metres <= 30f && _mourningDone.Add("own|" + w.Id + "|" + day))
                     {
-                        _ticker.Push((w.Name ?? "Someone") + ", thinking", Mourning.OwnThought(first, w.Id + "|" + day), "near", h);
+                        string photo = _cfg.MemorialPhotos ? MemorialPhoto.MournerThought(_placeTown, first, w.Id + "|" + day) : null;   // the photograph that came (FIVEDAY R11)
+                        _ticker.Push((w.Name ?? "Someone") + ", thinking", photo ?? Mourning.OwnThought(first, w.Id + "|" + day), "near", h);
                         _mourningThoughts++;
                         return;
                     }

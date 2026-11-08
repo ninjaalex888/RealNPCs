@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Memorial photographs** (`[Mind] MemorialPhotos`, on; settings version 299; FIVEDAY reserve R11). In Saint Denis and Blackwater, the photographer at his counter thinks of the memorial portraits he made of the town's dead these ten days, by name: posed among the family on a brace, eyes painted on the plate, a hand on the Bible. A busy spell gets a thought of its own. A mourner there thinks of the photograph that came about a time in three (in place of a mourning thought).
+  - Why it reads true: the memorial photograph was often the only likeness a poor family ever had of its dead, and keeping them present is how grief settles rather than ends.
+  - Offline: a third of mourners' thoughts there are of the photograph, and the photographer's counter thoughts name the dead (before: neither).
+
 - **The undertaker thinks of the week's dead** (`[Mind] UndertakerKnows`, on; settings version 298; FIVEDAY reserve R10). The undertaker at his counter (Rhodes, Armadillo) thinks of his town's dead of the last seven days, by name and by how they died: the fever's closed box, what the mine sent up, the rope's mark, the lead dug out for the sheriff, the one who did it himself, or the one you sent him. A busy week is a thought of its own, and when you've killed twice or more, he thinks of you as trade. In a quiet week, his trade's thoughts as before.
   - Why it reads true: he handles every death, so he keeps the town's real count, and his gallows humour is how a man stands measuring his neighbours.
   - Offline: in a week with deaths in his town, every one of his counter thoughts names the dead, the week or you (before: his trade's thoughts only).
