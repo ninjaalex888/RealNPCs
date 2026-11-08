@@ -22,6 +22,7 @@ namespace EnrageWestworld.Core
         public Func<int, int, int, bool> On;        // (year, month, day): the festival's date (null for one booked by a death)
         public bool OnDeath;                         // booked the day after a named death in its town ({d} the dead; R21)
         public bool Couple;                          // its man and woman come away courting (a "flirt" between them), not cheered and envied (R22)
+        public bool MorningIfThere;                  // the morning's word only for a town you were at (the Fourth's six towns at once: the review)
         public string[] Beats;                       // the staged lines in order ({m} a man's prize, {w} a woman's)
         public string ManPrize, WomanPrize;         // what the named winners win, or null
         public string Posted, Morning;              // {t} the town, {m} {w} the winners
@@ -54,7 +55,7 @@ namespace EnrageWestworld.Core
             new FestivalKind
             {
                 Kind = "fourth", Title = "Independence Day", Spot = "bandstand", Towns = new[] { "Valentine", "Saint Denis", "Rhodes", "Blackwater", "Strawberry", "Armadillo" },
-                FromMin = 18 * 60, ToMin = 21 * 60 + 30, Affection = 2,
+                FromMin = 18 * 60, ToMin = 21 * 60 + 30, Affection = 2, MorningIfThere = true,
                 On = (y, m, d) => m == 7 && d == 4,
                 Beats = new[] {
                     "[a brass band, bunting on every porch, the flag up the pole]",
@@ -102,7 +103,7 @@ namespace EnrageWestworld.Core
                     "Dust to dust. Go on home now, {d}. Go on home.",
                     "[the snare cracks, the band strikes up hot, and the second line is dancing in the street]",
                     "[parasols and handkerchiefs in the air, the whole street behind the band, and nobody sad]" },
-                Posted = "The society buries {d} tomorrow at three, with the band. All who knew him are asked to walk.",
+                Posted = "The society buries {d} tomorrow at three, with the band. All who knew the departed are asked to walk.",
                 Morning = "They buried {d} with the band yesterday, and the second line went on till dark."
             },
             // A fais do-do in Lagras (R22, [World] EventFaisDoDo): every Saturday night, eight till half past eleven, the bayou's
@@ -163,7 +164,8 @@ namespace EnrageWestworld.Core
 
         public static string Fill(string line, string town, string man, string woman, string dead = null)
         {
-            return (line ?? "").Replace("{t}", town ?? "town").Replace("{m}", man ?? "a county man").Replace("{w}", woman ?? "a county woman").Replace("{d}", dead ?? "our brother");
+            return (line ?? "").Replace("{t}", town ?? "town").Replace("{m}", string.IsNullOrEmpty(man) ? "a county man" : man).Replace("{w}", string.IsNullOrEmpty(woman) ? "a county woman" : woman)
+                               .Replace("{d}", string.IsNullOrEmpty(dead) ? "our brother" : dead);   // (empty counts as none: Person.FirstOf(null) is "", the R7-R22 review)
         }
 
         public static IEnumerable<string> AllLines()

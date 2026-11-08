@@ -7,7 +7,7 @@ namespace EnrageWestworld.Core
 {
     public partial class Engine
     {
-        private bool FestivalOn(string kind)
+        public bool FestivalOn(string kind)
         {
             if (Cfg == null || !Cfg.TownEvents)
                 return false;
@@ -33,12 +33,14 @@ namespace EnrageWestworld.Core
                 if (FestivalOn(f.Kind) && !f.OnDeath && Festivals.On(f, y, m, d))
                     foreach (string town in f.Towns)
                         BookFestival(f, town, now / 1440 + 1, now);
-            // the ones a death books (R21): the newest named death of the last day in the town, for tomorrow, once each
+            foreach (string k in Store.Counts.Keys.Where(k => k.StartsWith("buried:", System.StringComparison.Ordinal) && now / 1440 - Store.Counts[k] > 30).ToList())
+                Store.Counts.Remove(k);   // (pruned after a month: the review)
+            // the ones a death books (R21): the newest named death of the last two days in the town, for tomorrow, once each
             foreach (FestivalKind f in Festivals.All)
                 if (f.OnDeath && FestivalOn(f.Kind))
                     foreach (string town in f.Towns)
                     {
-                        DeathEntry dead = Store.Deaths.Where(x => x != null && x.Town == town && x.Name != null && (x.Kind == "resident" || x.Kind == "folk") && now - x.At >= 0 && now - x.At < 1440 &&
+                        DeathEntry dead = Store.Deaths.Where(x => x != null && x.Town == town && x.Name != null && (x.Kind == "resident" || x.Kind == "folk") && now - x.At >= 0 && now - x.At < 2 * 1440 &&   /* two days: a death at the day's tick, or a second while one is booked, isn't lost (the review) */
                                                                   Store.Count("buried:" + x.Id) == 0).OrderByDescending(x => x.At).FirstOrDefault();
                         if (dead == null)
                             continue;
@@ -104,7 +106,7 @@ namespace EnrageWestworld.Core
                     if (st != null)
                         st.Affection = Romance.Clamp(st.Affection + (f != null ? f.Affection : 2), -100, 100);
                 }
-            if (f != null)
+            if (f != null && (attended || !f.MorningIfThere))
                 Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(e.Town), At = now, Text = Festivals.Fill(f.Morning, e.Town, Person.FirstOf(e.AName), Person.FirstOf(e.BName), e.Extra), DueAt = (now / 1440 + 1) * 1440 + 8 * 60 });
             Log("EVENT " + e.Kind + " " + e.Town + ": over (" + e.Outcome + ")");
         }

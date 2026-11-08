@@ -560,7 +560,9 @@ namespace EnrageWestworld.InGame
         {
             if (string.IsNullOrEmpty(text))
                 return;
-            string route = _cfg.NewsRoute;   // corner, ticker or gamefeed (Settings.NewsRoute): never white text
+            string route = _cfg.NewsRoute;   // corner, ticker, gamefeed or off (Settings.NewsRoute): never white text
+            if (route == "off")
+                return;   // NewsTo = off: no notices anywhere (the R7-R22 review: "off" fell through to the game feed's toasts)
             if (route == "corner")
             {
                 NewsPush(label, text, kind);   // the "Around town" box (WestworldScript.News.cs)
@@ -705,7 +707,7 @@ namespace EnrageWestworld.InGame
             {
                 _nextTickerUpdate = now + 200;
                 TickerLine was = _tickerLine;
-                _tickerLine = _ticker.Update(now, _near, _cfg.NewsRoute == "corner" ? null : (Func<string>)(() => _engine.Summary()));   // the news has its own box then
+                _tickerLine = _ticker.Update(now, _near, _cfg.NewsRoute == "corner" || _cfg.NewsRoute == "off" ? null : (Func<string>)(() => _engine.Summary()));   // the news has its own box then
                 if (_tickerLine != was)
                 {
                     Safe("thought sound", () => ThoughtSound(_tickerLine, now));

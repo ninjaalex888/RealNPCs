@@ -35,7 +35,7 @@ namespace EnrageWestworld.InGame
             {
                 _posterDay[_placeTown] = day;
                 _postersShown++;
-                NewsPush(_placeTown, "Outside the sheriff's: " + DriftPoster.Bill(d.Kind, d.Count, d.Town ?? d.Zone, best.Fidelity, _engine.Player.FullName, best.Id), "news");
+                Notice(_placeTown, "Outside the sheriff's: " + DriftPoster.Bill(d.Kind, d.Count, d.Town ?? d.Zone, best.Fidelity, _engine.Player.FullName, best.Id), "news");
                 Log.Write("POSTER " + _placeTown + ": the bill for " + d.Kind + " at " + (d.Town ?? d.Zone) + ", the telling at fidelity " + best.Fidelity);
                 return;
             }

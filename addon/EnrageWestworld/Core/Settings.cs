@@ -954,7 +954,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 307)
                     log?.Invoke("Settings: new in this version: [World] EventFourth (on): the Fourth of July as an event.");
                 if (s.SettingsVersion < 306)
-                    log?.Invoke("Settings: new in this version: the Around town box stays up 30 seconds after you come into a town, not the whole time ([Display] AroundTownStaysSeconds; 0 as before), shows each item a little shorter, and [Output] NewsTo = off turns it off.");
+                    log?.Invoke("Settings: new in this version: the Around town box stays up 30 seconds after you come into a town, not the whole time ([Output] AroundTownStaysSeconds; 0 as before), shows each item a little shorter, and [Output] NewsTo = off turns it off.");
                 if (s.SettingsVersion < 305)
                     log?.Invoke("Settings: new in this version: [World] EventFair (on): the county fair at Valentine in September.");
                 if (s.SettingsVersion < 304)

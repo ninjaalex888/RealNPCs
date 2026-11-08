@@ -2010,7 +2010,7 @@ in the file. The new ones:
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left; off: no Around town box at all
                 (on the settings panel's UI page as "The Around town box, top right")
-[Display]   AroundTownStaysSeconds = 30: how long the box keeps the town's regard of you up after
+            AroundTownStaysSeconds = 30: how long the box keeps the town's regard of you up after
                 you come into a town or it changes (0: the whole time you're in a town)
             WarNewsTo (feed | corner | ticker): where gang and faction news goes (feed, the default:
                 the game's own updates, top left)

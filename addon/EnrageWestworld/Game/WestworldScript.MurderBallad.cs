@@ -52,7 +52,10 @@ namespace EnrageWestworld.InGame
                 lines = MurderBallad.OfYours(d.Detail, d.Town ?? d.Zone, d.Id);
             if (lines == null)
             {
-                DeathEntry dead = _store.Deaths.Where(x => x != null && x.Name != null && x.Town != null).OrderByDescending(x => x.At).FirstOrDefault();
+                // a killing only, of a man (the verses are a man's): never the fever, the mine, the rope or his own hand (the review)
+                DeathEntry dead = _store.Deaths.Where(x => x != null && x.Name != null && x.Town != null && (x.By == "another" || x.By == "player" || x.By == "unknown") &&
+                                                           x.How != "the fever" && x.How != "the mine" && x.How != "the rope" && !Residents.IsWomansName(Person.FirstOf(x.Name)))
+                                               .OrderByDescending(x => x.At).FirstOrDefault();
                 if (dead != null)
                 {
                     string by = dead.By == "player" ? "the stranger" : dead.ById != null ? (_store.FindResident(dead.ById) != null ? _store.FindResident(dead.ById).Name : null) : null;

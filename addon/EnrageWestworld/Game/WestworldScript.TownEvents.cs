@@ -112,7 +112,7 @@ namespace EnrageWestworld.InGame
                 BeginBarnRaising(e, now);   // WestworldScript.BarnRaising.cs (FIVEDAY R7)
             else if (e.Kind == BaseBall.Kind && _cfg.EventBaseBall)
                 BeginBaseBall(e, now);      // WestworldScript.BaseBall.cs (FIVEDAY R16)
-            else if (Festivals.Of(e.Kind) != null)
+            else if (Festivals.Of(e.Kind) != null && _engine.FestivalOn(e.Kind))
                 BeginFestival(e, now);      // WestworldScript.Festivals.cs (FIVEDAY R17-R19; each kind's switch is the engine's booking)
         }
 

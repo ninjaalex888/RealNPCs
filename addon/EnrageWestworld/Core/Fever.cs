@@ -1,6 +1,6 @@
 // Fever in town (FIVEDAY reserve R9). Rarely (a town in a hundred and fifty a day, never within ninety days of the last), a
 // fever breaks out in one of the towns: one of its people falls sick, and each day it passes along the warm ties (friends,
-// sweethearts, the neighbours who talk: Ties.Warmth > 0) to someone in the same town, one in seven a tie a day. The sick
+// sweethearts, the neighbours who talk: Ties.Warmth > 0) to someone in the same town, one tie in twenty-five a day. The sick
 // keep to home for about a week (a strong lean on their choices, the home proper at any hour), think of it, and get better,
 // or one in twelve dies of it (mourned like anyone: the wake, the grave). With three down at once the board of health posts
 // a quarantine notice (the box), and the town's talk turns to it. It's over when nobody is sick. Who's sick and who's had it

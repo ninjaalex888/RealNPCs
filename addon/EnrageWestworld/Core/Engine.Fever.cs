@@ -45,8 +45,8 @@ namespace EnrageWestworld.Core
             foreach (string s in nowSick)
             {
                 Resident from = Store.FindResident(s);
-                if (from == null)
-                    continue;
+                if (from == null || from.Dead || from.Left || from.Fled)
+                    continue;   // (a dead or gone carrier spreads nothing: the review)
                 foreach (SceneTie t in Store.Ties)
                 {
                     if (t.Warmth <= 0 || !t.Has(s))
@@ -148,6 +148,8 @@ namespace EnrageWestworld.Core
                 return "off ([World] Fever)";
             if (town == null || indexId == null || Store.FindResident(indexId) == null)
                 return "no resident near to fall sick first";
+            if (!Fever.Towns.Contains(town))
+                return "no: the fever comes only to " + string.Join(", ", Fever.Towns) + ", not " + town;   // (it would never end there: the review)
             if (Store.Count(Fever.TownPrefix + town) > 0)
                 return "no: a fever is going through " + town + " already";
             string who = FeverStart(town, now / 1440, indexId);

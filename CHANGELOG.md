@@ -4,7 +4,7 @@
 
 - **The Around town box, less of it** (players' finding, 2026-11-07: "How do I disable the window in the top right corner? I couldn't find it anywhere in the settings menu"; settings version 306).
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
-  - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Display] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
+  - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Output] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
 
 - **The claim agent and the widow** (`[World] ClaimAgents`, on; settings version 313; FIVEDAY reserve R24). Three days after a man dies at the Annesburg mine, the company's claim agent calls on his widow with fifty dollars and a paper, "in full settlement". After a killing in Saint Denis, the insurance man calls instead, to ask about the policy rather than about her. The box tells it, and the next day what she did: signed (four in ten), sent him away and wrote to a lawyer (three in ten), or the town took up a collection so she needn't sign (three in ten).
   - Why it reads true: the companies settled for what a grieving family would take, timing the visit for when grief was rawest. The collection is the town closing ranks.
@@ -17,7 +17,7 @@
   - Why it reads true: the weekly dance was the bayou's whole social world, where courtship was done in public, under every aunt's eye, and so safely.
   - A Testing row, "A fais do-do", stages one.
 
-- **A brass band funeral in Saint Denis** (`[World] EventBrassFuneral`, on, with TownEvents; settings version 310; FIVEDAY reserve R21). The day after a named death in Saint Denis, from three till five, posted the day before, from the cemetery spot (else near you):
+- **A brass band funeral in Saint Denis** (`[World] EventBrassFuneral`, on, with TownEvents; settings version 310; FIVEDAY reserve R21). A day or two after a named death in Saint Denis, from three till five, posted the day before, from the cemetery spot (else near you):
   - the society's brass band leading the dirge out, its men in black sashes behind the dead;
   - the hymn at the graveside, with the trombone carrying the tune;
   - "Go on home now", and then the snare cracks and the second line dances back through the street.
