@@ -205,6 +205,12 @@ namespace EnrageWestworld.InGame
                     KnownAt(new Ped(d.By), now);
                 }
                 LedgerNote(d.Handle, d.Id, d.Name, d.Kind, "a beating", null);
+                if (d.By != 0 && d.By != Game.Player.Character.Handle && ENTITY.DOES_ENTITY_EXIST(d.By))
+                {
+                    MindWho kw = MindKnown(d.By, now);
+                    if (kw != null && kw.Id != null)
+                        _engine.PostReward(kw.Id);   // a resident beat a man to death: the sheriff posts a reward (FIVEDAY R30)
+                }
             }
             if (_brawlFatal.Count > 200)
                 _brawlFatal.RemoveWhere(x => !ENTITY.DOES_ENTITY_EXIST(x));

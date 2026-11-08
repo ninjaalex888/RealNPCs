@@ -1331,6 +1331,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST towns: " + TownsStatus());
 			Log.Write("TEST loop: " + LoopStatus());
 			Log.Write("TEST ghosts: " + GhostsStatus());
+			Log.Write("TEST " + RewardStatus());   // (FIVEDAY R30)
 			Log.Write("TEST wakelines: " + WakeLinesStatus());
 			Log.Write("TEST moods: " + MoodsStatus());
 			Log.Write("TEST kingrudges: " + KinGrudgesStatus());

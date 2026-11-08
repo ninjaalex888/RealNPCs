@@ -40,7 +40,7 @@ namespace EnrageWestworld.InGame
             _eventPrompt = kind;
             _eventPromptFor = e;
             _eventPromptUntil = Game.GameTime + ms;
-            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : ": the cell");
+            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : kind == NeighbourReward.Kind ? ": the reward" : ": the cell");
         }
 
         private void PromptClear()
@@ -617,6 +617,7 @@ namespace EnrageWestworld.InGame
                 case BoxSocial.Kind: menu.Rows = BoxSocial.Rows(_boxHigh, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "The box social:"; break;   // (FIVEDAY R6)
                 case Foreclosure.Kind: menu.Rows = Foreclosure.Rows(_eventPromptFor.Extra, _eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "The sheriff's sale:"; break;   // (FIVEDAY R3)
                 case Slate.Kind: menu.Rows = Slate.Rows(_eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "At the counter:"; break;   // (FIVEDAY R2)
+                case NeighbourReward.Kind: menu.Rows = NeighbourReward.Rows(_eventPromptFor.AName, _eventPromptFor.Count); menu.Title = "The reward on " + Person.FirstOf(_eventPromptFor.AName) + ":"; break;   // (FIVEDAY R30)
                 default: menu.Rows = Trials.BreakoutRows(_eventPromptFor.AName); menu.Title = Person.FirstOf(_eventPromptFor.AName) + " is in the cell:"; break;
             }
             _eventMenu = menu;
@@ -679,6 +680,11 @@ namespace EnrageWestworld.InGame
             if (m.Mode == Foreclosure.Kind && row.Id == "foreclosure:buy")
             {
                 ForeclosureBuy(e);   // WestworldScript.Foreclosure.cs (FIVEDAY R3)
+                return;
+            }
+            if (m.Mode == NeighbourReward.Kind)
+            {
+                RewardChoice(e, row.Id.Substring("reward:".Length));   // WestworldScript.Reward.cs (FIVEDAY R30)
                 return;
             }
             if (m.Mode == Slate.Kind && row.Id == "slate:pay")

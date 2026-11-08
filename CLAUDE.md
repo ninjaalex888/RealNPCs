@@ -1092,6 +1092,16 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## A reward for a neighbour (FIVEDAY R30, 2026-11-08; `[World] NeighbourReward`; settings version 319)
+
+Core/NeighbourReward.cs: `Kind` "reward", `Cents` ($25-$75), `Live` (7 days), `Side(resident)` (collect, warn or leave), the lines, and `Rows`.
+
+Core/Engine.Rewards.cs: `PostReward(id)`, `RewardIn(town)` (prunes a lapsed one), `RewardCents`, and `RewardEnded(r, now, taken)` (sets Left and Fled). State lives in `Store.Counts` under "reward:<id>" (the day) and "rewardc:<id>" (the cents).
+
+Posted from WestworldScript.BrawlDown.cs's fatal-due loop after LedgerNote, when the killer (d.By) isn't the player and is known by id. WestworldScript.Reward.cs's `RewardStep` runs every 3 s and covers the notice once a town a day, the J prompt within 4 m, and a thought every 30 s. `RewardChoice` comes from Trials' EventMenuChoose. F7 `TEST reward:`. Testing row `reward` (TestRewardKey).
+
+mindtest `NeighbourRewardTest` (`neighbourreward`).
+
 ## Hobo signs (FIVEDAY R29, 2026-11-08; `[World] HoboSigns`; settings version 318)
 
 Core/HoboSigns.cs: `Mark(resident)` by Personality, then Devotion, then Disposition (eight marks), and `Tower(residents, town, seed)`, which covers two living residents of the town (not Dead, Left or Fled) or returns null.

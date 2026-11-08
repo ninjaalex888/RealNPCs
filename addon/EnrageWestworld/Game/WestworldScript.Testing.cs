@@ -368,6 +368,29 @@ namespace EnrageWestworld.InGame
                         said = "The sheriff's man calls the street together; J while a lot is called buys it back";
                         return null;
                     }
+                case "reward":   // FIVEDAY R30: a named resident near stands for the man who killed in a brawl
+                    {
+                        skipped = "the brawl and the death";
+                        if (!_cfg.NeighbourReward)
+                            return "off ([World] NeighbourReward)";
+                        foreach (int h in _mindNear)
+                        {
+                            MindWho mw;
+                            if (!_mindWho.TryGetValue(h, out mw) || mw.Id == null || !Resident.IsResident(mw.Id) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                                continue;
+                            Resident rr = _store.FindResident(mw.Id);
+                            if (rr == null || rr.Town != _placeTown || rr.Dead || rr.Left || rr.Fled || rr.Held != null)
+                                continue;
+                            _engine.PostReward(rr.Id);
+                            if (_engine.RewardIn(_placeTown) == null)
+                                return "the reward didn't post (see the log)";
+                            _rewardNoticeDay.Remove(_placeTown);
+                            _rewardNextLook = 0;
+                            said = "A reward is posted for " + rr.Name + "; the notice, then J within 4 m of them";
+                            return null;
+                        }
+                        return "no named resident of this town near you";
+                    }
                 case "slate":   // FIVEDAY R2
                     {
                         skipped = "the third of the time, the ninety seconds between, once a day each, the week's own debt";
