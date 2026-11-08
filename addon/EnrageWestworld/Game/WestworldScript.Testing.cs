@@ -368,6 +368,34 @@ namespace EnrageWestworld.InGame
                         said = "The sheriff's man calls the street together; J while a lot is called buys it back";
                         return null;
                     }
+                case "posse":   // FIVEDAY R32: out now with a made-up deed, or back now if one is out
+                    {
+                        skipped = "the crime, the day's tick, the eighteen hours out";
+                        if (!_cfg.PosseRides)
+                            return "off ([World] PosseRides)";
+                        if (_placeTown == null)
+                            return "no town here";
+                        long g = Bridge.Now();
+                        if (_engine.PosseBackNow(_placeTown, g))
+                        {
+                            said = "The posse is back (see the box)";
+                            return null;
+                        }
+                        int k = _engine.PosseForm(_placeTown, "test|" + g, "murder", g);
+                        if (k == 0)
+                            return "too few of this town's men known (three needed; see the log)";
+                        said = k + " men ride out (the box); the row again brings them back";
+                        return null;
+                    }
+                case "posse:probe":   // FIVEDAY R32: the mounted ride, probed
+                    {
+                        skipped = "nothing: this is the probe";
+                        string why = PosseProbeStart(Game.GameTime);
+                        if (why != null)
+                            return why;
+                        said = "They mount; the log's PROBE posse lines say how it rides";
+                        return null;
+                    }
                 case "wanted":   // FIVEDAY R31: a named resident within 4 m stands in for one with the poster worry
                     {
                         skipped = "the poster worry itself";

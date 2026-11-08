@@ -1092,6 +1092,16 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## The posse rides (FIVEDAY R32, 2026-11-08; `[World] PosseRides`; settings version 321)
+
+Core/PosseRides.cs: `Rides`, `Pick` (3-5 by the deed), `Outcome` (lost 45, brought 30, dead 25) and the lines.
+
+Core/Engine.Posse.cs's `PosseDaily` (from DailyTick) brings back any posse out 18 h or more (`PosseBack`; the dead go through `NoteDied`). It then runs `PosseForm` for a town with `RecentCrime` and no posse out, once a deed. Store.Counts keys: "posse:<town>" (the minute it rode), "possekind:<town>", "posseman:<id>", "possedeed:<id>". There are also `PosseOut`, `PosseBackNow` (Testing) and `PossesOut`/`PossesRode` (F7).
+
+WestworldScript.Posse.cs: `PosseStep` (a near thought every 30 s while the town's posse is out), and the mounted probe `PosseProbeStart`/`PosseProbeStep`. The probe uses TASK_MOUNT_ANIMAL, then smart flee for the first man and go-to-entity for the second, logging "PROBE posse" every 2 s for 25 s. The ride on screen is not built until Lex has run the probe.
+
+mindtest `PosseRidesTest` (`posserides`).
+
 ## Wanted, but which one? (FIVEDAY R31, 2026-11-08; `[World] WantedWhich`; settings version 320)
 
 Core/WantedWhich.cs: `OnThePoster(worry, stage)` ("law", stage 2 or before, as Street.cs reads it), `Cents` ($50-$150), `Crime`, the lines, and `Rows` (the ticket is greyed under $15). `Store.Counts["wanted:<id>"]` holds 1 once the face is known and 2 once it's settled.
