@@ -368,6 +368,28 @@ namespace EnrageWestworld.InGame
                         said = "The sheriff's man calls the street together; J while a lot is called buys it back";
                         return null;
                     }
+                case "wanted":   // FIVEDAY R31: a named resident within 4 m stands in for one with the poster worry
+                    {
+                        skipped = "the poster worry itself";
+                        if (!_cfg.WantedWhich)
+                            return "off ([World] WantedWhich)";
+                        Ped me = Game.Player.Character;
+                        foreach (int h in _mindNear)
+                        {
+                            MindWho mw;
+                            if (!_mindWho.TryGetValue(h, out mw) || mw.Id == null || mw.P == null || !Resident.IsResident(mw.Id) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || new Ped(h).Position.DistanceTo(me.Position) > WantedWhich.NearMetres)
+                                continue;
+                            Resident rr = _store.FindResident(mw.Id);
+                            if (rr == null || rr.Dead || rr.Left || rr.Fled || rr.Held != null)
+                                continue;
+                            _wantedTestFor = rr.Id;
+                            _store.Counts.Remove(WantedWhich.Key(rr.Id));
+                            _wantedNextLook = 0;
+                            said = "You know " + rr.Name + "'s face from the poster; J within 4 m";
+                            return null;
+                        }
+                        return "no named resident within 4 m of you";
+                    }
                 case "reward":   // FIVEDAY R30: a named resident near stands for the man who killed in a brawl
                     {
                         skipped = "the brawl and the death";

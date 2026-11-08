@@ -1092,6 +1092,14 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## Wanted, but which one? (FIVEDAY R31, 2026-11-08; `[World] WantedWhich`; settings version 320)
+
+Core/WantedWhich.cs: `OnThePoster(worry, stage)` ("law", stage 2 or before, as Street.cs reads it), `Cents` ($50-$150), `Crime`, the lines, and `Rows` (the ticket is greyed under $15). `Store.Counts["wanted:<id>"]` holds 1 once the face is known and 2 once it's settled.
+
+WestworldScript.Wanted.cs's `WantedStep` runs every 2 s and covers the first named resident within 4 m on the poster. `WantedChoice` handles turnin (`Engine.GoneFromTown`), warn (`SavedByYou`), train (`Engine.Departed`) and leave. Engine.Rewards.cs's `GoneFromTown` (Left and Fled, a log line) is shared with R30. F7 `TEST wanted:`. Testing row `wanted` (`_wantedTestFor`).
+
+mindtest `WantedWhichTest` (`wantedwhich`).
+
 ## A reward for a neighbour (FIVEDAY R30, 2026-11-08; `[World] NeighbourReward`; settings version 319)
 
 Core/NeighbourReward.cs: `Kind` "reward", `Cents` ($25-$75), `Live` (7 days), `Side(resident)` (collect, warn or leave), the lines, and `Rows`.

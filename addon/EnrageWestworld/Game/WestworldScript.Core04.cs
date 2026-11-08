@@ -1336,6 +1336,7 @@ namespace EnrageWestworld.InGame
             RegardStep(now);      // the town's regard of you in the "Around town" box (WestworldScript.Regard.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             FenceStep(now);         // what you saw of the fence cutters, and the town's word (WestworldScript.FenceCutters.cs; FIVEDAY item 31)
+            WantedStep(now);        // a resident on a wanted poster, recognised (WestworldScript.Wanted.cs; FIVEDAY R31)
             RewardStep(now);        // a reward posted for a neighbour (WestworldScript.Reward.cs; FIVEDAY R30)
             HoboStep(now);          // the chalk on the water tower by the station (WestworldScript.DriftPoster.cs; FIVEDAY R29)
             RelicStep(now);         // 1907: the photographer's window of old outlaws (WestworldScript.DriftPoster.cs; FIVEDAY R26)

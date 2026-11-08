@@ -61,6 +61,15 @@ namespace EnrageWestworld.Core
                 return;
             Store.Counts.Remove(NeighbourReward.DayKey(r.Id));
             Store.Counts.Remove(NeighbourReward.CentsKey(r.Id));
+            GoneFromTown(r, now, taken ? "turned in by you on the reward: to the county jail" : "warned by you of the reward: ran in the night");
+        }
+
+        /// Gone from their town for good, not by the train (taken by the law, or run off): Left and Fled, so no cast finds
+        /// them again; the log says why (FIVEDAY R30, R31).
+        public void GoneFromTown(Resident r, long now, string why)
+        {
+            if (r == null)
+                return;
             if (!r.Left)
             {
                 r.Left = true;
@@ -71,7 +80,7 @@ namespace EnrageWestworld.Core
                 r.Fled = true;
                 r.FledAt = now;
             }
-            Log("REWARD " + r.Name + (taken ? " turned in by you: to the county jail" : " warned by you: ran in the night") + ", gone from " + r.Town + " for good");
+            Log("GONE " + r.Name + " from " + r.Town + " for good: " + why);
         }
     }
 }
