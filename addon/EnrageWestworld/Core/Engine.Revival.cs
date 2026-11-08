@@ -64,6 +64,7 @@ namespace EnrageWestworld.Core
             {
                 Store.Counts[Revival.SavedPrefix + e.AId] = (int)(now / 1440);
                 _revivalsSaved++;
+                BookBaptism(e, now);   // the next Sunday, at the river (Engine.Baptism.cs; FIVEDAY R5)
             }
             if (attended)
                 foreach (Resident r in Store.Residents.Where(r => r.Regular && !r.Dead && r.Town == e.Town).OrderBy(r => Voice.Hash(r.Id + "|" + e.Id)).Take(6))
@@ -108,7 +109,7 @@ namespace EnrageWestworld.Core
             int at;
             if (!Store.Counts.TryGetValue(Revival.SavedPrefix + id, out at))
                 return false;
-            bool saved = Revival.StillSaved(id, at, day);
+            bool saved = BaptisedWithin(id, day) || Revival.StillSaved(id, at, day);   // baptised: three weeks, no backsliding (FIVEDAY R5)
             backslid = !saved && day - at < Revival.SavedDays;
             return saved;
         }

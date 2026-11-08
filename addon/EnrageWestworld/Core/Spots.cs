@@ -22,7 +22,7 @@ namespace EnrageWestworld.Core
     public static class Spots
     {
         public const float DefaultRoom = 6f, NearMetres = 200f;
-        public static readonly string[] Kinds = { "platform", "wharf", "pithead", "stockyards", "cemetery", "bandstand", "churchsteps", "corral", "mainstreet", "saloonporch", "bankdoor", "jailyard", "showground" };
+        public static readonly string[] Kinds = { "platform", "wharf", "pithead", "stockyards", "cemetery", "bandstand", "churchsteps", "corral", "mainstreet", "saloonporch", "bankdoor", "jailyard", "showground", "riverbank" };   // (riverbank: the baptisms, FIVEDAY R5)
         private static readonly Spot[] BuiltIn = new Spot[0];   // none yet: the key fills the file
 
         public static bool IsKind(string kind)

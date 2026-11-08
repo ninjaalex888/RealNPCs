@@ -1084,6 +1084,21 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## A river baptism (FIVEDAY R5, 2026-11-07; `[World] EventBaptisms`; settings version 293)
+
+Core/Baptism.cs:
+- `For(town, id, name, savedDay, weekdayOfSaved, preacher)`: the next Sunday (a saving on a Sunday gives the one after), 14:00-15:30, Kind "baptism", AId the man, Extra the preacher.
+- The lines.
+- Spots.Kinds gains "riverbank" (the SpotKey ini text lists it).
+
+Engine.Baptism.cs:
+- `BookBaptism`: from RevivalOver when a man is saved (InnerLife.Weekday for the day's weekday).
+- `BaptismOver` (both FinishEvent paths): `Store.Counts["baptised:<id>"]` = the day; attended, five regulars' affection +2; the morning's word.
+- `BaptisedWithin(id, day)`: under 21 days. SavedNow is true then, whatever the backslide roll.
+- `BaptismTest`.
+
+Game (WestworldScript.Baptism.cs): `BeginBaptism` stages only at a riverbank spot within 150 m and out of view. Otherwise nothing is staged and the engine resolves it away. `BaptismStep` spawns the preacher, the man (as r.Preacher) and five on an arc of the bank. Beats while you're within 50 m: hymn, words, under, up with the amens and cheers, his words and thought, then attended. Testing row `baptism`. F7 `TEST baptisms:`. mindtest `BaptismTest` (`baptism`).
+
 ## Camp meetings (FIVEDAY R4, 2026-11-07; `[World] EventRevivals`; settings version 292)
 
 Core/Revival.cs:

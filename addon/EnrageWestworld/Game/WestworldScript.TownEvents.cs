@@ -104,6 +104,8 @@ namespace EnrageWestworld.InGame
                 BeginShivaree(e, now);   // WestworldScript.Shivaree.cs (FIVEDAY item 13)
             else if (e.Kind == Revival.Kind && _cfg.EventRevivals)
                 BeginRevival(e, now);    // WestworldScript.Revival.cs (FIVEDAY R4)
+            else if (e.Kind == Baptism.Kind && _cfg.EventBaptisms)
+                BeginBaptism(e, now);    // WestworldScript.Baptism.cs (FIVEDAY R5)
         }
 
         /// The dance staged: outside the saloon he came out of here, else behind the camera, 20-35 m off.
@@ -198,6 +200,11 @@ namespace EnrageWestworld.InGame
             if (r.E.Kind == Revival.Kind)
             {
                 RevivalStep(r, now);
+                return;
+            }
+            if (r.E.Kind == Baptism.Kind)
+            {
+                BaptismStep(r, now);
                 return;
             }
             if (r.E.Kind == "show")

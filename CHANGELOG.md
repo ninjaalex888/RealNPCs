@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **A river baptism** (`[World] EventBaptisms`, on, with TownEvents; settings version 293; FIVEDAY reserve R5). The Sunday after a camp meeting saves a man, he's baptised in the river from two in the afternoon, at the town's new "riverbank" spot (the spots tool has the kind now). The preacher and the faithful stand on the bank: the hymn, the preacher's words, under and up, the amens, his words and his thought.
+  - Baptised, he keeps from the saloon three weeks and doesn't backslide. Offline, of men saved at a camp meeting, 67% are still saved on day ten without it and 100% with it.
+  - Without a riverbank spot, or with you away, it happens all the same, and the morning has the word. A while there warms the regulars to you.
+  - Why it reads true: a commitment made twice, and in public, is far harder to walk back. That's why the churches insisted on the river.
+  - A Testing row, "A baptism at the river", stages one.
+
 - **Camp meetings: three nights of revival** (`[World] EventRevivals`, on, with TownEvents; settings version 292; FIVEDAY reserve R4). Now and then from June to August, a travelling preacher holds a camp meeting outside one of the country towns (Valentine, Strawberry, Rhodes, Blackwater, Annesburg, Armadillo, Emerald Ranch). It runs three nights, half past seven till ten, posted ahead.
   - It plays at the town's showground or church steps spot (else a spot near you): the preacher in a ring of the faithful, the hymns, the amens. The first night is the call to repent, the second hellfire, the third the altar call.
   - On the third night, a man of the town whose worry is the drink or the cards goes up to the mourners' bench. For two weeks he keeps from the saloon and the card table and leans to church, though a third of them backslide at the week. Offline, a saved drinker's 7 pm saloon goes from 18% to 0%.

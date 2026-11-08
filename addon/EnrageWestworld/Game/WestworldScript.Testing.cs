@@ -404,6 +404,15 @@ namespace EnrageWestworld.InGame
                         said = what;
                         return null;
                     }
+                case "baptism":   // FIVEDAY R5
+                    {
+                        skipped = "the camp meeting before it and the Sunday's hour: two minutes from now, here";
+                        string what = _engine.BaptismTest(_placeTown, Bridge.Now());
+                        if (what.StartsWith("off") || what.StartsWith("no "))
+                            return what;
+                        said = what;
+                        return null;
+                    }
                 case "shivaree":
                     {
                         skipped = "the wedding before it and the night's hour: two minutes from now, here";

@@ -198,6 +198,8 @@ namespace EnrageWestworld.Core
                 ShivareeOver(e, now, false);
             else if (e.Kind == Revival.Kind)
                 RevivalOver(e, now, false);
+            else if (e.Kind == Baptism.Kind)
+                BaptismOver(e, now, false);
         }
 
         /// What a dance leaves: the regulars' ties and memories (and, attended, their thought of the player who came).
@@ -265,6 +267,8 @@ namespace EnrageWestworld.Core
                 ShivareeOver(e, now, attended);
             else if (e.Kind == Revival.Kind)
                 RevivalOver(e, now, attended);
+            else if (e.Kind == Baptism.Kind)
+                BaptismOver(e, now, attended);
         }
 
         /// Shots or a gun pointed broke it up: nothing comes of it, and the town remembers who fired.
