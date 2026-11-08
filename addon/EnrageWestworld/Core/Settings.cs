@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 291;
+        public const int CurrentVersion = 292;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -375,6 +375,7 @@ namespace EnrageWestworld.Core
         public bool Payday = true;   // [Scenes] Saturday noon to eight in town: the working people's day bends to the week's pay, and a woman may meet a man at the door for his wages (Core/Payday.cs; FIVEDAY item 11, settings version 263)
         public bool StoreSlate = true;   // [Scenes] at the store: someone asks to put it on the slate; the keeper chalks it, asks for something first, or says it's full, and J lets you pay what they owe; on payday they pay it down (Core/Slate.cs; FIVEDAY R2, settings version 290)
         public bool Temperance = true;   // [Scenes] by day, a temperance woman asks a drinker in the street to sign the pledge (Core/Temperance.cs; FIVEDAY item 12, settings version 264)
+        public bool EventRevivals = true;   // [World] with TownEvents: in summer, three nights of a camp meeting outside a country town; the third night's altar call saves a drinker or a gambler for two weeks (Core/Revival.cs; FIVEDAY R4, settings version 292)
         public bool EventShivarees = true;   // [World] with TownEvents: the night after a wedding in town, the couple's friends raise a din until the groom stands them a round (Core/Shivaree.cs; FIVEDAY item 13, settings version 265)
         public bool WhileAway = true;   // [World] back in a town after two game days, what you missed: the box's "What you missed" and a neighbour's thought (Core/WhileAway.cs; FIVEDAY item 19, settings version 271)
         public bool KinTownWrongs = true;   // [Scenes] with KinGrudges: a family takes up a beating or a theft one townsman did another; a man of theirs comes to town a week on and has it out with him (Engine.KinTownDaily; FIVEDAY item 32b, settings version 285)
@@ -914,6 +915,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 292)
+                    log?.Invoke("Settings: new in this version: [World] EventRevivals (on): summer camp meetings, three nights of revival.");
                 if (s.SettingsVersion < 291)
                     log?.Invoke("Settings: new in this version: [World] Foreclosures (on): the sheriff's sale in the street when the bank takes a family's place.");
                 if (s.SettingsVersion < 290)
@@ -1816,6 +1819,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("Payday = " + B(Payday) + "   ; Saturday from noon till eight in a town: wages paid, the working people lean to the saloon, the cards, the store and a drink and away from work, and a woman may stop a man on his way to the saloon for the week's money");
             b.AppendLine("StoreSlate = " + B(StoreSlate) + "   ; at the store, now and then: a townsman or townswoman asks the keeper to put it on the slate, and he chalks it up, asks for something on account first, or says the slate's full (by what they owe this week and his manner). Refused, J for ten seconds lets you pay what they owe, a kindness remembered. On Saturday afternoon they pay it down instead");
             b.AppendLine("Temperance = " + B(Temperance) + "   ; by day in the street: a temperance woman asks a drinker before the saloon doors to sign the pledge; he jeers, slinks off, swears off for the day, or is taken home on her arm. The pious start it oftener, and a man whose worry is the drink is the one she stops");
+            b.AppendLine("EventRevivals = " + B(EventRevivals) + "   ; with TownEvents on: now and then from June to August, a preacher holds three nights of a camp meeting outside a country town (posted ahead), half past seven till ten, at its showground or church steps spot; on the third night a townsman whose worry is the drink or the cards goes up to the bench, and for two weeks keeps from the saloon (a third backslide at the week). A night there warms the regulars to you a little");
             b.AppendLine("EventShivarees = " + B(EventShivarees) + "   ; with TownEvents on: the night after a wedding in a town, from nine, the couple's friends gather with pans and a cowbell and shout for the groom until he comes out and stands them a round; there a minute, the regulars think better of you for it");
             b.AppendLine("WhileAway = " + B(WhileAway) + "   ; back in a town after two game days or more: what happened while you were gone (deaths, weddings, who left on the train, a new face at a counter, the dance, the trial, the hanging, the election you missed), in the Around town box, and someone near who knows you thinks of telling you");
             b.AppendLine("KinTownWrongs = " + B(KinTownWrongs) + "   ; with KinGrudges on: when one townsman beats or robs another, two times in five the victim's brother, father, son, cousin or uncle comes to town five to nine days on, and if the one who did it is near you, walks up to him and has it out (words, a walk-off, an apology, or blows between two hot-tempered men)");

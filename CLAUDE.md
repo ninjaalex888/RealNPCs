@@ -1084,6 +1084,26 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Camp meetings (FIVEDAY R4, 2026-11-07; `[World] EventRevivals`; settings version 292)
+
+Core/Revival.cs:
+- `Summer` (June-August), `Books(town, day, month, lastDay)`: 2% a day, at least 30 days apart, `Towns`.
+- `For(town, day, preacher)`: three TownEvents of Kind "revival", 19:30-22:00 from tomorrow, Count = the night, Extra = the preacher.
+- `Sinner`: drink or cards. `StillSaved`: 14 days, a third backslide from day 7. `Lean`: saloon and drink -0.3, cards -0.35, church +0.2, pray +0.15, work +0.05.
+- The lines.
+
+Engine.Revival.cs:
+- `RevivalDaily` (the daily tick): one town a day at most, `Store.Counts["revival:<town>"]` = the day, posted, a toast.
+- `RevivalSinner(e, day)`: on the event's AId/AName, so the staging names the same man the end saves.
+- `RevivalOver` (both FinishEvent paths): night 3 saves him (`Store.Counts["saved:<id>"]`); attended, six regulars' affection +2; the morning's word by Later.
+- `SavedNow(id, day, out backslid)` feeds ChoiceContext.Saved (Mind.cs).
+- `RevivalTest`.
+
+Game (WestworldScript.Revival.cs), the shivaree's pattern:
+- `BeginRevival`: the showground spot, else churchsteps, within 150 m and out of view, else EncounterSpot 20-40.
+- `RevivalStep`: spawns the preacher and six in a 3 m ring. Beats every 7-9 s while you're within 50 m: hymn, sermon by night, amens and cheers, sermon, hymn, then on night 3 the bench (a Hint with his name and his words). Then FinishEvent, attended.
+- Testing rows `revival` and `revival3`. F7 `TEST revivals:`. mindtest `RevivalTest` (`revival`).
+
 ## A sheriff's sale (FIVEDAY R3, 2026-11-07; `[World] Foreclosures`; settings version 291)
 
 Core/Foreclosure.cs:

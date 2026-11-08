@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Camp meetings: three nights of revival** (`[World] EventRevivals`, on, with TownEvents; settings version 292; FIVEDAY reserve R4). Now and then from June to August, a travelling preacher holds a camp meeting outside one of the country towns (Valentine, Strawberry, Rhodes, Blackwater, Annesburg, Armadillo, Emerald Ranch). It runs three nights, half past seven till ten, posted ahead.
+  - It plays at the town's showground or church steps spot (else a spot near you): the preacher in a ring of the faithful, the hymns, the amens. The first night is the call to repent, the second hellfire, the third the altar call.
+  - On the third night, a man of the town whose worry is the drink or the cards goes up to the mourners' bench. For two weeks he keeps from the saloon and the card table and leans to church, though a third of them backslide at the week. Offline, a saved drinker's 7 pm saloon goes from 18% to 0%.
+  - A night there warms the regulars to you a little, and the morning has the word.
+  - Why it reads true: a public vow under a crowd's eye is one of the strongest pulls on behaviour there is, and it fades when the crowd goes home. That's why the backsliding was as famous as the saving.
+  - Offline, about twelve camp meetings a summer across the seven towns (before: none). Two Testing rows stage night one and the altar call.
+
 - **A sheriff's sale in the street** (`[World] Foreclosures`, on; settings version 291; FIVEDAY reserve R3). On the first day a resident's worry over the bank ends badly, one time in four, the bank sells them up in public. From ten till two, with the town's bankdoor (or mainstreet) spot recorded and you near, the sheriff's man calls the street together and sells three of their things: the plough, the milch cow, the parlour organ.
   - The neighbours bid low. Two sales in five, not one of them will bid against the family, and the bank's man takes each lot.
   - The family watches if they're near, and thinks of it.

@@ -28,6 +28,7 @@ namespace EnrageWestworld.Core
         public string WorkPlace;              // where their work is, if it's somewhere work is otherwise improper (a barkeep's saloon)
         public bool Woman, SaloonGirl;        // a respectable woman of 1899 didn't drink or play cards in a saloon; the saloon's own women did
         public bool PassedOver;               // passed over at the docks' shape-up today (Core/ShapeUp.cs), with [World] ShapeUp
+        public bool Saved;                    // saved at a camp meeting these two weeks (Core/Revival.cs), with [World] EventRevivals
         public string SaleMood;               // at Valentine's sale today (Core/SaleDay.cs): paid or ruined, with [World] SaleDay; else null
         public bool Mourning;                 // a friend's death these three weeks (Core/Mourning.cs), with [World] Mourning
         public string Devotion;               // Devout, Churchgoer, Lapsed, Godless (the person's), for Sunday's lean with [World] SundayMorning; else null
@@ -269,6 +270,7 @@ namespace EnrageWestworld.Core
             if (c.Plan != null)
                 s += PlanLean(c.Plan, d.Id);
             s += ShapeUp.Lean(c.PassedOver, d.Id);   // passed over at the wharf: the saloon (FIVEDAY item 29)
+            s += Revival.Lean(c.Saved, d.Id);   // saved at the camp meeting: away from the saloon and the cards, toward church (FIVEDAY R4)
             s += SaleDay.Lean(c.SaleMood, c.Hour, d.Id);   // sale day: the drovers drink their pay, the ruined man drinks (FIVEDAY item 30)
             s += Mourning.Lean(c.Mourning, d.Id);   // mourning: quieter days (FIVEDAY item 26)
             if (c.Devotion != null)

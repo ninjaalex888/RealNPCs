@@ -394,6 +394,16 @@ namespace EnrageWestworld.InGame
                         said = "a man in a city suit is walking in from out of view to ask after you";
                         return null;
                     }
+                case "revival":
+                case "revival3":   // FIVEDAY R4
+                    {
+                        skipped = "the summer day's roll, the month between, the nights' hours: two minutes from now, here";
+                        string what = _engine.RevivalTest(_placeTown, Bridge.Now(), a.Id == "revival3");
+                        if (what.StartsWith("off") || what.StartsWith("no "))
+                            return what;
+                        said = what;
+                        return null;
+                    }
                 case "shivaree":
                     {
                         skipped = "the wedding before it and the night's hour: two minutes from now, here";
