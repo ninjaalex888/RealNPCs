@@ -1092,6 +1092,19 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## Grinding season (FIVEDAY R23, 2026-11-08; `[World] GrindingSeason`; settings version 312)
+
+Core/Grinding.cs:
+- `Now(month, day)`: 15 October to 20 December. `Towns`: Rhodes, Saint Denis, Lagras.
+- `Works(town, tradeGroup)`: working or farm.
+- `Lean(grinding, hour)`: work +0.45 after 18:00 (else +0.25); saloon -0.2; home -0.25 in the evening; stroll -0.15. The lines.
+
+ChoiceContext.Grinding (Mind.cs, by _placeTown and the clock date). The work Proper runs past 18:00 when grinding (still from 07:00).
+
+A Couple `FestivalKind` "grindingball" (Rhodes, 20 December, behind GrindingSeason). `GrindStep` (WestworldScript.Fever.cs): every 30 s in a cane town in the season, a working man near thinks of the grinding.
+
+Testing row `grindingball`. mindtest `GrindingTest` (`grinding`).
+
 ## A fais do-do (FIVEDAY R22, 2026-11-08; `[World] EventFaisDoDo`; settings version 311)
 
 A `FestivalKind` "faisdodo": Lagras, every Saturday, 20:00-23:30, the mainstreet spot, six beats, `Couple`. In `FestivalOver`, a Couple kind notes a "flirt" between AId and BId instead of the cheer and envy. Testing row `faisdodo`. mindtest FestivalsTest's checks.

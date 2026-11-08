@@ -35,9 +35,35 @@ namespace EnrageWestworld.InGame
             });
         }
 
+        // ---- grinding season's thoughts (FIVEDAY R23; Core/Grinding.cs) ----
+        private int _grindNextLook, _grindThoughts;
+
+        /// Every thirty seconds in a cane town in the season: a named working man near thinks of the grinding.
+        private void GrindStep(int now)
+        {
+            if (_cfg == null || !_cfg.GrindingSeason || _placeTown == null || now < _grindNextLook)
+                return;
+            _grindNextLook = now + 30000;
+            if (!Grinding.In(_placeTown) || !Grinding.Now(InnerLife.ClockMonth, InnerLife.ClockDay))
+                return;
+            long day = Bridge.Now() / 1440;
+            foreach (int h in _mindNear)
+            {
+                MindWho w;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                    continue;
+                string tg = w.TradeGroup ?? (w.TradeGroup = InnerLife.TradeGroup(w.P.Trade));
+                if (tg != "working" && tg != "farm")
+                    continue;
+                _ticker.Push((w.Name ?? "Someone") + ", thinking", Grinding.Thought(w.Id + "|" + day), "near", h);
+                _grindThoughts++;
+                break;
+            }
+        }
+
         private string FeverGameStatus()
         {
-            return _engine.FeverStatus() + "; " + _feverThoughts + " fever thoughts this session";
+            return _engine.FeverStatus() + "; " + _feverThoughts + " fever thoughts this session; " + _grindThoughts + " grinding thoughts";
         }
     }
 }

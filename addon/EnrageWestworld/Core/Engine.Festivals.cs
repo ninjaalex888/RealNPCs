@@ -18,6 +18,7 @@ namespace EnrageWestworld.Core
                 case "mardigras": return Cfg.EventMardiGras;
                 case "brassfuneral": return Cfg.EventBrassFuneral;
                 case "faisdodo": return Cfg.EventFaisDoDo;
+                case "grindingball": return Cfg.GrindingSeason;
                 default: return false;
             }
         }

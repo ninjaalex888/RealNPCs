@@ -65,6 +65,7 @@ namespace EnrageWestworld.Core
             new Entry("boxsocial", "People", "A box social (in 2 min here)", "TestBoxSocialKey", needs: "[World] TownEvents, EventBoxSocials; a town with a young woman and two young men among its regulars"),
             new Entry("barnraising", "People", "A barn raising (in 2 min here)", "TestBarnRaisingKey", needs: "[World] TownEvents, EventBarnRaisings; a town with a farm family known to RealNPCs (two men at odds for the beam, if any)"),
             new Entry("baseball", "People", "Base ball (in 2 min, Valentine or Strawberry)", "TestBaseBallKey", needs: "[World] TownEvents, EventBaseBall; in Valentine or Strawberry to see it staged"),
+            new Entry("grindingball", "People", "The grinding ball (in 2 min, Rhodes)", "TestGrindingBallKey", needs: "[World] TownEvents, GrindingSeason; in Rhodes to see it staged"),
             new Entry("faisdodo", "People", "A fais do-do (in 2 min, Lagras)", "TestFaisDoDoKey", needs: "[World] TownEvents, EventFaisDoDo; in Lagras to see it staged"),
             new Entry("brassfuneral", "People", "A brass band funeral (in 2 min, Saint Denis)", "TestBrassFuneralKey", needs: "[World] TownEvents, EventBrassFuneral; in Saint Denis to see it staged"),
             new Entry("mardigras", "People", "Mardi Gras (in 2 min, Saint Denis)", "TestMardiGrasKey", needs: "[World] TownEvents, EventMardiGras; in Saint Denis to see it staged"),

@@ -125,6 +125,22 @@ namespace EnrageWestworld.Core
                 Posted = "Fais do-do in Lagras Saturday night: the fiddle, the accordion, gumbo for all.",
                 Morning = "At the fais do-do in Lagras, {m} and {w} danced every dance together. The aunts are talking."
             },
+            // The grinding ball at Rhodes (R23, with [World] GrindingSeason): the night of 20 December, the season's end, the
+            // mill hands' dance, a fiddle, the planters' whiskey, and a couple who come away courting.
+            new FestivalKind
+            {
+                Kind = "grindingball", Title = "The grinding ball", Spot = "mainstreet", Towns = new[] { "Rhodes" }, FromMin = 20 * 60, ToMin = 23 * 60 + 30, Affection = 2,
+                On = (y, m, d) => m == 12 && d == 20,
+                Beats = new[] {
+                    "[the last cane ground, the mill quiet for the first time in two months, and a fiddle starting up]",
+                    "To the crop! Every stalk of it in before the frost!",
+                    "[the planter's whiskey going round, and men who've not slept in weeks dancing like boys]",
+                    "{m} has asked {w} for every reel tonight. Somebody fetch the preacher.",
+                    "[a reel, then another, the lamps smoking, the whole parish on the floor]" },
+                ManPrize = "every reel with her", WomanPrize = "every reel with him", Couple = true,
+                Posted = "The grinding ball at Rhodes on the twentieth: the crop is in, and the planters stand the whiskey.",
+                Morning = "The grinding's done, and at the ball in Rhodes {m} and {w} danced every reel. Half the parish slept till noon."
+            },
         };
 
         public static FestivalKind Of(string kind)

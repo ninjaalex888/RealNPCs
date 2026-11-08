@@ -6,6 +6,10 @@
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
   - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Display] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
 
+- **Grinding season in the cane** (`[World] GrindingSeason`, on; settings version 312; FIVEDAY reserve R23). From 15 October to 20 December the sugar mills of Lemoyne run day and night. The working men of Rhodes, Saint Denis and Lagras work into the night, with less saloon and less home, and think of it: the knives, the rollers that took a man's arm, the molasses smoke, the sleep they aren't getting. With TownEvents, it ends with the grinding ball at Rhodes on the twentieth, where a couple dance every reel and come away courting.
+  - Why it reads true: the grinding was the hardest and most dangerous labour of the Southern year, and exhaustion narrows a mind to the next shift. The ball at the end is the release that made it bearable.
+  - Offline, a working man at 9 pm in a cane town is at work 95% of the time in the grinding (0% before). A Testing row stages the ball.
+
 - **A fais do-do in Lagras** (`[World] EventFaisDoDo`, on, with TownEvents; settings version 311; FIVEDAY reserve R22). Every Saturday night in Lagras, from eight till half past eleven, the bayou's dance: a fiddle and an accordion, waltzes and two-steps on the boards, the gumbo pot passed round, the babies carried to the back room and sung to sleep ("fais do-do"). A young couple of the village dance every dance together, and come away courting; the aunts are talking by morning.
   - Why it reads true: the weekly dance was the bayou's whole social world, where courtship was done in public, under every aunt's eye, and so safely.
   - A Testing row, "A fais do-do", stages one.

@@ -488,6 +488,7 @@ namespace EnrageWestworld.InGame
                         said = what;
                         return null;
                     }
+                case "grindingball":   // FIVEDAY R23
                 case "faisdodo":   // FIVEDAY R22
                 case "brassfuneral":   // FIVEDAY R21
                 case "mardigras":   // FIVEDAY R19
