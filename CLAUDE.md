@@ -1084,6 +1084,20 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## A box social (FIVEDAY R6, 2026-11-07; `[World] EventBoxSocials`; settings version 294)
+
+Core/BoxSocial.cs:
+- `PostsToday(weekday, dayOfMonth)`: Thursday, with Saturday in days 1-7.
+- `Cast(regulars, ties, year)`: a woman of 16-30. Two men of 17-35: one she has a warm tie with first, else by seed, then another.
+- `Bids(seed)`: four climbing cents. `Rows(high, cash)`: you bid +50c. `Affection` 6, `Sore` 4. The lines.
+
+Engine.BoxSocial.cs:
+- `BoxSocialDaily` (the daily tick, InnerLife.Weekday and ClockDay): `BookBoxSocial` per town, for day + 2, 15:00-17:00. AId her, BId the winner, Extra "loserId|loserName"; posted, a toast.
+- `BoxSocialOver` (both FinishEvent paths): not you, the winner+her "flirt" tie and the loser+winner "envy" tie. Part "you": her Affection +6 and the winner's -4. The morning's word.
+- `BoxSocialTest`.
+
+Game (WestworldScript.BoxSocial.cs): `BeginBoxSocial` at the churchsteps spot within 150 m and out of view, else EncounterSpot 20-35. `BoxSocialStep` spawns the auctioneer, her, the two suitors and three more. Beats while you're within 50 m: the open, four alternating bids (each re-prompts J: `PromptSet(BoxSocial.Kind, e)`), sold (to you, Part "you", if `_boxYou`), her words, the loser's thought, attended. `BoxSocialBid` (the Trials menu case "box:bid") takes high + 50c in cash. Testing row `boxsocial`. F7 `TEST box socials:`. mindtest `BoxSocialTest` (`boxsocial`).
+
 ## A river baptism (FIVEDAY R5, 2026-11-07; `[World] EventBaptisms`; settings version 293)
 
 Core/Baptism.cs:

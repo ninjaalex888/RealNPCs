@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **A box social** (`[World] EventBoxSocials`, on, with TownEvents; settings version 294; FIVEDAY reserve R6). On the first Saturday of the month, posted the Thursday before, the church in each settled town holds a box social from three. It plays at the church steps spot, else near you.
+  - A young woman's supper box is auctioned unopened, and everyone knows whose it is. Two young men of the town bid each other up for it, the one she's already warm to among them.
+  - The winner and she come away courting, and the loser envies him.
+  - While they bid, J lets you go fifty cents over. Buy it and she eats with you: she thinks the more of you, and the suitor you outbid is sore at you.
+  - Why it reads true: courtship in public, with money as the signal and the whole town watching. Costly signalling and rivalry at their plainest.
+  - Offline, once a month in each of the six towns with the cast, each a new courting tie (before: none). A Testing row, "A box social", stages one.
+
 - **A river baptism** (`[World] EventBaptisms`, on, with TownEvents; settings version 293; FIVEDAY reserve R5). The Sunday after a camp meeting saves a man, he's baptised in the river from two in the afternoon, at the town's new "riverbank" spot (the spots tool has the kind now). The preacher and the faithful stand on the bank: the hymn, the preacher's words, under and up, the amens, his words and his thought.
   - Baptised, he keeps from the saloon three weeks and doesn't backslide. Offline, of men saved at a camp meeting, 67% are still saved on day ten without it and 100% with it.
   - Without a riverbank spot, or with you away, it happens all the same, and the morning has the word. A while there warms the regulars to you.

@@ -413,6 +413,15 @@ namespace EnrageWestworld.InGame
                         said = what;
                         return null;
                     }
+                case "boxsocial":   // FIVEDAY R6
+                    {
+                        skipped = "the first Saturday and Thursday's posting: two minutes from now, here";
+                        string what = _engine.BoxSocialTest(_placeTown, Bridge.Now());
+                        if (what.StartsWith("off") || what.StartsWith("no "))
+                            return what;
+                        said = what;
+                        return null;
+                    }
                 case "shivaree":
                     {
                         skipped = "the wedding before it and the night's hour: two minutes from now, here";

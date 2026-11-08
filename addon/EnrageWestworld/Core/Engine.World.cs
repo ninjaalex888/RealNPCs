@@ -925,6 +925,7 @@ namespace EnrageWestworld.Core
                 DebtTick(now);
             GoalTick(now);
             EventsDaily(now);   // the dances posted on Thursdays (Engine.Events.cs)
+            BoxSocialDaily(now);    // Thursday posts the first Saturday's box social (Engine.BoxSocial.cs; FIVEDAY R6)
             RevivalDaily(now);      // a summer camp meeting booked in a country town (Engine.Revival.cs; FIVEDAY R4)
             DrummersDaily(now);     // drummers whose days are up leave on the train (Engine.Drummers.cs; FIVEDAY R1)
             KinTownDaily(now);      // a family takes up a wrong one townsman did another (Engine.KinGrudges.cs; FIVEDAY item 32b)
