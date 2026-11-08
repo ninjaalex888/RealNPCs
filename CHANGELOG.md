@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **The telegraph clerk knows first** (`[Mind] TelegraphKnows`, on; settings version 303; FIVEDAY reserve R15). The station agent at his counter thinks of what came over the wire these two days: deaths in other towns, by name ("Nobody here knows yet. I'm not paid to tell them."). With you at his window, he thinks of your deed in another town before the word has reached his ("Wire from Valentine about a stranger: SHOT DEAD STOP. And here he stands at my window.").
+  - Why it reads true: the clerk of 1899 held the town's news an hour before the town did. His trade was discretion and his temptation was to break it.
+
 - **The editor takes a side** (`[World] EditorSides`, on; settings version 302; FIVEDAY reserve R14). Every town's paper has its editor and his line:
   - law and order (Saint Denis, Rhodes): hang the man, the sheriff must act;
   - the people's (Valentine, Strawberry, Annesburg): ask who the real thieves are;

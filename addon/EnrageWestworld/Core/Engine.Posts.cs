@@ -138,6 +138,25 @@ namespace EnrageWestworld.Core
             return UndertakerWeek.Thought(week, seed);
         }
 
+        /// The station agent's thought of what came over the wire these two days, or null: your deed in another town that hasn't
+        /// reached his (when you're near: he knows), else a death elsewhere, by name.
+        private string TelegraphThought(Post post, Resident r, bool near, string seed)
+        {
+            if (Cfg == null || !Cfg.TelegraphKnows || post == null || r == null)
+                return null;
+            PostKind k = Posts.Of(post.Model);
+            if (k == null || k.Kind != Telegraph.Kind)
+                return null;
+            string town = r.Town ?? k.Town;
+            long now = Store.LastGameMin, since = now - Telegraph.Days * 1440L;
+            if (near)
+                foreach (Deed d in Store.Deeds)
+                    if (d != null && d.At >= since && d.At <= now && d.Town != null && d.Town != town && d.Weight >= 30 && (Store.TownRumours == null || !Store.TownRumours.Any(x => x != null && x.DeedId == d.Id && x.Town == town)))
+                        return Telegraph.DeedLine(Telegraph.Wire(d.Kind), d.Town, seed);
+            DeathEntry dead = Store.Deaths.Where(x => x != null && x.Town != null && x.Town != town && x.Name != null && x.At >= since && x.At <= now).OrderByDescending(x => x.At).FirstOrDefault();
+            return dead != null ? Telegraph.DeathLine(dead.Name, dead.Town, seed) : null;
+        }
+
         /// The photographer's thought of the dead of his town these ten days, or null (not the photographer, the switch off,
         /// a quiet spell). Only the town's own people (residents and townsfolk), never a stranger's body.
         private string PhotographerThought(Post post, Resident r, string seed)
@@ -172,6 +191,9 @@ namespace EnrageWestworld.Core
                 string tables = UndertakerThought(post, r, seed);   // the week's dead on his table (FIVEDAY R10)
                 if (tables != null)
                     extra.Add(new Minds.Candidate { Source = "post:undertaker", Pull = UndertakerWeek.Pull + Minds.Jitter(seed, "und", 6), Make = () => tables });
+                string wire = TelegraphThought(post, r, near, seed);   // what came over the wire (FIVEDAY R15)
+                if (wire != null)
+                    extra.Add(new Minds.Candidate { Source = "post:telegraph", Pull = Telegraph.Pull + Minds.Jitter(seed, "tel", 6), Make = () => wire });
                 string plates = PhotographerThought(post, r, seed);   // the dead he's photographed (FIVEDAY R11)
                 if (plates != null)
                     extra.Add(new Minds.Candidate { Source = "post:photographer", Pull = MemorialPhoto.Pull + Minds.Jitter(seed, "pho", 6), Make = () => plates });
@@ -184,7 +206,7 @@ namespace EnrageWestworld.Core
                 if (w != null)
                     return w;
             }
-            string und = UndertakerThought(post, r, seed) ?? PhotographerThought(post, r, seed);
+            string und = UndertakerThought(post, r, seed) ?? PhotographerThought(post, r, seed) ?? TelegraphThought(post, r, near, seed);
             if (und != null && Voice.Chance(seed + "|und", 50))
                 return und;   // the week's dead (FIVEDAY R10, R11)
             string t = post != null ? Posts.Thought(r, post, Posts.Of(post.Model), near, st != null ? st.Sightings : 0, Store.LastGameMin, seed) : null;

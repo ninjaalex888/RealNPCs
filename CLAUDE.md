@@ -1084,6 +1084,17 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## The telegraph clerk (FIVEDAY R15, 2026-11-07; `[Mind] TelegraphKnows`; settings version 303)
+
+Core/Telegraph.cs: `Wire(kind)` (the deed in wire words), `DeathLine`, `DeedLine`.
+
+Engine.Posts.cs `TelegraphThought(post, r, near, seed)`, for PostKind "station" only:
+- With you near: your Deed of the last 2 days in another town, Weight 30+, with no TownRumour of it in his town.
+- Else the newest death in another town in the last 2 days.
+- A "post:telegraph" candidate at pull 44 with Minds; in the without-Minds half-chance chain otherwise.
+
+mindtest `TelegraphTest` (`telegraph`).
+
 ## The editor takes a side (FIVEDAY R14, 2026-11-07; `[World] EditorSides`; settings version 302)
 
 Core/Editor.cs:
