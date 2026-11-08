@@ -1092,6 +1092,16 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## Murder ballads (FIVEDAY R20, 2026-11-08; `[Scenes] MurderBallads`; settings version 309)
+
+Core/MurderBallad.cs: `OfYours(victim, place)` and `OfDeath(dead, place, by)`, an opening and four verses each.
+
+Game (WestworldScript.MurderBallad.cs): every 15 s, once a game night (the night counted from 18:00), when `AtFireNow()` holds (the camp revenant's test).
+- `StartBallad` sings `Shows.MostTold` if it's a kill, murder or lawkill (Detail the victim, Town or Zone the place).
+- Else it sings the newest Store.Deaths of a named person in a town: By player gives "the stranger", ById a known resident's name.
+- Verses go to the ticker as "From the next fire", every 8 s.
+- Testing row `ballad`. F7 `TEST ballads:`. mindtest `MurderBalladTest` (`ballad`).
+
 ## Mardi Gras (FIVEDAY R19, 2026-11-08; `[World] EventMardiGras`; settings version 308)
 
 A `FestivalKind` "mardigras" in Core/Festivals.cs: Saint Denis, `Calendar.Easter(y) - 47 days`, 19:00-23:00, the mainstreet spot. Six beats; ManPrize King of the Carnival, WomanPrize the king cake's baby (so a rival's envy). `FestivalOn` "mardigras". Testing row `mardigras`. mindtest FestivalsTest's checks (14 Feb 1899, 12 Feb 1907).

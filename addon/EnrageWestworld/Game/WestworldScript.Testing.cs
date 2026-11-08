@@ -329,6 +329,19 @@ namespace EnrageWestworld.InGame
                         said = what;
                         return null;
                     }
+                case "ballad":   // FIVEDAY R20
+                    {
+                        skipped = "the night, the fire, once a night";
+                        if (!_cfg.MurderBallads)
+                            return "off ([Scenes] MurderBallads)";
+                        if (_balladLines != null)
+                            return "one is being sung now";
+                        string why = StartBallad(Game.GameTime, -2);
+                        if (why != null)
+                            return why;
+                        said = "From the next fire, a ballad (the ticker)";
+                        return null;
+                    }
                 case "quilt":   // FIVEDAY R8
                     {
                         skipped = "Tuesday and Thursday afternoons, standing still, once a town a day";

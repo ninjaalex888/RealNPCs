@@ -6,6 +6,10 @@
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
   - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Display] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
 
+- **Murder ballads at a fire** (`[Scenes] MurderBallads`, on; settings version 309; FIVEDAY reserve R20). Sit by a campfire out of the towns at night, and once a night a voice from the next fire sings a murder ballad on the ticker, an opening and four verses. It's your own most-told killing if one has been told of ("A stranger rode in on a cold grey morn..."), else a death RealNPCs knows, with its name, its place and its hand. Nothing is spawned: it's heard from the dark.
+  - Why it reads true: the murder ballad was how the back country kept its news and its morals, a real killing sung until the facts wore off and the warning stayed. Hearing your own deed sung by someone who doesn't know you're listening is a reputation's strangest mirror.
+  - A Testing row, "A murder ballad from the next fire", sings one.
+
 - **Mardi Gras night in Saint Denis** (`[World] EventMardiGras`, on, with TownEvents; settings version 308; FIVEDAY reserve R19). On Fat Tuesday (14 February in 1899), from seven till eleven on the Saint Denis main street spot (else near you), posted the day before.
   - Masks and torches and a cornet band, and the krewe's float with paper dragons and a Devil throwing beads.
   - A townsman crowned King of the Carnival, and the king cake cut, with a townswoman finding the baby (next year's queen). Then dancing till the bells.

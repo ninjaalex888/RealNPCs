@@ -1338,6 +1338,7 @@ namespace EnrageWestworld.InGame
             PosterStep(now);        // the bill outside the sheriff's, as the rumour has it (WestworldScript.DriftPoster.cs; FIVEDAY R13)
             NovelStep(now);         // people near you who've read the dime novel (WestworldScript.DimeNovel.cs; FIVEDAY R12)
             FeverStep(now);         // fever in town: the thoughts near you (WestworldScript.Fever.cs; FIVEDAY R9)
+            BalladStep(now);        // a murder ballad from the next fire (WestworldScript.MurderBallad.cs; FIVEDAY R20)
             QuiltStep(now);         // the quilting bee overheard by the church (WestworldScript.QuiltingBee.cs; FIVEDAY R8)
             ForeclosureStep(now);   // the sheriff's sale when the bank takes a place (WestworldScript.Foreclosure.cs; FIVEDAY R3)
             SlateStep(now);         // credit at the store's counter (WestworldScript.Slate.cs; FIVEDAY R2)
