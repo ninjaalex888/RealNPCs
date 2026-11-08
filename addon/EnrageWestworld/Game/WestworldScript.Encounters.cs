@@ -959,6 +959,8 @@ namespace EnrageWestworld.InGame
                 EndKinDoer(why);
             if (_drum != null)
                 EndDrummer(why);
+            if (_slate != null)
+                EndSlate(why);
             if (_crying != null)
                 EndCrying(why);
             if (_hermit != null)

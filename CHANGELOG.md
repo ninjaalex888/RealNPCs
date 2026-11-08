@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **The slate at the store** (`[Scenes] StoreSlate`, on; settings version 290; FIVEDAY reserve R2). When you're at the store, now and then one of the town's people goes up to the counter and asks to put it on the slate. What they owe is their own this week, more with debt, the cards, the bank or the drink on their mind, and nothing for the well-off.
+  - The keeper chalks it up, asks for something on account first, or says the slate's full and it's cash from now on. That's by what's owed and his own manner.
+  - Refused, they think of the shame in front of the store. For ten seconds, J (the event key) lets you pay what they owe from your own pocket: their thanks, the keeper's, and a kindness seen by everyone near.
+  - On Saturday afternoon, payday, they come to pay it down instead.
+  - Why it reads true: credit is a relationship before it's money. The storekeeper's book is where a small town keeps score of who is trusted, and a refusal at the counter is a public shame.
+  - Offline, of 3,000 asking: 53% chalked, 14% asked for something first, 32% told it's full. So J is offered 46% of the time (before: no slate). A Testing row, "Someone asks for credit at the store", shows a refusal.
+
 - **Drummers on the train** (`[World] Drummers`, on, with TrainTime; settings version 289; FIVEDAY reserve R1). One man in three who steps down off a train is now a drummer: a travelling salesman for a far city's firm, with a line of goods (hardware, dry goods, cigars, notions, stoves, barbed wire, sewing machines, canned goods). The box says he's at the hotel.
   - When you're near the store with him in town, he walks over to its keeper with his pitch. The keeper orders, haggles or sends him off by his own manner, and the drummer thinks of it after. An order makes the Around town box.
   - He thinks a drummer's thoughts (the hotel beds, the sample case, the next town), is never one of the regulars, and is gone on the train in two days.

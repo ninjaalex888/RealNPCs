@@ -307,6 +307,19 @@ namespace EnrageWestworld.InGame
                         said = "A wire found cut at " + _placeTown + "; the box has the word, and what you saw";
                         return null;
                     }
+                case "slate":   // FIVEDAY R2
+                    {
+                        skipped = "the third of the time, the ninety seconds between, once a day each, the week's own debt";
+                        if (!_cfg.StoreSlate)
+                            return "off ([Scenes] StoreSlate)";
+                        if (_slate != null)
+                            return "someone is at the counter now";
+                        string why = SlateLook(Game.GameTime, true);
+                        if (why != null)
+                            return why;
+                        said = "They go up to the counter; refused, J pays their slate";
+                        return null;
+                    }
                 case "drummer":   // FIVEDAY R1: a named man near stands for the drummer, with a ware for the test
                     {
                         skipped = "the train, the one-in-three, the once a day each";

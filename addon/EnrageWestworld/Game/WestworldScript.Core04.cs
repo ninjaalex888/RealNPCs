@@ -1334,6 +1334,7 @@ namespace EnrageWestworld.InGame
             RegardStep(now);      // the town's regard of you in the "Around town" box (WestworldScript.Regard.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             FenceStep(now);         // what you saw of the fence cutters, and the town's word (WestworldScript.FenceCutters.cs; FIVEDAY item 31)
+            SlateStep(now);         // credit at the store's counter (WestworldScript.Slate.cs; FIVEDAY R2)
             DrummerStep(now);       // a drummer calls on the store's keeper (WestworldScript.Drummers.cs; FIVEDAY R1)
             SaleDayStep(now);       // Tuesday's sale at the Valentine stockyards (WestworldScript.SaleDay.cs; FIVEDAY item 30)
             ShapeUpStep(now);       // the dawn shape-up on the Saint Denis waterfront (WestworldScript.ShapeUp.cs; FIVEDAY item 29)
