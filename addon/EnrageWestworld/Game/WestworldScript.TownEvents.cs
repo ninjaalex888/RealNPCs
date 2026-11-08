@@ -110,6 +110,8 @@ namespace EnrageWestworld.InGame
                 BeginBoxSocial(e, now);  // WestworldScript.BoxSocial.cs (FIVEDAY R6)
             else if (e.Kind == BarnRaising.Kind && _cfg.EventBarnRaisings)
                 BeginBarnRaising(e, now);   // WestworldScript.BarnRaising.cs (FIVEDAY R7)
+            else if (e.Kind == BaseBall.Kind && _cfg.EventBaseBall)
+                BeginBaseBall(e, now);      // WestworldScript.BaseBall.cs (FIVEDAY R16)
         }
 
         /// The dance staged: outside the saloon he came out of here, else behind the camera, 20-35 m off.
@@ -219,6 +221,11 @@ namespace EnrageWestworld.InGame
             if (r.E.Kind == BarnRaising.Kind)
             {
                 BarnRaisingStep(r, now);
+                return;
+            }
+            if (r.E.Kind == BaseBall.Kind)
+            {
+                BaseBallStep(r, now);
                 return;
             }
             if (r.E.Kind == "show")

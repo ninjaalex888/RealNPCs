@@ -64,6 +64,7 @@ namespace EnrageWestworld.Core
             new Entry("baptism", "People", "A baptism at the river (in 2 min here)", "TestBaptismKey", needs: "[World] TownEvents, EventBaptisms; a town with a riverbank spot recorded within 150 m, and a man of it known to RealNPCs"),
             new Entry("boxsocial", "People", "A box social (in 2 min here)", "TestBoxSocialKey", needs: "[World] TownEvents, EventBoxSocials; a town with a young woman and two young men among its regulars"),
             new Entry("barnraising", "People", "A barn raising (in 2 min here)", "TestBarnRaisingKey", needs: "[World] TownEvents, EventBarnRaisings; a town with a farm family known to RealNPCs (two men at odds for the beam, if any)"),
+            new Entry("baseball", "People", "Base ball (in 2 min, Valentine or Strawberry)", "TestBaseBallKey", needs: "[World] TownEvents, EventBaseBall; in Valentine or Strawberry to see it staged"),
             new Entry("shivaree", "People", "A shivaree (in 2 min here)", "TestShivareeKey", needs: "[World] TownEvents, EventShivarees; a town with a man and a woman among its regulars to stand for the couple"),
             new Entry("marks", "Tools", "A beating's marks: try the next gait and bruising", "TestMarksKey", needs: "a named person within 15 m (each press the next pair; the log says which)"),
             new Entry("fence", "People", "Fence cutters: a wire found cut here (now)", "TestFenceKey", needs: "[World] FenceCutters; a town with two men known to RealNPCs (the row counts you as near last night)"),

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 303;
+        public const int CurrentVersion = 304;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -379,6 +379,7 @@ namespace EnrageWestworld.Core
         public bool QuiltingBee = true;   // [Scenes] Tuesday and Thursday afternoons, still by the church steps: the quilting bee through the window, the town's goings-on and a word of you, on the ticker (Core/QuiltingBee.cs; FIVEDAY R8, settings version 296)
         public bool StoreSlate = true;   // [Scenes] at the store: someone asks to put it on the slate; the keeper chalks it, asks for something first, or says it's full, and J lets you pay what they owe; on payday they pay it down (Core/Slate.cs; FIVEDAY R2, settings version 290)
         public bool Temperance = true;   // [Scenes] by day, a temperance woman asks a drinker in the street to sign the pledge (Core/Temperance.cs; FIVEDAY item 12, settings version 264)
+        public bool EventBaseBall = true;   // [World] with TownEvents: every other Saturday, April to September, Valentine against Strawberry at base ball, home by turns (Core/BaseBall.cs; FIVEDAY R16, settings version 304)
         public bool EventBarnRaisings = true;   // [World] with TownEvents: March to October, now and then a farm family's barn raised by the neighbours on a Saturday morning; two men at odds put on one beam (Core/BarnRaising.cs; FIVEDAY R7, settings version 295)
         public bool EventBoxSocials = true;   // [World] with TownEvents: the first Saturday of the month, a box social at the church: two suitors bid for a young woman's box, and J lets you bid against them (Core/BoxSocial.cs; FIVEDAY R6, settings version 294)
         public bool EventBaptisms = true;   // [World] with TownEvents and EventRevivals: the Sunday after a camp meeting saves a man, his baptism at the river (the riverbank spot); baptised, he's saved three weeks without backsliding (Core/Baptism.cs; FIVEDAY R5, settings version 293)
@@ -927,6 +928,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 304)
+                    log?.Invoke("Settings: new in this version: [World] EventBaseBall (on): Valentine against Strawberry at base ball.");
                 if (s.SettingsVersion < 303)
                     log?.Invoke("Settings: new in this version: [Mind] TelegraphKnows (on): the station agent knows first.");
                 if (s.SettingsVersion < 302)
@@ -1857,6 +1860,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("QuiltingBee = " + B(QuiltingBee) + "   ; Tuesday and Thursday from one till half past four, on foot and still for a few seconds within 25 m of a town's church steps spot: half a minute of the quilting bee through the open window on the ticker, the town's last three days by name as the women tell them, and what they say of you. Once a town a day");
             b.AppendLine("StoreSlate = " + B(StoreSlate) + "   ; at the store, now and then: a townsman or townswoman asks the keeper to put it on the slate, and he chalks it up, asks for something on account first, or says the slate's full (by what they owe this week and his manner). Refused, J for ten seconds lets you pay what they owe, a kindness remembered. On Saturday afternoon they pay it down instead");
             b.AppendLine("Temperance = " + B(Temperance) + "   ; by day in the street: a temperance woman asks a drinker before the saloon doors to sign the pledge; he jeers, slinks off, swears off for the day, or is taken home on her arm. The pious start it oftener, and a man whose worry is the drink is the one she stops");
+            b.AppendLine("EventBaseBall = " + B(EventBaseBall) + "   ; with TownEvents on: every other Saturday from April to September at two, Valentine against Strawberry at base ball, home by turns (posted Thursday; the home town's showground spot, else near you): the pitches, the hits, the crowd, the score; the losers sore, the season's tally kept");
             b.AppendLine("EventBarnRaisings = " + B(EventBarnRaisings) + "   ; with TownEvents on: March to October, now and then a farm family's barn is raised on a Saturday from nine (posted ahead; at the town's corral spot, else near you): the lifts, the dinner. Two men at odds are put on the same beam, and six times in ten the work mends it. The neighbours who came are warmer to the family, and the regulars to you if you were there");
             b.AppendLine("EventBoxSocials = " + B(EventBoxSocials) + "   ; with TownEvents on: posted on the Thursday, the first Saturday of the month from three, a box social at the church (its church steps spot, else near you): a young woman's supper box auctioned, two young men bidding each other up for it; J while they bid lets you go fifty cents over, and she eats with you. The winner and she come away courting, the loser envying him");
             b.AppendLine("EventBaptisms = " + B(EventBaptisms) + "   ; with TownEvents on: the Sunday after a camp meeting's altar call, from two, the man saved is baptised in the river at the town's riverbank spot (record one with the spots tool; without it, it happens away): the hymn, under and up, the amens. Baptised, he keeps from the saloon three weeks and doesn't backslide");

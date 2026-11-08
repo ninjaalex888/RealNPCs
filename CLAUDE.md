@@ -1084,6 +1084,19 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Town base ball (FIVEDAY R16, 2026-11-07; `[World] EventBaseBall`; settings version 304)
+
+Core/BaseBall.cs:
+- `Season` (April-September). `PostsToday(weekday, month, day, out home)`: Thursday, even weeks, home Valentine when week%4 < 2, else Strawberry.
+- `Score(seed)`: no draws. The lines.
+
+Engine.BaseBall.cs:
+- `BaseBallDaily` (the daily tick). `BookBaseBall`: one at a time, Town home, Extra away, posted, a toast.
+- `BaseBallOver` (both FinishEvent paths): Counts "baseball:<winner>" +1; a loser's regular man an "envy" tie with a winner's; attended, five home regulars +2; the morning's result.
+- `BaseBallTest`.
+
+Game (WestworldScript.BaseBall.cs): the showground spot within 150 m and out of view, else EncounterSpot 20-40. Spawns the pitcher, the batter at 18 m (r.Preacher), and eight fielders and crowd. Beats while you're within 60 m, in fours: pitch, hit (45%) or strike, the crowd with cheers, the score at 3/6/9 (the 9th the result and the end). Testing row `baseball`. F7 `TEST base ball:`. mindtest `BaseBallTest` (`baseball`).
+
 ## The telegraph clerk (FIVEDAY R15, 2026-11-07; `[Mind] TelegraphKnows`; settings version 303)
 
 Core/Telegraph.cs: `Wire(kind)` (the deed in wire words), `DeathLine`, `DeedLine`.

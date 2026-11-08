@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Town base ball: Valentine against Strawberry** (`[World] EventBaseBall`, on, with TownEvents; settings version 304; FIVEDAY reserve R16). Every other Saturday from April to September, at two, the two towns' nines play, at home by turns, posted on the Thursday. It plays at the home town's showground spot, else near you: the pitches, the hits and the strikes, the crowd's shouts, the score after the third, sixth and ninth, the result.
+  - The losers' men are sore at the winners', and a game there warms the home regulars to you a little. The season's tally is kept, and the morning has the result.
+  - Why it reads true: a neighbouring town is the best rival there is. In-group pride and out-group rivalry cost nothing to join, and they bind a town together.
+  - Offline: twelve games over half a year (before: none). A Testing row, "Base ball", stages one.
+
 - **The telegraph clerk knows first** (`[Mind] TelegraphKnows`, on; settings version 303; FIVEDAY reserve R15). The station agent at his counter thinks of what came over the wire these two days: deaths in other towns, by name ("Nobody here knows yet. I'm not paid to tell them."). With you at his window, he thinks of your deed in another town before the word has reached his ("Wire from Valentine about a stranger: SHOT DEAD STOP. And here he stands at my window.").
   - Why it reads true: the clerk of 1899 held the town's news an hour before the town did. His trade was discretion and his temptation was to break it.
 
