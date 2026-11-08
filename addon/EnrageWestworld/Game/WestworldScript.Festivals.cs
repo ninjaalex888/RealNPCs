@@ -125,7 +125,7 @@ namespace EnrageWestworld.InGame
                 r.ReleaseAt = now + 14000;
                 return;
             }
-            string line = Festivals.Fill(f.Beats[r.Step], e.Town, e.AName, e.BName);
+            string line = Festivals.Fill(f.Beats[r.Step], e.Town, e.AName, e.BName, e.Extra);
             bool stage = line.StartsWith("[", StringComparison.Ordinal);
             SpeechCaption(stage ? f.Title : "The caller", line, r.Fiddler.Handle, 5000, false, !stage);
             if (stage)

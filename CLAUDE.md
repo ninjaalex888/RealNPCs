@@ -1092,6 +1092,16 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## A brass band funeral (FIVEDAY R21, 2026-11-08; `[World] EventBrassFuneral`; settings version 310)
+
+A `FestivalKind` "brassfuneral" with `OnDeath`: Saint Denis, 15:00-17:00, the cemetery spot, {d} the dead (Extra).
+
+`FestivalsDaily`: date kinds skip OnDeath. OnDeath kinds book tomorrow for the newest named death (resident or folk) of the last day in the town that isn't buried yet (Counts "buried:<id>").
+
+`BookFestival(..., dead)` sets Extra. `Festivals.Fill(..., dead)` fills {d} in the beats, Posted and Morning. No prizes, so no ties at the end.
+
+Testing row `brassfuneral` (the newest death in the town, else a test name). mindtest FestivalsTest's checks.
+
 ## Murder ballads (FIVEDAY R20, 2026-11-08; `[Scenes] MurderBallads`; settings version 309)
 
 Core/MurderBallad.cs: `OfYours(victim, place)` and `OfDeath(dead, place, by)`, an opening and four verses each.

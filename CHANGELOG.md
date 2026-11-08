@@ -6,6 +6,14 @@
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
   - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Display] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
 
+- **A brass band funeral in Saint Denis** (`[World] EventBrassFuneral`, on, with TownEvents; settings version 310; FIVEDAY reserve R21). The day after a named death in Saint Denis, from three till five, posted the day before, from the cemetery spot (else near you):
+  - the society's brass band leading the dirge out, its men in black sashes behind the dead;
+  - the hymn at the graveside, with the trombone carrying the tune;
+  - "Go on home now", and then the snare cracks and the second line dances back through the street.
+  - Being there warms the regulars to you, and the morning has the word.
+  - Why it reads true: the city's benevolent societies buried their members with a band, mourning on the way out and rejoicing on the way back: grief turned into a whole street's celebration of a life.
+  - A Testing row, "A brass band funeral", stages one.
+
 - **Murder ballads at a fire** (`[Scenes] MurderBallads`, on; settings version 309; FIVEDAY reserve R20). Sit by a campfire out of the towns at night, and once a night a voice from the next fire sings a murder ballad on the ticker, an opening and four verses. It's your own most-told killing if one has been told of ("A stranger rode in on a cold grey morn..."), else a death RealNPCs knows, with its name, its place and its hand. Nothing is spawned: it's heard from the dark.
   - Why it reads true: the murder ballad was how the back country kept its news and its morals, a real killing sung until the facts wore off and the warning stayed. Hearing your own deed sung by someone who doesn't know you're listening is a reputation's strangest mirror.
   - A Testing row, "A murder ballad from the next fire", sings one.

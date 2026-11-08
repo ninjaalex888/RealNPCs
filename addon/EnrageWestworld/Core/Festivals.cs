@@ -19,7 +19,8 @@ namespace EnrageWestworld.Core
         public string Kind, Title, Spot;
         public string[] Towns;
         public int FromMin, ToMin, Affection = 3;
-        public Func<int, int, int, bool> On;        // (year, month, day): the festival's date
+        public Func<int, int, int, bool> On;        // (year, month, day): the festival's date (null for one booked by a death)
+        public bool OnDeath;                         // booked the day after a named death in its town ({d} the dead; R21)
         public string[] Beats;                       // the staged lines in order ({m} a man's prize, {w} a woman's)
         public string ManPrize, WomanPrize;         // what the named winners win, or null
         public string Posted, Morning;              // {t} the town, {m} {w} the winners
@@ -85,6 +86,24 @@ namespace EnrageWestworld.Core
                 Posted = "Mardi Gras tomorrow night in Saint Denis: the krewe's parade at seven, masks and the king cake after.",
                 Morning = "Ash Wednesday, and Saint Denis is very quiet. {m} was King of the Carnival; {w} found the baby in the cake."
             },
+            // A brass band funeral in Saint Denis (R21, [World] EventBrassFuneral): the day after a named death in the city, three
+            // till five, from the cemetery spot: the band's dirge going out, the hymn at the grave, and coming back the second
+            // line, the band hot and the street dancing behind it. Why it reads true: the city's benevolent societies buried their
+            // members with a band, mourning on the way out and rejoicing on the way back, grief turned into a whole street's
+            // celebration of a life (and a society's promise that nobody is buried alone).
+            new FestivalKind
+            {
+                Kind = "brassfuneral", Title = "A funeral with a band", Spot = "cemetery", Towns = new[] { "Saint Denis" }, FromMin = 15 * 60, ToMin = 17 * 60, Affection = 2,
+                OnDeath = true,
+                Beats = new[] {
+                    "[a brass band, slow, the dirge going out, and the society's men in black sashes behind {d}]",
+                    "[the hymn at the graveside, the trombone carrying the tune, the women's voices under it]",
+                    "Dust to dust. Go on home now, {d}. Go on home.",
+                    "[the snare cracks, the band strikes up hot, and the second line is dancing in the street]",
+                    "[parasols and handkerchiefs in the air, the whole street behind the band, and nobody sad]" },
+                Posted = "The society buries {d} tomorrow at three, with the band. All who knew him are asked to walk.",
+                Morning = "They buried {d} with the band yesterday, and the second line went on till dark."
+            },
         };
 
         public static FestivalKind Of(string kind)
@@ -105,18 +124,18 @@ namespace EnrageWestworld.Core
             y = t.Year; m = t.Month; d = t.Day;
         }
 
-        public static string Fill(string line, string town, string man, string woman)
+        public static string Fill(string line, string town, string man, string woman, string dead = null)
         {
-            return (line ?? "").Replace("{t}", town ?? "town").Replace("{m}", man ?? "a county man").Replace("{w}", woman ?? "a county woman");
+            return (line ?? "").Replace("{t}", town ?? "town").Replace("{m}", man ?? "a county man").Replace("{w}", woman ?? "a county woman").Replace("{d}", dead ?? "our brother");
         }
 
         public static IEnumerable<string> AllLines()
         {
             foreach (FestivalKind f in All)
             {
-                foreach (string b in f.Beats) yield return Fill(b, f.Towns[0], "Abel Grange", "Cora Hollis");
-                yield return Fill(f.Posted, f.Towns[0], "Abel Grange", "Cora Hollis");
-                yield return Fill(f.Morning, f.Towns[0], "Abel", "Cora");
+                foreach (string b in f.Beats) yield return Fill(b, f.Towns[0], "Abel Grange", "Cora Hollis", "Abel Grange");
+                yield return Fill(f.Posted, f.Towns[0], "Abel Grange", "Cora Hollis", "Abel Grange");
+                yield return Fill(f.Morning, f.Towns[0], "Abel", "Cora", "Abel Grange");
             }
         }
     }
