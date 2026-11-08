@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 307;
+        public const int CurrentVersion = 308;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -379,6 +379,7 @@ namespace EnrageWestworld.Core
         public bool QuiltingBee = true;   // [Scenes] Tuesday and Thursday afternoons, still by the church steps: the quilting bee through the window, the town's goings-on and a word of you, on the ticker (Core/QuiltingBee.cs; FIVEDAY R8, settings version 296)
         public bool StoreSlate = true;   // [Scenes] at the store: someone asks to put it on the slate; the keeper chalks it, asks for something first, or says it's full, and J lets you pay what they owe; on payday they pay it down (Core/Slate.cs; FIVEDAY R2, settings version 290)
         public bool Temperance = true;   // [Scenes] by day, a temperance woman asks a drinker in the street to sign the pledge (Core/Temperance.cs; FIVEDAY item 12, settings version 264)
+        public bool EventMardiGras = true;   // [World] with TownEvents: Mardi Gras night in Saint Denis, the krewe, the king, the king cake (Core/Festivals.cs; FIVEDAY R19, settings version 308)
         public bool EventFourth = true;   // [World] with TownEvents: the Fourth of July in each town of size, the band, the reading, the shooting match, the fireworks (Core/Festivals.cs; FIVEDAY R18, settings version 307)
         public bool EventFair = true;   // [World] with TownEvents: the county fair at Valentine, the third Saturday of September: the judging, the pies, the greasy pig (Core/Festivals.cs; FIVEDAY R17, settings version 305)
         public bool EventBaseBall = true;   // [World] with TownEvents: every other Saturday, April to September, Valentine against Strawberry at base ball, home by turns (Core/BaseBall.cs; FIVEDAY R16, settings version 304)
@@ -933,6 +934,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 308)
+                    log?.Invoke("Settings: new in this version: [World] EventMardiGras (on): Mardi Gras night in Saint Denis.");
                 if (s.SettingsVersion < 307)
                     log?.Invoke("Settings: new in this version: [World] EventFourth (on): the Fourth of July as an event.");
                 if (s.SettingsVersion < 306)
@@ -1871,6 +1874,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("QuiltingBee = " + B(QuiltingBee) + "   ; Tuesday and Thursday from one till half past four, on foot and still for a few seconds within 25 m of a town's church steps spot: half a minute of the quilting bee through the open window on the ticker, the town's last three days by name as the women tell them, and what they say of you. Once a town a day");
             b.AppendLine("StoreSlate = " + B(StoreSlate) + "   ; at the store, now and then: a townsman or townswoman asks the keeper to put it on the slate, and he chalks it up, asks for something on account first, or says the slate's full (by what they owe this week and his manner). Refused, J for ten seconds lets you pay what they owe, a kindness remembered. On Saturday afternoon they pay it down instead");
             b.AppendLine("Temperance = " + B(Temperance) + "   ; by day in the street: a temperance woman asks a drinker before the saloon doors to sign the pledge; he jeers, slinks off, swears off for the day, or is taken home on her arm. The pious start it oftener, and a man whose worry is the drink is the one she stops");
+            b.AppendLine("EventMardiGras = " + B(EventMardiGras) + "   ; with TownEvents on: on Fat Tuesday, seven till eleven on the Saint Denis main street spot (else near you): masks and torches, the krewe's float, a townsman crowned King of the Carnival, the king cake and the baby found by a townswoman, dancing till the bells; Ash Wednesday's quiet in the morning's word");
             b.AppendLine("EventFourth = " + B(EventFourth) + "   ; with TownEvents on: on the Fourth of July, six till half past nine at the bandstand spot (else near you) in Valentine, Saint Denis, Rhodes, Blackwater, Strawberry and Armadillo: the band, the Declaration read out, the speech, firecrackers, the shooting match (a townsman wins), the fireworks at dark");
             b.AppendLine("EventFair = " + B(EventFair) + "   ; with TownEvents on: the county fair at Valentine on the third Saturday of September, eleven till two at the stockyards spot (else near you): the livestock judged and a townsman's prize, the blue ribbon for pies and a rival's sour face, the greasy pig");
             b.AppendLine("EventBaseBall = " + B(EventBaseBall) + "   ; with TownEvents on: every other Saturday from April to September at two, Valentine against Strawberry at base ball, home by turns (posted Thursday; the home town's showground spot, else near you): the pitches, the hits, the crowd, the score; the losers sore, the season's tally kept");

@@ -475,6 +475,7 @@ namespace EnrageWestworld.InGame
                         said = what;
                         return null;
                     }
+                case "mardigras":   // FIVEDAY R19
                 case "fourth":   // FIVEDAY R18
                 case "fair":   // FIVEDAY R17 (and the festivals after it)
                     {

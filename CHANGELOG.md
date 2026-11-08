@@ -6,6 +6,13 @@
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
   - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Display] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
 
+- **Mardi Gras night in Saint Denis** (`[World] EventMardiGras`, on, with TownEvents; settings version 308; FIVEDAY reserve R19). On Fat Tuesday (14 February in 1899), from seven till eleven on the Saint Denis main street spot (else near you), posted the day before.
+  - Masks and torches and a cornet band, and the krewe's float with paper dragons and a Devil throwing beads.
+  - A townsman crowned King of the Carnival, and the king cake cut, with a townswoman finding the baby (next year's queen). Then dancing till the bells.
+  - The morning is Ash Wednesday, and very quiet.
+  - Why it reads true: the carnival is licensed disorder, one night when rank and rule are turned over by permission. That's why a strict town needs it, and why the morning after is so quiet.
+  - A Testing row, "Mardi Gras", stages it.
+
 - **The Fourth of July as an event** (`[World] EventFourth`, on, with TownEvents; settings version 307; FIVEDAY reserve R18). On the Fourth, from six till half past nine, at the bandstand spot (else near you) in Valentine, Saint Denis, Rhodes, Blackwater, Strawberry and Armadillo, posted the day before: the band and the bunting, the Declaration read out, a speech that goes on, firecrackers under the horses, the shooting match (a townsman's win), and the fireworks at dark. Being there warms the regulars to you, and the morning has the word, and which roof caught fire.
   - Why it reads true: thirty-four years after the war, the Fourth was the one day the whole country agreed to be one town, a ritual of belonging, and of gunpowder.
   - A Testing row, "The Fourth of July", stages it.

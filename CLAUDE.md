@@ -1092,6 +1092,10 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## Mardi Gras (FIVEDAY R19, 2026-11-08; `[World] EventMardiGras`; settings version 308)
+
+A `FestivalKind` "mardigras" in Core/Festivals.cs: Saint Denis, `Calendar.Easter(y) - 47 days`, 19:00-23:00, the mainstreet spot. Six beats; ManPrize King of the Carnival, WomanPrize the king cake's baby (so a rival's envy). `FestivalOn` "mardigras". Testing row `mardigras`. mindtest FestivalsTest's checks (14 Feb 1899, 12 Feb 1907).
+
 ## The Fourth of July (FIVEDAY R18, 2026-11-07; `[World] EventFourth`; settings version 307)
 
 A `FestivalKind` "fourth" in Core/Festivals.cs: six towns, July 4, 18:00-21:30, the bandstand spot. Six beats; ManPrize the shooting match, no woman's prize, so FestivalOver gives no envy. `FestivalOn` "fourth". Testing row `fourth` (the "fair" case's code). mindtest FestivalsTest's Fourth checks.

@@ -65,6 +65,26 @@ namespace EnrageWestworld.Core
                 Posted = "The Fourth of July at {t}: the band at six, the reading, the shooting match, fireworks at dark.",
                 Morning = "The Fourth at {t}: {m} won the shooting match, the mayor spoke an hour, and a rocket set fire to the livery roof."
             },
+            // Mardi Gras in Saint Denis (R19, [World] EventMardiGras): Fat Tuesday (Easter less forty-seven days), seven till
+            // eleven on the main street: masks and torches, the krewe's float, the king of the carnival crowned (a townsman), the
+            // king cake cut and the baby found (a townswoman, next year's queen), the street dancing till the bells, and the
+            // morning after Ash Wednesday's quiet. Why it reads true: the carnival is licensed disorder, one night when rank
+            // and rule are turned over by permission, which is why a strict town needs it and why the morning after is so quiet.
+            new FestivalKind
+            {
+                Kind = "mardigras", Title = "Mardi Gras", Spot = "mainstreet", Towns = new[] { "Saint Denis" }, FromMin = 19 * 60, ToMin = 23 * 60, Affection = 2,
+                On = (y, m, d) => { System.DateTime t = Calendar.Easter(y).AddDays(-47); return t.Month == m && t.Day == d; },
+                Beats = new[] {
+                    "[masks and torches, a cornet band, the whole street in costume]",
+                    "[the krewe's float rolls by, paper dragons and a man dressed as the Devil throwing beads]",
+                    "Hail the King of the Carnival! Long live King {m}!",
+                    "[the king cake cut on a trestle, every slice watched]",
+                    "The baby! {w} has the baby! Next year's queen!",
+                    "[dancing in the street till the church bells ring for Lent]" },
+                ManPrize = "King of the Carnival", WomanPrize = "the king cake's baby",
+                Posted = "Mardi Gras tomorrow night in Saint Denis: the krewe's parade at seven, masks and the king cake after.",
+                Morning = "Ash Wednesday, and Saint Denis is very quiet. {m} was King of the Carnival; {w} found the baby in the cake."
+            },
         };
 
         public static FestivalKind Of(string kind)
