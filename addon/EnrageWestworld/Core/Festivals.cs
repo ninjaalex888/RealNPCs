@@ -44,6 +44,27 @@ namespace EnrageWestworld.Core
                 Posted = "The county fair at {t} on Saturday: the judging, the pies, the greasy pig. All welcome.",
                 Morning = "At the county fair: {m} took first prize for his steer, and {w} the blue ribbon for pies. Some say the judges were her cousins."
             },
+            // The Fourth of July (R18, [World] EventFourth): every town of size, six till half past nine at the bandstand (else
+            // the main street): the band and the bunting, the Declaration read out, a speech too long, firecrackers under the
+            // horses, the shooting match (a townsman's win), the fireworks at dark. Why it reads true: thirty-four years after
+            // the war the Fourth was the one day the whole country agreed to be one town, a ritual of belonging (and of
+            // gunpowder) that even the ones it left out turned up for.
+            new FestivalKind
+            {
+                Kind = "fourth", Title = "Independence Day", Spot = "bandstand", Towns = new[] { "Valentine", "Saint Denis", "Rhodes", "Blackwater", "Strawberry", "Armadillo" },
+                FromMin = 18 * 60, ToMin = 21 * 60 + 30, Affection = 2,
+                On = (y, m, d) => m == 7 && d == 4,
+                Beats = new[] {
+                    "[a brass band, bunting on every porch, the flag up the pole]",
+                    "When in the course of human events... [the Declaration, read out by the mayor, all of it]",
+                    "[firecrackers under the horses, and a dog that won't come out from the porch]",
+                    "Friends, this great nation, a hundred and twenty-three years free... [the speech goes on]",
+                    "The shooting match to {m}! Five bottles, five shots, not a one left standing!",
+                    "[the fireworks at dark: rockets, and the whole street saying ahh]" },
+                ManPrize = "the shooting match",
+                Posted = "The Fourth of July at {t}: the band at six, the reading, the shooting match, fireworks at dark.",
+                Morning = "The Fourth at {t}: {m} won the shooting match, the mayor spoke an hour, and a rocket set fire to the livery roof."
+            },
         };
 
         public static FestivalKind Of(string kind)

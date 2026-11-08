@@ -14,6 +14,7 @@ namespace EnrageWestworld.Core
             switch (kind)
             {
                 case "fair": return Cfg.EventFair;
+                case "fourth": return Cfg.EventFourth;
                 default: return false;
             }
         }

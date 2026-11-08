@@ -6,6 +6,10 @@
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
   - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Display] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
 
+- **The Fourth of July as an event** (`[World] EventFourth`, on, with TownEvents; settings version 307; FIVEDAY reserve R18). On the Fourth, from six till half past nine, at the bandstand spot (else near you) in Valentine, Saint Denis, Rhodes, Blackwater, Strawberry and Armadillo, posted the day before: the band and the bunting, the Declaration read out, a speech that goes on, firecrackers under the horses, the shooting match (a townsman's win), and the fireworks at dark. Being there warms the regulars to you, and the morning has the word, and which roof caught fire.
+  - Why it reads true: thirty-four years after the war, the Fourth was the one day the whole country agreed to be one town, a ritual of belonging, and of gunpowder.
+  - A Testing row, "The Fourth of July", stages it.
+
 - **The county fair** (`[World] EventFair`, on, with TownEvents; settings version 305; FIVEDAY reserve R17). At Valentine on the third Saturday of September, from eleven till two, at the stockyards spot (else near you), posted the day before. The bunting and the cornet; the livestock judged, and a townsman's prize beast named; the blue ribbon for pies to a townswoman, and a rival's sour face; the greasy pig.
   - A neighbour is warmer to the prize man, a rival woman envies the ribbon, and being there warms the regulars to you. The morning has who won, and whose cousins the judges were.
   - Why it reads true: the fair was the county's yearly show of itself, and a ribbon was status the whole county saw.

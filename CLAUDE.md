@@ -1092,6 +1092,10 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## The Fourth of July (FIVEDAY R18, 2026-11-07; `[World] EventFourth`; settings version 307)
+
+A `FestivalKind` "fourth" in Core/Festivals.cs: six towns, July 4, 18:00-21:30, the bandstand spot. Six beats; ManPrize the shooting match, no woman's prize, so FestivalOver gives no envy. `FestivalOn` "fourth". Testing row `fourth` (the "fair" case's code). mindtest FestivalsTest's Fourth checks.
+
 ## The festivals: the county fair (FIVEDAY R17, 2026-11-07; `[World] EventFair`; settings version 305)
 
 Core/Festivals.cs:

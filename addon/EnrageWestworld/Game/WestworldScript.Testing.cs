@@ -475,6 +475,7 @@ namespace EnrageWestworld.InGame
                         said = what;
                         return null;
                     }
+                case "fourth":   // FIVEDAY R18
                 case "fair":   // FIVEDAY R17 (and the festivals after it)
                     {
                         skipped = "the date and the day before's booking: two minutes from now";
