@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **A barn raising** (`[World] EventBarnRaisings`, on, with TownEvents; settings version 295; FIVEDAY reserve R7). From March to October, now and then a farm family in a country town has its barn raised by the neighbours on a Saturday from nine, posted ahead. It plays at the town's corral spot, else near you: the call, the bents going up on the pike poles, the dinner on trestles, the family's thanks.
+  - If two townsmen are at odds, the foreman puts them on the same beam. They bicker, and then the beam has to go up: six times in ten it mends the feud (a makeup), and the rest they fall out again.
+  - The neighbours who came are warmer to the family, and the regulars to you if you were there.
+  - Why it reads true: a barn was more than one family could raise, so the district did it. And a goal neither side can reach alone is the oldest cure for a feud there is (Sherif's superordinate goals): not certain, but better odds than talking.
+  - Offline, 58% of feuding pairs put on one beam come away mended (before: no barn raisings). A Testing row, "A barn raising", stages one.
+
 - **A box social** (`[World] EventBoxSocials`, on, with TownEvents; settings version 294; FIVEDAY reserve R6). On the first Saturday of the month, posted the Thursday before, the church in each settled town holds a box social from three. It plays at the church steps spot, else near you.
   - A young woman's supper box is auctioned unopened, and everyone knows whose it is. Two young men of the town bid each other up for it, the one she's already warm to among them.
   - The winner and she come away courting, and the loser envies him.

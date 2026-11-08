@@ -1084,6 +1084,21 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## A barn raising (FIVEDAY R7, 2026-11-07; `[World] EventBarnRaisings`; settings version 295)
+
+Core/BarnRaising.cs:
+- `Season` (March-October), `Books` (2% a day, 21 days apart), `DaysToSaturday` (at least 2).
+- `Family` (a farm trade). `Feud(ties, menOfTown)`: the coldest hostile tie between two men of the town.
+- `Mends(seed)`: 60%, seeded by the event id, so the staging's line and the end agree. The lines.
+
+Engine.BarnRaising.cs:
+- `BarnRaisingDaily`: one town a day; Store.Counts "barn:<town>". `BookBarnRaising`: AId the family, Extra "aId|aName|bId|bName" for the pair.
+- `Engine.BarnPair(e, ...)` (static): the pair, and whether it mends.
+- `BarnRaisingOver` (both FinishEvent paths): the pair's makeup or argue tie; four regular men a "help" tie to the family (Doer the helper); attended, six regulars +3; the morning's word.
+- `BarnRaisingTest`.
+
+Game (WestworldScript.BarnRaising.cs): the corral spot within 150 m and out of view, else EncounterSpot 20-40. Spawns the foreman, six men (the second and third stand for the pair) and two women. Beats while you're within 50 m: call, lift, the pair's bicker (else a call), lift, the pair after, dinner, the family's thanks, attended. Testing row `barnraising`. F7 `TEST barn raisings:`. mindtest `BarnRaisingTest` (`barn`).
+
 ## A box social (FIVEDAY R6, 2026-11-07; `[World] EventBoxSocials`; settings version 294)
 
 Core/BoxSocial.cs:

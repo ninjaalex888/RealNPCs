@@ -422,6 +422,15 @@ namespace EnrageWestworld.InGame
                         said = what;
                         return null;
                     }
+                case "barnraising":   // FIVEDAY R7
+                    {
+                        skipped = "the season's roll and the Saturday: two minutes from now, here";
+                        string what = _engine.BarnRaisingTest(_placeTown, Bridge.Now());
+                        if (what.StartsWith("off") || what.StartsWith("no "))
+                            return what;
+                        said = what;
+                        return null;
+                    }
                 case "shivaree":
                     {
                         skipped = "the wedding before it and the night's hour: two minutes from now, here";
