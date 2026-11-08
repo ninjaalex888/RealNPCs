@@ -472,6 +472,8 @@ namespace EnrageWestworld.Core
 
         public static Scene HostTalk(SceneCast c, string seed)
         {
+            if (HostNotes.On() && Voice.Chance(seed + "|notes", HostNotes.Share))
+                return HostNotes.Make(seed);   // half the time they test the world together (Core/HostNotes.cs; FIVEDAY R28)
             Scene s = new Scene { Kind = "hosts", Summary = "two people talking strangely about the world" };
             bool first = true;
             if (WentBackLately)

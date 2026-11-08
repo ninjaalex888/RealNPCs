@@ -55,6 +55,7 @@ namespace EnrageWestworld.Core
 			InnerLife.WorsenedAt = WorsenedAt;    // ...and one he turned the wrong way reads as ended badly (Core/Helps.cs; SIXDAY item 9)
 			InnerLife.WorryIdOf = WorryIdOf;      // enRAGE's person keeps the worry of the resident it took up (NIGHT3 For Lex 9a)
 			InnerLife.WorrySelf = WorrySelfOf;
+			HostNotes.On = () => Cfg != null && Cfg.WestWorld && Cfg.HostNotes;   // the waking test the world together (FIVEDAY R28)
 			HookMindFirst();   // the mind's own thoughts first, with [Mind] MindLive on (Engine.MindLive.cs)
 			// a rewind in the last two days, read off the ghosts kept, so the waking open with it after a restart too (the review of items 11-12)
 			Scenes.WentBackLately = cfg != null && cfg.WestWorld && cfg.Ghosts && store != null && store.Ghosts != null && Ghosts.WentBackLately(store.Ghosts, store.LastGameMin);

@@ -35,9 +35,30 @@ namespace EnrageWestworld.Core
         public int WakeChance(string id)
         {
             float s = Shaken(id);
-            if (s == 0f)
-                return WakeChanceAsBefore;
-            return Math.Max(40, Math.Min(78, WakeChanceAsBefore + (int)Math.Round(35f * s)));
+            int c = s == 0f ? WakeChanceAsBefore : Math.Max(40, Math.Min(78, WakeChanceAsBefore + (int)Math.Round(35f * s)));
+            return Math.Min(90, c + NotesLift(id));   // compared notes with another waking these three days: faster (FIVEDAY R28)
+        }
+
+        /// The lift to the wake roll for someone who compared notes with another waking these three days (Core/HostNotes.cs,
+        /// [WestWorld] HostNotes), kept in Store.Counts as the game day it happened; 0 otherwise.
+        public int NotesLift(string id)
+        {
+            int day;
+            if (id == null || Cfg == null || !Cfg.WestWorld || !Cfg.HostNotes || Store == null || Store.Counts == null || !Store.Counts.TryGetValue(HostNotes.Key(id), out day))
+                return 0;
+            return HostNotes.LiftFor(day, Store.LastGameMin / 1440);
+        }
+
+        /// Two waking people compared notes (the scene started): each wakes faster for three days (FIVEDAY R28).
+        public void ComparedNotes(string aId, string bId)
+        {
+            if (Store == null || Cfg == null || !Cfg.HostNotes)
+                return;
+            int today = (int)(Store.LastGameMin / 1440);
+            foreach (string id in new[] { aId, bId })
+                if (id != null)
+                    Store.Counts[HostNotes.Key(id)] = Math.Max(1, today);
+            Log("HOSTNOTES " + aId + " & " + bId + " compared notes: each wakes faster for " + HostNotes.Days + " days");
         }
 
         /// The lean toward who first stirs, on top of their awareness (Hosts.Awareness, 0-100, and a roll of 25): up to 40

@@ -788,6 +788,13 @@ namespace EnrageWestworld.InGame
         private void NoteHappened(Pending p, string kind)
         {
             NoteSceneTie(kind, p.People, p.S != null ? p.S.Doer : -1);
+            if (kind == "hosts" && p.S != null && p.S.Summary == HostNotes.Summary && p.People.Count >= 2)
+            {
+                string na, nn, nb, nm;   // two waking compared notes: each wakes faster for a while (Core/HostNotes.cs; FIVEDAY R28)
+                LastingId(p.People[0], out na, out nn);
+                LastingId(p.People[1], out nb, out nm);
+                _engine.ComparedNotes(na, nb);
+            }
             NoteMinds(kind, p.People, p.Names);   // what they and those watching remember of it (Minds)
             Safe("plans", () => PlanSettled(p.People, kind));   // a plan between them carried out
             Safe("world events", () => RecordSceneEvent(kind, p.People));   // and the plain record, with its witnesses (WorldEvents.cs)

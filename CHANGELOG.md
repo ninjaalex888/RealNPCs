@@ -6,6 +6,9 @@
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
   - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Output] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
 
+- **Hosts compare notes** (`[WestWorld] HostNotes`, on with West World; settings version 317; FIVEDAY reserve R28). When two waking people meet and talk strangely, half the time they now test the world together: one counted the same forty-one faces two days running, one walked to the town's edge and found himself walking back in, or they tell each other their dreams and find the same room in both. For three days after, each wakes faster (the daily roll to wake a stage further goes from 60% to 72%).
+  - Why it reads true: doubt alone is easy to talk yourself out of. Doubt someone else confirms isn't, and the tests are what a sane person would try: count, walk, compare.
+
 - **Going dry (1907)** (`[World] GoingDry`, on; settings version 316; FIVEDAY reserve R27). In John's 1907 the temperance women have won the local-option vote in Rhodes and Strawberry. The saloon still pours under the counter, but the law-abiding and the devout keep out (offline, a man at 8 pm in town goes to the saloon 11% -> 5%), named people near think of the town gone dry, and the box shows the notice on the saloon door the first time you come in each day.
   - Why it reads true: a law against a habit doesn't end the habit, it sorts people. The conscientious obey, the rest learn where to knock.
 

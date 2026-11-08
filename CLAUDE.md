@@ -1092,6 +1092,14 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## Hosts compare notes (FIVEDAY R28, 2026-11-08; `[WestWorld] HostNotes`; settings version 317)
+
+Core/HostNotes.cs: `Make(seed)` (a "hosts" scene with `Summary == HostNotes.Summary`, four lines), `Share` 50, `Lift` 12, `Days` 3, `LiftFor`, `Key(id)`, and `On` (a Func set by Engine's constructor to WestWorld && HostNotes).
+
+Scenes.HostTalk returns `HostNotes.Make` half the time when `On()`. WestworldScript.Life.cs NoteHappened calls `_engine.ComparedNotes(a, b)` for that summary, which keeps the game day in `Store.Counts["hostnotes:<id>"]`. Engine.Doubt's `WakeChance` adds `NotesLift(id)` (capped at 90).
+
+mindtest `HostNotesTest` (`hostnotes`), with the offline measure.
+
 ## Going dry (FIVEDAY R27, 2026-11-08; `[World] GoingDry`; settings version 316)
 
 Core/GoingDry.cs: `Dry(town, year)` (Rhodes and Strawberry, 1907 on), `Lean(dry, deference, piety, act)` (negative on "saloon" and "drink" only), `Thought`, `Door`.
