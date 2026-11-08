@@ -206,6 +206,8 @@ namespace EnrageWestworld.Core
                 BarnRaisingOver(e, now, false);
             else if (e.Kind == BaseBall.Kind)
                 BaseBallOver(e, now, false);
+            else if (IsFestival(e.Kind))
+                FestivalOver(e, now, false);
         }
 
         /// What a dance leaves: the regulars' ties and memories (and, attended, their thought of the player who came).
@@ -281,6 +283,8 @@ namespace EnrageWestworld.Core
                 BarnRaisingOver(e, now, attended);
             else if (e.Kind == BaseBall.Kind)
                 BaseBallOver(e, now, attended);
+            else if (IsFestival(e.Kind))
+                FestivalOver(e, now, attended);
         }
 
         /// Shots or a gun pointed broke it up: nothing comes of it, and the town remembers who fired.

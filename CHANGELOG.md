@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **The county fair** (`[World] EventFair`, on, with TownEvents; settings version 305; FIVEDAY reserve R17). At Valentine on the third Saturday of September, from eleven till two, at the stockyards spot (else near you), posted the day before. The bunting and the cornet; the livestock judged, and a townsman's prize beast named; the blue ribbon for pies to a townswoman, and a rival's sour face; the greasy pig.
+  - A neighbour is warmer to the prize man, a rival woman envies the ribbon, and being there warms the regulars to you. The morning has who won, and whose cousins the judges were.
+  - Why it reads true: the fair was the county's yearly show of itself, and a ribbon was status the whole county saw.
+  - The festivals (the fair here; the Fourth and Mardi Gras next) share one module: booked from the calendar, staged with a crowd out of view, settled with their winners. A Testing row, "The county fair", stages it.
+
 - **Town base ball: Valentine against Strawberry** (`[World] EventBaseBall`, on, with TownEvents; settings version 304; FIVEDAY reserve R16). Every other Saturday from April to September, at two, the two towns' nines play, at home by turns, posted on the Thursday. It plays at the home town's showground spot, else near you: the pitches, the hits and the strikes, the crowd's shouts, the score after the third, sixth and ninth, the result.
   - The losers' men are sore at the winners', and a game there warms the home regulars to you a little. The season's tally is kept, and the morning has the result.
   - Why it reads true: a neighbouring town is the best rival there is. In-group pride and out-group rivalry cost nothing to join, and they bind a town together.

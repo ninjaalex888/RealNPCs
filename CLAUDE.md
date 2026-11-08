@@ -1084,6 +1084,20 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## The festivals: the county fair (FIVEDAY R17, 2026-11-07; `[World] EventFair`; settings version 305)
+
+Core/Festivals.cs:
+- `FestivalKind`: Kind, Title, Spot, Towns, hours, `On(y,m,d)`, Beats ({m} and {w} the winners), ManPrize, WomanPrize, Posted, Morning.
+- `All` holds "fair" (Valentine, the third Saturday of September, 11:00-14:00, the stockyards). `Tomorrow` crosses month ends. `Fill`.
+
+Engine.Festivals.cs:
+- `FestivalOn(kind)`: each kind's switch, with TownEvents.
+- `FestivalsDaily` (the daily tick, InnerLife's clock date): tomorrow's kinds booked per town. `BookFestival`: AId a regular man, BId a regular woman.
+- `FestivalOver` (both FinishEvent paths through `IsFestival`): a man's "cheer" to AId, a woman's "envy" to BId, attended six regulars + the kind's Affection, the morning's word.
+- `FestivalTest`.
+
+Game (WestworldScript.Festivals.cs): `BeginFestival` at the kind's spot within 150 m and out of view, else EncounterSpot 20-40. `FestivalStep` spawns the caller and nine in a 5 m ring. The kind's beats come every 7-9 s while you're within 60 m: "[...]" beats are captions with cheers, others the caller's voiced line. Then attended. Testing row `fair`. F7 `TEST festivals:`. mindtest `FestivalsTest` (`festivals`).
+
 ## Town base ball (FIVEDAY R16, 2026-11-07; `[World] EventBaseBall`; settings version 304)
 
 Core/BaseBall.cs:
