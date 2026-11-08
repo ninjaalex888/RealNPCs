@@ -1092,6 +1092,14 @@ A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `Bo
 - Items stay `min(12000, 5500 + 38 ms a letter)`. `NewsQueueMax` is 4.
 - mindtest `AroundTownTest` (`aroundtown`).
 
+## Hobo signs (FIVEDAY R29, 2026-11-08; `[World] HoboSigns`; settings version 318)
+
+Core/HoboSigns.cs: `Mark(resident)` by Personality, then Devotion, then Disposition (eight marks), and `Tower(residents, town, seed)`, which covers two living residents of the town (not Dead, Left or Fled) or returns null.
+
+`HoboStep` (WestworldScript.DriftPoster.cs): every 10 s, within 30 m of a PostKind "station" ped, once a town a day, `Notice` with the tower.
+
+mindtest `HoboSignsTest` (`hobosigns`).
+
 ## Hosts compare notes (FIVEDAY R28, 2026-11-08; `[WestWorld] HostNotes`; settings version 317)
 
 Core/HostNotes.cs: `Make(seed)` (a "hosts" scene with `Summary == HostNotes.Summary`, four lines), `Share` 50, `Lift` 12, `Days` 3, `LiftFor`, `Key(id)`, and `On` (a Func set by Engine's constructor to WestWorld && HostNotes).

@@ -53,6 +53,39 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        // ---- hobo signs by the tracks (FIVEDAY R29; Core/HoboSigns.cs) ----
+        private int _hoboNextLook, _hoboShown;
+        private readonly Dictionary<string, long> _hoboDay = new Dictionary<string, long>();
+
+        /// Every ten seconds in a town: within 30 m of the station agent at his window, once a town a day, the chalk on the
+        /// water tower in the Around town box (two of the town's residents, each with the mark their temper earns).
+        private void HoboStep(int now)
+        {
+            if (_cfg == null || !_cfg.HoboSigns || _placeTown == null || _store == null || now < _hoboNextLook)
+                return;
+            _hoboNextLook = now + 10000;
+            long day = Bridge.Now() / 1440, d;
+            if (_hoboDay.TryGetValue(_placeTown, out d) && d == day)
+                return;
+            Ped me = Game.Player.Character;
+            foreach (Ped p in Peds.All())
+            {
+                if (p.IsDead || p.Position.DistanceTo(me.Position) > HoboSigns.NearMetres)
+                    continue;
+                PostKind pk = PostKindOf(p);
+                if (pk == null || pk.Kind != Telegraph.Kind)
+                    continue;
+                _hoboDay[_placeTown] = day;
+                string line = HoboSigns.Tower(_store.Residents, _placeTown, _placeTown + "|" + day);
+                if (line == null)
+                    return;
+                _hoboShown++;
+                Notice(_placeTown, line, "news");
+                Log.Write("HOBOSIGNS the water tower at " + _placeTown);
+                return;
+            }
+        }
+
         // ---- the photographer's window, 1907 (FIVEDAY R26; Core/Relics.cs) ----
         private int _relicNextLook, _relicsShown;
         private readonly Dictionary<string, long> _relicDay = new Dictionary<string, long>();

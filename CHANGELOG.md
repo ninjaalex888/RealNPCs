@@ -6,6 +6,9 @@
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
   - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Output] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
 
+- **Hobo signs by the tracks** (`[World] HoboSigns`, on; settings version 318; FIVEDAY reserve R29). Near the station agent, once a town a day, the Around town box shows the tramps' chalk on the water tower. It names two of the town's living residents, each with the mark their temper earns: a cat for a kind woman, teeth for a temper, a gun for the cold, a cross for the devout, a crossed circle where there's nothing to be had.
+  - Why it reads true: the poor read the respectable at the back door, and their chalk is seldom wrong. If you know these people, you'll find the marks uncannily fair.
+
 - **Hosts compare notes** (`[WestWorld] HostNotes`, on with West World; settings version 317; FIVEDAY reserve R28). When two waking people meet and talk strangely, half the time they now test the world together: one counted the same forty-one faces two days running, one walked to the town's edge and found himself walking back in, or they tell each other their dreams and find the same room in both. For three days after, each wakes faster (the daily roll to wake a stage further goes from 60% to 72%).
   - Why it reads true: doubt alone is easy to talk yourself out of. Doubt someone else confirms isn't, and the tests are what a sane person would try: count, walk, compare.
 

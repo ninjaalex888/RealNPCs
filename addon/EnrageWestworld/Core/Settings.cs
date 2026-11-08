@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 317;
+        public const int CurrentVersion = 318;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -404,6 +404,7 @@ namespace EnrageWestworld.Core
         public bool DriftingPosters = true;   // [World] the bill outside the sheriff's describes you as the town's rumour has it, true or bent out of shape, and people near hold you up against it (Core/DriftPoster.cs; FIVEDAY R13, settings version 301)
         public bool DimeNovels = true;   // [World] your most-told deed written up as a dime novel (a lurid title in the box), and a month of people near you thinking of having read it (Core/DimeNovel.cs; FIVEDAY R12, settings version 300)
         public bool GoingDry = true;   // [World] 1907: Rhodes and Strawberry dry by local option, the saloon a blind tiger, the law-abiding keeping out (Core/GoingDry.cs; FIVEDAY R27, settings version 316)
+        public bool HoboSigns = true;   // [World] the tramps' chalk on the water tower by the station, drawn from the tempers of the town's residents, once a town a day (Core/HoboSigns.cs; FIVEDAY R29, settings version 318)
         public bool Relics = true;   // [World] 1907: the photographers sell the old outlaws as cabinet cards, his thoughts and his window (Core/Relics.cs; FIVEDAY R26, settings version 315)
         public bool BoyRemembers = true;   // [World] in 1907, one who was a boy in '99 and met Arthur remembers him as a boy would, and may ask John about him (Core/Epilogue.cs; FIVEDAY R25, settings version 314)
         public bool ClaimAgents = true;   // [World] three days after a mine death or a killing in Saint Denis, the claim agent calls on the widow; she signs, refuses, or the town takes up a collection (Core/ClaimAgent.cs; FIVEDAY R24, settings version 313)
@@ -943,6 +944,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 318)
+                    log?.Invoke("Settings: new in this version: [World] HoboSigns (on): the tramps' chalk by the tracks.");
                 if (s.SettingsVersion < 317)
                     log?.Invoke("Settings: new in this version: [WestWorld] HostNotes (on): the waking compare notes.");
                 if (s.SettingsVersion < 316)
@@ -1926,6 +1929,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("DriftingPosters = " + B(DriftingPosters) + "   ; in a town your deed's rumour has reached, the first time each day: the bill outside the sheriff's as it reads there (true where the telling's faithful, a thing wrong further out, wild when it's been passed along), in the box; and someone near now and then holds you up against it");
             b.AppendLine("DimeNovels = " + B(DimeNovels) + "   ; when your most-told deed has been talked of in two towns or more, on a Monday some New York hack writes it up: a dime novel in the store windows (the box has its lurid title), once a deed, sixty days apart; for thirty days people near you think of having read it, by their temper");
             b.AppendLine("GoingDry = " + B(GoingDry) + "   ; in John's 1907, Rhodes and Strawberry are dry by local option: the saloon pours under the counter, the law-abiding and the devout keep out, the rest talk of nothing else; the box shows the notice on the saloon door once a day");
+            b.AppendLine("HoboSigns = " + B(HoboSigns) + "   ; near the station agent, once a town a day, the box shows the tramps' chalk on the water tower: two of the town's residents, each with the mark their temper earns (a cat for a kind woman, teeth for a temper, a cross for the devout)");
             b.AppendLine("Relics = " + B(Relics) + "   ; in John's 1907: the photographers of Saint Denis and Blackwater think of the trade in the old outlaws (cabinet cards of the dead, an old man paid to pose, the hanging postcards), and near the studio once a day the box shows the window, where one face is one you'd know");
             b.AppendLine("BoyRemembers = " + B(BoyRemembers) + "   ; with EpilogueCarries, in John's 1907: one who was a boy of eight to fifteen in '99 and met Arthur thinks of him as a boy remembers a man (the dollar, the reins, the way he stood), and if John comes within six metres, asks him aloud if he knew a man called Morgan");
             b.AppendLine("ClaimAgents = " + B(ClaimAgents) + "   ; three days after a man dies at the Annesburg mine, the company's claim agent calls on his widow with fifty dollars and a paper; after a killing in Saint Denis, the insurance man. The box tells it, and the next day what she did: signed, sent him away for a lawyer, or the town took up a collection");
