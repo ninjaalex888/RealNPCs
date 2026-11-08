@@ -1334,6 +1334,7 @@ namespace EnrageWestworld.InGame
             RegardStep(now);      // the town's regard of you in the "Around town" box (WestworldScript.Regard.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             FenceStep(now);         // what you saw of the fence cutters, and the town's word (WestworldScript.FenceCutters.cs; FIVEDAY item 31)
+            NovelStep(now);         // people near you who've read the dime novel (WestworldScript.DimeNovel.cs; FIVEDAY R12)
             FeverStep(now);         // fever in town: the thoughts near you (WestworldScript.Fever.cs; FIVEDAY R9)
             QuiltStep(now);         // the quilting bee overheard by the church (WestworldScript.QuiltingBee.cs; FIVEDAY R8)
             ForeclosureStep(now);   // the sheriff's sale when the bank takes a place (WestworldScript.Foreclosure.cs; FIVEDAY R3)

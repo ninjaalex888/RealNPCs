@@ -925,6 +925,7 @@ namespace EnrageWestworld.Core
                 DebtTick(now);
             GoalTick(now);
             EventsDaily(now);   // the dances posted on Thursdays (Engine.Events.cs)
+            DimeNovelDaily(now);    // a dime novel about your most-told deed, on a Monday (Engine.DimeNovel.cs; FIVEDAY R12)
             FeverDaily(now);        // fever in town: the spread, the sick, the quarantine (Engine.Fever.cs; FIVEDAY R9)
             BarnRaisingDaily(now);  // a barn raising booked for a Saturday (Engine.BarnRaising.cs; FIVEDAY R7)
             BoxSocialDaily(now);    // Thursday posts the first Saturday's box social (Engine.BoxSocial.cs; FIVEDAY R6)

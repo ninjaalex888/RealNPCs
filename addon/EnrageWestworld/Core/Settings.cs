@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 299;
+        public const int CurrentVersion = 300;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -390,6 +390,7 @@ namespace EnrageWestworld.Core
         public bool Foreclosures = true;   // [World] the day a resident's worry over the bank ends badly, the sheriff's sale of their goods at the bank's door; the neighbours bid low or won't bid at all, and J buys a lot back (Core/Foreclosure.cs; FIVEDAY R3, settings version 291)
         public bool Drummers = true;   // [World] with TrainTime: one man in three off a train is a drummer, a travelling salesman who calls on the store's keeper with his pitch and leaves in two days (Core/Drummers.cs; FIVEDAY R1, settings version 289)
         public bool ShapeUp = true;   // [World] at dawn on the Saint Denis waterfront the foreman picks his gang from the crowd; the passed-over drift to the saloon, and one may take it out on the last man picked (Core/ShapeUp.cs; FIVEDAY item 29, settings version 281)
+        public bool DimeNovels = true;   // [World] your most-told deed written up as a dime novel (a lurid title in the box), and a month of people near you thinking of having read it (Core/DimeNovel.cs; FIVEDAY R12, settings version 300)
         public bool Fever = true;   // [World] rarely, a fever goes through a town along its warm ties: the sick keep to home a week, a quarantine is posted at three, and with FeverDeaths one in twelve dies (Core/Fever.cs; FIVEDAY R9, settings version 297)
         public bool FeverDeaths = true;   // [World] with Fever: one in twelve of the sick dies of it, mourned like anyone
         public bool MineWhistle = true;   // [World] rarely, three whistles at the Annesburg mine: one or two of its men killed below, off screen; the town runs to the pithead, the names, the grief, the collection (Core/MineWhistle.cs; FIVEDAY item 28, settings version 280)
@@ -923,6 +924,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 300)
+                    log?.Invoke("Settings: new in this version: [World] DimeNovels (on): dime novels about you.");
                 if (s.SettingsVersion < 299)
                     log?.Invoke("Settings: new in this version: [Mind] MemorialPhotos (on): memorial photographs of the dead.");
                 if (s.SettingsVersion < 298)
@@ -1856,6 +1859,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("Foreclosures = " + B(Foreclosures) + "   ; the day a resident's worry over the bank ends badly, from ten till two, with the bankdoor (or mainstreet) spot recorded and you near: the sheriff's man sells their things in the street, three lots; the neighbours bid low, or two times in five won't bid at all; while a lot is called, J buys it back for the family, once a sale");
             b.AppendLine("Drummers = " + B(Drummers) + "   ; with TrainTime on: one man in three who steps down off a train is a drummer for a far city's firm, with a line of goods; near the store with him in town, he walks over to its keeper with his pitch, and the keeper orders, haggles or sends him off; in two days he's gone on the train");
             b.AppendLine("ShapeUp = " + B(ShapeUp) + "   ; from five to half past six in Saint Denis, with the wharf spot recorded and you near it, the named men about it crowd the wharf and the foreman picks his gang; the picked go to work, the passed-over to the saloon for the day, and a bitter one may have it out with the last man picked (a rematch plan, with MindPlans)");
+            b.AppendLine("DimeNovels = " + B(DimeNovels) + "   ; when your most-told deed has been talked of in two towns or more, on a Monday some New York hack writes it up: a dime novel in the store windows (the box has its lurid title), once a deed, sixty days apart; for thirty days people near you think of having read it, by their temper");
             b.AppendLine("Fever = " + B(Fever) + "   ; rarely (a town in about a hundred and fifty a day, ninety days apart), a fever breaks out in a town and passes along its warm ties, one in seven a tie a day, among its residents: the sick keep to home about a week and think of it; at three sick the board of health posts a quarantine; it's over when nobody's sick, and the box says what it cost");
             b.AppendLine("FeverDeaths = " + B(FeverDeaths) + "   ; with Fever on: one in twelve of the sick dies of it, named and mourned like anyone (the wake, the grave). Off: they all get up again");
             b.AppendLine("MineWhistle = " + B(MineWhistle) + "   ; rarely (a day in twenty-five, never within three weeks of the last), the mine whistle at Annesburg blows three times: one or two of the town's men are killed below, named, never shown, and mourned like anyone. In Annesburg you hear it, people run for the pithead, the names come up, and the hat goes round; away, the word reaches you");

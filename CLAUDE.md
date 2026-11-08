@@ -1084,6 +1084,20 @@ A street scene, not a staged event: two of the town's own people, the street's m
 
 A town event (Kind "shivaree") booked by `FinishWedding` (Engine.World.cs -> `BookShivaree`, Core/Engine.Shivaree.cs) for the next night 21:00-22:30 (`Shivaree.For`: none for a ruined wedding or without a town; AId the groom, the man of the couple whichever side). `ShivareeOver` (ResolveAway/FinishEvent): ties with warmth > 0 to either of the couple get a "cheer" step, both of the couple a "warmth/shivaree" memory, attended: eight regulars of the town +3 affection; the morning's word at 08:00. Game (WestworldScript.Shivaree.cs): by the saloon door he last came out of (else EncounterSpot 18-35 m), five revellers in a ring of 2.2 m turned to the first; steps every 6.5-8.5 s: the din (caption, cheering and mocking voices), a call for the groom, the din, a call, the groom spawned 9 m off out of view walking in (TASK_FOLLOW_NAV_MESH_TO_COORD, the ring's), his line, the cheer, over; a minute there counts as attended. Testing row `shivaree` (Engine `ShivareeTest`: a man and a woman of the town's regulars as the couple, two minutes from now). F7 `TEST shivarees:`. mindtest `ShivareeTest` (`shivaree`). ticktest "testing: 123 actions".
 
+## Dime novels (FIVEDAY R12, 2026-11-07; `[World] DimeNovels`; settings version 300)
+
+Core/DimeNovel.cs:
+- `Title(fullName, deed)`: an epithet by Kind, the town or zone, a subtitle; seeded by the deed id.
+- `Publishes(weekday, towns, writtenBefore, day, lastDay)`: Monday, 2+ towns, once a deed, 60 days apart.
+- `Reading` (30 days), `ReaderThought(temperGroup, surname)`, `Notice`.
+
+Engine.DimeNovel.cs:
+- `DimeNovelDaily` (the daily tick): `Shows.MostTold`, the towns from Store.TownRumours. `Publish` sets Counts "novel:<deedId>" and "novel:last" and sends a toast.
+- `NovelNow(now)`: the title being read.
+- `DimeNovelTest`: MostTold, else a static TestDeed (never added to Store.Deeds).
+
+Game (WestworldScript.DimeNovel.cs): every 30 s in a town while a novel is being read, the first named person near (40% each) thinks by `Minds.TemperGroup`. Testing row `novel`. F7 `TEST dime novels:`. mindtest `DimeNovelTest` (`novel`).
+
 ## Memorial photographs (FIVEDAY R11, 2026-11-07; `[Mind] MemorialPhotos`; settings version 299)
 
 Core/MemorialPhoto.cs:

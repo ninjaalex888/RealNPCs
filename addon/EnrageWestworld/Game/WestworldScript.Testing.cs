@@ -307,6 +307,16 @@ namespace EnrageWestworld.InGame
                         said = "A wire found cut at " + _placeTown + "; the box has the word, and what you saw";
                         return null;
                     }
+                case "novel":   // FIVEDAY R12
+                    {
+                        skipped = "the two towns' telling, the Monday, the sixty days";
+                        string what = _engine.DimeNovelTest(Bridge.Now());
+                        if (what.StartsWith("off"))
+                            return what;
+                        said = what;
+                        _novelNextLook = 0;
+                        return null;
+                    }
                 case "fever":   // FIVEDAY R9
                     {
                         skipped = "the rare day's roll and the ninety days between";

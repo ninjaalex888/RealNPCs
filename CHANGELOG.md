@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Dime novels about you** (`[World] DimeNovels`, on; settings version 300; FIVEDAY reserve R12). When your most-told deed has been talked of in two towns or more, some New York hack writes it up. A dime novel turns up in the store windows on a Monday, and the box has its lurid title ("ARTHUR MORGAN, THE SCOURGE OF VALENTINE; or, Forty Men in the Snow"). Once a deed, sixty days apart.
+  - For thirty days, people near you in town think of having read it. The bold admire it, the fearful believe every word, the cold scoff at it, the rest are tickled, and a few think the man himself looks smaller than the woodcut.
+  - Why it reads true: real outlaws read about themselves in the dime novels, and a legend outruns its man. The town reacts to the story, not the person, and the original is always a let-down.
+  - A Testing row, "A dime novel about you", publishes one (a test deed if none has travelled, never added to your deeds).
+
 - **Memorial photographs** (`[Mind] MemorialPhotos`, on; settings version 299; FIVEDAY reserve R11). In Saint Denis and Blackwater, the photographer at his counter thinks of the memorial portraits he made of the town's dead these ten days, by name: posed among the family on a brace, eyes painted on the plate, a hand on the Bible. A busy spell gets a thought of its own. A mourner there thinks of the photograph that came about a time in three (in place of a mourning thought).
   - Why it reads true: the memorial photograph was often the only likeness a poor family ever had of its dead, and keeping them present is how grief settles rather than ends.
   - Offline: a third of mourners' thoughts there are of the photograph, and the photographer's counter thoughts name the dead (before: neither).

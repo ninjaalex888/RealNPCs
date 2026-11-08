@@ -68,6 +68,7 @@ namespace EnrageWestworld.Core
             new Entry("marks", "Tools", "A beating's marks: try the next gait and bruising", "TestMarksKey", needs: "a named person within 15 m (each press the next pair; the log says which)"),
             new Entry("fence", "People", "Fence cutters: a wire found cut here (now)", "TestFenceKey", needs: "[World] FenceCutters; a town with two men known to RealNPCs (the row counts you as near last night)"),
             new Entry("saleday", "People", "Sale day at the stockyards (now)", "TestSaleDayKey", needs: "[World] SaleDay; Valentine, the stockyards spot recorded and within 80 m, four named men about it"),
+            new Entry("novel", "People", "Publish a dime novel of your deeds (now)", "TestNovelKey", needs: "[World] DimeNovels; your most-told deed if one has travelled, else a test deed (not kept as yours)"),
             new Entry("fever", "People", "A fever starts in this town (the nearest resident first)", "TestFeverKey", needs: "[World] Fever; a town, a resident within 20 m; it spreads at each day's tick"),
             new Entry("quilt", "People", "Overhear the quilting bee (now)", "TestQuiltKey", needs: "[Scenes] QuiltingBee; on foot within 25 m of a town's church steps spot (recorded with the spots tool)"),
             new Entry("foreclosure", "People", "A sheriff's sale in the street (now)", "TestForeclosureKey", needs: "[World] Foreclosures; a town with its bankdoor or mainstreet spot recorded and within 80 m, a named resident near for the family and three others about"),
