@@ -164,6 +164,8 @@ namespace EnrageWestworld.InGame
                     if (MindChosenQuietly(h) || MindActWhyNot(p, h, seated) != null || !CanDirect(p))
                         continue;
                     _held[h] = new Held { Name = w.Name, Since = now, NextAt = now, Seated = seated };
+                    if (!seated)
+                        RingAskModel(h, w, _held[h], now);   // the model's word on where they're off to next (FIVEDAY2 item 5)
                     _heldStarts++;
                     Log.Write("HELD: " + w.Name + " held, " + (int)p.Position.DistanceTo(at) + " m from you (" + (w.Choice != null ? Choosing.WordsOf(w.Choice) : "no choice yet") + ")");
                 }
@@ -278,6 +280,29 @@ namespace EnrageWestworld.InGame
             _ringPlansMade++;
             Log.Detail("HELD: " + w.Name + " means to " + string.Join(", then ", p.Steps.Select(Choosing.WordsOf)));
             return p;
+        }
+
+        private int _ringAsked;
+
+        /// As someone comes into the ring: their errand's next step goes to the model with the rest of what they might do, the everyday pick's own way (PickAsk, under PicksAtOnce, so the model's never asked more than it can answer), and whichever it picks is done. Late or unreadable, the step stands.
+        private void RingAskModel(int h, MindWho w, Held hd, int now)
+        {
+            if (!_cfg.ControlRingPicks || !PicksOn)
+                return;
+            RingPlan plan = RingPlanFor(w, now);
+            if (plan == null || plan.Done)
+                return;
+            string was = w.Choice, wasNext = w.ChoiceNext;
+            w.Choice = plan.NextStep;
+            if (w.Choice == was || !PickAsk(w, h, now, MindContextFor(w, h, false, _store.LastGameMin)))
+            {
+                w.Choice = was;
+                w.ChoiceNext = wasNext;
+                return;
+            }
+            plan.Next++;
+            _ringAsked++;
+            hd.NextAt = now + PickWaitMs + 500;   // the answer's act comes through PicksStep
         }
 
         /// The next act for one held between acts: the next step of their errand if they have one, the mind's choice, the one it ranked next, a spot, a stroll. Never nothing.
@@ -507,7 +532,7 @@ namespace EnrageWestworld.InGame
                         acting++;
                 }
             }
-            string gauge = RingOn ? "; ring " + _ringGait.Settled + " " + (int)_ringReach.In + " m, at most " + _ringReach.Most + "; " + _ringActsLastMinute + " decisions last minute; a step " + _ringGuard.AverageMicros + " us on average, peak " + _ringGuard.PeakMicros + " us (budget " + RingGuard.AverageBudget + " / " + RingGuard.PeakBudget + "); guard " + _ringGuard.Scale.ToString("0.00") + ", drawn in " + _ringGuard.Shrinks + " times, eased " + _ringGuard.Eases + "; " + _ringDrawnIn + " let go as it drew in; " + _ringReorders + " told again of " + _ringReorderChecks + " checks; " + _ringRaised + " got up for what they wanted" + (_ringStayed > 0 ? ", " + _ringStayed + " looks at someone content where they sat" : "") + "; " + _ringPlansMade + " errands made, " + _ringPlanSteps + " steps done" : "";
+            string gauge = RingOn ? "; ring " + _ringGait.Settled + " " + (int)_ringReach.In + " m, at most " + _ringReach.Most + "; " + _ringActsLastMinute + " decisions last minute; a step " + _ringGuard.AverageMicros + " us on average, peak " + _ringGuard.PeakMicros + " us (budget " + RingGuard.AverageBudget + " / " + RingGuard.PeakBudget + "); guard " + _ringGuard.Scale.ToString("0.00") + ", drawn in " + _ringGuard.Shrinks + " times, eased " + _ringGuard.Eases + "; " + _ringDrawnIn + " let go as it drew in; " + _ringReorders + " told again of " + _ringReorderChecks + " checks; " + _ringRaised + " got up for what they wanted" + (_ringStayed > 0 ? ", " + _ringStayed + " looks at someone content where they sat" : "") + "; " + _ringPlansMade + " errands made, " + _ringPlanSteps + " steps done, " + _ringAsked + " put to the model" : "";
             return (RingOn ? "control ring: " : "held ring: ") + held + " of " + inRing + " named within " + (int)HeldInMetres + " m held" + (inRing > 0 ? " (" + (100 * held / inRing) + "%)" : "") + ", " + acting + " of them at an act or a spot; " +
                    _heldStarts + " held this session, " + _heldChained + " acts chained, " + _heldFills + " spots or strolls, " + _heldEnds + " let go" +
                    (_heldEndWhy.Count > 0 ? " (" + string.Join(", ", _heldEndWhy.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value)) + ")" : "") + (_heldLast != null ? "; last: " + _heldLast : "") + gauge;

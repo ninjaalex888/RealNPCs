@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The model's word on it** (`[Mind] ControlRingPicks`, on; settings version 334; FIVEDAY2 item 5). With the AI model on, as someone comes into the ring the next step of their errand is offered to it among the other things they might do, the same way as the everyday picks and under the same limit. Late or unreadable, the errand stands.
+
 - **An errand of their own** (`[Mind] ControlRingPlans`, on; settings version 333; FIVEDAY2 item 4). Someone the ring takes in has a short errand for that part of the day, two to four things in order (the store, a talk, home), kept by who they are for five minutes, so someone who walks out of the ring and back carries on. A strong feeling still comes first, and a step that can't be done is passed over.
   - Why it reads true: a choice a minute is a person with no yesterday. A list in the head is a person with an afternoon.
 

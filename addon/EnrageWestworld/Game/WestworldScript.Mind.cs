@@ -386,13 +386,9 @@ namespace EnrageWestworld.InGame
             MindChooseFor(w, h, now, false);
         }
 
-        /// One person's choice now (the shadow's choosing): their needs, nature, mood, the strongest feeling and, for the
-        /// near ring, who is in sight. `quiet`: the about ring (MindLevels on; after item 14): out of view nobody is "in
-        /// sight", and no line is written (the near ring's look writes it when they come near and the choice stands).
-        private void MindChooseFor(MindWho w, int h, int now, bool quiet)
+        /// What a choice is made in: who they are, their day, what's near them (lifted out of MindChooseFor, so the control ring can ask the model with the same; FIVEDAY2 item 5).
+        private ChoiceContext MindContextFor(MindWho w, int h, bool quiet, long g)
         {
-            w.ChoseAt = now;
-            long g = _store.LastGameMin;
             string tg = w.TradeGroup ?? (w.TradeGroup = InnerLife.TradeGroup(w.P.Trade));
             if (w.Recent == null)
                 w.Recent = new RecentActs();
@@ -471,6 +467,17 @@ namespace EnrageWestworld.InGame
                 else if (!(Ties.Trouble(t.Kind) && t.Did(w.Id)))
                     c.FoeNear = true;
             }
+            return c;
+        }
+
+        /// One person's choice now (the shadow's choosing): their needs, nature, mood, the strongest feeling and, for the
+        /// near ring, who is in sight. `quiet`: the about ring (MindLevels on; after item 14): out of view nobody is "in
+        /// sight", and no line is written (the near ring's look writes it when they come near and the choice stands).
+        private void MindChooseFor(MindWho w, int h, int now, bool quiet)
+        {
+            w.ChoseAt = now;
+            long g = _store.LastGameMin;
+            ChoiceContext c = MindContextFor(w, h, quiet, g);
             string next;
             KeyValuePair<string, string> ch = Choosing.Choose(w.Needs, w.Traits, c, Choosing.SeedFor(w.Id, g), out next);
             _mindChoices++;
