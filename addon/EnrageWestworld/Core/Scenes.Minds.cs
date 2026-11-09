@@ -67,6 +67,8 @@ namespace EnrageWestworld.Core
             if (c.Saloon && twoMen)
                 w.Add(new KeyValuePair<string, int>("cheat", 10));
             w.Add(new KeyValuePair<string, int>("debt", 7));
+            if (mixed && !c.Saloon && !c.Night && c.Town == Suffrage.Town)
+                w.Add(new KeyValuePair<string, int>("suffrage", 5));   // the vote (Core/Suffrage.cs)
             if (twoMen && c.Town != null)
                 w.Add(new KeyValuePair<string, int>("money", c.Saloon ? 9 : 4));   // the money question (Core/MoneyTalk.cs): a saloon's argument, more than a street's
             if (mixed && !c.Saloon && !c.Night && c.Town != null)
@@ -266,6 +268,7 @@ namespace EnrageWestworld.Core
                 case "propose": return "ask " + o + " to marry you";
                 case "cheat": return "call " + o + " out for cheating at cards";
                 case "temperance": return "ask " + o + " to sign the pledge";
+                case "suffrage": return "tell " + o + " what you think about the vote";
                 case "money": return "settle the money question with " + o;
                 case "wages": return "ask " + o + " for the week's pay";
                 case "gossip": return "trade the town's news with " + o;

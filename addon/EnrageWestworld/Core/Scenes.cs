@@ -184,6 +184,7 @@ namespace EnrageWestworld.Core
                 case "rematch": return Rematch.AgainScene(c, seed);   // the beaten man's plan (Core/Rematch.cs): a brawl of its own words
                 case "shake": return Rematch.ShakeScene(c, seed);     // his hand offered, taken or refused
                 case "temperance": return Temperance.Make(c, seed);   // the pledge put to a drinker (Core/Temperance.cs)
+                case "suffrage": return Suffrage.Make(c, seed);   // the vote, put to a man in the street at Saint Denis (Core/Suffrage.cs)
                 case "money": return MoneyTalk.Make(c, seed, Voice.NowYear);   // gold against silver, or the banks in 1907 (Core/MoneyTalk.cs)
                 case "wages": return c.AWoman != c.BWoman ? Payday.Wages(c, seed) : null;   // payday: a woman meets a man for his pay (Core/Payday.cs)
                 case "propose": return Propose(c, seed);

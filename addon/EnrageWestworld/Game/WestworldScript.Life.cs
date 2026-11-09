@@ -1021,6 +1021,7 @@ namespace EnrageWestworld.InGame
             if (!_cfg.Songs) cast.Off.Add("song");
             if (!_cfg.Temperance) cast.Off.Add("temperance");
             if (!_cfg.MoneyTalk) cast.Off.Add("money");
+            if (!_cfg.Suffrage) cast.Off.Add("suffrage");
             if (!_cfg.TallTales) cast.Off.Add("talltale");
             if (!_cfg.NightTales) cast.Off.Add("nighttale");   // the old tales after dark (Run 3, item 3)
             if (!_cfg.NewspaperTalk) cast.Off.Add("paper");

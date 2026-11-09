@@ -659,6 +659,9 @@ namespace EnrageWestworld.Core
                 "Made me look at the dime in my own pocket a while.",
                 "Preacher talks of kindness every Sunday. {b} just went and did it.",
                 "Stood straighter after, {a} did. Funny what a dollar does to a spine.", } },
+            { "suffrage", new[] {
+                "Told him to his face, she did, about the vote.", "Somebody said Wyoming. Somebody always says Wyoming.",
+                "I'd go to that hall myself, if I could think what to tell them at home.", "She's not wrong. I wouldn't say so, but she's not wrong.", } },
             { "temperance", new[] {
                 "Temperance woman had a man by the sleeve outside the saloon. Brave, or foolish.", "Pledge cards on the boardwalk again. Half the men cross the street.",
                 "Pledge put to a man right there in the street. I'd have run.", "Somebody ought to sign. Not me. Somebody.",
