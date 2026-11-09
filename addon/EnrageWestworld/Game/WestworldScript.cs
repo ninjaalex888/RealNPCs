@@ -1310,6 +1310,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST loads: " + Loads.Status());
 			Log.Write("TEST perform: " + PerformStatus());
 			Log.Write("TEST composed acts: " + ComposedStatus());
+			Log.Write("TEST the circle answers: " + CircleStatus());
 			Log.Write("TEST revenant mind: " + RevenantMindStatus());
 			Log.Write("TEST wayside: " + WaysideStatus());
 			Log.Write("TEST mind talks: " + MindTalkStatus());

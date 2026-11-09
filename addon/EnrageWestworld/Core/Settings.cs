@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 336;
+        public const int CurrentVersion = 337;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -273,6 +273,7 @@ namespace EnrageWestworld.Core
         public bool Hermits = true;
         public int HermitChance = 25;
         public string HermitKey = "None";
+        public bool CircleAnswers = true;        // [Encounters] walk into the middle of a ring of the awake and the ring decides what to do about it, as one: the AI model's choice with it on, the rules' without (FIVEDAY2 item 10; settings version 337)
         public bool Gatherings = true;
         public int GatheringHostile = 50;   // [Encounters] percent of gatherings that turn on you once you come within 10 m (Lex, 2026-11-01; violence against Arthur, on as it comes); 0 never; settings version 186
         public bool EventDots = true;   // [Encounters] the game's pulsing event dot on the map where one of ours is going on (Lex, 2026-11-01); settings version 187
@@ -967,6 +968,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 337)
+                    log?.Invoke("Settings: new in this version: [Encounters] CircleAnswers (on): walk into the middle of a ring of the awake and it answers you as one.");
                 if (s.SettingsVersion < 336)
                     log?.Invoke("Settings: new in this version: [Mind] ComposedModel (on): with the AI model on, it chooses the order of a composed act.");
                 if (s.SettingsVersion < 335)
@@ -1848,6 +1851,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("AlliesGrievedLiking = " + AlliesGrievedLiking + "   ; enRAGE's fondness a friend of the fallen loses (0 to 50)");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
+            b.AppendLine("CircleAnswers = " + B(CircleAnswers) + "   ; walk into the middle of a ring of the awake and it answers you as one: they close in, one steps out and speaks, they all kneel, or they wake the one lying among them; the AI model chooses if it is on, the rules if not");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: the awake stand in a silent circle, facing in: from midnight to half past three out in the wilds (once a night), and with GatheringHours any by day too, in an open field or just outside a town's edge");
             b.AppendLine("GatheringChance = " + GatheringChance + "   ; percent on each encounter roll while one may happen");
             b.AppendLine("GatheringHours = " + GatheringHours + "   ; any: at any hour (the night ones as they were, and by day in the open or at a town's edge); night: only from midnight to half past three in the wilds, as before");

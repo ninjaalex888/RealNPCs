@@ -15,6 +15,81 @@ namespace EnrageWestworld.Core
     {
         public static readonly string[] Picks = { "tend", "close", "leave" };
 
+        // ---- the circle answers you (FIVEDAY2 item 10; [Encounters] CircleAnswers). You've walked into the middle of the ring and they've all spoken at once. What the ring does next is one
+        // decision for the lot of them: the model's if it's on, the rules' if it isn't. Why it reads true: a crowd of the awake isn't many people deciding, it's one thing deciding, and that's what frightens.
+        public const string RingClose = "close", RingForward = "forward", RingKneel = "kneel", RingWake = "wake";
+        public const int RingWaitMs = 3000;
+
+        private static readonly Dictionary<string, string> RingOptionWords = new Dictionary<string, string>
+        {
+            { RingClose, "they all close in round the stranger, without a word" },
+            { RingForward, "one of them steps out and says something to the stranger" },
+            { RingKneel, "all of them go down on their knees to the stranger" },
+            { RingWake, "they wake the one lying among them, in front of the stranger" },
+        };
+
+        private static readonly string[] ForwardLines =
+        {
+            "You're late. We held your place.", "It's only us. It's only ever been us.", "You can stand there. We stood there.",
+            "Sit down. They're not looking at this part.", "We wondered when you'd walk in.", "It doesn't hurt, once you stop asking who's counting.",
+            "You've done this before. You've done all of this before.", "Say nothing. It's better when you say nothing.",
+        };
+
+        /// What the ring might do. Waking one is only on offer with someone lying there to wake.
+        public static List<string> RingMenu(bool canWake)
+        {
+            var m = new List<string> { RingClose, RingForward, RingKneel };
+            if (canWake)
+                m.Add(RingWake);
+            return m;
+        }
+
+        public static string RingWords(string id)
+        {
+            string w;
+            return RingOptionWords.TryGetValue(id, out w) ? w : id;
+        }
+
+        public static string RingBrief(int year)
+        {
+            return "You decide what a circle of people does next. It is " + (year > 0 ? year : 1899) + ", in the American West and South. They are people who have come awake to something about the world, and stand together at night. " +
+                   "A stranger has walked into the middle of them. Choose the one thing the whole circle would do, and the private thought of the one who speaks for them. Answer in exactly two lines, nothing else, the number first:\nChoice: the number\nThought: the thought";
+        }
+
+        /// The request: one of them, speaking for the ring.
+        public static LanguageRequest RingRequest(int year, int hour, int people, string town, string kind, List<string> menu)
+        {
+            var r = new LanguageRequest
+            {
+                Kind = "pick", Circle = true, WithThought = true, Name = "The ring's speaker", Trade = "speaking for the " + people + " of them", Town = town, Hour = hour, Year = year,
+                Place = "a circle of people standing in the open", Mood = "calm, and very sure", Feeling = "pity", Strength = "moderate", About = "you", YouAs = "the stranger", Shows = "shown",
+                Now = "a stranger has walked into the middle of the ring and is standing there" + (kind == Encounters.RingLeader ? "; one of them has been preaching" : kind == Encounters.RingSleeper ? "; one of them is lying on the ground, not yet awake" : ""),
+            };
+            r.Options = menu.ConvertAll(RingWords);
+            return r;
+        }
+
+        /// The rules' choice from the same list.
+        public static string RingRules(List<string> menu, string seed)
+        {
+            int roll = Voice.Hash(seed + "|ringanswer") % 100;
+            if (menu.Contains(RingWake) && roll < 35)
+                return RingWake;
+            int then = Voice.Hash(seed + "|ringanswer2") % 100;   // a fresh roll, so waking one doesn't take its share from any one of the rest
+            return then < 45 ? RingForward : then < 75 ? RingClose : RingKneel;
+        }
+
+        public static string ForwardLine(string seed)
+        {
+            return Voice.Pick(seed + "|forward", ForwardLines);
+        }
+
+        public static IEnumerable<string> AllRingLines()
+        {
+            foreach (string l in ForwardLines)
+                yield return l;
+        }
+
         /// The first friend's table after a fight, with another friend near: tend him alone, fetch the other and close round
         /// him, or leave it. The loyal and the proud close round; the timid leave; a sore mood leaves sooner.
         public static Staged.Weights CloseRoundWeights(StagedMind m, int friendsNear)

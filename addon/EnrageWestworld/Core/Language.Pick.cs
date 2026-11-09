@@ -22,6 +22,8 @@ namespace EnrageWestworld.Core
             int year = r != null && r.Year > 0 ? r.Year : 1899;
             if (r != null && r.Revenant)
                 return RevenantMind.Brief(year);
+            if (r != null && r.Circle)
+                return GroupActs.RingBrief(year);
             if (r != null && r.WakeStage >= Awakening.Questioning)
                 return WakeOdd.PickBrief(year, r.WakeStage);   // the waking (Lex, 2026-10-31: the model decides, lash-outs too)
             return "You decide what one person living in " + year + ", in the American West and South, does next. You are given who they are, where, " +
@@ -87,6 +89,8 @@ namespace EnrageWestworld.Core
         /// in an evening, 27 of them too long: the pick brief had no character limit and no examples).
         public static string ThinkPickBrief(LanguageRequest r)
         {
+            if (r != null && r.Circle)
+                return PickBrief(r);   // its own two lines
             return PickBrief(r).Replace(" Answer with its number alone.", "") +
                    " Give the number of what they do, and the private thought in their head as they decide: " + (r != null && r.Varied ? "short" : "short fragments") + ", the way people think, not speak, " +
                    MaxWords + " words at most, " + MaxChars + " characters at most, " +

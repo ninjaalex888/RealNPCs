@@ -49,6 +49,12 @@ namespace EnrageWestworld.InGame
             public Vector3 From;              // a procession: where it starts; Centre is where it's going
             public int NextWord, AnswerAt, Words;
             public bool Woken, KnownSaid;
+            // the circle answers you (FIVEDAY2 item 10; Core/GroupActs.cs)
+            public string AskKey;
+            public List<string> AskMenu;
+            public LanguageRequest AskRequest;
+            public int AskDeadline;
+            public bool Answered;
         }
 
         /// The hours a gathering belongs to (Lex, 2026-11-02: rarer, eerier): from 21:00 to 05:00, or any hour in fog, rain or
@@ -382,6 +388,8 @@ namespace EnrageWestworld.InGame
                 Scatter(g, live, me, now);
                 return;
             }
+            if (g.AskMenu != null && !g.Answered && CircleAnswerStep(g, live, me, now))
+                return;
             if (g.Phase == "stand")
             {
                 if (toCentre >= 30f)
@@ -410,6 +418,7 @@ namespace EnrageWestworld.InGame
                 Feed.Say("All of them, at once", Encounters.Pick(Encounters.GatherTogether, "gather|" + NightIndex()), toYou: true);
                 Log.Write("ENCOUNTER gathering: you stood in the middle; they spoke at once");
                 g.NextCreep = now + 5000;
+                CircleAsk(g, live, now);   // and then the ring decides what to do about you (FIVEDAY2 item 10)
                 return;
             }
             if (seen)
@@ -594,6 +603,109 @@ namespace EnrageWestworld.InGame
                     Log.Write("ENCOUNTER gathering: the one in the middle woke" + (lead.R != null ? " (" + lead.R.Name + ", a stage further)" : ""));
                 }
             }
+        }
+
+        // ---- the circle answers you (FIVEDAY2 item 10; Core/GroupActs.cs)
+        private int _circleModel, _circleRules;
+        private string _circleLast;
+
+        /// You've stood in the middle: what the ring does next, asked of the model if it's on; the rules' choice otherwise, when the moment comes.
+        private void CircleAsk(Gathering g, List<Gatherer> live, int now)
+        {
+            if (!_cfg.CircleAnswers)
+                return;
+            g.AskMenu = GroupActs.RingMenu(g.Kind == Encounters.RingSleeper && !g.Woken && live.Any(x => x.Lead));
+            g.AskDeadline = now + GroupActs.RingWaitMs;
+            if (!PicksOn)
+                return;
+            LanguageRequest r = GroupActs.RingRequest(Voice.NowYear, CLOCK.GET_CLOCK_HOURS(), live.Count, _placeTown, g.Kind, g.AskMenu);
+            string key = "circle|" + g.StartedAt;
+            if (_engine.LanguageAnswers.AskPick(new LanguageAsk { Key = key, Name = "the circle", PersonId = "circle", Request = r, AskedAtMs = Environment.TickCount }))
+            {
+                g.AskKey = key;
+                g.AskRequest = r;
+            }
+        }
+
+        /// The answer, when it's in or the wait's up. True on the frame the ring acts.
+        private bool CircleAnswerStep(Gathering g, List<Gatherer> live, Ped me, int now)
+        {
+            string answer = null;
+            long ms = 0;
+            bool came = g.AskKey != null && _engine.LanguageAnswers.TakePick(g.AskKey, out answer, out ms);
+            if (!came && now < g.AskDeadline && now >= g.AskDeadline - GroupActs.RingWaitMs)
+                return false;
+            g.Answered = true;
+            string thought = null, seed = "circle|" + g.StartedAt;
+            int idx = came ? Language.ParseThinkPick(answer, g.AskMenu.Count, out thought) : -1;
+            string what = idx >= 0 ? g.AskMenu[idx] : GroupActs.RingRules(g.AskMenu, seed);
+            if (idx >= 0)
+                _circleModel++;
+            else
+                _circleRules++;
+            _circleLast = GroupActs.RingWords(what) + (idx >= 0 ? " (the model)" : " (the rules)");
+            Log.Write("ENCOUNTER gathering: the ring answers you: " + _circleLast);
+            CircleDo(g, live, me, what, thought, seed, now);
+            return true;
+        }
+
+        private void CircleDo(Gathering g, List<Gatherer> live, Ped me, string what, string thought, string seed, int now)
+        {
+            int you = me.Handle;
+            Vector3 at = me.Position;
+            g.ResumeAt = 0;
+            switch (what)
+            {
+                case GroupActs.RingClose:
+                    for (int i = 0; i < live.Count; i++)
+                    {
+                        double a = 2 * Math.PI * i / live.Count;
+                        Vector3 to = at + new Vector3((float)Math.Cos(a) * 1.9f, (float)Math.Sin(a) * 1.9f, 0f);
+                        int h = live[i].Ped.Handle;
+                        ScenarioExit.SoftUp(h, x => TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(x, to.X, to.Y, to.Z, Natives.Brisk, -1, 0.3f, 0, 0f));
+                        TASK.TASK_LOOK_AT_ENTITY(h, you, -1, 0, 51, 0);
+                    }
+                    g.Moving = false;   // their own walk in, not the creeping that stops when you look
+                    g.NextCreep = now + 60000;
+                    break;
+                case GroupActs.RingForward:
+                {
+                    Gatherer m = live.FirstOrDefault(x => x.Lead) ?? live.OrderBy(x => x.Ped.Position.DistanceTo(at)).First();
+                    int h = m.Ped.Handle;
+                    Vector3 to = m.Ped.Position + (at - m.Ped.Position).Normalized * 1.4f;
+                    ScenarioExit.SoftUp(h, x => TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(x, to.X, to.Y, to.Z, 1f, -1, 0.4f, 0, 0f));
+                    TASK.TASK_LOOK_AT_ENTITY(h, you, -1, 0, 51, 0);
+                    string line = thought != null && g.AskRequest != null && Language.Check(g.AskRequest, thought) == null ? thought : GroupActs.ForwardLine(seed);
+                    Feed.Say(m.R != null ? m.R.Name : "One of them", line, Speech.When(h, "hum", you), h, toYou: true);
+                    break;
+                }
+                case GroupActs.RingKneel:
+                    foreach (Gatherer m in live)
+                    {
+                        int h = m.Ped.Handle;
+                        ScenarioExit.SoftUp(h, x => TASK.TASK_START_SCENARIO_IN_PLACE_HASH(x, Natives.Hash(ExecKneel), -1, true, 0u, -1f, false));
+                        TASK.TASK_LOOK_AT_ENTITY(h, you, -1, 0, 51, 0);
+                    }
+                    g.NextCreep = now + 60000;   // they've stopped coming: they've knelt
+                    break;
+                case GroupActs.RingWake:
+                {
+                    Gatherer lead = live.FirstOrDefault(x => x.Lead);
+                    if (lead == null)
+                        break;
+                    g.Woken = true;
+                    ScenarioExit.SoftUp(lead.Ped.Handle, x => TASK.TASK_TURN_PED_TO_FACE_ENTITY(x, you, 4000, 0f, 0f, 0f));
+                    Feed.Say(lead.R != null ? lead.R.Name : "The one in the middle", Encounters.Pick(Encounters.GatherWakes, "woke|" + g.StartedAt), Speech.When(lead.Ped.Handle, "hum"), lead.Ped.Handle);
+                    if (lead.R != null)
+                        _engine.Awaken(_engine.PersonOfResident(lead.R), Bridge.Now());
+                    break;
+                }
+            }
+        }
+
+        private string CircleStatus()
+        {
+            return (_cfg.CircleAnswers ? "on" : "off ([Encounters] CircleAnswers)") + ": " + _circleModel + " by the model, " + _circleRules + " by the rules this session" + (_circleLast != null ? "; last: " + _circleLast : "");
         }
 
         private void Scatter(Gathering g, List<Gatherer> live, Ped me, int now)
