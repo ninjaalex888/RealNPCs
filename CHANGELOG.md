@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Trouble on the road** (with `[Encounters] Wayside`; FIVEDAY2 item 18; a Testing row for each). A rider down with his horse gone: get him on his feet, leave a dollar for the doctor, go through his pockets, or ride on. A man bitten by a snake, whom you can cut and bleed. A woman put off the stage with her case still on it, walking.
+  - Why it reads true: it's easy to help when others are watching. Help given on an empty road, where nobody would ever know you'd ridden past, is the kind that gets remembered.
+
 - **Prisoners and pursuit** (with `[Encounters] Wayside`; FIVEDAY2 item 17; a Testing row for each). A chain gang walking the road under guard: give the last man your water, or tell the guard to turn them loose and see what he says. A man running past with armed men behind him: point them the wrong way or the right one, or say nothing. And out in the wilds, a firing party and a deserter (the game's soldiers where it has them).
   - Why it reads true: a man in irons or a man running asks one question of whoever sees him, and it isn't about the law. It's whether you think he deserves it, knowing nothing at all.
 
