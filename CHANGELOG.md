@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **More kinds of awake circle** (with `[Encounters] Gatherings`; FIVEDAY2 item 14; three Testing rows). The plain ring, all of them doing one strange thing together, stays and is still the commonest. New: a ring with someone in the middle leading it, the rest kneeling and answering low; a ring round a sleeper they're trying to wake, who comes round if you come close or watch for a while, one more of the awake if you know their name; and after dark, a line of people walking across the open, torches in hand, to the ground where they make a ring (you can follow them). Someone you've met is put in the ring first, and says so.
+  - Why it reads true: ritual is how a group makes a private doubt feel like a shared fact. One in the middle makes it a congregation, a sleeper makes it a recruitment, and being recruited frightens more than being threatened.
+
 - **The clip walker** (Testing row "Try every unproven clip in turn"; FIVEDAY2 item 6). Every clip in the catalogue that no log has shown playing, played in turn on the nearest free person, each result in the log as `WAKE anim`: whether it started, how long it ran and how far it moved them. One session of it proves the clips that the things to come across will use.
 
 - **One way to play a row of the catalogue** (FIVEDAY2 item 7). What the game is proven able to show was a table nothing played from. `Perform` takes a row and a person and plays it the proven way (a gesture on the upper body, a clip over the whole body, a scenario, a line in their voice, a look or a turn), holds the animation set while it plays, lets it go after, and fails soft if the game hasn't got it. Thirty-four candidate clips from the game's own encounters join the table marked not yet seen, and stay out of use until a log has shown them playing. F7 `TEST perform:`.

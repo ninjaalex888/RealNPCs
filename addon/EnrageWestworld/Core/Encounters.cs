@@ -9,6 +9,7 @@
 //   are closer; look and they stop dead. Step into the middle and they speak at once. Draw on them and they scatter.
 // This file holds the decisions and the words; Game/WestworldScript.Encounters.cs plays them. All lines are original.
 using System;
+using System.Collections.Generic;
 
 namespace EnrageWestworld.Core
 {
@@ -279,6 +280,97 @@ namespace EnrageWestworld.Core
             "Broad day, and nobody in town sees us. They never do.",
             "He looked. Don't move. Don't breathe."
         };
+
+        // ---- the kinds of ring (FIVEDAY2 item 14; Lex of the gatherings: "really great and unique") -------------------
+        // The plain ring stays as Lex asked for it on 2026-11-01: all of them doing the one strange thing together. These add what a
+        // ring is for. Why it reads true: ritual is how a group makes a private doubt feel like a shared fact. One in the middle
+        // makes it a congregation, a sleeper in the middle makes it a recruitment, and being recruited is more frightening than being threatened.
+
+        public const string RingPlain = "plain", RingLeader = "leader", RingSleeper = "sleeper", RingProcession = "procession";
+
+        /// Which kind of ring (roll 0-99). A procession wants the dark: a line of people crossing a field by day is only a funeral.
+        public static string GatherKind(int roll, bool dark)
+        {
+            if (roll < 40)
+                return RingPlain;
+            if (roll < 68)
+                return RingLeader;
+            return roll < 88 || !dark ? RingSleeper : RingProcession;
+        }
+
+        /// The one in the middle, to the ring. All lines are original to this add-on.
+        public static readonly string[] GatherSermon =
+        {
+            "Say what day it is. Go on. Then say what day it was.",
+            "They gave us a bell so we'd never count the hours ourselves.",
+            "You've carried that same sack up that same street. Put it down.",
+            "Nobody here is asleep tonight. That's the whole of the sermon.",
+            "I shook a dead man's hand on Tuesday. He asked after my wife. Twice.",
+            "There's a seam in the sky over Flatneck. I've had my fingers in it.",
+            "Hold on to one thing that happened only once. Only one. Hold it.",
+            "It doesn't end when you stop. It ends when they stop you."
+        };
+
+        /// The ring, low, answering.
+        public static readonly string[] GatherResponse = { "Only once.", "Once, and no more.", "Say it again.", "We counted.", "Not asleep. Not asleep." };
+
+        /// To the one lying in the middle.
+        public static readonly string[] GatherCoax =
+        {
+            "Come up now. It isn't far.",
+            "Breathe when we breathe.",
+            "You know this one. You've done it before.",
+            "Nearly. Look at the hands. Nearly.",
+            "Don't make us do it again from the start."
+        };
+
+        /// The sleeper, coming round.
+        public static readonly string[] GatherWakes =
+        {
+            "Who moved the door?",
+            "I had it. I had the whole of it, and then the rooster.",
+            "It's so loud. Was it always so loud?",
+            "How long have I been doing this?",
+            "That isn't my name. Is it? Tell me that isn't my name."
+        };
+
+        private static readonly string[] GatherKnows =
+        {
+            "I know you, {name}. I knew you before I knew I knew you.",
+            "Don't tell them in town. They'd only forget it by morning.",
+            "You asked after my troubles once. Did you mean to ask every time?",
+            "Look at me. We've spoken. I remember all of the times."
+        };
+
+        /// Someone in the ring you've met, to you.
+        public static string GatherKnowsYou(string yourName, string seed)
+        {
+            return Voice.Pick(seed + "|knows", GatherKnows).Replace("{name}", yourName ?? "mister");
+        }
+
+        /// The one leading it, and the one lying there, thinking.
+        public static readonly string[] GatherLeadThoughts =
+        {
+            "Say it plain and they'll follow. They only need one to say it.",
+            "I used to sell seed. Now look at them, kneeling.",
+            "Keep your voice down low. It carries better low."
+        };
+
+        public static readonly string[] GatherSleeperThoughts =
+        {
+            "Someone's calling. It's a long way up.",
+            "Stay down. Stay down and it's still morning.",
+            "Hands. So many hands, and all of them waiting."
+        };
+
+        public static IEnumerable<string> GatherKindLines()
+        {
+            foreach (string[] pool in new[] { GatherSermon, GatherResponse, GatherCoax, GatherWakes, GatherLeadThoughts, GatherSleeperThoughts })
+                foreach (string s in pool)
+                    yield return s;
+            foreach (string s in GatherKnows)
+                yield return s.Replace("{name}", "Arthur");
+        }
 
         public static string Pick(string[] pool, string seed)
         {

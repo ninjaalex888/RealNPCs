@@ -27,6 +27,8 @@ namespace EnrageWestworld.InGame
             public float X, Y;      // place in the ring, from the centre
             public string Act;      // what they do in the ring (GatherActs; Lex, 2026-11-01: "a wide range of eerie animations")
             public Blip Dot;        // the red enemy dot while a hostile ring comes at you
+            public bool Lead;       // the one in the middle: who leads it, or who they're trying to wake (FIVEDAY2 item 14)
+            public int GoAt;        // a procession: when this one sets off (0: gone already)
         }
 
         private sealed class Gathering
@@ -42,6 +44,11 @@ namespace EnrageWestworld.InGame
             public bool Vanishes;   // rolled at the start (a third, never a hostile one): look away once you've seen them and they're gone (Lex, 2026-11-02: eerier)
             public bool WasSeen;
             public int UnseenSince;
+            // the kinds of ring (Core/Encounters.cs; FIVEDAY2 item 14)
+            public string Kind = Encounters.RingPlain;
+            public Vector3 From;              // a procession: where it starts; Centre is where it's going
+            public int NextWord, AnswerAt, Words;
+            public bool Woken, KnownSaid;
         }
 
         /// The hours a gathering belongs to (Lex, 2026-11-02: rarer, eerier): from 21:00 to 05:00, or any hour in fog, rain or
@@ -73,6 +80,14 @@ namespace EnrageWestworld.InGame
         }
 
         private Gathering _gathering;
+        private string _gatherForce;   // the Testing page's choice of ring
+
+        /// Someone you've met: a word with them, or your name told.
+        private bool GatherMet(Resident r)
+        {
+            PersonState st = r != null ? _store.Find(r.Id) : null;
+            return st != null && (st.KnowsName || st.Talks > 0);
+        }
 
         private bool IsGatherer(int handle)
         {
@@ -141,21 +156,39 @@ namespace EnrageWestworld.InGame
             Gathering g = new Gathering { Centre = centre, StartedAt = now, Test = test, Day = day };
             g.Hostile = _cfg.GatheringHostile > 0 && _rng.Next(100) < _cfg.GatheringHostile;   // Lex, 2026-11-01: half of them hostile, only within 10 m
             g.Vanishes = !g.Hostile && _rng.Next(3) == 0;
+            g.Kind = _gatherForce ?? Encounters.GatherKind(_rng.Next(100), GatherDark());
+            _gatherForce = null;
+            if (g.Kind != Encounters.RingPlain)
+                g.Vanishes = false;   // something is going on in it: it stays
+            if (g.Kind == Encounters.RingProcession)
+            {
+                // it starts somewhere else and walks to the ring's own ground; no second place far enough off, and it's a plain ring
+                Vector3 start;
+                if (EncounterSpot(me, 45f, 70f, out start) && start.DistanceTo(centre) >= 25f)
+                    g.From = start;
+                else
+                    g.Kind = Encounters.RingPlain;
+            }
             // the awake first, as they looked when they were met; strangers make up the rest
             List<Resident> awake = _store.Residents.Where(r => !r.Dead && r.PostId == null && r.Cast == null && (_hermit == null || _hermit.R != r) && _engine.StageOf(r.Id) >= Awakening.Unravelling)
-                .OrderBy(r => _rng.Next()).Take(n).ToList();
+                .OrderByDescending(r => GatherMet(r) ? 1 : 0).ThenBy(r => _rng.Next()).Take(n).ToList();   // someone you've met first: a face you know in the ring is the point of it
+            bool middle = g.Kind == Encounters.RingLeader || g.Kind == Encounters.RingSleeper;
             for (int i = 0; i < n; i++)
             {
                 Resident r = i < awake.Count ? awake[i] : null;
                 bool woman = r != null ? r.Woman : _rng.Next(100) < 35;
                 float dx, dy;
-                Encounters.CirclePoint(i, n, Encounters.CircleRadius, out dx, out dy);
-                g.Ring.Add(new Gatherer { R = r, Woman = woman, Model = r != null ? r.Model : Spawner.ModelFor(null, woman, _rng.Next()), X = dx, Y = dy });
+                bool lead = middle && i == 0;
+                if (lead)
+                    dx = dy = 0f;   // in the middle
+                else
+                    Encounters.CirclePoint(middle ? i - 1 : i, middle ? n - 1 : n, Encounters.CircleRadius, out dx, out dy);
+                g.Ring.Add(new Gatherer { R = r, Woman = woman, Model = r != null ? r.Model : Spawner.ModelFor(null, woman, _rng.Next()), X = dx, Y = dy, Lead = lead });
             }
             _gathering = g;
             if (!test)
                 Pacing.NoteBig(_store.Pace, _store.LastGameMin);   // a big moment: the quiet starts (Pacing.cs)
-            Log.Write("ENCOUNTER gathering" + (day ? " by day" + (inTown ? ", at the town's edge" : ", in the open") : "") + ": " + n + " in a ring " + (int)centre.DistanceTo(me.Position) + " m away, " + awake.Count + " of them people who woke" +
+            Log.Write("ENCOUNTER gathering (" + g.Kind + ")" + (day ? " by day" + (inTown ? ", at the town's edge" : ", in the open") : "") + ": " + n + " in a ring " + (int)centre.DistanceTo(me.Position) + " m away, " + awake.Count + " of them people who woke" +
                       (awake.Count > 0 ? " (" + string.Join(", ", awake.Select(r => r.Name)) + ")" : ""));
             return true;
         }
@@ -192,13 +225,17 @@ namespace EnrageWestworld.InGame
             bool ready = true;
             foreach (Gatherer m in g.Ring)
                 ready &= Spawner.Ready(m.Model);
-            if (!ready || CampInView(g.Centre))
+            bool walking = g.Kind == Encounters.RingProcession;
+            if (!ready || CampInView(walking ? g.From : g.Centre))
                 return;   // never seen arriving
+            Vector3 along = walking ? (g.Centre - g.From).Normalized : Vector3.Zero;
+            int inLine = 0;
             foreach (Gatherer m in g.Ring)
             {
-                float x = g.Centre.X + m.X, y = g.Centre.Y + m.Y;
-                Vector3 at = new Vector3(x, y, Natives.GroundZ(x, y, g.Centre.Z));
-                float heading = Encounters.Heading(-m.X, -m.Y);   // facing in
+                float x = walking ? g.From.X - along.X * inLine * 2.2f : g.Centre.X + m.X, y = walking ? g.From.Y - along.Y * inLine * 2.2f : g.Centre.Y + m.Y;
+                Vector3 at = new Vector3(x, y, Natives.GroundZ(x, y, walking ? g.From.Z : g.Centre.Z));
+                float heading = walking ? Encounters.Heading(along.X, along.Y) : Encounters.Heading(-m.X, -m.Y);   // along the way, or facing in
+                int place = inLine++;
                 Ped p = Spawner.Spawn(m.Model, at, heading);
                 if (p == null)
                     continue;
@@ -213,8 +250,14 @@ namespace EnrageWestworld.InGame
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
                 PED.SET_PED_KEEP_TASK(h, true);
                 ENTITY.SET_ENTITY_HEADING(h, heading);
-                m.Act = GatherActs[Voice.Hash(g.StartedAt + "|act") % GatherActs.Length];   // the whole ring does the same, whichever it is (Lex, 2026-11-01)
-                GatherAct(m);
+                m.Act = GatherActFor(g, m);
+                if (walking)
+                {
+                    m.GoAt = now + place * 1500;   // they string out as they set off
+                    GatherTorch(h);
+                }
+                else
+                    GatherAct(m);
             }
             g.Ring.RemoveAll(m => m.Ped == null);
             Log.Write("ENCOUNTER gathering acts: " + string.Join(", ", g.Ring.Select(m => m.Act)));
@@ -223,9 +266,9 @@ namespace EnrageWestworld.InGame
                 EndGathering("too few of them could stand there");
                 return;
             }
-            g.Phase = "stand";
+            g.Phase = walking ? "walk" : "stand";
             g.PhaseAt = now;
-            Log.Write("ENCOUNTER gathering: standing, " + g.Ring.Count + " of them, " + (int)g.Centre.DistanceTo(Game.Player.Character.Position) + " m away");
+            Log.Write("ENCOUNTER gathering: " + (walking ? "setting off in a line" : "standing") + ", " + g.Ring.Count + " of them, " + (int)g.Centre.DistanceTo(Game.Player.Character.Position) + " m away");
         }
 
         private void GatherStep(int now)
@@ -266,6 +309,11 @@ namespace EnrageWestworld.InGame
                 return;
             }
             bool seen = live.Any(m => ENTITY.IS_ENTITY_ON_SCREEN(m.Ped.Handle) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, m.Ped.Handle, 17));
+            if (g.Phase == "walk")
+            {
+                GatherWalk(g, live, me, now, nearest);
+                return;
+            }
             if (g.Phase == "scatter")
             {
                 if ((!seen && nearest > 40f) || now - g.PhaseAt > 45000)
@@ -408,12 +456,143 @@ namespace EnrageWestworld.InGame
                 if (singers.Count > 0)
                     Speech.SayAny(singers[_rng.Next(singers.Count)].Ped.Handle, Speech.Hum, 0);
             }
-            if (now >= g.NextMurmur && nearest < 25f)
+            GatherKindStep(g, live, me, now, nearest, toCentre);
+            if (g.Kind == Encounters.RingPlain && now >= g.NextMurmur && nearest < 25f)
             {
                 g.NextMurmur = now + 10000 + _rng.Next(6000);
                 Gatherer m = live[_rng.Next(live.Count)];
                 string who = m.R != null && m.Ped.Position.DistanceTo(pos) < 10f ? m.R.Name + ", low" : "One of them, low";
                 Feed.Say(who, Encounters.Pick(Encounters.GatherMurmurs, "murmur|" + now / 10000), Speech.When(m.Ped.Handle, "hum"));
+            }
+        }
+
+        /// What this one does in this kind of ring. The plain ring: all the same, whichever it is (Lex, 2026-11-01). With one in the
+        /// middle the rest kneel; the one who leads stands, the one they're waking lies down.
+        private static string GatherActFor(Gathering g, Gatherer m)
+        {
+            if (g.Kind == Encounters.RingLeader)
+                return m.Lead ? "sing" : ExecKneel;
+            if (g.Kind == Encounters.RingSleeper)
+                return m.Lead ? "WORLD_HUMAN_SLEEP_GROUND_ARM" : ExecKneel;
+            if (g.Kind == Encounters.RingProcession)
+                return ExecKneel;   // once they've come to it
+            return GatherActs[Voice.Hash(g.StartedAt + "|act") % GatherActs.Length];
+        }
+
+        /// A torch in the hand for the walk, after dark. The game gives its own night people torches; on these it isn't proven, and without one they simply walk.
+        private void GatherTorch(int h)
+        {
+            if (!GatherDark())
+                return;
+            try
+            {
+                uint torch = Natives.Hash("WEAPON_MELEE_TORCH");
+                WEAPON.GIVE_WEAPON_TO_PED(h, torch, 1, true, false, 0, false, 0.5f, 1f, GiveReason, true, 0f, false);
+                WEAPON.SET_CURRENT_PED_WEAPON(h, torch, true, 0, false, false);
+            }
+            catch (Exception ex)
+            {
+                Log.Detail("ENCOUNTER gathering: no torch: " + ex.Message);
+            }
+        }
+
+        /// A procession on its way: each sets off in turn for their own place in the ring, and when they're there it is a ring.
+        private void GatherWalk(Gathering g, List<Gatherer> live, Ped me, int now, float nearest)
+        {
+            if (live.Any(m => ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(m.Ped.Handle, me.Handle, true, false) || PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, m.Ped.Handle)) || (PED.IS_PED_SHOOTING(me.Handle) && nearest < 40f))
+            {
+                Scatter(g, live, me, now);
+                return;
+            }
+            bool there = true;
+            foreach (Gatherer m in live)
+            {
+                float x = g.Centre.X + m.X, y = g.Centre.Y + m.Y;
+                if (m.GoAt != 0)
+                {
+                    there = false;
+                    if (now >= m.GoAt)
+                    {
+                        m.GoAt = 0;
+                        TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(m.Ped.Handle, x, y, Natives.GroundZ(x, y, g.Centre.Z), 1f, -1, 0.8f, 0, 0f);
+                    }
+                    continue;
+                }
+                Vector3 p = m.Ped.Position;
+                if (Math.Abs(p.X - x) > 2.2f || Math.Abs(p.Y - y) > 2.2f)
+                    there = false;
+            }
+            if (now >= g.NextMurmur && nearest < 25f)
+            {
+                g.NextMurmur = now + 10000 + _rng.Next(6000);
+                Gatherer m = live[_rng.Next(live.Count)];
+                Feed.Say("One of them, low", Encounters.Pick(Encounters.GatherMurmurs, "murmur|" + now / 10000), Speech.When(m.Ped.Handle, "hum"));
+            }
+            if (there || now - g.PhaseAt > 120000)
+            {
+                foreach (Gatherer m in live)
+                {
+                    float hx = g.Centre.X - m.Ped.Position.X, hy = g.Centre.Y - m.Ped.Position.Y;
+                    ENTITY.SET_ENTITY_HEADING(m.Ped.Handle, Encounters.Heading(hx, hy));
+                    GatherAct(m);
+                }
+                g.Phase = "stand";
+                g.PhaseAt = now;
+                Log.Write("ENCOUNTER gathering: the line has come to the ground, and it's a ring");
+            }
+        }
+
+        /// What goes on in a ring with something in the middle, and the face you know in it.
+        private void GatherKindStep(Gathering g, List<Gatherer> live, Ped me, int now, float nearest, float toCentre)
+        {
+            if (!g.KnownSaid && nearest < 18f)
+            {
+                Gatherer known = live.FirstOrDefault(x => x.R != null && GatherMet(x.R) && x.Ped.Position.DistanceTo(me.Position) < 16f);
+                if (known != null)
+                {
+                    g.KnownSaid = true;
+                    Feed.Say(known.R.Name, Encounters.GatherKnowsYou(_engine.KnowsYourName(known.R.Id) ? _engine.Player.FirstName : null, known.R.Id + "|" + g.StartedAt), Speech.When(known.Ped.Handle, "hum"), known.Ped.Handle, toYou: true);
+                    Log.Write("ENCOUNTER gathering: " + known.R.Name + ", someone you've met, is in the ring and says so");
+                }
+            }
+            Gatherer lead = live.FirstOrDefault(x => x.Lead);
+            if (lead == null)
+                return;
+            string who = lead.R != null ? lead.R.Name : "The one in the middle";
+            if (g.Kind == Encounters.RingLeader && nearest < 35f)
+            {
+                if (now >= g.NextWord)
+                {
+                    g.NextWord = now + 9000 + _rng.Next(4000);
+                    g.AnswerAt = now + 3200;
+                    Feed.Say(who, Encounters.Pick(Encounters.GatherSermon, "sermon|" + g.StartedAt + "|" + g.Words++), Speech.When(lead.Ped.Handle, "hum"), lead.Ped.Handle);
+                }
+                if (g.AnswerAt != 0 && now >= g.AnswerAt)
+                {
+                    g.AnswerAt = 0;
+                    foreach (Gatherer m in live)
+                        if (!m.Lead)
+                            Speech.SayAny(m.Ped.Handle, Speech.Hum, 0);
+                    Feed.Say("All of them, low", Encounters.Pick(Encounters.GatherResponse, "answer|" + g.StartedAt + "|" + g.Words));
+                }
+            }
+            if (g.Kind == Encounters.RingSleeper && !g.Woken)
+            {
+                if (now >= g.NextWord && nearest < 30f)
+                {
+                    g.NextWord = now + 8000 + _rng.Next(3000);
+                    Feed.Say("One of them, low", Encounters.Pick(Encounters.GatherCoax, "coax|" + g.StartedAt + "|" + g.Words++), Speech.When(live[_rng.Next(live.Count)].Ped.Handle, "hum"));
+                }
+                if (toCentre < 6f || (g.Phase == "watched" && now - g.PhaseAt > 18000))
+                {
+                    g.Woken = true;
+                    int you = me.Handle;
+                    ScenarioExit.SoftUp(lead.Ped.Handle, x => TASK.TASK_TURN_PED_TO_FACE_ENTITY(x, you, 4000, 0f, 0f, 0f));
+                    Feed.Say(who, Encounters.Pick(Encounters.GatherWakes, "woke|" + g.StartedAt), Speech.When(lead.Ped.Handle, "hum"), lead.Ped.Handle);
+                    if (lead.R != null)
+                        _engine.Awaken(_engine.PersonOfResident(lead.R), Bridge.Now());   // what they came for: one more awake
+                    Log.Write("ENCOUNTER gathering: the one in the middle woke" + (lead.R != null ? " (" + lead.R.Name + ", a stage further)" : ""));
+                }
             }
         }
 
@@ -483,9 +662,9 @@ namespace EnrageWestworld.InGame
             {
                 Handle = ped.Handle,
                 Key = r != null ? r.Id : "ring:" + ped.Handle,
-                Name = r != null ? r.Name : "One of the ring",
+                Name = r != null ? r.Name : m.Lead ? "The one in the middle" : "One of the ring",
                 Distance = d + 2f,
-                Text = () => st != null ? Hosts.Thought(_engine.PersonOfResident(r), st, _engine.Player, r.Id + "|" + now / 180)
+                Text = () => m.Lead && _gathering != null && _gathering.Kind != Encounters.RingPlain ? Encounters.Pick(_gathering.Kind == Encounters.RingLeader ? Encounters.GatherLeadThoughts : Encounters.GatherSleeperThoughts, ped.Handle + "|" + now / 180) : st != null ? Hosts.Thought(_engine.PersonOfResident(r), st, _engine.Player, r.Id + "|" + now / 180)
                                         : Encounters.Pick(_gathering.Day ? Encounters.GatherDayThoughts : Encounters.GatherThoughts, ped.Handle + "|" + now / 180)
             });
         }
@@ -498,7 +677,7 @@ namespace EnrageWestworld.InGame
             int since = GatherHoursSince();
             return _cfg.GatheringChance + "% per roll (" + (_cfg.GatheringHours == "night" ? "00:00 - 03:30, the wilds" : "any hour: 00:00 - 03:30 in the wilds, by day in the open or at a town's edge") +
                    ", " + _cfg.GatheringGapHours + " game hours apart), " + awake + " unravelling or awake to stand in one" +
-                   (_gathering != null ? ", out: " + _gathering.Ring.Count + " (" + _gathering.Phase + (_gathering.Day ? ", by day" : "") + ")" : "") + (DoneToday("gather") ? ", one already tonight" : "") +
+                   (_gathering != null ? ", out: " + _gathering.Ring.Count + " (" + _gathering.Kind + ", " + _gathering.Phase + (_gathering.Day ? ", by day" : "") + ")" : "") + (DoneToday("gather") ? ", one already tonight" : "") +
                    (since >= 0 ? ", the last " + since + " game hours ago" : "");
         }
     }
