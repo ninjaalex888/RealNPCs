@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 323;
+        public const int CurrentVersion = 324;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -278,6 +278,8 @@ namespace EnrageWestworld.Core
         public int CalloutsArthurChance = 30;
         public int CalloutsArthurDraw = 10;   // percent: an armed hothead calling you out over blood draws instead of putting up fists (0 never)
         public int HogtiedTurnsOnYou = 25;   // [Encounters] percent: one you cut loose pulls a knife on you instead of thanking you (violence against Arthur, on as it comes; Lex, 2026-11-01); settings version 189
+        public bool Wayside = true;          // [Encounters] things to come across on the road: fights, prisoners, trouble, camps, what's left after (Core/Wayside*.cs; settings version 324)
+        public int WaysideChance = 25;       // ... percent a roll, among the other encounters
         public bool AlliesHelp = true;       // [Encounters] attacked within sight of people who think well of you, some of them come to your aid (Core/Allies.cs; a player's request, 2026-11-03; settings version 197)
         public int AlliesMetres = 40;        // ... from within this many metres
         public int AlliesMost = 3;           // ... at most this many at once
@@ -951,6 +953,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 324)
+                    log?.Invoke("Settings: new in this version: [Encounters] Wayside (on), WaysideChance (25): things to come across out on the road.");
                 if (s.SettingsVersion < 323)
                     log?.Invoke("Settings: new in this version: [Mind] ControlRing (on), ControlRingMetres (22), ControlRingMost (12): the people near you kept at what their minds choose, less as you ride faster, drawn in if it costs too much.");
                 if (s.SettingsVersion < 322)
@@ -1348,6 +1352,7 @@ namespace EnrageWestworld.Core
             LawShootsThieves = Math.Max(0, Math.Min(100, LawShootsThieves));
             ActThoughtEachSeconds = Math.Max(20, Math.Min(600, ActThoughtEachSeconds));
             ActThoughtGapSeconds = Math.Max(0, Math.Min(120, ActThoughtGapSeconds));
+            WaysideChance = Math.Max(0, Math.Min(100, WaysideChance));
             ControlRingMetres = Math.Max(Ring.LeastMetres, Math.Min(Ring.MostMetres, ControlRingMetres));
             ControlRingMost = Math.Max(Ring.LeastHeld, Math.Min(Ring.MostHeld, ControlRingMost));
             HeldRingMetres = Math.Max(4f, Math.Min(20f, HeldRingMetres));
@@ -1767,6 +1772,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("CalloutsArthur = " + B(CalloutsArthur) + "   ; by day in a town, out of doors, one of the people near with something against you (you struck or robbed them, they saw you kill, word of your thieving reached them, or you soured them) walks up and says it to your face. Walk off past 12 m and they call you a coward; stay and most put up their fists (fighting them is self-defence); hold a gun on them and they back off. Once a day each");
             b.AppendLine("CalloutsArthurChance = " + CalloutsArthurChance + "   ; percent on each encounter roll while one may happen (five real minutes at least between them)");
             b.AppendLine("CalloutsArthurDraw = " + CalloutsArthurDraw + "   ; percent: an armed hothead calling you out over blood (a beating, a killing, an old grudge) draws on you instead (0 never)");
+            b.AppendLine("Wayside = " + B(Wayside) + "   ; things to come across out of the towns: men fighting by the road, and more: their own people, staged out of your sight, and you can step in or ride on");
+            b.AppendLine("WaysideChance = " + WaysideChance + "   ; percent a roll, among the other encounters (0 to 100)");
             b.AppendLine("AlliesHelp = " + B(AlliesHelp) + "   ; attacked by anyone, the law too, within sight of people who think well of you, some of them come to your aid: someone who owes you (the bar at AlliesLiking or more, someone you saved) whatever the odds, and of the rest the brave and the hot first, cowards never, a woman only against fists, and against a gun only those who carry one (they're given a revolver for it and keep it after). They shout as they come, and have a word with you after; they remember it, and think better of you for it");
             b.AppendLine("AlliesMetres = " + AlliesMetres + "   ; from within this many metres of you (10 to 80)");
             b.AppendLine("AlliesMost = " + AlliesMost + "   ; at most this many with you at once (1 to 6)");

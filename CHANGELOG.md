@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Things to come across on the road, and fights away from town** (`[Encounters] Wayside`, on; `WaysideChance` 25; settings version 324; FIVEDAY2 item 16; a Testing row for each). A new kind of encounter out of the towns, staged from a table of scenes so each one is its people and its words. First, fights: two teamsters coming to blows over the road, with a couple watching; hunters over a kill; a card game going wrong at a camp. Nobody dies of a fist fight. Come near and it plays out; within 10 m, J lets you part them, bet on it or leave them to it; draw on them and they run, or the armed come at you.
+  - Why it reads true: out of town nobody has to back down for the sake of who's looking, so words become fists very fast, and a stranger stopping to watch changes who's winning.
+  - `[Scenes] FightCrowds` stays off, as Lex asked on 2026-11-01. A fight out here brings its own watchers.
+
 - **Executions can turn** (with `[Encounters] Executions`; FIVEDAY2 item 15; three Testing rows). The road execution you can stop stays. Now one of the men may refuse at the last moment: sometimes the other lets it go too, and sometimes he finishes it alone. Someone may come running up the road with what's owed on a debt or a feud. A few may have come to watch, muttering, and they run when the shooting starts. And after a killing, someone who knew him may come for the body and kneel by it. Someone let go is no doing of yours, and the town hears he came home on foot.
   - Why it reads true: killing a man who's begging is hard, and most who hold the gun have never done it. A few who came to watch make the worst of it, because nobody ever thinks it's theirs to stop.
 

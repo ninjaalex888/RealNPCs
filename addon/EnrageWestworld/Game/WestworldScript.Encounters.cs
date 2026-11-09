@@ -47,7 +47,7 @@ namespace EnrageWestworld.InGame
             Safe("encounters", _aEncounters);
         }
 
-        private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null || _exec != null || _visitor != null || _traveller != null || _campfire != null || _supper != null || _wagonScene != null || StagedLive; } }
+        private bool EncounterLive { get { return _wayside != null || _crying != null || _hermit != null || _gathering != null || _exec != null || _visitor != null || _traveller != null || _campfire != null || _supper != null || _wagonScene != null || StagedLive; } }
 
         /// What's going on, for the log and the stalker key.
         private string EncounterWhat
@@ -58,6 +58,8 @@ namespace EnrageWestworld.InGame
                     return "the crying woman is out";
                 if (_wagonScene != null)
                     return "a wagon stands on the road with a wheel off";
+                if (_wayside != null)
+                    return "something is going on out by the road";
                 if (_visitor != null)
                     return "a figure is abroad in the dark";
                 if (_traveller != null)
@@ -112,6 +114,8 @@ namespace EnrageWestworld.InGame
                 WagonSceneStep(now);   // a wagon with a wheel off (WestworldScript.WagonScene.cs; roadmap 32)
             if (_callYou != null)
                 CallYouStep(now);
+            if (_wayside != null)
+                WaysideStep(now);   // something to come across out on the road (WestworldScript.Wayside.cs)
             StagedChecksStep(now);
             VisitorBodyStep();   // a body left behind goes once nobody can see (WestworldScript.Visitor.cs)
             HermitStep(now);   // a hermit at his camp, when you come near one
@@ -173,7 +177,7 @@ namespace EnrageWestworld.InGame
         }
 
         private int _encounterTurn;
-        private const int EncounterKinds = 13;   // the eight before NIGHT4 item 4, then the street callout, the husband's temper, the hogtied captive, the callout at you, and the wagon with a wheel off (roadmap 32)
+        private const int EncounterKinds = 14;   // the eight before NIGHT4 item 4, then the street callout, the husband's temper, the hogtied captive, the callout at you, and the wagon with a wheel off (roadmap 32)
 
         /// The kinds that happen in a town's street among the people already there (they don't wait on the Director's scene).
         private static bool StreetKind(int kind)
@@ -252,6 +256,16 @@ namespace EnrageWestworld.InGame
                         return false;
                     StartTraveller(now);   // Pacing notes it once he's on the road (TravellerSpawn)
                     return true;
+                case 13:
+                    if (!_cfg.Wayside || _wayside != null)
+                        return false;
+                    not = WaysideNotNow();
+                    if (not != null)
+                    {
+                        notNow.Add("a thing beside the road: " + not);
+                        return false;
+                    }
+                    return EncounterRoll("a thing beside the road", _cfg.WaysideChance) && StartWayside(now, false);
                 case 12:
                     if (!_cfg.WagonWheel || _wagonScene != null)
                         return false;
@@ -378,6 +392,7 @@ namespace EnrageWestworld.InGame
                 case "traveller": return _traveller != null;
                 case "supper": return _supper != null;
                 case "wagonscene": return _wagonScene != null;
+                case "wayside": return _wayside != null;
                 case "campfire": return _campfire != null;
                 case "gathering": return _gathering != null;
                 case "callout2": return _streetCallout != null;
@@ -393,6 +408,7 @@ namespace EnrageWestworld.InGame
         {
             asked = false;
             string off = !_cfg.Encounters ? "Encounters are off ([Encounters] Encounters)."
+                : kind == "wayside" ? (_cfg.Wayside ? null : "These are off ([Encounters] Wayside).")
                 : kind == "execution" ? (_cfg.Executions ? null : "Executions are off ([Encounters] Executions).")
                 : kind == "crying" ? (_cfg.CryingWoman ? null : "The crying woman is off ([Encounters] CryingWoman).")
                 : kind == "hermit" ? (_cfg.Hermits ? null : "Hermits are off ([Encounters] Hermits; they need West World on too).")
@@ -459,6 +475,10 @@ namespace EnrageWestworld.InGame
         {
             switch (kind)
             {
+                case "wayside":
+                    if (!StartWayside(now, true))
+                        Hint("Nothing of that kind here.", 5000);
+                    break;
                 case "execution":
                     StartExecution(now, true);
                     break;
@@ -947,6 +967,8 @@ namespace EnrageWestworld.InGame
         /// Ends whatever encounter is running (a mission started, the add-on is stopping).
         private void EndEncounters(string why)
         {
+            if (_wayside != null)
+                WaysideEnd(why);
             if (_pink != null)
                 EndPinkerton(why);
             if (_graveWalk != null)

@@ -168,6 +168,18 @@ namespace EnrageWestworld.InGame
                 skipped = "the reason, the chance meeting's wait and the rests (the trouble kinds keep their own settings)";
                 return FireScene(a.Id.Substring("scene:".Length), now, seed, out said);
             }
+            if (a.Id.StartsWith("wayside:", StringComparison.Ordinal))
+            {
+                _waysideForce = a.Id.Substring("wayside:".Length);
+                said = RequestEncounter("wayside", how, out asked);
+                if (!asked)
+                {
+                    _waysideForce = null;
+                    return said;
+                }
+                skipped = "the hour, the road, the roll and how lately you saw one (not the towns)";
+                return null;
+            }
             switch (a.Id)
             {
                 case "crying":

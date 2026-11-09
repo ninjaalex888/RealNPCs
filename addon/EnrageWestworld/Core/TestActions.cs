@@ -27,6 +27,13 @@ namespace EnrageWestworld.Core
             }
         }
 
+        // one row for each thing to come across on the road (Core/Wayside*.cs): the table is the list
+        static TestActions()
+        {
+            foreach (WaysideKind k in Wayside.All)
+                All.Add(new Entry("wayside:" + k.Id, "Encounters", k.Test, "TestWayside" + char.ToUpperInvariant(k.Id[0]) + k.Id.Substring(1) + "Key", needs: "out of the towns, somewhere open" + (k.OnRoad ? ", on a road" : "")));
+        }
+
         public static readonly string[] Groups = { "Encounters", "People", "Street scenes", "Tools" };
 
         public static readonly List<Entry> All = new List<Entry>

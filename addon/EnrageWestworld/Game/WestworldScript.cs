@@ -1308,6 +1308,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST vram: " + VramStatus());
 			Log.Write("TEST loads: " + Loads.Status());
 			Log.Write("TEST perform: " + PerformStatus());
+			Log.Write("TEST wayside: " + WaysideStatus());
 			Log.Write("TEST mind talks: " + MindTalkStatus());
 			Log.Write("TEST allies: " + AlliesStatus());
 			Log.Write("TEST greet liking: " + GreetLikingStatus());

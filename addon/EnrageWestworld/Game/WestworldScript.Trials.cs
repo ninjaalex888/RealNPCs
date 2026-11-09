@@ -40,7 +40,7 @@ namespace EnrageWestworld.InGame
             _eventPrompt = kind;
             _eventPromptFor = e;
             _eventPromptUntil = Game.GameTime + ms;
-            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : kind == NeighbourReward.Kind ? ": the reward" : kind == WantedWhich.Kind ? ": the poster" : ": the cell");
+            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == Wayside.Kind ? ": what you do" : kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : kind == NeighbourReward.Kind ? ": the reward" : kind == WantedWhich.Kind ? ": the poster" : ": the cell");
         }
 
         private void PromptClear()
@@ -610,6 +610,7 @@ namespace EnrageWestworld.InGame
             var menu = new LetterMenu { Mode = _eventPrompt };
             switch (_eventPrompt)
             {
+                case Wayside.Kind: menu.Rows = Wayside.Rows(Wayside.Of(_eventPromptFor.Extra), MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "On the road:"; break;   // (FIVEDAY2 items 16-20)
                 case "testify": menu.Rows = Trials.TestifyRows(); menu.Title = "To the court:"; break;
                 case "swear": menu.Rows = Trials.SwearRows(); menu.Title = "The sheriff's man:"; break;
                 case "show": menu.Rows = Shows.Rows(_eventPromptFor); menu.Title = "At the show:"; break;
@@ -642,6 +643,11 @@ namespace EnrageWestworld.InGame
             PromptClear();
             if (e == null)
                 return;
+            if (m.Mode == Wayside.Kind)
+            {
+                WaysideChoose(e, row.Id);   // WestworldScript.Wayside.cs
+                return;
+            }
             if (m.Mode == "testify")
             {
                 string what = row.Id.Substring("testify:".Length);
