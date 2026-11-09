@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **The hunt** (`[Stalkers] RevenantsHunt`, on; `RevenantHuntChance` 30; settings version 326; FIVEDAY2 item 13; Testing row "Someone you killed comes to kill you"). Someone you killed who has come back may now try to kill you, once they're within 25 m and they've stayed a while: likelier if they held something against you from before, if they begged, if they've been back before. It's self-defence, the same as anyone else coming at you. Word of them comes ahead of them: in the town you're in, someone will have been asking. Put them down and most stay down. If they get you, they've had what they came for.
+  - Why it reads true: what's unfinished is what comes back, and it doesn't come back to talk.
+
 - **Their own words** (with `[Stalkers] RevenantsMinds`; FIVEDAY2 item 12). Someone you killed says what they say from how they died and what they held against you: the AI model's words when it gave some and they pass the check every line of the model's is held to, written ones when it didn't. They aren't talkative.
 
 - **Someone you killed decides what to do about it** (`[Stalkers] RevenantsMinds`, on; settings version 325; FIVEDAY2 item 11). Someone who has come back used to go through the stalker's motions. Now what they do next (keep after you, stand where you can see them, close in and walk round you, come straight at you and stop short, or leave) is chosen from how they died and what they held against you first: by the AI model when it's on, by the rules when it isn't or it's slow. F7's `TEST revenant mind:` and the log's `REVENANT` lines say which it was.

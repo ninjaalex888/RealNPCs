@@ -62,6 +62,7 @@ namespace EnrageWestworld.Core
             new Entry("gathering:procession", "Encounters", "A gathering: a line walks to the ring", "TestGatherProcessionKey", needs: "West World; somewhere open with nobody near; torches after dark"),
             new Entry("stalker", "Encounters", "A stalker now", "StalkerKey", "]", needs: "outdoors", field: true),
             new Entry("stalkerhorse", "Encounters", "A stalker on horseback now", "TestStalkerHorseKey", needs: "outdoors; [Stalkers] StalkerRides for him to ride (stand still to bring him in, move to send him off)"),
+            new Entry("revenant", "Encounters", "Someone you killed comes to kill you", "TestRevenantKey", needs: "West World; outdoors; stand still a little, then let them come within 25 m"),
             new Entry("stalkeroutfit", "Encounters", "Stalker outfit: show the next candidate", "TestStalkerOutfitKey", needs: "out of the saddle; a man stands 4 m in front of you in the next model and preset (every preset of one model, then the next), the one before goes; the log and the hint give the two ini lines for [Stalkers] StalkerBlackModel and StalkerBlackOutfit"),
             // ---- people --------------------------------------------------------------------------------------------
             new Entry("wake", "People", "Wake the person you face one stage", "WakeKey", "Y", needs: "face someone a few steps off", field: true),

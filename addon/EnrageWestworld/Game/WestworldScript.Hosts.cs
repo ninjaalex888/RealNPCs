@@ -241,6 +241,7 @@ namespace EnrageWestworld.InGame
                             _stalkDueSince = now;   // still due: someone near may be turned by then
                             _stalkDueTest = _stalkerIsTest;
                         }
+                        RevenantReset();
                         _stalker = null;
                         _stalkerPendingUntil = 0;
                         _stalkerCooldown = now + waitMin * 60000;
@@ -289,6 +290,7 @@ namespace EnrageWestworld.InGame
                         return;
                     }
                 }
+                RevenantWord(gameMin);   // word of them ahead of them (item 13)
                 // someone you killed, back as a stalker: a West World thing
                 Fallen due = _store.Fallen.FirstOrDefault(f => !f.Done && f.ReturnAt > 0 && gameMin >= f.ReturnAt);
                 if (due != null)
@@ -541,6 +543,7 @@ namespace EnrageWestworld.InGame
             _stalkerIsTest = test;
             _stalker = new Stalker(f, label, woman, _cfg);
             _stalker.AtCamp = atCamp;
+            _stalker.OnHunt = p => MakeHostile(p, Game.GameTime);   // fighting them off is self-defence (Watch.cs)
             _stalker.Mounted = !atCamp && (_stalkerForceMounted || _cfg.StalkerHorse > 0 && _rng.Next(100) < (f != null && f.Held != null ? Math.Min(100, _cfg.StalkerHorse * 2) : _cfg.StalkerHorse));   // on horseback now and then (the Testing row forces one: FIVEDAY item 32c) (SIXDAY item 19); a revenant with a grudge from before rides out twice as often (item 22)
             _stalkerForceMounted = false;
             _stalkerPendingUntil = now + 25000;
@@ -594,10 +597,24 @@ namespace EnrageWestworld.InGame
         private void EndStalker(int now)
         {
             Fallen f = _stalker.Revenant;
+            bool hunted = _stalker.Hunted && !_stalker.LostYou, gotYou = _stalker.GotYou, test = _revTest;
+            RevenantReset();
             _stalker = null;
             _stalkerRecord = false;
             _stalkerCooldown = now + 60000;
             _nextStalkRoll = now + _cfg.StalkerEveryMinutes * 60000;   // the next roll counts from when this one ends
+            if (test)
+                return;   // the Testing row: nothing of it kept
+            if (f != null && hunted)
+            {
+                f.Returned++;
+                f.Done = gotYou || RevenantMind.StaysDown(f.Id + "|" + f.Returned);
+                if (!f.Done)
+                    f.ReturnAt = Bridge.Now() + 1440 * (3 + _rng.Next(4));
+                News("Revenant", RevenantMind.Over(f, gotYou, f.Id + "|" + f.Returned));
+                Log.Write("REVENANT " + (f.Name ?? f.Id) + ": " + (gotYou ? "got you" : "put down") + (f.Done ? ", and done" : ", and will be back"));
+                return;
+            }
             if (f != null)
             {
                 f.Returned++;

@@ -1251,6 +1251,7 @@ namespace EnrageWestworld.InGame
                 _stalker.Finish(false);
                 if (f != null && !f.Done)
                     f.ReturnAt = Bridge.Now() + 240;
+                RevenantReset();
                 _stalker = null;
                 _stalkerRecord = false;
                 _stalkerPendingUntil = 0;

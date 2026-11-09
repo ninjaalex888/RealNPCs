@@ -252,6 +252,11 @@ namespace EnrageWestworld.InGame
             int h = _ped.Handle;
             Vector3 me = _ped.Position, pp = player.Position;
             float dist = me.DistanceTo(pp);
+            if (_mode == Mode.Hunt)
+            {
+                HuntStep(player, dist, now);
+                return;
+            }
             bool onScreen = ENTITY.IS_ENTITY_ON_SCREEN(h);
             bool clear = ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(player.Handle, h, 17);
             bool watched = onScreen && clear && dist < 95f && Natives.Looking(me + new Vector3(0f, 0f, 1f), 28f);
@@ -608,6 +613,59 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
+        // ---- the hunt (FIVEDAY2 item 13): he came a long way for this. Turned on by [Stalkers] RevenantsHunt, and it's a fight like any other that someone started with you.
+        public Action<Ped> OnHunt;      // the script's way of marking him as an attacker
+        public bool Hunted { get; private set; }
+        public bool GotYou { get; private set; }
+        public bool LostYou { get; private set; }   // you got away: they didn't go down
+
+        private void StartHunt(Ped player, int now)
+        {
+            int h = _ped.Handle;
+            _mode = Mode.Hunt;
+            Hunted = true;
+            _nextOrder = 0;
+            if (Mounted)
+                Dismount(now);
+            Spawner.StandUp(h);
+            TASK.CLEAR_PED_TASKS(h, true, false);
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            _ped.GiveWeapon(eWeapon.RevolverCattleman, 60, eWeaponAttachPoint.PistolR, true);
+            OnHunt?.Invoke(_ped);
+            HuntOrder(player);
+            Log.Write("STALKER " + Label + " comes to kill you, " + (int)_ped.Position.DistanceTo(player.Position) + " m away");
+        }
+
+        private void HuntOrder(Ped player)
+        {
+            const int fightStyle = 16;
+            int target = player.Handle;
+            TASK.TASK_COMBAT_PED(_ped.Handle, target, 0, fightStyle);
+        }
+
+        /// You're dead with them after you. The script says so, since nothing steps a stalker while you're dead.
+        public void HadYou()
+        {
+            GotYou = true;
+            Finish(false);
+        }
+
+        private void HuntStep(Ped player, float dist, int now)
+        {
+            if (dist > 140f && !ENTITY.IS_ENTITY_ON_SCREEN(_ped.Handle))
+            {
+                LostYou = true;
+                Finish(true);
+                return;
+            }
+            if (now >= _nextOrder)
+            {
+                _nextOrder = now + 4000;
+                if (!PED.IS_PED_IN_COMBAT(_ped.Handle, player.Handle))
+                    HuntOrder(player);   // the game took him back: at you again
+            }
+        }
+
         /// Near enough, and free to be told what next (FIVEDAY2 item 11).
         public bool MayDecide { get { return !Done && _ped != null && _ped.Exists() && !_ped.IsDead && _mode != Mode.Flee && _mode != Mode.Hunt && _mode != Mode.Act; } }
 
@@ -641,6 +699,9 @@ namespace EnrageWestworld.InGame
                     break;
                 case RevenantMind.Leave:
                     StartFleeMounted(player);
+                    break;
+                case RevenantMind.Attack:
+                    StartHunt(player, now);
                     break;
                 default:
                     _mode = Mode.Follow;

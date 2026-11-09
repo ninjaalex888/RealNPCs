@@ -238,6 +238,7 @@ namespace EnrageWestworld.InGame
 			if (!InWorld())
 			{
 				WorldQuietAway();   // no look read until a while after the world runs again (WestworldScript.WorldQuiet.cs)
+				RevenantHadYou(Game.GameTime);   // nothing steps a stalker while you're dead (WestworldScript.RevenantMind.cs)
 				TrystInTheDark();
 				SupperInTheDark();   // the supper invitation's dark, likewise (WestworldScript.Supper.cs)
 				if (_recordFates.Count > 0 && Game.IsLoading)

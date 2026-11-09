@@ -11,9 +11,9 @@ namespace EnrageWestworld.Core
 {
     public static class RevenantMind
     {
-        public const string Follow = "follow", Stare = "stare", Circle = "circle", Rush = "rush", Leave = "leave";
+        public const string Follow = "follow", Stare = "stare", Circle = "circle", Rush = "rush", Leave = "leave", Attack = "attack";
         public const int ThinkEveryMs = 22000, AskWaitMs = 3500, MostAsks = 7;
-        public const float ReachMetres = 60f;
+        public const float ReachMetres = 60f, AttackMetres = 25f;
 
         private static readonly Dictionary<string, string> Words = new Dictionary<string, string>
         {
@@ -22,6 +22,7 @@ namespace EnrageWestworld.Core
             { Circle, "comes in close and walks round him" },
             { Rush, "comes straight at him, and stops a few steps short" },
             { Leave, "turns and goes, finished with him for now" },
+            { Attack, "goes for him, to kill him" },
         };
 
         public static string WordsOf(string id)
@@ -31,9 +32,11 @@ namespace EnrageWestworld.Core
         }
 
         /// What he might do now. Far off, keeping after him is all there is to do; close in, all of it. Once he's stayed a while, he may leave.
-        public static List<string> Menu(float metres, int asks)
+        public static List<string> Menu(float metres, int asks, bool hunt = false)
         {
             var m = new List<string> { Follow };
+            if (hunt && metres < AttackMetres && asks >= 2)
+                m.Add(Attack);
             if (metres < 45f)
                 m.Add(Stare);
             if (metres < 30f)
@@ -92,6 +95,41 @@ namespace EnrageWestworld.Core
             return Said.TryGetValue(what, out pool) ? Voice.Pick(seed + "|said", pool) : null;
         }
 
+        /// How likely he is to go for you, from the setting and what he has to hold against you (FIVEDAY2 item 13): someone with a grievance from before, someone who begged, someone back more than once.
+        public static int AttackChance(int setting, Fallen f)
+        {
+            if (f == null || setting <= 0)
+                return setting;
+            int c = setting + (f.Held != null ? 20 : 0) + (f.Begged ? 15 : 0) + (f.Headshot ? 5 : 0) + 10 * Math.Min(2, f.Returned);
+            return Math.Max(0, Math.Min(100, c));
+        }
+
+        /// As he comes.
+        public static string Attacks(Fallen f, string seed)
+        {
+            string name = f != null && f.Name != null ? f.Name : "me";
+            return Voice.Pick(seed + "|att", "Now you can do it twice.", "This time I've got the first shot.", "Say my name. Go on. Say it. It's " + name + ".", "I've had a long walk to do this.");
+        }
+
+        /// Word of him ahead of him: someone's been asking.
+        public static string AskingAfter(Fallen f, string town, string seed)
+        {
+            return Voice.Pick(seed + "|ask", "Somebody at " + town + " has been wanting to know where you are. Those who saw him don't care to describe him.", "Somebody at " + town + " swears they saw a dead man buy a ticket.", "A man was asking the way to you at " + town + " and left no name.");
+        }
+
+        /// He got what he came for, or you put him down again.
+        public static string Over(Fallen f, bool gotYou, string seed)
+        {
+            string who = f != null && f.Name != null ? f.Name : "Someone you killed";
+            return gotYou ? who + " has had what they came back for." : Voice.Pick(seed + "|over", who + " is down again.", who + " is dead, again. It may take, this time.");
+        }
+
+        /// Whether, put down again, he stays down.
+        public static bool StaysDown(string seed)
+        {
+            return Voice.Chance(seed + "|down", 60);
+        }
+
         /// Whether he says anything this time: he isn't talkative.
         public static bool Speaks(string seed)
         {
@@ -108,9 +146,11 @@ namespace EnrageWestworld.Core
         }
 
         /// The rules' choice from the same list, by how near he is and how many times he's been asked.
-        public static string Rules(List<string> menu, float metres, int asks, string seed)
+        public static string Rules(List<string> menu, float metres, int asks, string seed, int attackChance = 0)
         {
             int roll = Voice.Hash(seed + "|rev") % 100;
+            if (menu.Contains(Attack) && Voice.Chance(seed + "|attack", attackChance))
+                return Attack;
             if (menu.Contains(Leave) && roll < 12 + 6 * Math.Max(0, asks - 3))
                 return Leave;
             if (menu.Contains(Circle))

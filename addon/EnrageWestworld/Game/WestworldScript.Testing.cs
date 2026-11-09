@@ -258,6 +258,9 @@ namespace EnrageWestworld.InGame
                     return TestCastBring(Game.Player.Character, now, out said);   // WestworldScript.TestCast.cs
                 case "cast:go":
                     return TestCastGo(out said);
+                case "revenant":
+                    skipped = "when they're due, the roll, and how much they hold against you";
+                    return RevenantTest(now, out said);   // WestworldScript.RevenantMind.cs
                 case "stalkeroutfit":
                     skipped = "nothing: it only shows clothes";
                     return StalkerOutfitNext(now, out said);
