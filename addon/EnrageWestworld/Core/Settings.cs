@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 352;
+        public const int CurrentVersion = 353;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -172,6 +172,7 @@ namespace EnrageWestworld.Core
         public string LanguageModel = EnrageWestworld.Core.Language.DefaultModel;   // the model Ollama holds (ollama pull <name>): llama3.2:3b as it comes since settings version 249 (llama3.1:8b before; Lex, 2026-11-04)
 
         // [Display] - drawn on screen besides the ticker
+        public bool KnownOnMap;   // [Display] a grey mark with the name on the regulars you've met, near you in town. Off as it comes (TENHOUR R6; settings version 353)
         public bool CleanScreen;             // [Display] one switch for a clear screen: names, bars, the meter, mind cards, thoughts, the bar, the Around town box and the VRAM gauge all go, and come back as they were (players on Nexus, 2026-11: at least eight couldn't find how; settings version 322)
         public bool FeelingBars = true;
         public float FeelingBarsMetres = 15f;
@@ -984,6 +985,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 353)
+                    log?.Invoke("Settings: new in this version: [Display] KnownOnMap (off): the regulars you've met as named marks on the map.");
                 if (s.SettingsVersion < 352)
                     log?.Invoke("Settings: new in this version: [World] WeekColumn (on): a Sunday column in the paper of what really happened that week.");
                 if (s.SettingsVersion < 351)
@@ -1771,6 +1774,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("ScenesOnTickerMetres = " + F(ScenesOnTickerMetres) + "   ; what people say within this many metres shows as a subtitle (5-80)");
             b.AppendLine();
             b.AppendLine("[Display]");
+            b.AppendLine("KnownOnMap = " + B(KnownOnMap) + "   ; a grey mark with their name on the regulars you've met, near you in town, kept up to date every half a minute");
             b.AppendLine("CleanScreen = " + B(CleanScreen) + "   ; one switch for a clear screen: hides the names over heads, the feeling bars and the meter, the mind cards and wake tags, thoughts over heads, the ticker, the Around town box and the VRAM gauge (what people say to you, the Talk menu and this panel stay); false brings it all back, each as you had it");
             b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, fondness and anger, as enRAGE keeps them");
             b.AppendLine("FeelingBarsMetres = " + F(FeelingBarsMetres) + "   ; how close they must be (the nearest three in plain view get bars)");

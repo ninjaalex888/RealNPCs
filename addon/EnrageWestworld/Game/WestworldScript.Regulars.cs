@@ -34,10 +34,37 @@ namespace EnrageWestworld.InGame
             Safe("town regulars", _aRegulars);
         }
 
+        private int _knownMapAt;
+
+        /// [Display] KnownOnMap (TENHOUR R6; off as it comes): a grey mark with the name on the regulars you've met, near you in town, kept up to date every half a minute. The same marks F7 gives for a minute; these are only for those you've met.
+        private void KnownOnMapStep(int now)
+        {
+            if (!_cfg.KnownOnMap || _placeTown == null || !_cfg.Regulars || (now < _knownMapAt && _knownMapAt - now <= 30000))
+                return;
+            _knownMapAt = now + 30000;
+            ClearRegularBlips();
+            Ped me = Game.Player.Character;
+            Vector3 at = me.Position;
+            int until = now + 35000, n = 0;
+            foreach (KeyValuePair<int, ResBind> kv in _resBind)
+            {
+                if (n >= 12)
+                    break;
+                Resident r = kv.Value.R;
+                if (r == null || !r.Regular || r.Dead || !GatherMet(r) || !ENTITY.DOES_ENTITY_EXIST(kv.Key) || ENTITY.IS_ENTITY_DEAD(kv.Key) || new Ped(kv.Key).Position.DistanceTo(at) > 200f)
+                    continue;
+                Blip b = new Ped(kv.Key).AddBlip(BlipType.CompanionGray);
+                b.Label = r.Name;
+                _regBlips.Add(new KeyValuePair<Blip, int>(b, until));
+                n++;
+            }
+        }
+
         private void RegularsTick(int now)
         {
             if (_regBlips.Count > 0)
                 ExpireRegularBlips(now);
+            KnownOnMapStep(now);
             bool returners = ReturnersOn;
             if ((!_cfg.Regulars && !returners) || _engine == null || _store == null)
                 return;   // one scan serves the regulars and the returners (Run 3, item 5): either keeps it going
