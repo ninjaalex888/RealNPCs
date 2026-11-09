@@ -131,6 +131,12 @@ namespace EnrageWestworld.InGame
         private bool _mindReactFailed;
 
         /// A scene's people's temperaments (Reactions.Listener): enRAGE's or the resident's own, else null.
+        private bool CastWellOff(Ped p)
+        {
+            Someone s = p != null && p.Exists() ? SomeoneOf(p) : null;
+            return s != null && s.WellOff;
+        }
+
         private string CastTemper(Ped p)
         {
             Someone s = p != null && p.Exists() ? SomeoneOf(p) : null;

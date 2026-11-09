@@ -994,7 +994,8 @@ namespace EnrageWestworld.InGame
                 HostTier = TownHostTier(), HasCrowd = crowd != null, CWoman = crowd != null && !PED.IS_PED_MALE(crowd.Handle), OldTimer = Director.OldModel(a),
                 PlayerNear = a.Position.DistanceTo(me.Position) < 12f,
                 Names = SceneNames(a, b, crowd),
-                Tempers = new[] { CastTemper(a), CastTemper(b), crowd != null ? CastTemper(crowd) : null }
+                Tempers = new[] { CastTemper(a), CastTemper(b), crowd != null ? CastTemper(crowd) : null },
+                WellOff = new[] { CastWellOff(a), CastWellOff(b) }
             };
             cast.Knows = CastKnows(a, b, crowd);
             CastWarmth(a, b, crowd, cast);
@@ -1019,6 +1020,7 @@ namespace EnrageWestworld.InGame
             if (!_cfg.Standoffs) cast.Off.Add("standoff");
             if (!_cfg.Songs) cast.Off.Add("song");
             if (!_cfg.Temperance) cast.Off.Add("temperance");
+            if (!_cfg.MoneyTalk) cast.Off.Add("money");
             if (!_cfg.TallTales) cast.Off.Add("talltale");
             if (!_cfg.NightTales) cast.Off.Add("nighttale");   // the old tales after dark (Run 3, item 3)
             if (!_cfg.NewspaperTalk) cast.Off.Add("paper");

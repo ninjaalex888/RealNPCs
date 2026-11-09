@@ -91,6 +91,7 @@ namespace EnrageWestworld.Core
             return k < Warmth.Length ? Warmth[k] : 0;
         }
         public string[] Tempers = new string[3];            // A, B and C's temperaments (Reactions.Listener); null: none known
+        public bool[] WellOff;                              // A and B dressed like money (the money argument, Core/MoneyTalk.cs); null: unknown
         public int MindLead;                                // a chance meeting the minds chose: whose side a cold shoulder or a loan is on (0 A, 1 B; Scenes.Minds.cs)
         public string MindWorry;                            // ... and the asker's money worry (debt, bank, savings, cards)
         public string WakeLine;                             // a stage-four person's line that wakes (Core/WakeLines.cs), said as a talk closes
@@ -183,6 +184,7 @@ namespace EnrageWestworld.Core
                 case "rematch": return Rematch.AgainScene(c, seed);   // the beaten man's plan (Core/Rematch.cs): a brawl of its own words
                 case "shake": return Rematch.ShakeScene(c, seed);     // his hand offered, taken or refused
                 case "temperance": return Temperance.Make(c, seed);   // the pledge put to a drinker (Core/Temperance.cs)
+                case "money": return MoneyTalk.Make(c, seed, Voice.NowYear);   // gold against silver, or the banks in 1907 (Core/MoneyTalk.cs)
                 case "wages": return c.AWoman != c.BWoman ? Payday.Wages(c, seed) : null;   // payday: a woman meets a man for his pay (Core/Payday.cs)
                 case "propose": return Propose(c, seed);
                 case "cheat": return Cheat(c, seed);
