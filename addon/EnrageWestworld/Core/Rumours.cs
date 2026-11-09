@@ -33,6 +33,13 @@ namespace EnrageWestworld.Core
 
         public static string NearestTown(float x, float y)
         {
+            float metres;
+            return NearestTown(x, y, out metres);
+        }
+
+        /// The nearest town, and how far it is.
+        public static string NearestTown(float x, float y, out float metres)
+        {
             string best = null;
             float bd = float.MaxValue;
             foreach (KeyValuePair<string, float[]> t in Towns)
@@ -45,6 +52,7 @@ namespace EnrageWestworld.Core
                     best = t.Key;
                 }
             }
+            metres = best != null ? (float)Math.Sqrt(bd) : float.MaxValue;
             return best;
         }
 

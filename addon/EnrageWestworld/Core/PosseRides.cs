@@ -53,9 +53,27 @@ namespace EnrageWestworld.Core
 
         public static string What(string kind) { return Deeds.IsViolent(kind) ? "the killing" : "the robbery"; }
 
+        // ---- a killing on the road (TENHOUR item 3). A deed out of town has no town, so no posse ever rode for it: you could kill a man on the Valentine road in front of three people and nothing
+        // came of it but talk. Now the nearest town rides, if it's near enough for word to get there and someone is left to carry it. Why it reads true: the thing about a killing in empty country
+        // is that it feels as though it has happened nowhere; it hasn't, and finding that out as men you know on horses is what consequence feels like.
+        public const float RoadMetres = 1000f;
+
+        /// Which town rides after a killing out of town, or null: it's too far for word to reach anyone that day, nobody lived to tell it, or it isn't that kind of thing. For the posse only: the deed's own Town stays empty, because the town's regard, the rumours and the witnesses all read it.
+        public static string RoadTown(Deed d, long now)
+        {
+            if (d == null || d.Town != null || d.Witnesses <= 0 || d.Unseen || d.TalkAt != 0 || !Deeds.IsViolent(d.Kind) || d.Weight < 45 || now < d.At || now - d.At >= 1440)
+                return null;
+            float metres;
+            string town = Rumours.NearestTown(d.X, d.Y, out metres);
+            return town != null && metres <= RoadMetres ? town : null;
+        }
+
         private static readonly string[] Formed = {
             "The sheriff swore in {k} men at {t}, and they rode out after {w}: {names}.",
             "A posse left {t} at first light after {w}. {names}, with rifles across their saddles." };
+        private static readonly string[] RoadFormed = {
+            "Word of a killing out on the road reached {t}, and {k} men rode out before dark: {names}.",
+            "A man came into {t} white as paper with news from the road. {names} had saddled up inside the hour." };
         private static readonly string[] Lost = {
             "The posse came back to {t} with tired horses and nothing else. The trail went cold in the hills.",
             "{t}'s posse is home, empty-handed. Rain took the tracks, they say." };
@@ -81,6 +99,13 @@ namespace EnrageWestworld.Core
             return Fill(Voice.Pick(seed + "|pf", Formed), town, what, list, names != null ? names.Count : 0, null);
         }
 
+        /// The same, after a killing out on the road.
+        public static string RoadFormedLine(string town, List<string> names, string seed)
+        {
+            string list = names == null || names.Count == 0 ? "" : names.Count == 1 ? names[0] : string.Join(", ", names.Take(names.Count - 1)) + " and " + names[names.Count - 1];
+            return Fill(Voice.Pick(seed + "|prf", RoadFormed), town, "the killing", list, names != null ? names.Count : 0, null);
+        }
+
         public static string BackLine(string outcome, string town, string what, string deadName, string seed)
         {
             string[] pool = outcome == "dead" ? Dead : outcome == "brought" ? Brought : Lost;
@@ -93,6 +118,7 @@ namespace EnrageWestworld.Core
         public static IEnumerable<string> AllLines()
         {
             foreach (string l in Formed) yield return Fill(l, "Valentine", "the killing", "Jim, Abe and Walt", 3, null);
+            foreach (string l in RoadFormed) yield return Fill(l, "Valentine", "the killing", "Jim, Abe and Walt", 3, null);
             foreach (string[] p in new[] { Lost, Brought, Dead })
                 foreach (string l in p)
                     yield return Fill(l, "Valentine", "the killing", null, 0, "Abe Cole");

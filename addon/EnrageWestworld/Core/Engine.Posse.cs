@@ -43,11 +43,22 @@ namespace EnrageWestworld.Core
                 Store.Counts[PosseRides.DeedKey(d.Id)] = 1;
                 PosseForm(town, d.Id, d.Kind, now);
             }
+            if (!Cfg.PosseFromTheRoad)
+                return;
+            // a killing out of town, near enough for word to get there (TENHOUR item 3): the worst first, once a deed, one posse a town at a time
+            foreach (Deed d in Store.Deeds.Where(x => x.Town == null && now >= x.At && now - x.At < 1440 && x.Id != null).OrderByDescending(x => x.Weight).ToList())
+            {
+                string town = PosseRides.RoadTown(d, now);
+                if (town == null || PosseOut(town) || Store.Counts.ContainsKey(PosseRides.DeedKey(d.Id)))
+                    continue;
+                Store.Counts[PosseRides.DeedKey(d.Id)] = 1;
+                PosseForm(town, d.Id, d.Kind, now, true);
+            }
         }
 
         /// Gets a posse up in this town after a deed (its id seeds who rides): the men, the box, the log. Returns how many
         /// ride, or 0 with too few men (or one out already). The Testing row "posse" calls it with a made-up deed.
-        public int PosseForm(string town, string deedId, string kind, long now)
+        public int PosseForm(string town, string deedId, string kind, long now, bool road = false)
         {
             if (PosseOut(town))
                 return 0;
@@ -62,8 +73,8 @@ namespace EnrageWestworld.Core
             foreach (Resident m in men)
                 Store.Counts[PosseRides.ManKey(m.Id)] = (int)now;
             PossesRode++;
-            Push(new Toast { Kind = "life", Title = ShortTown(town), Weight = 50, Text = PosseRides.FormedLine(town, PosseRides.What(kind), men.Select(m => Person.FirstOf(m.Name)).ToList(), deedId) });
-            Log("POSSE rides out of " + town + " after " + kind + " (" + deedId + "): " + string.Join(", ", men.Select(m => m.Name)));
+            Push(new Toast { Kind = "life", Title = ShortTown(town), Weight = 50, Text = road ? PosseRides.RoadFormedLine(town, men.Select(m => Person.FirstOf(m.Name)).ToList(), deedId) : PosseRides.FormedLine(town, PosseRides.What(kind), men.Select(m => Person.FirstOf(m.Name)).ToList(), deedId) });
+            Log("POSSE rides out of " + town + " after " + kind + (road ? " on the road" : "") + " (" + deedId + "): " + string.Join(", ", men.Select(m => m.Name)));
             return men.Count;
         }
 
