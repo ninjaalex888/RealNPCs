@@ -46,6 +46,19 @@ namespace EnrageWestworld.Core
                 Thoughts = new[] { "He don't need it. He don't need it where he is.", "If the sheriff's boy sees this lantern we're both done.", "It's only digging. I've dug before." },
                 News = "Someone's been digging at a grave out past {town}, and {you} scared them off."
             },
+            new WaysideKind
+            {
+                Id = "frozen", Mark = "A thing in the snow", Test = "High country: a man frozen where he sat", From = 0, To = 24, Weight = 24, Place = PlaceSnow,
+                Cast = new[] { R("A frozen man", "rough", null, "dead", 0f, 0f) },
+                Choices = new[]
+                {
+                    C("search", "Go through his coat", 0, "search", -1),
+                    C("bless", "Say a word over him", 0, "bless", -1),
+                    C("leave", "Leave him", 0, "leave", -1)
+                },
+
+                News = "A trapper came down to {town} saying there's a man sat frozen against a rock in the high country, with his boots off."
+            },
         };
     }
 }

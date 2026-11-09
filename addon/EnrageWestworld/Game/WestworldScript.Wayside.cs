@@ -95,6 +95,8 @@ namespace EnrageWestworld.InGame
             string near = Rumours.NearestTown(p.X, p.Y);
             if (near == "Annesburg" || near == "Butcher Creek")
                 _waysideHere.Add(Wayside.PlaceMines);
+            if (_bridge.ZoneName(p) == "the Grizzlies" || _engine.NowWeather == "snow")
+                _waysideHere.Add(Wayside.PlaceSnow);
             return _waysideHere;
         }
 
