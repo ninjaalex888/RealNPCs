@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Composed acts** (`[Mind] ComposedActs`, on; settings version 335; FIVEDAY2 item 8; Testing row "A composed act on the nearest held person"). Someone the control ring holds, with a feeling strong enough to show, shows it in two or three of the game's own moves in an order that can follow: a look, then a shrug, then walking off. Only moves the game has been seen to play. F7's `TEST composed acts:` says what was composed and how it went.
+  - Why it reads true: people's displays have a grammar. Attention first, then what's felt, then what it comes to.
+
 - **The model's word on it** (`[Mind] ControlRingPicks`, on; settings version 334; FIVEDAY2 item 5). With the AI model on, as someone comes into the ring the next step of their errand is offered to it among the other things they might do, the same way as the everyday picks and under the same limit. Late or unreadable, the errand stands.
 
 - **An errand of their own** (`[Mind] ControlRingPlans`, on; settings version 333; FIVEDAY2 item 4). Someone the ring takes in has a short errand for that part of the day, two to four things in order (the store, a talk, home), kept by who they are for five minutes, so someone who walks out of the ring and back carries on. A strong feeling still comes first, and a step that can't be done is passed over.

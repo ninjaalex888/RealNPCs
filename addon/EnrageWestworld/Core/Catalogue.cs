@@ -16,6 +16,7 @@ namespace EnrageWestworld.Core
     public sealed class Expression
     {
         public string Channel, Name, Who, Posture, Proof;
+        public string Words;   // what it looks like, in plain words: all the model is ever offered (FIVEDAY2 item 9)
         public string[] Feelings, Urges;
         public string Least;   // mild, moderate or strong: the least strength it fits
 
@@ -68,12 +69,12 @@ namespace EnrageWestworld.Core
 
     public static class Catalogue
     {
-        private static Expression E(string channel, string name, string feelings, string urges, string least, string who, string posture, string proof)
+        private static Expression E(string channel, string name, string feelings, string urges, string least, string who, string posture, string proof, string words = null)
         {
             return new Expression
             {
                 Channel = channel, Name = name, Feelings = feelings.Length == 0 ? new string[0] : feelings.Split(','), Urges = urges.Length == 0 ? new string[0] : urges.Split(','),
-                Least = least, Who = who, Posture = posture, Proof = proof
+                Least = least, Who = who, Posture = posture, Proof = proof, Words = words
             };
         }
 
@@ -85,39 +86,39 @@ namespace EnrageWestworld.Core
         public static readonly Expression[] All =
         {
             // gestures (upper body, standing; the four standing sets found in game, 0.6.1)
-            E("gesture", Silent + " / silent_neutral_hat_tip_l_001", "gratitude,joy,pride", "share,repay,display", "mild", "men", "standing", "NOT YET SEEN: last night's nods (the set was found, 0.6.1)"),
-            E("gesture", Silent + " / silent_headnod_greet_f_001", "gratitude,joy,relief", "share,repay", "mild", "any", "standing", "NOT YET SEEN: last night's nods"),
-            E("gesture", Silent + " / silent_neutral_wave_l_001", "joy,gratitude", "share", "mild", "any", "standing", "NOT YET SEEN: last night's nods"),
-            E("gesture", Silent + " / silent_neutral_spit_f_001", "contempt,anger", "dismiss,disparage", "moderate", "men", "standing", "NOT YET SEEN: last night's nods and sights; men only"),
+            E("gesture", Silent + " / silent_neutral_hat_tip_l_001", "gratitude,joy,pride", "share,repay,display", "mild", "men", "standing", "NOT YET SEEN: last night's nods (the set was found, 0.6.1)", "tips their hat"),
+            E("gesture", Silent + " / silent_headnod_greet_f_001", "gratitude,joy,relief", "share,repay", "mild", "any", "standing", "NOT YET SEEN: last night's nods", "gives a nod"),
+            E("gesture", Silent + " / silent_neutral_wave_l_001", "joy,gratitude", "share", "mild", "any", "standing", "NOT YET SEEN: last night's nods", "lifts a hand"),
+            E("gesture", Silent + " / silent_neutral_spit_f_001", "contempt,anger", "dismiss,disparage", "moderate", "men", "standing", "NOT YET SEEN: last night's nods and sights; men only", "spits on the ground"),
             E("gesture", Silent + " / head shake", "contempt,anger,shame", "dismiss,disparage", "mild", "any", "standing", Played + " (0.6.1, the stalker's head-shake on the upper body)"),
-            E("gesture", "ai_gestures@gen_female@standing@speaker / surprised_gasp_f_001", "fear,pity", "freeze,avoid,help", "mild", "women", "standing", "NOT YET SEEN: last night's sights"),
-            E("gesture", "ai_gestures@gen_male@standing@speaker / negative_disbelief_l_001", "contempt,anger,fear", "dismiss,watch", "mild", "men", "standing", "NOT YET SEEN: last night's sights"),
-            E("gesture", Speaker + " / happy_cheer_f_001", "joy,gratitude,pride", "share,display", "moderate", "any", "standing", "NOT YET SEEN: last night's round"),
-            E("gesture", Speaker + " / happy_laugh_f_001", "joy,contempt", "share,dismiss", "mild", "any", "standing", "NOT YET SEEN: last night's round"),
-            E("gesture", Speaker + " / neutral_point_l_001", "anger,contempt", "confront,disparage", "moderate", "any", "standing", "NOT YET SEEN: last night's traveller"),
+            E("gesture", "ai_gestures@gen_female@standing@speaker / surprised_gasp_f_001", "fear,pity", "freeze,avoid,help", "mild", "women", "standing", "NOT YET SEEN: last night's sights", "catches their breath"),
+            E("gesture", "ai_gestures@gen_male@standing@speaker / negative_disbelief_l_001", "contempt,anger,fear", "dismiss,watch", "mild", "men", "standing", "NOT YET SEEN: last night's sights", "shakes their head, not believing it"),
+            E("gesture", Speaker + " / happy_cheer_f_001", "joy,gratitude,pride", "share,display", "moderate", "any", "standing", "NOT YET SEEN: last night's round", "throws up an arm"),
+            E("gesture", Speaker + " / happy_laugh_f_001", "joy,contempt", "share,dismiss", "mild", "any", "standing", "NOT YET SEEN: last night's round", "laughs out loud"),
+            E("gesture", Speaker + " / neutral_point_l_001", "anger,contempt", "confront,disparage", "moderate", "any", "standing", "NOT YET SEEN: last night's traveller", "points at them"),
             // the reactions' clips (Core/Reactions.cs): the sets were found in game (0.6.1 probe) and a head-shake was seen playing in a Shift+F9 scene (2026-10-26); the rest are listed in anims.lua and not yet seen played (night 2026-10-28, item 13: the mind's reactions play them through Reactions.KindOf)
-            E("gesture", Silent + " / aknwoledge_timid_look_down_f_001", "shame,guilt", "hide,withdraw,amends,avoid", "mild", "any", "standing", SetsFound + "; the reactions' look-down, not yet seen played"),
-            E("gesture", Silent + " / silent_might_flee_nervous_f_001", "fear", "avoid,freeze", "mild", "any", "standing", SetsFound + "; the reactions' flinch, not yet seen played"),
-            E("gesture", Silent + " / silent_aggressive_taunt_f_001", "anger", "confront", "mild", "men", "standing", SetsFound + "; the reactions' bristle, not yet seen played"),
-            E("gesture", Silent + " / silent_negative_dismiss_f_001", "anger,contempt", "confront,dismiss", "mild", "women", "standing", SetsFound + "; the reactions' bristle for women, not yet seen played"),
-            E("gesture", Silent + " / silent_confused_look_f_001", "fear,pity", "watch", "mild", "any", "standing", SetsFound + "; the reactions' puzzled look, not yet seen played"),
-            E("gesture", Silent + " / silent_neutral_shrug_f_001", "relief,contempt,envy", "dismiss,rest", "mild", "any", "standing", SetsFound + "; the reactions' shrug, not yet seen played"),
-            E("gesture", Silent + " / silent_wince_l_004", "fear", "freeze", "mild", "any", "standing", SetsFound + "; the reactions' wince (the hurt seen playing is the street fight's reel), not yet seen played"),
-            E("gesture", Silent + " / silent_positive_headonod_f_001", "gratitude,joy,relief", "repay,share,rest", "mild", "any", "standing", SetsFound + "; the reactions' nod, not yet seen played"),
+            E("gesture", Silent + " / aknwoledge_timid_look_down_f_001", "shame,guilt", "hide,withdraw,amends,avoid", "mild", "any", "standing", SetsFound + "; the reactions' look-down, not yet seen played", "looks down at their boots"),
+            E("gesture", Silent + " / silent_might_flee_nervous_f_001", "fear", "avoid,freeze", "mild", "any", "standing", SetsFound + "; the reactions' flinch, not yet seen played", "flinches back"),
+            E("gesture", Silent + " / silent_aggressive_taunt_f_001", "anger", "confront", "mild", "men", "standing", SetsFound + "; the reactions' bristle, not yet seen played", "squares up"),
+            E("gesture", Silent + " / silent_negative_dismiss_f_001", "anger,contempt", "confront,dismiss", "mild", "women", "standing", SetsFound + "; the reactions' bristle for women, not yet seen played", "waves it away"),
+            E("gesture", Silent + " / silent_confused_look_f_001", "fear,pity", "watch", "mild", "any", "standing", SetsFound + "; the reactions' puzzled look, not yet seen played", "looks puzzled"),
+            E("gesture", Silent + " / silent_neutral_shrug_f_001", "relief,contempt,envy", "dismiss,rest", "mild", "any", "standing", SetsFound + "; the reactions' shrug, not yet seen played", "shrugs"),
+            E("gesture", Silent + " / silent_wince_l_004", "fear", "freeze", "mild", "any", "standing", SetsFound + "; the reactions' wince (the hurt seen playing is the street fight's reel), not yet seen played", "winces"),
+            E("gesture", Silent + " / silent_positive_headonod_f_001", "gratitude,joy,relief", "repay,share,rest", "mild", "any", "standing", SetsFound + "; the reactions' nod, not yet seen played", "nods slowly"),
             // the few Online emotes Story Mode has (0.6.1 probe: 3 of 28 sets)
             E("emote", "script_mp@emotes@respectful_bow@male@unarmed@full", "gratitude,pride", "repay,display", "moderate", "any", "standing", Played + " (0.6.1, the stalker's acts)"),
             E("emote", "script_mp@emotes@pointlaugh@male@unarmed@full", "contempt,joy", "dismiss,disparage", "moderate", "any", "standing", Played + " (0.6.1)"),
             E("emote", "script_mp@emotes@prospector_jig@male@unarmed@full", "joy,pride", "share,display", "strong", "any", "standing", Played + " (0.6.1)"),
             // scenarios (started in game; gravedig, hammer and scrub failed and are left out)
-            E("scenario", "WORLD_HUMAN_GRAVE_MOURNING_KNEEL", "grief,guilt,shame", "withdraw,amends", "moderate", "any", "any", Played + " (the Sabbath's kneel, the despair kneel)"),
-            E("scenario", "WORLD_HUMAN_DRUNK_BAR_SLUMPED", "grief,shame", "withdraw,hide", "moderate", "men", "any", Played + " (the bar)"),
-            E("scenario", "WORLD_HUMAN_CROUCH_INSPECT", "pity,grief", "help", "mild", "any", "any", "NOT YET SEEN: the visitor's crouch (last night)"),
-            E("scenario", "WORLD_HUMAN_SIT_GROUND", "grief,shame,fear", "withdraw,rest", "moderate", "any", "any", "NOT YET SEEN: the fall's sit (last night)"),
+            E("scenario", "WORLD_HUMAN_GRAVE_MOURNING_KNEEL", "grief,guilt,shame", "withdraw,amends", "moderate", "any", "any", Played + " (the Sabbath's kneel, the despair kneel)", "goes down on one knee"),
+            E("scenario", "WORLD_HUMAN_DRUNK_BAR_SLUMPED", "grief,shame", "withdraw,hide", "moderate", "men", "any", Played + " (the bar)", "slumps where they are"),
+            E("scenario", "WORLD_HUMAN_CROUCH_INSPECT", "pity,grief", "help", "mild", "any", "any", "NOT YET SEEN: the visitor's crouch (last night)", "crouches down"),
+            E("scenario", "WORLD_HUMAN_SIT_GROUND", "grief,shame,fear", "withdraw,rest", "moderate", "any", "any", "NOT YET SEEN: the fall's sit (last night)", "sits on the ground"),
             // clips the scenes and despair play
             E("clip", "mech_grapple / table_smash", "anger", "confront", "strong", "men", "standing", Played + " (faces into the bar)"),
             E("clip", "script_re@street_fight@v3", "anger", "confront,intervene", "strong", "men", "standing", Played + " (street fights)"),
             E("clip", "script_re@drunk_dueler", "anger,contempt", "confront", "moderate", "men", "standing", Played + " (the drunk's challenge)"),
-            E("clip", "script_re@rally@cross_accident / sobbing_idle_a_leader", "grief,shame,fear", "withdraw", "strong", "any", "standing", Played + " (despair, 2026-10-27; sobs on a man and a woman)"),
+            E("clip", "script_re@rally@cross_accident / sobbing_idle_a_leader", "grief,shame,fear", "withdraw", "strong", "any", "standing", Played + " (despair, 2026-10-27; sobs on a man and a woman)", "breaks down sobbing"),
             E("clip", "script_story@mry1@ig@ig6_jamie_attempts_suicide", "grief,shame", "withdraw", "strong", "any", "standing", Played + " (despair, 2026-10-27)"),
             E("clip", "script_re@town_confront@male@barfight", "anger,contempt", "confront", "moderate", "men", "standing", "NOT YET SEEN: the street callout's set (NIGHT4 item 4; callover, confront, to_crowd, taunt, threat, ignore, positive, negative; the log's ENCOUNTER clips line proves each)"),
             E("clip", "script_re@town_confront@female@drunk_duel", "anger,contempt", "confront", "moderate", "women", "standing", "NOT YET SEEN: the street callout's set for a woman (NIGHT4 item 4)"),
@@ -129,11 +130,11 @@ namespace EnrageWestworld.Core
             // movement tasks the scenes use, proven in play
             E("move", "TASK_SMART_FLEE_PED", "fear", "avoid", "moderate", "any", "any", "NOT YET SEEN: last night's visitor and robbery"),
             E("move", "TASK_GO_TO_ENTITY", "anger,pity,grief", "confront,intervene,help", "moderate", "any", "any", "NOT YET SEEN: last night's grudge walk"),
-            E("move", TurnMove, "anger,contempt,fear,pity", "confront,watch", "mild", "any", "any", Played + " (scenes, sights)"),
-            E("move", LookMove, "fear,anger,contempt,envy,pity,joy", "watch,freeze", "mild", "any", "any", Played + " (nods, sights, wake acts)"),
+            E("move", TurnMove, "anger,contempt,fear,pity", "confront,watch", "mild", "any", "any", Played + " (scenes, sights)", "turns to face them"),
+            E("move", LookMove, "fear,anger,contempt,envy,pity,joy", "watch,freeze", "mild", "any", "any", Played + " (nods, sights, wake acts)", "looks at them"),
             E("move", "TASK_HANDS_UP", "fear", "freeze", "strong", "any", "any", "NOT YET SEEN: last night's robbery"),
-            E("move", StillMove, "fear,shame", "freeze", "moderate", "any", "any", Played + " (the animation rows hold people with it between clips, 2026-10-27)"),
-            E("move", WanderMove, "contempt,shame,envy,guilt", "dismiss,avoid,withdraw,hide", "mild", "any", "any", Played + " (every hand-back)"),
+            E("move", StillMove, "fear,shame", "freeze", "moderate", "any", "any", Played + " (the animation rows hold people with it between clips, 2026-10-27)", "stands stock still"),
+            E("move", WanderMove, "contempt,shame,envy,guilt", "dismiss,avoid,withdraw,hide", "mild", "any", "any", Played + " (every hand-back)", "walks away"),
             // the game's own recorded lines (how many of the 332 voices carry each, from amb_takes.txt)
             // the game's own encounters' sets, for the wild events and the composed acts: only names ship, and each stays out of use until a log has shown it playing
             E("clip", "script_re@execution / base_main", "anger,contempt", "confront", "moderate", "men", "standing", Candidate),
@@ -170,29 +171,29 @@ namespace EnrageWestworld.Core
             E("clip", "script_re@public_hanging@crowds@generic / loop_group_am01", "fear,grief", "watch", "moderate", "men", "standing", Candidate),
             E("clip", "script_re@public_hanging@std_crowds / ig2_action_crowd_m01", "fear,contempt", "watch", "moderate", "men", "standing", Candidate),
             E("clip", "script_re@public_hanging@std_crowds / ig2_action_crowd_f01", "fear,pity", "watch", "moderate", "women", "standing", Candidate),
-            E("voice", "GENERIC_ANGRY_SHOUT", "anger", "confront", "strong", "any", "any", "voice banks carry it (Speech.Angry)"),
-            E("voice", "CHALLENGE_THREATEN", "anger,contempt", "confront", "moderate", "any", "any", "297 of 332 voices"),
-            E("voice", "GET_OUT", "anger,contempt", "confront,dismiss", "moderate", "any", "any", "317 of 332 voices"),
-            E("voice", "SHAME_ON_YOU", "contempt,anger", "disparage,confront", "moderate", "any", "any", "302 of 332 voices"),
-            E("voice", "DISMISSIVE_REACT", "contempt", "dismiss", "mild", "any", "any", "voice banks carry it (Speech.Mild)"),
-            E("voice", "VOCAL_FX_DISAPPROVE", "contempt,envy", "dismiss,disparage", "mild", "any", "any", "179 of 332 voices (wordless)"),
-            E("voice", "GENERIC_FRIGHTENED_HIGH", "fear", "avoid,freeze", "strong", "any", "any", "voice banks carry it (Speech.Scared)"),
-            E("voice", "GENERIC_FRIGHTENED_MED", "fear", "avoid", "moderate", "any", "any", "voice banks carry it (Speech.Scared)"),
-            E("voice", "SCARED_HELP", "fear", "avoid,freeze", "strong", "any", "any", "284 of 332 voices"),
-            E("voice", "PLEAD", "fear", "freeze", "strong", "any", "any", "330 of 332 voices"),
-            E("voice", "GENERIC_SHOCKED_DISBELIEF", "fear,grief", "freeze,watch", "moderate", "any", "any", "voice banks carry it; played (despair's disbelief)"),
-            E("voice", "SORRY_TO_HEAR_THAT", "pity,grief", "help", "mild", "any", "any", "329 of 332 voices"),
-            E("voice", "GENERIC_THANKS", "gratitude,relief", "repay", "mild", "any", "any", "329 of 332 voices"),
-            E("voice", "RELIEVED_REACT", "relief", "rest,share", "moderate", "any", "any", "295 of 332 voices"),
-            E("voice", "GENERIC_CHEER", "joy,pride", "share,display", "moderate", "any", "any", "276 of 332 voices"),
-            E("voice", "COOL_IT", "pity,anger", "intervene", "moderate", "any", "any", "296 of 332 voices"),
-            E("voice", "DISPUTE_INTERVENE_HARASSMENT", "anger,pity", "intervene", "moderate", "any", "any", "223 of 332 voices"),
-            E("voice", "STORM_OFF", "shame,anger", "withdraw,avoid", "moderate", "any", "any", "216 of 332 voices"),
-            E("voice", "IM_OUTTA_HERE", "fear,shame", "avoid", "moderate", "any", "any", "246 of 332 voices"),
-            E("voice", "GENERIC_MOCK", "contempt,envy", "disparage,dismiss", "mild", "any", "any", "voice banks carry it; played (the waking voices)"),
-            E("voice", "GOING_BADLY", "grief,fear", "withdraw", "moderate", "any", "any", "329 of 332 voices"),
-            E("voice", "LEAVE_ME", "grief,shame", "withdraw", "moderate", "any", "any", "210 of 332 voices"),
-            E("voice", "GREET_GENERAL_FAMILIAR", "joy,gratitude", "share", "mild", "any", "any", "328 of 332 voices"),
+            E("voice", "GENERIC_ANGRY_SHOUT", "anger", "confront", "strong", "any", "any", "voice banks carry it (Speech.Angry)", "shouts in anger"),
+            E("voice", "CHALLENGE_THREATEN", "anger,contempt", "confront", "moderate", "any", "any", "297 of 332 voices", "says something threatening"),
+            E("voice", "GET_OUT", "anger,contempt", "confront,dismiss", "moderate", "any", "any", "317 of 332 voices", "tells them to get out"),
+            E("voice", "SHAME_ON_YOU", "contempt,anger", "disparage,confront", "moderate", "any", "any", "302 of 332 voices", "tells them shame on them"),
+            E("voice", "DISMISSIVE_REACT", "contempt", "dismiss", "mild", "any", "any", "voice banks carry it (Speech.Mild)", "says something dismissive"),
+            E("voice", "VOCAL_FX_DISAPPROVE", "contempt,envy", "dismiss,disparage", "mild", "any", "any", "179 of 332 voices (wordless)", "makes a sound of disapproval"),
+            E("voice", "GENERIC_FRIGHTENED_HIGH", "fear", "avoid,freeze", "strong", "any", "any", "voice banks carry it (Speech.Scared)", "cries out"),
+            E("voice", "GENERIC_FRIGHTENED_MED", "fear", "avoid", "moderate", "any", "any", "voice banks carry it (Speech.Scared)", "says something frightened"),
+            E("voice", "SCARED_HELP", "fear", "avoid,freeze", "strong", "any", "any", "284 of 332 voices", "calls for help"),
+            E("voice", "PLEAD", "fear", "freeze", "strong", "any", "any", "330 of 332 voices", "pleads"),
+            E("voice", "GENERIC_SHOCKED_DISBELIEF", "fear,grief", "freeze,watch", "moderate", "any", "any", "voice banks carry it; played (despair's disbelief)", "says something shocked"),
+            E("voice", "SORRY_TO_HEAR_THAT", "pity,grief", "help", "mild", "any", "any", "329 of 332 voices", "says how sorry they are"),
+            E("voice", "GENERIC_THANKS", "gratitude,relief", "repay", "mild", "any", "any", "329 of 332 voices", "thanks them"),
+            E("voice", "RELIEVED_REACT", "relief", "rest,share", "moderate", "any", "any", "295 of 332 voices", "says how relieved they are"),
+            E("voice", "GENERIC_CHEER", "joy,pride", "share,display", "moderate", "any", "any", "276 of 332 voices", "gives a cheer"),
+            E("voice", "COOL_IT", "pity,anger", "intervene", "moderate", "any", "any", "296 of 332 voices", "tells them to simmer down"),
+            E("voice", "DISPUTE_INTERVENE_HARASSMENT", "anger,pity", "intervene", "moderate", "any", "any", "223 of 332 voices", "tells them to leave off"),
+            E("voice", "STORM_OFF", "shame,anger", "withdraw,avoid", "moderate", "any", "any", "216 of 332 voices", "says something sharp"),
+            E("voice", "IM_OUTTA_HERE", "fear,shame", "avoid", "moderate", "any", "any", "246 of 332 voices", "says they're going"),
+            E("voice", "GENERIC_MOCK", "contempt,envy", "disparage,dismiss", "mild", "any", "any", "voice banks carry it; played (the waking voices)", "mocks them"),
+            E("voice", "GOING_BADLY", "grief,fear", "withdraw", "moderate", "any", "any", "329 of 332 voices", "says it's going badly"),
+            E("voice", "LEAVE_ME", "grief,shame", "withdraw", "moderate", "any", "any", "210 of 332 voices", "says to leave them be"),
+            E("voice", "GREET_GENERAL_FAMILIAR", "joy,gratitude", "share", "mild", "any", "any", "328 of 332 voices", "greets them"),
         };
 
         /// What could show this feeling with this urge, at this strength, for this person (standing or not).

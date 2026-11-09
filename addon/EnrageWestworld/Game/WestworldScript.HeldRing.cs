@@ -27,6 +27,7 @@ namespace EnrageWestworld.InGame
             public int Since, NextAt, Acts, Fillers;
             public int StoodAt = int.MinValue / 2;   // the last standing look (a watch, a show): one each HeldStandMs at most
             public string Last;
+            public int ComposedAt = int.MinValue / 2;   // the last composed act (FIVEDAY2 item 8)
             public bool Seated;   // taken in sat or leaning (FIVEDAY2 item 3): gets up, in time, for what their mind wants
         }
 
@@ -309,6 +310,13 @@ namespace EnrageWestworld.InGame
         private void HeldNext(int h, MindWho w, Held hd, Ped me, int now)
         {
             hd.NextAt = now + 1500;
+            if (RingComposed(h, w, hd, me, now))
+            {
+                hd.Acts++;
+                _heldChained++;
+                _ringActsThisMinute++;
+                return;   // a feeling shown in two or three moves (WestworldScript.Composed.cs)
+            }
             RingPlan plan = RingPlanFor(w, now);
             while (plan != null && !plan.Done)
             {

@@ -153,6 +153,14 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// Anything still waiting for its set on this person is dropped: whatever comes next is not ours to overlay.
+        private void PerformCancel(int h)
+        {
+            for (int i = _performing.Count - 1; i >= 0; i--)
+                if (_performing[i].Handle == h && !_performing[i].Started)
+                    PerformEnd(i);
+        }
+
         private void PerformEnd(int i)
         {
             Performing p = _performing[i];

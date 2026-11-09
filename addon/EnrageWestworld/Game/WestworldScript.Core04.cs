@@ -1393,6 +1393,7 @@ namespace EnrageWestworld.InGame
             RegardStep(now);      // the town's regard of you in the "Around town" box (WestworldScript.Regard.cs)
             Loads.Sweep(now);     // a body asked for and never used goes back to the game (Game/Loads.cs)
             PerformStep(now);     // whoever is playing a row of the catalogue (WestworldScript.Perform.cs)
+            ComposedStep(now);    // and whoever is at two or three in order (WestworldScript.Composed.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             FenceStep(now);         // what you saw of the fence cutters, and the town's word (WestworldScript.FenceCutters.cs; FIVEDAY item 31)
             PosseStep(now);         // the town whose posse is out thinks of the road (WestworldScript.Posse.cs; FIVEDAY R32)
