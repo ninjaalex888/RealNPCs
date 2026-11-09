@@ -81,21 +81,21 @@ namespace EnrageWestworld.Core
         private const string Silent = "ai_gestures@gen_{sex}@standing@silent", Speaker = "ai_gestures@gen_{sex}@standing@speaker";
         public const string TurnMove = "TASK_TURN_PED_TO_FACE_ENTITY", LookMove = "TASK_LOOK_AT_ENTITY", StillMove = "TASK_STAND_STILL", WanderMove = "TASK_WANDER_STANDARD";   // the moves Perform makes
         private const string Candidate = "NOT YET SEEN: a candidate from the game's own sets for the things to come across (FIVEDAY2 item 7); the clip walker proves it";
-        private const string SetsFound = "set found in game (0.6.1 probe)", Played = "played in game";
+        private const string SetsFound = "set found in game (0.6.1 probe)", Played = "played in game", Walker = "played in game: the clip walker, 2026-11-09";
 
         public static readonly Expression[] All =
         {
             // gestures (upper body, standing; the four standing sets found in game, 0.6.1)
-            E("gesture", Silent + " / silent_neutral_hat_tip_l_001", "gratitude,joy,pride", "share,repay,display", "mild", "men", "standing", "NOT YET SEEN: last night's nods (the set was found, 0.6.1)", "tips their hat"),
-            E("gesture", Silent + " / silent_headnod_greet_f_001", "gratitude,joy,relief", "share,repay", "mild", "any", "standing", "NOT YET SEEN: last night's nods", "gives a nod"),
-            E("gesture", Silent + " / silent_neutral_wave_l_001", "joy,gratitude", "share", "mild", "any", "standing", "NOT YET SEEN: last night's nods", "lifts a hand"),
-            E("gesture", Silent + " / silent_neutral_spit_f_001", "contempt,anger", "dismiss,disparage", "moderate", "men", "standing", "NOT YET SEEN: last night's nods and sights; men only", "spits on the ground"),
+            E("gesture", Silent + " / silent_neutral_hat_tip_l_001", "gratitude,joy,pride", "share,repay,display", "mild", "men", "standing", Walker, "tips their hat"),
+            E("gesture", Silent + " / silent_headnod_greet_f_001", "gratitude,joy,relief", "share,repay", "mild", "any", "standing", Walker, "gives a nod"),
+            E("gesture", Silent + " / silent_neutral_wave_l_001", "joy,gratitude", "share", "mild", "any", "standing", "NOT YET SEEN: didn't start for the clip walker in game, 2026-11-09 (status 8, twice)", "lifts a hand"),
+            E("gesture", Silent + " / silent_neutral_spit_f_001", "contempt,anger", "dismiss,disparage", "moderate", "men", "standing", Walker, "spits on the ground"),
             E("gesture", Silent + " / head shake", "contempt,anger,shame", "dismiss,disparage", "mild", "any", "standing", Played + " (0.6.1, the stalker's head-shake on the upper body)"),
-            E("gesture", "ai_gestures@gen_female@standing@speaker / surprised_gasp_f_001", "fear,pity", "freeze,avoid,help", "mild", "women", "standing", "NOT YET SEEN: last night's sights", "catches their breath"),
-            E("gesture", "ai_gestures@gen_male@standing@speaker / negative_disbelief_l_001", "contempt,anger,fear", "dismiss,watch", "mild", "men", "standing", "NOT YET SEEN: last night's sights", "shakes their head, not believing it"),
-            E("gesture", Speaker + " / happy_cheer_f_001", "joy,gratitude,pride", "share,display", "moderate", "any", "standing", "NOT YET SEEN: last night's round", "throws up an arm"),
-            E("gesture", Speaker + " / happy_laugh_f_001", "joy,contempt", "share,dismiss", "mild", "any", "standing", "NOT YET SEEN: last night's round", "laughs out loud"),
-            E("gesture", Speaker + " / neutral_point_l_001", "anger,contempt", "confront,disparage", "moderate", "any", "standing", "NOT YET SEEN: last night's traveller", "points at them"),
+            E("gesture", "ai_gestures@gen_female@standing@speaker / surprised_gasp_f_001", "fear,pity", "freeze,avoid,help", "mild", "women", "standing", Walker, "catches their breath"),
+            E("gesture", "ai_gestures@gen_male@standing@speaker / negative_disbelief_l_001", "contempt,anger,fear", "dismiss,watch", "mild", "men", "standing", Walker, "shakes their head, not believing it"),
+            E("gesture", Speaker + " / happy_cheer_f_001", "joy,gratitude,pride", "share,display", "moderate", "any", "standing", Walker, "throws up an arm"),
+            E("gesture", Speaker + " / happy_laugh_f_001", "joy,contempt", "share,dismiss", "mild", "any", "standing", Walker, "laughs out loud"),
+            E("gesture", Speaker + " / neutral_point_l_001", "anger,contempt", "confront,disparage", "moderate", "any", "standing", Walker, "points at them"),
             // the reactions' clips (Core/Reactions.cs): the sets were found in game (0.6.1 probe) and a head-shake was seen playing in a Shift+F9 scene (2026-10-26); the rest are listed in anims.lua and not yet seen played (night 2026-10-28, item 13: the mind's reactions play them through Reactions.KindOf)
             E("gesture", Silent + " / aknwoledge_timid_look_down_f_001", "shame,guilt", "hide,withdraw,amends,avoid", "mild", "any", "standing", SetsFound + "; the reactions' look-down, not yet seen played", "looks down at their boots"),
             E("gesture", Silent + " / silent_might_flee_nervous_f_001", "fear", "avoid,freeze", "mild", "any", "standing", SetsFound + "; the reactions' flinch, not yet seen played", "flinches back"),
@@ -125,8 +125,8 @@ namespace EnrageWestworld.Core
             E("clip", "script_re@domestic_dispute@rhodes", "anger,contempt", "confront", "moderate", "men", "standing", "NOT YET SEEN: a husband's temper, his rant (NIGHT4 item 4; head_in_clouds, live_on_moon, thats_rhodes, grass_greener _husband)"),
             E("clip", "script_re@domestic_dispute@annesburg", "anger,contempt", "confront", "moderate", "men", "standing", "NOT YET SEEN: a husband's temper, his rant (you_married_husband, shoulda_husband)"),
             E("move", "TASK_KNOCKED_OUT_AND_HOGTIED", "fear", "freeze", "strong", "any", "any", "NOT YET SEEN: hogtied by the road (NIGHT4 item 4; the log says whether IS_PED_HOGTIED held at 2 s)"),
-            E("clip", "script_re@kidnap_victim / thank_you_a_victim", "gratitude,relief", "repay", "moderate", "any", "standing", "NOT YET SEEN: the hogtied captive's thanks (NIGHT4 item 4)"),
-            E("clip", "ai_combat@damage@writhe@base / writhe_loop", "fear,grief", "freeze", "strong", "any", "any", "NOT YET SEEN: despair's knife writhe"),
+            E("clip", "script_re@kidnap_victim / thank_you_a_victim", "gratitude,relief", "repay", "moderate", "any", "standing", Walker),
+            E("clip", "ai_combat@damage@writhe@base / writhe_loop", "fear,grief", "freeze", "strong", "any", "any", Walker),
             // movement tasks the scenes use, proven in play
             E("move", "TASK_SMART_FLEE_PED", "fear", "avoid", "moderate", "any", "any", "NOT YET SEEN: last night's visitor and robbery"),
             E("move", "TASK_GO_TO_ENTITY", "anger,pity,grief", "confront,intervene,help", "moderate", "any", "any", "NOT YET SEEN: last night's grudge walk"),
@@ -137,22 +137,22 @@ namespace EnrageWestworld.Core
             E("move", WanderMove, "contempt,shame,envy,guilt", "dismiss,avoid,withdraw,hide", "mild", "any", "any", Played + " (every hand-back)", "walks away"),
             // the game's own recorded lines (how many of the 332 voices carry each, from amb_takes.txt)
             // the game's own encounters' sets, for the wild events and the composed acts: only names ship, and each stays out of use until a log has shown it playing
-            E("clip", "script_re@execution / base_main", "anger,contempt", "confront", "moderate", "men", "standing", Candidate),
-            E("clip", "script_re@execution / warn_forward_guard", "anger,contempt", "confront", "moderate", "men", "standing", Candidate),
-            E("clip", "script_re@execution / base_vic01", "fear,grief", "freeze", "strong", "men", "any", Candidate),
-            E("clip", "script_re@execution / action_vic01", "fear", "freeze", "strong", "men", "any", Candidate),
-            E("clip", "script_re@execution / exit_quick_vic01", "relief,fear", "avoid", "strong", "men", "any", Candidate),
-            E("clip", "script_re@chain_gang / action_pick01", "shame,grief", "withdraw", "moderate", "men", "standing", Candidate),
-            E("clip", "script_re@chain_gang / action_pris01", "shame,grief", "withdraw", "moderate", "men", "standing", Candidate),
-            E("clip", "script_re@chain_gang / action_guard01", "contempt", "watch", "mild", "men", "standing", Candidate),
-            E("clip", "script_re@injured_rider / idle_01", "fear,grief", "freeze", "strong", "any", "any", Candidate),
-            E("clip", "script_re@injured_rider / fall_left_01", "fear", "freeze", "strong", "any", "standing", Candidate),
-            E("clip", "script_re@torch_procession / idle_male_a", "grief,pride", "display", "moderate", "men", "standing", Candidate),
-            E("clip", "script_re@torch_procession / enter_male_a", "grief,pride", "display", "moderate", "men", "standing", Candidate),
-            E("clip", "script_re@town_burial@grave_digger / ilo_med_n", "grief", "withdraw", "mild", "men", "standing", Candidate),
-            E("clip", "script_re@town_burial@preacher@pose_a@base / base", "grief,pity", "help", "mild", "men", "standing", Candidate),
-            E("clip", "script_re@stalking_shadows@walks@with_torch / idle_a", "fear", "watch", "mild", "men", "standing", Candidate),
-            E("clip", "script_re@stalking_shadows@walks@with_torch / walk_a", "fear", "watch", "mild", "men", "standing", Candidate),
+            E("clip", "script_re@execution / base_main", "anger,contempt", "confront", "moderate", "men", "standing", Walker),
+            E("clip", "script_re@execution / warn_forward_guard", "anger,contempt", "confront", "moderate", "men", "standing", Walker),
+            E("clip", "script_re@execution / base_vic01", "fear,grief", "freeze", "strong", "men", "any", Walker),
+            E("clip", "script_re@execution / action_vic01", "fear", "freeze", "strong", "men", "any", Walker),
+            E("clip", "script_re@execution / exit_quick_vic01", "relief,fear", "avoid", "strong", "men", "any", Walker),
+            E("clip", "script_re@chain_gang / action_pick01", "shame,grief", "withdraw", "moderate", "men", "standing", Walker),
+            E("clip", "script_re@chain_gang / action_pris01", "shame,grief", "withdraw", "moderate", "men", "standing", Walker),
+            E("clip", "script_re@chain_gang / action_guard01", "contempt", "watch", "mild", "men", "standing", Walker),
+            E("clip", "script_re@injured_rider / idle_01", "fear,grief", "freeze", "strong", "any", "any", Walker),
+            E("clip", "script_re@injured_rider / fall_left_01", "fear", "freeze", "strong", "any", "standing", Walker),
+            E("clip", "script_re@torch_procession / idle_male_a", "grief,pride", "display", "moderate", "men", "standing", Walker),
+            E("clip", "script_re@torch_procession / enter_male_a", "grief,pride", "display", "moderate", "men", "standing", Walker),
+            E("clip", "script_re@town_burial@grave_digger / ilo_med_n", "grief", "withdraw", "mild", "men", "standing", Walker),
+            E("clip", "script_re@town_burial@preacher@pose_a@base / base", "grief,pity", "help", "mild", "men", "standing", Walker),
+            E("clip", "script_re@stalking_shadows@walks@with_torch / idle_a", "fear", "watch", "mild", "men", "standing", Walker),
+            E("clip", "script_re@stalking_shadows@walks@with_torch / walk_a", "fear", "watch", "mild", "men", "standing", Walker),
             E("clip", "script_re@duel_winner@taunt / idle_ped01", "contempt,pride", "disparage,display", "mild", "men", "standing", Candidate),
             E("clip", "script_re@duel_winner@taunt / you_scared_ped01", "contempt", "disparage", "moderate", "men", "standing", Candidate),
             E("clip", "script_re@duel_winner@taunt / laughing_ped01", "contempt,joy", "disparage", "moderate", "men", "standing", Candidate),
