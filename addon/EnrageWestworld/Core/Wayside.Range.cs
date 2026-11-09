@@ -53,6 +53,29 @@ namespace EnrageWestworld.Core
                 Thoughts = new[] { "A sheep bites the grass off at the root. Ask anyone.", "Thirty years and I never hurt a soul with a lamb.", "Sunday. He'll be gone by Sunday, one way or the other." },
                 News = "Cowboys ran a sheepherder off the range near {town}, and the talk is he'll be back with the county's paper."
             },
+            new WaysideKind
+            {
+                Id = "surveyors", Mark = "Men arguing", Test = "By a farm: surveyors and a farmer's gun", From = 8, To = 18, Weight = 9, Threat = "fight",
+                Cast = new[]
+                {
+                    R("A surveyor", "rough", null, W("CROUCH_INSPECT"), 0f, 0f), R("A chainman", "rough", null, "stand", 3f, 1f, 2), R("A farmer", "rough", "rifle", "stand", -3.5f, 0f, 0)
+                },
+                Beats = new[]
+                {
+                    Say(0, 2, "threat", "Pull that stake or I'll pull it for you.", "My father cleared this ground. Get off it."),
+                    Say(4000, 0, "scared", "The company has the right of way, sir. It's all been filed.", "I only measure. Talk to the gentlemen in Saint Denis."),
+                    Say(8000, 2, "threat", "Filed. Who filed it? Nobody asked me.", "You tell your company I've got two barrels and a bad temper."),
+                    Say(12000, 1, "scared", "Easy now. We'll come back with the sheriff.", "Put it down, mister. Nobody's digging anything today.")
+                },
+                Choices = new[]
+                {
+                    C("farmer", "Stand with the farmer", 0, "part", 2, "Obliged to you. You heard the man, the pair of you. Off."),
+                    C("company", "Tell him it's filed and done", 0, "leave", 0, "Thank you, sir. Reasonable men are hard to find out here."),
+                    C("leave", "Ride on", 0, "leave", -1)
+                },
+                Thoughts = new[] { "Forty acres, and a line drawn across it by a man in Saint Denis.", "Three dollars a day to be shot at.", "They'll pay him next to nothing and he'll take it. They always do." },
+                News = "A farmer near {town} ran the railroad's surveyors off his land with a gun. They've said they'll be back."
+            },
         };
     }
 }
