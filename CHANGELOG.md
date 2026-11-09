@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **The seated too** (`[Mind] ControlRingSeated`, on; settings version 332; FIVEDAY2 item 3). The ring used to leave anyone on a bench or a rail alone, and most of a street is sat down. Now, after a minute or so (each person's own, so a bench doesn't rise as one), someone whose mind wants something else gets up the game's way and goes to it, a few at most at a time. Someone content where they are stays.
+  - Why it reads true: people sit down for a reason, and get up when it runs out.
+
 - **The ring keeps people at it** (`[Mind] ControlRingKeepAt`, on; settings version 331; FIVEDAY2 item 2). Someone the control ring holds who stops short of where they were sent is given the order again, up to three times, and never over a fight, a flee or a fall. F7's held line counts them.
   - Why it reads true: a person who gives up half way across a street for no reason reads as a mind going blank.
 

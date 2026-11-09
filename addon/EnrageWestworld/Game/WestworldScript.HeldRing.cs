@@ -27,6 +27,7 @@ namespace EnrageWestworld.InGame
             public int Since, NextAt, Acts, Fillers;
             public int StoodAt = int.MinValue / 2;   // the last standing look (a watch, a show): one each HeldStandMs at most
             public string Last;
+            public bool Seated;   // taken in sat or leaning (FIVEDAY2 item 3): gets up, in time, for what their mind wants
         }
 
         // a watch or a show is a stand and a look: chained back to back it stopped and turned them every few seconds, which
@@ -155,11 +156,14 @@ namespace EnrageWestworld.InGame
                     if (_heldRest.TryGetValue(h, out rest) && now < rest && now >= rest - HeldRestMs - 1000)
                         continue;
                     Ped p = new Ped(h);
-                    if (PED.IS_PED_USING_ANY_SCENARIO(h))
-                        continue;   // sat or at a spot: theirs; the minute's choice gets them up, and on their feet they're taken in (a bench full of the held was a ring of nobody chained)
-                    if (MindChosenQuietly(h) || MindActWhyNot(p, h, false) != null || !CanDirect(p))
+                    bool seated = PED.IS_PED_USING_ANY_SCENARIO(h);
+                    if (!seated)
+                        _ringSeatedSince.Remove(h);
+                    else if (!RingSeatedReady(h, w, now))
+                        continue;   // sat or at a spot: theirs, for a decent while; the ring's own (FIVEDAY2 item 3) after that, or the minute's choice gets them up and on their feet they're taken in (a bench full of the held was a ring of nobody chained)
+                    if (MindChosenQuietly(h) || MindActWhyNot(p, h, seated) != null || !CanDirect(p))
                         continue;
-                    _held[h] = new Held { Name = w.Name, Since = now, NextAt = now };
+                    _held[h] = new Held { Name = w.Name, Since = now, NextAt = now, Seated = seated };
                     _heldStarts++;
                     Log.Write("HELD: " + w.Name + " held, " + (int)p.Position.DistanceTo(at) + " m from you (" + (w.Choice != null ? Choosing.WordsOf(w.Choice) : "no choice yet") + ")");
                 }
@@ -172,9 +176,16 @@ namespace EnrageWestworld.InGame
                     continue;
                 if (PED.IS_PED_USING_ANY_SCENARIO(h))
                 {
+                    MindWho sw;
+                    if (hd.Seated && _mindWho.TryGetValue(h, out sw) && sw.P != null && RingSeatedReady(h, sw, now))
+                    {
+                        RingRaise(h, sw, hd, now);
+                        continue;
+                    }
                     hd.NextAt = now + 3000;   // at a seat or a spot: theirs, untouched (the minute's choice may get them up)
                     continue;
                 }
+                hd.Seated = false;
                 MindWho w;
                 if (!_mindWho.TryGetValue(h, out w) || w.P == null)
                 {
@@ -260,6 +271,11 @@ namespace EnrageWestworld.InGame
             }
             if (lost == MindRetry.Aimed || lost == MindRetry.Story || lost == MindRetry.Riding || lost == MindRetry.Busy)
                 return;   // HeldWhyNot lets them go on the next step
+            if (PED.IS_PED_USING_ANY_SCENARIO(h))
+            {
+                hd.NextAt = now + 12000;   // sat, and nothing to get up for yet: no spot or stroll over their seat
+                return;
+            }
             HeldFill(h, w, hd, now, lost);
         }
 
@@ -286,6 +302,51 @@ namespace EnrageWestworld.InGame
             else if (standing)
                 hd.StoodAt = now;
             return lost;
+        }
+
+        // the ring's seated: when each was first seen sat near you, and how many have got up for it
+        private readonly Dictionary<int, int> _ringSeatedSince = new Dictionary<int, int>();
+        private int _ringRaised, _ringStayed;
+
+        /// Whether someone sat near you has been there a decent while, and their mind wants something else that gets them up. Their dwell is theirs: a bench doesn't rise as one.
+        private bool RingSeatedReady(int h, MindWho w, int now)
+        {
+            if (!RingOn || !_cfg.ControlRingSeated || !_cfg.MindActsScenarios)
+                return false;
+            int since;
+            if (!_ringSeatedSince.TryGetValue(h, out since) || now < since)
+            {
+                if (_ringSeatedSince.Count > 200)
+                    _ringSeatedSince.Clear();
+                _ringSeatedSince[h] = now;
+                return false;
+            }
+            if (now - since < Ring.SeatedDwellMs(Voice.Hash(w.Id)))
+                return false;
+            string kind = w.MindChoice ?? w.Choice;
+            if (kind == null || !MindScenarios.GetsUpFor(kind) || MindAlreadyAt(kind, h) != null)
+            {
+                _ringStayed++;
+                return false;   // it's what they want, or nothing that gets them up: they stay
+            }
+            return true;
+        }
+
+        /// Up the game's way and off to what they wanted (MindGetUp, under its own limit of a few at a time near you). If it can't be done yet they stay and it's tried again in a while.
+        private void RingRaise(int h, MindWho w, Held hd, int now)
+        {
+            hd.NextAt = now + 6000;
+            string lost = HeldTry(w, hd, h, now, w.MindChoice ?? w.Choice);
+            if (lost != null || !MindGettingUp(h))
+                return;
+            hd.Acts++;
+            hd.Seated = false;
+            _heldChained++;
+            _ringActsThisMinute++;
+            _ringRaised++;
+            _ringSeatedSince.Remove(h);
+            hd.Last = _heldLast = _mindActLast;
+            Log.Detail("HELD: " + hd.Name + " gets up: " + _mindActLast);
         }
 
         /// An act under way for someone the ring holds, every few seconds: stopped short of where they were sent, they're told again (never a scenario, never over a fight, a flee or a fall).
@@ -392,7 +453,7 @@ namespace EnrageWestworld.InGame
                         acting++;
                 }
             }
-            string gauge = RingOn ? "; ring " + _ringGait.Settled + " " + (int)_ringReach.In + " m, at most " + _ringReach.Most + "; " + _ringActsLastMinute + " decisions last minute; a step " + _ringGuard.AverageMicros + " us on average, peak " + _ringGuard.PeakMicros + " us (budget " + RingGuard.AverageBudget + " / " + RingGuard.PeakBudget + "); guard " + _ringGuard.Scale.ToString("0.00") + ", drawn in " + _ringGuard.Shrinks + " times, eased " + _ringGuard.Eases + "; " + _ringDrawnIn + " let go as it drew in; " + _ringReorders + " told again of " + _ringReorderChecks + " checks" : "";
+            string gauge = RingOn ? "; ring " + _ringGait.Settled + " " + (int)_ringReach.In + " m, at most " + _ringReach.Most + "; " + _ringActsLastMinute + " decisions last minute; a step " + _ringGuard.AverageMicros + " us on average, peak " + _ringGuard.PeakMicros + " us (budget " + RingGuard.AverageBudget + " / " + RingGuard.PeakBudget + "); guard " + _ringGuard.Scale.ToString("0.00") + ", drawn in " + _ringGuard.Shrinks + " times, eased " + _ringGuard.Eases + "; " + _ringDrawnIn + " let go as it drew in; " + _ringReorders + " told again of " + _ringReorderChecks + " checks; " + _ringRaised + " got up for what they wanted" + (_ringStayed > 0 ? ", " + _ringStayed + " looks at someone content where they sat" : "") : "";
             return (RingOn ? "control ring: " : "held ring: ") + held + " of " + inRing + " named within " + (int)HeldInMetres + " m held" + (inRing > 0 ? " (" + (100 * held / inRing) + "%)" : "") + ", " + acting + " of them at an act or a spot; " +
                    _heldStarts + " held this session, " + _heldChained + " acts chained, " + _heldFills + " spots or strolls, " + _heldEnds + " let go" +
                    (_heldEndWhy.Count > 0 ? " (" + string.Join(", ", _heldEndWhy.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value)) + ")" : "") + (_heldLast != null ? "; last: " + _heldLast : "") + gauge;

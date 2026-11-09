@@ -38,6 +38,15 @@ namespace EnrageWestworld.Core
             return moved < StallMetres && reorders < MostReorders;
         }
 
+        // ---- the seated too (FIVEDAY2 item 3): the game's own benches and rails hold most of a street. Someone who's sat a decent while, and whose mind wants something else, gets up for it
+        public const int SeatedDwellLeastMs = 45000, SeatedDwellSpreadMs = 45000;
+
+        /// How long this person stays sat before their mind's wanting something else gets them up: a spread, so a bench doesn't rise as one.
+        public static int SeatedDwellMs(int hash)
+        {
+            return SeatedDwellLeastMs + (hash & 0x7fffffff) % SeatedDwellSpreadMs;
+        }
+
         /// How you're moving. Any vehicle counts as fast: a seat on a wagon or a train takes you past people, and you can't stop to look.
         public static RingGait GaitOf(bool mounted, bool inVehicle, float speed)
         {
