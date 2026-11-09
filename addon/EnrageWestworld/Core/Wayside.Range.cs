@@ -28,6 +28,31 @@ namespace EnrageWestworld.Core
                 Thoughts = new[] { "Two more and we're over the ridge before light.", "Nobody reads a brand that close.", "If he's a stock detective I'll know by his hands." },
                 News = "Somebody's been at the cattle out past {town} with a running iron, by night."
             },
+            new WaysideKind
+            {
+                Id = "sheepherder", Mark = "Men shouting", Test = "In the wilds: cowboys run off a sheepherder", From = 7, To = 19, Weight = 9,
+                Cast = new[]
+                {
+                    R("A cowboy", "rough", null, "stand", 1.3f, 0f, 1), R("A sheepherder", "rough", null, "stand", -1.3f, 0f, 0), R("A cowboy", "rough", "revolver", W("STARE_STOIC"), 3f, 3f)
+                },
+                SideA = new[] { 0 }, SideB = new[] { 1 },
+                Beats = new[]
+                {
+                    Say(0, 0, "threat", "This is cattle range. It was cattle range before you were born.", "Get those woollies off this grass by Sunday."),
+                    Say(3500, 1, "scared", "I have a paper from the county, mister. I have a paper.", "Grass doesn't know whose it is."),
+                    Say(7000, 2, "threat", "A paper. Show him what we think of paper.", "Go on. Knock some sense into him."),
+                    Do(9000, "fight"),
+                    Say(14000, 1, "fight", "Thirty years I've kept sheep! Thirty years!")
+                },
+                Choices = new[]
+                {
+                    C("part", "Stand between them", 0, "part", 1, "God keep you. They'll be back, but God keep you."),
+                    C("side", "Tell the herder to clear off", 0, "leave", 0, "There. Even a stranger can see it."),
+                    C("leave", "Ride on", 0, "leave", -1)
+                },
+                Thoughts = new[] { "A sheep bites the grass off at the root. Ask anyone.", "Thirty years and I never hurt a soul with a lamb.", "Sunday. He'll be gone by Sunday, one way or the other." },
+                News = "Cowboys ran a sheepherder off the range near {town}, and the talk is he'll be back with the county's paper."
+            },
         };
     }
 }
