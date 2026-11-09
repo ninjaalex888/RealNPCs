@@ -48,7 +48,7 @@ namespace EnrageWestworld.Core
                 },
                 Choices = new[]
                 {
-                    C("wrong", "Point them the wrong way", 0, "help", 1, "Obliged. Come on, he can't have got far."),
+                    C("wrong", "Point them the wrong way", 0, "misdirect", 1, "Obliged. Come on, he can't have got far."),
                     C("right", "Point them the right way", 0, "leave", 1, "That's the first honest face I've seen today."),
                     C("leave", "Say nothing", 0, "leave", -1)
                 },

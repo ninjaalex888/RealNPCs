@@ -8,7 +8,7 @@ namespace EnrageWestworld.Core
         {
             new WaysideKind
             {
-                Id = "injured", Mark = "A man down", Test = "By the road: a rider hurt, his horse gone", From = 7, To = 20, OnRoad = true, Weight = 12,
+                Id = "injured", NewsIfHelped = true, Mark = "A man down", Test = "By the road: a rider hurt, his horse gone", From = 7, To = 20, OnRoad = true, Weight = 12,
                 Cast = new[] { R("A man on the ground", "rough", null, W("SIT_GROUND"), 0f, 0f) },
                 Beats = new[]
                 {
@@ -28,7 +28,7 @@ namespace EnrageWestworld.Core
             },
             new WaysideKind
             {
-                Id = "snakebite", Mark = "A man down", Test = "In the wilds: a man bitten by a snake", From = 8, To = 19, Weight = 8,
+                Id = "snakebite", NewsIfHelped = true, Mark = "A man down", Test = "In the wilds: a man bitten by a snake", From = 8, To = 19, Weight = 8,
                 Cast = new[] { R("A man on the ground", "rough", null, W("SIT_GROUND"), 0f, 0f) },
                 Beats = new[]
                 {
@@ -46,7 +46,7 @@ namespace EnrageWestworld.Core
             },
             new WaysideKind
             {
-                Id = "stranded", Mark = "Someone waiting", Test = "On a road: someone stranded", From = 7, To = 21, OnRoad = true, Weight = 10,
+                Id = "stranded", NewsIfHelped = true, Mark = "Someone waiting", Test = "On a road: someone stranded", From = 7, To = 21, OnRoad = true, Weight = 10,
                 Cast = new[] { R("A woman by the road", "rough", null, W("STARE_STOIC"), 0f, 0f, -1, true) },
                 Beats = new[]
                 {

@@ -34,7 +34,7 @@ namespace EnrageWestworld.InGame
             public bool Noticed, Warned, Called, Thought, Test, LastChance;
             // what can turn it (FIVEDAY2 item 15; Core/Executions.cs)
             public string Twist = Executions.TwistNone;
-            public bool TwistDone, RunnerSent, KinDue, KinSaid;
+            public bool TwistDone, RunnerSent, KinDue, KinSaid, LetGo;
             public Ped Runner, Kin;
             public uint RunnerModel, KinModel;
             public int KinAt, NextMutter;
@@ -96,6 +96,7 @@ namespace EnrageWestworld.InGame
             if (r == null)
             {
                 Log.Write("EXECUTION: nobody to put there (no town regulars saved yet)");
+                _execForce = null;
                 if (test)
                     Hint("Nobody to put there yet: walk round a town first, so it has regulars.", 6000);
                 return;
@@ -156,9 +157,10 @@ namespace EnrageWestworld.InGame
             if (e.Captive != null && e.Captive.Exists())
                 EventDot("execution", e.Captive.Position);
             Ped me = Game.Player.Character;
-            foreach (Ped m in e.Men)
-                if (m != null && m.Exists() && !m.IsDead)
-                    _cameAtYouSeen[m.Handle] = now;   // men holding a man at gunpoint: shooting them is self-defence, the whole time
+            if (!e.LetGo)
+                foreach (Ped m in e.Men)
+                    if (m != null && m.Exists() && !m.IsDead)
+                        _cameAtYouSeen[m.Handle] = now;   // men holding a man at gunpoint: shooting them is self-defence, while they are
             bool captiveThere = e.Captive != null && e.Captive.Exists();
             bool captiveAlive = captiveThere && !e.Captive.IsDead;
             List<Ped> men = e.Men.Where(m => m != null && m.Exists() && !m.IsDead).ToList();
@@ -591,6 +593,9 @@ namespace EnrageWestworld.InGame
                     return true;
                 }
                 Feed.Say(ExecManName(e, first), Executions.BalkAnswered(seed), Speech.When(first.Handle, "threat", second.Handle), first.Handle);
+                e.Men.Remove(second);   // he's out of it: not one of them, to you or to anyone
+                e.Crowd.Add(second);
+                _cameAtYouSeen.Remove(second.Handle);
                 Vector3 away = second.Position + (second.Position - e.Captive.Position).Normalized * 120f;
                 TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(second.Handle, away.X, away.Y, away.Z, Natives.Brisk, -1, 1f, 0, 0f);
                 e.ShootAt = Math.Max(e.ShootAt, now + 3000);
@@ -651,6 +656,10 @@ namespace EnrageWestworld.InGame
             if (e.Mark != null && e.Mark.Exists())
                 e.Mark.Delete();
             e.KinDue = false;
+            e.LetGo = true;   // nobody's holding anyone now: shooting them walking away isn't self-defence
+            foreach (Ped m in e.Men)
+                if (m != null)
+                    _cameAtYouSeen.Remove(m.Handle);
             e.Phase = "leaving";
             e.PhaseUntil = now + 45000;
             _execCount++;
@@ -665,6 +674,11 @@ namespace EnrageWestworld.InGame
                 return false;
             if (now < e.KinAt)
                 return true;
+            if (e.Captive.Position.DistanceTo(Game.Player.Character.Position) > 90f)
+            {
+                e.KinDue = false;   // you've ridden on: nobody comes for you to see
+                return false;
+            }
             int body = e.Captive.Handle;
             if (e.Kin == null)
             {
@@ -723,7 +737,7 @@ namespace EnrageWestworld.InGame
             if (e.Captive != null && e.Captive.Exists() && e.Phase != "spawn")
             {
                 // the outcome says how it ended for him, so the mind can take it as a killing seen or, for him, a rescue (night 2026-10-28)
-                string outcome = e.Captive.IsDead ? "he died; " + why : e.Phase == "saved" || e.Phase == "leaving" ? "saved; " + why : why;
+                string outcome = e.Captive.IsDead ? "he died; " + why : e.LetGo ? "let go; " + why : e.Phase == "saved" || e.Phase == "leaving" ? "saved; " + why : why;   // let go: nothing of that was yours
                 Safe("world events", () => RecordEvent("encounter:execution", e.BossR != null ? e.BossR.Id : null, e.Plan != null ? e.Plan.Boss ?? "two men" : "two men", e.R.Id, e.R.Name,
                                                        e.Captive.Position, e.Captive.Handle, e.Captive.Handle, 0, outcome));
             }

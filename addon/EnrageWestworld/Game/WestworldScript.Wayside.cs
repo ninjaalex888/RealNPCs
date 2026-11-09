@@ -25,13 +25,14 @@ namespace EnrageWestworld.InGame
             public int StartedAt, NoticedAt, PhaseUntil, Beat, Tries;
             public bool Noticed, Test, Chose, Fought;
             public string Outcome = "you rode on";
+            public string BetSeed;   // a bet waiting on the fight
             public Blip Mark;
             public TownEvent Ask;
             public string Town;
             public Resident R;   // someone you know, when it's them (Core/Wayside.Known.cs)
         }
 
-        private const int WaysideFightMs = 22000, WaysideAfterMs = 12000, WaysideRepeatDays = 2;
+        private const int WaysideFightMs = 22000, WaysideAfterMs = 12000, WaysideRepeatDays = 2, WaysideFightOnMs = 120000, WaysideLingerMs = 180000;
         private WaysideRun _wayside;
         private string _waysideForce;
         private int _waysideCount;
@@ -169,12 +170,13 @@ namespace EnrageWestworld.InGame
             float d = live.Min(c => c.Position.DistanceTo(pos));
             if (d > 150f)
             {
-                WaysideEnd("you rode on");
+                WaysideEnd(w.Chose ? w.Outcome : "you rode on");
                 return;
             }
             if (w.Phase == "after")
             {
-                if (now >= w.PhaseUntil)
+                bool stillAtIt = w.Fought && now < w.PhaseUntil + WaysideFightOnMs && live.Any(c => PED.IS_PED_IN_COMBAT(c.Handle, me.Handle));   // the scene waits for the shooting, up to a point
+                if (now >= w.PhaseUntil && !stillAtIt)
                     WaysideEnd(w.Outcome);
                 return;
             }
@@ -195,6 +197,11 @@ namespace EnrageWestworld.InGame
                     WaysideEnd("you never came near; nothing came of it");
                     return;
                 }
+                return;
+            }
+            if ((w.Phase == "play" || w.Phase == "walk") && w.Beat >= (w.K.Beats != null ? w.K.Beats.Length : 0) && now - w.NoticedAt > WaysideLingerMs)
+            {
+                WaysideEnd(w.Chose ? w.Outcome : "you stayed by it and nothing more came of it");
                 return;
             }
             WaysidePlay(w, live, now, d);
@@ -306,6 +313,8 @@ namespace EnrageWestworld.InGame
                 if (w.K.Threat == "fight" && WEAPON.IS_PED_ARMED(h, 4))
                 {
                     MakeHostile(c, now);
+                    _cameAtYouSeen.Remove(h);
+                    _youStarted[h] = now;   // you drew first: answering them isn't self-defence (WestworldScript.Watch.cs)
                     ScenarioExit.SoftUp(h, x => TASK.TASK_COMBAT_PED(x, you, 0, 16));
                 }
                 else
@@ -460,6 +469,19 @@ namespace EnrageWestworld.InGame
         }
 
         /// The fight is over: one side down on the ground, nobody dead of it.
+        /// A dollar down, won or lost. `noFight`: a bet on someone's shooting, not on a man in a fight.
+        private string WaysideSettleBet(string seed, bool noFight)
+        {
+            if (Wayside.BetWon(seed))
+            {
+                MONEY._MONEY_INCREMENT_CASH_BALANCE(200, 0);
+                Hint(noFight ? "He missed. Two dollars to you." : "Your man won. Two dollars.", 4000);
+                return "you bet and won";
+            }
+            Hint(noFight ? "Clean through the knot. The dollar's his." : "Your man went down. The dollar's gone.", 4000);
+            return "you bet and lost";
+        }
+
         private void WaysideFightOver(WaysideRun w, List<Ped> live, int now)
         {
             bool aDown = Voice.Chance(w.K.Id + "|" + w.StartedAt + "|down", 50);
@@ -481,7 +503,7 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_STAND_STILL(p.Handle, 5000);
                 }
             }
-            w.Outcome = "the fight ran its course";
+            w.Outcome = w.BetSeed != null ? WaysideSettleBet(w.BetSeed, false) : "the fight ran its course";
             w.Phase = "after";
             w.PhaseUntil = now + WaysideAfterMs;
             Log.Write("WAYSIDE " + w.K.Id + ": the fight is over, side " + (aDown ? "A" : "B") + " down");
@@ -524,14 +546,33 @@ namespace EnrageWestworld.InGame
                     w.PhaseUntil = now + WaysideAfterMs;
                     return "you parted them";
                 case "bet":
-                    if (Wayside.BetWon(seed))
+                    if (w.K.SideA != null && (w.Phase == "play" || w.Phase == "fight"))
                     {
-                        MONEY._MONEY_INCREMENT_CASH_BALANCE(200, 0);
-                        Hint("Your man won. Two dollars.", 4000);
-                        return "you bet and won";
+                        w.BetSeed = seed;   // settled when the fight is (WaysideFightOver)
+                        Hint("Your dollar's down. Now watch.", 3000);
+                        return "you put a dollar on it";
                     }
-                    Hint("Your man went down. The dollar's gone.", 4000);
-                    return "you bet and lost";
+                    return WaysideSettleBet(seed, w.K.SideA == null);
+                case "buy":
+                    Hint("It tastes like a fence post. You'll live.", 4000);
+                    return "you bought a jar";
+                case "misdirect":
+                    {
+                        Vector3 me = Game.Player.Character.Position;
+                        for (int i = 0; i < w.Cast.Length; i++)
+                        {
+                            Ped p = w.Cast[i];
+                            if (p == null || !p.Exists() || p.IsDead || w.K.Cast[i].Arm == null)
+                                continue;
+                            Vector3 away = p.Position + new Vector3(p.Position.Y - me.Y, me.X - p.Position.X, 0f).Normalized * 120f;   // off at right angles to where he went
+                            PED.SET_PED_KEEP_TASK(p.Handle, false);
+                            TASK.CLEAR_PED_TASKS(p.Handle, false, false);
+                            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(p.Handle, away.X, away.Y, away.Z, Natives.Brisk, -1, 1f, 0, 0f);
+                        }
+                        w.Phase = "after";
+                        w.PhaseUntil = now + WaysideAfterMs;
+                        return "you sent them the wrong way";
+                    }
                 case "leave":
                     return "you left them to it";
                 case "help":
@@ -607,8 +648,9 @@ namespace EnrageWestworld.InGame
         {
             long g = Bridge.Now();
             string seed = w.K.Id + "|" + w.StartedAt;
-            _engine.WaysideHeard(Wayside.Heard(w.K, w.Town, null), w.Town, seed, g);
-            if (w.Outcome == "you helped" && w.R == null && w.Town != null && Wayside.Writes(seed) && _cfg.Letters)
+            if (!w.K.NewsIfHelped || w.Outcome == "you helped")
+                _engine.WaysideHeard(Wayside.Heard(w.K, w.Town, null), w.Town, seed, g);
+            if (w.K.NewsIfHelped && w.Outcome == "you helped" && w.R == null && w.Town != null && Wayside.Writes(seed) && _cfg.Letters)
                 _engine.QueueLetter(new Paper { Id = Ids.New(), Kind = "note", Title = "A note left for you at " + w.Town, From = "Someone from the road", Body = Wayside.ThanksBody(seed), At = g, Town = w.Town, Delivered = false });
         }
 
@@ -646,7 +688,7 @@ namespace EnrageWestworld.InGame
                         continue;
                     bool alive = p.Exists() && !p.IsDead;
                     bool seen = alive && ENTITY.IS_ENTITY_ON_SCREEN(p.Handle);
-                    Spawner.Release(p, alive && (!seen || p.Position.DistanceTo(me.Position) > 120f));
+                    Spawner.Release(p, alive && !PED.IS_PED_IN_COMBAT(p.Handle, 0) && (!seen || p.Position.DistanceTo(me.Position) > 120f));
                 }
             _waysideCount++;
             _waysideLast = w.K.Id + ": " + why;

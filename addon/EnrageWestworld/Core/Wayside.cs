@@ -48,6 +48,7 @@ namespace EnrageWestworld.Core
         public float WalkMetres;              // they set off along the scene's facing, one after another, this far
         public string[] Thoughts;             // over their heads, any of them
         public string News;                   // what the nearest town hears when it's over: {town}, {you}
+        public bool NewsIfHelped;             // the news says you stopped, so it's only heard if you did; and only these may write to thank you
     }
 
     public static partial class Wayside

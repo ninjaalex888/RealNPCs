@@ -130,6 +130,8 @@ namespace EnrageWestworld.InGame
                 if (block != null)
                 {
                     Log.Write("ENCOUNTER test, " + asked + ": not now: " + block);
+                    _waysideForce = null;   // asked for and refused: not left for the next roll to pick up
+                    _execForce = null;
                     Hint("Not now: " + block + ".", 5000);
                 }
                 else
@@ -374,7 +376,7 @@ namespace EnrageWestworld.InGame
         {
             get
             {
-                return (_crying != null ? 1 : 0) + (_exec != null ? 1 : 0) + (HermitWithYou() ? 1 : 0) + (_gathering != null ? 1 : 0) + (_visitor != null ? 1 : 0) +
+                return (_wayside != null ? 1 : 0) + (_crying != null ? 1 : 0) + (_exec != null ? 1 : 0) + (HermitWithYou() ? 1 : 0) + (_gathering != null ? 1 : 0) + (_visitor != null ? 1 : 0) +
                        (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0) + (_streetCallout != null ? 1 : 0) + (_domestic != null ? 1 : 0) + (_hog != null ? 1 : 0) + (_callYou != null ? 1 : 0) + (_wagonScene != null ? 1 : 0);
             }
         }
@@ -437,6 +439,8 @@ namespace EnrageWestworld.InGame
             {
                 case "execution":
                     return "An execution will be staged near you, out of sight. Look for the mark on the map.";
+                case "wayside":
+                    return "Something will be going on off the road near you, out of sight. Look for the mark on the map.";
                 case "crying":
                     return "A woman will be crying somewhere near you, out of sight. Listen for her.";
                 case "hermit":
@@ -464,7 +468,7 @@ namespace EnrageWestworld.InGame
 
         private string KeyOf(string kind)
         {
-            if (kind == "visitor" || kind == "traveller" || kind == "supper" || kind == "campfire" || kind == "callout2" || kind == "domestic" || kind == "hogtied" || kind == "callyou")
+            if (kind == "wayside" || kind == "visitor" || kind == "traveller" || kind == "supper" || kind == "campfire" || kind == "callout2" || kind == "domestic" || kind == "hogtied" || kind == "callyou")
                 return "its Testing page row";
             KeySpec k = kind == "execution" ? _execKey : kind == "crying" ? _cryingKey : kind == "hermit" ? _hermitKey : _gatherKey;
             return k.ToString();
@@ -476,8 +480,17 @@ namespace EnrageWestworld.InGame
             switch (kind)
             {
                 case "wayside":
-                    if (!StartWayside(now, true))
-                        Hint("Nothing of that kind here.", 5000);
+                    {
+                        string whyNot = WaysideNotNow();
+                        if (whyNot != null)
+                        {
+                            _waysideForce = null;
+                            Hint("Not now: " + whyNot + ".", 5000);
+                            break;
+                        }
+                        if (!StartWayside(now, true))
+                            Hint("Nothing of that kind here.", 5000);
+                    }
                     break;
                 case "execution":
                     StartExecution(now, true);

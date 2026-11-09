@@ -18,7 +18,7 @@ namespace EnrageWestworld.Core
                 },
                 Choices = new[]
                 {
-                    C("buy", "Buy a jar", 200, "help", 1, "Sip it. I mean that. Sip it."),
+                    C("buy", "Buy a jar", 200, "buy", 1, "Sip it. I mean that. Sip it."),
                     C("hostile", "Tell them you'll tell the sheriff", 0, "hostile", 0, "Now why would you go and say a thing like that."),
                     C("leave", "Walk on", 0, "leave", -1)
                 },
