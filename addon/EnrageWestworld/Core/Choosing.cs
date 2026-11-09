@@ -32,6 +32,7 @@ namespace EnrageWestworld.Core
         public bool Grinding;                 // working the cane grinding (Core/Grinding.cs), with [World] GrindingSeason
         public bool Sick;                     // down with the town's fever (Core/Fever.cs), with [World] Fever
         public bool Saved;                    // saved at a camp meeting these two weeks (Core/Revival.cs), with [World] EventRevivals
+        public bool RoundupPay;               // a farmhand in a cattle town the fortnight after a roundup (Core/Roundup.cs), with [World] RoundupSeason
         public string SaleMood;               // at Valentine's sale today (Core/SaleDay.cs): paid or ruined, with [World] SaleDay; else null
         public bool Mourning;                 // a friend's death these three weeks (Core/Mourning.cs), with [World] Mourning
         public string Devotion;               // Devout, Churchgoer, Lapsed, Godless (the person's), for Sunday's lean with [World] SundayMorning; else null
@@ -152,7 +153,7 @@ namespace EnrageWestworld.Core
             new Doing { Id = "showoff", Words = "makes sure to be seen", Serves = N(0, 0, 0, 0, 0, 0.2f, 1f), Effort = 0.15f, Risk = 0.05f, Proper = c => c.Others >= 2 && c.Place != "church", Suits = t => 0.15f * T(t, Traits.Assertiveness) - 0.12f * T(t, Traits.Honesty) },
             // night 2026-10-28 (item 5): the places of a town's day, and the people in sight
             new Doing { Id = "saloon", Words = "goes to the saloon", Serves = N(0.3f, 0.2f, 0.3f, 0, 0, 0.6f, 0.1f, 0, 0.6f), Effort = 0.15f, Risk = 0.04f,
-                        Proper = c => c.Place != "saloon" && c.InTown && c.SaloonNear && (!c.Woman || c.SaloonGirl) && !Sunday(c) && (c.Hour >= 17 || c.Hour < 2 || c.Weekday == 6 && c.Hour >= 14 || c.PassedOver && c.Hour >= 7 || c.SaleMood != null && c.Hour >= SaleDay.DrinkFromHour),   // (passed over at the wharf: from seven in the morning; FIVEDAY item 29; sale day's pay from one: item 30)
+                        Proper = c => c.Place != "saloon" && c.InTown && c.SaloonNear && (!c.Woman || c.SaloonGirl) && !Sunday(c) && (c.Hour >= 17 || c.Hour < 2 || c.Weekday == 6 && c.Hour >= 14 || c.PassedOver && c.Hour >= 7 || c.SaleMood != null && c.Hour >= SaleDay.DrinkFromHour || c.RoundupPay && c.Hour >= SaleDay.DrinkFromHour),   // (passed over at the wharf: from seven in the morning; FIVEDAY item 29; sale day's pay from one: item 30)
                         Suits = t => 0.12f * T(t, Traits.Sociability) - 0.15f * T(t, Traits.Piety) - 0.05f * T(t, Traits.SelfControl) },   // 1899 is the Anti-Saloon League's decade: a church member in a saloon was the congregation's business
             new Doing { Id = "store", Words = "goes to the store", Serves = N(0.15f, 0, 0.25f, -0.1f, 0, 0.25f, 0.1f), Effort = 0.15f, Risk = 0f,   // provisions, not a meal; it costs; the cracker barrel was the town's second hub (the review)
                         Proper = c => c.Place != "store" && c.InTown && c.StoreNear && c.Weekday != 0 && c.Hour >= 7 && c.Hour < 20,
@@ -285,6 +286,8 @@ namespace EnrageWestworld.Core
             s += Survivors.Lean(c.Survivor, d.Id);   // a wrong of his: the broken keep clear of the street (FIVEDAY item 21)
             s += StressLoad.Lean(c.Coping, d.Id);   // broken by the week's load: the habit bends the day (FIVEDAY item 17)
             s += WorryActs.Lean(c.Worry, c.WorryStage, d.Id);   // a worry bends the day, for everyone who carries one (FIVEDAY item 7)
+            if (c.RoundupPay)
+                s += Roundup.Lean(d.Id);
             if (c.Payday)
                 s += Payday.Lean(c.Weekday, c.Hour, c.Works && !c.SaloonGirl, d.Id);   // (a saloon girl's busiest afternoon: her work isn't stopped; the Part 3 review)   // the week's pay in their pocket (FIVEDAY item 11)
             if (c.Mood == "glad" && (d.Id == "talk" || d.Id == "stroll" || d.Id == "greet"))

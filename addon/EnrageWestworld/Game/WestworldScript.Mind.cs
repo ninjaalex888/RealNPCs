@@ -401,6 +401,7 @@ namespace EnrageWestworld.InGame
                 Plan = PlansOn ? _store.Plans.FirstOrDefault(p => !p.Done && p.HolderId == w.Id)?.Kind : null   // a plan leans the day (WestworldScript.Plans.cs)
             };
             c.Payday = _cfg.Payday;
+            c.RoundupPay = _cfg.RoundupSeason && tg == "farm" && Roundup.In(_placeTown) && Roundup.Paid(InnerLife.ClockMonth, InnerLife.ClockDay);
             c.Coping = _engine.BrokenWay(w.Id, g / 1440);
             c.Survivor = SurvivorWayOf(w);
             c.Fright = _cfg.SharedFright && FrightPartnerNear(w.Id);

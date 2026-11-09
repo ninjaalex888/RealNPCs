@@ -941,6 +941,7 @@ namespace EnrageWestworld.Core
             BaseBallDaily(now);     // Thursday posts the Saturday's base ball (Engine.BaseBall.cs; FIVEDAY R16)
             DimeNovelDaily(now);    // a dime novel about your most-told deed, on a Monday (Engine.DimeNovel.cs; FIVEDAY R12)
             PosseDaily(now);        // a posse rides after a bad crime, and comes back (Engine.Posse.cs; FIVEDAY R32)
+            RoundupDaily(now);      // the hands are in from the roundup (Engine.Roundup.cs; TENHOUR R1)
             ClaimAgentsDaily(now);  // the claim agent calls on a widow (Engine.Fever.cs; FIVEDAY R24)
             FeverDaily(now);        // fever in town: the spread, the sick, the quarantine (Engine.Fever.cs; FIVEDAY R9)
             BarnRaisingDaily(now);  // a barn raising booked for a Saturday (Engine.BarnRaising.cs; FIVEDAY R7)
