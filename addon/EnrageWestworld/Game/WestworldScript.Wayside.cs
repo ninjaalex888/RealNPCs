@@ -648,6 +648,15 @@ namespace EnrageWestworld.InGame
                         w.PhaseUntil = now + 5000;
                         return "you went through their pockets";
                     }
+                case "paid":
+                    {
+                        int cents = 200 + Voice.Hash(seed + "|paid") % 600;
+                        MONEY._MONEY_INCREMENT_CASH_BALANCE(cents, 0);
+                        Hint("$" + (cents / 100) + "." + (cents % 100).ToString("00") + " in your hand, and nobody the wiser.", 4000);
+                        w.Phase = "after";
+                        w.PhaseUntil = now + WaysideAfterMs;
+                        return "you took their money";
+                    }
                 case "bless":
                     Hint("You take your hat off a moment. There's nobody to see it.", 4000);
                     w.Phase = "after";

@@ -30,7 +30,7 @@ namespace EnrageWestworld.Core
 
     public sealed class WaysideChoice
     {
-        public string Id, Label, Effect;      // Effect: part, bet, help, rob, hostile, bless, search, leave
+        public string Id, Label, Effect;      // Effect: part, bet, help, rob, hostile, bless, search, leave, paid
         public int Cents, By = -1;            // the cost, and who answers
         public string[] Said;
     }
@@ -84,7 +84,7 @@ namespace EnrageWestworld.Core
         /// The kinds there are. Each item's table adds itself here.
         public static IEnumerable<WaysideKind> All
         {
-            get { return Fights.Concat(Pursuit).Concat(Trouble).Concat(Camps).Concat(Found).Concat(Burial).Concat(Labour); }
+            get { return Fights.Concat(Pursuit).Concat(Trouble).Concat(Camps).Concat(Found).Concat(Burial).Concat(Labour).Concat(Range); }
         }
 
         public static WaysideKind Of(string id)
