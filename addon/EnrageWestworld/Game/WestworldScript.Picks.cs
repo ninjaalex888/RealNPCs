@@ -162,6 +162,8 @@ namespace EnrageWestworld.InGame
                 Log.Detail("MIND pick for " + w.Name + ": dropped, taken up since the ask (a scene, Talk, a walk-up)");
                 return;   // no thought over it, no act (the cross-cutting review)
             }
+            if (IsHeld(h))
+                _mindActNextAt = 0;   // one of the ring's, going on with an errand: the street's gap between new starts isn't for them (as HeldTry)
             string thought = null;
             int idx = came ? Language.ParseThinkPick(answer, pp.Ids.Count, out thought) : -1;
             string offered = string.Join(" | ", pp.Words.Select((x, k) => (k + 1) + " " + x));

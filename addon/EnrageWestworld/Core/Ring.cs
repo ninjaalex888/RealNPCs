@@ -95,6 +95,7 @@ namespace EnrageWestworld.Core
     public static class RingPlans
     {
         public const int KeepMs = 300000;
+        public const int AskGapMs = 30000;   // at most one ask of the model a person in this long (TENHOUR item 12): the model has room, the street needn't be asked about at every step of everybody's day
 
         // by the part of the day: what a person in town has in mind
         private static readonly string[][] Morning = { new[] { "work", "store", "talk" }, new[] { "store", "stroll", "home" }, new[] { "eat", "work" }, new[] { "stroll", "store" } };

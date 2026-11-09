@@ -25,6 +25,7 @@ namespace EnrageWestworld.InGame
         {
             public string Name;
             public int Since, NextAt, Acts, Fillers;
+            public int AskedAt = int.MinValue / 2;   // the last time the model was asked about them (RingPlans.AskGapMs)
             public int StoodAt = int.MinValue / 2;   // the last standing look (a watch, a show): one each HeldStandMs at most
             public string Last;
             public int ComposedAt = int.MinValue / 2;   // the last composed act (FIVEDAY2 item 8)
@@ -386,7 +387,29 @@ namespace EnrageWestworld.InGame
             }
             plan.Next++;
             _ringAsked++;
+            hd.AskedAt = now;
             hd.NextAt = now + PickWaitMs + 500;   // the answer's act comes through PicksStep
+        }
+
+        /// The model's word on what they're about to do (TENHOUR item 12: its answers take a third of a second and it was asked a few times a minute). True when it's asked: the act comes through PicksStep, the step itself if the answer's late or unreadable. Not more than once a person in RingPlans.AskGapMs. `evenIfSame`: a seated person's choice is the one standing already, and the ask is what gets them offered something else.
+        private bool RingAskStep(int h, MindWho w, Held hd, string step, int now, bool evenIfSame = false)
+        {
+            if (!_cfg.ControlRingPicks || !PicksOn || step == null || (now - hd.AskedAt < RingPlans.AskGapMs && now >= hd.AskedAt))
+                return false;
+            string was = w.Choice, wasNext = w.ChoiceNext;
+            if (step == was && !evenIfSame)
+                return false;
+            hd.AskedAt = now;
+            w.Choice = step;
+            if (!PickAsk(w, h, now, MindContextFor(w, h, false, _store.LastGameMin)))
+            {
+                w.Choice = was;
+                w.ChoiceNext = wasNext;
+                return false;
+            }
+            _ringAsked++;
+            hd.NextAt = now + PickWaitMs + 500;
+            return true;
         }
 
         /// The next act for one held between acts: the next step of their errand if they have one, the mind's choice, the one it ranked next, a spot, a stroll. Never nothing.
@@ -405,6 +428,8 @@ namespace EnrageWestworld.InGame
             {
                 string step = plan.NextStep;
                 plan.Next++;   // done or not to be done, it's passed: a plan never stalls on what can't happen now
+                if (RingAskStep(h, w, hd, step, now))
+                    return;
                 string got = HeldTry(w, hd, h, now, step);
                 if (got == null)
                 {
@@ -506,6 +531,13 @@ namespace EnrageWestworld.InGame
         private void RingRaise(int h, MindWho w, Held hd, int now)
         {
             hd.NextAt = now + 6000;
+            if (w.ChoiceWhy != null && w.ChoiceWhy.StartsWith("the model's pick", StringComparison.Ordinal))
+            {
+                hd.NextAt = now + RingPlans.AskGapMs;
+                return;   // the model has had its say about them: they stay as it left them until their own mind moves on
+            }
+            if (RingAskStep(h, w, hd, w.MindChoice ?? w.Choice, now, true))
+                return;
             string lost = HeldTry(w, hd, h, now, w.MindChoice ?? w.Choice);
             if (lost != null || !MindGettingUp(h))
                 return;
