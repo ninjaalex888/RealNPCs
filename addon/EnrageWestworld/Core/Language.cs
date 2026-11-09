@@ -50,6 +50,7 @@ namespace EnrageWestworld.Core
         public List<string> Recent = new List<string>();    // their last thoughts shown (the model is told to think of something else)
         public bool Revenant;                // Kind "pick" for one of the dead (Core/RevenantMind.cs): the brief says so
         public string CarryOn;               // their last thought, to pick up from (FIVEDAY2 item 27), or null
+        public bool Compose;                 // Kind "pick": a few moves in order, not one (Core/Composed.cs; FIVEDAY2 item 9)
         public string Now;                   // Kind "pick" in a staged encounter (Core/Staged.cs): what is going on around them this moment, in a few words
 
         /// The variety rules apply here: set, and a thought or a pick (Talk's answers and the remarks said aloud keep their own).

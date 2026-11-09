@@ -43,12 +43,23 @@ namespace EnrageWestworld.Core
         /// The body for /api/generate: steadier than a thought, and a few tokens are enough for a number.
         public static string PickBody(string model, LanguageRequest r)
         {
+            if (r != null && r.Compose)
+                return ComposeBody(model, r);     // moves in order: numbers, no thought
             if (r != null && r.WithThought)
                 return ThinkPickBody(model, r);   // the thought and the choice in one answer
             var b = new StringBuilder(1024);
             b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(PickBrief(r))).Append(",\"prompt\":").Append(JsonString(PickPrompt(r)));
             b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append(0.5.ToString("0.00", CultureInfo.InvariantCulture))
              .Append(",\"num_predict\":4,\"stop\":[\"\\n\"]}}");
+            return b.ToString();
+        }
+
+        /// The body for a sequence of moves (FIVEDAY2 item 9): steady, and enough tokens for three numbers and no more.
+        public static string ComposeBody(string model, LanguageRequest r)
+        {
+            var b = new StringBuilder(1024);
+            b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(Composed.Brief(r != null ? r.Year : 0))).Append(",\"prompt\":").Append(JsonString(Composed.Prompt(r)));
+            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":1024,\"temperature\":0.60,\"num_predict\":12,\"stop\":[\"\\n\"]}}");
             return b.ToString();
         }
 

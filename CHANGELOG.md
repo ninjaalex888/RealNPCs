@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The model composes** (`[Mind] ComposedModel`, on; settings version 336; FIVEDAY2 item 9). With the AI model on, someone's composed act is put to it as a short numbered list of what their body can do, in plain words, and it answers with two or three numbers in order. The order is checked, and a bad or late answer falls back to the rules. It never sees or names a clip.
+
 - **Composed acts** (`[Mind] ComposedActs`, on; settings version 335; FIVEDAY2 item 8; Testing row "A composed act on the nearest held person"). Someone the control ring holds, with a feeling strong enough to show, shows it in two or three of the game's own moves in an order that can follow: a look, then a shrug, then walking off. Only moves the game has been seen to play. F7's `TEST composed acts:` says what was composed and how it went.
   - Why it reads true: people's displays have a grammar. Attention first, then what's felt, then what it comes to.
 
