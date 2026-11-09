@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The road's pace, measured** (FIVEDAY2 item 23). An offline measure of what a rider meets in an hour (mindtest `RoadPaceTest`): the encounters as they were against the same with the road's scenes added. No setting changed by it.
+
 - **What comes of it** (FIVEDAY2 item 22). What happens out on the road doesn't stay there. A while after, the nearest town has word of it in the Around town box. Someone you stopped for may leave a note for you at the post office there.
 
 - **Someone you know, out of place** (with `[Encounters] Wayside`; FIVEDAY2 item 21; Testing row). A quarter of the time, what you come across on the road is someone you've met who lives in another town, far from it, for a reason their own trouble gives: the debtor who doesn't want to be found, the one walking to a crossing to ask a question, the father looking for a son. Say your name if they know it. Give them a few dollars, tell them to go home, or say you never saw them. What you do for them there they remember.
