@@ -122,6 +122,29 @@ namespace EnrageWestworld.InGame
                     NoteTheirThought(side[i].Handle, now, side[i].Text);
                     ThreadThoughtShown(side[i].Key, now);
                 }
+            ThoughtsMinuteLine(now);
+        }
+
+        // the thought board's numbers for the log, once a minute: what the last line has told already, and when it was
+        private int _thoughtsMainShown, _roadThoughtsMade, _thoughtsMinuteAt, _toldMain, _toldSide, _toldAsides, _toldRoad, _toldFollow;
+
+        /// The boxes over heads as a line in the log, so a session can be read afterwards (TENHOUR item 2; asides, road thoughts and follow-ons wrote nothing an ordinary log would show).
+        private void ThoughtsMinuteLine(int now)
+        {
+            if (now - _thoughtsMinuteAt < 60000 && now >= _thoughtsMinuteAt)
+                return;
+            _thoughtsMinuteAt = now;
+            int main = _thoughtsMainShown - _toldMain, beside = _sideShown - _toldSide, asides = _asidesShown - _toldAsides, road = _roadThoughtsMade - _toldRoad, follow = _threadFollows - _toldFollow;
+            if (main + beside + asides + road + follow == 0)
+                return;
+            _toldMain = _thoughtsMainShown;
+            _toldSide = _sideShown;
+            _toldAsides = _asidesShown;
+            _toldRoad = _roadThoughtsMade;
+            _toldFollow = _threadFollows;
+            double f = Stopwatch.Frequency / 1000.0;
+            Log.Write("THOUGHTS minute: " + (main + beside) + " over heads (" + main + " main, " + beside + " beside), at most " + _sideMost + " beside it so far; " + asides + " while someone talked, " + road + " from the saddle, " + follow + " following on" +
+                      (_sideFrames > 0 ? "; the side boxes " + (_sideTicks / f / _sideFrames).ToString("0.000") + " ms a frame on average, " + (_sidePeak / f).ToString("0.000") + " ms at worst" : ""));
         }
 
         /// The box already showing this line, or a free one.

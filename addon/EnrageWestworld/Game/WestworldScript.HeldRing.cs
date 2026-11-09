@@ -73,9 +73,32 @@ namespace EnrageWestworld.InGame
             if (now - _ringMinuteAt >= 60000 || now < _ringMinuteAt)
             {
                 _ringMinuteAt = now;
+                RingMinuteLine();
                 _ringActsLastMinute = _ringActsThisMinute;
                 _ringActsThisMinute = 0;
             }
+        }
+
+        // what the last minute's line has told already, so each says that minute's own numbers
+        private int _ringToldStarts, _ringToldEnds, _ringToldReorders, _ringToldRaised, _ringToldErrand, _ringToldAsked, _ringToldComposed;
+
+        /// Once a minute while the ring has anything to say: F7's numbers in the log, so a session can be read afterwards (TENHOUR item 2; nobody is looking at F7 while they play, and the frame-cost test needs these).
+        private void RingMinuteLine()
+        {
+            int began = _heldStarts - _ringToldStarts, ended = _heldEnds - _ringToldEnds, told = _ringReorders - _ringToldReorders, up = _ringRaised - _ringToldRaised,
+                errand = _ringPlanSteps - _ringToldErrand, asked = _ringAsked - _ringToldAsked, composed = _composedPlayed - _ringToldComposed;
+            if (_held.Count == 0 && _ringActsThisMinute == 0 && began == 0 && ended == 0)
+                return;
+            _ringToldStarts = _heldStarts;
+            _ringToldEnds = _heldEnds;
+            _ringToldReorders = _ringReorders;
+            _ringToldRaised = _ringRaised;
+            _ringToldErrand = _ringPlanSteps;
+            _ringToldAsked = _ringAsked;
+            _ringToldComposed = _composedPlayed;
+            Log.Write("RING minute: " + _held.Count + " held now (" + _ringGait.Settled + ", " + (int)_ringReach.In + " m, at most " + _ringReach.Most + "); this minute " + began + " taken in, " + ended + " let go, " +
+                      _ringActsThisMinute + " acts chained (" + errand + " of an errand, " + composed + " composed, " + up + " got up), " + told + " told again, " + asked + " asked the model; a step " +
+                      _ringGuard.AverageMicros + " us on average, peak " + _ringGuard.PeakMicros + " us, the guard at " + (int)(_ringGuard.Scale * 100f) + "%" + (_ringGuard.Shrinks > 0 ? " (drawn in " + _ringGuard.Shrinks + " times)" : ""));
         }
 
         /// The ring has drawn in below how many it holds (you got on a horse, or it cost too much): the farthest are let go, with no

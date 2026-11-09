@@ -725,7 +725,10 @@ namespace EnrageWestworld.InGame
                 }
                 Safe("aloud", () => AloudAsk(_tickerLine, now));   // said aloud in their own voice, if it fits (WestworldScript.Aloud.cs)
                 if (_tickerLine != was && _tickerLine != null && _tickerLine.Kind == "near" && _tickerLine.Handle != 0)
+                {
+                    _thoughtsMainShown++;
                     NoteTheirThought(_tickerLine.Handle, now, _tickerLine.Text);   // a thought over someone came up: no act's or turn's thought of theirs on top of it (WestworldScript.ActThoughts.cs)
+                }
                 if (_tickerLine != was && _tickerLine != null && _tickerLine.Kind == "near" && _tickerLine.Key != null)
                     ThreadThoughtShown(_tickerLine.Key, now);
                 SideThoughtsCame(now);   // and the same for those beside it (WestworldScript.OverHead.cs)
@@ -1197,7 +1200,7 @@ namespace EnrageWestworld.InGame
                 Name = Grammar.UpperFirst(Director.Kind(ped, !PED.IS_PED_MALE(h))),
                 Handle = h,
                 Distance = d + 6f,
-                Text = () => ThoughtNow(ped, me, d, null, null, key, null, lk => RoadThoughts.Passing(lk.Now, Voice.Hash(key) & 3, key + "|" + now / 30))
+                Text = () => ThoughtNow(ped, me, d, null, null, key, null, lk => { _roadThoughtsMade++; return RoadThoughts.Passing(lk.Now, Voice.Hash(key) & 3, key + "|" + now / 30); })
             });
         }
 
