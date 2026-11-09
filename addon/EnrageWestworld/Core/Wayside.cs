@@ -56,6 +56,9 @@ namespace EnrageWestworld.Core
     {
         public const string Kind = "wayside";
         public const int NearMetres = 35, ChoiceMetres = 10, UnseenMs = 240000;
+        public const int CrossingMs = 180000;   // how long after you've been in the water you still count as just over a crossing
+        public const float CrossingMetres = 30f;   // and how near the place you crossed a body on the bank has to be
+        public const float CrossingNearMetres = 90f;   // and you still near enough to it for one of those spots to exist
         public const string PlaceMines = "mines", PlaceSnow = "snow", PlaceWater = "water";   // what can be true of where you are: the game side says which (WestworldScript.Wayside.cs, WaysideHere)
 
         private static string W(string scenario)

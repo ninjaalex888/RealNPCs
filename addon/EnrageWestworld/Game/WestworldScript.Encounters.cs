@@ -43,7 +43,11 @@ namespace EnrageWestworld.InGame
         private void EncountersStep(int now)
         {
             if (_aEncounters == null)
-                _aEncounters = () => EncountersTick(_now);
+                _aEncounters = () =>
+                {
+                    WaysideNoteWater(_now);
+                    EncountersTick(_now);
+                };
             Safe("encounters", _aEncounters);
         }
 

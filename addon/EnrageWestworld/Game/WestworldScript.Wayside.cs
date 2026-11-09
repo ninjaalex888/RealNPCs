@@ -87,6 +87,22 @@ namespace EnrageWestworld.InGame
         }
 
         private readonly List<string> _waysideHere = new List<string>(3);
+        private int _crossedAt, _crossingCheckAt;
+        private Vector3 _crossedPos;
+
+        /// Once a second: are you or your horse in the water, and where. We can't tell where the shores are, but a place you've just forded is one (TENHOUR item 10).
+        private void WaysideNoteWater(int now)
+        {
+            if (now < _crossingCheckAt && _crossingCheckAt - now <= 1000)
+                return;
+            _crossingCheckAt = now + 1000;
+            Ped me = Game.Player.Character;
+            if (ENTITY.IS_ENTITY_IN_WATER(PED.IS_PED_ON_MOUNT(me.Handle) ? PED.GET_MOUNT(me.Handle) : me.Handle))
+            {
+                _crossedAt = now;
+                _crossedPos = me.Position;
+            }
+        }
 
         /// What's true of where you are, for the scenes that can only happen in some places (TENHOUR items 8 to 10).
         private List<string> WaysideHere(Vector3 p)
@@ -97,6 +113,8 @@ namespace EnrageWestworld.InGame
                 _waysideHere.Add(Wayside.PlaceMines);
             if (_bridge.ZoneName(p) == "the Grizzlies" || _engine.NowWeather == "snow")
                 _waysideHere.Add(Wayside.PlaceSnow);
+            if (_crossedAt != 0 && _now - _crossedAt < Wayside.CrossingMs && _now >= _crossedAt && _crossedPos.DistanceTo(p) < Wayside.CrossingNearMetres)
+                _waysideHere.Add(Wayside.PlaceWater);
             return _waysideHere;
         }
 
@@ -255,7 +273,7 @@ namespace EnrageWestworld.InGame
                 return;
             Ped me = Game.Player.Character;
             Vector3 at;
-            if (!EncounterSpot(me, 45f, 70f, out at) || CampInView(at))
+            if (!EncounterSpot(me, 45f, 70f, out at) || CampInView(at) || (w.K.Place == Wayside.PlaceWater && !w.Test && at.DistanceTo(_crossedPos) > Wayside.CrossingMetres))
             {
                 w.Tries++;
                 return;

@@ -59,6 +59,19 @@ namespace EnrageWestworld.Core
 
                 News = "A trapper came down to {town} saying there's a man sat frozen against a rock in the high country, with his boots off."
             },
+            new WaysideKind
+            {
+                Id = "ashore", Mark = "A thing on the bank", Test = "Just over a crossing: someone washed ashore", From = 0, To = 24, Weight = 200, Place = PlaceWater,
+                Cast = new[] { R("A drowned man", "rough", null, "dead", 0f, 0f) },
+                Choices = new[]
+                {
+                    C("search", "Look for papers on him", 0, "search", -1),
+                    C("bless", "Say a word over him", 0, "bless", -1),
+                    C("leave", "Leave him for the river", 0, "leave", -1)
+                },
+
+                News = "A drowned man was found on the bank near {town}. Nobody knows how far he'd come."
+            },
         };
     }
 }
