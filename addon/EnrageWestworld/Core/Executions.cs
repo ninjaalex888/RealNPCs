@@ -215,9 +215,97 @@ namespace EnrageWestworld.Core
             return s.Replace("{bossword}", BossWord(p)).Replace("{boss}", p.Boss ?? "").Replace("{gangadj}", adj).Replace("{gang}", Grammar.UpperFirst(p.Gang ?? "the gang"));
         }
 
+        // ---- what can turn it (FIVEDAY2 item 15; built on the road executions Lex has seen). Why it reads true: killing a man who is
+        // begging is hard to do, and most who hold the gun have never done it. One who balks, or someone arriving with the money, is
+        // the thing a witness hopes for; a few who came to watch make the worst of it, because nobody ever thinks it's theirs to stop.
+
+        public const string TwistNone = "none", TwistBalk = "balk", TwistReprieve = "reprieve";
+
+        /// What may turn this one: a captor who won't (with two or more to disagree), or kin arriving with what's owed (a debt or a feud can be settled; a gang can't).
+        public static string Twist(Plan p, int men, string seed)
+        {
+            int roll = Voice.Hash(seed + "|twist") % 100;
+            if (men >= 2 && roll < 22)
+                return TwistBalk;
+            if (p != null && (p.Reason == "debt" || p.Reason == "feud") && roll < 44)
+                return TwistReprieve;
+            return TwistNone;
+        }
+
+        /// Whether a few have come to watch.
+        public static bool Crowd(string seed)
+        {
+            return Voice.Chance(seed + "|crowd", 35);
+        }
+
+        /// Whether the other man, hearing the first refuse, lets it go too.
+        public static bool Relents(string seed)
+        {
+            return Voice.Chance(seed + "|relents", 45);
+        }
+
+        /// Whether kin come for the body before the crows do.
+        public static bool KinCome(string seed)
+        {
+            return Voice.Chance(seed + "|kin", 45);
+        }
+
+        public static string Balks(string seed)
+        {
+            return Voice.Pick(seed + "|balk", "I took money to scare him. Nobody said this.", "Not me. I've a boy near his age.", "You do it. I'll be on the road.", "No. Look at him. No.");
+        }
+
+        public static string BalkAnswered(string seed)
+        {
+            return Voice.Pick(seed + "|balka", "Then ride, and be quick about it.", "Go on, then. I've got a strong stomach for two.", "You'll want your share all the same, I suppose.");
+        }
+
+        public static string RelentsLine(string seed)
+        {
+            return Voice.Pick(seed + "|relent", "Hell with it. Get up. Get up and run.", "You got lucky. Don't let me see you.", "Get out of here before I think better of it.");
+        }
+
+        public static string ReprieveCry(Plan p, string seed)
+        {
+            return p != null && p.Reason == "feud"
+                ? Voice.Pick(seed + "|cry", "Enough! It's finished! Father says it's finished!", "Hold your fire! The land's yours! It's yours!")
+                : Voice.Pick(seed + "|cry", "Stop! Stop, I've got it! It's all here!", "Wait! Wait, I sold the mare! I've got the money!");
+        }
+
+        public static string ReprieveAnswer(Plan p, string seed)
+        {
+            return p != null && p.Reason == "feud"
+                ? Voice.Pick(seed + "|cryans", "Took you long enough. Get him out of here.", "Twenty years, and this is how it ends. Go on.")
+                : Voice.Pick(seed + "|cryans", "Count it. ...It's all here. Get up.", "Your kin bought your hide. Don't make them buy it twice.");
+        }
+
+        public static string Muttered(string seed)
+        {
+            return Voice.Pick(seed + "|mutter", "Somebody ought to stop it.", "Not me. It's not for me to say.", "What did he do? Does anybody know?", "Don't look away. They'll remember who looked away.", "I only came to see if it was true.");
+        }
+
+        public static string KinAtBody(string seed)
+        {
+            return Voice.Pick(seed + "|kinb", "Get up. Get up, you fool, get up.", "Who did this? Which way did they go?", "I told you to pay it. I told you.", "Lord. Who's going to tell your mother.");
+        }
+
         /// Every line, for the tests.
         public static IEnumerable<string> AllLines()
         {
+            for (int t = 0; t < 12; t++)
+            {
+                string q = "t" + t;
+                Plan debt = For("debt", "Yates", null, "Valentine", q), feud = For("feud", "Yates", null, "Valentine", q);
+                yield return Balks(q);
+                yield return BalkAnswered(q);
+                yield return RelentsLine(q);
+                yield return ReprieveCry(debt, q);
+                yield return ReprieveCry(feud, q);
+                yield return ReprieveAnswer(debt, q);
+                yield return ReprieveAnswer(feud, q);
+                yield return Muttered(q);
+                yield return KinAtBody(q);
+            }
             foreach (string reason in new[] { "debt", "feud", "law", null })
                 for (int i = 0; i < 16; i++)
                 {

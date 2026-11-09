@@ -200,6 +200,18 @@ namespace EnrageWestworld.InGame
                             : a.Id == "callout2" ? "the hour (08:00-20:00, not the noon hour), the rest between them, the people's rests, the roll (it still needs a town's street and two people with something between them)"
                             : "the hour, the place (the wilds at night; by day the open or a town's edge), once a night, the gap between gatherings, the roll";
                     return null;
+                case "execution:balk":
+                case "execution:reprieve":
+                case "execution:crowd":
+                    _execForce = a.Id.Substring("execution:".Length);
+                    said = RequestEncounter("execution", how, out asked);
+                    if (!asked)
+                    {
+                        _execForce = null;
+                        return said;
+                    }
+                    skipped = "the hour (05:00-22:00), outside the towns, once a day, the roll, and which turn it takes";
+                    return null;
                 case "gathering:leader":
                 case "gathering:sleeper":
                 case "gathering:procession":

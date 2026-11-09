@@ -51,6 +51,19 @@ namespace EnrageWestworld.Core
             Log("EXECUTION " + p.Name + ": saved by you (" + plan.Reason + ", " + plan.Boss + ")");
         }
 
+        /// Let go at the last moment, by a captor who wouldn't or kin who paid: nothing of yours in it, and the town has it by evening.
+        public void Spared(Resident r, Executions.Plan plan, string town, long now)
+        {
+            Person p = PersonOfResident(r);
+            KeepResident(r, now);
+            Later(new LaterAct
+            {
+                Kind = "news", PersonId = p.Id, Title = "Word around " + ShortTown(town ?? r.Town), At = now,
+                Text = p.Name + " came home on foot with no hat and won't say where he has been.", DueAt = Knowing.TalkDue(now, false, p.Id + "spared")
+            });
+            Log("EXECUTION " + p.Name + ": let go at the last moment (" + plan.Reason + ")");
+        }
+
         /// The player gave someone a hand up after a fall: fonder of him, and they remember it (a kindness done to them).
         /// Only for those who can remember (a lasting id); the game side keeps an unsaved resident first.
         public void HelpedUp(Person p, bool nobodyElse, long now)

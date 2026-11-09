@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Executions can turn** (with `[Encounters] Executions`; FIVEDAY2 item 15; three Testing rows). The road execution you can stop stays. Now one of the men may refuse at the last moment: sometimes the other lets it go too, and sometimes he finishes it alone. Someone may come running up the road with what's owed on a debt or a feud. A few may have come to watch, muttering, and they run when the shooting starts. And after a killing, someone who knew him may come for the body and kneel by it. Someone let go is no doing of yours, and the town hears he came home on foot.
+  - Why it reads true: killing a man who's begging is hard, and most who hold the gun have never done it. A few who came to watch make the worst of it, because nobody ever thinks it's theirs to stop.
+
 - **More kinds of awake circle** (with `[Encounters] Gatherings`; FIVEDAY2 item 14; three Testing rows). The plain ring, all of them doing one strange thing together, stays and is still the commonest. New: a ring with someone in the middle leading it, the rest kneeling and answering low; a ring round a sleeper they're trying to wake, who comes round if you come close or watch for a while, one more of the awake if you know their name; and after dark, a line of people walking across the open, torches in hand, to the ground where they make a ring (you can follow them). Someone you've met is put in the ring first, and says so.
   - Why it reads true: ritual is how a group makes a private doubt feel like a shared fact. One in the middle makes it a congregation, a sleeper makes it a recruitment, and being recruited frightens more than being threatened.
 
