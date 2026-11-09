@@ -109,7 +109,7 @@ namespace EnrageWestworld.Core
                 case "feud":
                     return Voice.Pick(seed + "ep", "It was never about the fence! Please!", "I'll sell the place and leave! I'll leave tonight!", "Think of my children, for God's sake.");
                 case "committee":
-                    return Voice.Pick(seed + "ep", "I was at the mill! Ask anyone, I was at the mill!", "You've known me eleven years. All of you.", "Hang me and whoever did it goes on walking about.");
+                    return Voice.Pick(seed + "ep", "I was at the mill! Ask anyone, I was at the mill!", "You've known me eleven years. All of you.", "Shoot me and whoever did it goes on walking about.");
                 case "informer":
                     return Voice.Pick(seed + "ep", "I never said a word! Not one word!", "They had me in a cell! What was I to do?", "There's a wife waiting on me. Please. A wife and two little ones.");
                 default:
@@ -170,7 +170,7 @@ namespace EnrageWestworld.Core
                 case "feud":
                     return Voice.Pick(seed + "eth", "They'd have done it. They really would have done it. Thank you.", "You came out of nowhere. Lord, you came out of nowhere.");
                 case "committee":
-                    return Voice.Pick(seed + "eth", "My own neighbours. My own neighbours. Thank you.", "I sold that man seed for nine years, and he held the rope. Thank you, mister.");
+                    return Voice.Pick(seed + "eth", "My own neighbours. My own neighbours. Thank you.", "I sold that man seed for nine years, and he held the gun. Thank you, mister.");
                 case "informer":
                     return Voice.Pick(seed + "eth", "They'll come again. But not today. Thank you.", "I owe you my life, mister. I don't know how to pay that.");
                 default:

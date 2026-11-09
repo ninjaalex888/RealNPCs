@@ -23,7 +23,7 @@ namespace EnrageWestworld.Core
             if (!Cfg.PosseRides)
             {
                 // switched off: any posse out is dropped quietly, so nothing waits in the save for the switch (the review)
-                foreach (string k in Store.Counts.Keys.Where(k => k.StartsWith(PosseRides.Prefix, StringComparison.Ordinal) || k.StartsWith(PosseRides.ManPrefix, StringComparison.Ordinal) || k.StartsWith("possekind:", StringComparison.Ordinal)).ToList())
+                foreach (string k in Store.Counts.Keys.Where(k => k.StartsWith(PosseRides.Prefix, StringComparison.Ordinal) || k.StartsWith(PosseRides.ManPrefix, StringComparison.Ordinal) || k.StartsWith("possekind:", StringComparison.Ordinal) || k.StartsWith("committee:", StringComparison.Ordinal)).ToList())
                     Store.Counts.Remove(k);
                 return;
             }
@@ -156,7 +156,7 @@ namespace EnrageWestworld.Core
         public bool CommitteeDue(string town, long now)
         {
             int due;
-            return Cfg.VigilanceCommittees && town != null && Store.Counts.TryGetValue(PosseRides.CommitteeKey(town), out due) && now >= due;
+            return Cfg.VigilanceCommittees && Cfg.PosseRides && town != null && Store.Counts.TryGetValue(PosseRides.CommitteeKey(town), out due) && now >= due;
         }
 
         /// The plan for one held by his own neighbours, using up what's due; null if nothing is (`force`: the Testing row). The man who leads it comes from those who'd have ridden with the posse.

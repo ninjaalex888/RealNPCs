@@ -163,7 +163,7 @@ namespace EnrageWestworld.InGame
             {
                 free.Laid = line;
                 free.Parts.Clear();
-                free.Scale = -1f;   // laid out the first time it can be placed
+                free.Scale = free.WrapScale = -1f;   // laid out the first time it can be placed
                 free.Shift = 0f;
                 free.UnseenSince = -1;
             }

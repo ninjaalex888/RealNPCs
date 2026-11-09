@@ -509,7 +509,7 @@ namespace EnrageWestworld.InGame
             {
                 Vector3 to = w.At + WaysideAlong(w) * w.K.WalkMetres;
                 PED.SET_PED_KEEP_TASK(doer.Handle, false);
-                TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(doer.Handle, to.X, to.Y, to.Z, 3f, -1, 1f, 0, 0f);
+                ScenarioExit.SoftUp(doer.Handle, x => TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(x, to.X, to.Y, to.Z, 3f, -1, 1f, 0, 0f));   // up first: someone at a scenario doesn't take a walk order
                 return;
             }
             if (b.Do == "chase" && doer != null && doer.Exists() && !doer.IsDead && w.Cast[0] != null && w.Cast[0].Exists())
