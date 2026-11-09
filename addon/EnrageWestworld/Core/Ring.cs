@@ -48,6 +48,16 @@ namespace EnrageWestworld.Core
             return SeatedDwellLeastMs + (hash & 0x7fffffff) % SeatedDwellSpreadMs;
         }
 
+        // ---- the look-ahead along your path (FIVEDAY2 R1): the ring is where you're going as much as where you are
+        public const float LookAheadSeconds = 3f, LookAheadMost = 6f;
+
+        /// How near someone counts as when choosing whom to take in: someone along the way you're going counts as nearer, by how far you'll have come in a few seconds. `dot`: the cosine between your heading and them; `room`: how much the ring's let-go leaves for it.
+        public static float Nearness(float metres, float dot, float speed, float room)
+        {
+            float ahead = Math.Min(Math.Min(LookAheadMost, Math.Max(0f, room)), Math.Max(0f, speed) * LookAheadSeconds);
+            return metres - Math.Max(0f, dot) * ahead;
+        }
+
         /// How you're moving. Any vehicle counts as fast: a seat on a wagon or a train takes you past people, and you can't stop to look.
         public static RingGait GaitOf(bool mounted, bool inVehicle, float speed)
         {

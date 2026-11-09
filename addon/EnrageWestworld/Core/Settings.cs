@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 337;
+        public const int CurrentVersion = 338;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -107,6 +107,7 @@ namespace EnrageWestworld.Core
         public bool ControlRingPicks = true;     // [Mind] with the AI model on, it may change someone's next step as they come into the ring (FIVEDAY2 item 5; settings version 334)
         public bool ControlRingPlans = true;     // [Mind] someone the ring takes in has a short errand of two to four things, kept by who they are for five minutes (FIVEDAY2 item 4; settings version 333)
         public bool ControlRingSeated = true;    // [Mind] the ring takes in those sat at the game's own benches and rails: after a decent dwell, someone whose mind wants something else gets up for it (FIVEDAY2 item 3; settings version 332; needs MindActsScenarios)
+        public bool ControlRingAhead = true;     // [Mind] the ring takes in people along the way you're going a little sooner than those behind you (FIVEDAY2 R1; settings version 338)
         public bool ControlRingKeepAt = true;    // [Mind] someone the ring holds who stops getting where they were sent is given the order again (FIVEDAY2 item 2; settings version 331)
         public float ControlRingMetres = Ring.DefaultMetres;   // ... how near you on foot, in metres (6-25); less in the saddle, none at a gallop
         public int ControlRingMost = Ring.DefaultMost;         // ... how many at once on foot (2-20)
@@ -968,6 +969,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 338)
+                    log?.Invoke("Settings: new in this version: [Mind] ControlRingAhead (on): the ring takes in people along the way you're going a little sooner.");
                 if (s.SettingsVersion < 337)
                     log?.Invoke("Settings: new in this version: [Encounters] CircleAnswers (on): walk into the middle of a ring of the awake and it answers you as one.");
                 if (s.SettingsVersion < 336)
@@ -1627,6 +1630,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("ControlRingPicks = " + B(ControlRingPicks) + "   ; with ControlRing and the AI model: as someone comes into the ring, the model may change the next step of their errand; late or unreadable, the errand stands (within PicksAtOnce)");
             b.AppendLine("ControlRingPlans = " + B(ControlRingPlans) + "   ; with ControlRing: someone held has a short errand of two to four things (the store, a talk, home) that they carry on with if they leave your side and come back; a strong feeling still comes first");
             b.AppendLine("ControlRingSeated = " + B(ControlRingSeated) + "   ; with ControlRing and MindActsScenarios: those sat or leaning near you are held too, and after a minute or so someone whose mind wants something else gets up for it, a few at most at a time");
+            b.AppendLine("ControlRingAhead = " + B(ControlRingAhead) + "   ; with ControlRing: people along the way you are going are taken in a little sooner than those behind you, so they are already about something when you reach them");
             b.AppendLine("ControlRingKeepAt = " + B(ControlRingKeepAt) + "   ; with ControlRing: someone held who stops getting where they were sent is given the order again, a few times at most; never over a fight, a flee or a fall");
             b.AppendLine("ControlRingMetres = " + F(ControlRingMetres) + "   ; with ControlRing: how near you, in metres, on foot (6 to 25)");
             b.AppendLine("ControlRingMost = " + ControlRingMost + "   ; with ControlRing: how many people at once, on foot (2 to 20)");

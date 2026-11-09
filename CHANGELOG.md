@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The ring looks ahead** (`[Mind] ControlRingAhead`, on; settings version 338; FIVEDAY2 R1). People along the way you're going are taken into the ring a few metres sooner than those behind you, so they're already about something when you reach them.
+
 - **The circle answers you** (`[Encounters] CircleAnswers`, on; settings version 337; FIVEDAY2 item 10). Walk into the middle of a ring of the awake and, once they've spoken at once, the ring decides what to do about you, as one: they close in round you, one steps out and speaks (the model's own words if they pass the check), they all go down on their knees, or they wake the one lying among them. The AI model chooses if it's on, the rules if not. F7's `TEST the circle answers:` says which.
   - Why it reads true: a crowd of the awake isn't many people deciding. It's one thing deciding, and that's what frightens.
 

@@ -142,7 +142,7 @@ namespace EnrageWestworld.InGame
                 RingDrawIn(at, now);
             // who comes in: the named people the mind has near, nearest first
             if (_held.Count < HeldMostNow)
-                foreach (int h in _mindNear.OrderBy(x => ENTITY.GET_ENTITY_COORDS(x, true, true).DistanceTo(at)))
+                foreach (int h in _mindNear.OrderBy(x => RingNear(x, me, at)))
                 {
                     if (_held.Count >= HeldMostNow)
                         break;
@@ -151,8 +151,8 @@ namespace EnrageWestworld.InGame
                     MindWho w;
                     if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                         continue;
-                    if (ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(at) > HeldInMetres)
-                        break;   // ordered by distance: the rest are farther
+                    if (RingNear(h, me, at) > HeldInMetres)
+                        break;   // ordered by nearness: the rest are farther
                     int rest;
                     if (_heldRest.TryGetValue(h, out rest) && now < rest && now >= rest - HeldRestMs - 1000)
                         continue;
@@ -197,6 +197,19 @@ namespace EnrageWestworld.InGame
                 }
                 HeldNext(h, w, hd, me, now);
             }
+        }
+
+        /// How near someone counts as, for taking them in: their distance, less a little if they're along the way you're going (FIVEDAY2 R1).
+        private float RingNear(int h, Ped me, Vector3 at)
+        {
+            Vector3 p = ENTITY.GET_ENTITY_COORDS(h, true, true);
+            float d = p.DistanceTo(at);
+            if (!RingOn || !_cfg.ControlRingAhead || d < 0.5f)
+                return d;
+            Vector3 f = me.ForwardVector;
+            float dot = ((p.X - at.X) * f.X + (p.Y - at.Y) * f.Y) / d;
+            int mount = PED.IS_PED_ON_MOUNT(me.Handle) ? PED.GET_MOUNT(me.Handle) : me.Handle;
+            return Ring.Nearness(d, dot, ENTITY.GET_ENTITY_SPEED(mount), HeldOutMetres - HeldInMetres - 1f);
         }
 
         /// What lets go everyone at once, or null.
