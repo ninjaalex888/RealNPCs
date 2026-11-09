@@ -201,7 +201,7 @@ namespace EnrageWestworld.InGame
         {
             foreach (string d in dicts.Concat(Gestures.Dicts))
             {
-                STREAMING.REQUEST_ANIM_DICT(d);
+                Loads.Anim(d);
                 if (!_stagedDictAsked.ContainsKey(d))
                     _stagedDictAsked[d] = now;
             }
@@ -224,7 +224,7 @@ namespace EnrageWestworld.InGame
                     return;
                 }
                 int asked;
-                STREAMING.REQUEST_ANIM_DICT(dict);
+                Loads.Anim(dict);
                 if (!_stagedDictAsked.TryGetValue(dict, out asked))
                     _stagedDictAsked[dict] = asked = now;
                 if (now - asked > 3000 && _stagedMissing.Add(dict + "/" + clip))

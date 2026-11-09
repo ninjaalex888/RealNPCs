@@ -424,10 +424,10 @@ namespace EnrageWestworld.InGame
             else
                 _live = l;
             foreach (string d in Gestures.Dicts)
-                STREAMING.REQUEST_ANIM_DICT(d);   // body language for the lines (Gestures), loaded by the time they're said
+                Loads.Anim(d);   // body language for the lines (Gestures), loaded by the time they're said
             if (s.Beats.Any(x => x.Act == "challenge" || x.Act == "passout" || x.Act == "cometo"))
             {
-                STREAMING.REQUEST_ANIM_DICT(DrunkDict);
+                Loads.Anim(DrunkDict);
                 AUDIO.SET_PED_IS_DRUNK(l.Cast[0].Handle, true);   // he sounds it, too
                 l.MadeDrunk = true;
                 l.DrunkHandle = l.Cast[0].Handle;

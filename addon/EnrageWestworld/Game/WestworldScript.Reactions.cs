@@ -80,7 +80,7 @@ namespace EnrageWestworld.InGame
             }
             if (clip == null || !STREAMING.HAS_ANIM_DICT_LOADED(dict))
             {
-                STREAMING.REQUEST_ANIM_DICT(dict);
+                Loads.Anim(dict);
                 Log.Detail("REACT " + r.ByName + ": " + dict + " not loaded yet");
                 return;
             }
@@ -151,7 +151,7 @@ namespace EnrageWestworld.InGame
                           (STREAMING.DOES_ANIM_DICT_EXIST(Gestures.MaleSilent) ? "yes" : "NO") + ", women's " + (STREAMING.DOES_ANIM_DICT_EXIST(Gestures.FemaleSilent) ? "yes" : "NO"));
             }
             if (_streetFight && !STREAMING.HAS_ANIM_DICT_LOADED(StreetFightDict))
-                STREAMING.REQUEST_ANIM_DICT(StreetFightDict);
+                Loads.Anim(StreetFightDict);
         }
 
         /// F7: on or off, the sets, how many reactions so far and the last.

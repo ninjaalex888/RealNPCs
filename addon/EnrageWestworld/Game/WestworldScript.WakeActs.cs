@@ -1204,7 +1204,7 @@ namespace EnrageWestworld.InGame
             {
                 if (_bladeSet == 1 && !STREAMING.HAS_ANIM_DICT_LOADED(BladeDict) && now - act.RunFrom < 2000)
                 {
-                    STREAMING.REQUEST_ANIM_DICT(BladeDict);   // a moment more for the set to load
+                    Loads.Anim(BladeDict);   // a moment more for the set to load
                     act.PhaseUntil = now + 100;
                     return;
                 }

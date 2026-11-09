@@ -89,9 +89,9 @@ namespace EnrageWestworld.InGame
                 ReactionSets();   // and the hurt reaction's set (WestworldScript.Reactions.cs)
                 foreach (string d in _cfg.RoughHandling ? new[] { SmashDict, WallDict } : new string[0])
                     if (!STREAMING.HAS_ANIM_DICT_LOADED(d) && STREAMING.DOES_ANIM_DICT_EXIST(d))
-                        STREAMING.REQUEST_ANIM_DICT(d);
+                        Loads.Anim(d);
                 if (_cfg.DrunkChallenges && !STREAMING.HAS_ANIM_DICT_LOADED(DrunkDict) && STREAMING.DOES_ANIM_DICT_EXIST(DrunkDict))
-                    STREAMING.REQUEST_ANIM_DICT(DrunkDict);
+                    Loads.Anim(DrunkDict);
             }
             Safe("rough handling", _aRough);
         }
@@ -516,8 +516,8 @@ namespace EnrageWestworld.InGame
                 parts.Add(RoughMoves().Count + " angles read (listed under ROUGH moves)");
             else
             {
-                STREAMING.REQUEST_ANIM_DICT(SmashDict);   // read on the next F7
-                STREAMING.REQUEST_ANIM_DICT(WallDict);
+                Loads.Anim(SmashDict);   // read on the next F7
+                Loads.Anim(WallDict);
             }
             Ped me = Game.Player.Character;
             var near = Peds.All().Where(p => p != null && p.Exists() && p.Handle != me.Handle && PED.IS_PED_HUMAN(p.Handle) && p.Position.DistanceTo(me.Position) < 20f)

@@ -136,7 +136,7 @@ namespace EnrageWestworld.InGame
             }
             foreach (string d in new[] { Gestures.MaleSpeaker, Gestures.FemaleSpeaker })
                 if (!STREAMING.HAS_ANIM_DICT_LOADED(d))
-                    STREAMING.REQUEST_ANIM_DICT(d);
+                    Loads.Anim(d);
             Pacing.Note(_store.Pace, "round", _placeTown, buyer.Who.Id, g);
             _rounds++;
             _roundLast = buyer.Who.Name + " (" + roundWhy + ")" + (test ? ", a test" : "");

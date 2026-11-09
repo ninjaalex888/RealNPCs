@@ -488,7 +488,7 @@ namespace EnrageWestworld.InGame
                     Failed(player, now, "isn't in the game (" + _dict + ")", false);
                     return;
                 }
-                STREAMING.REQUEST_ANIM_DICT(_dict);
+                Loads.Anim(_dict);
                 _dicts.Add(_dict);
                 _step = ActStep.Load;
                 _stepUntil = now + 3000;

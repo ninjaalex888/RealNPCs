@@ -958,7 +958,7 @@ namespace EnrageWestworld.InGame
             act.GestFlags = pick.Flags;
             act.GestAt = at;
             act.GestPhase = 1;
-            STREAMING.REQUEST_ANIM_DICT(act.GestDict);
+            Loads.Anim(act.GestDict);
             _gestDicts.Add(act.GestDict);
         }
 

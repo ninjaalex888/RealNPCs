@@ -422,7 +422,7 @@ namespace EnrageWestworld.InGame
             _nodCount[run.Act.Kind] = c + 1;
             foreach (string d in new[] { Gestures.MaleSilent, Gestures.FemaleSilent })
                 if (!STREAMING.HAS_ANIM_DICT_LOADED(d))
-                    STREAMING.REQUEST_ANIM_DICT(d);
+                    Loads.Anim(d);
             _nodLast = run.AName + " & " + run.BName + ": " + run.Act.Kind + (test ? " (a test)" : "");
             Log.Write("NOD " + run.AName + " & " + run.BName + ": " + run.Act.Kind + " (" + run.Act.Gesture + ", the answer " + run.Act.Answer +
                       (run.Act.Speaks ? ", a word" : "") + ", " + run.A.Position.DistanceTo(run.B.Position).ToString("0.0") + " m apart, " +
@@ -542,7 +542,7 @@ namespace EnrageWestworld.InGame
             string dict = woman ? Gestures.FemaleSilent : Gestures.MaleSilent;
             if (!STREAMING.HAS_ANIM_DICT_LOADED(dict))
             {
-                STREAMING.REQUEST_ANIM_DICT(dict);
+                Loads.Anim(dict);
                 Log.Detail("NOD " + name + ": " + dict + " not loaded yet, only a look");
                 return;
             }

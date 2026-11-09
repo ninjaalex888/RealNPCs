@@ -80,7 +80,7 @@ namespace EnrageWestworld.InGame
         private void DespairPreload()
         {
             foreach (string d in new[] { SobDict, JamieDict, DrinkDict, SickDict })
-                STREAMING.REQUEST_ANIM_DICT(d);
+                Loads.Anim(d);
         }
 
         /// The clips for a way, in order (null: the way has none, the wall and the knife).
@@ -150,13 +150,13 @@ namespace EnrageWestworld.InGame
             act.Weapon = method == "gun" ? (armed ? null : Despair.Gun(act.P)) : method == "knife" ? Despair.Knife : null;
             DespairSets();
             if (method == "knife" && _bladeSet == 1)
-                STREAMING.REQUEST_ANIM_DICT(BladeDict);   // asked for now: it played once in two when asked at the last step
+                Loads.Anim(BladeDict);   // asked for now: it played once in two when asked at the last step
             if (method == "knife" && _writheSet == 1)
-                STREAMING.REQUEST_ANIM_DICT(WritheDict);
+                Loads.Anim(WritheDict);
             if (act.Seq != null)
                 foreach (string d in act.Seq.Select(c => c.Dict).Distinct())
-                    STREAMING.REQUEST_ANIM_DICT(d);
-            STREAMING.REQUEST_ANIM_DICT(SobDict);
+                    Loads.Anim(d);
+            Loads.Anim(SobDict);
             TASK.CLEAR_PED_TASKS(h, true, false);
             bool sob = STREAMING.HAS_ANIM_DICT_LOADED(SobDict);
             act.Sobbed = sob;   // else the last words' steps start it once the set is in (StepDespair)
@@ -230,7 +230,7 @@ namespace EnrageWestworld.InGame
             {
                 if (!STREAMING.HAS_ANIM_DICT_LOADED(c.Dict))
                 {
-                    STREAMING.REQUEST_ANIM_DICT(c.Dict);
+                    Loads.Anim(c.Dict);
                     if (now - act.ClipAt > 2500)
                     {
                         DespairSeqFallback(act, now, c.Clip + "'s set didn't load");

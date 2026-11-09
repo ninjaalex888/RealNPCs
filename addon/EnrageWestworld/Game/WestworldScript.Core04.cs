@@ -1336,6 +1336,7 @@ namespace EnrageWestworld.InGame
             WagonProbeStep(now);  // the wagon wheel probe's readings, while one is going (WestworldScript.Wagon.cs; item 26)
             NoticeBoardStep(now); // into a town: what it has posted, in the box (WestworldScript.NoticeBoard.cs; FIVEDAY item 16)
             RegardStep(now);      // the town's regard of you in the "Around town" box (WestworldScript.Regard.cs)
+            Loads.Sweep(now);     // a body asked for and never used goes back to the game (Game/Loads.cs)
             ThanksStep(now);    // someone you helped comes over to thank you (WestworldScript.Thanks.cs)
             FenceStep(now);         // what you saw of the fence cutters, and the town's word (WestworldScript.FenceCutters.cs; FIVEDAY item 31)
             PosseStep(now);         // the town whose posse is out thinks of the road (WestworldScript.Posse.cs; FIVEDAY R32)

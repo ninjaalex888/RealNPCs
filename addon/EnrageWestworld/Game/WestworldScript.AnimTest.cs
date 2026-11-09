@@ -179,7 +179,7 @@ namespace EnrageWestworld.InGame
                     bool f = t.Woman && c.FDict != null;
                     t.Dict = f ? c.FDict : c.Dict;
                     t.Clip = f ? c.FClip : c.Clip;
-                    STREAMING.REQUEST_ANIM_DICT(t.Dict);
+                    Loads.Anim(t.Dict);
                     if (c.Gun)
                     {
                         // forced into the hand before every gun clip: clearing their orders between clips puts it away, and

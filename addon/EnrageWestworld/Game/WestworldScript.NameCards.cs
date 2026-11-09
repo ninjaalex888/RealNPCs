@@ -255,10 +255,22 @@ namespace EnrageWestworld.InGame
 
         /// The living humans in range with a name of ours to show, nearest first, at most NameCardsMost; each keeps its card
         /// (and its smoothing) between looks, refreshed every three seconds or when the game reuses the handle.
+        /// Whom you're locked on to or aiming at, or 0.
+        private static unsafe int NameCardTarget()
+        {
+            int t = 0;
+            PLAYER.GET_PLAYER_INTERACTION_TARGET_ENTITY(Game.Player.Handle, &t, false, false);
+            if (t == 0)
+                PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(Game.Player.Handle, &t);
+            return t;
+        }
+
         private void NameCardsCandidates(Ped me, Vector3 mePos, int now)
         {
             _nameCardsNow.Clear();
-            bool everyone = _cfg.NameCards == "everyone";
+            bool targeted = _cfg.NameCards == "targeted";   // only the one you're locked on to or aiming at (a player on Nexus, 2026-11-04: names "only when targeted")
+            int targetNow = targeted ? NameCardTarget() : 0;
+            bool everyone = _cfg.NameCards == "everyone" || targeted;   // whoever it is: the one you asked about gets a card, known or not
             int inside = INTERIOR.GET_INTERIOR_FROM_ENTITY(me.Handle);
             bool probe = inside != _nameCardsProbedIn && now - _nameCardsProbeAt > 3000;
             int seen = 0, carded = 0;
@@ -269,6 +281,8 @@ namespace EnrageWestworld.InGame
             foreach (Ped p in Peds.All())
             {
                 if (p == null || !p.Exists() || p.Handle == me.Handle)
+                    continue;
+                if (targeted && p.Handle != targetNow)
                     continue;
                 float d = p.Position.DistanceTo(mePos);
                 if (d > most || p.IsDead || !PED.IS_PED_HUMAN(p.Handle))

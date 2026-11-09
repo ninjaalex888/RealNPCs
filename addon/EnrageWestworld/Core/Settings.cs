@@ -1482,7 +1482,7 @@ namespace EnrageWestworld.Core
             ErrandPace = Math.Max(1f, Math.Min(3f, ErrandPace));
             FeelingBarsMetres = Math.Max(3f, Math.Min(40f, FeelingBarsMetres));
             string nc = (NameCards ?? "known").Trim().ToLowerInvariant();
-            NameCards = nc == "off" || nc == "everyone" ? nc : "known";
+            NameCards = nc == "off" || nc == "everyone" || nc == "targeted" ? nc : "known";
             string sto = (Storyteller ?? "lively").Trim().ToLowerInvariant();
             Storyteller = sto == "off" || sto == "calm" || sto == "wild" ? sto : "lively";
             VramGauge = Vram.Normal(VramGauge);
@@ -1654,7 +1654,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, fondness and anger, as enRAGE keeps them");
             b.AppendLine("FeelingBarsMetres = " + F(FeelingBarsMetres) + "   ; how close they must be (the nearest three in plain view get bars)");
             b.AppendLine("FeelingBarsShowEmpty = " + B(FeelingBarsShowEmpty) + "   ; also show the empty part of each bar, so a low value reads as a little out of a whole bar");
-            b.AppendLine("NameCards = " + NameCards + "   ; names over heads in the game's title type, the way enRAGE drew them: off, known (people RealNPCs knows: enRAGE's records and townsfolk, regulars, anyone who thought or spoke or took part in a scene), everyone (the rest get what they look like, \"A townsman\", in grey). While enRAGE runs with its own cards on, ours stay off unless NameCardsBesideEnrage; off on the settings panel turns enRAGE's own cards off too");
+            b.AppendLine("NameCards = " + NameCards + "   ; names over heads in the game's title type, the way enRAGE drew them: off, targeted (only the person you're locked on to or aiming at), known (people RealNPCs knows: enRAGE's records and townsfolk, regulars, anyone who thought or spoke or took part in a scene), everyone (the rest get what they look like, \"A townsman\", in grey). While enRAGE runs with its own cards on, ours stay off unless NameCardsBesideEnrage; off on the settings panel turns enRAGE's own cards off too");
             b.AppendLine("NameCardsMetres = " + F(NameCardsMetres) + "   ; strangers' names within (metres); they fade out near the edge");
             b.AppendLine("NameCardsKnownMetres = " + F(NameCardsKnownMetres) + "   ; the names of people you know within (metres)");
             b.AppendLine("NameCardsBesideEnrage = " + B(NameCardsBesideEnrage) + "   ; draw ours even while enRAGE draws its own (two cards over each head enRAGE knows)");

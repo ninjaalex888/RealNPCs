@@ -263,7 +263,7 @@ namespace EnrageWestworld.InGame
                         if (dc != null && STREAMING.HAS_ANIM_DICT_LOADED(dd))
                             TASK.TASK_PLAY_ANIM(h, dd, dc, 4f, -4f, -1, 8 | 16, 0f, false, 0, false, "", false);
                         else
-                            STREAMING.REQUEST_ANIM_DICT(dd);
+                            Loads.Anim(dd);
                         TASK.TASK_WANDER_STANDARD(h, 10f, 10);
                         did = "walks off from it, disapproving";
                         break;
@@ -313,7 +313,7 @@ namespace EnrageWestworld.InGame
                         string dict = Reactions.Dict(a.Woman), clip = Reactions.Clip(a.Act, a.Woman, a.Id + a.QueuedAt);
                         if (clip == null || !STREAMING.HAS_ANIM_DICT_LOADED(dict))
                         {
-                            STREAMING.REQUEST_ANIM_DICT(dict);
+                            Loads.Anim(dict);
                             _onlookSkipped++;
                             _onlookLastSkip = a.Name + " (" + dict + " not loaded yet)";
                             return;

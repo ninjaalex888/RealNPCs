@@ -98,6 +98,7 @@ namespace EnrageWestworld.InGame
         {
             if (!STREAMING.IS_MODEL_VALID(model) || !STREAMING.IS_MODEL_A_PED(model))
                 return false;
+            Loads.ModelAsked(model, Game.GameTime);   // noted either way: a body asked for and never used is let go (Game/Loads.cs)
             if (STREAMING.HAS_MODEL_LOADED(model))
                 return true;
             STREAMING.REQUEST_MODEL(model, false);
@@ -124,6 +125,7 @@ namespace EnrageWestworld.InGame
             STREAMING.REQUEST_COLLISION_AT_COORD(pos.X, pos.Y, pos.Z);
             Ped p = World.CreatePed((PedHash)model, pos, heading);
             STREAMING.SET_MODEL_AS_NO_LONGER_NEEDED(model);
+            Loads.ModelUsed(model);
             if (p == null || !p.Exists())
             {
                 LastSpawnWhy = "the game made nobody at " + pos.X.ToString("0") + ", " + pos.Y.ToString("0") + ", " + pos.Z.ToString("0") + " (model " + model.ToString("x8") + ")";

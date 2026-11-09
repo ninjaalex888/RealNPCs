@@ -410,7 +410,7 @@ namespace EnrageWestworld.InGame
         {
             foreach (string d in new[] { Gestures.MaleSilent, Gestures.FemaleSilent })
                 if (!STREAMING.HAS_ANIM_DICT_LOADED(d))
-                    STREAMING.REQUEST_ANIM_DICT(d);
+                    Loads.Anim(d);
         }
 
         /// Why this person can't react now, or null: a bystander (not the law, not fighting or fleeing), one we may

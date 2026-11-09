@@ -497,7 +497,7 @@ namespace EnrageWestworld.InGame
             string dict = Gestures.MaleSpeaker;
             if (!STREAMING.HAS_ANIM_DICT_LOADED(dict))
             {
-                STREAMING.REQUEST_ANIM_DICT(dict);
+                Loads.Anim(dict);
                 return;
             }
             if (!PED.IS_PED_USING_ANY_SCENARIO(h))
