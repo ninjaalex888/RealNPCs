@@ -79,6 +79,18 @@ namespace EnrageWestworld.InGame
             _revLast = (f.Name ?? "a revenant") + ": " + RevenantMind.WordsOf(what) + (byModel ? " (the model)" : " (the rules)");
             Log.Write("REVENANT " + _revLast);
             _stalker.Decide(what, me, now);
+            RevenantSpeaks(f, what, byModel ? thought : null, now);
+        }
+
+        /// His own words as he does it: the model's, held to the check every line of the model's is held to, else the written ones.
+        private void RevenantSpeaks(Fallen f, string what, string fromModel, int now)
+        {
+            string seed = f.Id + "|" + now / 20000;
+            if (_stalker == null || !RevenantMind.Speaks(seed))
+                return;
+            string line = fromModel != null && what != RevenantMind.Follow && _revRequest != null && Language.Check(_revRequest, fromModel) == null ? fromModel : RevenantMind.Says(what, f, seed);
+            if (line != null)
+                StalkerSay(_stalker.Label, line, true);
         }
 
         private string RevenantMindStatus()

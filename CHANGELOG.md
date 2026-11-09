@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Their own words** (with `[Stalkers] RevenantsMinds`; FIVEDAY2 item 12). Someone you killed says what they say from how they died and what they held against you: the AI model's words when it gave some and they pass the check every line of the model's is held to, written ones when it didn't. They aren't talkative.
+
 - **Someone you killed decides what to do about it** (`[Stalkers] RevenantsMinds`, on; settings version 325; FIVEDAY2 item 11). Someone who has come back used to go through the stalker's motions. Now what they do next (keep after you, stand where you can see them, close in and walk round you, come straight at you and stop short, or leave) is chosen from how they died and what they held against you first: by the AI model when it's on, by the rules when it isn't or it's slow. F7's `TEST revenant mind:` and the log's `REVENANT` lines say which it was.
   - Why it reads true: grievance outlives the wound. What comes back is the unfinished business.
 

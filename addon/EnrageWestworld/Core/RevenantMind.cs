@@ -71,6 +71,42 @@ namespace EnrageWestworld.Core
             return r;
         }
 
+        // ---- his own words (FIVEDAY2 item 12): the model's when it gave some and they pass, these when it didn't. All original to this add-on.
+
+        private static readonly Dictionary<string, string[]> Said = new Dictionary<string, string[]>
+        {
+            { Stare, new[] { "Go on. Have a good look.", "You didn't look this long the first time.", "I'm still here. I expect you'd noticed." } },
+            { Circle, new[] { "You walk different than I remember.", "Round and round. I've had practice.", "Stand still. I did." } },
+            { Rush, new[] { "There. That's how close you were.", "You can smell it, can't you? The ground.", "I wanted to see if you'd flinch." } },
+            { Leave, new[] { "Not today. I've got time. I've got nothing but.", "Sleep well, then. See if you can.", "I'll know where to find you." } },
+        };
+
+        /// What he says as he does it, from what he holds, or null: nothing to say.
+        public static string Says(string what, Fallen f, string seed)
+        {
+            if (what == Follow)
+                return null;
+            if (f != null && f.Held != null && Voice.Chance(seed + "|held", 30))
+                return Voice.Pick(seed + "|heldw", Grammar.UpperFirst(f.Held) + ". You'll have forgotten.", "It was never the bullet. " + Grammar.UpperFirst(f.Held) + ".");
+            string[] pool;
+            return Said.TryGetValue(what, out pool) ? Voice.Pick(seed + "|said", pool) : null;
+        }
+
+        /// Whether he says anything this time: he isn't talkative.
+        public static bool Speaks(string seed)
+        {
+            return Voice.Chance(seed + "|speaks", 65);
+        }
+
+        public static IEnumerable<string> AllLines()
+        {
+            foreach (string[] pool in Said.Values)
+                foreach (string s in pool)
+                    yield return s;
+            yield return "You robbed me. You'll have forgotten.";
+            yield return "It was never the bullet. You robbed me.";
+        }
+
         /// The rules' choice from the same list, by how near he is and how many times he's been asked.
         public static string Rules(List<string> menu, float metres, int asks, string seed)
         {
