@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 324;
+        public const int CurrentVersion = 325;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -210,6 +210,7 @@ namespace EnrageWestworld.Core
         public bool WagonOthersStop = true;   // [Encounters] with WagonWheel: someone else on the road may pull up for the wagon when you haven't helped, and set the wheel with the driver (FIVEDAY item 32d, settings version 287)
         public bool StalkerRides = true;      // [Stalkers] a mounted stalker stays in the saddle to follow, come in close and ride off; checked, and down on foot if the horse doesn't go (Core/StalkerRide.cs; FIVEDAY item 32c, settings version 286)
         public int StalkerHorse = 35;          // percent of stalkers who appear on horseback and sit the horse watching; they get down to move (SIXDAY item 19; settings version 235)
+        public bool RevenantsMinds = true;     // [Stalkers] with the AI model on, it chooses what someone you killed does when they've found you; the rules choose without it (Core/RevenantMind.cs; settings version 325)
         public bool RevenantsAtCamp = true;    // with West World: someone you killed, due back (or due within two days), comes to the edge of your firelight when you sit at a fire of a night out of the towns (SIXDAY item 19)
         public bool StalkerRecords = true;
         public bool StalkerBlack = true;       // the stalker is always a stranger dressed in black, spawned out of sight (Lex, 2026-10-31); never someone near turned or one of enRAGE's people, whose clothes enRAGE knows them by; false: as before (settings version 161)
@@ -953,6 +954,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 325)
+                    log?.Invoke("Settings: new in this version: [Stalkers] RevenantsMinds (on): someone you killed who comes back chooses what to do next, by the model if it is on.");
                 if (s.SettingsVersion < 324)
                     log?.Invoke("Settings: new in this version: [Encounters] Wayside (on), WaysideChance (25): things to come across out on the road.");
                 if (s.SettingsVersion < 323)
@@ -1720,6 +1723,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("StalkerStrangers = " + B(StalkerStrangers) + "   ; with StalkerBlack off: if nobody near can be turned for a few minutes, a stranger turns up behind you instead");
             b.AppendLine("StalkerRides = " + B(StalkerRides) + "   ; a stalker on horseback stays in the saddle: he follows at a distance, rides in close and back out again round you, pulls up short of you, and rides off when he flees or falls back (if the horse won't go within five seconds, he gets down and does it on foot as before). Hiding and his eerie acts stay on foot");
             b.AppendLine("StalkerHorse = " + StalkerHorse + "   ; percent of stalkers who appear on horseback: he sits the horse watching from where he appeared and gets down the first time he moves (the horse is given back out of view); 0: always on foot");
+            b.AppendLine("RevenantsMinds = " + B(RevenantsMinds) + "   ; someone you killed who has come back chooses what to do next: the AI model chooses from how they died and what they held against you, if it is on; the rules choose if not; false: they go about it the old way");
             b.AppendLine("RevenantsAtCamp = " + B(RevenantsAtCamp) + "   ; with WestWorld and Stalkers: sit at a fire of a night out of the towns and someone you killed who is due back (or due within two days) comes to the edge of the firelight, 13-18 m off, and stares; a word from the dark; the stalker's ways after; false: they come behind you on the road as before");
             b.AppendLine("StalkerMinutes = " + StalkerMinutes + "   ; how long a stalker keeps it up (real minutes, up to 240)");
             b.AppendLine("StalkerAppearMin = " + StalkerAppearMin + "   ; he first turns up this many metres behind you, at least...");

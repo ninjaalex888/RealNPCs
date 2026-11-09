@@ -264,6 +264,7 @@ namespace EnrageWestworld.InGame
                     }
                 }
                 _stalker.Tick(Game.Player.Character, _engine.Player, StalkerSay);
+                RevenantThink(now);   // someone you killed, deciding what to do about it (WestworldScript.RevenantMind.cs)
                 return;
             }
             if (now < _nextStalkCheck || now < _stalkerCooldown)

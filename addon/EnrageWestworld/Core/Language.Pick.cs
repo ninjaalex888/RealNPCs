@@ -20,6 +20,8 @@ namespace EnrageWestworld.Core
         public static string PickBrief(LanguageRequest r)
         {
             int year = r != null && r.Year > 0 ? r.Year : 1899;
+            if (r != null && r.Revenant)
+                return RevenantMind.Brief(year);
             if (r != null && r.WakeStage >= Awakening.Questioning)
                 return WakeOdd.PickBrief(year, r.WakeStage);   // the waking (Lex, 2026-10-31: the model decides, lash-outs too)
             return "You decide what one person living in " + year + ", in the American West and South, does next. You are given who they are, where, " +

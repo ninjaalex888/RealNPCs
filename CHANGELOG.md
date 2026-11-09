@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Someone you killed decides what to do about it** (`[Stalkers] RevenantsMinds`, on; settings version 325; FIVEDAY2 item 11). Someone who has come back used to go through the stalker's motions. Now what they do next (keep after you, stand where you can see them, close in and walk round you, come straight at you and stop short, or leave) is chosen from how they died and what they held against you first: by the AI model when it's on, by the rules when it isn't or it's slow. F7's `TEST revenant mind:` and the log's `REVENANT` lines say which it was.
+  - Why it reads true: grievance outlives the wound. What comes back is the unfinished business.
+
 - **The road's pace, measured** (FIVEDAY2 item 23). An offline measure of what a rider meets in an hour (mindtest `RoadPaceTest`): the encounters as they were against the same with the road's scenes added. No setting changed by it.
 
 - **What comes of it** (FIVEDAY2 item 22). What happens out on the road doesn't stay there. A while after, the nearest town has word of it in the Around town box. Someone you stopped for may leave a note for you at the post office there.

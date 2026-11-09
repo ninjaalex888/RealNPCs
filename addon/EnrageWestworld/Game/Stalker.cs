@@ -16,7 +16,7 @@ namespace EnrageWestworld.InGame
 {
     internal sealed partial class Stalker
     {
-        private enum Mode { Follow, Stare, Watched, Hide, Circle, Retreat, Lurk, Still, Rush, Act, Flee }
+        private enum Mode { Follow, Stare, Watched, Hide, Circle, Retreat, Lurk, Still, Rush, Act, Flee, Hunt }
 
         private const uint MoveLR = 1301263553u, MoveUD = 4255658384u, HorseMoveLR = 308778731u, HorseMoveUD = 1002303471u;
 
@@ -606,6 +606,48 @@ namespace EnrageWestworld.InGame
                 return false;
             _stillAt = pos;
             return true;
+        }
+
+        /// Near enough, and free to be told what next (FIVEDAY2 item 11).
+        public bool MayDecide { get { return !Done && _ped != null && _ped.Exists() && !_ped.IsDead && _mode != Mode.Flee && _mode != Mode.Hunt && _mode != Mode.Act; } }
+
+        public float MetresFrom(Ped player)
+        {
+            return _ped != null && _ped.Exists() ? _ped.Position.DistanceTo(player.Position) : 9999f;
+        }
+
+        /// What he does next, chosen by the model or the rules (Core/RevenantMind.cs): the stalker's own moves, entered the way they always are.
+        public void Decide(string what, Ped player, int now)
+        {
+            if (!MayDecide)
+                return;
+            switch (what)
+            {
+                case RevenantMind.Stare:
+                    _mode = Mode.Stare;
+                    _modeUntil = now + 10000 + _rng.Next(6000);
+                    Face(player, true);
+                    break;
+                case RevenantMind.Circle:
+                    StartCircle(player, now);
+                    break;
+                case RevenantMind.Rush:
+                    _mode = Mode.Rush;
+                    _modeUntil = 0;
+                    _rushSince = now;
+                    _nextOrder = 0;
+                    TASK.CLEAR_PED_TASKS(_ped.Handle, true, false);
+                    TASK.TASK_LOOK_AT_ENTITY(_ped.Handle, player.Handle, -1, 0, 51, 0);
+                    break;
+                case RevenantMind.Leave:
+                    StartFleeMounted(player);
+                    break;
+                default:
+                    _mode = Mode.Follow;
+                    _nextOrder = 0;
+                    break;
+            }
+            Log.Write("STALKER " + Label + ": " + RevenantMind.WordsOf(what));
         }
 
         /// The player has stood still long enough: whatever StalkerWhenStill says. The clock starts again after each.

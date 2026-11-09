@@ -48,6 +48,7 @@ namespace EnrageWestworld.Core
         public string Focus, FocusId, Shape; // what their mind goes to this time, and the thought's shape
         public bool WeatherOff;              // the weather left out (it isn't the focus)
         public List<string> Recent = new List<string>();    // their last thoughts shown (the model is told to think of something else)
+        public bool Revenant;                // Kind "pick" for one of the dead (Core/RevenantMind.cs): the brief says so
         public string Now;                   // Kind "pick" in a staged encounter (Core/Staged.cs): what is going on around them this moment, in a few words
 
         /// The variety rules apply here: set, and a thought or a pick (Talk's answers and the remarks said aloud keep their own).
