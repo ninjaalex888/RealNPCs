@@ -1,4 +1,4 @@
-RealNPCs 0.7.24 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.25 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -16,6 +16,57 @@ backup). enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemption2/m
 Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
+
+The settings are in RealNPCs.ini. It isn't in this zip: RealNPCs writes it the first time you
+load the game with the mod, in Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs. The
+settings panel (Alt+F or Alt+R) changes the same file.
+
+
+NEW IN 0.7.25
+-------------
+The biggest update so far. It's large and has been tested offline rather than over long play,
+so if something misbehaves please send your log. Nearly every new thing
+below has its own switch, and 0.7.24 stays on the GitHub releases page.
+
+What you asked for in the comments:
+- The Around town box can be turned off: on the settings panel's UI page, "The Around town box,
+  top right", or [Output] NewsTo = off. It's up less too: the town's regard keeps it up for 30
+  seconds after you arrive or it changes ([Output] AroundTownStaysSeconds; 0 for the whole time).
+- A clean screen in one switch: on the settings panel's first page, or [Display]
+  CleanScreen = true. Names, bars, thoughts, the ticker, the box and the VRAM gauge all go and
+  come back as you had them. What people say to you and the Talk menu stay.
+- Friends come to your aid in gunfights. Almost nobody did before, because nearly everyone bolts
+  at the first shot. Now someone who owes you turns back, and a friend may; a friend without a
+  gun is handed one. Someone whose fondness bar is full always comes.
+- Names only for the person you've targeted: [Display] NameCards = targeted.
+- Your own translation: make translation.txt in the RealNPCs folder, one line each, the English,
+  a TAB, your translation. Anything not found shows in English.
+- A body model asked for and never used now goes back to the game (F7's "TEST loads:" says what's held).
+
+New in the fights:
+- People bet on a fistfight and settle up after, and a bet welshed on makes bad blood. The man
+  who lost remembers: days later he wants it again, keeps clear of the winner, or offers his hand.
+- A prize fight out back of the saloon at night: bet a dollar, or tip off the sheriff.
+- Someone who fought beside you brings it up later.
+
+New in people's heads:
+- Stress builds over a bad week to a breaking point, each person breaking their own way.
+- Meetings are remembered by their worst moment and how they ended. Trust goes fast and comes back slowly.
+- Gossip moves along friendships. Two who saw you kill are bound by it.
+- The man you beat carries it for days and his friends name you for it, and survivors come back changed.
+- People act out their worries where you can see, and friends come to you unasked with news, a warning or a small gift.
+- About 3,500 more written lines, more kinds of quarrel, debt and gossip, and talk of the times.
+
+New in the towns and on the roads:
+- Payday Saturday, temperance ladies, a shivaree, a proper Sunday, wakes, mourners at graves.
+- A notice board, and being told what you missed when you come back to a town.
+- Three whistles at Annesburg, the shape-up on the Saint Denis docks, sale day at Valentine, fence cutters.
+- Witnesses who choose what to do, Pinkertons asking after you, a posse that rides out.
+- Drummers, the slate at the store, a sheriff's sale, camp meetings, river baptisms, box socials,
+  barn raisings, fever and quarantine, base ball, the county fair, the Fourth of July, Mardi
+  Gras, a brass band funeral, a fais do-do, grinding season, hobo signs, rewards and wanted men.
+- Dime novels about you, posters that drift from the rumours, an editor who takes a side.
+- 1907: going dry, relics of the outlaw days, the boy who remembers. In West World, hosts compare notes.
 
 
 NEW: THE PEOPLE SPEAK IN THEIR OWN VOICES (OPTIONAL, RECOMMENDED)
@@ -37,7 +88,7 @@ your PC. One voice plays at a time, louder near and from the side the speaker st
 14 m ([Mind] VoiceMetres); VoiceVolume (100). The game's own recorded remark, where one plays,
 still plays.
 
-What you need: an NVIDIA graphics card with about 3 GB of memory free beside the game (with
+What you need: an NVIDIA graphics card (AMD cards can't run the voices yet) with about 3 GB of memory free beside the game (with
 the AI model running too, about 5.5 GB free with the model as it comes: a 16 GB card does both
 with room to spare, a 12 GB card both at medium settings), about 8 GB of disk, and a one-time setup of about ten minutes. Without the voice server nothing
 changes: the switches are on as they come, and nothing is heard until it answers (the log says
@@ -54,6 +105,8 @@ Set it up once:
    on where it stopped.
 3. Before you play, double-click start-voice-server.cmd and leave its window open. It takes
    about 15 seconds to load the model, then says it's listening.
+   While people are being recorded, keep anything else on your PC quiet: it records what your PC
+   plays, so a video left on can end up as someone's voice.
 4. Play. People are recorded as you meet them, so the first voices come after a few minutes in
    a town; F7's "TEST voice:" line and the server's window (and voice-server.log beside it) say
    what it's doing.

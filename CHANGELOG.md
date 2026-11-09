@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.7.25 (2026-11-08)
+
 - **What RealNPCs asks the game to load, it lets go** (players on Nexus, 2026-11: VRAM climbing, stutters; FIVEDAY2 0a). A body model asked for and then never used (an encounter that ended early, a friend who never rode in) used to stay asked for: bodies are what sit on the graphics card. Now one nobody has asked after for 45 seconds goes back to the game. F7's `TEST loads:` line and a `LOADS` line in the log every few minutes say what's held. This won't be the whole of what players see: most of the climb on the gauge is likely the game's own streaming filling the card, and with the model or the voice server on, those hold 2.3 to 7 GB by themselves.
 
 - **Names only for the person you've targeted** (`[Display] NameCards = targeted`; a player on Nexus, 2026-11-04). A fourth choice beside off, known and everyone: a name over the head of whoever you're locked on to or aiming at, and nobody else.
