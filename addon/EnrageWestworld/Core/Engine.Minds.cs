@@ -185,6 +185,28 @@ namespace EnrageWestworld.Core
 
         /// Whether this person mourns a friend the player killed in the last `days` (our own death record says "by the
         /// player"), whether or not they've had it out with him yet: nobody comes over glad to him then (Lonely; the review).
+        /// Someone this person was fond of who has died, at any time, for All Saints' Day (TENHOUR R8): the tie's other side, by name; `byYou` when it was your doing.
+        public bool DeadOfTheirs(string id, out string dead, out string deadId, out bool byYou)
+        {
+            dead = deadId = null;
+            byYou = false;
+            if (id == null)
+                return false;
+            foreach (SceneTie t in Store.Ties)
+            {
+                if (!t.Has(id) || t.Warmth <= 0)
+                    continue;
+                DeathEntry d = Store.DeathOf(t.OtherId(id));
+                if (d == null)
+                    continue;
+                dead = t.Other(id);
+                deadId = t.OtherId(id);
+                byYou = d.By == "player";
+                return true;
+            }
+            return false;
+        }
+
         public bool MournsYourKill(string id, int days)
         {
             PersonState st = id != null ? Store.Find(id) : null;

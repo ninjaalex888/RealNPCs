@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 354;
+        public const int CurrentVersion = 355;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -454,6 +454,7 @@ namespace EnrageWestworld.Core
         public bool FeverDeaths = true;   // [World] with Fever: one in twelve of the sick dies of it, mourned like anyone
         public bool MineWhistle = true;   // [World] rarely, three whistles at the Annesburg mine: one or two of its men killed below, off screen; the town runs to the pithead, the names, the grief, the collection (Core/MineWhistle.cs; FIVEDAY item 28, settings version 280)
         public bool Wakes = true;   // [World] the night before a burial the neighbours sit up with the dead: the box tells you, the street talks of them, and in West World one swears the dead moved (Core/WakeNight.cs; FIVEDAY item 27, settings version 279)
+        public bool AllSaintsGraves = true;   // [World] with Mourning: on All Saints' Day in the south, those with someone dead go to the tombs, the ones you put there among them (TENHOUR R8; settings version 355)
         public bool Mourning = true;   // [World] three weeks of mourning a friend: quieter days and thoughts, hushed neighbours, the grave on a Sunday afternoon (Core/Mourning.cs; FIVEDAY item 26, settings version 278)
         public bool SundayMorning = true;   // [World] Sunday properly: the believers walk to the service, the hymn heard from the street, a sermon on the town's week talked over after, dinner on the grounds (Core/Sunday.cs; FIVEDAY item 25, settings version 277)
         public bool NoticeBoard = true;   // [World] the week ahead on one board: a "Notice board" page in the reader, and what a town has posted in the Around town box as you come in (Core/NoticeBoard.cs; FIVEDAY item 16, settings version 268)
@@ -986,6 +987,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 355)
+                    log?.Invoke("Settings: new in this version: [World] AllSaintsGraves (on): on All Saints' Day in the south, people go to the tombs.");
                 if (s.SettingsVersion < 354)
                     log?.Invoke("Settings: new in this version: [World] LettersHome (on): those who left write to a friend still in the town.");
                 if (s.SettingsVersion < 353)
@@ -2099,6 +2102,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("FeverDeaths = " + B(FeverDeaths) + "   ; with Fever on: one in twelve of the sick dies of it, named and mourned like anyone (the wake, the grave). Off: they all get up again");
             b.AppendLine("MineWhistle = " + B(MineWhistle) + "   ; rarely (a day in twenty-five, never within three weeks of the last), the mine whistle at Annesburg blows three times: one or two of the town's men are killed below, named, never shown, and mourned like anyone. In Annesburg you hear it, people run for the pithead, the names come up, and the hat goes round; away, the word reaches you");
             b.AppendLine("Wakes = " + B(Wakes) + "   ; the night after a death in town (or before one of enRAGE's funerals), from eight to two, the neighbours sit up with the dead: the Around town box tells you once, the street's quiet talks are of the dead half the time, and with West World one of the waking swears the dead one moved");
+            b.AppendLine("AllSaintsGraves = " + B(AllSaintsGraves) + "   ; with Mourning: on the first of November in the south, those with someone dead go to the tombs, the ones you put there among them");
             b.AppendLine("Mourning = " + B(Mourning) + "   ; for three weeks after a friend's death they mourn: quieter days (home, prayer, not the cards or the saloon), their thoughts of the dead, neighbours hushing near them, and on a Sunday afternoon a walk to the grave to kneel (the town's cemetery spot, else by the church). At the grave of one you killed, they know you");
             b.AppendLine("SundayMorning = " + B(SundayMorning) + "   ; Sunday properly: from eight the town's believers make for the church (the devout most); from half past nine near the church you hear the hymn; the sermon is on the town's week (a killing, a theft, a death, the drink) and the churchgoers think it over after; from noon, dinner on the grounds");
             b.AppendLine("NoticeBoard = " + B(NoticeBoard) + "   ; what is posted for the coming seven days, gathered on one board: a Notice board page in the reader (each town by day: dances, elections, the circuit judge, hangings, the show, prize fights, announced weddings, funerals, Saturday wages and Sunday service), and as you come into a town, what it has posted, in the Around town box (once a town a day)");

@@ -65,13 +65,14 @@ namespace EnrageWestworld.InGame
                 {
                     MindWho w;
                     string dead, deadId;
-                    if (!_mindWho.TryGetValue(h, out w) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || !Mourns(w, g, out dead, out deadId))
+                    bool saints = _cfg.AllSaintsGraves && Mourning.AllSaints(InnerLife.ClockMonth, InnerLife.ClockDay, _placeTown, hour), saintsYours = false;
+                    if (!_mindWho.TryGetValue(h, out w) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || (!Mourns(w, g, out dead, out deadId) && !(saints && w.Id != null && _engine.DeadOfTheirs(w.Id, out dead, out deadId, out saintsYours))))
                         continue;
                     Ped p = new Ped(h);
                     float metres = p.Position.DistanceTo(me.Position);
                     string first = Person.FirstOf(dead);
                     // a Sunday afternoon: to the grave
-                    if (Mourning.GraveHour(InnerLife.Weekday, hour) && metres < 40f && _mourningDone.Add("grave|" + w.Id + "|" + day) &&
+                    if ((Mourning.GraveHour(InnerLife.Weekday, hour) || saints) && metres < 40f && _mourningDone.Add("grave|" + w.Id + "|" + day) &&
                         MayDirectWhyNot(p) == null && !NotFree(h) && !_director.Involves(h) && !PED.IS_PED_USING_ANY_SCENARIO(h) && !_staged.Contains(h))
                     {
                         Spot spot = Spots.Nearest(_spots, _placeTown, "cemetery", p.Position.X, p.Position.Y);
@@ -83,7 +84,7 @@ namespace EnrageWestworld.InGame
                             at = p.Position;   // no graveyard known: by the church, where they stand
                         else
                             continue;
-                        bool byYou = _engine.MournsYourKill(w.Id, Mourning.Days);
+                        bool byYou = saintsYours || _engine.MournsYourKill(w.Id, Mourning.Days);
                         _graveWalk = new GraveWalk { P = p, Id = w.Id, Name = w.Name, Dead = first, ByYou = byYou, At = at, Until = now + 90000 };
                         StagedHold(p);
                         TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, at.X, at.Y, at.Z, 1.0f, 60000, 1.5f, 0, 0f);

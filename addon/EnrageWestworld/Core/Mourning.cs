@@ -52,6 +52,9 @@ namespace EnrageWestworld.Core
 
         public static bool GraveHour(int weekday, int hour) { return weekday == 0 && hour >= GraveFrom && hour < GraveTo; }
 
+        /// All Saints' Day in the south (TENHOUR R8; roadmap.md's idea bank): families at the tombs from morning to evening, the first of November.
+        public static bool AllSaints(int month, int day, string town, int hour) { return month == 11 && day == 1 && town != null && Calendar.Region(town) == "south" && hour >= 8 && hour < 18; }
+
         private static readonly string[] Own =
         {
             "{d}'s chair at the table. Nobody sits in it.", "I keep turning to tell {d} something.", "Three weeks, they say, and it gets easier. They lie.",
