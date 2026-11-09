@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 353;
+        public const int CurrentVersion = 354;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -441,6 +441,7 @@ namespace EnrageWestworld.Core
         public bool ColdSnaps = true;   // [World] twice a winter, five days of bitter cold in the high country; an old man may not wake, off screen (Core/ColdSnap.cs; TENHOUR R3, settings version 350)
         public bool TownRivals = true;   // [World] a tale crossing to a rival town arrives more bent, and people say what they think of the place (Core/TownRivals.cs; TENHOUR R4, settings version 351)
         public bool WeekColumn = true;   // [World] on a Sunday the paper carries a column of what really happened in the town you're nearest that week (Core/WeekColumn.cs; TENHOUR R5, settings version 352)
+        public bool LettersHome = true;   // [World] those who left on the train write to a friend still in the town, and the friend has it on their mind for a few days (Core/LettersHome.cs; TENHOUR R7, settings version 354)
         public bool RoundupSeason = true;   // [World] the fortnight after each roundup, the cattle towns fill with paid-off hands, and one comes back hurt (Core/Roundup.cs; TENHOUR R1, settings version 348)
         public bool PosseRides = true;   // [World] after a bad crime in a town, three to five of its men ride out as a posse, off screen, and come back a day on with nothing, a stranger, or one of them dead (Core/PosseRides.cs; FIVEDAY R32, settings version 321)
         public bool WantedWhich = true;   // [World] a resident whose worry is the wanted poster is recognised within 4 m (once, in the box), then J near them: turn in for the bounty, warn them, buy them a ticket, or leave it (Core/WantedWhich.cs; FIVEDAY R31, settings version 320)
@@ -985,6 +986,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 354)
+                    log?.Invoke("Settings: new in this version: [World] LettersHome (on): those who left write to a friend still in the town.");
                 if (s.SettingsVersion < 353)
                     log?.Invoke("Settings: new in this version: [Display] KnownOnMap (off): the regulars you've met as named marks on the map.");
                 if (s.SettingsVersion < 352)
@@ -2083,6 +2086,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("ColdSnaps = " + B(ColdSnaps) + "   ; twice a winter, five days of bitter cold at Colter, Wapiti and Strawberry: the store runs out of coal oil, and an old man may not wake. Someone can die of it, off screen");
             b.AppendLine("TownRivals = " + B(TownRivals) + "   ; a tale crossing to a rival town (Valentine and Strawberry, say) arrives more bent than the miles would make it, and people near you say what they think of the place");
             b.AppendLine("WeekColumn = " + B(WeekColumn) + "   ; on a Sunday the paper carries a column of what really happened in the town you're nearest that week: who was buried, who married, how many fights");
+            b.AppendLine("LettersHome = " + B(LettersHome) + "   ; those who left on the train write to a friend still in the town, and the friend has it on their mind for a few days");
             b.AppendLine("RoundupSeason = " + B(RoundupSeason) + "   ; in the fortnight after each roundup (July and November) the cattle towns fill with paid-off hands, and one comes back hurt");
             b.AppendLine("PosseRides = " + B(PosseRides) + "   ; the day after a bad crime in a town (a killing or a robbery with talk of it), three to five of its own men ride out as a posse; off screen, they come back a day on with nothing, with a stranger they say did it, or one short (a posse man killed, mourned like anyone); while they're out the town thinks of the road");
             b.AppendLine("WantedWhich = " + B(WantedWhich) + "   ; a resident living quietly with the wanted-poster worry: within 4 m you know the face (once each, in the box), and near them J: turn them in for the bounty ($50 to $150; gone in irons), warn them (they owe you, as one you saved), buy them a ticket on the next train ($15; gone by train), or leave it");

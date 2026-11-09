@@ -1410,6 +1410,7 @@ namespace EnrageWestworld.InGame
             PosterStep(now);        // the bill outside the sheriff's, as the rumour has it (WestworldScript.DriftPoster.cs; FIVEDAY R13)
             NovelStep(now);         // people near you who've read the dime novel (WestworldScript.DimeNovel.cs; FIVEDAY R12)
             DryStep(now);           // 1907: a town dry by local option (WestworldScript.Fever.cs; FIVEDAY R27)
+            LettersHomeStep(now);   // a letter from one who left (WestworldScript.Roundup.cs; TENHOUR R7)
             RoundupStep(now);       // the hands paid off after the roundup (WestworldScript.Roundup.cs; TENHOUR R1)
             TownRivalStep(now);     // what this town thinks of its rival (WestworldScript.Roundup.cs; TENHOUR R4)
             ColdSnapStep(now);      // the high country's cold spells (WestworldScript.ColdSnap.cs; TENHOUR R3)

@@ -7,7 +7,27 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private int _roundupNextLook, _roundupThoughts, _rivalNextLook;
+        private int _roundupNextLook, _roundupThoughts, _rivalNextLook, _letterHomeNextLook;
+
+        /// Every twenty seconds or so: someone near you has had a letter from one who left (TENHOUR R7; Core/LettersHome.cs); each of them thinks of it once a day.
+        private void LettersHomeStep(int now)
+        {
+            if (_cfg == null || !_cfg.LettersHome || _placeTown == null || (now < _letterHomeNextLook && _letterHomeNextLook - now <= 20000))
+                return;
+            _letterHomeNextLook = now + 20000;
+            long day = Bridge.Now() / 1440;
+            foreach (int h in _mindNear)
+            {
+                MindWho w;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                    continue;
+                string from = _engine.LetterHomeFrom(w.Id, day);
+                if (from == null || !SeasonFirst("letter|" + w.Id + "|" + day))
+                    continue;
+                _ticker.Push((w.Name ?? "Someone") + ", thinking", LettersHome.Thought(from, w.Id + "|" + day), "near", h);
+                break;
+            }
+        }
 
         /// Every minute or so in a town with a rival, someone near you has an opinion of it (TENHOUR R4; Core/TownRivals.cs).
         private void TownRivalStep(int now)

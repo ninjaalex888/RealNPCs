@@ -942,6 +942,7 @@ namespace EnrageWestworld.Core
             DimeNovelDaily(now);    // a dime novel about your most-told deed, on a Monday (Engine.DimeNovel.cs; FIVEDAY R12)
             PosseDaily(now);        // a posse rides after a bad crime, and comes back (Engine.Posse.cs; FIVEDAY R32)
             WeekColumnDaily(now);   // the week in town, on a Sunday (Engine.WeekColumn.cs; TENHOUR R5)
+            LettersHomeDaily(now);  // those who left write to a friend at home (Engine.LettersHome.cs; TENHOUR R7)
             RoundupDaily(now);      // the hands are in from the roundup (Engine.Roundup.cs; TENHOUR R1)
             ColdSnapDaily(now);     // the high country's cold spells (Engine.ColdSnap.cs; TENHOUR R3)
             ClaimAgentsDaily(now);  // the claim agent calls on a widow (Engine.Fever.cs; FIVEDAY R24)
