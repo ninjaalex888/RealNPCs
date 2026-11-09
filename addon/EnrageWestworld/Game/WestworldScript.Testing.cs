@@ -885,6 +885,8 @@ namespace EnrageWestworld.InGame
                     _nextTickerUpdate = 0;
                     said = "the next thoughts are coming up beside the main one";
                     return null;
+                case "pairs":
+                    return PairTest(now, out said);   // WestworldScript.PairThoughts.cs
                 case "composed":
                     skipped = "the roll, the wait between them and how strong the feeling must be";
                     return ComposedTest(now, out said);   // WestworldScript.Composed.cs

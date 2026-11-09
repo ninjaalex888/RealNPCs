@@ -123,6 +123,7 @@ namespace EnrageWestworld.InGame
                     ThreadThoughtShown(side[i].Key, now);
                 }
             ThoughtsMinuteLine(now);
+            PairThoughtsStep(now);   // two who think about each other (WestworldScript.PairThoughts.cs)
         }
 
         // the thought board's numbers for the log, once a minute: what the last line has told already, and when it was

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 344;
+        public const int CurrentVersion = 345;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -76,6 +76,7 @@ namespace EnrageWestworld.Core
         public bool Asides = true;                // [Ticker] while someone near you talks, whoever's listening may think something about it, over their head (Core/Asides.cs; FIVEDAY2 item 25; settings version 328)
         public bool WeatherChecked = true;   // [Ticker] what people think and say about the weather is held to what's really out, the temperature too (Core/WeatherTruth.cs; a player's report, 2026-11-09; settings version 342)
         public bool WeatherTalk = true;      // [Ticker] with WeatherChecked: people remark on the weather more the worse it is, and for a couple of minutes after it turns
+        public bool PairThoughts = true;   // [Ticker] two in view with a history between them each think about the other, at the same moment, in the boxes over their heads (TENHOUR item 14; settings version 345)
         public int ThoughtsAtOnce = 3;            // [Ticker] how many people's thoughts may be up over their heads at once (FIVEDAY2 item 24; settings version 327); 1: singly, as it was
         public bool TickerShowsScene = true;   // the bar names the street scene playing out near you, while it plays (Lex, 2026-10-30; settings version 122)
         public bool ScenesOnTicker = true;        // a street scene's lines on the ticker while it plays within ScenesOnTickerMetres (2026-10-29, Lex)
@@ -976,6 +977,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 345)
+                    log?.Invoke("Settings: new in this version: [Ticker] PairThoughts (on): two in view with a history each think about the other.");
                 if (s.SettingsVersion < 344)
                     log?.Invoke("Settings: new in this version: [Encounters] WaysideComposed (on): people in road scenes show what they feel in the game's own moves.");
                 if (s.SettingsVersion < 343)
@@ -1740,6 +1743,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Asides = " + B(Asides) + "   ; while someone near you talks, the person listening may have a thought about it over their head (needs ThoughtsAtOnce above 1)");
             b.AppendLine("WeatherChecked = " + B(WeatherChecked) + "   ; what people think and say about the weather is held to what's really out, the temperature too: no heat talk in a cold drizzle");
             b.AppendLine("WeatherTalk = " + B(WeatherTalk) + "   ; with WeatherChecked: people remark on the weather more the worse it is, and for a couple of minutes after it turns (the first drops, thunder, snow, the rain stopping)");
+            b.AppendLine("PairThoughts = " + B(PairThoughts) + "   ; two people in view with a history between them each think about the other, at the same moment, in the boxes over their heads. Needs ThoughtsAtOnce 3 or more");
             b.AppendLine("ThoughtsAtOnce = " + ThoughtsAtOnce + "   ; how many people's thoughts may be up over their heads at once, arriving one after another (1 to 4; 1: singly, as it was; needs ThoughtsOverHeads)");
             b.AppendLine("TickerShowsScene = " + B(TickerShowsScene) + "   ; while a street scene plays out within 40 m, the bar at the bottom says what is going on and who is in it (\"Nearby: ...\")");
             b.AppendLine("ScenesOnTicker = " + B(ScenesOnTicker) + "   ; what people say near you (a street scene, a hello, the doctor, the law) shows as they say it in the subtitle box, the game's way (their name, the line); never on the bar; [Output] Subtitles = off hides it");
