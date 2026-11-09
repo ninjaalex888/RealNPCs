@@ -141,8 +141,14 @@ namespace EnrageWestworld.InGame
 
         private static bool WaysideOfTheDead(WaysideRun w)
         {
-            return w.K.Cast.All(r => r.Act == "dead");
+            WaysideRole[] cast = w.K.Cast;
+            for (int i = 0; i < cast.Length; i++)
+                if (cast[i].Act != "dead")
+                    return false;
+            return true;
         }
+
+        private readonly List<Ped> _waysideLive = new List<Ped>(8);
 
         private void WaysideStep(int now)
         {
@@ -161,13 +167,20 @@ namespace EnrageWestworld.InGame
             Vector3 pos = me.Position;
             EventDot("wayside", w.At);
             bool theDead = WaysideOfTheDead(w);
-            List<Ped> live = w.Cast.Where(c => c != null && c.Exists() && (theDead || !c.IsDead)).ToList();
+            List<Ped> live = _waysideLive;   // kept, so a step allocates nothing (TENHOUR item 1)
+            live.Clear();
+            float d = float.MaxValue;
+            foreach (Ped c in w.Cast)
+                if (c != null && c.Exists() && (theDead || !c.IsDead))
+                {
+                    live.Add(c);
+                    d = Math.Min(d, c.Position.DistanceTo(pos));
+                }
             if (live.Count == 0)
             {
                 WaysideEnd("none of them is left");
                 return;
             }
-            float d = live.Min(c => c.Position.DistanceTo(pos));
             if (d > 150f)
             {
                 WaysideEnd(w.Chose ? w.Outcome : "you rode on");
@@ -301,7 +314,9 @@ namespace EnrageWestworld.InGame
         {
             if (w.Fought || WaysideOfTheDead(w))
                 return false;
-            bool threat = live.Any(c => ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(c.Handle, me.Handle, true, false) || PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, c.Handle)) || (PED.IS_PED_SHOOTING(me.Handle) && d < 40f);
+            bool threat = PED.IS_PED_SHOOTING(me.Handle) && d < 40f;
+            for (int i = 0; i < live.Count && !threat; i++)
+                threat = ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(live[i].Handle, me.Handle, true, false) || PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, live[i].Handle);
             if (!threat)
                 return false;
             w.Fought = true;

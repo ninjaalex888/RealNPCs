@@ -13,12 +13,14 @@ namespace EnrageWestworld.InGame
     {
         private sealed class ComposedRun
         {
-            public int Handle, Target, NextAt, Step;
+            public int Handle, Target, NextAt, Step, CheckAt;
             public List<Expression> Steps;
             public MindAct Act;
             public string Name;
         }
 
+        private const int ComposedCheckMs = 200;
+        private Action _aComposed;
         private readonly List<ComposedRun> _composed = new List<ComposedRun>();
         private int _composedPlayed, _composedSteps, _composedFailed;
         private string _composedLast;
@@ -85,14 +87,19 @@ namespace EnrageWestworld.InGame
             {
                 ComposedRun r = _composed[i];
                 int h = r.Handle;
-                if (!_mindActs.Contains(r.Act) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || !CanDirect(new Ped(h)))
+                bool due = now >= r.NextAt && !IsPerforming(h);
+                if (due || now >= r.CheckAt || r.CheckAt - now > ComposedCheckMs)   // whether it's still theirs, before a step and a few times a second between them, not every frame (TENHOUR item 1)
                 {
-                    PerformCancel(h);
-                    r.Act.Until = now;
-                    _composed.RemoveAt(i);   // the act's been dropped, or a fight, a flight or a fall has them: no more orders
-                    continue;
+                    r.CheckAt = now + ComposedCheckMs;
+                    if (!_mindActs.Contains(r.Act) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || !CanDirect(new Ped(h)))
+                    {
+                        PerformCancel(h);
+                        r.Act.Until = now;
+                        _composed.RemoveAt(i);   // the act's been dropped, or a fight, a flight or a fall has them: no more orders
+                        continue;
+                    }
                 }
-                if (now < r.NextAt || IsPerforming(h))
+                if (!due)
                     continue;
                 if (r.Step >= r.Steps.Count)
                 {
@@ -118,7 +125,7 @@ namespace EnrageWestworld.InGame
         private void ComposedStep(int now)
         {
             if (_composed.Count > 0 || _composedAsks.Count > 0)
-                Safe("composed acts", () => ComposedTick(now));
+                Safe("composed acts", _aComposed ?? (_aComposed = () => ComposedTick(_now)));
         }
 
         /// The Testing row: the nearest person the ring holds shows whatever's on them, or, with nothing on them, plain contempt.

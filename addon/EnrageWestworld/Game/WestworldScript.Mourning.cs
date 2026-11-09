@@ -113,8 +113,13 @@ namespace EnrageWestworld.InGame
             });
         }
 
+        private int _graveStepAt;
+
         private void GraveStep(int now)
         {
+            if (now < _graveStepAt && _graveStepAt - now <= 250)
+                return;   // (TENHOUR item 1)
+            _graveStepAt = now + 250;
             GraveWalk gw = _graveWalk;
             Ped me = Game.Player.Character;
             if (gw.P == null || !gw.P.Exists() || gw.P.IsDead || now > gw.Until || MISC.GET_MISSION_FLAG() || PED.IS_PED_IN_COMBAT(gw.P.Handle, 0))

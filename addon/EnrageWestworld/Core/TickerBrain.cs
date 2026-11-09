@@ -47,6 +47,7 @@ namespace EnrageWestworld.Core
         public int StaggerMs = 2500;  // at most one new side thought this often
         public int SideMs = 9000;     // how long one stays, before its reading time
         public int SideTries = 4;     // how many people are asked for a thought in one go, when the nearest have nothing new
+        private NearThought[] _sideBest = new NearThought[4];
 
         private readonly List<TickerLine> _fresh = new List<TickerLine>();
         private readonly List<TickerLine> _history = new List<TickerLine>();
@@ -194,8 +195,10 @@ namespace EnrageWestworld.Core
             {
                 _sideAskAt = now + 500;   // not asked again for half a second (with an empty bar this runs every frame)
                 // the loud moments first, then nearest; a few asked, since someone's thought may be the one they had a moment ago
-                foreach (NearThought n in near.Where(x => x != null && x.Key != null && x.Handle != 0 && !IsUp(x.Key, x.Handle)).OrderByDescending(x => x.Urgent).ThenBy(x => x.Distance).Take(SideTries))
+                int found = BestForSide(near);
+                for (int b = 0; b < found; b++)
                 {
+                    NearThought n = _sideBest[b];
                     next = NearLine(n, now);
                     if (next == null)
                         continue;
@@ -210,6 +213,36 @@ namespace EnrageWestworld.Core
             next.Until = now + ms + Math.Min(4000, next.Text.Length * 25);
             _side.Add(next);
             _sideNextAt = now + StaggerMs;
+        }
+
+        /// The few to ask, the loud moments first and then the nearest, kept in order as they're met (TENHOUR item 1: this ran twice a second over everyone near, sorting the lot). Those level with each other stay in the order they came.
+        private int BestForSide(IList<NearThought> near)
+        {
+            if (_sideBest.Length < SideTries)
+                _sideBest = new NearThought[SideTries];
+            int found = 0;
+            for (int i = 0; i < near.Count; i++)
+            {
+                NearThought x = near[i];
+                if (x == null || x.Key == null || x.Handle == 0 || IsUp(x.Key, x.Handle))
+                    continue;
+                int at = found;
+                while (at > 0 && Ahead(x, _sideBest[at - 1]))
+                    at--;
+                if (at >= SideTries)
+                    continue;
+                for (int j = Math.Min(found, SideTries - 1); j > at; j--)
+                    _sideBest[j] = _sideBest[j - 1];
+                _sideBest[at] = x;
+                if (found < SideTries)
+                    found++;
+            }
+            return found;
+        }
+
+        private static bool Ahead(NearThought a, NearThought b)
+        {
+            return a.Urgent != b.Urgent ? a.Urgent : a.Distance < b.Distance;
         }
 
         /// A thought pushed for someone (an event's, a turn's) gets a free place at once rather than waiting its turn on the main line.

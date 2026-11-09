@@ -29,14 +29,19 @@ namespace EnrageWestworld.InGame
         private string _drumWhyNot;
         private readonly Dictionary<string, long> _drumCalledDay = new Dictionary<string, long>();   // drummer id -> the game day he called
 
+        private int _drumWalkAt;
+
         private void DrummerStep(int now)
         {
             if (_drum != null)
             {
                 if (_cfg == null || !_cfg.Drummers)
                     EndDrummer("[World] Drummers switched off");
-                else
+                else if (now >= _drumWalkAt || _drumWalkAt - now > 250)
+                {
+                    _drumWalkAt = now + 250;   // a walk across a street is looked at four times a second (TENHOUR item 1)
                     Safe("drummer", () => DrummerWalkStep(now));
+                }
                 return;
             }
             if (_cfg == null || !_cfg.Drummers || _store == null || _placeTown == null || now < _drumNextLook)

@@ -22,7 +22,7 @@ namespace EnrageWestworld.InGame
         {
             public int Handle;
             public string Kind, Name;
-            public int Until, Started, LookAt;
+            public int Until, Started, LookAt, PollAt;
             public Vector3 To;
             public int Toward;          // the one they walk to (talk, greet), 0 none
             public bool Spot;           // sent to the nearest scenario point
@@ -603,12 +603,18 @@ namespace EnrageWestworld.InGame
         }
 
         /// Each frame's look at those acting: done, gone or arrived, they're let go to their own ways.
+        private const int MindActPollMs = 200;
+
         private void MindActsStep(int now)
         {
             for (int i = _mindActs.Count - 1; i >= 0; i--)
             {
                 MindAct a = _mindActs[i];
                 int h = a.Handle;
+                // a walk or a while somewhere is looked at five times a second, not every frame (TENHOUR item 1: the ring makes this up to sixteen people, several game calls each); what takes them from it, which costs nothing to ask, is seen at once, and stage 1 keeps its own pace
+                if (!a.Stage1 && now < a.PollAt && a.PollAt - now <= MindActPollMs && !TakenUp(h) && !AimedLately(h, now))
+                    continue;
+                a.PollAt = now + MindActPollMs;
                 bool gone = !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h);
                 if (!gone && TakenUp(h))
                 {

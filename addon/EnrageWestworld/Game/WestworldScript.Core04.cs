@@ -1318,6 +1318,7 @@ namespace EnrageWestworld.InGame
         private void Tick04(int now)
         {
             _now = now;
+            Log.Tick(now);   // what's waiting to be written, a couple of times a second
             Natives.YieldToDying = Speech.YieldToDying = _cfg != null && _cfg.YieldToDying;   // the rule for the dying, read each tick ([World] YieldToDying; item 27)
             Safe("settings reload", _aIni);
             Safe("places", _aPlaces);

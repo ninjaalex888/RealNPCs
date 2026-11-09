@@ -93,7 +93,9 @@ namespace EnrageWestworld.InGame
         {
             public TickerLine Laid;
             public List<string> Parts = new List<string>();
-            public float Scale, Width, Shift;
+            public readonly List<string> Formed = new List<string>(4);   // each line made ready for the game once, not each frame (TENHOUR item 1)
+            public readonly List<float> PartWidths = new List<float>(4);
+            public float Scale, Width, Shift, WrapScale, WidthWrapped;
             public int UnseenSince = -1;
             // this frame's
             public float X, Top, Height;
@@ -103,6 +105,7 @@ namespace EnrageWestworld.InGame
         private readonly SideBox[] _sideNow = new SideBox[MostBoxes];
         private readonly float[] _boxX0 = new float[MostBoxes], _boxX1 = new float[MostBoxes], _boxTop = new float[MostBoxes], _boxH = new float[MostBoxes];
         private float _mainX0, _mainX1, _mainH;
+        private const float SideRewrapDrift = 0.02f;
         private int _sideShown, _sideMost, _sideFrames, _sidePasses;
         private TickerLine _sideCounted;
         private long _sideTicks, _sidePeak;
@@ -152,6 +155,7 @@ namespace EnrageWestworld.InGame
                 return;
             long t0 = Stopwatch.GetTimestamp();
             int n = 0, used = 0;
+            Vector3 you = Game.Player.Character.Position;
             if (_overHeadTopAt == now && _overHeadDrawn)
             {
                 _boxX0[0] = _mainX0;
@@ -167,7 +171,7 @@ namespace EnrageWestworld.InGame
                 SideBox box = BoxFor(line, side);
                 if (box == null)
                     continue;
-                if (!PlaceSideBox(line, box, now))
+                if (!PlaceSideBox(line, box, now, you))
                 {
                     if (box.UnseenSince < 0)
                         box.UnseenSince = now;
@@ -215,7 +219,7 @@ namespace EnrageWestworld.InGame
         }
 
         /// This frame's position for a side thought; false when its thinker can't be seen.
-        private bool PlaceSideBox(TickerLine line, SideBox box, int now)
+        private bool PlaceSideBox(TickerLine line, SideBox box, int now, Vector3 you)
         {
             int h = line.Handle;
             if (h == 0 || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || !ENTITY.IS_ENTITY_ON_SCREEN(h))
@@ -224,17 +228,29 @@ namespace EnrageWestworld.InGame
             float x, y;
             if (!ScreenAt(head + new Vector3(0f, 0f, ThoughtAboveHead), out x, out y))
                 return false;
-            float scale = _cfg.ThoughtsOverHeadScale * Math.Max(0.75f, Feelings.SizeAt(head.DistanceTo(Game.Player.Character.Position)));
-            if (line != box.Laid || Math.Abs(scale - box.Scale) > 0.004f)
+            float scale = _cfg.ThoughtsOverHeadScale * Math.Max(0.75f, Feelings.SizeAt(head.DistanceTo(you)));
+            if (line != box.Laid || Math.Abs(scale - box.WrapScale) > SideRewrapDrift)   // the lines are worked out again only when they could really break differently; between times the same ones are drawn a shade bigger or smaller
             {
                 box.Laid = line;
-                box.Scale = scale;
+                box.WrapScale = scale;
                 List<string> parts = Draw.Wrap("\"" + Translations.Of(line.Text.Trim()).Trim().Trim('"') + "\"", scale, ThoughtWidth);
                 if (parts.Count > SideLines)
                     parts = parts.Take(SideLines - 1).Concat(new[] { Draw.Fit(string.Join(" ", parts.Skip(SideLines - 1)), scale, ThoughtWidth) }).ToList();
                 box.Parts = parts;
-                box.Width = parts.Count == 0 ? 0f : parts.Max(p => Draw.Width(p, scale));
+                box.Formed.Clear();
+                box.PartWidths.Clear();
+                box.WidthWrapped = 0f;
+                for (int i = 0; i < parts.Count; i++)
+                {
+                    float w = Draw.Width(parts[i], scale);
+                    box.Formed.Add(Draw.Formed(parts[i]));
+                    box.PartWidths.Add(w);
+                    if (w > box.WidthWrapped)
+                        box.WidthWrapped = w;
+                }
             }
+            box.Scale = scale;
+            box.Width = box.WidthWrapped * scale / box.WrapScale;
             if (box.Parts.Count == 0)
                 return false;
             float lineH = Draw.LineHeight(scale);
@@ -252,8 +268,9 @@ namespace EnrageWestworld.InGame
             float padX = 0.006f, lineH = Draw.LineHeight(box.Scale), w = box.Width, a = box.Alpha;
             Draw.Rect(box.X - w / 2f - padX, top, w + padX * 2f, box.Height, 12, 10, 8, (int)(140 * a / 255));
             Draw.Rect(box.X - w / 2f - padX, top, w + padX * 2f, 0.0015f, 222, 182, 96, (int)(170 * a / 255));
-            for (int i = 0; i < box.Parts.Count; i++)
-                Draw.Text(box.Parts[i], box.X - Draw.Width(box.Parts[i], box.Scale) / 2f, top + 0.003f + i * lineH, box.Scale, 232, 226, 210, box.Alpha);
+            float wide = box.Scale / box.WrapScale;
+            for (int i = 0; i < box.Formed.Count; i++)
+                Draw.TextFormed(box.Formed[i], box.X - box.PartWidths[i] * wide / 2f, top + 0.003f + i * lineH, box.Scale, 232, 226, 210, box.Alpha);
         }
 
         /// F7: how many, and what they cost.

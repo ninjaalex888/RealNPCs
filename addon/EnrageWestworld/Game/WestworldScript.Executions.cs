@@ -33,6 +33,7 @@ namespace EnrageWestworld.InGame
             public int StartedAt, NoticedAt, ShootAt, NextLine, PhaseUntil, Tries, AimSince, Lines;
             public bool Noticed, Warned, Called, Thought, Test, LastChance;
             // what can turn it (FIVEDAY2 item 15; Core/Executions.cs)
+            public int SpotRetryAt;
             public string Twist = Executions.TwistNone;
             public bool TwistDone, RunnerSent, KinDue, KinSaid, LetGo;
             public Ped Runner, Kin;
@@ -605,9 +606,14 @@ namespace EnrageWestworld.InGame
                 return false;
             if (!e.RunnerSent)
             {
+                if (now < e.SpotRetryAt && e.SpotRetryAt - now <= 1000)
+                    return false;
                 Vector3 at;
                 if (!EncounterSpot(Game.Player.Character, 40f, 60f, out at))
+                {
+                    e.SpotRetryAt = now + 1000;   // nowhere hidden just now: not looked for again this second (TENHOUR item 1)
                     return false;
+                }
                 e.RunnerSent = true;
                 e.Runner = Spawner.Spawn(e.RunnerModel, at, 0f);
                 if (e.Runner == null)
@@ -682,8 +688,14 @@ namespace EnrageWestworld.InGame
             int body = e.Captive.Handle;
             if (e.Kin == null)
             {
-                Vector3 at;
-                if (!Spawner.Ready(e.KinModel) || !EncounterSpot(Game.Player.Character, 40f, 55f, out at))
+                Vector3 at = default(Vector3);
+                bool looked = now >= e.SpotRetryAt || e.SpotRetryAt - now > 1000;
+                if (looked && Spawner.Ready(e.KinModel) && !EncounterSpot(Game.Player.Character, 40f, 55f, out at))
+                {
+                    looked = false;
+                    e.SpotRetryAt = now + 1000;
+                }
+                if (!looked || !Spawner.Ready(e.KinModel))
                 {
                     if (now - e.KinAt > 15000)
                     {

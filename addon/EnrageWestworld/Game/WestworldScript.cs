@@ -573,6 +573,7 @@ namespace EnrageWestworld.InGame
 			WatchStop();   // our own threads ended before Script Hook unloads us (a reload froze waiting on one, 2026-10-31)
 			ReadMarks.Close();   // the looks probe's lastread.txt let go (Game/ReadMarks.cs)
 			Log.Write("Stopped.");
+			Log.Flush();
 		}
 
 		// Reading enRAGE's people a slice a frame (players, 2026-11-04: stutters; the frame-time meter's peak each minute was

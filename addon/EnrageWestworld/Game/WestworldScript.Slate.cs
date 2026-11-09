@@ -32,14 +32,19 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<string, long> _slateDay = new Dictionary<string, long>();   // id -> the game day they came to the counter
         private readonly HashSet<string> _slateSquared = new HashSet<string>();                 // ids you paid off this session (by "id|week")
 
+        private int _slateWalkAt;
+
         private void SlateStep(int now)
         {
             if (_slate != null)
             {
                 if (_cfg == null || !_cfg.StoreSlate)
                     EndSlate("[Scenes] StoreSlate switched off");
-                else
+                else if (now >= _slateWalkAt || _slateWalkAt - now > 250)
+                {
+                    _slateWalkAt = now + 250;   // (TENHOUR item 1)
                     Safe("slate", () => SlateWalkStep(now));
+                }
                 return;
             }
             if (_cfg == null || !_cfg.StoreSlate || _store == null || _placeTown == null || now < _slateNextLook)

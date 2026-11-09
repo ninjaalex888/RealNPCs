@@ -82,7 +82,6 @@ namespace EnrageWestworld.InGame
                 _revAsks = 0;
                 _revNextAt = now + 8000;
             }
-            Ped me = Game.Player.Character;
             if (_revKey != null)
             {
                 string answer = null;
@@ -93,14 +92,18 @@ namespace EnrageWestworld.InGame
                 _revKey = null;
                 string thought = null;
                 int idx = came ? Language.ParseThinkPick(answer, _revMenu.Count, out thought) : -1;
-                RevenantDo(f, me, idx >= 0 ? _revMenu[idx] : null, idx >= 0, thought, now);
+                RevenantDo(f, Game.Player.Character, idx >= 0 ? _revMenu[idx] : null, idx >= 0, thought, now);
                 return;
             }
             if (now < _revNextAt || _revAsks >= RevenantMind.MostAsks || !_stalker.MayDecide || _stalker.Handle == 0)
                 return;
+            Ped me = Game.Player.Character;
             float metres = _stalker.MetresFrom(me);
             if (metres > RevenantMind.ReachMetres)
+            {
+                _revNextAt = now + 2000;   // still too far: not measured again every frame (TENHOUR item 1)
                 return;
+            }
             _revNextAt = now + RevenantMind.ThinkEveryMs;
             _revAsks++;
             _revMenu = RevenantMind.Menu(metres, _revAsks, _cfg.RevenantsHunt);

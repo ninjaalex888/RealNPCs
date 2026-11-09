@@ -130,8 +130,12 @@ namespace EnrageWestworld.InGame
             if (RingOn)
                 RingUpdate(me, now);
             string all = HeldAllWhy(me);
-            foreach (int h in _held.Keys.ToList())
+            _ringShooting = _held.Count > 0 && all == null && PED.IS_ANY_PED_SHOOTING_IN_AREA(at.X - 70f, at.Y - 70f, at.Z - 50f, at.X + 70f, at.Y + 70f, at.Z + 50f, false, false);   // one look round, so each held person needn't ask for their own patch of it
+            _heldNow.Clear();
+            _heldNow.AddRange(_held.Keys);
+            for (int i = 0; i < _heldNow.Count; i++)
             {
+                int h = _heldNow[i];
                 string why = all ?? HeldWhyNot(h, at, now);
                 if (why != null)
                     HeldLetGo(h, why, now, all == null);   // a let-go of everyone (you mounted, fired) leaves no rest: back in once it's over
@@ -142,17 +146,16 @@ namespace EnrageWestworld.InGame
                 RingDrawIn(at, now);
             // who comes in: the named people the mind has near, nearest first
             if (_held.Count < HeldMostNow)
-                foreach (int h in _mindNear.OrderBy(x => RingNear(x, me, at)))
+            {
+                RingCandidates(me, at, now);
+                for (int c = 0; c < _ringCandidates; c++)
                 {
                     if (_held.Count >= HeldMostNow)
                         break;
-                    if (_held.ContainsKey(h))
-                        continue;
+                    int h = _ringCandidate[c];
                     MindWho w;
                     if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                         continue;
-                    if (RingNear(h, me, at) > HeldInMetres)
-                        break;   // ordered by nearness: the rest are farther
                     int rest;
                     if (_heldRest.TryGetValue(h, out rest) && now < rest && now >= rest - HeldRestMs - 1000)
                         continue;
@@ -163,18 +166,28 @@ namespace EnrageWestworld.InGame
                     else if (!RingSeatedReady(h, w, now))
                         continue;   // sat or at a spot: theirs, for a decent while; the ring's own (FIVEDAY2 item 3) after that, or the minute's choice gets them up and on their feet they're taken in (a bench full of the held was a ring of nobody chained)
                     if (MindChosenQuietly(h) || MindActWhyNot(p, h, seated) != null || !CanDirect(p))
+                    {
+                        if (_ringRefused.Count > 200)
+                            _ringRefused.Clear();
+                        _ringRefused[h] = now + RingRefusedMs;   // not asked again for a moment: a refusal costs dozens of game calls, and whatever it was won't have changed in half a second
                         continue;
+                    }
                     _held[h] = new Held { Name = w.Name, Since = now, NextAt = now, Seated = seated };
                     if (!seated)
                         RingAskModel(h, w, _held[h], now);   // the model's word on where they're off to next (FIVEDAY2 item 5)
                     _heldStarts++;
                     Log.Write("HELD: " + w.Name + " held, " + (int)p.Position.DistanceTo(at) + " m from you (" + (w.Choice != null ? Choosing.WordsOf(w.Choice) : "no choice yet") + ")");
                 }
+            }
             // keep each going: the next act the moment one ends
-            foreach (KeyValuePair<int, Held> kv in _held.ToList())
+            _heldNow.Clear();
+            _heldNow.AddRange(_held.Keys);
+            for (int i = 0; i < _heldNow.Count; i++)
             {
-                int h = kv.Key;
-                Held hd = kv.Value;
+                int h = _heldNow[i];
+                Held hd;
+                if (!_held.TryGetValue(h, out hd))
+                    continue;
                 if (now < hd.NextAt || IsMindActing(h) || InWakeAct(h))
                     continue;
                 if (PED.IS_PED_USING_ANY_SCENARIO(h))
@@ -199,17 +212,51 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// How near someone counts as, for taking them in: their distance, less a little if they're along the way you're going (FIVEDAY2 R1).
-        private float RingNear(int h, Ped me, Vector3 at)
+        // one step's working lists, kept so a step allocates nothing (TENHOUR item 1), and who was refused a moment ago
+        private const int RingRefusedMs = 2000, RingMostCandidates = 48;
+        private readonly List<int> _heldNow = new List<int>(24);
+        private readonly int[] _ringCandidate = new int[RingMostCandidates];
+        private readonly float[] _ringCandidateNear = new float[RingMostCandidates];
+        private int _ringCandidates;
+        private bool _ringShooting;
+        private readonly Dictionary<int, int> _ringRefused = new Dictionary<int, int>();
+
+        /// Who might come in this step, nearest first, each counted once: their distance, less a little if they're along the way you're going (FIVEDAY2 R1). How you're moving is read once for the step, not once a person.
+        private void RingCandidates(Ped me, Vector3 at, int now)
         {
-            Vector3 p = ENTITY.GET_ENTITY_COORDS(h, true, true);
-            float d = p.DistanceTo(at);
-            if (!RingOn || !_cfg.ControlRingAhead || d < 0.5f)
-                return d;
-            Vector3 f = me.ForwardVector;
-            float dot = ((p.X - at.X) * f.X + (p.Y - at.Y) * f.Y) / d;
-            int mount = PED.IS_PED_ON_MOUNT(me.Handle) ? PED.GET_MOUNT(me.Handle) : me.Handle;
-            return Ring.Nearness(d, dot, ENTITY.GET_ENTITY_SPEED(mount), HeldOutMetres - HeldInMetres - 1f);
+            _ringCandidates = 0;
+            bool ahead = RingOn && _cfg.ControlRingAhead;
+            float fx = 0f, fy = 0f, speed = 0f, room = HeldOutMetres - HeldInMetres - 1f, reach = HeldInMetres;
+            if (ahead)
+            {
+                Vector3 f = me.ForwardVector;
+                fx = f.X;
+                fy = f.Y;
+                speed = ENTITY.GET_ENTITY_SPEED(PED.IS_PED_ON_MOUNT(me.Handle) ? PED.GET_MOUNT(me.Handle) : me.Handle);
+            }
+            for (int i = 0; i < _mindNear.Count; i++)
+            {
+                int h = _mindNear[i], until;
+                if (_held.ContainsKey(h) || (_ringRefused.TryGetValue(h, out until) && now < until && until - now <= RingRefusedMs))
+                    continue;
+                Vector3 p = ENTITY.GET_ENTITY_COORDS(h, true, true);
+                float d = p.DistanceTo(at);
+                if (ahead && d >= 0.5f)
+                    d = Ring.Nearness(d, ((p.X - at.X) * fx + (p.Y - at.Y) * fy) / d, speed, room);
+                if (d > reach)
+                    continue;
+                int s = Math.Min(_ringCandidates, RingMostCandidates - 1);
+                while (s > 0 && _ringCandidateNear[s - 1] > d)
+                {
+                    _ringCandidate[s] = _ringCandidate[s - 1];
+                    _ringCandidateNear[s] = _ringCandidateNear[s - 1];
+                    s--;
+                }
+                _ringCandidate[s] = h;
+                _ringCandidateNear[s] = d;
+                if (_ringCandidates < RingMostCandidates)
+                    _ringCandidates++;
+            }
         }
 
         /// What lets go everyone at once, or null.
@@ -246,7 +293,7 @@ namespace EnrageWestworld.InGame
                 if (!CanDirect(p)) return "the game has them";
                 return null;
             }
-            if (PED.IS_ANY_PED_SHOOTING_IN_AREA(pos.X - 40f, pos.Y - 40f, pos.Z - 15f, pos.X + 40f, pos.Y + 40f, pos.Z + 15f, false, false)) return "gunfire near";
+            if (_ringShooting && PED.IS_ANY_PED_SHOOTING_IN_AREA(pos.X - 40f, pos.Y - 40f, pos.Z - 15f, pos.X + 40f, pos.Y + 40f, pos.Z + 15f, false, false)) return "gunfire near";
             if (!CanDirect(p)) return "the game has them";
             return MindActWhyNot(p, h, true);
         }
