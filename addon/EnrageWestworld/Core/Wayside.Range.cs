@@ -104,6 +104,30 @@ namespace EnrageWestworld.Core
                 Thoughts = new[] { "Scrip at the company store. Scrip at the company store.", "They've got a list. I know they've got a list.", "Say the word union out loud and see who looks at his boots." },
                 News = "A union man was run off in the dark near {town}, and two miners are out of their houses for it."
             },
+            new WaysideKind
+            {
+                Id = "sectiongang", Mark = "Men singing", Test = "On a road: a section gang going home", From = 16, To = 21, OnRoad = true, Weight = 9, WalkMetres = 90f,
+                Cast = new[]
+                {
+                    R("A trackman", "rough", null, "stand", 0f, 3f), R("A trackman", "rough", null, "stand", 0f, 0.8f), R("A trackman", "rough", null, "stand", 0f, -1.4f),
+                    R("A trackman", "rough", null, "stand", 0f, -3.6f), R("A foreman", "rough", null, "stand", 1.5f, -6f)
+                },
+                Beats = new[]
+                {
+                    Do(0, "walk"),
+                    Say(1500, 0, "hum", "Swing it high, boys! Bring it down!", "Line her over, boys! Line her over!"),
+                    Say(5000, 2, "hum", "Line her over! Bring it down!", "Swing it high! Bring it down!"),
+                    Say(9000, 3, "scared", "Forty rail-lengths, and he calls that a good day.", "My hands won't close. Look at that. Won't close."),
+                    Say(13000, 4, "threat", "Keep moving. Whistle's at five, same as today.", "You'll sleep when the line's laid.")
+                },
+                Choices = new[]
+                {
+                    C("water", "Give them your water", 0, "help", 3, "Much obliged. The foreman don't carry any."),
+                    C("leave", "Ride on", 0, "leave", -1)
+                },
+                Thoughts = new[] { "Every one of those ties has my back in it.", "A dollar ten, and the hammer rings in your teeth after the first year.", "Sing and it goes quicker. Doesn't go easier. Goes quicker." },
+                News = "A section gang came through near {town}, singing, and they say the line's to be relaid by spring."
+            },
         };
     }
 }
