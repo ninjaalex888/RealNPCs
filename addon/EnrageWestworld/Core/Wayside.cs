@@ -24,13 +24,13 @@ namespace EnrageWestworld.Core
     public sealed class WaysideBeat
     {
         public int Ms, Who = -1, To = -1;     // when, who says it, to whom (-1: nobody in particular; -2: you)
-        public string Tag, Do;                // Tag: the recorded voice's kind. Do: fight, flee, draw, walk, fall, down
+        public string Tag, Do;                // Tag: the recorded voice's kind. Do: fight, flee, walk, run, chase, shoot
         public string[] Lines;
     }
 
     public sealed class WaysideChoice
     {
-        public string Id, Label, Effect;      // Effect: part, bet, help, give, rob, free, buy, bless, search, leave
+        public string Id, Label, Effect;      // Effect: part, bet, help, rob, hostile, bless, search, leave
         public int Cents, By = -1;            // the cost, and who answers
         public string[] Said;
     }
@@ -83,7 +83,7 @@ namespace EnrageWestworld.Core
         /// The kinds there are. Each item's table adds itself here.
         public static IEnumerable<WaysideKind> All
         {
-            get { return Fights; }
+            get { return Fights.Concat(Pursuit); }
         }
 
         public static WaysideKind Of(string id)

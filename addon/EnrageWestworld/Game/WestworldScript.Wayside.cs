@@ -83,9 +83,30 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
+        private static readonly string[] SoldierModels = { "s_m_m_army_01", "s_m_y_army_01" };
+
         private uint WaysideModel(WaysideRole role, string town)
         {
-            return Spawner.ModelFor(role.Pool == "town" ? town : null, role.Woman, _rng.Next());
+            if (role.Pool == "soldier")
+                foreach (string m in SoldierModels)
+                {
+                    uint hash = Natives.Hash(m);
+                    if (STREAMING.IS_MODEL_VALID(hash))
+                        return hash;
+                }
+            return Spawner.ModelFor(role.Pool == "town" ? town : null, role.Woman, _rng.Next());   // no soldier's body in this game: someone rough will do
+        }
+
+        /// The way the scene faces, as a direction on the ground.
+        private static Vector3 WaysideAlong(WaysideRun w)
+        {
+            double rad = w.Facing * Math.PI / 180.0;
+            return new Vector3((float)Math.Sin(rad), (float)-Math.Cos(rad), 0f);
+        }
+
+        private static bool WaysideOfTheDead(WaysideRun w)
+        {
+            return w.K.Cast.All(r => r.Act == "dead");
         }
 
         private void WaysideStep(int now)
@@ -104,7 +125,8 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             Vector3 pos = me.Position;
             EventDot("wayside", w.At);
-            List<Ped> live = w.Cast.Where(c => c != null && c.Exists() && !c.IsDead).ToList();
+            bool theDead = WaysideOfTheDead(w);
+            List<Ped> live = w.Cast.Where(c => c != null && c.Exists() && (theDead || !c.IsDead)).ToList();
             if (live.Count == 0)
             {
                 WaysideEnd("none of them is left");
@@ -144,6 +166,8 @@ namespace EnrageWestworld.InGame
             WaysidePlay(w, live, now, d);
             if (w.Phase == "fight" && now >= w.PhaseUntil)
                 WaysideFightOver(w, live, now);
+            if (w.Phase == "shooting" && now >= w.PhaseUntil)
+                WaysideShotsDone(w, now);
             if (!w.Chose && d <= Wayside.ChoiceMetres && w.K.Choices != null && _eventMenu == null && (_eventPrompt == null || _eventPrompt == Wayside.Kind || now > _eventPromptUntil))
             {
                 if (w.Ask == null)
@@ -169,8 +193,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             w.At = at;
-            double rad = w.Facing * Math.PI / 180.0;
-            Vector3 along = new Vector3((float)Math.Sin(rad), (float)-Math.Cos(rad), 0f), across = new Vector3(along.Y, -along.X, 0f);
+            Vector3 along = WaysideAlong(w), across = new Vector3(along.Y, -along.X, 0f);
             var spots = new Vector3[w.K.Cast.Length];
             for (int i = 0; i < spots.Length; i++)
             {
@@ -228,7 +251,7 @@ namespace EnrageWestworld.InGame
         /// Drawn on, shot at or hit: they run, or the armed come at you.
         private bool WaysideThreatened(WaysideRun w, List<Ped> live, Ped me, float d, int now)
         {
-            if (w.Fought)
+            if (w.Fought || WaysideOfTheDead(w))
                 return false;
             bool threat = live.Any(c => ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(c.Handle, me.Handle, true, false) || PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, c.Handle)) || (PED.IS_PED_SHOOTING(me.Handle) && d < 40f);
             if (!threat)
@@ -279,6 +302,55 @@ namespace EnrageWestworld.InGame
 
         private void WaysideDo(WaysideRun w, WaysideBeat b, List<Ped> live, int now)
         {
+            if (b.Do == "walk")
+            {
+                // in file along the way they face, each keeping their place in the line
+                Vector3 along = WaysideAlong(w);
+                for (int i = 0; i < w.Cast.Length; i++)
+                    if (w.Cast[i] != null && w.Cast[i].Exists() && !w.Cast[i].IsDead)
+                    {
+                        Vector3 to = w.At + along * (w.K.WalkMetres + w.K.Cast[i].Y);
+                        PED.SET_PED_KEEP_TASK(w.Cast[i].Handle, false);
+                        TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(w.Cast[i].Handle, to.X, to.Y, to.Z, 1f, -1, 1f, 0, 0f);
+                    }
+                return;
+            }
+            Ped doer = b.Who >= 0 && b.Who < w.Cast.Length ? w.Cast[b.Who] : null;
+            if (b.Do == "run" && doer != null && doer.Exists() && !doer.IsDead)
+            {
+                Vector3 to = w.At + WaysideAlong(w) * w.K.WalkMetres;
+                PED.SET_PED_KEEP_TASK(doer.Handle, false);
+                TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(doer.Handle, to.X, to.Y, to.Z, 3f, -1, 1f, 0, 0f);
+                return;
+            }
+            if (b.Do == "chase" && doer != null && doer.Exists() && !doer.IsDead && w.Cast[0] != null && w.Cast[0].Exists())
+            {
+                PED.SET_PED_KEEP_TASK(doer.Handle, false);
+                TASK.TASK_GO_TO_ENTITY(doer.Handle, w.Cast[0].Handle, 60000, 1.5f, 3f, 0f, 0);
+                return;
+            }
+            if (b.Do == "flee")
+            {
+                int you = Game.Player.Character.Handle;
+                foreach (Ped p in doer != null ? new List<Ped> { doer } : live)
+                    if (p != null && p.Exists() && !p.IsDead)
+                    {
+                        PED.SET_PED_KEEP_TASK(p.Handle, false);
+                        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, false);
+                        ScenarioExit.SoftUp(p.Handle, x => TASK.TASK_SMART_FLEE_PED(x, you, 150f, -1, 0, 3f, 0));
+                    }
+                return;
+            }
+            if (b.Do == "shoot" && w.K.SideA != null && w.K.SideB != null)
+            {
+                WaysideFire(w, w.K.SideA, w.K.SideB);
+                if (w.K.SideA.Length == 1 && w.K.SideB.Length == 1)
+                    WaysideFire(w, w.K.SideB, w.K.SideA);   // a duel: both at once
+                w.Phase = "shooting";
+                w.PhaseUntil = now + 3000;
+                Log.Write("WAYSIDE " + w.K.Id + ": they fire");
+                return;
+            }
             if (b.Do == "fight" && w.K.SideA != null && w.K.SideB != null)
             {
                 foreach (int i in w.K.SideA)
@@ -303,6 +375,47 @@ namespace EnrageWestworld.InGame
             PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, true);
             PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);
             ScenarioExit.SoftUp(h, x => TASK.TASK_COMBAT_PED(x, f, 0, 16));
+        }
+
+        /// The game plays the shots, as it does for the road execution's gunman.
+        private void WaysideFire(WaysideRun w, int[] shooters, int[] targets)
+        {
+            Ped t = targets.Select(o => w.Cast[o]).FirstOrDefault(c => c != null && c.Exists() && !c.IsDead);
+            if (t == null)
+                return;
+            int target = t.Handle;
+            foreach (int i in shooters)
+            {
+                Ped p = w.Cast[i];
+                if (p == null || p.IsDead || !p.Exists())
+                    continue;
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, false);
+                PED.SET_PED_KEEP_TASK(p.Handle, false);
+                TASK.CLEAR_PED_TASKS(p.Handle, false, false);
+                TASK.TASK_COMBAT_PED(p.Handle, target, 0, 16);
+            }
+        }
+
+        /// However the shots went, it ends with one down: the deserter, or in a duel whichever the morning chooses. The rest stop and go.
+        private void WaysideShotsDone(WaysideRun w, int now)
+        {
+            bool duel = w.K.SideA.Length == 1 && w.K.SideB.Length == 1;
+            int[] losers = duel && Voice.Chance(w.K.Id + "|" + w.StartedAt + "|duel", 50) ? w.K.SideA : w.K.SideB;
+            foreach (int i in losers)
+            {
+                Ped p = w.Cast[i];
+                if (p != null && p.Exists() && !p.IsDead)
+                    ENTITY.SET_ENTITY_HEALTH(p.Handle, 0, 0);
+            }
+            foreach (Ped p in w.Cast)
+                if (p != null && p.Exists() && !p.IsDead)
+                {
+                    TASK.CLEAR_PED_TASKS(p.Handle, false, false);
+                    TASK.TASK_STAND_STILL(p.Handle, 6000);
+                }
+            w.Outcome = duel ? "one of them fell" : "they shot him";
+            w.Phase = "after";
+            w.PhaseUntil = now + WaysideAfterMs;
         }
 
         /// The fight is over: one side down on the ground, nobody dead of it.
@@ -380,6 +493,67 @@ namespace EnrageWestworld.InGame
                     return "you bet and lost";
                 case "leave":
                     return "you left them to it";
+                case "help":
+                    {
+                        Ped by = c.By >= 0 && c.By < w.Cast.Length ? w.Cast[c.By] : null;
+                        if (by != null && by.Exists() && !by.IsDead && w.K.WalkMetres <= 0f)
+                        {
+                            PED.SET_PED_KEEP_TASK(by.Handle, false);
+                            ScenarioExit.SoftUp(by.Handle, x => TASK.TASK_WANDER_STANDARD(x, 10f, 10));
+                        }
+                        if (w.K.WalkMetres <= 0f)
+                        {
+                            w.Phase = "after";
+                            w.PhaseUntil = now + WaysideAfterMs;
+                        }
+                        return "you helped";
+                    }
+                case "rob":
+                    {
+                        Ped by = c.By >= 0 && c.By < w.Cast.Length ? w.Cast[c.By] : null;
+                        int cents = 100 + Voice.Hash(seed + "|rob") % 500;
+                        MONEY._MONEY_INCREMENT_CASH_BALANCE(cents, 0);
+                        Hint("$" + (cents / 100) + "." + (cents % 100).ToString("00") + ". It's all he had.", 4000);
+                        if (by != null && by.Exists() && !by.IsDead)
+                        {
+                            int you = Game.Player.Character.Handle;
+                            PED.SET_PED_KEEP_TASK(by.Handle, false);
+                            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(by.Handle, false);
+                            ScenarioExit.SoftUp(by.Handle, x => TASK.TASK_SMART_FLEE_PED(x, you, 150f, -1, 0, 2f, 0));
+                        }
+                        w.Phase = "after";
+                        w.PhaseUntil = now + WaysideAfterMs;
+                        return "you robbed him";
+                    }
+                case "hostile":
+                    {
+                        int you = Game.Player.Character.Handle;
+                        foreach (Ped p in w.Cast)
+                            if (p != null && p.Exists() && !p.IsDead && WEAPON.IS_PED_ARMED(p.Handle, 4))
+                            {
+                                PED.SET_PED_KEEP_TASK(p.Handle, false);
+                                MakeHostile(p, now);
+                                ScenarioExit.SoftUp(p.Handle, x => TASK.TASK_COMBAT_PED(x, you, 0, 16));
+                            }
+                        w.Fought = true;
+                        w.Phase = "after";
+                        w.PhaseUntil = now + 90000;
+                        return "you crossed them";
+                    }
+                case "search":
+                    {
+                        int cents = 40 + Voice.Hash(seed + "|search") % 360;
+                        MONEY._MONEY_INCREMENT_CASH_BALANCE(cents, 0);
+                        Hint("$" + (cents / 100) + "." + (cents % 100).ToString("00") + ", and nothing with a name on it.", 4000);
+                        w.Phase = "after";
+                        w.PhaseUntil = now + 5000;
+                        return "you went through their pockets";
+                    }
+                case "bless":
+                    Hint("You take your hat off a moment. There's nobody to see it.", 4000);
+                    w.Phase = "after";
+                    w.PhaseUntil = now + 5000;
+                    return "you said a word over them";
                 default:
                     return "you " + c.Effect;
             }

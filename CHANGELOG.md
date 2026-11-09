@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Prisoners and pursuit** (with `[Encounters] Wayside`; FIVEDAY2 item 17; a Testing row for each). A chain gang walking the road under guard: give the last man your water, or tell the guard to turn them loose and see what he says. A man running past with armed men behind him: point them the wrong way or the right one, or say nothing. And out in the wilds, a firing party and a deserter (the game's soldiers where it has them).
+  - Why it reads true: a man in irons or a man running asks one question of whoever sees him, and it isn't about the law. It's whether you think he deserves it, knowing nothing at all.
+
 - **Things to come across on the road, and fights away from town** (`[Encounters] Wayside`, on; `WaysideChance` 25; settings version 324; FIVEDAY2 item 16; a Testing row for each). A new kind of encounter out of the towns, staged from a table of scenes so each one is its people and its words. First, fights: two teamsters coming to blows over the road, with a couple watching; hunters over a kill; a card game going wrong at a camp. Nobody dies of a fist fight. Come near and it plays out; within 10 m, J lets you part them, bet on it or leave them to it; draw on them and they run, or the armed come at you.
   - Why it reads true: out of town nobody has to back down for the sake of who's looking, so words become fists very fast, and a stranger stopping to watch changes who's winning.
   - `[Scenes] FightCrowds` stays off, as Lex asked on 2026-11-01. A fight out here brings its own watchers.
