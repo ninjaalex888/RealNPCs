@@ -1411,6 +1411,7 @@ namespace EnrageWestworld.InGame
             NovelStep(now);         // people near you who've read the dime novel (WestworldScript.DimeNovel.cs; FIVEDAY R12)
             DryStep(now);           // 1907: a town dry by local option (WestworldScript.Fever.cs; FIVEDAY R27)
             RoundupStep(now);       // the hands paid off after the roundup (WestworldScript.Roundup.cs; TENHOUR R1)
+            TownRivalStep(now);     // what this town thinks of its rival (WestworldScript.Roundup.cs; TENHOUR R4)
             ColdSnapStep(now);      // the high country's cold spells (WestworldScript.ColdSnap.cs; TENHOUR R3)
             GrindStep(now);         // the grinding season's thoughts (WestworldScript.Fever.cs; FIVEDAY R23)
             FeverStep(now);         // fever in town: the thoughts near you (WestworldScript.Fever.cs; FIVEDAY R9)

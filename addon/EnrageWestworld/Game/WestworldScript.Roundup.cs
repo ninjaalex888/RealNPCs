@@ -7,7 +7,27 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private int _roundupNextLook, _roundupThoughts;
+        private int _roundupNextLook, _roundupThoughts, _rivalNextLook;
+
+        /// Every minute or so in a town with a rival, someone near you has an opinion of it (TENHOUR R4; Core/TownRivals.cs).
+        private void TownRivalStep(int now)
+        {
+            if (_cfg == null || !_cfg.TownRivals || _placeTown == null || (now < _rivalNextLook && _rivalNextLook - now <= 60000))
+                return;
+            _rivalNextLook = now + 60000;
+            long day = Bridge.Now() / 1440;
+            string seed = _placeTown + "|" + now / 60000;
+            if (TownRivals.RivalOf(_placeTown) == null || !Voice.Chance(seed + "|roll", TownRivals.ThoughtPct))
+                return;
+            foreach (int h in _mindNear)
+            {
+                MindWho w;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || !SeasonFirst("rival|" + w.Id + "|" + day))
+                    continue;
+                _ticker.Push((w.Name ?? "Someone") + ", thinking", TownRivals.Thought(_placeTown, w.Id + "|" + seed), "near", h);
+                break;
+            }
+        }
         private readonly HashSet<string> _seasonDone = new HashSet<string>();
 
         /// True the first time this key is seen: a person thinks of a season's thing once a day, not every half a minute for as long as they're the nearest.

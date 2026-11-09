@@ -78,7 +78,7 @@ namespace EnrageWestworld.Core
         }
 
         /// Moves talk on to the next towns. Returns the rumours that arrived somewhere new.
-        public static List<TownRumour> Spread(Store s, long now)
+        public static List<TownRumour> Spread(Store s, long now, bool rivals = false)
         {
             List<TownRumour> arrived = new List<TownRumour>();
             Dictionary<string, Deed> deeds = s.Deeds.ToDictionary(d => d.Id, d => d);
@@ -97,7 +97,7 @@ namespace EnrageWestworld.Core
                     float dist = Distance(r.Town, town);
                     if (dist > 3200f || s.TownRumours.Any(x => x.DeedId == r.DeedId && x.Town == town))
                         continue;
-                    int loss = 6 + (int)(dist / 200f) + (int)(Voice.Hash(r.Id + town) % 7);
+                    int loss = 6 + (int)(dist / 200f) + (int)(Voice.Hash(r.Id + town) % 7) + (rivals ? TownRivals.Loss(r.Town, town) : 0);   // a rival town tells it meaner (TENHOUR R4)
                     TownRumour next = new TownRumour
                     {
                         Id = Ids.New(), DeedId = r.DeedId, Origin = r.Origin, Town = town, Hops = r.Hops + 1,

@@ -723,7 +723,7 @@ namespace EnrageWestworld.Core
 
         private void RumourTick(long now)
         {
-            List<TownRumour> arrived = Rumours.Spread(Store, now);
+            List<TownRumour> arrived = Rumours.Spread(Store, now, Cfg != null && Cfg.TownRivals);
             if (arrived.Count == 0)
                 return;
             Dictionary<string, Deed> deeds = Store.Deeds.ToDictionary(x => x.Id, x => x);
