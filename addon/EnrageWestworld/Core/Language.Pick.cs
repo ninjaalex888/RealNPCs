@@ -26,6 +26,8 @@ namespace EnrageWestworld.Core
                 return GroupActs.RingBrief(year);
             if (r != null && r.CrowdPick)
                 return GroupActs.CrowdBrief(year);
+            if (r != null && r.RoadScene)
+                return Wayside.AnswerBrief(year);
             if (r != null && r.WakeStage >= Awakening.Questioning)
                 return WakeOdd.PickBrief(year, r.WakeStage);   // the waking (Lex, 2026-10-31: the model decides, lash-outs too)
             return "You decide what one person living in " + year + ", in the American West and South, does next. You are given who they are, where, " +

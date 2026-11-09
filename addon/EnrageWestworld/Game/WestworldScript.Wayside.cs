@@ -16,6 +16,11 @@ namespace EnrageWestworld.InGame
     {
         private sealed class WaysideRun
         {
+            public bool AnswerDone;                    // what they do about you (TENHOUR item 11): settled
+            public List<string> AnswerMenu;
+            public int AnswerSpeaker, AnswerDeadline;
+            public string AnswerKey;
+            public LanguageRequest AnswerRequest;
             public WaysideKind K;
             public string Phase = "spawn";   // spawn, stand, play, fight, after, walk
             public Vector3 At;
@@ -250,6 +255,8 @@ namespace EnrageWestworld.InGame
                 return;
             }
             WaysidePlay(w, live, now, d);
+            if (_cfg.WaysideAnswers)
+                WaysideAnswerStep(w, live, me, d, now);
             if (w.Phase == "fight" && now >= w.PhaseUntil)
                 WaysideFightOver(w, live, now);
             if (w.Phase == "shooting" && now >= w.PhaseUntil)
@@ -339,6 +346,91 @@ namespace EnrageWestworld.InGame
             }
             w.Phase = "stand";
             Log.Write("WAYSIDE " + w.K.Id + ": " + w.Cast.Count(c => c != null) + " of them, " + (int)at.DistanceTo(me.Position) + " m away");
+        }
+
+        // ---- what they do about you (TENHOUR item 11; Core/Wayside.Answer.cs)
+        private int _waysideByModel, _waysideByRules;
+        private string _waysideAnswerLast;
+
+        /// You've come close: one of them is asked, and acts on it when the answer's in or the wait is up. Once a scene.
+        private void WaysideAnswerStep(WaysideRun w, List<Ped> live, Ped me, float d, int now)
+        {
+            if (w.AnswerDone)
+                return;
+            if (w.AnswerMenu == null)
+            {
+                if (d > Wayside.AnswerMetres || now - w.NoticedAt < Wayside.AnswerAfterMs || (w.Phase != "play" && w.Phase != "walk"))
+                    return;
+                w.AnswerMenu = Wayside.AnswerMenu(w.K, w.K.Id + "|" + w.StartedAt);
+                w.AnswerSpeaker = Wayside.AnswerSpeaker(w.K, i => w.Cast[i] != null && w.Cast[i].Exists() && !w.Cast[i].IsDead);
+                if (w.AnswerMenu.Count < 2 || w.AnswerSpeaker < 0)
+                {
+                    w.AnswerDone = true;
+                    return;
+                }
+                w.AnswerDeadline = now + Wayside.AnswerWaitMs;
+                if (PicksOn)
+                {
+                    LanguageRequest r = Wayside.AnswerRequest(w.K, w.AnswerSpeaker, Voice.NowYear, CLOCK.GET_CLOCK_HOURS(), w.AnswerMenu);
+                    string key = "wayside|" + w.K.Id + "|" + w.StartedAt;
+                    if (_engine.LanguageAnswers.AskPick(new LanguageAsk { Key = key, Name = w.K.Cast[w.AnswerSpeaker].Name, PersonId = "wayside", Request = r, AskedAtMs = Environment.TickCount }))
+                    {
+                        w.AnswerKey = key;
+                        w.AnswerRequest = r;
+                    }
+                }
+                return;
+            }
+            string answer = null;
+            long ms = 0;
+            bool came = w.AnswerKey != null && _engine.LanguageAnswers.TakePick(w.AnswerKey, out answer, out ms);
+            if (!came && now < w.AnswerDeadline && now >= w.AnswerDeadline - Wayside.AnswerWaitMs)
+                return;
+            w.AnswerDone = true;
+            if (w.Chose || w.Fought || (w.Phase != "play" && w.Phase != "walk"))
+                return;   // you've done something about it first, or it has come to blows: that's the answer
+            string thought = null, seed = "wayside|" + w.K.Id + "|" + w.StartedAt;
+            int idx = came ? Language.ParseThinkPick(answer, w.AnswerMenu.Count, out thought) : -1;
+            string what = idx >= 0 ? w.AnswerMenu[idx] : Wayside.AnswerRules(w.AnswerMenu, seed);
+            if (idx >= 0)
+                _waysideByModel++;
+            else
+                _waysideByRules++;
+            _waysideAnswerLast = w.K.Id + ": " + Wayside.AnswerWords(what) + (idx >= 0 ? " (the model)" : " (the rules)");
+            Log.Write("WAYSIDE " + _waysideAnswerLast);
+            WaysideAnswerDo(w, me, what, thought, seed, now);
+        }
+
+        private void WaysideAnswerDo(WaysideRun w, Ped me, string what, string thought, string seed, int now)
+        {
+            Ped who = w.Cast[w.AnswerSpeaker];
+            if (who == null || !who.Exists() || who.IsDead)
+                return;
+            int h = who.Handle, you = me.Handle;
+            string line = Wayside.AnswerLine(what, seed);
+            if (line != null)
+            {
+                TASK.TASK_LOOK_AT_ENTITY(h, you, 4000, 0, 51, 0);
+                string tag = what == Wayside.AnswerAsk ? "plead" : what == Wayside.AnswerCall ? "hum" : "threat";
+                Feed.Say(w.K.Cast[w.AnswerSpeaker].Name, line, Speech.When(h, tag, you), h, toYou: true);
+            }
+            if (!string.IsNullOrEmpty(thought) && w.AnswerRequest != null && Language.Check(w.AnswerRequest, thought) == null)
+                _ticker.Push(w.K.Cast[w.AnswerSpeaker].Name + ", thinking", thought, "near", h);
+            if (what != Wayside.AnswerTurn)
+                return;
+            foreach (Ped p in w.Cast)
+                if (p != null && p.Exists() && !p.IsDead && WEAPON.IS_PED_ARMED(p.Handle, 4))
+                {
+                    PED.SET_PED_KEEP_TASK(p.Handle, false);
+                    MakeHostile(p, now);
+                    _cameAtYouSeen[p.Handle] = now;   // they came at you: answering them is self-defence
+                    ScenarioExit.SoftUp(p.Handle, x => TASK.TASK_COMBAT_PED(x, you, 0, 16));
+                }
+            w.Fought = true;
+            w.Chose = true;
+            w.Outcome = "they turned on you";
+            w.Phase = "after";
+            w.PhaseUntil = now + 90000;
         }
 
         /// Drawn on, shot at or hit: they run, or the armed come at you.

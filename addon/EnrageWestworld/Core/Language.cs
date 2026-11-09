@@ -38,6 +38,7 @@ namespace EnrageWestworld.Core
         public string Thought;               // Kind "say": the thought showing now
         public string TownMood;              // their town on edge, in a few words (TownMood.Words: "on edge since a killing today"), or null
         public bool WithThought;             // Kind "pick": the thought as well as the choice, in one answer (Lex, 2026-10-31: what they think and do should agree)
+        public bool RoadScene;               // Kind "pick": people in a road scene deciding what to do about a stranger (Core/Wayside.Answer.cs; TENHOUR item 11)
         public int WakeStage;                // Kind "pick" for the waking (WakeOdd.PickOptions): their stage, 2 to 4, so the brief says what they have come to see
         public string Said, Mean;            // Kind "talk" (Language.Talk.cs): what he said to them, and what their answer means (the written line)
         public string Speaker;               // Kind "talk" between two people (MindTalk): who spoke to them, in words ("your neighbour Garrett"); null: the player did

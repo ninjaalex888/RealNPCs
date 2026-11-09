@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 342;
+        public const int CurrentVersion = 343;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -429,6 +429,7 @@ namespace EnrageWestworld.Core
         public bool DriftingPosters = true;   // [World] the bill outside the sheriff's describes you as the town's rumour has it, true or bent out of shape, and people near hold you up against it (Core/DriftPoster.cs; FIVEDAY R13, settings version 301)
         public bool DimeNovels = true;   // [World] your most-told deed written up as a dime novel (a lurid title in the box), and a month of people near you thinking of having read it (Core/DimeNovel.cs; FIVEDAY R12, settings version 300)
         public bool GoingDry = true;   // [World] 1907: Rhodes and Strawberry dry by local option, the saloon a blind tiger, the law-abiding keeping out (Core/GoingDry.cs; FIVEDAY R27, settings version 316)
+        public bool WaysideAnswers = true;   // [Encounters] when you walk up on a road scene, one of them decides what to do about you: carry on, warn you off, call you over, ask for help, or turn on you. The AI model's word if it's on (TENHOUR item 11; settings version 343)
         public bool VigilanceCommittees = true;   // [World] with PosseRides: after a killing, a posse that comes home with nothing can leave the town's angrier men to settle on someone, on the road if you're near, off screen if not (TENHOUR item 4; settings version 341)
         public bool PosseFromTheRoad = true;   // [World] with PosseRides: a killing out of town, near enough to a town for word to get there, with someone left to tell it, brings that town's posse (TENHOUR item 3; settings version 340)
         public bool PosseRides = true;   // [World] after a bad crime in a town, three to five of its men ride out as a posse, off screen, and come back a day on with nothing, a stranger, or one of them dead (Core/PosseRides.cs; FIVEDAY R32, settings version 321)
@@ -974,6 +975,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 343)
+                    log?.Invoke("Settings: new in this version: [Encounters] WaysideAnswers (on): walk up on a road scene and one of them decides what to do about you.");
                 if (s.SettingsVersion < 342)
                     log?.Invoke("Settings: new in this version: [Ticker] WeatherChecked (on): talk about the weather is held to what's really out. WeatherTalk (on): more of it the worse it is, and when it turns.");
                 if (s.SettingsVersion < 341)
@@ -1850,6 +1853,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("CalloutsArthur = " + B(CalloutsArthur) + "   ; by day in a town, out of doors, one of the people near with something against you (you struck or robbed them, they saw you kill, word of your thieving reached them, or you soured them) walks up and says it to your face. Walk off past 12 m and they call you a coward; stay and most put up their fists (fighting them is self-defence); hold a gun on them and they back off. Once a day each");
             b.AppendLine("CalloutsArthurChance = " + CalloutsArthurChance + "   ; percent on each encounter roll while one may happen (five real minutes at least between them)");
             b.AppendLine("CalloutsArthurDraw = " + CalloutsArthurDraw + "   ; percent: an armed hothead calling you out over blood (a beating, a killing, an old grudge) draws on you instead (0 never)");
+            b.AppendLine("WaysideAnswers = " + B(WaysideAnswers) + "   ; when you walk up on a road scene, one of them decides what to do about you, from a short list that fits the scene. The AI model's word if it's on, the rules' if not. The armed may turn on you");
             b.AppendLine("Wayside = " + B(Wayside) + "   ; things to come across out of the towns: men fighting by the road, and more: their own people, staged out of your sight, and you can step in or ride on");
             b.AppendLine("WaysideChance = " + WaysideChance + "   ; percent a roll, among the other encounters (0 to 100)");
             b.AppendLine("AlliesHelp = " + B(AlliesHelp) + "   ; attacked by anyone, the law too, within sight of people who think well of you, some of them come to your aid: someone who owes you (the bar at AlliesLiking or more, someone you saved) whatever the odds, and of the rest the brave and the hot first, cowards never, a woman only against fists, and against a gun only those who carry one (they're given a revolver for it and keep it after). They shout as they come, and have a word with you after; they remember it, and think better of you for it");
