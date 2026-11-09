@@ -10,6 +10,7 @@
 // The guard answers Lex's "we can test frame cost afterwards": every step's cost is measured whatever else happens, and a ring
 // running over the budget (1 ms average, 4 ms peak) shrinks itself until it fits, then eases back. Plain C#, no game.
 using System;
+using System.Collections.Generic;
 
 namespace EnrageWestworld.Core
 {
@@ -68,6 +69,58 @@ namespace EnrageWestworld.Core
             float inM = metres * share * scale;
             int n = (int)Math.Round(most * share * scale);
             return new RingReach { In = inM, Out = inM + (gait == RingGait.Foot ? 6f : 4f), Most = Math.Max(1, n) };
+        }
+    }
+
+    /// A short errand of a person's own (FIVEDAY2 item 4): two to four things, in order, kept by who they are for five minutes, so someone who walks out of the ring and back carries on.
+    public sealed class RingPlan
+    {
+        public string[] Steps;
+        public int Next, MadeAt;
+        public bool Done { get { return Steps == null || Next >= Steps.Length; } }
+        public string NextStep { get { return Done ? null : Steps[Next]; } }
+    }
+
+    /// Why it reads true: a choice a minute is a person with no yesterday; a list in the head is a person with an afternoon. The steps are the mind's own kinds of act, and any it can't do are passed over.
+    public static class RingPlans
+    {
+        public const int KeepMs = 300000;
+
+        // by the part of the day: what a person in town has in mind
+        private static readonly string[][] Morning = { new[] { "work", "store", "talk" }, new[] { "store", "stroll", "home" }, new[] { "eat", "work" }, new[] { "stroll", "store" } };
+        private static readonly string[][] Noon = { new[] { "eat", "stroll", "talk" }, new[] { "store", "eat", "work" }, new[] { "talk", "eat", "work" }, new[] { "eat", "rest" } };
+        private static readonly string[][] Afternoon = { new[] { "work", "store", "home" }, new[] { "stroll", "talk", "saloon" }, new[] { "store", "home" }, new[] { "rest", "talk", "stroll", "home" } };
+        private static readonly string[][] Evening = { new[] { "saloon", "drink", "home" }, new[] { "eat", "talk", "home" }, new[] { "stroll", "home" }, new[] { "eat", "saloon", "home" } };
+        private static readonly string[][] Late = { new[] { "home" }, new[] { "drink", "home" }, new[] { "saloon", "home" } };
+        private static readonly string[][] Wilds = { new[] { "work", "rest" }, new[] { "stroll", "rest" }, new[] { "rest", "eat", "stroll" } };
+
+        /// The plan for someone just come into the ring.
+        public static RingPlan Make(int hour, bool inTown, bool works, string seed, int now)
+        {
+            string[][] day = !inTown ? Wilds : hour >= 23 || hour < 6 ? Late : hour < 11 ? Morning : hour < 15 ? Noon : hour < 19 ? Afternoon : Evening;
+            int n = (Voice.Hash(seed + "|ringplan") & 0x7fffffff) % day.Length;
+            string[] steps = day[n];
+            if (!works && Array.IndexOf(steps, "work") >= 0)
+                steps = day[(n + 1) % day.Length];   // nothing to get on with: another of the day's
+            if (!works && Array.IndexOf(steps, "work") >= 0)
+                steps = new[] { "stroll", "talk" };
+            return new RingPlan { Steps = steps, MadeAt = now };
+        }
+
+        /// Whether a kept plan's still worth carrying on: not yet done, and made in the last five minutes.
+        public static bool Keeps(RingPlan p, int now)
+        {
+            return p != null && !p.Done && now >= p.MadeAt && now - p.MadeAt < KeepMs;
+        }
+
+        public static IEnumerable<string[][]> All()
+        {
+            yield return Morning;
+            yield return Noon;
+            yield return Afternoon;
+            yield return Evening;
+            yield return Late;
+            yield return Wilds;
         }
     }
 

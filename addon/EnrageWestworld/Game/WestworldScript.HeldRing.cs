@@ -252,10 +252,64 @@ namespace EnrageWestworld.InGame
             Log.Write("HELD: " + hd.Name + " let go after " + (now - hd.Since) / 1000 + " s, " + hd.Acts + " act" + (hd.Acts == 1 ? "" : "s") + (hd.Fillers > 0 ? " (" + hd.Fillers + " of them a spot or a stroll)" : "") + " (" + why + ")");
         }
 
-        /// The next act for one held between acts: the mind's choice, the one it ranked next, a spot, a stroll. Never nothing.
+        // ---- plans per person (FIVEDAY2 item 4; Core/Ring.cs, RingPlans): an errand kept by who they are, not by the body in front of you
+        private readonly Dictionary<string, RingPlan> _ringPlans = new Dictionary<string, RingPlan>();
+        private int _ringPlansMade, _ringPlanSteps;
+
+        /// Their errand: the one they were on if it's still fresh, else a new one. Null with the switch off or a strong feeling in charge.
+        private RingPlan RingPlanFor(MindWho w, int now)
+        {
+            if (!RingOn || !_cfg.ControlRingPlans || w.Id == null || (w.ChoiceWhy != null && w.ChoiceWhy.StartsWith("a feeling", StringComparison.Ordinal)))
+                return null;
+            RingPlan p;
+            if (_ringPlans.TryGetValue(w.Id, out p))
+            {
+                if (RingPlans.Keeps(p, now))
+                    return p;
+                if (p != null && p.Done && now >= p.MadeAt && now - p.MadeAt < RingPlans.KeepMs)
+                    return null;   // done with it: their own way until it's old
+            }
+            if (_ringPlans.Count > 200)
+                foreach (string k in _ringPlans.Where(kv => !RingPlans.Keeps(kv.Value, now)).Select(kv => kv.Key).ToList())
+                    _ringPlans.Remove(k);
+            string tg = w.TradeGroup ?? (w.TradeGroup = InnerLife.TradeGroup(w.P.Trade));
+            p = RingPlans.Make(CLOCK.GET_CLOCK_HOURS(), _placeTown != null, tg != "gentry" && !(w.P.Woman && tg == "town"), w.Id + "|" + _store.LastGameMin / 180, now);
+            _ringPlans[w.Id] = p;
+            _ringPlansMade++;
+            Log.Detail("HELD: " + w.Name + " means to " + string.Join(", then ", p.Steps.Select(Choosing.WordsOf)));
+            return p;
+        }
+
+        /// The next act for one held between acts: the next step of their errand if they have one, the mind's choice, the one it ranked next, a spot, a stroll. Never nothing.
         private void HeldNext(int h, MindWho w, Held hd, Ped me, int now)
         {
             hd.NextAt = now + 1500;
+            RingPlan plan = RingPlanFor(w, now);
+            while (plan != null && !plan.Done)
+            {
+                string step = plan.NextStep;
+                plan.Next++;   // done or not to be done, it's passed: a plan never stalls on what can't happen now
+                string got = HeldTry(w, hd, h, now, step);
+                if (got == null)
+                {
+                    hd.Acts++;
+                    _heldChained++;
+                    _ringPlanSteps++;
+                    _ringActsThisMinute++;
+                    hd.Last = _heldLast = _mindActLast;
+                    Log.Detail("HELD: " + hd.Name + " goes on with the errand: " + _mindActLast);
+                    return;
+                }
+                if (MindRetry.Temporary(got))
+                {
+                    plan.Next--;   // not now, rather than not at all: the step waits
+                    if (got == MindRetry.Aimed || got == MindRetry.Riding || got == MindRetry.Busy)
+                        return;
+                    break;   // the mind's own choice meanwhile
+                }
+                if (got == MindRetry.Story)
+                    return;
+            }
             string lost = HeldTry(w, hd, h, now, w.MindChoice ?? w.Choice);
             if (lost != null && w.ChoiceNext != null && w.ChoiceNext != (w.MindChoice ?? w.Choice))
                 lost = HeldTry(w, hd, h, now, w.ChoiceNext);
@@ -453,7 +507,7 @@ namespace EnrageWestworld.InGame
                         acting++;
                 }
             }
-            string gauge = RingOn ? "; ring " + _ringGait.Settled + " " + (int)_ringReach.In + " m, at most " + _ringReach.Most + "; " + _ringActsLastMinute + " decisions last minute; a step " + _ringGuard.AverageMicros + " us on average, peak " + _ringGuard.PeakMicros + " us (budget " + RingGuard.AverageBudget + " / " + RingGuard.PeakBudget + "); guard " + _ringGuard.Scale.ToString("0.00") + ", drawn in " + _ringGuard.Shrinks + " times, eased " + _ringGuard.Eases + "; " + _ringDrawnIn + " let go as it drew in; " + _ringReorders + " told again of " + _ringReorderChecks + " checks; " + _ringRaised + " got up for what they wanted" + (_ringStayed > 0 ? ", " + _ringStayed + " looks at someone content where they sat" : "") : "";
+            string gauge = RingOn ? "; ring " + _ringGait.Settled + " " + (int)_ringReach.In + " m, at most " + _ringReach.Most + "; " + _ringActsLastMinute + " decisions last minute; a step " + _ringGuard.AverageMicros + " us on average, peak " + _ringGuard.PeakMicros + " us (budget " + RingGuard.AverageBudget + " / " + RingGuard.PeakBudget + "); guard " + _ringGuard.Scale.ToString("0.00") + ", drawn in " + _ringGuard.Shrinks + " times, eased " + _ringGuard.Eases + "; " + _ringDrawnIn + " let go as it drew in; " + _ringReorders + " told again of " + _ringReorderChecks + " checks; " + _ringRaised + " got up for what they wanted" + (_ringStayed > 0 ? ", " + _ringStayed + " looks at someone content where they sat" : "") + "; " + _ringPlansMade + " errands made, " + _ringPlanSteps + " steps done" : "";
             return (RingOn ? "control ring: " : "held ring: ") + held + " of " + inRing + " named within " + (int)HeldInMetres + " m held" + (inRing > 0 ? " (" + (100 * held / inRing) + "%)" : "") + ", " + acting + " of them at an act or a spot; " +
                    _heldStarts + " held this session, " + _heldChained + " acts chained, " + _heldFills + " spots or strolls, " + _heldEnds + " let go" +
                    (_heldEndWhy.Count > 0 ? " (" + string.Join(", ", _heldEndWhy.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value)) + ")" : "") + (_heldLast != null ? "; last: " + _heldLast : "") + gauge;

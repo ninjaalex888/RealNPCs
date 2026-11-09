@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 332;
+        public const int CurrentVersion = 333;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -102,6 +102,7 @@ namespace EnrageWestworld.Core
         public int ActThoughtGapSeconds = 15;    // never within this many seconds of another, different thought of theirs (45 as built; a repeat of the same line doesn't count)
         public bool HeldRing = false;            // with MindActs: the named near you are held, one act straight into the next (Lex, 2026-11-02: a tighter ring, held longer; Game/WestworldScript.HeldRing.cs); off while it's tried; settings version 192
         public bool ControlRing = true;          // [Mind] the control ring (FIVEDAY2 item 1; Lex, 2026-11-08: build it, test the frame cost after): the held ring wider, by how you're moving, with a guard on what it costs (Core/Ring.cs; Game/WestworldScript.HeldRing.cs; settings version 323)
+        public bool ControlRingPlans = true;     // [Mind] someone the ring takes in has a short errand of two to four things, kept by who they are for five minutes (FIVEDAY2 item 4; settings version 333)
         public bool ControlRingSeated = true;    // [Mind] the ring takes in those sat at the game's own benches and rails: after a decent dwell, someone whose mind wants something else gets up for it (FIVEDAY2 item 3; settings version 332; needs MindActsScenarios)
         public bool ControlRingKeepAt = true;    // [Mind] someone the ring holds who stops getting where they were sent is given the order again (FIVEDAY2 item 2; settings version 331)
         public float ControlRingMetres = Ring.DefaultMetres;   // ... how near you on foot, in metres (6-25); less in the saddle, none at a gallop
@@ -963,6 +964,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 333)
+                    log?.Invoke("Settings: new in this version: [Mind] ControlRingPlans (on): someone the ring holds has a short errand of their own, kept for five minutes.");
                 if (s.SettingsVersion < 332)
                     log?.Invoke("Settings: new in this version: [Mind] ControlRingSeated (on): those sat near you are held too, and get up when their mind wants something else.");
                 if (s.SettingsVersion < 331)
@@ -1607,6 +1610,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("ActThoughtEachSeconds = " + ActThoughtEachSeconds + "   ; with ActThoughts: one person's thought with what they chose at most once in this many seconds (20 to 600)");
             b.AppendLine("ActThoughtGapSeconds = " + ActThoughtGapSeconds + "   ; with ActThoughts: none within this many seconds of another, different thought of theirs (0 to 120)");
             b.AppendLine("ControlRing = " + B(ControlRing) + "   ; with MindActs: the people the mind knows near you are kept at what their minds choose, one act straight into the next, instead of the game taking them back between acts; less in the saddle, nobody at a gallop or on a train; draws itself in if it costs too much (F7: TEST mind acts). false: the older HeldRing below, if that is on");
+            b.AppendLine("ControlRingPlans = " + B(ControlRingPlans) + "   ; with ControlRing: someone held has a short errand of two to four things (the store, a talk, home) that they carry on with if they leave your side and come back; a strong feeling still comes first");
             b.AppendLine("ControlRingSeated = " + B(ControlRingSeated) + "   ; with ControlRing and MindActsScenarios: those sat or leaning near you are held too, and after a minute or so someone whose mind wants something else gets up for it, a few at most at a time");
             b.AppendLine("ControlRingKeepAt = " + B(ControlRingKeepAt) + "   ; with ControlRing: someone held who stops getting where they were sent is given the order again, a few times at most; never over a fight, a flee or a fall");
             b.AppendLine("ControlRingMetres = " + F(ControlRingMetres) + "   ; with ControlRing: how near you, in metres, on foot (6 to 25)");

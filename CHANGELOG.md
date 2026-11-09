@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **An errand of their own** (`[Mind] ControlRingPlans`, on; settings version 333; FIVEDAY2 item 4). Someone the ring takes in has a short errand for that part of the day, two to four things in order (the store, a talk, home), kept by who they are for five minutes, so someone who walks out of the ring and back carries on. A strong feeling still comes first, and a step that can't be done is passed over.
+  - Why it reads true: a choice a minute is a person with no yesterday. A list in the head is a person with an afternoon.
+
 - **The seated too** (`[Mind] ControlRingSeated`, on; settings version 332; FIVEDAY2 item 3). The ring used to leave anyone on a bench or a rail alone, and most of a street is sat down. Now, after a minute or so (each person's own, so a bench doesn't rise as one), someone whose mind wants something else gets up the game's way and goes to it, a few at most at a time. Someone content where they are stays.
   - Why it reads true: people sit down for a reason, and get up when it runs out.
 
