@@ -117,6 +117,7 @@ namespace EnrageWestworld.InGame
                     _sideCounted = side[i];
                     _sideShown++;
                     NoteTheirThought(side[i].Handle, now, side[i].Text);
+                    ThreadThoughtShown(side[i].Key, now);
                 }
         }
 
@@ -315,7 +316,7 @@ namespace EnrageWestworld.InGame
             if (!_cfg.ThoughtsOverHeads)
                 return "off ([Ticker] ThoughtsOverHeads): on the bar; people within " + (int)_cfg.TickerNearbyMetres + " m";
             return "over heads (size " + _cfg.ThoughtsOverHeadScale.ToString("0.00") + "), people within " + (int)_cfg.TickerNearbyMetres + " m; this session " + _overHeadShown +
-                   " over a head, " + _overHeadUnseen + " passed over (the thinker out of view; never on the bar)" + (_overHeadLast != null ? "; last over " + _overHeadLast : "") + "; " + SideStatus() + "; " + AsideStatus();
+                   " over a head, " + _overHeadUnseen + " passed over (the thinker out of view; never on the bar)" + (_overHeadLast != null ? "; last over " + _overHeadLast : "") + "; " + SideStatus() + "; " + AsideStatus() + "; " + ThreadStatus();
         }
     }
 }

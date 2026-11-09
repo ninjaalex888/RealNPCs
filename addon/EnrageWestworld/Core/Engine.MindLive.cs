@@ -257,6 +257,10 @@ namespace EnrageWestworld.Core
 
         // ---- thoughts that vary, and the waking found by the model (Language.Variety.cs; Lex, 2026-10-31) -------------
 
+        /// Set by the game (FIVEDAY2 item 27): in a few words, what they've just been through, or null; and how long ago their last thought was, in real ms, or -1.
+        public Func<string, string> StillOnMind;
+        public Func<string, int> LastThoughtMs;
+
         /// Their thoughts lately, by id (the model is told them and the check holds a repeat).
         public readonly RecentThoughts Recent = new RecentThoughts();
 
@@ -282,6 +286,15 @@ namespace EnrageWestworld.Core
                 r.Uncanny.Add("moments that came round again, just as before");
             r.Recent = Recent.Of(p.Id);
             Language.Vary(r, Voice.Hash(p.Id) + (int)(now / 20) * 7919, t != null && t[Traits.Piety] > 1.2f);
+            // what they've just been through comes before anything else on their mind; and now and then they go on from what they last thought (FIVEDAY2 item 27)
+            string still = StillOnMind != null ? StillOnMind(p.Id) : null;
+            if (still != null)
+            {
+                r.Focus = still;
+                r.FocusId = "still";
+            }
+            else if (Cfg.ThoughtsFollowOn && r.Recent.Count > 0 && ThoughtThreads.CarriesOn(LastThoughtMs != null ? LastThoughtMs(p.Id) : -1, p.Id + "|" + now / 20))
+                r.CarryOn = r.Recent[0];
         }
 
         /// A thought was shown for them: kept as one of their thoughts lately; and with ModelWakes, when someone with cause

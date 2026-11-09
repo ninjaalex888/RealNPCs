@@ -189,11 +189,18 @@ namespace EnrageWestworld.InGame
                 if (t != null)
                 {
                     _momentUrgent++;
+                    ThreadLoud(key, src, Game.GameTime);   // it's what's on their mind for a while (WestworldScript.Threads.cs)
                     _momentLast = (p != null ? p.Name : key) + " " + src;
                     if (Log.Debug)
                         Log.Detail("MOMENT " + (p != null ? p.Name : key) + " (" + src + "): \"" + t + "\"");
                     return t;
                 }
+            }
+            if (m == null || !Moments.Urgent(m))
+            {
+                string follows = ThreadFollow(key, p, Game.GameTime);
+                if (follows != null)
+                    return follows;
             }
             if (look == null)
                 look = Look(me, d);

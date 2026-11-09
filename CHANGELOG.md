@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Thoughts that follow on** (`[Ticker] ThoughtsFollowOn`, on; settings version 330; FIVEDAY2 item 27). For a few minutes after a fight, a run for it, a gun in their face, shots close by or a body, someone's next thought or two pick up from it instead of going back to the stew. With the AI model on, it's told what they've just been through, and one ask in three is told their last thought and asked to go on from it.
+  - Why it reads true: the mind doesn't change the subject when the danger stops. The proud replay it with a better ending; the frightened can't put it down.
+
 - **Thoughts from the saddle** (`[Ticker] RoadThoughts`, on; `RoadThoughtsMetres` 35; settings version 329; FIVEDAY2 item 26). Out of town, the riders, drivers and walkers you pass think something, about the road and about you, from as far off as 35 m for someone mounted; they have no names and nothing is kept of them. People at a scene think by their part in it: the captive, those holding them, and those who came to watch (at the roadside and at a hanging).
   - Why it reads true: on an empty road every stranger is a small decision, and the people watching something terrible are thinking about their supper and their own skin.
 

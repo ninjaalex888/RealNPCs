@@ -49,6 +49,7 @@ namespace EnrageWestworld.Core
         public bool WeatherOff;              // the weather left out (it isn't the focus)
         public List<string> Recent = new List<string>();    // their last thoughts shown (the model is told to think of something else)
         public bool Revenant;                // Kind "pick" for one of the dead (Core/RevenantMind.cs): the brief says so
+        public string CarryOn;               // their last thought, to pick up from (FIVEDAY2 item 27), or null
         public string Now;                   // Kind "pick" in a staged encounter (Core/Staged.cs): what is going on around them this moment, in a few words
 
         /// The variety rules apply here: set, and a thought or a pick (Talk's answers and the remarks said aloud keep their own).
@@ -154,7 +155,8 @@ namespace EnrageWestworld.Core
             {
                 if (r.Uncanny.Count > 0 && r.Stage >= Awakening.Stirring && r.Stage < Awakening.Questioning) b.Append("Strange things lately: ").Append(string.Join("; ", r.Uncanny.Take(3))).Append(".\n");   // the asleep aren't told: they never doubt (Language.Variety.MayDoubt)
                 if (!string.IsNullOrEmpty(r.Focus)) b.Append("Their mind goes to: ").Append(r.Focus).Append(".\n");
-                if (r.Recent.Count > 0) b.Append("Their thoughts lately (think of something else): ").Append(string.Join(" | ", r.Recent.Take(3))).Append(".\n");
+                if (!string.IsNullOrEmpty(r.CarryOn)) b.Append("A moment ago they thought: ").Append(r.CarryOn).Append(" Let this thought follow from that one: go on from it, answer it or take it back; don't repeat it.\n");
+                if (r.Recent.Count > 0) b.Append(r.CarryOn != null ? "Their thoughts lately: " : "Their thoughts lately (think of something else): ").Append(string.Join(" | ", r.Recent.Take(3))).Append(".\n");
             }
             return b.ToString();
         }

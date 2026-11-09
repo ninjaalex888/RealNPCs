@@ -236,6 +236,8 @@ namespace EnrageWestworld.InGame
             LoadVoices();
             Feed.Thinking = (who, text, ped) => _ticker.Push(who + ", thinking", text, "near", ped);
             Feed.Spoke = ListenersThink;   // WestworldScript.Asides.cs
+            _engine.StillOnMind = ThreadStill;   // WestworldScript.Threads.cs
+            _engine.LastThoughtMs = ThreadLastThought;
             Log.Write("0.4 features: ticker " + (_cfg.Ticker ? "on" : "off") + ", news to " + _cfg.NewsRoute + ", reader key " + _readerKey +
                       ", reveries " + (_cfg.Reveries ? _cfg.ReturnChance + "%" : "off") + ", stalkers " + (_cfg.Stalkers ? _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min" : "off") + ".");
             Log.Write("West World " + (_cfg.WestWorld ? "on (awakening " + _cfg.AwakeningShare + "%, breakdown " + _cfg.AwakeningBreakdown + "%, despair " + _cfg.AwakeningDespair + "%)" : "off") +
@@ -724,6 +726,8 @@ namespace EnrageWestworld.InGame
                 Safe("aloud", () => AloudAsk(_tickerLine, now));   // said aloud in their own voice, if it fits (WestworldScript.Aloud.cs)
                 if (_tickerLine != was && _tickerLine != null && _tickerLine.Kind == "near" && _tickerLine.Handle != 0)
                     NoteTheirThought(_tickerLine.Handle, now, _tickerLine.Text);   // a thought over someone came up: no act's or turn's thought of theirs on top of it (WestworldScript.ActThoughts.cs)
+                if (_tickerLine != was && _tickerLine != null && _tickerLine.Kind == "near" && _tickerLine.Key != null)
+                    ThreadThoughtShown(_tickerLine.Key, now);
                 SideThoughtsCame(now);   // and the same for those beside it (WestworldScript.OverHead.cs)
             }
             TickerLine line = _tickerLine;

@@ -33,7 +33,7 @@ namespace EnrageWestworld.Core
             foreach (string h in r.Beliefs)
                 b.Append('|').Append(h);   // a belief flipped is a new situation
             if (r.Varied)
-                b.Append("|f:").Append(r.FocusId).Append("|s:").Append(r.Shape != null ? Array.IndexOf(Shapes, r.Shape) : -1).Append(MayDoubt(r) ? "|doubt" : "");   // another focus or shape is another thought to keep (LanguageVariety)
+                b.Append("|f:").Append(r.FocusId).Append("|s:").Append(r.Shape != null ? Array.IndexOf(Shapes, r.Shape) : -1).Append(MayDoubt(r) ? "|doubt" : "").Append(r.CarryOn != null ? "|on:" + r.CarryOn : "");   // another focus or shape is another thought to keep (LanguageVariety)
             return b.ToString();
         }
 
