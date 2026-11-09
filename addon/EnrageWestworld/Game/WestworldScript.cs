@@ -183,6 +183,7 @@ namespace EnrageWestworld.InGame
 				}
 				return;
 			}
+			Draw.TickBegin();   // the frame's number, once: every piece of text used to ask the game for it four times
 			long stepStart = System.Diagnostics.Stopwatch.GetTimestamp();   // the frame-time meter's total (WestworldScript.Perf.cs)
 			LawPulseEnd(Game.GameTime);
 			try

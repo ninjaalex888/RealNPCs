@@ -30,6 +30,8 @@ namespace EnrageWestworld.InGame
 
         private static readonly Dictionary<string, Pinned> Strings = new Dictionary<string, Pinned>();
         private static int _sweepAt;
+        private static int _tickFrame;           // this tick's frame number, read once (TickBegin): asked of the game four times for every piece of text before (FIVEDAY2 0g)
+        private static ulong _literalTag, _colourTag;   // the two tags every piece of text uses, kept for good rather than looked up each time
         private static int _frame = -1;
         private static int _used;
         private static float _aspect = 16f / 9f;
@@ -39,17 +41,36 @@ namespace EnrageWestworld.InGame
 
         // ---- strings ------------------------------------------------------------------------------
 
+        /// Once a tick, before anything draws (OnTick).
+        public static void TickBegin()
+        {
+            _tickFrame = Game.FrameCount;
+        }
+
+        private static ulong Kept(ref ulong slot, string text)
+        {
+            if (slot == 0)
+                slot = (ulong)CopyOut(text).ToInt64();
+            return slot;
+        }
+
+        /// The text as a C string in unmanaged memory.
+        private static IntPtr CopyOut(string text)
+        {
+            byte[] utf8 = Encoding.UTF8.GetBytes(text);
+            IntPtr at = Marshal.AllocHGlobal(utf8.Length + 1);
+            Marshal.Copy(utf8, 0, at, utf8.Length);
+            Marshal.WriteByte(at, utf8.Length, 0);
+            return at;
+        }
+
         private static ulong Pin(string text)
         {
-            int frame = Game.FrameCount;
+            int frame = _tickFrame;
             Pinned p;
             if (!Strings.TryGetValue(text, out p))
             {
-                byte[] bytes = Encoding.UTF8.GetBytes(text);
-                IntPtr ptr = Marshal.AllocHGlobal(bytes.Length + 1);
-                Marshal.Copy(bytes, 0, ptr, bytes.Length);
-                Marshal.WriteByte(ptr, bytes.Length, 0);
-                p = new Pinned { Ptr = ptr };
+                p = new Pinned { Ptr = CopyOut(text) };
                 Strings[text] = p;
             }
             p.LastFrame = frame;
@@ -121,12 +142,12 @@ namespace EnrageWestworld.InGame
         /// Text pieces still to be had this frame.
         public static int Left
         {
-            get { return Game.FrameCount != _frame ? FrameBudget : FrameBudget - _used; }
+            get { return _tickFrame != _frame ? FrameBudget : FrameBudget - _used; }
         }
 
         private static bool Take(int n)
         {
-            int frame = Game.FrameCount;
+            int frame = _tickFrame;
             if (frame != _frame)
             {
                 _frame = frame;
@@ -169,7 +190,7 @@ namespace EnrageWestworld.InGame
         /// What took this frame's text so far, for the log: "the bar 3, the subtitles 4; 0 of 48 left, 6 refused".
         public static string Spent()
         {
-            bool now = Game.FrameCount == _frame;
+            bool now = _tickFrame == _frame;
             var b = new StringBuilder(160);
             for (int i = 0; i < Parts; i++)
                 if (now && _by[i] > 0)
@@ -229,9 +250,9 @@ namespace EnrageWestworld.InGame
                 return;
             UIDEBUG._BG_SET_TEXT_SCALE(scale, scale);
             UIDEBUG._BG_SET_TEXT_COLOR(r, g, b, a);
-            ulong inner = Function.Call<ulong>(VarString, 10, new InputArgument(Pin("LITERAL_STRING")),
+            ulong inner = Function.Call<ulong>(VarString, 10, new InputArgument(Kept(ref _literalTag, "LITERAL_STRING")),
                 new InputArgument(Pin(formed)));
-            ulong v = Function.Call<ulong>(VarString, 42, new InputArgument(Pin("COLOR_STRING")), 0, new InputArgument(inner));
+            ulong v = Function.Call<ulong>(VarString, 42, new InputArgument(Kept(ref _colourTag, "COLOR_STRING")), 0, new InputArgument(inner));
             Function.Call(DisplayText, new InputArgument(v), x, y);
         }
 

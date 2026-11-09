@@ -27,6 +27,7 @@ namespace EnrageWestworld.InGame
             public string Name, Line2;
             public int R, G, B, R2, G2, B2;
             public bool Known;
+            public bool Ready;   // the body exists and is ready to draw, asked one frame in four (NameCardPlan.BodyCheckDue)
             public int MadeAt, FirstSeen, SeenFrame;
             public float Metres, Range;
             public Vector3 HeadOff;
@@ -113,7 +114,7 @@ namespace EnrageWestworld.InGame
             float dt = Math.Max(0.004f, Math.Min(0.1f, (now - _nameCardsLastMs) / 1000f));
             _nameCardsLastMs = now;
             int bones = 0, rays = 0, up = 0;
-            int myInterior = INTERIOR.GET_INTERIOR_FROM_ENTITY(me.Handle);
+            int myInterior = _cfg.NameCardsAlways ? 0 : INTERIOR.GET_INTERIOR_FROM_ENTITY(me.Handle);   // always on, walls alone decide and this isn't read
             // always on, the cards are drawn before the Testing overlays: they leave those their room (Lex, 2026-10-30: a wake
             // stage tag went the moment her Fondness bar came, the frame's text all spent on names)
             int keep = !_cfg.NameCardsAlways ? 0 : (_cfg.ShowWakeStages && _cfg.WestWorld ? WakeTagMax : 0) + (_cfg.ShowMinds ? 12 : 0) + 2;
@@ -121,14 +122,21 @@ namespace EnrageWestworld.InGame
             foreach (NameCard c in _nameCardsNow)
             {
                 int h = c.Handle;
-                if (!ENTITY.DOES_ENTITY_EXIST(h) || !PED.IS_PED_READY_TO_RENDER(h))
+                if (NameCardPlan.BodyCheckDue(_nameCardsFrame, h))
+                    c.Ready = ENTITY.DOES_ENTITY_EXIST(h) && PED.IS_PED_READY_TO_RENDER(h);
+                if (!c.Ready)
                     continue;
                 if (now - c.FirstSeen < 1000)
                     continue;   // a body just come into range settles first
                 Vector3 pos = ENTITY.GET_ENTITY_COORDS(h, true, true);
+                if (pos.X == 0f && pos.Y == 0f)
+                {
+                    c.Ready = false;   // gone since the last check
+                    continue;
+                }
                 bool hasHead = c.HeadFrame > -1000;
                 Vector3 head;
-                if ((!hasHead || _nameCardsFrame - c.HeadFrame >= 3) && bones < 6)
+                if ((!hasHead || _nameCardsFrame - c.HeadFrame >= NameCardPlan.BoneEveryFrames(c.Metres)) && bones < 6)
                 {
                     bones++;
                     head = PED.GET_PED_BONE_COORDS(h, 21030, 0f, 0f, 0f);
@@ -187,7 +195,7 @@ namespace EnrageWestworld.InGame
                     c.VelX = c.VelY = 0f;
                 }
                 c.PrevFrame = _nameCardsFrame;
-                if ((c.BlockedAt == 0 || now - c.BlockedAt > 150) && rays < 3)
+                if ((c.BlockedAt == 0 || now - c.BlockedAt > NameCardPlan.RayEveryMs(c.Metres)) && rays < NameCardPlan.RaysAFrame)
                 {
                     rays++;
                     // always on: only a wall hides it (the map's own shapes), not a table, a post or someone in the way (Lex, 2026-10-30)
@@ -226,7 +234,7 @@ namespace EnrageWestworld.InGame
                     c.Units = TitleUnits(c.Name);
                 }
                 Draw.TextFormed(c.Formed, x - c.Units * s1 * 0.0205f / 2f, y - h1 - h2 + 0.002f, s1, c.R, c.G, c.B, a);
-                if (_cfg.NameCardsSecondLine && !string.IsNullOrEmpty(c.Line2) && !tight && Draw.Left > 0)   // off: the name alone (players, 2026-10-30); short of text, the name alone too
+                if (_cfg.NameCardsSecondLine && NameCardPlan.SecondLine(up, c.Metres) && !string.IsNullOrEmpty(c.Line2) && !tight && Draw.Left > 0)   // off: the name alone (players, 2026-10-30); short of text, the name alone too; the nearest few only (FIVEDAY2 0g)
                 {
                     if (!ReferenceEquals(c.Formed2Of, c.Line2))
                     {
@@ -253,8 +261,6 @@ namespace EnrageWestworld.InGame
                     _nameCards.Remove(gone);
         }
 
-        /// The living humans in range with a name of ours to show, nearest first, at most NameCardsMost; each keeps its card
-        /// (and its smoothing) between looks, refreshed every three seconds or when the game reuses the handle.
         /// Whom you're locked on to or aiming at, or 0.
         private static unsafe int NameCardTarget()
         {
@@ -265,8 +271,12 @@ namespace EnrageWestworld.InGame
             return t;
         }
 
+        /// The living humans in range with a name of ours to show, nearest first, at most NameCardsMost; each keeps its card
+        /// (and its smoothing) between looks, its words worked out again every three seconds, or when the game reuses the handle, a
+        /// few a pass (NameCardPlan.MayFill): all of a crowd's came due together, a spike every three seconds.
         private void NameCardsCandidates(Ped me, Vector3 mePos, int now)
         {
+            int fills = 0;
             _nameCardsNow.Clear();
             bool targeted = _cfg.NameCards == "targeted";   // only the one you're locked on to or aiming at (a player on Nexus, 2026-11-04: names "only when targeted")
             int targetNow = targeted ? NameCardTarget() : 0;
@@ -297,8 +307,9 @@ namespace EnrageWestworld.InGame
                 }
                 if (probe && d <= strangerRange)
                     seen++;
-                if (now - c.MadeAt >= NameCardsRefreshMs || probe)
+                if (probe || NameCardPlan.MayFill(now - c.MadeAt >= NameCardsRefreshMs, c.Name == null && c.MadeAt < 0, fills))
                 {
+                    fills++;
                     c.MadeAt = now;
                     if (!NameCardFill(p, c, everyone))
                     {
