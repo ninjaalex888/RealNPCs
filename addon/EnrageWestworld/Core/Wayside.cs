@@ -120,7 +120,7 @@ namespace EnrageWestworld.Core
         public static List<InteractOption> Rows(WaysideKind k, int cash)
         {
             var rows = new List<InteractOption>();
-            foreach (WaysideChoice c in k.Choices ?? new WaysideChoice[0])
+            foreach (WaysideChoice c in (k != null ? k.Choices : null) ?? new WaysideChoice[0])
                 rows.Add(new InteractOption { Id = c.Id, Label = c.Label + (c.Cents > 0 ? " ($" + (c.Cents / 100) + ")" : ""), Why = c.Cents > cash ? "you haven't the money" : null });
             return rows;
         }

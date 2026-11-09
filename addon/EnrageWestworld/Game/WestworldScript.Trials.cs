@@ -610,7 +610,7 @@ namespace EnrageWestworld.InGame
             var menu = new LetterMenu { Mode = _eventPrompt };
             switch (_eventPrompt)
             {
-                case Wayside.Kind: menu.Rows = Wayside.Rows(Wayside.Of(_eventPromptFor.Extra), MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "On the road:"; break;   // (FIVEDAY2 items 16-20)
+                case Wayside.Kind: menu.Rows = Wayside.Rows(_wayside != null ? _wayside.K : Wayside.Of(_eventPromptFor.Extra), MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "On the road:"; break;   // (FIVEDAY2 items 16-20)
                 case "testify": menu.Rows = Trials.TestifyRows(); menu.Title = "To the court:"; break;
                 case "swear": menu.Rows = Trials.SwearRows(); menu.Title = "The sheriff's man:"; break;
                 case "show": menu.Rows = Shows.Rows(_eventPromptFor); menu.Title = "At the show:"; break;

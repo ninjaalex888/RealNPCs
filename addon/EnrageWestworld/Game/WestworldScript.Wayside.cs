@@ -28,6 +28,7 @@ namespace EnrageWestworld.InGame
             public Blip Mark;
             public TownEvent Ask;
             public string Town;
+            public Resident R;   // someone you know, when it's them (Core/Wayside.Known.cs)
         }
 
         private const int WaysideFightMs = 22000, WaysideAfterMs = 12000, WaysideRepeatDays = 2;
@@ -63,12 +64,40 @@ namespace EnrageWestworld.InGame
             return _store.Counts.TryGetValue("wayside:" + id, out day) && (int)(_store.LastGameMin / 1440) - day < WaysideRepeatDays && day <= (int)(_store.LastGameMin / 1440);
         }
 
+        /// Someone you've met, a saved regular of a town other than the one you're nearest, nobody's just now: who it might be out here.
+        private Resident WaysideKnownWho(Vector3 at)
+        {
+            string near = Rumours.NearestTown(at.X, at.Y);
+            HashSet<Resident> bound = new HashSet<Resident>(_resBind.Values.Select(b => b.R));
+            List<Resident> pool = _store.Residents.Where(r => r.Regular && !r.Dead && !r.Left && !r.Fled && r.Held == null && r.PostId == null && r.Cast == null && r.Model != 0 && r.Town != near && !bound.Contains(r) && GatherMet(r)).ToList();
+            return pool.Count == 0 ? null : pool[_rng.Next(pool.Count)];
+        }
+
+        private WaysideKind WaysideKnownKind(Resident r)
+        {
+            Person who = _engine.PersonOfResident(r);
+            long day = _store.LastGameMin / 1440;
+            string worry;
+            int stage;
+            bool good;
+            if (!InnerLife.WorryNow(who, day, out worry, out stage, out good))
+                worry = null;
+            return Wayside.Known(r.Name, r.Woman, r.Town, worry, _engine.KnowsYourName(r.Id) ? _engine.Player.FirstName : null, r.Id + "|" + day);
+        }
+
         private bool StartWayside(int now, bool test)
         {
             Ped me = Game.Player.Character;
             Vector3 p = me.Position;
             bool onRoad = PATHFIND.IS_POINT_ON_ROAD(p.X, p.Y, p.Z, 0);
-            WaysideKind k = _waysideForce != null ? Wayside.Of(_waysideForce) : Wayside.Pick(CLOCK.GET_CLOCK_HOURS(), onRoad, WaysideLately, _store.LastGameMin + "|" + now);
+            Resident known = _waysideForce == Wayside.KnownId || (_waysideForce == null && !WaysideLately(Wayside.KnownId) && _rng.Next(100) < 25) ? WaysideKnownWho(p) : null;
+            if (_waysideForce == Wayside.KnownId && known == null)
+            {
+                _waysideForce = null;
+                Hint("Nobody you've met is free to be out here just now.", 5000);
+                return false;
+            }
+            WaysideKind k = known != null ? WaysideKnownKind(known) : _waysideForce != null ? Wayside.Of(_waysideForce) : Wayside.Pick(CLOCK.GET_CLOCK_HOURS(), onRoad, WaysideLately, _store.LastGameMin + "|" + now);
             _waysideForce = null;
             if (k == null)
                 return false;
@@ -76,6 +105,11 @@ namespace EnrageWestworld.InGame
             var w = new WaysideRun { K = k, StartedAt = now, Test = test, Town = town, Cast = new Ped[k.Cast.Length], Models = new uint[k.Cast.Length], Facing = (float)_rng.NextDouble() * 360f };
             for (int i = 0; i < k.Cast.Length; i++)
                 w.Models[i] = WaysideModel(k.Cast[i], town);
+            if (known != null)
+            {
+                w.R = known;
+                w.Models[0] = known.Model;   // themselves, as the town knows them
+            }
             _wayside = w;
             if (!test)
                 Pacing.NoteBig(_store.Pace, _store.LastGameMin);   // a big moment: the quiet starts (Pacing.cs)
@@ -221,6 +255,13 @@ namespace EnrageWestworld.InGame
                     p.GiveWeapon(eWeapon.RevolverCattleman, 60, eWeaponAttachPoint.PistolR, true);
                 else if (role.Arm == "rifle")
                     WEAPON.GIVE_WEAPON_TO_PED(h, Natives.Hash("WEAPON_RIFLE_SPRINGFIELD"), 30, true, false, 0, false, 0.5f, 1f, GiveReason, true, 0f, false);
+                if (w.R != null && i == 0)
+                {
+                    PED._EQUIP_META_PED_OUTFIT_PRESET(h, w.R.Outfit, false);
+                    PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+                    Dressed.Note(h);   // not read for a while (Game/Dressed.cs)
+                    _resBind[h] = new ResBind { R = w.R, Model = w.R.Model };
+                }
                 if (role.Act == "dead")
                 {
                     ENTITY.SET_ENTITY_HEALTH(h, 0, 0);
@@ -495,6 +536,8 @@ namespace EnrageWestworld.InGame
                     return "you left them to it";
                 case "help":
                     {
+                        if (w.R != null)
+                            _engine.HelpedUp(_engine.PersonOfResident(w.R), true, Bridge.Now());   // what you did for them on an empty road: fonder of you, and they remember it
                         Ped by = c.By >= 0 && c.By < w.Cast.Length ? w.Cast[c.By] : null;
                         if (by != null && by.Exists() && !by.IsDead && w.K.WalkMetres <= 0f)
                         {

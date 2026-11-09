@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Someone you know, out of place** (with `[Encounters] Wayside`; FIVEDAY2 item 21; Testing row). A quarter of the time, what you come across on the road is someone you've met who lives in another town, far from it, for a reason their own trouble gives: the debtor who doesn't want to be found, the one walking to a crossing to ask a question, the father looking for a son. Say your name if they know it. Give them a few dollars, tell them to go home, or say you never saw them. What you do for them there they remember.
+  - Why it reads true: recognition out of context is the strongest sign a world goes on without you.
+
 - **Found after the fact** (with `[Encounters] Wayside`; FIVEDAY2 item 20; a Testing row for each). Coming on the end of something: two men dead by the road, a woman alone in the wilds, grave robbers who've heard your horse. Go through the pockets, say a word over them, or leave them. Nobody real dies of this: they're strangers the world made for it.
   - Why it reads true: most of what happens to people happens when nobody is watching, and coming on the end of something makes the mind write the rest. Being too late is its own kind of story.
 
