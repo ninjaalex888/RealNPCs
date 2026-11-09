@@ -86,6 +86,18 @@ namespace EnrageWestworld.InGame
             return Wayside.Known(r.Name, r.Woman, r.Town, worry, _engine.KnowsYourName(r.Id) ? _engine.Player.FirstName : null, r.Id + "|" + day);
         }
 
+        private readonly List<string> _waysideHere = new List<string>(3);
+
+        /// What's true of where you are, for the scenes that can only happen in some places (TENHOUR items 8 to 10).
+        private List<string> WaysideHere(Vector3 p)
+        {
+            _waysideHere.Clear();
+            string near = Rumours.NearestTown(p.X, p.Y);
+            if (near == "Annesburg" || near == "Butcher Creek")
+                _waysideHere.Add(Wayside.PlaceMines);
+            return _waysideHere;
+        }
+
         private bool StartWayside(int now, bool test)
         {
             Ped me = Game.Player.Character;
@@ -98,7 +110,7 @@ namespace EnrageWestworld.InGame
                 Hint("Nobody you've met is free to be out here just now.", 5000);
                 return false;
             }
-            WaysideKind k = known != null ? WaysideKnownKind(known) : _waysideForce != null ? Wayside.Of(_waysideForce) : Wayside.Pick(CLOCK.GET_CLOCK_HOURS(), onRoad, WaysideLately, _store.LastGameMin + "|" + now);
+            WaysideKind k = known != null ? WaysideKnownKind(known) : _waysideForce != null ? Wayside.Of(_waysideForce) : Wayside.Pick(CLOCK.GET_CLOCK_HOURS(), onRoad, WaysideLately, _store.LastGameMin + "|" + now, WaysideHere(p));
             _waysideForce = null;
             if (k == null)
                 return false;

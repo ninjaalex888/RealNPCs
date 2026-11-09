@@ -76,6 +76,34 @@ namespace EnrageWestworld.Core
                 Thoughts = new[] { "Forty acres, and a line drawn across it by a man in Saint Denis.", "Three dollars a day to be shot at.", "They'll pay him next to nothing and he'll take it. They always do." },
                 News = "A farmer near {town} ran the railroad's surveyors off his land with a gun. They've said they'll be back."
             },
+            new WaysideKind
+            {
+                Id = "organiser", Mark = "Lantern light", Test = "By the mines, after dark: a union man", From = 20, To = 4, Weight = 22, Place = PlaceMines, WalkMetres = 110f, Threat = "flee",
+                Cast = new[]
+                {
+                    R("A man with a lantern", "rough", null, W("GUARD_LANTERN_NERVOUS"), 0f, 0f), R("A miner", "rough", null, "stand", 2f, 1f, 0), R("A miner", "rough", null, "stand", -2f, 1.5f, 0),
+                    R("A company man", "rough", "revolver", "stand", 2f, -26f), R("A company man", "rough", "revolver", "stand", -2f, -30f)
+                },
+                Beats = new[]
+                {
+                    Say(0, 0, "plead", "They own the scales and the store and the roof. Think on it.", "One man asks, they let him go. Five hundred ask, they listen."),
+                    Say(4500, 1, "scared", "If the foreman hears of this I'm out of the house as well.", "My wife says I'm a fool to come."),
+                    Do(8000, "chase", 3),
+                    Do(8300, "chase", 4),
+                    Say(10000, 3, "threat", "You, with the lantern! Stay where you are!", "There he is. The one from Pennsylvania."),
+                    Do(10500, "run", 0),
+                    Do(11000, "flee", 1),
+                    Do(11300, "flee", 2)
+                },
+                Choices = new[]
+                {
+                    C("wrong", "Point the company men the wrong way", 0, "misdirect", 3, "Obliged. He won't have got far."),
+                    C("sell", "Tell them which way he went, for a price", 0, "paid", 3, "That's the first useful thing anyone's told me in this county."),
+                    C("leave", "Ride on", 0, "leave", -1)
+                },
+                Thoughts = new[] { "Scrip at the company store. Scrip at the company store.", "They've got a list. I know they've got a list.", "Say the word union out loud and see who looks at his boots." },
+                News = "A union man was run off in the dark near {town}, and two miners are out of their houses for it."
+            },
         };
     }
 }

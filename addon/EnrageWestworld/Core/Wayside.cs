@@ -40,6 +40,7 @@ namespace EnrageWestworld.Core
         public string Id, Mark, Test;         // Mark: the dot's label, Test: the Testing row's words (60 characters at most)
         public int From, To, Weight = 10;     // the hours (From > To runs over midnight), how likely against the others
         public bool OnRoad;                   // only on a road
+        public string Place;                  // where it can happen at all (a Place* constant), or null: anywhere
         public WaysideRole[] Cast;
         public WaysideBeat[] Beats;
         public WaysideChoice[] Choices;
@@ -55,6 +56,7 @@ namespace EnrageWestworld.Core
     {
         public const string Kind = "wayside";
         public const int NearMetres = 35, ChoiceMetres = 10, UnseenMs = 240000;
+        public const string PlaceMines = "mines", PlaceSnow = "snow", PlaceWater = "water";   // what can be true of where you are: the game side says which (WestworldScript.Wayside.cs, WaysideHere)
 
         private static string W(string scenario)
         {
@@ -93,9 +95,11 @@ namespace EnrageWestworld.Core
         }
 
         /// Whether this kind can happen at this hour, on or off a road.
-        public static bool Fits(WaysideKind k, int hour, bool onRoad)
+        public static bool Fits(WaysideKind k, int hour, bool onRoad, ICollection<string> here = null)
         {
             if (k.OnRoad && !onRoad)
+                return false;
+            if (k.Place != null && (here == null || !here.Contains(k.Place)))
                 return false;
             return k.From <= k.To ? hour >= k.From && hour < k.To : hour >= k.From || hour < k.To;
         }
@@ -122,9 +126,9 @@ namespace EnrageWestworld.Core
         }
 
         /// One of those that fit, by weight, leaving out any seen lately. Null: none.
-        public static WaysideKind Pick(int hour, bool onRoad, Func<string, bool> lately, string seed)
+        public static WaysideKind Pick(int hour, bool onRoad, Func<string, bool> lately, string seed, ICollection<string> here = null)
         {
-            List<WaysideKind> fit = All.Where(k => Fits(k, hour, onRoad) && !lately(k.Id)).ToList();
+            List<WaysideKind> fit = All.Where(k => Fits(k, hour, onRoad, here) && !lately(k.Id)).ToList();
             int total = fit.Sum(k => k.Weight);
             if (total <= 0)
                 return null;
