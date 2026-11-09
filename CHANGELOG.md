@@ -2,6 +2,48 @@
 
 ## Unreleased
 
+- **Weather talk now fits the weather** (`[Ticker] WeatherChecked` and `WeatherTalk`, both on; settings version 342). A player's report: people talking about the heat in a cold drizzle. What they think and say is now held to the actual weather and temperature where you are, and follows a change as it happens. They also remark on it more the worse it is, and most just after it turns: the first drops, thunder, snow, the rain stopping.
+
+- **All Saints' Day at the tombs** (`[World] AllSaintsGraves`, on; settings version 355). On the first of November in the south, those with someone dead go to the tombs, the ones you put there among them.
+
+- **Letters home** (`[World] LettersHome`, on; settings version 354). Someone who left on the train writes, some weeks on, to a friend still in the town.
+
+- **People you know on the map** (`[Display] KnownOnMap`, off as it comes; settings version 353). A grey mark with their name on the regulars you've met.
+
+- **The week in town** (`[World] WeekColumn`, on; settings version 352). On a Sunday the paper says who was buried and married, and how many fights there were, in the town you're nearest.
+
+- **Grudges between towns** (`[World] TownRivals`, on; settings version 351). A tale crossing to a rival town arrives more bent, and people say what they think of the place.
+
+- **Cold snaps** (`[World] ColdSnaps`, on; settings version 350). Twice a winter at Colter, Wapiti and Strawberry. The store runs out of coal oil, and an old man may not wake.
+
+- **Scrip at Annesburg** (`[Scenes] ScripTalk`, on; settings version 349). A man says what he thinks of being paid in the company's paper; the other agrees, hushes him or warns him.
+
+- **Roundup season** (`[World] RoundupSeason`, on; settings version 348). For a fortnight after each roundup the cattle towns fill with paid-off hands, and one comes back hurt.
+
+- **A section gang going home.** On a road towards evening, tools on their shoulders, singing.
+
+- **The vote, argued in Saint Denis** (`[Scenes] Suffrage`, on; settings version 347). A woman says what she thinks to a man she meets; he forbids it, laughs, is shaken or agrees.
+
+- **The money argument** (`[Scenes] MoneyTalk`, on; settings version 346). Two men argue gold against silver, or the banks in 1907; those who fall out are the colder for it.
+
+- **Two who think about each other** (`[Ticker] PairThoughts`, on; settings version 345; Testing row "Two with a history think about each other"). A box each, at once, each about the other.
+
+- **Feelings shown at road scenes** (`[Encounters] WaysideComposed`, on; settings version 344). Someone standing about shows what they feel in the game's own moves, between what's said and done.
+
+- **The model's word on more of the errand** (with `[Mind] ControlRingPicks`). Before each step, and for those sat down too.
+
+- **A road scene answers you** (`[Encounters] WaysideAnswers`, on; settings version 343). Walk up on one and somebody there decides what to do about you. The armed may turn on you.
+
+- **More to come across:** rustlers at a branding fire, cowboys running off a sheepherder, surveyors and a farmer's gun, a union man by the mines after dark, a man frozen in the high country, one washed ashore just past a crossing.
+
+- **A vigilance committee** (`[World] VigilanceCommittees`, on; settings version 342; Testing row "An execution: his own neighbours hold him"). A posse that comes home with nothing after a killing can leave the town's angrier men to settle on someone. Someone can die of it off screen.
+
+- **A killing on the road brings a posse** (`[World] PosseFromTheRoad`, on; settings version 341). Near enough to a town for word to get there, with someone left to tell it.
+
+- **Lighter on the frame.** The log no longer opens its file for each line, the control ring's step does less, and those acting are looked at five times a second instead of every frame.
+
+- **Two more lines in the log**, `RING minute` and `THOUGHTS minute`, so a session can be read afterwards.
+
 - **A crowd takes a fight as one** (`[Mind] CrowdPicks`, on; needs `[Scenes] FightCrowds`, off as it comes; settings version 339; FIVEDAY2 R10). Once three have gathered round a fight, how they take it is one decision for all of them: egging it on, calling for it to stop, shouting for the law, or going quiet. The AI model's if it's on, the rules' if not.
 
 - **Labour trouble** (with `[Encounters] Wayside`; FIVEDAY2 R9; Testing row "A camp: the men have come out on strike"). A foreman and company rifles against men who've come out. Stand between them, put something in the fund, or keep riding; left alone it comes to blows.
