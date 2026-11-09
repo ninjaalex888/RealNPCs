@@ -259,7 +259,7 @@ namespace EnrageWestworld.InGame
             WaysidePlay(w, live, now, d);
             if (_cfg.WaysideAnswers)
                 WaysideAnswerStep(w, live, me, d, now);
-            if (_cfg.ComposedActs && _cfg.WaysideComposed)
+            if ((_cfg.ComposedActs && _cfg.WaysideComposed) || (_cfg.SceneClips && SceneClips.HasRoad(w.K.Id)))
                 WaysideComposedStep(w, me, d, now);
             if (w.Phase == "fight" && now >= w.PhaseUntil)
                 WaysideFightOver(w, live, now);
@@ -353,7 +353,7 @@ namespace EnrageWestworld.InGame
         }
 
         // ---- a feeling shown in a road scene (TENHOUR item 13; Core/Composed.cs). Two things must never direct one person, so this only touches someone the scene has simply standing about, only with no order of the scene's due for a few seconds, and anything that gives the scene an order stops it first (WaysideComposedStop).
-        private int _waysideComposedPlayed;
+        private int _waysideComposedPlayed, _sceneClipsPlayed;
 
         private void WaysideComposedStop(WaysideRun w)
         {
@@ -386,7 +386,11 @@ namespace EnrageWestworld.InGame
                 {
                     w.ComposedSteps = null;
                     w.ComposedNext = now + Wayside.ComposedGapMs;
-                    TASK.TASK_STAND_STILL(who.Handle, -1);   // back to standing there, as the scene left them
+                    string act = w.K.Cast[w.ComposedWho].Act;
+                    if (act != null && act != "stand" && act != "dead")
+                        TASK.TASK_START_SCENARIO_IN_PLACE_HASH(who.Handle, Natives.Hash(act), -1, true, 0u, -1f, false);   // back at what the scene had them at (THREEHOUR item 2)
+                    else
+                        TASK.TASK_STAND_STILL(who.Handle, -1);   // back to standing there, as the scene left them
                     return;
                 }
                 int ms;
@@ -400,6 +404,27 @@ namespace EnrageWestworld.InGame
                 return;
             w.ComposedNext = now + Wayside.ComposedGapMs;
             int n = w.Cast.Length;
+            // the scene's own clips first, by turns with a feeling shown (THREEHOUR item 2; Core/SceneClips.cs): only someone standing still
+            if (_cfg.SceneClips && SceneClips.HasRoad(w.K.Id) && (w.ComposedPlayed % 2 == 0 || !(_cfg.ComposedActs && _cfg.WaysideComposed)))
+                for (int t = 0; t < n; t++)
+                {
+                    int i = (w.ComposedTurn + t) % n;
+                    Ped p = w.Cast[i];
+                    Expression own = SceneClips.ForRoad(w.K.Id, i, w.ComposedPlayed / 2);
+                    if (own == null || p == null || !p.Exists() || p.IsDead || !ENTITY.IS_ENTITY_ON_SCREEN(p.Handle) || IsPerforming(p.Handle) || ENTITY.GET_ENTITY_SPEED(p.Handle) > 0.3f)
+                        continue;
+                    w.ComposedTurn = i + 1;
+                    w.ComposedWho = i;
+                    w.ComposedStep = 0;
+                    w.ComposedAt = now;
+                    w.ComposedSteps = new List<Expression> { own };
+                    w.ComposedPlayed++;
+                    _sceneClipsPlayed++;
+                    Log.Write("WAYSIDE " + w.K.Id + ": " + w.K.Cast[i].Name + " plays the scene's own " + own.Clip);
+                    return;
+                }
+            if (!(_cfg.ComposedActs && _cfg.WaysideComposed))
+                return;
             for (int t = 0; t < n; t++)
             {
                 int i = (w.ComposedTurn + t) % n;

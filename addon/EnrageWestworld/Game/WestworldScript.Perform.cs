@@ -19,6 +19,7 @@ namespace EnrageWestworld.InGame
             public int Handle, AskedAt, Until, Flags;
             public string Name, Dict, Clip;
             public bool Held, Started;
+            public Action Then;   // when the clip has played out, the scene puts them back as they were (THREEHOUR item 2)
         }
 
         private const int PerformLoadMs = 3000, PerformScenarioMs = 8000, PerformVoiceMs = 2500, PerformMoveMs = 2000;
@@ -42,6 +43,12 @@ namespace EnrageWestworld.InGame
         /// line is aimed at. `ms`: about how long it takes, for whoever is timing what comes next.
         private string Perform(int h, Expression row, int target, out int ms)
         {
+            return Perform(h, row, target, out ms, null);
+        }
+
+        /// The same, and `then` once a clip has played to its end on them (not if it never began, or they died or went).
+        private string Perform(int h, Expression row, int target, out int ms, Action then)
+        {
             ms = 0;
             if (row == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                 return "gone";
@@ -53,7 +60,7 @@ namespace EnrageWestworld.InGame
                 string dict = row.Dict(!PED.IS_PED_MALE(h));
                 if (!STREAMING.DOES_ANIM_DICT_EXIST(dict))
                     return PerformFailed(row.Name, "not a set this game has");
-                _performing.Add(new Performing { Handle = h, AskedAt = now, Name = row.Name, Dict = dict, Clip = row.Clip, Flags = row.Channel == "gesture" ? PerformUpper : 0 });
+                _performing.Add(new Performing { Handle = h, AskedAt = now, Name = row.Name, Dict = dict, Clip = row.Clip, Flags = row.Channel == "gesture" ? PerformUpper : 0, Then = then });
                 ms = 3000;   // until the set is in and its length known
                 return null;
             }
@@ -131,6 +138,8 @@ namespace EnrageWestworld.InGame
                 if (gone || (p.Started && now >= p.Until))
                 {
                     PerformEnd(i);
+                    if (!gone && p.Started && p.Then != null)
+                        p.Then();
                     continue;
                 }
                 if (p.Started)

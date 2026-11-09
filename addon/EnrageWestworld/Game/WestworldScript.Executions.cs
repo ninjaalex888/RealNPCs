@@ -27,6 +27,7 @@ namespace EnrageWestworld.InGame
             public Executions.Plan Plan;
             public Ped Captive;
             public readonly List<Ped> Men = new List<Ped>();
+            public int ShakeNext;   // when the man on his knees may shake again (THREEHOUR item 2)
             public readonly List<uint> MenModels = new List<uint>();
             public Blip Mark;
             public string Town, Region;
@@ -222,7 +223,12 @@ namespace EnrageWestworld.InGame
                     if (now >= e.PhaseUntil)
                     {
                         if (e.Captive.Exists() && !e.Captive.IsDead)
-                            TASK.TASK_WANDER_STANDARD(e.Captive.Handle, 10f, 10);
+                        {
+                            int fh = e.Captive.Handle;
+                            // saved: he scrambles up and off, the victim's own way out (THREEHOUR item 2), then walks on
+                            if (!_cfg.SceneClips || ExecClip(fh, SceneClips.ExecFreed, 0, () => { if (ENTITY.DOES_ENTITY_EXIST(fh) && !ENTITY.IS_ENTITY_DEAD(fh)) TASK.TASK_WANDER_STANDARD(fh, 10f, 10); }) != null)
+                                TASK.TASK_WANDER_STANDARD(fh, 10f, 10);
+                        }
                         e.Phase = "leaving";
                         e.PhaseUntil = now + 30000;
                     }
@@ -371,6 +377,11 @@ namespace EnrageWestworld.InGame
                     e.ShootAt = Math.Min(e.ShootAt, now + ExecAfterWarnMs);
                     Ped m = men[0];
                     Feed.Say(ExecManName(e, m), Executions.WarnYou(e.Plan, e.R.Id + now), Speech.When(m.Handle, "threat", me.Handle), m.Handle, toYou: true);
+                    if (_cfg.SceneClips && men.Count > 1)   // he waves you back, and his gun goes back on the man after; one man alone keeps his on him
+                    {
+                        int mh = m.Handle;
+                        ExecClip(mh, SceneClips.ExecWarn, me.Handle, () => { if (ENTITY.DOES_ENTITY_EXIST(mh) && !ENTITY.IS_ENTITY_DEAD(mh) && e.Phase == "held") TASK.TASK_AIM_GUN_AT_ENTITY(mh, ch, -1, false, 0); });
+                    }
                 }
                 if (!e.Thought && d < 30f && seen)
                 {
@@ -394,6 +405,12 @@ namespace EnrageWestworld.InGame
                     Feed.Say(e.R.Name, Executions.Plead(e.Plan, seed), Speech.When(ch, "plead", men[0].Handle), ch);
             }
             ExecutionMutters(e, now, d);
+            if (_cfg.SceneClips && e.Noticed && d < 45f && seen && now >= e.ShakeNext && e.ShootAt - now > 7000)
+            {
+                // on his knees, afraid: the victim's own, from the execution's set; then down on his knees again (THREEHOUR item 2)
+                e.ShakeNext = now + SceneClips.ExecShakeEveryMs + _rng.Next(4000);
+                ExecClip(ch, SceneClips.ExecShake, me.Handle, () => { if (ENTITY.DOES_ENTITY_EXIST(ch) && !ENTITY.IS_ENTITY_DEAD(ch) && e.Phase == "held") TASK.TASK_START_SCENARIO_IN_PLACE_HASH(ch, Natives.Hash(ExecKneel), -1, true, 0u, -1f, false); });
+            }
             if (e.Noticed && !e.TwistDone && ExecutionTwists(e, men, now))
                 return;
             if (e.Noticed && !e.LastChance && men.Count > 0 && e.ShootAt - now <= 6000 && d < 90f)
@@ -413,6 +430,22 @@ namespace EnrageWestworld.InGame
                 e.Phase = "last";
                 e.PhaseUntil = now + 1800;
             }
+        }
+
+        /// One of the execution's own clips on someone, then `then`; null when it has begun, else why not (and nothing changes).
+        private string ExecClip(int h, string name, int target, Action then)
+        {
+            Expression row = SceneClips.Row(name);
+            if (row == null)
+                return "not proven";
+            int ms;
+            string why = Perform(h, row, target, out ms, then);
+            if (why == null)
+            {
+                _sceneClipsPlayed++;
+                Log.Write("EXECUTION clip: " + row.Clip);
+            }
+            return why;
         }
 
         private static string ExecManName(Execution e, Ped m)

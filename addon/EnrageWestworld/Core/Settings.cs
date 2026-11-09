@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 356;
+        public const int CurrentVersion = 357;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -434,6 +434,7 @@ namespace EnrageWestworld.Core
         public bool DriftingPosters = true;   // [World] the bill outside the sheriff's describes you as the town's rumour has it, true or bent out of shape, and people near hold you up against it (Core/DriftPoster.cs; FIVEDAY R13, settings version 301)
         public bool DimeNovels = true;   // [World] your most-told deed written up as a dime novel (a lurid title in the box), and a month of people near you thinking of having read it (Core/DimeNovel.cs; FIVEDAY R12, settings version 300)
         public bool GoingDry = true;   // [World] 1907: Rhodes and Strawberry dry by local option, the saloon a blind tiger, the law-abiding keeping out (Core/GoingDry.cs; FIVEDAY R27, settings version 316)
+        public bool SceneClips = true;   // [Encounters] the scenes' own clips, proven by the clip walker in game (2026-11-09): the execution's guard and victim, the chain gang, the injured rider, the burial (THREEHOUR item 2; settings version 357)
         public bool WaysideComposed = true;   // [Encounters] with [Mind] ComposedActs: someone in a road scene, between what's said and done, shows what they feel in two or three of the game's own moves (TENHOUR item 13; settings version 344)
         public bool WaysideAnswers = true;   // [Encounters] when you walk up on a road scene, one of them decides what to do about you: carry on, warn you off, call you over, ask for help, or turn on you. The AI model's word if it's on (TENHOUR item 11; settings version 343)
         public bool VigilanceCommittees = true;   // [World] with PosseRides: after a killing, a posse that comes home with nothing can leave the town's angrier men to settle on someone, on the road if you're near, off screen if not (TENHOUR item 4; settings version 341)
@@ -995,6 +996,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 357)
+                    log?.Invoke("Settings: new in this version: [Encounters] SceneClips (on): the scenes' own clips, seen to play in game, in the executions and the road scenes.");
                 if (s.SettingsVersion < 355)
                     log?.Invoke("Settings: new in this version: [World] AllSaintsGraves (on): on All Saints' Day in the south, people go to the tombs.");
                 if (s.SettingsVersion < 354)
@@ -1899,6 +1902,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("CalloutsArthur = " + B(CalloutsArthur) + "   ; by day in a town, out of doors, one of the people near with something against you (you struck or robbed them, they saw you kill, word of your thieving reached them, or you soured them) walks up and says it to your face. Walk off past 12 m and they call you a coward; stay and most put up their fists (fighting them is self-defence); hold a gun on them and they back off. Once a day each");
             b.AppendLine("CalloutsArthurChance = " + CalloutsArthurChance + "   ; percent on each encounter roll while one may happen (five real minutes at least between them)");
             b.AppendLine("CalloutsArthurDraw = " + CalloutsArthurDraw + "   ; percent: an armed hothead calling you out over blood (a beating, a killing, an old grudge) draws on you instead (0 never)");
+            b.AppendLine("SceneClips = " + B(SceneClips) + "   ; the scenes' own clips, seen to play in game: a captor waves you back, the man on his knees shakes, the saved one scrambles off; the chain gang, the injured rider, the burial's preacher and digger");
             b.AppendLine("WaysideComposed = " + B(WaysideComposed) + "   ; with ComposedActs: someone standing in a road scene shows what they feel, between what's said and done, in moves the game has been seen to play");
             b.AppendLine("WaysideAnswers = " + B(WaysideAnswers) + "   ; when you walk up on a road scene, one of them decides what to do about you, from a short list that fits the scene. The AI model's word if it's on, the rules' if not. The armed may turn on you");
             b.AppendLine("Wayside = " + B(Wayside) + "   ; things to come across out of the towns: men fighting by the road, and more: their own people, staged out of your sight, and you can step in or ride on");
