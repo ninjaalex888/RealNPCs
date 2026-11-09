@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The clip walker** (Testing row "Try every unproven clip in turn"; FIVEDAY2 item 6). Every clip in the catalogue that no log has shown playing, played in turn on the nearest free person, each result in the log as `WAKE anim`: whether it started, how long it ran and how far it moved them. One session of it proves the clips that the things to come across will use.
+
 - **One way to play a row of the catalogue** (FIVEDAY2 item 7). What the game is proven able to show was a table nothing played from. `Perform` takes a row and a person and plays it the proven way (a gesture on the upper body, a clip over the whole body, a scenario, a line in their voice, a look or a turn), holds the animation set while it plays, lets it go after, and fails soft if the game hasn't got it. Thirty-four candidate clips from the game's own encounters join the table marked not yet seen, and stay out of use until a log has shown them playing. F7 `TEST perform:`.
 
 - **Name cards cost less** (FIVEDAY2 0g). They were the costliest thing RealNPCs did in 47 of the 61 spells it ran over its frame budget in Lex's last long session. Every piece of text on screen asked the game for the frame number four times, and now it asks once a tick, which helps everything RealNPCs draws. The wall check, an expensive ray, is one a frame, and far cards check less often. A crowd's names are worked out a few at a time rather than all at once every three seconds. Bodies are checked one frame in four. The small line under a name shows on the nearest eight within 18 m, where it can be read.

@@ -104,6 +104,20 @@ namespace EnrageWestworld.InGame
             public readonly List<string> Results = new List<string>();
         }
 
+        // The clip walker (FIVEDAY2 item 6): every row of the catalogue no log has shown playing, from the one table, so a clip added
+        // to it is walked without touching this. Each result goes in the log as WAKE anim; a row that's marked played afterwards is
+        // proven from that log, never offline.
+        private static AnimClip[] _walker;
+
+        private static AnimClip[] WalkerClips()
+        {
+            if (_walker == null)
+                _walker = Catalogue.All.Where(x => !x.Proven && x.HasClip)
+                                   .Select(x => A(x.Channel == "gesture" ? "gesture" : "clip", x.Dict(false), x.Clip, x.Channel == "gesture" ? Upper : Once, false, x.Dict(true) != x.Dict(false) ? x.Dict(true) : null, x.Dict(true) != x.Dict(false) ? x.Clip : null))
+                                   .ToArray();
+            return _walker;
+        }
+
         private AnimTestRun _animTest;
         private Action _aAnimTest;
         private static readonly uint TestRevolver = Natives.Hash("WEAPON_REVOLVER_CATTLEMAN");
@@ -127,7 +141,7 @@ namespace EnrageWestworld.InGame
             _animTest = new AnimTestRun
             {
                 Handle = h, Name = who != null ? who.Name : Grammar.UpperFirst(Director.Kind(p, woman)), Woman = woman, Which = which,
-                Clips = which == "despair" ? DespairClips : StageClips, NextAt = now + 1600
+                Clips = which == "despair" ? DespairClips : which == "walker" ? WalkerClips() : StageClips, NextAt = now + 1600
             };
             // borrowed for the run, so the game stops giving them orders of its own between clips (Lex, 2026-10-27: he went
             // back to his day between them); someone another script already holds is borrowed lightly (their state left)

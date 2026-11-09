@@ -835,6 +835,8 @@ namespace EnrageWestworld.InGame
                     return TimesTalkTest(now, out said);   // WestworldScript.MindTalk.cs (Run 3, item 2)
                 case "ring":
                     return RingMark(now, out said);   // WestworldScript.HeldRing.cs
+                case "clips":
+                    return AnimTestStart("walker", now);   // every clip no log has shown playing, each on the nearest free person (WestworldScript.AnimTest.cs)
                 case "allies":
                     skipped = "the fondness (the nearest named person counts as your friend) and the ally's own nerve";
                     return AlliesTest(now, out said);   // WestworldScript.Allies.cs
