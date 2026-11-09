@@ -47,6 +47,8 @@ namespace EnrageWestworld.InGame
             public int About;           // the one the act is about (the friend, the talker, the foe), for its thought's name; never read as Toward (MindTalkable)
             public bool ThoughtDue;     // a get-up whose act's thought waits for the real start, once up (S1Send; the no-model run, item 1)
             public string ThoughtWhy;   // ... and the choice's why it was chosen for, kept from then
+            public Vector3 CheckedFrom; // the control ring's check on a walk (FIVEDAY2 item 2): where they were when last looked at, when next, how many times told again
+            public int CheckAt, Reorders;
         }
 
         private readonly List<MindAct> _mindActs = new List<MindAct>();
@@ -644,6 +646,8 @@ namespace EnrageWestworld.InGame
                     if (a.Spot)
                         if (Log.Debug) Log.Detail("MIND acts: " + a.Name + (PED.IS_PED_USING_ANY_SCENARIO(h) ? " took a spot (scenario type " + TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(h) + ")" : " found no spot to take"));
                 }
+                if (!gone && !a.Stage1 && _cfg.ControlRingKeepAt && RingOn && _held.ContainsKey(h))
+                    RingKeepAt(a, h, now);   // given up half way: the order again (WestworldScript.HeldRing.cs)
                 bool arrived = !gone && a.Toward != 0 && ENTITY.DOES_ENTITY_EXIST(a.Toward) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(ENTITY.GET_ENTITY_COORDS(a.Toward, true, true)) < 2f;
                 bool there = !gone && a.To != default(Vector3) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(a.To) < 3f;
                 if (a.S1Begun && (arrived || (there && !a.Arrived)) && S1GameHasThem(h))

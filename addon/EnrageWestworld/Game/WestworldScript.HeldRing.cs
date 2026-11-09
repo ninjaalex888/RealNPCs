@@ -51,7 +51,7 @@ namespace EnrageWestworld.InGame
         private readonly RingGuard _ringGuard = new RingGuard();
         private readonly RingGaitWatch _ringGait = new RingGaitWatch();
         private RingReach _ringReach;
-        private int _ringActsThisMinute, _ringActsLastMinute, _ringMinuteAt, _ringDrawnIn;
+        private int _ringActsThisMinute, _ringActsLastMinute, _ringMinuteAt, _ringDrawnIn, _ringReorders, _ringReorderChecks;
 
         private bool HeldOn { get { return _cfg != null && (_cfg.HeldRing || _cfg.ControlRing) && _cfg.MindLive && _cfg.MindActs; } }
         private float HeldInMetres { get { return RingOn ? _ringReach.In : Math.Max(4f, Math.Min(20f, _cfg.HeldRingMetres)); } }
@@ -288,6 +288,35 @@ namespace EnrageWestworld.InGame
             return lost;
         }
 
+        /// An act under way for someone the ring holds, every few seconds: stopped short of where they were sent, they're told again (never a scenario, never over a fight, a flee or a fall).
+        private void RingKeepAt(MindAct a, int h, int now)
+        {
+            if (a.Spot || a.Arrived || a.Seated || a.Then != 0 || (now < a.CheckAt && a.CheckAt - now <= Ring.CheckWalkMs))
+                return;
+            Vector3 pos = ENTITY.GET_ENTITY_COORDS(h, true, true);
+            bool first = a.CheckAt == 0;
+            float moved = first ? 99f : pos.DistanceTo(a.CheckedFrom);
+            a.CheckedFrom = pos;
+            a.CheckAt = now + Ring.CheckWalkMs;
+            _ringReorderChecks++;
+            if (first || !Ring.Stalled(moved, a.Reorders) || PED.IS_PED_USING_ANY_SCENARIO(h) || !CanDirect(new Ped(h)) || _director.Involves(h))
+                return;
+            if (a.To != default(Vector3))
+            {
+                Vector3 to = a.To;
+                TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, to.X, to.Y, to.Z, 1f, -1, a.Arrive != null ? 2.5f : 1f, 0, 0f);
+            }
+            else if (a.Toward != 0 && ENTITY.DOES_ENTITY_EXIST(a.Toward))
+                TASK.TASK_GO_TO_ENTITY(h, a.Toward, 20000, 1f, a.Joining ? 1.3f : 1.4f, 0f, 0);
+            else if (a.Kind == "held")
+                TASK.TASK_WANDER_IN_AREA(h, pos.X, pos.Y, pos.Z, 6f, 2f, 5f, 0);
+            else
+                return;   // a look, a stand: nothing that goes anywhere
+            a.Reorders++;
+            _ringReorders++;
+            Log.Detail("HELD: " + a.Name + " had stopped short, told again (" + a.Reorders + " of " + Ring.MostReorders + ")");
+        }
+
         /// Nothing the mind chose could be done: the nearest of the game's own spots within 10 m for a while, else a stroll
         /// about where they stand. Counted as one of the mind's acts, so the step lets them go when it's over.
         private void HeldFill(int h, MindWho w, Held hd, int now, string lost)
@@ -363,7 +392,7 @@ namespace EnrageWestworld.InGame
                         acting++;
                 }
             }
-            string gauge = RingOn ? "; ring " + _ringGait.Settled + " " + (int)_ringReach.In + " m, at most " + _ringReach.Most + "; " + _ringActsLastMinute + " decisions last minute; a step " + _ringGuard.AverageMicros + " us on average, peak " + _ringGuard.PeakMicros + " us (budget " + RingGuard.AverageBudget + " / " + RingGuard.PeakBudget + "); guard " + _ringGuard.Scale.ToString("0.00") + ", drawn in " + _ringGuard.Shrinks + " times, eased " + _ringGuard.Eases + "; " + _ringDrawnIn + " let go as it drew in" : "";
+            string gauge = RingOn ? "; ring " + _ringGait.Settled + " " + (int)_ringReach.In + " m, at most " + _ringReach.Most + "; " + _ringActsLastMinute + " decisions last minute; a step " + _ringGuard.AverageMicros + " us on average, peak " + _ringGuard.PeakMicros + " us (budget " + RingGuard.AverageBudget + " / " + RingGuard.PeakBudget + "); guard " + _ringGuard.Scale.ToString("0.00") + ", drawn in " + _ringGuard.Shrinks + " times, eased " + _ringGuard.Eases + "; " + _ringDrawnIn + " let go as it drew in; " + _ringReorders + " told again of " + _ringReorderChecks + " checks" : "";
             return (RingOn ? "control ring: " : "held ring: ") + held + " of " + inRing + " named within " + (int)HeldInMetres + " m held" + (inRing > 0 ? " (" + (100 * held / inRing) + "%)" : "") + ", " + acting + " of them at an act or a spot; " +
                    _heldStarts + " held this session, " + _heldChained + " acts chained, " + _heldFills + " spots or strolls, " + _heldEnds + " let go" +
                    (_heldEndWhy.Count > 0 ? " (" + string.Join(", ", _heldEndWhy.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value)) + ")" : "") + (_heldLast != null ? "; last: " + _heldLast : "") + gauge;

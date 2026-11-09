@@ -28,6 +28,16 @@ namespace EnrageWestworld.Core
         public const int DefaultMost = 12, MostHeld = 20, LeastHeld = 2;
         public const float WalkBelow = 2.6f, TrotBelow = 6.0f;   // metres a second under the saddle: a horse walks at about 2, trots at about 5, canters from about 8
 
+        // ---- kept at it (FIVEDAY2 item 2): the game takes people back between and during our tasks, and a walk given up half way reads as a mind going blank
+        public const int CheckWalkMs = 2500, MostReorders = 3;
+        public const float StallMetres = 0.5f;
+
+        /// Whether someone sent somewhere has stopped getting there, so the order wants giving again. Only so many times: past that the way's blocked, or the game wants them for something else.
+        public static bool Stalled(float moved, int reorders)
+        {
+            return moved < StallMetres && reorders < MostReorders;
+        }
+
         /// How you're moving. Any vehicle counts as fast: a seat on a wagon or a train takes you past people, and you can't stop to look.
         public static RingGait GaitOf(bool mounted, bool inVehicle, float speed)
         {

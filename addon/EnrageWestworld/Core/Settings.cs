@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 330;
+        public const int CurrentVersion = 331;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -102,6 +102,7 @@ namespace EnrageWestworld.Core
         public int ActThoughtGapSeconds = 15;    // never within this many seconds of another, different thought of theirs (45 as built; a repeat of the same line doesn't count)
         public bool HeldRing = false;            // with MindActs: the named near you are held, one act straight into the next (Lex, 2026-11-02: a tighter ring, held longer; Game/WestworldScript.HeldRing.cs); off while it's tried; settings version 192
         public bool ControlRing = true;          // [Mind] the control ring (FIVEDAY2 item 1; Lex, 2026-11-08: build it, test the frame cost after): the held ring wider, by how you're moving, with a guard on what it costs (Core/Ring.cs; Game/WestworldScript.HeldRing.cs; settings version 323)
+        public bool ControlRingKeepAt = true;    // [Mind] someone the ring holds who stops getting where they were sent is given the order again (FIVEDAY2 item 2; settings version 331)
         public float ControlRingMetres = Ring.DefaultMetres;   // ... how near you on foot, in metres (6-25); less in the saddle, none at a gallop
         public int ControlRingMost = Ring.DefaultMost;         // ... how many at once on foot (2-20)
         public float HeldRingMetres = 12f;       // the held ring's reach (4-20 m); let go 13 m beyond it
@@ -961,6 +962,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 331)
+                    log?.Invoke("Settings: new in this version: [Mind] ControlRingKeepAt (on): someone the ring holds who stops short is given the order again.");
                 if (s.SettingsVersion < 330)
                     log?.Invoke("Settings: new in this version: [Ticker] ThoughtsFollowOn (on): someone's next thoughts pick up from what just happened to them.");
                 if (s.SettingsVersion < 329)
@@ -1601,6 +1604,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("ActThoughtEachSeconds = " + ActThoughtEachSeconds + "   ; with ActThoughts: one person's thought with what they chose at most once in this many seconds (20 to 600)");
             b.AppendLine("ActThoughtGapSeconds = " + ActThoughtGapSeconds + "   ; with ActThoughts: none within this many seconds of another, different thought of theirs (0 to 120)");
             b.AppendLine("ControlRing = " + B(ControlRing) + "   ; with MindActs: the people the mind knows near you are kept at what their minds choose, one act straight into the next, instead of the game taking them back between acts; less in the saddle, nobody at a gallop or on a train; draws itself in if it costs too much (F7: TEST mind acts). false: the older HeldRing below, if that is on");
+            b.AppendLine("ControlRingKeepAt = " + B(ControlRingKeepAt) + "   ; with ControlRing: someone held who stops getting where they were sent is given the order again, a few times at most; never over a fight, a flee or a fall");
             b.AppendLine("ControlRingMetres = " + F(ControlRingMetres) + "   ; with ControlRing: how near you, in metres, on foot (6 to 25)");
             b.AppendLine("ControlRingMost = " + ControlRingMost + "   ; with ControlRing: how many people at once, on foot (2 to 20)");
             b.AppendLine("HeldRing = " + B(HeldRing) + "   ; (in testing) with MindActs: the people the mind knows within HeldRingMetres of you are held: when one of their acts ends the next begins at once (what their mind chose, else what it ranked next, else the nearest seat or spot, else a short stroll) instead of the game taking them back. Let go 13 m farther out, after HeldRingMinutes, or the moment a gun, a fight, a scene, Talk, the law or enRAGE has a claim on them");
