@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Found after the fact** (with `[Encounters] Wayside`; FIVEDAY2 item 20; a Testing row for each). Coming on the end of something: two men dead by the road, a woman alone in the wilds, grave robbers who've heard your horse. Go through the pockets, say a word over them, or leave them. Nobody real dies of this: they're strangers the world made for it.
+  - Why it reads true: most of what happens to people happens when nobody is watching, and coming on the end of something makes the mind write the rest. Being too late is its own kind of story.
+
 - **Camps and cranks** (with `[Encounters] Wayside`; FIVEDAY2 item 19; a Testing row for each). A moonshiner's camp, where you can buy a jar or make an enemy. An old man who's been about to strike it for nineteen years. A sharpshooter taking bets. And at sunup, two men settling it with pistols and their seconds looking on, whom you can step between; one of them doesn't walk home if you don't.
   - Why it reads true: the people who live furthest out are the ones who went looking for something, and the first thing any of them wants is someone new to tell about it. Some are glad of you. Some have reason not to be.
 

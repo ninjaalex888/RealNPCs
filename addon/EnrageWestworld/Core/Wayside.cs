@@ -83,7 +83,7 @@ namespace EnrageWestworld.Core
         /// The kinds there are. Each item's table adds itself here.
         public static IEnumerable<WaysideKind> All
         {
-            get { return Fights.Concat(Pursuit).Concat(Trouble).Concat(Camps); }
+            get { return Fights.Concat(Pursuit).Concat(Trouble).Concat(Camps).Concat(Found); }
         }
 
         public static WaysideKind Of(string id)
