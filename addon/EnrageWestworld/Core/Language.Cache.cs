@@ -29,7 +29,7 @@ namespace EnrageWestworld.Core
                 return null;
             var b = new StringBuilder(96);
             b.Append(r.Kind).Append('|').Append(r.Name).Append('|').Append(r.Feeling).Append('|').Append(r.Strength).Append('|').Append(r.About).Append('|').Append(r.Shows);
-            b.Append('|').Append(r.Need).Append('|').Append(r.Worry).Append('|').Append(r.Place).Append('|').Append(DayPart(r.Hour)).Append('|').Append(r.Weather).Append('|').Append(r.Mood).Append('|').Append(r.Year);
+            b.Append('|').Append(r.Need).Append('|').Append(r.Worry).Append('|').Append(r.Place).Append('|').Append(DayPart(r.Hour)).Append('|').Append(WeatherTruth.Words(r.Weather, WeatherTruth.Now)).Append('|').Append(r.Mood).Append('|').Append(r.Year);
             foreach (string h in r.Beliefs)
                 b.Append('|').Append(h);   // a belief flipped is a new situation
             if (r.Varied)

@@ -62,8 +62,8 @@ namespace EnrageWestworld.Core
             {
                 int k = (i + t) % options.Length;
                 int h = Hash(options[k] ?? "");
-                if (FreshSaid.Contains(h))
-                    continue;
+                if (FreshSaid.Contains(h) || !WeatherTruth.Fits(options[k]))
+                    continue;   // (a line the weather rules out isn't marked as said: what's recorded here is what gets said)
                 if (t > 0)
                     FreshSwaps++;
                 FreshSaid.Add(h);

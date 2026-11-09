@@ -216,6 +216,23 @@ namespace EnrageWestworld.Core
             return c;
         }
 
+        // The pools' lines come round again and again, the patterns cost about 70 microseconds a line, and a scene can pick dozens in one
+        // frame: so each line is read once. Names filled in make new strings all the time, hence the ceiling.
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, Claim> SaysRead = new System.Collections.Concurrent.ConcurrentDictionary<string, Claim>();
+        private const int SaysReadMost = 8000;
+
+        private static Claim SaysOf(string line)
+        {
+            Claim c;
+            if (SaysRead.TryGetValue(line, out c))
+                return c;
+            c = ClaimsOf(line, Says);
+            if (SaysRead.Count >= SaysReadMost)
+                SaysRead.Clear();
+            SaysRead[line] = c;
+            return c;
+        }
+
         /// The first thing claimed that isn't so under this sky, or None.
         private static Claim Wrong(Claim c, SkyNow s)
         {
@@ -243,7 +260,7 @@ namespace EnrageWestworld.Core
 
         public static bool Fits(string line, SkyNow s)
         {
-            return s == null || string.IsNullOrEmpty(line) || Wrong(ClaimsOf(line, Says), s) == Claim.None;
+            return s == null || string.IsNullOrEmpty(line) || Wrong(SaysOf(line), s) == Claim.None;
         }
 
         /// The index to use in a pool: the one given if it fits, else the next that does. If none does, the one given.
@@ -264,7 +281,7 @@ namespace EnrageWestworld.Core
             SkyNow s = Now;
             if (s == null || string.IsNullOrEmpty(text))
                 return null;
-            Claim wrong = Wrong(ClaimsOf(text, Says) | ClaimsOf(text, Loose), s);
+            Claim wrong = Wrong(SaysOf(text) | ClaimsOf(text, Loose), s);
             return wrong == Claim.None ? null : wrong.ToString();
         }
 

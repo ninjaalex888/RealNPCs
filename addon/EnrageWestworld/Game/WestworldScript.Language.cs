@@ -95,7 +95,7 @@ namespace EnrageWestworld.InGame
                 return null;
             string key = Language.CacheKey(r);
             string kept = _engine.LanguageAnswers.Cached(key);
-            if (kept != null && kept != written)
+            if (kept != null && kept != written && WeatherTruth.WrongIn(kept) == null)   // written under another sky, it may not be so now (Core/WeatherTruth.cs)
             {
                 string was;
                 if (_langShownLast.TryGetValue(p.Id, out was) && was == kept)
