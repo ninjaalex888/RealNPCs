@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 327;
+        public const int CurrentVersion = 328;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -70,6 +70,7 @@ namespace EnrageWestworld.Core
         public bool ThoughtMarker = true;
         public bool ThoughtsOverHeads = true;
         public float ThoughtsOverHeadScale = 0.24f;
+        public bool Asides = true;                // [Ticker] while someone near you talks, whoever's listening may think something about it, over their head (Core/Asides.cs; FIVEDAY2 item 25; settings version 328)
         public int ThoughtsAtOnce = 3;            // [Ticker] how many people's thoughts may be up over their heads at once (FIVEDAY2 item 24; settings version 327); 1: singly, as it was
         public bool TickerShowsScene = true;   // the bar names the street scene playing out near you, while it plays (Lex, 2026-10-30; settings version 122)
         public bool ScenesOnTicker = true;        // a street scene's lines on the ticker while it plays within ScenesOnTickerMetres (2026-10-29, Lex)
@@ -957,6 +958,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 328)
+                    log?.Invoke("Settings: new in this version: [Ticker] Asides (on): while someone talks near you, the person listening may think something about it.");
                 if (s.SettingsVersion < 327)
                     log?.Invoke("Settings: new in this version: [Ticker] ThoughtsAtOnce (3): up to three people's thoughts over their heads at once.");
                 if (s.SettingsVersion < 326)
@@ -1672,6 +1675,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("ThoughtMarker = " + B(ThoughtMarker) + "   ; a small gold mark over the person whose thought is on the ticker");
             b.AppendLine("ThoughtsOverHeads = " + B(ThoughtsOverHeads) + "   ; the thoughts of people near you show above their head in small type, not on the bar (the news and the rest stay on the bar; a thought whose thinker is out of view is passed over, never put on the bar)");
             b.AppendLine("ThoughtsOverHeadScale = " + F(ThoughtsOverHeadScale) + "   ; text size of thoughts above heads (TickerScale is the bar's)");
+            b.AppendLine("Asides = " + B(Asides) + "   ; while someone near you talks, the person listening may have a thought about it over their head (needs ThoughtsAtOnce above 1)");
             b.AppendLine("ThoughtsAtOnce = " + ThoughtsAtOnce + "   ; how many people's thoughts may be up over their heads at once, arriving one after another (1 to 4; 1: singly, as it was; needs ThoughtsOverHeads)");
             b.AppendLine("TickerShowsScene = " + B(TickerShowsScene) + "   ; while a street scene plays out within 40 m, the bar at the bottom says what is going on and who is in it (\"Nearby: ...\")");
             b.AppendLine("ScenesOnTicker = " + B(ScenesOnTicker) + "   ; what people say near you (a street scene, a hello, the doctor, the law) shows as they say it in the subtitle box, the game's way (their name, the line); never on the bar; [Output] Subtitles = off hides it");

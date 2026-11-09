@@ -235,6 +235,7 @@ namespace EnrageWestworld.InGame
             ApplySettings();
             LoadVoices();
             Feed.Thinking = (who, text, ped) => _ticker.Push(who + ", thinking", text, "near", ped);
+            Feed.Spoke = ListenersThink;   // WestworldScript.Asides.cs
             Log.Write("0.4 features: ticker " + (_cfg.Ticker ? "on" : "off") + ", news to " + _cfg.NewsRoute + ", reader key " + _readerKey +
                       ", reveries " + (_cfg.Reveries ? _cfg.ReturnChance + "%" : "off") + ", stalkers " + (_cfg.Stalkers ? _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min" : "off") + ".");
             Log.Write("West World " + (_cfg.WestWorld ? "on (awakening " + _cfg.AwakeningShare + "%, breakdown " + _cfg.AwakeningBreakdown + "%, despair " + _cfg.AwakeningDespair + "%)" : "off") +
@@ -669,6 +670,8 @@ namespace EnrageWestworld.InGame
             float metres = !toYou && handle != 0 && ENTITY.DOES_ENTITY_EXIST(handle) ? ENTITY.GET_ENTITY_COORDS(handle, true, true).DistanceTo(Game.Player.Character.Position) : -1f;
             bool shown = toYou ? Feed.ToYouCaption(label, text, Math.Max(1500, ms)) : Feed.Overheard(label, text, Math.Max(1500, ms), handle, metres);   // to the player: the top box; else the one under it (a newer caption from someone else, farther off, waits its turn)
             Log.Detail("CAPTION " + (toYou ? "(to you) " : "") + label + ": " + text + (shown ? "" : " (no subtitle: [Output] Subtitles off, or another speaker's caption still new)"));
+            if (!toYou && handle != 0)
+                ListenersThink(handle, label, text, ms);   // and whoever is listening thinks something about it (WestworldScript.Asides.cs)
         }
 
         private void FrameImpl(int now)

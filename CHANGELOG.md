@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **What they say and what they think** (`[Ticker] Asides`, on; settings version 328; FIVEDAY2 item 25; Testing row "Someone talks and someone listening thinks"). While someone near you is talking, the person standing nearest them may have a private thought about it over their head: read off what was said (begging, a threat, an insult, a boast, grief, thanks, money, a question) and by the listener's temper. Not for lines said to you.
+  - Why it reads true: what's said and what's thought are rarely the same, and the distance between them is where a person lives.
+
 - **Several thoughts at once** (`[Ticker] ThoughtsAtOnce`, 3; settings version 327; FIVEDAY2 item 24; Testing row "Several thoughts at once"). Up to three people's thoughts over their heads at the same time instead of one every fifteen seconds: arriving one after another, nearest first and a fight's before anyone's, each kept from sitting on another. The extra boxes are silent and three lines at most; F7's `TEST thoughts:` says how many came up and what drawing them cost. 1 puts it back as it was.
   - Why it reads true: a street is a lot of people thinking at once. One box at a time reads as one person being switched on.
 

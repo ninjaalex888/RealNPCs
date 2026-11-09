@@ -146,6 +146,18 @@ namespace EnrageWestworld.Core
             _side.Remove(line);
         }
 
+        /// A private thought while someone else is talking (FIVEDAY2 item 25): up at once beside whatever's showing, in place of the oldest if there's no room. It's what they think as it's said, so it can't wait its turn.
+        public bool Aside(string label, string text, string key, int handle, int forMs, int now)
+        {
+            if (Several < 2 || string.IsNullOrEmpty(text) || handle == 0 || IsUp(key, handle))
+                return false;
+            if (_side.Count >= Several - 1)
+                _side.RemoveAt(0);
+            _side.Add(new TickerLine { Label = label, Text = text.Trim(), Kind = "near", Key = key, Handle = handle, ShownAt = now, Until = now + Math.Max(2500, forMs) });
+            _sideNextAt = Math.Max(_sideNextAt, now + StaggerMs);
+            return true;
+        }
+
         /// The next new side thought may come at once, and everyone may think again (the Testing row).
         public void SidesNow()
         {

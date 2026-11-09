@@ -158,6 +158,9 @@ namespace EnrageWestworld.InGame
 		/// How that voice is going (ped): 1 playing or done, 0 still being made, -1 failed (the recorded remark then plays).
 		public static Func<int, int> CloneState;
 		private static object _clonedGroup;
+		/// A line said by someone near, as it shows, once a saying (ped, speaker, the whole line, how long it's up): someone listening may think something about it (WestworldScript.Asides.cs).
+		public static Action<int, string, string, int> Spoke;
+		private static object _spokeGroup;
 		private const int CloneWaitMs = 3500, ClonePollMs = 250;   // the subtitle waits this long at most for the voice (as SpeechCaption's VoiceCaptionWaitMs)
 
 		/// ahead: the player asked for it (a flirt), so it goes before everything already waiting, in the order given.
@@ -345,6 +348,18 @@ namespace EnrageWestworld.InGame
 						SubtitlesShown++;
 						LastSubtitle = sub;
 						Log.Write("SUBTITLE " + sub + " (" + (!string.IsNullOrEmpty(words) ? "the recorded words" : "the written line") + ")");
+					}
+					if (Spoke != null && line.Ped != 0 && !line.ToYou && line.Full != null && line.Group != null && !ReferenceEquals(line.Group, _spokeGroup))
+					{
+						_spokeGroup = line.Group;
+						try
+						{
+						Spoke(line.Ped, line.Speaker, line.Full, ms);
+						}
+						catch (Exception ex)
+						{
+						Log.Write("Spoke: " + ex.Message);
+						}
 					}
 					_lastShownAt = gameTime;
 					_nextAt = gameTime + ms;
