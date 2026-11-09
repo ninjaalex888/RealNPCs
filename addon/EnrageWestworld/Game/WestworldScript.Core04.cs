@@ -32,6 +32,7 @@ namespace EnrageWestworld.InGame
         /// Game minutes between a new thought for a counter keeper or a resident: 45, about the 90 real seconds the
         /// ticker waits before asking again (it was 600, so the same thought came back for 20 minutes).
         private const long ThoughtEvery = 45;
+        private long EveryNow { get { return _ticker.Several > 1 ? 30 : ThoughtEvery; } }   // game minutes (FIVEDAY2 item 24: thirty, a minute of real time, when several can be up)
 
         /// Closer than this, a person is right beside you: every other ticker turn goes to them (TickerBrain).
         private const float BesideMetres = 3.5f;
@@ -258,6 +259,8 @@ namespace EnrageWestworld.InGame
             Feed.SubtitleMode = _cfg.Subtitles;
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
             _ticker.GapMs = _cfg.TickerGapSeconds * 1000;
+            _ticker.Several = _cfg.ThoughtsOverHeads ? _cfg.ThoughtsAtOnce : 1;   // beside the main line only over heads: the bar has room for one (FIVEDAY2 item 24)
+            _ticker.ThoughtCacheMs = _ticker.Several > 1 ? 60000 : 90000;         // with room for more, each person moves on sooner
             JoinIn.BrawlBoost = _cfg.BrawlJoinBoost / 100f;   // onlookers readier to join (Lex, 2026-11-01)
             JoinIn.BraveryPull = Bravery.JoinPull(_cfg.Bravery);   // [World] Bravery: only how readily onlookers join a fight now (Lex, 2026-11-04)
             ActThoughts.PersonGapMs = _cfg.ActThoughtEachSeconds * 1000;   // the act thoughts' limits (Lex, 2026-11-01: livelier)
@@ -718,6 +721,7 @@ namespace EnrageWestworld.InGame
                 Safe("aloud", () => AloudAsk(_tickerLine, now));   // said aloud in their own voice, if it fits (WestworldScript.Aloud.cs)
                 if (_tickerLine != was && _tickerLine != null && _tickerLine.Kind == "near" && _tickerLine.Handle != 0)
                     NoteTheirThought(_tickerLine.Handle, now, _tickerLine.Text);   // a thought over someone came up: no act's or turn's thought of theirs on top of it (WestworldScript.ActThoughts.cs)
+                SideThoughtsCame(now);   // and the same for those beside it (WestworldScript.OverHead.cs)
             }
             TickerLine line = _tickerLine;
             // a thought goes over its thinker's head (WestworldScript.OverHead.cs), under its own guard, and with
@@ -725,7 +729,13 @@ namespace EnrageWestworld.InGame
             // a moment the ticker moves on; anything else (the news, the summary) on the bar
             _overHeadDrawn = false;
             if (_aOverHead == null)
-                _aOverHead = () => _overHeadDrawn = DespairOverHead(_now) || ThoughtOverHead(_tickerLine, _now);   // despair's words first, while they last (WestworldScript.Despair.cs)
+                _aOverHead = () =>
+                {
+                    bool despair = DespairOverHead(_now);   // despair's words first, while they last (WestworldScript.Despair.cs), and on their own
+                    _overHeadDrawn = despair || ThoughtOverHead(_tickerLine, _now);
+                    if (!despair)
+                        SidesOverHead(_now);   // the others thinking at the same time (FIVEDAY2 item 24)
+                };
             Draw.Part = Draw.PartThought;
             Safe("thoughts over heads", _aOverHead);
             Draw.Part = Draw.PartBar;
@@ -1041,7 +1051,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 }
                 // right beside you: a new thought every 15 game minutes (30 s), to match the ticker's quicker turn
-                long every = d < BesideMetres ? 15 : ThoughtEvery;
+                long every = d < BesideMetres ? 15 : EveryNow;
                 FolkRef a = _bridge.AcquaintanceAt(h);
                 if (a != null && !string.IsNullOrEmpty(a.Name))
                 {
@@ -1113,7 +1123,7 @@ namespace EnrageWestworld.InGame
                     // regular counts each time you meet them, and may know you again.
                     Person rp = _engine.PersonOfResident(res);
                     int met = res.Regular ? NoteRegularMet(res, stranger.Handle, rp) : 0;
-                    long every = sd < BesideMetres ? 15 : ThoughtEvery;
+                    long every = sd < BesideMetres ? 15 : EveryNow;
                     _near.Add(new NearThought
                     {
                         Key = res.Id,

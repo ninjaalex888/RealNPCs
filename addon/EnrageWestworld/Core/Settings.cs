@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 326;
+        public const int CurrentVersion = 327;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -70,6 +70,7 @@ namespace EnrageWestworld.Core
         public bool ThoughtMarker = true;
         public bool ThoughtsOverHeads = true;
         public float ThoughtsOverHeadScale = 0.24f;
+        public int ThoughtsAtOnce = 3;            // [Ticker] how many people's thoughts may be up over their heads at once (FIVEDAY2 item 24; settings version 327); 1: singly, as it was
         public bool TickerShowsScene = true;   // the bar names the street scene playing out near you, while it plays (Lex, 2026-10-30; settings version 122)
         public bool ScenesOnTicker = true;        // a street scene's lines on the ticker while it plays within ScenesOnTickerMetres (2026-10-29, Lex)
         public float ScenesOnTickerMetres = 12f;   // was 30 before settings version 120 (Lex, 2026-10-30: a mourner's words subtitled from 26 m away)
@@ -956,6 +957,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 327)
+                    log?.Invoke("Settings: new in this version: [Ticker] ThoughtsAtOnce (3): up to three people's thoughts over their heads at once.");
                 if (s.SettingsVersion < 326)
                     log?.Invoke("Settings: new in this version: [Stalkers] RevenantsHunt (on), RevenantHuntChance (30): someone you killed who comes back may try to kill you.");
                 if (s.SettingsVersion < 325)
@@ -1476,6 +1479,7 @@ namespace EnrageWestworld.Core
             TickerWidth = Math.Max(0.2f, Math.Min(1f, TickerWidth));
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
             ThoughtsOverHeadScale = Math.Max(0.12f, Math.Min(0.6f, ThoughtsOverHeadScale));
+            ThoughtsAtOnce = Math.Max(1, Math.Min(4, ThoughtsAtOnce));
             ScenesOnTickerMetres = Math.Max(5f, Math.Min(80f, ScenesOnTickerMetres));
             PanelTimeScale = Math.Max(0f, Math.Min(1f, PanelTimeScale));
             PadSettings = PadChord.Normal(PadSettings) ?? "RB+DPadUp";   // one that can't be read: the default (the panel is how a controller reaches everything)
@@ -1668,6 +1672,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("ThoughtMarker = " + B(ThoughtMarker) + "   ; a small gold mark over the person whose thought is on the ticker");
             b.AppendLine("ThoughtsOverHeads = " + B(ThoughtsOverHeads) + "   ; the thoughts of people near you show above their head in small type, not on the bar (the news and the rest stay on the bar; a thought whose thinker is out of view is passed over, never put on the bar)");
             b.AppendLine("ThoughtsOverHeadScale = " + F(ThoughtsOverHeadScale) + "   ; text size of thoughts above heads (TickerScale is the bar's)");
+            b.AppendLine("ThoughtsAtOnce = " + ThoughtsAtOnce + "   ; how many people's thoughts may be up over their heads at once, arriving one after another (1 to 4; 1: singly, as it was; needs ThoughtsOverHeads)");
             b.AppendLine("TickerShowsScene = " + B(TickerShowsScene) + "   ; while a street scene plays out within 40 m, the bar at the bottom says what is going on and who is in it (\"Nearby: ...\")");
             b.AppendLine("ScenesOnTicker = " + B(ScenesOnTicker) + "   ; what people say near you (a street scene, a hello, the doctor, the law) shows as they say it in the subtitle box, the game's way (their name, the line); never on the bar; [Output] Subtitles = off hides it");
             b.AppendLine("ScenesOnTickerMetres = " + F(ScenesOnTickerMetres) + "   ; what people say within this many metres shows as a subtitle (5-80)");

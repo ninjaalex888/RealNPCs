@@ -872,6 +872,13 @@ namespace EnrageWestworld.InGame
                 case "timestalk":
                     skipped = "the street's own timing, the reasons' turn-taking and the roll a pair and a day";
                     return TimesTalkTest(now, out said);   // WestworldScript.MindTalk.cs (Run 3, item 2)
+                case "several":
+                    if (_cfg.ThoughtsAtOnce <= 1 || !_cfg.ThoughtsOverHeads)
+                        return "[Ticker] ThoughtsAtOnce is 1, or ThoughtsOverHeads off";
+                    _ticker.SidesNow();
+                    _nextTickerUpdate = 0;
+                    said = "the next thoughts are coming up beside the main one";
+                    return null;
                 case "ring":
                     return RingMark(now, out said);   // WestworldScript.HeldRing.cs
                 case "clips":

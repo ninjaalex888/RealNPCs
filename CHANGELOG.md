@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Several thoughts at once** (`[Ticker] ThoughtsAtOnce`, 3; settings version 327; FIVEDAY2 item 24; Testing row "Several thoughts at once"). Up to three people's thoughts over their heads at the same time instead of one every fifteen seconds: arriving one after another, nearest first and a fight's before anyone's, each kept from sitting on another. The extra boxes are silent and three lines at most; F7's `TEST thoughts:` says how many came up and what drawing them cost. 1 puts it back as it was.
+  - Why it reads true: a street is a lot of people thinking at once. One box at a time reads as one person being switched on.
+
 - **The hunt** (`[Stalkers] RevenantsHunt`, on; `RevenantHuntChance` 30; settings version 326; FIVEDAY2 item 13; Testing row "Someone you killed comes to kill you"). Someone you killed who has come back may now try to kill you, once they're within 25 m and they've stayed a while: likelier if they held something against you from before, if they begged, if they've been back before. It's self-defence, the same as anyone else coming at you. Word of them comes ahead of them: in the town you're in, someone will have been asking. Put them down and most stay down. If they get you, they've had what they came for.
   - Why it reads true: what's unfinished is what comes back, and it doesn't come back to talk.
 
