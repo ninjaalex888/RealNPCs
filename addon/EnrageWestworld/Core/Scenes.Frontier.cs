@@ -412,6 +412,8 @@ namespace EnrageWestworld.Core
         {
             Scene s = new Scene { Kind = "smalltalk", Summary = "neighbours passing the time of day" };
             int i = Voice.Hash(seed + "small") % Small.Length;
+            for (int k = 0; k < Small.Length && !(WeatherTruth.Fits(Small[i][0]) && WeatherTruth.Fits(Small[i][1])); k++)   // "Hot one" isn't said in the rain (Core/WeatherTruth.cs)
+                i = (i + 1) % Small.Length;
             string[] x = Small[i];
             bool bad = i == 1 || i == 7;
             s.Add(0, x[0], bad ? "chatbad" : "chat", "face").Add(1, x[1], bad ? "replybad" : "reply");

@@ -97,9 +97,9 @@ namespace EnrageWestworld.Core
         /// of are what it follows). An answer too like one of them is held (Check: "copies an example").
         public static readonly string[] Examples =
         {
-            "Rain on the hat brim. Hollis talking big again. Let him.",
+            "Stage is late. Hollis talking big again. Let him.",
             "Note's due Friday. Hands won't keep still.",
-            "Boots wet through. The stove, and nobody talking.",
+            "Blister on the heel. The stove, and nobody talking.",
         };
 
         public const int MaxWords = 20;
@@ -112,7 +112,7 @@ namespace EnrageWestworld.Core
             return "You write one private thought for a person living in " + year + ", in the American West and South. " +
                    (varied ? "Short, the way people think, not speak: " + MaxWords + " words at most, " + MaxChars + " characters at most. One thing, the one their mind goes to. "
                            : "Short fragments, the way people think, not speak: two or three clipped sentences, " + MaxWords + " words at most, " + MaxChars + " characters at most. One thing the body notices or the eye falls on. ") +
-                   "Plain words of the time: no modern words or phrases, no poetry, no similes. Never name anyone you were not given. " +
+                   "Plain words of the time: no modern words or phrases, no poetry, no similes. Never name anyone you were not given. Say nothing of the weather unless you are told what it is. " +
                    "The thought says what is really felt, even when the face hides it. Never mention video games, being in a story, or being written. " +
                    "The shape, not the words, of these: " + Examples[0] + " | " + Examples[1] + " | " + Examples[2] + " " +
                    "Answer with the thought alone: no quotation marks, no name before it, nothing else." + VarietyBrief(r);
@@ -134,7 +134,7 @@ namespace EnrageWestworld.Core
             b.Append(".\n");
             if (!string.IsNullOrEmpty(r.TraitWords)) b.Append("Nature: ").Append(r.TraitWords).Append(".\n");
             b.Append("Where: ").Append(r.Place ?? "the street").Append(r.Town != null ? " in " + r.Town : " away from any town").Append(", ")
-             .Append(HourWords(r.Hour)).Append(", ").Append(r.Year).Append(r.Weather != null && !r.WeatherOff ? ", " + r.Weather : "").Append(".\n");
+             .Append(HourWords(r.Hour)).Append(", ").Append(r.Year).Append(r.Weather != null && !r.WeatherOff ? ", " + WeatherTruth.Words(r.Weather, WeatherTruth.Now) : "").Append(".\n");
             if (!string.IsNullOrEmpty(r.Mood)) b.Append("Mood: ").Append(r.Mood).Append(".\n");
             if (!string.IsNullOrEmpty(r.Now)) b.Append("Right now: ").Append(r.Now).Append(".\n");
             if (!string.IsNullOrEmpty(r.Feeling))
@@ -217,6 +217,9 @@ namespace EnrageWestworld.Core
             string modern = PeriodWords.ModernIn(a);
             if (modern != null)
                 return "a modern word (" + modern + ")";
+            string sky = WeatherTruth.WrongIn(a);
+            if (sky != null)
+                return "the weather's not like that (" + sky + ")";
             HashSet<string> names = r != null ? r.Names() : new HashSet<string>();
             Func<string, bool> allowed = w => { string stem = Stem(w); return Common.Contains(w) || names.Contains(w) || stem != w && (names.Contains(stem) || Common.Contains(stem)); };   // (Pa'd, Ma'll, Hale's: NIGHT4 fix 8)
             foreach (Match m in Inner.Matches(plain))

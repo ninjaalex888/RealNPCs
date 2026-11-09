@@ -64,7 +64,7 @@ namespace EnrageWestworld.InGame
             int hour = CLOCK.GET_CLOCK_HOURS(), minute = CLOCK.GET_CLOCK_MINUTES();
             if (Encounters.GatherHours(hour, minute) || hour >= 21 || hour < 5)
                 return true;
-            string w = InnerLife.WeatherOf(MISC._GET_PREV_WEATHER_TYPE_HASH_NAME());
+            string w = InnerLife.WeatherOf(SkySeen());
             return w == "fog" || w == "rain" || w == "storm";
         }
 

@@ -851,7 +851,7 @@ namespace EnrageWestworld.Core
                     // a line the guard turns down stays marked as thought by them (InnerLife.Pick marks it as it gives it): taking the
                     // mark off was tried (the no-model run, item 5) and cost each person variety (ticktest 588 -> 525 distinct)
                     string text = k.Make();
-                    if (string.IsNullOrEmpty(text) || said.Contains(text))
+                    if (string.IsNullOrEmpty(text) || said.Contains(text) || !WeatherTruth.Fits(text))
                         continue;
                     if (pass == 0 && variety && FrameHeard(text, now))
                     {
@@ -1008,7 +1008,8 @@ namespace EnrageWestworld.Core
                         break;
                     case "nearby": pull = 18; break;
                     case "mood": pull = 21; break;
-                    case "weather": pull = day.Weather == "rain" || day.Weather == "storm" || day.Weather == "snow" || day.Weather == "dust" ? 22 : 15; break;
+                    case "weather": pull = day.Sky != null && Cfg != null && Cfg.WeatherTalk ? WeatherTruth.Pull(day.Sky) : day.Weather == "rain" || day.Weather == "storm" || day.Weather == "snow" || day.Weather == "dust" ? 22 : 15; break;
+                    case "weather-turn": pull = WeatherTruth.TurnedPull; break;   // it has just started to rain: that's what's on everybody's mind
                     case "place": pull = 17; break;
                     default: pull = 12; break;
                 }

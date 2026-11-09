@@ -876,6 +876,8 @@ namespace EnrageWestworld.InGame
                 case "asides":
                     skipped = "the roll and the gaps between them";
                     return AsideTest(now, out said);   // WestworldScript.Asides.cs
+                case "weather":
+                    return WeatherTest(now, out said);   // WestworldScript.Weather.cs
                 case "several":
                     if (_cfg.ThoughtsAtOnce <= 1 || !_cfg.ThoughtsOverHeads)
                         return "[Ticker] ThoughtsAtOnce is 1, or ThoughtsOverHeads off";

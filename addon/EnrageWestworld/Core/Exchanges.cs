@@ -440,6 +440,8 @@ namespace EnrageWestworld.Core
                     // their worry's own words at its worst; else (a shame, a pile of troubles, a worry settled) a plain snap (the review)
                     string snapLine = worry != null && stage == 2 && Snap.ContainsKey(worry) ? WorryLine(Snap, MoreSnap, worry, seed + "sn")
                                     : Voice.Pick(seed + "ps", "Not now. It's one thing on top of another.", "Leave me be. I've had a day of it.", "Can't a body get a minute's peace?");
+                    if (!WeatherTruth.Fits(snapLine))
+                        snapLine = "Not now. The well's low and I've no patience for it.";   // "Don't say hot to me" wants a hot day (Core/WeatherTruth.cs)
                     s.Add(1, fill(Voice.Pick(seed + "h", HelloPool)), "familiar", "face").Add(0, fill(snapLine), "replybad");
                     Answer(s, manner, fill, seed, KindToTrouble, ColdToTrouble, SharpToTrouble);
                     if (manner == "sharp")

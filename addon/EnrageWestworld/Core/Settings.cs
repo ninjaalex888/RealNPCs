@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 341;
+        public const int CurrentVersion = 342;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -74,6 +74,8 @@ namespace EnrageWestworld.Core
         public bool RoadThoughts = true;          // [Ticker] thoughts from those you pass on the road, by how they're travelling and what they make of you, and by their part at a scene (Core/RoadThoughts.cs; FIVEDAY2 item 26; settings version 329)
         public float RoadThoughtsMetres = 35f;    // ... riders and drivers this far off, out of town
         public bool Asides = true;                // [Ticker] while someone near you talks, whoever's listening may think something about it, over their head (Core/Asides.cs; FIVEDAY2 item 25; settings version 328)
+        public bool WeatherChecked = true;   // [Ticker] what people think and say about the weather is held to what's really out, the temperature too (Core/WeatherTruth.cs; a player's report, 2026-11-09; settings version 342)
+        public bool WeatherTalk = true;      // [Ticker] with WeatherChecked: people remark on the weather more the worse it is, and for a couple of minutes after it turns
         public int ThoughtsAtOnce = 3;            // [Ticker] how many people's thoughts may be up over their heads at once (FIVEDAY2 item 24; settings version 327); 1: singly, as it was
         public bool TickerShowsScene = true;   // the bar names the street scene playing out near you, while it plays (Lex, 2026-10-30; settings version 122)
         public bool ScenesOnTicker = true;        // a street scene's lines on the ticker while it plays within ScenesOnTickerMetres (2026-10-29, Lex)
@@ -972,6 +974,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 342)
+                    log?.Invoke("Settings: new in this version: [Ticker] WeatherChecked (on): talk about the weather is held to what's really out. WeatherTalk (on): more of it the worse it is, and when it turns.");
                 if (s.SettingsVersion < 341)
                     log?.Invoke("Settings: new in this version: [World] VigilanceCommittees (on): when a posse finds nothing, the town's angrier men may settle on someone.");
                 if (s.SettingsVersion < 340)
@@ -1728,6 +1732,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("RoadThoughts = " + B(RoadThoughts) + "   ; out of town, the riders, drivers and walkers you pass think something about the road and about you, and people at a scene think by their part in it");
             b.AppendLine("RoadThoughtsMetres = " + F(RoadThoughtsMetres) + "   ; riders and drivers this far off, out of town (at least TickerNearbyMetres)");
             b.AppendLine("Asides = " + B(Asides) + "   ; while someone near you talks, the person listening may have a thought about it over their head (needs ThoughtsAtOnce above 1)");
+            b.AppendLine("WeatherChecked = " + B(WeatherChecked) + "   ; what people think and say about the weather is held to what's really out, the temperature too: no heat talk in a cold drizzle");
+            b.AppendLine("WeatherTalk = " + B(WeatherTalk) + "   ; with WeatherChecked: people remark on the weather more the worse it is, and for a couple of minutes after it turns (the first drops, thunder, snow, the rain stopping)");
             b.AppendLine("ThoughtsAtOnce = " + ThoughtsAtOnce + "   ; how many people's thoughts may be up over their heads at once, arriving one after another (1 to 4; 1: singly, as it was; needs ThoughtsOverHeads)");
             b.AppendLine("TickerShowsScene = " + B(TickerShowsScene) + "   ; while a street scene plays out within 40 m, the bar at the bottom says what is going on and who is in it (\"Nearby: ...\")");
             b.AppendLine("ScenesOnTicker = " + B(ScenesOnTicker) + "   ; what people say near you (a street scene, a hello, the doctor, the law) shows as they say it in the subtitle box, the game's way (their name, the line); never on the bar; [Output] Subtitles = off hides it");

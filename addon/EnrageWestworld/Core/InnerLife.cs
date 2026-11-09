@@ -21,6 +21,7 @@ namespace EnrageWestworld.Core
             public List<WorryLink> Linked;              // someone else's worry this person is the other end of (Links.cs)
             public Func<string, bool> Dead;             // whether someone in those has died since, by id (may be null)
             public string Weather;                      // how it feels out (WeatherOf): rain, storm, snow, dust, fog, sun, grey; null unknown
+            public SkyNow Sky;                          // what's really out, with the temperature (Core/WeatherTruth.cs); null when it isn't read
             public bool Indoors;                        // under a roof (the weather doesn't touch them; the place does)
             public string Place;                        // the kind of place they're in: saloon, church, store, hotel... (null: the street)
             public Witnessed JustSaw;                        // a scene that just played out in front of them, if any (InnerLife.Now.cs)
@@ -1265,6 +1266,8 @@ namespace EnrageWestworld.Core
                 string key = "il" + Voice.Hash(raw);
                 if (told != null && told.Contains(key))
                     continue;
+                if (!WeatherTruth.Fits(raw))
+                    continue;   // says it's hot in a cold drizzle, or the like: the next one (Core/WeatherTruth.cs)
                 if (told != null)
                 {
                     told.Add(key);

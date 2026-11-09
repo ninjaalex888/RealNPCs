@@ -176,7 +176,7 @@ namespace EnrageWestworld.InGame
                 masked = best.Masked;
                 aboutNear = best.AboutId == "player";   // Arthur is within 12 m: a reproach has its hearer
             }
-            bool wet = !_engine.NowIndoors && (_engine.NowWeather == "rain" || _engine.NowWeather == "storm");
+            bool wet = !_engine.NowIndoors && (_engine.NowWeather == "rain" || _engine.NowWeather == "storm" || _cfg.WeatherTalk && _engine.NowWeather == "snow");   // their own "what weather" remark; snow too
             string[] set = AloudRules.Say(kind, left, masked, aboutNear, _cfg.CrudeTalk, InHisCups(new Ped(h), w.P), wet);
             if (set == null)
             {

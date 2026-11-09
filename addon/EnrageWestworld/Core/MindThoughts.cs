@@ -678,7 +678,7 @@ namespace EnrageWestworld.Core
             for (int k = 0; k < pool.Length; k++)
             {
                 string line = Fill(pool[(start + k) % pool.Length], you, who);
-                if (line != null && (used == null || !used(line)))
+                if (line != null && (used == null || !used(line)) && WeatherTruth.Fits(line))
                     return line;
             }
             return null;

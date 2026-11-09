@@ -1416,6 +1416,7 @@ namespace EnrageWestworld.Core
         /// and the ones between two others in their town.
         /// What is going on around the player (and so around whoever near him is thinking), kept up by the game side.
         public string NowWeather, NowPlace;
+        public SkyNow NowSky;   // what's really out, with the temperature (Core/WeatherTruth.cs); null with [Ticker] WeatherChecked off
         public bool NowIndoors;
         public InnerLife.Witnessed LastScene;
         public List<InnerLife.Nearby> Nearby = new List<InnerLife.Nearby>();
@@ -1432,7 +1433,7 @@ namespace EnrageWestworld.Core
         public InnerLife.Context ThoughtDay(string town, string id = null)
         {
             long now = Store.LastGameMin;
-            InnerLife.Context c = new InnerLife.Context { GameDay = now > 0 ? now / 1440 : -1, Dead = HasDied, Weather = NowWeather, Indoors = NowIndoors, Place = NowPlace, Now = now };
+            InnerLife.Context c = new InnerLife.Context { GameDay = now > 0 ? now / 1440 : -1, Dead = HasDied, Weather = NowWeather, Sky = NowSky, Indoors = NowIndoors, Place = NowPlace, Now = now };
             // what is going on around them now (set by the game side): a scene just played out in their town, and the
             // others in sight (not themselves; the two in the scene think about it through their tie instead)
             InnerLife.Witnessed seen = LastScene;

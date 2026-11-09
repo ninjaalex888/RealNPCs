@@ -41,7 +41,7 @@ namespace EnrageWestworld.Core
             int i = Hash(seed) % options.Length;
             if (FreshDepth > 0 && options.Length > 1)
                 i = FreshIndex(options, i);
-            return options[i];
+            return options[WeatherTruth.FittingIndex(options, i)];   // "Hot one today" isn't said in the snow (Core/WeatherTruth.cs)
         }
 
         // Said lately (the no-model run, item 5; [Ticker] SaidLately): while a street scene's lines are being made (FreshScope,

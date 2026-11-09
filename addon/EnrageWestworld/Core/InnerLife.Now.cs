@@ -849,10 +849,17 @@ namespace EnrageWestworld.Core
                 options.Add(() => Pick(mood == "sore" ? Sore : Glad, p, seed + "mood", told));
                 names.Add("mood");
             }
-            if (!day.Indoors && day.Weather != null && ByWeather.ContainsKey(day.Weather))
+            if (!day.Indoors && (day.Weather != null || day.Sky != null && day.Sky.Turned != null))   // rain clearing to plain cloud has no kind, and it's still news
             {
-                options.Add(() => Pick(ByWeather[day.Weather], p, seed, told));
-                names.Add("weather");
+                bool turned;
+                string[] sky = WeatherTruth.PoolFor(day.Sky, seed, out turned);   // it's just turned, a cold rain, a clear night...: the weather as it really is (Core/WeatherTruth.cs)
+                if (sky == null && day.Weather != null && ByWeather.ContainsKey(day.Weather))
+                    sky = ByWeather[day.Weather];
+                if (sky != null)
+                {
+                    options.Add(() => Pick(sky, p, seed, told));
+                    names.Add(turned ? "weather-turn" : "weather");
+                }
             }
             if (day.Indoors && day.Place != null && ByPlace.ContainsKey(day.Place))
             {

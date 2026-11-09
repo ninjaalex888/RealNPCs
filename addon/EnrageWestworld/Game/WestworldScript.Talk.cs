@@ -194,7 +194,7 @@ namespace EnrageWestworld.InGame
         {
             TalkMoment moment = new TalkMoment
             {
-                Weather = RealTalk.WeatherKind(MISC._GET_PREV_WEATHER_TYPE_HASH_NAME()),
+                Weather = RealTalk.WeatherKind(SkySeen()),
                 Hour = CLOCK.GET_CLOCK_HOURS(),
                 Saloon = _placeKind == "saloon",
                 Sweethearts = TalkSweethearts(t.People[0], t.People[1]),
@@ -281,7 +281,7 @@ namespace EnrageWestworld.InGame
         /// Two who like each other (a warm tie, not sweethearts), for teasing (the no-model run, item 8).
         private static string TalkSky()
         {
-            string w = InnerLife.WeatherOf(MISC._GET_PREV_WEATHER_TYPE_HASH_NAME());
+            string w = InnerLife.WeatherOf(SkySeen());
             return w == "fog" || w == "snow" ? w : null;
         }
 
