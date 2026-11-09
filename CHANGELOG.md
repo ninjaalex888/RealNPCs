@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Camps and cranks** (with `[Encounters] Wayside`; FIVEDAY2 item 19; a Testing row for each). A moonshiner's camp, where you can buy a jar or make an enemy. An old man who's been about to strike it for nineteen years. A sharpshooter taking bets. And at sunup, two men settling it with pistols and their seconds looking on, whom you can step between; one of them doesn't walk home if you don't.
+  - Why it reads true: the people who live furthest out are the ones who went looking for something, and the first thing any of them wants is someone new to tell about it. Some are glad of you. Some have reason not to be.
+
 - **Trouble on the road** (with `[Encounters] Wayside`; FIVEDAY2 item 18; a Testing row for each). A rider down with his horse gone: get him on his feet, leave a dollar for the doctor, go through his pockets, or ride on. A man bitten by a snake, whom you can cut and bleed. A woman put off the stage with her case still on it, walking.
   - Why it reads true: it's easy to help when others are watching. Help given on an empty road, where nobody would ever know you'd ridden past, is the kind that gets remembered.
 
