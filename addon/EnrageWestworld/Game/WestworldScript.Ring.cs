@@ -25,6 +25,8 @@ namespace EnrageWestworld.InGame
         private readonly List<int> _ring = new List<int>();
         private readonly List<int[]> _ringRising = new List<int[]>();   // { handle, when to walk over, spot index, since }: getting up off a bench or the bar first
         private int _ringNextCheer, _ringNextLook, _rings, _ringBiggest;
+        private string _crowdMood, _crowdKey, _crowdFor;   // how this fight's crowd takes it (FIVEDAY2 R10)
+        private int _crowdDeadline, _crowdByModel, _crowdByRules;
 
         private void RingStep(int now)
         {
@@ -55,13 +57,19 @@ namespace EnrageWestworld.InGame
             }
             if (_ringRising.Count > 0)
                 RingRiseStep(mid, now);
+            if (_cfg.CrowdPicks)
+                CrowdStep(key, fighting, now);
             if (now >= _ringNextCheer && _ring.Count > 0)
             {
                 // a bigger ring cheers more often: one voice every 2.5-5 s round two men, about three times as often round sixteen
                 _ringNextCheer = now + Math.Max(800, (2500 + _rng.Next(2500)) * RingMostPair / Math.Max(RingMostPair, _ring.Count));
                 int h = _ring[_rng.Next(_ring.Count)];
                 if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !_director.Involves(h) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(mid) < RingOuterRadius + 3f)
-                    Speech.SayTag(h, _rng.Next(3) == 0 ? "mock" : "cheer", a[0]);
+                {
+                    string tag = _cfg.CrowdPicks && _crowdMood != null ? GroupActs.CrowdVoice(_crowdMood, h + "|" + now / 2000) : _rng.Next(3) == 0 ? "mock" : "cheer";
+                    if (tag != null)
+                        Speech.SayTag(h, tag, a[0]);
+                }
             }
         }
 
@@ -158,6 +166,41 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// Once a fight's crowd is three strong: one decision for all of them, the model's if it's on; the rules' otherwise, or if it's late.
+        private void CrowdStep(string fight, int fighting, int now)
+        {
+            if (fight != _crowdFor && _ring.Count >= 3)
+            {
+                _crowdFor = fight;
+                _crowdMood = null;
+                _crowdKey = null;
+                _crowdDeadline = now + PickWaitMs;
+                if (PicksOn)
+                {
+                    int clock = CLOCK.GET_CLOCK_HOURS();
+                    LanguageRequest r = GroupActs.CrowdRequest(Voice.NowYear, clock, _ring.Count, fighting, _placeTown, _engine.NowIndoors ? _engine.NowPlace : null, clock < 5 || clock >= 20);
+                    string key = "crowd|" + fight + "|" + now;
+                    if (_engine.LanguageAnswers.AskPick(new LanguageAsk { Key = key, Name = "the crowd", PersonId = "crowd", Request = r, AskedAtMs = Environment.TickCount }))
+                        _crowdKey = key;
+                }
+            }
+            if (fight != _crowdFor || _crowdMood != null)
+                return;
+            string answer = null;
+            long ms = 0;
+            bool came = _crowdKey != null && _engine.LanguageAnswers.TakePick(_crowdKey, out answer, out ms);
+            if (!came && _crowdKey != null && now < _crowdDeadline && now >= _crowdDeadline - PickWaitMs)
+                return;
+            int idx = came ? Language.ParsePick(answer, GroupActs.CrowdMoods.Length) : -1;
+            int h = CLOCK.GET_CLOCK_HOURS();
+            _crowdMood = idx >= 0 ? GroupActs.CrowdMoods[idx] : GroupActs.CrowdRules(fighting, h < 5 || h >= 20, fight);
+            if (idx >= 0)
+                _crowdByModel++;
+            else
+                _crowdByRules++;
+            Log.Write("RING the crowd " + GroupActs.CrowdWords(_crowdMood) + (idx >= 0 ? " (the model)" : " (the rules)"));
+        }
+
         private void RingBreak()
         {
             foreach (int h in _ring)
@@ -171,11 +214,14 @@ namespace EnrageWestworld.InGame
             _ring.Clear();
             _ringRising.Clear();
             _ringKey = null;
+            _crowdMood = null;
+            _crowdFor = null;
+            _crowdKey = null;
         }
 
         private string RingStatus()
         {
-            return !_cfg.FightCrowds ? "off ([Scenes] FightCrowds)" : _rings + " fights drew a ring this session (the biggest " + _ringBiggest + "; from within " + RingFrom.ToString("0") + " m, up to " + RingMostPair + " round two, " + RingMostBrawl + " round a brawl)" + (_ring.Count > 0 ? "; one now (" + _ring.Count + ")" : "");
+            return !_cfg.FightCrowds ? "off ([Scenes] FightCrowds)" : _crowdByModel + " crowds decided by the model, " + _crowdByRules + " by the rules; " + _rings + " fights drew a ring this session (the biggest " + _ringBiggest + "; from within " + RingFrom.ToString("0") + " m, up to " + RingMostPair + " round two, " + RingMostBrawl + " round a brawl)" + (_ring.Count > 0 ? "; one now (" + _ring.Count + ")" : "");
         }
     }
 }

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 338;
+        public const int CurrentVersion = 339;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -102,6 +102,7 @@ namespace EnrageWestworld.Core
         public int ActThoughtGapSeconds = 15;    // never within this many seconds of another, different thought of theirs (45 as built; a repeat of the same line doesn't count)
         public bool HeldRing = false;            // with MindActs: the named near you are held, one act straight into the next (Lex, 2026-11-02: a tighter ring, held longer; Game/WestworldScript.HeldRing.cs); off while it's tried; settings version 192
         public bool ControlRing = true;          // [Mind] the control ring (FIVEDAY2 item 1; Lex, 2026-11-08: build it, test the frame cost after): the held ring wider, by how you're moving, with a guard on what it costs (Core/Ring.cs; Game/WestworldScript.HeldRing.cs; settings version 323)
+        public bool CrowdPicks = true;           // [Mind] with [Scenes] FightCrowds on: how a crowd takes a fight, one decision for all of them, the AI model's with it on (FIVEDAY2 R10; settings version 339)
         public bool ComposedModel = true;        // [Mind] with the AI model on, it chooses the order of a composed act, from a short numbered menu in plain words (FIVEDAY2 item 9; settings version 336)
         public bool ComposedActs = true;         // [Mind] someone the ring holds, with a feeling strong enough, shows it in two or three of the game's own moves in an order that can follow (Core/Composed.cs; FIVEDAY2 item 8; settings version 335)
         public bool ControlRingPicks = true;     // [Mind] with the AI model on, it may change someone's next step as they come into the ring (FIVEDAY2 item 5; settings version 334)
@@ -969,6 +970,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 339)
+                    log?.Invoke("Settings: new in this version: [Mind] CrowdPicks (on): how a crowd takes a fight is one decision for all of them (needs [Scenes] FightCrowds).");
                 if (s.SettingsVersion < 338)
                     log?.Invoke("Settings: new in this version: [Mind] ControlRingAhead (on): the ring takes in people along the way you're going a little sooner.");
                 if (s.SettingsVersion < 337)
@@ -1625,6 +1628,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("ActThoughtEachSeconds = " + ActThoughtEachSeconds + "   ; with ActThoughts: one person's thought with what they chose at most once in this many seconds (20 to 600)");
             b.AppendLine("ActThoughtGapSeconds = " + ActThoughtGapSeconds + "   ; with ActThoughts: none within this many seconds of another, different thought of theirs (0 to 120)");
             b.AppendLine("ControlRing = " + B(ControlRing) + "   ; with MindActs: the people the mind knows near you are kept at what their minds choose, one act straight into the next, instead of the game taking them back between acts; less in the saddle, nobody at a gallop or on a train; draws itself in if it costs too much (F7: TEST mind acts). false: the older HeldRing below, if that is on");
+            b.AppendLine("CrowdPicks = " + B(CrowdPicks) + "   ; with [Scenes] FightCrowds: how a crowd takes a fight (eggs them on, calls for it to stop, shouts for the law, goes quiet), one decision for all of them: the AI model's if it is on, the rules' if not");
             b.AppendLine("ComposedModel = " + B(ComposedModel) + "   ; with ComposedActs and the AI model: the model chooses which moves and in what order, from a short numbered list in plain words; a bad or late answer falls back to the rules");
             b.AppendLine("ComposedActs = " + B(ComposedActs) + "   ; with ControlRing: someone held, with a strong enough feeling, shows it in two or three of the game's own moves in an order that can follow (a look, a shrug, walking off); only moves the game has been seen to play");
             b.AppendLine("ControlRingPicks = " + B(ControlRingPicks) + "   ; with ControlRing and the AI model: as someone comes into the ring, the model may change the next step of their errand; late or unreadable, the errand stands (within PicksAtOnce)");

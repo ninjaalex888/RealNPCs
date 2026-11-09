@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **A crowd takes a fight as one** (`[Mind] CrowdPicks`, on; needs `[Scenes] FightCrowds`, off as it comes; settings version 339; FIVEDAY2 R10). Once three have gathered round a fight, how they take it is one decision for all of them: egging it on, calling for it to stop, shouting for the law, or going quiet. The AI model's if it's on, the rules' if not.
+
 - **Labour trouble** (with `[Encounters] Wayside`; FIVEDAY2 R9; Testing row "A camp: the men have come out on strike"). A foreman and company rifles against men who've come out. Stand between them, put something in the fund, or keep riding; left alone it comes to blows.
   - Why it reads true: the frontier ran on wages somebody else set, and most of the violence in it was over who got paid what.
 

@@ -52,6 +52,7 @@ namespace EnrageWestworld.Core
         public string CarryOn;               // their last thought, to pick up from (FIVEDAY2 item 27), or null
         public bool Compose;                 // Kind "pick": a few moves in order, not one (Core/Composed.cs; FIVEDAY2 item 9)
         public bool Circle;                  // Kind "pick": what a ring of the awake does as one (Core/GroupActs.cs; FIVEDAY2 item 10)
+        public bool CrowdPick;               // Kind "pick": how a crowd takes a fight (FIVEDAY2 R10)
         public string Now;                   // Kind "pick" in a staged encounter (Core/Staged.cs): what is going on around them this moment, in a few words
 
         /// The variety rules apply here: set, and a thought or a pick (Talk's answers and the remarks said aloud keep their own).

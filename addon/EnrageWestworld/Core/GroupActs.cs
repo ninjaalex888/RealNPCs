@@ -84,6 +84,64 @@ namespace EnrageWestworld.Core
             return Voice.Pick(seed + "|forward", ForwardLines);
         }
 
+        // ---- the crowd round a fight (FIVEDAY2 R10; [Scenes] FightCrowds with [Mind] CrowdPicks): one decision for the crowd, how it takes this fight
+        public const string CrowdEgg = "egg", CrowdStop = "stop", CrowdLaw = "law", CrowdHush = "hush";
+        public static readonly string[] CrowdMoods = { CrowdEgg, CrowdStop, CrowdLaw, CrowdHush };
+
+        private static readonly Dictionary<string, string> CrowdWordsOf = new Dictionary<string, string>
+        {
+            { CrowdEgg, "eggs them on, shouting and laughing" },
+            { CrowdStop, "starts calling for someone to stop it" },
+            { CrowdLaw, "starts shouting for the law" },
+            { CrowdHush, "goes quiet, and watches" },
+        };
+
+        public static string CrowdWords(string id)
+        {
+            string w;
+            return CrowdWordsOf.TryGetValue(id, out w) ? w : id;
+        }
+
+        public static string CrowdBrief(int year)
+        {
+            return "You decide how a crowd takes a fistfight in the street. It is " + (year > 0 ? year : 1899) + ", in the American West and South. Choose the one this crowd would do. Answer with its number alone.";
+        }
+
+        public static LanguageRequest CrowdRequest(int year, int hour, int people, int fighting, string town, string place, bool night)
+        {
+            var r = new LanguageRequest
+            {
+                Kind = "pick", CrowdPick = true, Name = "A crowd of " + people, Town = town, Place = place ?? "the street", Hour = hour, Year = year, Mood = night ? "loose, the drink talking" : "restless",
+                Now = (fighting >= 3 ? fighting + " people are fighting" : "two people are fighting") + ", a few steps away",
+            };
+            foreach (string id in CrowdMoods)
+                r.Options.Add(CrowdWords(id));
+            return r;
+        }
+
+        /// The rules' answer: a brawl draws cheers, a fight in the day draws the law sooner, a quiet crowd now and then.
+        public static string CrowdRules(int fighting, bool night, string seed)
+        {
+            int roll = Voice.Hash(seed + "|crowd") % 100;
+            if (roll < (night ? 60 : 35) + (fighting >= 3 ? 15 : 0))
+                return CrowdEgg;
+            if (roll < 70)
+                return CrowdStop;
+            return roll < 88 ? CrowdLaw : CrowdHush;
+        }
+
+        /// How the crowd sounds, by its mood: the recorded voice's kind for one of them, or null (hush: nothing).
+        public static string CrowdVoice(string mood, string seed)
+        {
+            switch (mood)
+            {
+                case CrowdStop: return "defuse";
+                case CrowdLaw: return "scared";
+                case CrowdHush: return null;
+                default: return Voice.Chance(seed + "|m", 33) ? "mock" : "cheer";
+            }
+        }
+
         public static IEnumerable<string> AllRingLines()
         {
             foreach (string l in ForwardLines)
