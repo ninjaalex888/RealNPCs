@@ -86,6 +86,9 @@ namespace EnrageWestworld.Core
                 case "feud":
                     return Fill(Voice.Pick(seed + "et", "You moved that fence post one time too many.", "Should've let the dog be. Should've let all of it be.",
                         "My family's put up with you twenty years. No more.", "Say you're sorry. Go on. It won't help."), p);
+                case "committee":
+                    return Voice.Pick(seed + "et", "Forty men signed that paper. You want to argue with forty?", "The posse came home with nothing. We won't.",
+                        "Somebody did it, and you were seen on that road.", "The sheriff had his turn. We're what comes after.");
                 case "informer":
                     return Fill(Voice.Pick(seed + "et", "Somebody talked to the law. Somebody sweating, just like you.", "{gang} don't forget a loose mouth.",
                         "You told the sheriff where we sleep. Now you'll sleep."), p);
@@ -105,6 +108,8 @@ namespace EnrageWestworld.Core
                         "It's eleven dollars! It's only eleven dollars!"), p);
                 case "feud":
                     return Voice.Pick(seed + "ep", "It was never about the fence! Please!", "I'll sell the place and leave! I'll leave tonight!", "Think of my children, for God's sake.");
+                case "committee":
+                    return Voice.Pick(seed + "ep", "I was at the mill! Ask anyone, I was at the mill!", "You've known me eleven years. All of you.", "Hang me and whoever did it goes on walking about.");
                 case "informer":
                     return Voice.Pick(seed + "ep", "I never said a word! Not one word!", "They had me in a cell! What was I to do?", "There's a wife waiting on me. Please. A wife and two little ones.");
                 default:
@@ -121,6 +126,8 @@ namespace EnrageWestworld.Core
                     return Fill(Voice.Pick(seed + "ew", "Ride on, mister. This is between him and {bossword}.", "Keep moving. This is debt business, and it's paid today."), p);
                 case "feud":
                     return Voice.Pick(seed + "ew", "Family matter, stranger. Keep riding.", "This ain't yours. Turn around.");
+                case "committee":
+                    return Voice.Pick(seed + "ew", "Town business, stranger. We're seeing to it ourselves.", "The law had its turn. Ride on.");
                 default:
                     return Fill(Voice.Pick(seed + "ew", "{gangadj} business. You didn't see us.", "Ride on, or kneel down next to him."), p);
             }
@@ -162,6 +169,8 @@ namespace EnrageWestworld.Core
                     return Fill(Voice.Pick(seed + "eth", "I'll pay {boss}. Every cent. Thank you, mister. Thank you.", "Eleven dollars. I nearly died for eleven dollars. Thank you."), p);
                 case "feud":
                     return Voice.Pick(seed + "eth", "They'd have done it. They really would have done it. Thank you.", "You came out of nowhere. Lord, you came out of nowhere.");
+                case "committee":
+                    return Voice.Pick(seed + "eth", "My own neighbours. My own neighbours. Thank you.", "I sold that man seed for nine years, and he held the rope. Thank you, mister.");
                 case "informer":
                     return Voice.Pick(seed + "eth", "They'll come again. But not today. Thank you.", "I owe you my life, mister. I don't know how to pay that.");
                 default:
@@ -178,6 +187,8 @@ namespace EnrageWestworld.Core
                     return Fill(Voice.Pick(seed + "edu", "Eleven dollars. Not like this. Not over eleven dollars.", "{boss} sent them. {boss}, who shook my hand at church."), p);
                 case "feud":
                     return Voice.Pick(seed + "edu", "The children. Who'll see to the children.", "Twenty years of that fence. It comes to this.");
+                case "committee":
+                    return Voice.Pick(seed + "edu", "Sat beside him in church on Sunday. He passed me the hymnal.", "They need it to be someone. It's only that it's me.");
                 case "informer":
                     return Voice.Pick(seed + "edu", "Should've kept my mouth shut. Should've kept my mouth shut.", "The sheriff swore nobody would know.");
                 default:
@@ -204,6 +215,7 @@ namespace EnrageWestworld.Core
             {
                 case "debt": return name + " was found shot dead" + where + ". Folks say it was over a debt to " + p.Boss + ".";
                 case "feud": return name + " was found shot" + where + ". Nobody says the " + p.Boss + " name out loud.";
+                case "committee": return name + " was found shot" + where + ". The men of the town aren't saying who went out that night.";
                 case "informer": return name + " was found shot" + where + ". They say he'd talked to the law.";
                 default: return name + " was found shot dead" + where + ". Nobody knows why.";
             }
@@ -227,7 +239,7 @@ namespace EnrageWestworld.Core
             int roll = Voice.Hash(seed + "|twist") % 100;
             if (men >= 2 && roll < 22)
                 return TwistBalk;
-            if (p != null && (p.Reason == "debt" || p.Reason == "feud") && roll < 44)
+            if (p != null && (p.Reason == "debt" || p.Reason == "feud" || p.Reason == "committee") && roll < 44)
                 return TwistReprieve;
             return TwistNone;
         }
@@ -250,13 +262,17 @@ namespace EnrageWestworld.Core
             return Voice.Chance(seed + "|kin", 45);
         }
 
-        public static string Balks(string seed)
+        public static string Balks(string seed, Plan p = null)
         {
+            if (p != null && p.Reason == "committee")
+                return Voice.Pick(seed + "|balk", "We said we'd scare it out of him. We said scare.", "I can't. I've had supper at his table.", "Not me. Let a judge have him.");
             return Voice.Pick(seed + "|balk", "I took money to scare him. Nobody said this.", "Not me. I've a boy near his age.", "You do it. I'll be on the road.", "No. Look at him. No.");
         }
 
-        public static string BalkAnswered(string seed)
+        public static string BalkAnswered(string seed, Plan p = null)
         {
+            if (p != null && p.Reason == "committee")
+                return Voice.Pick(seed + "|balka", "Then go home, and say nothing to your wife.", "There's always one. Go on, then.");
             return Voice.Pick(seed + "|balka", "Then ride, and be quick about it.", "Go on, then. I've got a strong stomach for two.", "You'll want your share all the same, I suppose.");
         }
 
@@ -267,6 +283,8 @@ namespace EnrageWestworld.Core
 
         public static string ReprieveCry(Plan p, string seed)
         {
+            if (p != null && p.Reason == "committee")
+                return Voice.Pick(seed + "|cry", "Stop! It wasn't him! They've got the man at the depot!", "Hold on! He was with me that night, I'll swear it on the Book!");
             return p != null && p.Reason == "feud"
                 ? Voice.Pick(seed + "|cry", "Enough! It's finished! Father says it's finished!", "Hold your fire! The land's yours! It's yours!")
                 : Voice.Pick(seed + "|cry", "Stop! Stop, I've got it! It's all here!", "Wait! Wait, I sold the mare! I've got the money!");
@@ -274,6 +292,8 @@ namespace EnrageWestworld.Core
 
         public static string ReprieveAnswer(Plan p, string seed)
         {
+            if (p != null && p.Reason == "committee")
+                return Voice.Pick(seed + "|cryans", "Then we were never here. Nobody was ever here.", "Get up. Get up, and don't you look at me.");
             return p != null && p.Reason == "feud"
                 ? Voice.Pick(seed + "|cryans", "Took you long enough. Get him out of here.", "Twenty years, and this is how it ends. Go on.")
                 : Voice.Pick(seed + "|cryans", "Count it. ...It's all here. Get up.", "Your kin bought your hide. Don't make them buy it twice.");
@@ -296,6 +316,17 @@ namespace EnrageWestworld.Core
             {
                 string q = "t" + t;
                 Plan debt = For("debt", "Yates", null, "Valentine", q), feud = For("feud", "Yates", null, "Valentine", q);
+                Plan comm = new Plan { Reason = "committee", Boss = "Yates", Captors = "boss" };
+                yield return Balks(q, comm);
+                yield return BalkAnswered(q, comm);
+                yield return ReprieveCry(comm, q);
+                yield return ReprieveAnswer(comm, q);
+                yield return Threat(comm, q);
+                yield return Plead(comm, q);
+                yield return WarnYou(comm, q);
+                yield return Thanks(comm, q);
+                yield return During(comm, q);
+                yield return Found(comm, "Milo Hubbard", "Valentine", q);
                 yield return Balks(q);
                 yield return BalkAnswered(q);
                 yield return RelentsLine(q);

@@ -215,6 +215,7 @@ namespace EnrageWestworld.InGame
                 case "execution:balk":
                 case "execution:reprieve":
                 case "execution:crowd":
+                case "execution:committee":
                     _execForce = a.Id.Substring("execution:".Length);
                     said = RequestEncounter("execution", how, out asked);
                     if (!asked)

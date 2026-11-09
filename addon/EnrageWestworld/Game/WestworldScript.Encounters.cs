@@ -218,7 +218,7 @@ namespace EnrageWestworld.InGame
                         notNow.Add("an execution on the road: " + not);
                         return false;
                     }
-                    if (!EncounterRoll("an execution on the road", _cfg.ExecutionChance))
+                    if (!EncounterRoll("an execution on the road", ExecutionChanceNow()))
                         return false;
                     StartExecution(now, false);
                     return _exec != null;

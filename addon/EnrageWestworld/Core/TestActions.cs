@@ -45,6 +45,7 @@ namespace EnrageWestworld.Core
             new Entry("execution:balk", "Encounters", "An execution: one of the men won't do it", "TestExecBalkKey", needs: "a town with regulars; come near and wait"),
             new Entry("execution:reprieve", "Encounters", "An execution: someone comes running", "TestExecReprieveKey", needs: "a town with regulars; come near and wait (a debt or a feud)"),
             new Entry("execution:crowd", "Encounters", "An execution: a few have come to watch", "TestExecCrowdKey", needs: "a town with regulars; come near and wait"),
+            new Entry("execution:committee", "Encounters", "An execution: his own neighbours hold him", "TestExecCommitteeKey", needs: "a town with regulars; come near and wait"),
             new Entry("hermit", "Encounters", "A hermit's camp", "HermitKey", needs: "outside a town; the camp stays", field: true),
             new Entry("traveller", "Encounters", "A traveller asking the way", "TestTravellerKey", needs: "out of the towns; best on a road"),
             new Entry("supper", "Encounters", "The supper invitation (a test takes no money)", "TestSupperKey", needs: "out of the towns, the ticker on; best on a road; takes no money and leaves the clock alone"),

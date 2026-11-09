@@ -71,6 +71,33 @@ namespace EnrageWestworld.Core
         private static readonly string[] Formed = {
             "The sheriff swore in {k} men at {t}, and they rode out after {w}: {names}.",
             "A posse left {t} at first light after {w}. {names}, with rifles across their saddles." };
+        // ---- a vigilance committee (TENHOUR item 4). Nothing tells the code a town has lost its law (Posts leaves sheriffs out), so it comes from the posse's own failure: after a killing, a posse that comes
+        // home with nothing can leave the angrier men to settle on someone, a few days on. Why it reads true: when the institution fails, the grievance looks for another way out, and a crowd's certainty needs only a name.
+        public const int CommitteeChance = 40, CommitteeFromDays = 2, CommitteeSpanDays = 3, CommitteeKeepDays = 3, CommitteeHangsPct = 50;
+
+        public static string CommitteeKey(string town) { return "committee:" + town; }   // the game minute it's due
+
+        /// Whether this posse's coming home empty leaves men wanting to settle it themselves.
+        public static bool Committee(string seed) { return Voice.Chance(seed + "|comm", CommitteeChance); }
+
+        /// Game minutes from now until they act.
+        public static int CommitteeDelay(string seed) { return (CommitteeFromDays + (int)(Voice.Hash(seed + "|commd") % CommitteeSpanDays)) * 1440; }
+
+        /// Left to themselves with nobody there to see it, whether they go through with it.
+        public static bool CommitteeHangs(string seed) { return Voice.Chance(seed + "|commh", CommitteeHangsPct); }
+
+        private static readonly string[] Hanged = {
+            "Some of the men of {t} took {n} out to the cottonwoods last night. The sheriff says he saw nothing.",
+            "{n} of {t} was found hanged by the creek. Nobody in town will say who held the rope." };
+        private static readonly string[] Cooled = {
+            "The talk at {t} of taking the law in hand came to nothing. Men went home and looked at their boots.",
+            "A dozen men met behind the livery at {t}, and a dozen men went home again." };
+
+        public static string CommitteeLine(bool hanged, string town, string name, string seed)
+        {
+            return Fill(Voice.Pick(seed + "|comml", hanged ? Hanged : Cooled), town, null, null, 0, name);
+        }
+
         private static readonly string[] RoadFormed = {
             "Word of a killing out on the road reached {t}, and {k} men rode out before dark: {names}.",
             "A man came into {t} white as paper with news from the road. {names} had saddled up inside the hour." };
@@ -123,6 +150,8 @@ namespace EnrageWestworld.Core
                 foreach (string l in p)
                     yield return Fill(l, "Valentine", "the killing", null, 0, "Abe Cole");
             foreach (string l in Waiting) yield return l;
+            foreach (string l in Hanged) yield return Fill(l, "Valentine", null, null, 0, "Abe Cole");
+            foreach (string l in Cooled) yield return Fill(l, "Valentine", null, null, 0, "Abe Cole");
         }
     }
 }

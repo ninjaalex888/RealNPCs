@@ -73,6 +73,13 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
+        /// The road's chance of an execution on this roll: a certainty when men of the nearest town mean to act about now, so a committee is seen if you're near it (TENHOUR item 4).
+        private int ExecutionChanceNow()
+        {
+            Vector3 p = Game.Player.Character.Position;
+            return _engine != null && _engine.CommitteeDue(Rumours.NearestTown(p.X, p.Y), Bridge.Now()) ? 100 : _cfg.ExecutionChance;
+        }
+
         /// A regular of that town to put on his knees: a man, saved with his look, not bound to anyone in the world
         /// now; those whose worry gives a reason first. Null if there's nobody.
         private Resident ExecutionCaptive(string town)
@@ -103,7 +110,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             string seed = r.Id + "|" + Bridge.Now() / 1440;
-            Executions.Plan plan = _engine.ExecutionPlan(r, region ?? town, seed);
+            Executions.Plan plan = _engine.CommitteePlan(r, town, Bridge.Now(), seed, _execForce == "committee") ?? _engine.ExecutionPlan(r, region ?? town, seed);
             Execution e = new Execution { R = r, Plan = plan, Town = town ?? r.Town, Region = region, StartedAt = now, Test = test };   // Town: nearest where it happens, for the news
             if (plan.BossId != null)
             {
@@ -125,7 +132,7 @@ namespace EnrageWestworld.InGame
             {
                 if (e.BossR != null)
                     e.MenModels.Add(e.BossR.Model);
-                while (e.MenModels.Count < 2)
+                while (e.MenModels.Count < (plan.Reason == "committee" ? 3 : 2))
                     e.MenModels.Add(Spawner.ModelFor(null, false, _rng.Next()));
             }
             e.Twist = _execForce == "balk" ? Executions.TwistBalk : _execForce == "reprieve" ? Executions.TwistReprieve : Executions.Twist(plan, e.MenModels.Count, seed);
@@ -144,7 +151,7 @@ namespace EnrageWestworld.InGame
             if (!test)
                 Pacing.NoteBig(_store.Pace, _store.LastGameMin);   // a big moment: the quiet starts (Pacing.cs)
             Log.Write("EXECUTION begins" + (test ? " (test)" : "") + ": " + r.Name + " (" + r.Trade + " of " + r.Town + "), " + plan.Reason + " (" + plan.Boss + "), held by " +
-                      (e.BossR != null ? e.BossR.Name + " and a hired man" : plan.Captors == "outlaws" ? e.MenModels.Count + " of " + plan.Gang : plan.Captors == "kin" ? "the " + plan.Boss + " men" : "two men " + plan.Boss + " hired"));
+                      (plan.Reason == "committee" ? "men of " + e.Town + (e.BossR != null ? ", " + e.BossR.Name + " leading" : "") : e.BossR != null ? e.BossR.Name + " and a hired man" : plan.Captors == "outlaws" ? e.MenModels.Count + " of " + plan.Gang : plan.Captors == "kin" ? "the " + plan.Boss + " men" : "two men " + plan.Boss + " hired"));
         }
 
         private void ExecutionStep(int now)
@@ -585,7 +592,7 @@ namespace EnrageWestworld.InGame
                 PED.SET_PED_KEEP_TASK(second.Handle, false);
                 TASK.CLEAR_PED_TASKS(second.Handle, false, false);
                 TASK.TASK_TURN_PED_TO_FACE_ENTITY(second.Handle, first.Handle, 2500, 0f, 0f, 0f);
-                Feed.Say(ExecManName(e, second), Executions.Balks(seed), Speech.When(second.Handle, "storm", first.Handle), second.Handle);
+                Feed.Say(ExecManName(e, second), Executions.Balks(seed, e.Plan), Speech.When(second.Handle, "storm", first.Handle), second.Handle);
                 Log.Write("EXECUTION " + e.R.Name + ": one of the men won't do it");
                 if (Executions.Relents(seed))
                 {
@@ -593,7 +600,7 @@ namespace EnrageWestworld.InGame
                     ExecutionLetGo(e, men, now, "the men wouldn't go through with it");
                     return true;
                 }
-                Feed.Say(ExecManName(e, first), Executions.BalkAnswered(seed), Speech.When(first.Handle, "threat", second.Handle), first.Handle);
+                Feed.Say(ExecManName(e, first), Executions.BalkAnswered(seed, e.Plan), Speech.When(first.Handle, "threat", second.Handle), first.Handle);
                 e.Men.Remove(second);   // he's out of it: not one of them, to you or to anyone
                 e.Crowd.Add(second);
                 _cameAtYouSeen.Remove(second.Handle);

@@ -33,6 +33,7 @@ namespace EnrageWestworld.Core
                 if (now - rode >= PosseRides.OutMinutes)
                     PosseBack(key.Substring(PosseRides.Prefix.Length), rode, now);
             }
+            CommitteeDaily(now);
             foreach (string town in Store.Deeds.Where(d => d.Town != null && now >= d.At && now - d.At < 1440).Select(d => d.Town).Distinct().ToList())
             {
                 if (PosseOut(town))
@@ -114,6 +115,58 @@ namespace EnrageWestworld.Core
                 Store.Counts.Remove(k);
             Push(new Toast { Kind = "life", Title = ShortTown(town), Weight = outcome == "dead" ? 60 : 45, Text = PosseRides.BackLine(outcome, town, what, deadName, seed) });
             Log("POSSE back at " + town + ": " + outcome + (deadName != null ? " (" + deadName + " killed)" : ""));
+            if (Cfg.VigilanceCommittees && outcome == "lost" && what == "the killing" && PosseRides.Committee(seed))
+            {
+                Store.Counts[PosseRides.CommitteeKey(town)] = (int)now + PosseRides.CommitteeDelay(seed);
+                Log("VIGILANCE at " + town + ": the posse came home with nothing, and some of the men mean to settle it themselves");
+            }
+        }
+
+        // ---- a vigilance committee (TENHOUR item 4; Core/PosseRides.cs): staged as an execution if you're near when it's due, settled off screen if you never come
+        private void CommitteeDaily(long now)
+        {
+            foreach (string key in Store.Counts.Keys.Where(k => k.StartsWith("committee:", StringComparison.Ordinal)).ToList())
+            {
+                int due = Store.Counts[key];
+                if (!Cfg.VigilanceCommittees)
+                {
+                    Store.Counts.Remove(key);   // switched off: nothing waits in the save for the switch
+                    continue;
+                }
+                if (now - due < PosseRides.CommitteeKeepDays * 1440)
+                    continue;
+                Store.Counts.Remove(key);
+                string town = key.Substring("committee:".Length), seed = town + "|" + due;
+                Resident v = PosseRides.CommitteeHangs(seed) ? CommitteeVictim(town, seed, null) : null;
+                if (v != null)
+                    NoteDied(new DeathEntry { Id = v.Id, Name = v.Name, Kind = "resident", At = now, Town = town, How = "hanged by his neighbours", By = "unknown" });
+                Push(new Toast { Kind = "life", Title = ShortTown(town), Weight = v != null ? 60 : 40, Text = PosseRides.CommitteeLine(v != null, town, v != null ? v.Name : null, seed) });
+                Log("VIGILANCE at " + town + ": " + (v != null ? v.Name + " hanged, off screen" : "they went home again"));
+            }
+        }
+
+        /// Whom they would turn on: a man of that town, never their leader, never a keeper, and never someone bound to a body at present.
+        private Resident CommitteeVictim(string town, string seed, string notId)
+        {
+            return Store.Residents.Where(r => r.Town == town && !r.Woman && !r.Dead && !r.Left && !r.Fled && r.Held == null && r.PostId == null && r.Cast == null && r.Name != null && r.Id != notId)
+                .OrderBy(r => Voice.Hash(seed + "|cv|" + r.Id)).FirstOrDefault();
+        }
+
+        /// Whether men of this town mean to act about now, for the road's roll.
+        public bool CommitteeDue(string town, long now)
+        {
+            int due;
+            return Cfg.VigilanceCommittees && town != null && Store.Counts.TryGetValue(PosseRides.CommitteeKey(town), out due) && now >= due;
+        }
+
+        /// The plan for one held by his own neighbours, using up what's due; null if nothing is (`force`: the Testing row). The man who leads it comes from those who'd have ridden with the posse.
+        public Executions.Plan CommitteePlan(Resident r, string town, long now, string seed, bool force)
+        {
+            if (r == null || (!force && !CommitteeDue(town, now)))
+                return null;
+            Store.Counts.Remove(PosseRides.CommitteeKey(town));
+            Resident lead = PosseRides.Pick(Store.Residents, town, seed).FirstOrDefault(m => m.Id != r.Id);
+            return new Executions.Plan { Reason = "committee", Boss = lead != null ? Residents.SurnameOf(lead.Name) : Residents.Surname(seed + "b"), BossId = lead != null ? lead.Id : null, Captors = "boss" };
         }
     }
 }

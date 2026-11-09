@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 340;
+        public const int CurrentVersion = 341;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -427,6 +427,7 @@ namespace EnrageWestworld.Core
         public bool DriftingPosters = true;   // [World] the bill outside the sheriff's describes you as the town's rumour has it, true or bent out of shape, and people near hold you up against it (Core/DriftPoster.cs; FIVEDAY R13, settings version 301)
         public bool DimeNovels = true;   // [World] your most-told deed written up as a dime novel (a lurid title in the box), and a month of people near you thinking of having read it (Core/DimeNovel.cs; FIVEDAY R12, settings version 300)
         public bool GoingDry = true;   // [World] 1907: Rhodes and Strawberry dry by local option, the saloon a blind tiger, the law-abiding keeping out (Core/GoingDry.cs; FIVEDAY R27, settings version 316)
+        public bool VigilanceCommittees = true;   // [World] with PosseRides: after a killing, a posse that comes home with nothing can leave the town's angrier men to settle on someone, on the road if you're near, off screen if not (TENHOUR item 4; settings version 341)
         public bool PosseFromTheRoad = true;   // [World] with PosseRides: a killing out of town, near enough to a town for word to get there, with someone left to tell it, brings that town's posse (TENHOUR item 3; settings version 340)
         public bool PosseRides = true;   // [World] after a bad crime in a town, three to five of its men ride out as a posse, off screen, and come back a day on with nothing, a stranger, or one of them dead (Core/PosseRides.cs; FIVEDAY R32, settings version 321)
         public bool WantedWhich = true;   // [World] a resident whose worry is the wanted poster is recognised within 4 m (once, in the box), then J near them: turn in for the bounty, warn them, buy them a ticket, or leave it (Core/WantedWhich.cs; FIVEDAY R31, settings version 320)
@@ -971,6 +972,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 341)
+                    log?.Invoke("Settings: new in this version: [World] VigilanceCommittees (on): when a posse finds nothing, the town's angrier men may settle on someone.");
                 if (s.SettingsVersion < 340)
                     log?.Invoke("Settings: new in this version: [World] PosseFromTheRoad (on): a killing out on the road can bring the nearest town's posse.");
                 if (s.SettingsVersion < 339)
@@ -2029,6 +2032,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("DriftingPosters = " + B(DriftingPosters) + "   ; in a town your deed's rumour has reached, the first time each day: the bill outside the sheriff's as it reads there (true where the telling's faithful, a thing wrong further out, wild when it's been passed along), in the box; and someone near now and then holds you up against it");
             b.AppendLine("DimeNovels = " + B(DimeNovels) + "   ; when your most-told deed has been talked of in two towns or more, on a Monday some New York hack writes it up: a dime novel in the store windows (the box has its lurid title), once a deed, sixty days apart; for thirty days people near you think of having read it, by their temper");
             b.AppendLine("GoingDry = " + B(GoingDry) + "   ; in John's 1907, Rhodes and Strawberry are dry by local option: the saloon pours under the counter, the law-abiding and the devout keep out, the rest talk of nothing else; the box shows the notice on the saloon door once a day");
+            b.AppendLine("VigilanceCommittees = " + B(VigilanceCommittees) + "   ; with PosseRides: a posse that comes home with nothing after a killing can leave the town's angrier men to settle on someone a few days on: an execution on the road if you're near, and off screen if you never come. Someone can die of it");
             b.AppendLine("PosseFromTheRoad = " + B(PosseFromTheRoad) + "   ; with PosseRides: a killing out of town, near enough to a town for word to get there, with someone left alive to tell it, brings that town's posse too");
             b.AppendLine("PosseRides = " + B(PosseRides) + "   ; the day after a bad crime in a town (a killing or a robbery with talk of it), three to five of its own men ride out as a posse; off screen, they come back a day on with nothing, with a stranger they say did it, or one short (a posse man killed, mourned like anyone); while they're out the town thinks of the road");
             b.AppendLine("WantedWhich = " + B(WantedWhich) + "   ; a resident living quietly with the wanted-poster worry: within 4 m you know the face (once each, in the box), and near them J: turn them in for the bounty ($50 to $150; gone in irons), warn them (they owe you, as one you saved), buy them a ticket on the next train ($15; gone by train), or leave it");
