@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 348;
+        public const int CurrentVersion = 349;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -408,6 +408,7 @@ namespace EnrageWestworld.Core
         public bool StoreSlate = true;   // [Scenes] at the store: someone asks to put it on the slate; the keeper chalks it, asks for something first, or says it's full, and J lets you pay what they owe; on payday they pay it down (Core/Slate.cs; FIVEDAY R2, settings version 290)
         public bool MoneyTalk = true;   // [Scenes] two men meeting in a town argue gold against silver, the banks and the trusts; who they are decides the side, and those who disagree are the colder for it (TENHOUR item 15; settings version 346)
         public bool Suffrage = true;   // [Scenes] by day in Saint Denis: a woman says what she thinks about the vote to a man she meets; he forbids it, laughs, is shaken or agrees (Core/Suffrage.cs; TENHOUR item 16, settings version 347)
+        public bool ScripTalk = true;   // [Scenes] by day at Annesburg: a man says what he thinks of being paid in the company's scrip, and the other agrees, hushes him or warns him (Core/ScripTalk.cs; TENHOUR R2, settings version 349)
         public bool Temperance = true;   // [Scenes] by day, a temperance woman asks a drinker in the street to sign the pledge (Core/Temperance.cs; FIVEDAY item 12, settings version 264)
         public bool GrindingSeason = true;   // [World] 15 October to 20 December: the cane grinding in Rhodes, Saint Denis and Lagras, its men working into the night, and the grinding ball at Rhodes to end it (Core/Grinding.cs; FIVEDAY R23, settings version 312)
         public bool EventFaisDoDo = true;   // [World] with TownEvents: Saturday nights in Lagras, the bayou's dance, and a young couple who come away courting (Core/Festivals.cs; FIVEDAY R22, settings version 311)
@@ -980,6 +981,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 349)
+                    log?.Invoke("Settings: new in this version: [Scenes] ScripTalk (on): the men at Annesburg talk about being paid in scrip.");
                 if (s.SettingsVersion < 348)
                     log?.Invoke("Settings: new in this version: [World] RoundupSeason (on): the cattle towns fill with paid-off hands after the roundup.");
                 if (s.SettingsVersion < 347)
@@ -2037,6 +2040,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("StoreSlate = " + B(StoreSlate) + "   ; at the store, now and then: a townsman or townswoman asks the keeper to put it on the slate, and he chalks it up, asks for something on account first, or says the slate's full (by what they owe this week and his manner). Refused, J for ten seconds lets you pay what they owe, a kindness remembered. On Saturday afternoon they pay it down instead");
             b.AppendLine("MoneyTalk = " + B(MoneyTalk) + "   ; two men meeting in a town argue gold against silver, the banks and the trusts (the bank panic in 1907); how they're fixed decides the side, and those who fall out are the colder for it");
             b.AppendLine("Suffrage = " + B(Suffrage) + "   ; by day in Saint Denis: a woman says what she thinks about the vote to a man she meets; he forbids it, laughs, is shaken or agrees");
+            b.AppendLine("ScripTalk = " + B(ScripTalk) + "   ; by day at Annesburg: a man says what he thinks of being paid in the company's scrip; the other agrees, hushes him or warns him");
             b.AppendLine("Temperance = " + B(Temperance) + "   ; by day in the street: a temperance woman asks a drinker before the saloon doors to sign the pledge; he jeers, slinks off, swears off for the day, or is taken home on her arm. The pious start it oftener, and a man whose worry is the drink is the one she stops");
             b.AppendLine("GrindingSeason = " + B(GrindingSeason) + "   ; from 15 October to 20 December, the cane grinding: the working men of Rhodes, Saint Denis and Lagras work into the night (less saloon, less home) and think of the mill; with TownEvents, the grinding ball at Rhodes on the twentieth, and a couple who come away courting");
             b.AppendLine("EventFaisDoDo = " + B(EventFaisDoDo) + "   ; with TownEvents on: every Saturday night in Lagras, eight till half past eleven (its main street spot, else near you): the fiddle and the accordion, waltzes and two-steps, the babies sung to sleep, and a young couple of the village dancing every dance, who come away courting");

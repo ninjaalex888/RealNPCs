@@ -662,6 +662,9 @@ namespace EnrageWestworld.Core
             { "suffrage", new[] {
                 "Told him to his face, she did, about the vote.", "Somebody said Wyoming. Somebody always says Wyoming.",
                 "I'd go to that hall myself, if I could think what to tell them at home.", "She's not wrong. I wouldn't say so, but she's not wrong.", } },
+            { "scrip", new[] {
+                "Heard {a} say it out loud. About the scrip. Out loud.", "Somebody's going to get let go for talking like that.",
+                "{a}'s right, and it'll do him no good.", "Keep walking. You didn't hear a thing about the store.", } },
             { "temperance", new[] {
                 "Temperance woman had a man by the sleeve outside the saloon. Brave, or foolish.", "Pledge cards on the boardwalk again. Half the men cross the street.",
                 "Pledge put to a man right there in the street. I'd have run.", "Somebody ought to sign. Not me. Somebody.",
