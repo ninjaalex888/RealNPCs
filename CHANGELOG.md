@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Labour trouble** (with `[Encounters] Wayside`; FIVEDAY2 R9; Testing row "A camp: the men have come out on strike"). A foreman and company rifles against men who've come out. Stand between them, put something in the fund, or keep riding; left alone it comes to blows.
+  - Why it reads true: the frontier ran on wages somebody else set, and most of the violence in it was over who got paid what.
+
 - **A burial met on the road** (with `[Encounters] Wayside`; FIVEDAY2 R7; Testing row "By the road: a burial with no one to see it"). A preacher, a widow kneeling, a man with a spade, a neighbour. Take off your hat, give something toward the box, or ride on, and the town hears of it.
   - Why it reads true: out here the dead went into the ground where the wagon gave up, and whoever rode by was all the congregation they got.
 
