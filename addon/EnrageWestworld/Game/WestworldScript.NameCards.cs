@@ -47,6 +47,8 @@ namespace EnrageWestworld.InGame
 
         private readonly Dictionary<int, NameCard> _nameCards = new Dictionary<int, NameCard>();
         private readonly List<NameCard> _nameCardsNow = new List<NameCard>();
+        private readonly List<NameCard> _nameFound = new List<NameCard>();   // the candidates' pass, reused
+        private static readonly Comparison<NameCard> NearerFirst = (a, b) => a.Metres.CompareTo(b.Metres);
         private int _nameCardsCandAt = -100000, _nameCardsFrame, _nameCardsHoldUntil = -100000, _nameCardsLastMs, _nameCardsUp, _nameCardsMade;
         private int? _enrageCards;
         private int _enrageCardsAt = -100000;
@@ -287,16 +289,19 @@ namespace EnrageWestworld.InGame
             var why = probe ? new Dictionary<string, int>() : null;
             var models = probe ? new List<string>() : null;
             float knownRange = _cfg.NameCardsKnownMetres, strangerRange = _cfg.NameCardsMetres, most = Math.Max(knownRange, strangerRange) + 20f;
-            List<NameCard> found = new List<NameCard>();
+            List<NameCard> found = _nameFound;   // reused: four passes a second, no list each time (THREEHOUR item 1)
+            found.Clear();
             foreach (Ped p in Peds.All())
             {
-                if (p == null || !p.Exists() || p.Handle == me.Handle)
+                if (p == null || p.Handle == me.Handle)
                     continue;
                 if (targeted && p.Handle != targetNow)
                     continue;
+                // the distance first, before any other native: in a city most of the pool is far, and a body that's gone reads
+                // as 0,0,0, far too (THREEHOUR item 1: Exists, IsDead and IS_PED_HUMAN were asked of everyone, every pass)
                 float d = p.Position.DistanceTo(mePos);
-                if (d > most || p.IsDead || !PED.IS_PED_HUMAN(p.Handle))
-                    continue;   // the distance first: a far body needs neither native (the same people pass)
+                if (d > most || !p.Exists() || p.IsDead || !PED.IS_PED_HUMAN(p.Handle))
+                    continue;
                 int h = p.Handle;
                 uint model = ENTITY.GET_ENTITY_MODEL(h);
                 NameCard c;
@@ -333,8 +338,10 @@ namespace EnrageWestworld.InGame
                 if (d <= c.Range)
                     found.Add(c);
             }
-            foreach (NameCard c in found.OrderBy(x => x.Metres).Take(_cfg.NameCardsAlways ? NameCardsMostAlways : NameCardsMost))
-                _nameCardsNow.Add(c);
+            found.Sort(NearerFirst);   // in place, one comparer for good (was OrderBy and Take: an enumerator and a buffer a pass)
+            int most2 = Math.Min(found.Count, _cfg.NameCardsAlways ? NameCardsMostAlways : NameCardsMost);
+            for (int i = 0; i < most2; i++)
+                _nameCardsNow.Add(found[i]);
             if (probe)
             {
                 carded = _nameCardsNow.Count;

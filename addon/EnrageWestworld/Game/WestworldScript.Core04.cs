@@ -912,7 +912,22 @@ namespace EnrageWestworld.InGame
             return m + " m " + Points[(int)Math.Round(deg / 45.0) % 8];
         }
 
+        private int _tickerVisFrame = -1;
+        private bool _tickerVis;
+
+        /// Whether what we draw may show this frame. Asked by the ticker, the news, the feelings, the subtitles and the VRAM
+        /// gauge, five or six times a frame, four natives each: worked out once a frame now (THREEHOUR item 1).
         private bool TickerVisible(int now)
+        {
+            int frame = Game.FrameCount;
+            if (frame == _tickerVisFrame)
+                return _tickerVis;
+            _tickerVisFrame = frame;
+            _tickerVis = TickerVisibleNow(now);
+            return _tickerVis;
+        }
+
+        private bool TickerVisibleNow(int now)
         {
             if (HUD.IS_PAUSE_MENU_ACTIVE() || HUD.IS_HUD_HIDDEN() || CAM.IS_SCREEN_FADING_OUT())
                 return false;

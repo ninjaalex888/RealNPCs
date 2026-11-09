@@ -29,7 +29,7 @@ namespace EnrageWestworld.InGame
 
         private List<Felt> _felt = new List<Felt>();
         private List<GrudgeRow> _meter = new List<GrudgeRow>();
-        private int _nextFeelLook, _grudgeLine;
+        private int _nextFeelLook, _grudgeLine, _meterReadAt = -100000;
         private Action _aFeelings;
 
         private void FeelingsStep(int now)
@@ -70,10 +70,11 @@ namespace EnrageWestworld.InGame
             {
                 foreach (Ped p in Peds.All())
                 {
-                    if (p == null || p.Handle == me.Handle || !p.Exists() || p.IsDead || !PED.IS_PED_HUMAN(p.Handle))
+                    if (p == null || p.Handle == me.Handle)
                         continue;
+                    // the distance first: the rest are natives asked of the whole pool three times a second before (THREEHOUR item 1)
                     float d = p.Position.DistanceTo(at);
-                    if (d > _cfg.FeelingBarsMetres || !ENTITY.IS_ENTITY_ON_SCREEN(p.Handle))
+                    if (d > _cfg.FeelingBarsMetres || !p.Exists() || p.IsDead || !PED.IS_PED_HUMAN(p.Handle) || !ENTITY.IS_ENTITY_ON_SCREEN(p.Handle))
                         continue;
                     float fear, like, anger;
                     if (!_bridge.FeelingsOf(p.Handle, out fear, out like, out anger))
@@ -85,8 +86,9 @@ namespace EnrageWestworld.InGame
                 felt = felt.OrderBy(f => f.Metres).Where(f => ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, f.Ped.Handle, 17)).Take(BarPeople).ToList();
             }
             _felt = felt;
-            if (_cfg.GrudgeMeter)
+            if (_cfg.GrudgeMeter && Environment.TickCount - _meterReadAt >= 1000)
             {
+                _meterReadAt = Environment.TickCount;   // the grudges, from enRAGE's records: once a second (was every look, 300 ms); a grudge doesn't move faster (THREEHOUR item 1)
                 _grudgeLine = _bridge.GrudgeLine();
                 List<GrudgeRow> rows = Feelings.Meter(_bridge.GrudgesAgainstYou(at, MeterRange), MeterRows);
                 foreach (GrudgeRow r in rows)
