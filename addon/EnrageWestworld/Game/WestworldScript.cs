@@ -522,6 +522,8 @@ namespace EnrageWestworld.InGame
 				FolkDead = (string key) => _bridge != null && _bridge.FolkDead(key)
 			};
 			_engine.ResidentInSight = ResidentBodyNear;   // the mine never takes a man who's walking near you (the Part 5 review)
+			_engine.StillOnMind = ThreadStill;   // thoughts that follow on (FIVEDAY2 item 27; WestworldScript.Threads.cs). Set here, with each new engine:
+			_engine.LastThoughtMs = ThreadLastThought;   // in the constructor there's no engine yet, and setting them there stopped the add-on loading
 		}
 
 		/// 0.6 renamed the add-on (enRAGE Westworld became RealNPCs). Copies the old data folder (saves, diaries, voice files,

@@ -236,8 +236,8 @@ namespace EnrageWestworld.InGame
             LoadVoices();
             Feed.Thinking = (who, text, ped) => _ticker.Push(who + ", thinking", text, "near", ped);
             Feed.Spoke = ListenersThink;   // WestworldScript.Asides.cs
-            _engine.StillOnMind = ThreadStill;   // WestworldScript.Threads.cs
-            _engine.LastThoughtMs = ThreadLastThought;
+            // Nothing here may use _engine, _store or _bridge: they're made when a save loads (LoadStore), after this constructor,
+            // and a use here stops the add-on loading at all. The thread hooks are set in LoadStore, with the engine.
             Log.Write("0.4 features: ticker " + (_cfg.Ticker ? "on" : "off") + ", news to " + _cfg.NewsRoute + ", reader key " + _readerKey +
                       ", reveries " + (_cfg.Reveries ? _cfg.ReturnChance + "%" : "off") + ", stalkers " + (_cfg.Stalkers ? _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min" : "off") + ".");
             Log.Write("West World " + (_cfg.WestWorld ? "on (awakening " + _cfg.AwakeningShare + "%, breakdown " + _cfg.AwakeningBreakdown + "%, despair " + _cfg.AwakeningDespair + "%)" : "off") +
