@@ -16,6 +16,8 @@ namespace EnrageWestworld.InGame
     {
         private sealed class WaysideRun
         {
+            public List<Expression> ComposedSteps;     // a feeling being shown in two or three moves (TENHOUR item 13)
+            public int ComposedWho, ComposedStep, ComposedAt, ComposedNext, ComposedPlayed, ComposedTurn;
             public bool AnswerDone;                    // what they do about you (TENHOUR item 11): settled
             public List<string> AnswerMenu;
             public int AnswerSpeaker, AnswerDeadline;
@@ -257,6 +259,8 @@ namespace EnrageWestworld.InGame
             WaysidePlay(w, live, now, d);
             if (_cfg.WaysideAnswers)
                 WaysideAnswerStep(w, live, me, d, now);
+            if (_cfg.ComposedActs && _cfg.WaysideComposed)
+                WaysideComposedStep(w, me, d, now);
             if (w.Phase == "fight" && now >= w.PhaseUntil)
                 WaysideFightOver(w, live, now);
             if (w.Phase == "shooting" && now >= w.PhaseUntil)
@@ -346,6 +350,78 @@ namespace EnrageWestworld.InGame
             }
             w.Phase = "stand";
             Log.Write("WAYSIDE " + w.K.Id + ": " + w.Cast.Count(c => c != null) + " of them, " + (int)at.DistanceTo(me.Position) + " m away");
+        }
+
+        // ---- a feeling shown in a road scene (TENHOUR item 13; Core/Composed.cs). Two things must never direct one person, so this only touches someone the scene has simply standing about, only with no order of the scene's due for a few seconds, and anything that gives the scene an order stops it first (WaysideComposedStop).
+        private int _waysideComposedPlayed;
+
+        private void WaysideComposedStop(WaysideRun w)
+        {
+            if (w.ComposedSteps == null)
+                return;
+            Ped p = w.Cast[w.ComposedWho];
+            if (p != null && p.Exists())
+                PerformCancel(p.Handle);
+            w.ComposedSteps = null;
+        }
+
+        private void WaysideComposedStep(WaysideRun w, Ped me, float d, int now)
+        {
+            if (w.Phase != "play" || w.Fought || w.Chose)
+            {
+                WaysideComposedStop(w);
+                return;
+            }
+            if (w.ComposedSteps != null)
+            {
+                Ped who = w.Cast[w.ComposedWho];
+                if (who == null || !who.Exists() || who.IsDead)
+                {
+                    w.ComposedSteps = null;
+                    return;
+                }
+                if (now < w.ComposedAt || IsPerforming(who.Handle))
+                    return;
+                if (w.ComposedStep >= w.ComposedSteps.Count)
+                {
+                    w.ComposedSteps = null;
+                    w.ComposedNext = now + Wayside.ComposedGapMs;
+                    TASK.TASK_STAND_STILL(who.Handle, -1);   // back to standing there, as the scene left them
+                    return;
+                }
+                int ms;
+                int face = w.K.Cast[w.ComposedWho].Face;
+                Ped other = face >= 0 && face < w.Cast.Length ? w.Cast[face] : null;
+                string why = Perform(who.Handle, w.ComposedSteps[w.ComposedStep++], other != null && other.Exists() && !other.IsDead ? other.Handle : me.Handle, out ms);   // at whoever the scene has them facing
+                w.ComposedAt = now + (why == null ? ms + 250 : 300);
+                return;
+            }
+            if (now < w.ComposedNext || w.ComposedPlayed >= Wayside.ComposedMost || d > 40f || Wayside.OrderSoon(w.K, w.Beat, now - w.NoticedAt))
+                return;
+            w.ComposedNext = now + Wayside.ComposedGapMs;
+            int n = w.Cast.Length;
+            for (int t = 0; t < n; t++)
+            {
+                int i = (w.ComposedTurn + t) % n;
+                string feeling, urge;
+                Ped p = w.Cast[i];
+                if (p == null || !p.Exists() || p.IsDead || !Wayside.FeelingOf(w.K, i, out feeling, out urge) || !ENTITY.IS_ENTITY_ON_SCREEN(p.Handle) || IsPerforming(p.Handle))
+                    continue;
+                string seed = w.K.Id + "|" + w.StartedAt + "|" + i + "|" + w.ComposedPlayed;
+                List<Expression> menu = Composed.Menu(feeling, urge, "strong", w.K.Cast[i].Woman, true, seed).Where(e => e.Name != Catalogue.WanderMove).ToList();   // a walk-away would leave the scene a person short
+                List<Expression> steps = menu.Count >= Composed.LeastSteps ? Composed.Rules(menu, seed) : null;
+                if (steps == null || !Composed.Valid(steps))
+                    continue;
+                w.ComposedTurn = i + 1;
+                w.ComposedWho = i;
+                w.ComposedStep = 0;
+                w.ComposedAt = now;
+                w.ComposedSteps = steps;
+                w.ComposedPlayed++;
+                _waysideComposedPlayed++;
+                Log.Write("WAYSIDE " + w.K.Id + ": " + w.K.Cast[i].Name + " shows it: " + string.Join(", then ", steps.Select(s => s.Words)));
+                return;
+            }
         }
 
         // ---- what they do about you (TENHOUR item 11; Core/Wayside.Answer.cs)
@@ -444,6 +520,7 @@ namespace EnrageWestworld.InGame
             if (!threat)
                 return false;
             w.Fought = true;
+            WaysideComposedStop(w);
             int you = me.Handle;
             foreach (Ped c in live)
             {
@@ -491,6 +568,7 @@ namespace EnrageWestworld.InGame
 
         private void WaysideDo(WaysideRun w, WaysideBeat b, List<Ped> live, int now)
         {
+            WaysideComposedStop(w);
             if (b.Do == "walk")
             {
                 // in file along the way they face, each keeping their place in the line
@@ -658,6 +736,7 @@ namespace EnrageWestworld.InGame
             if (c == null)
                 return;
             w.Chose = true;
+            WaysideComposedStop(w);
             int now = Game.GameTime;
             if (c.Cents > 0)
                 MONEY._MONEY_DECREMENT_CASH_BALANCE(c.Cents);
@@ -809,6 +888,7 @@ namespace EnrageWestworld.InGame
             _wayside = null;
             if (w == null)
                 return;
+            WaysideComposedStop(w);
             try
             {
                 if (w.Mark != null && w.Mark.Exists())

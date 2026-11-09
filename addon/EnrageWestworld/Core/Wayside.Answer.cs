@@ -117,6 +117,57 @@ namespace EnrageWestworld.Core
             return pool != null ? Voice.Pick(seed + "|answerl", pool) : null;
         }
 
+        // ---- a feeling shown between beats (TENHOUR item 13)
+        public const int ComposedGapMs = 7000, ComposedBeatRoomMs = 6000, ComposedMost = 2;
+
+        /// What someone in a scene is showing, read off the first thing they say. False for those who say nothing, or who aren't simply standing there: someone at a scenario or a walk has something to do already.
+        public static bool FeelingOf(WaysideKind k, int i, out string feeling, out string urge)
+        {
+            feeling = urge = null;
+            if (k == null || k.Beats == null || i < 0 || i >= k.Cast.Length || k.Cast[i].Act != "stand" || k.WalkMetres > 0f)
+                return false;
+            foreach (WaysideBeat b in k.Beats)
+            {
+                if (b.Do != null || b.Who != i)
+                    continue;
+                switch (b.Tag)
+                {
+                    case "threat":
+                    case "fight":
+                    case "angry":
+                        feeling = "anger";
+                        urge = "confront";
+                        return true;
+                    case "scared":
+                        feeling = "fear";
+                        urge = "avoid";
+                        return true;
+                    case "plead":
+                        feeling = "fear";
+                        urge = "freeze";
+                        return true;
+                    case "final":
+                        feeling = "contempt";
+                        urge = "dismiss";
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            return false;
+        }
+
+        /// Whether the scene gives someone an order soon (a fight, a walk, a run): no move should be begun that would be cut off by it.
+        public static bool OrderSoon(WaysideKind k, int nextBeat, int elapsedMs)
+        {
+            if (k.Beats == null)
+                return false;
+            for (int i = nextBeat; i < k.Beats.Length; i++)
+                if (k.Beats[i].Do != null)
+                    return k.Beats[i].Ms - elapsedMs < ComposedBeatRoomMs;
+            return false;
+        }
+
         public static IEnumerable<string> AnswerLines()
         {
             foreach (string[] p in new[] { AnswerWarnLines, AnswerCallLines, AnswerAskLines, AnswerTurnLines })
