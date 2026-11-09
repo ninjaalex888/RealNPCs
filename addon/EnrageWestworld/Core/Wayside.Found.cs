@@ -61,7 +61,9 @@ namespace EnrageWestworld.Core
             },
             new WaysideKind
             {
-                Id = "ashore", Mark = "A thing on the bank", Test = "Just over a crossing: someone washed ashore", From = 0, To = 24, Weight = 200, Place = PlaceWater,
+                // Weight 30: just over a crossing he's the likeliest single scene, about three picks in ten, twice the next. At 200 he was seven in
+                // ten, and in the swamps, where you're nearly always just over a crossing, he'd have been most of the road (TENHOUR item 10's follow-up).
+                Id = "ashore", Mark = "A thing on the bank", Test = "Just over a crossing: someone washed ashore", From = 0, To = 24, Weight = 30, Place = PlaceWater,
                 Cast = new[] { R("A drowned man", "rough", null, "dead", 0f, 0f) },
                 Choices = new[]
                 {

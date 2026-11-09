@@ -908,6 +908,8 @@ namespace EnrageWestworld.InGame
                 if (w.Noticed && !w.Test && _engine != null)
                     WaysideAfterward(w);   // what comes of it
             }
+            else if (!w.Test && w.K.Place == Wayside.PlaceWater)
+                _store.Counts["wayside:" + w.K.Id] = (int)(_store.LastGameMin / 1440);   // nowhere by the water to put him still counts as his turn: in the swamps, where you're nearly always just over a crossing, he'd otherwise take the road's roll again and again and find nowhere each time (TENHOUR item 10's follow-up)
             Ped me = Game.Player.Character;
             if (w.Cast != null)
                 foreach (Ped p in w.Cast)
