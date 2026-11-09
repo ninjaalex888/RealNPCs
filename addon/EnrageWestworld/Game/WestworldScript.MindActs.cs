@@ -233,7 +233,7 @@ namespace EnrageWestworld.InGame
             }
             if (now < _mindActNextAt)
                 return LostGap;
-            if (_mindActs.Count >= MindActsAtOnce)
+            if (_mindActs.Count >= MindActsAtOnceNow)
                 return LostAtOnce;
             if (sat)
             {

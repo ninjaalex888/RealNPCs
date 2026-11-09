@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **The control ring, first stage** (`[Mind] ControlRing`, on; `ControlRingMetres` 22, `ControlRingMost` 12; settings version 323; FIVEDAY2 item 1). The held ring grown: the people the mind knows near you (22 m on foot, up from 12, up to twelve of them) are kept at what their minds choose, one act straight into the next, instead of the game taking them back between acts. It follows how you move: narrower at a walk in the saddle, small at a trot, nobody at a gallop or on a train, and mounting a horse no longer lets everyone go. A horse changing step doesn't flicker people in and out. Every step's cost is measured, and F7's `TEST mind acts` line and the log's minute line give the share held, decisions a minute and microseconds a step. If a step runs over the budget (1 ms average, 4 ms peak) the ring draws itself in, then eases back after a quiet spell.
+  - Why it reads true: behaviour only looks like intention if it carries on while you watch. Someone who goes slack the moment their errand ends reads as a puppet, and the eye goes straight to it.
+
 ## 0.7.25 (2026-11-08)
 
 - **What RealNPCs asks the game to load, it lets go** (players on Nexus, 2026-11: VRAM climbing, stutters; FIVEDAY2 0a). A body model asked for and then never used (an encounter that ended early, a friend who never rode in) used to stay asked for: bodies are what sit on the graphics card. Now one nobody has asked after for 45 seconds goes back to the game. F7's `TEST loads:` line and a `LOADS` line in the log every few minutes say what's held. This won't be the whole of what players see: most of the climb on the gauge is likely the game's own streaming filling the card, and with the model or the voice server on, those hold 2.3 to 7 GB by themselves.

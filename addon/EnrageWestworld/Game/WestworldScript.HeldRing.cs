@@ -10,6 +10,7 @@
 // (WestworldScript.WakeHold.cs) is the model this follows; a waking act always comes first.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using EnrageWestworld.Core;
 using RDR2;
@@ -44,9 +45,58 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<string, int> _heldEndWhy = new Dictionary<string, int>();
         private string _heldLast;
 
-        private bool HeldOn { get { return _cfg != null && _cfg.HeldRing && _cfg.MindLive && _cfg.MindActs; } }
-        private float HeldInMetres { get { return Math.Max(4f, Math.Min(20f, _cfg.HeldRingMetres)); } }
-        private float HeldOutMetres { get { return HeldInMetres + 13f; } }
+        // ---- the control ring (FIVEDAY2 item 1; Core/Ring.cs): [Mind] ControlRing takes the held ring wider, by how you're moving, and
+        // measures what every step costs. HeldRing stays as it was for anyone with ControlRing off.
+        private bool RingOn { get { return _cfg != null && _cfg.ControlRing; } }
+        private readonly RingGuard _ringGuard = new RingGuard();
+        private readonly RingGaitWatch _ringGait = new RingGaitWatch();
+        private RingReach _ringReach;
+        private int _ringActsThisMinute, _ringActsLastMinute, _ringMinuteAt, _ringDrawnIn;
+
+        private bool HeldOn { get { return _cfg != null && (_cfg.HeldRing || _cfg.ControlRing) && _cfg.MindLive && _cfg.MindActs; } }
+        private float HeldInMetres { get { return RingOn ? _ringReach.In : Math.Max(4f, Math.Min(20f, _cfg.HeldRingMetres)); } }
+        private float HeldOutMetres { get { return RingOn ? _ringReach.Out : HeldInMetres + 13f; } }
+        private int HeldMostNow { get { return RingOn ? _ringReach.Most : HeldMost; } }
+
+        /// How many acts may run at once: the street's ten, or room for everyone the ring holds.
+        private int MindActsAtOnceNow { get { return RingOn ? Math.Max(MindActsAtOnce, _ringReach.Most + 4) : MindActsAtOnce; } }
+
+        /// The ring's reach for how you're moving now, drawn in by the guard.
+        private void RingUpdate(Ped me, int now)
+        {
+            int h = me.Handle;
+            bool mounted = PED.IS_PED_ON_MOUNT(h), vehicle = PED.IS_PED_IN_ANY_VEHICLE(h, false);
+            float speed = mounted ? ENTITY.GET_ENTITY_SPEED(PED.GET_MOUNT(h)) : ENTITY.GET_ENTITY_SPEED(h);
+            _ringReach = Ring.ReachFor(_ringGait.Update(Ring.GaitOf(mounted, vehicle, speed), now), _cfg.ControlRingMetres, _cfg.ControlRingMost, _ringGuard.Scale);
+            if (now - _ringMinuteAt >= 60000 || now < _ringMinuteAt)
+            {
+                _ringMinuteAt = now;
+                _ringActsLastMinute = _ringActsThisMinute;
+                _ringActsThisMinute = 0;
+            }
+        }
+
+        /// The ring has drawn in below how many it holds (you got on a horse, or it cost too much): the farthest are let go, with no
+        /// rest, since nothing went wrong with them.
+        private void RingDrawIn(Vector3 at, int now)
+        {
+            while (_held.Count > Math.Max(0, HeldMostNow))
+            {
+                int far = 0;
+                float d = -1f;
+                foreach (int h in _held.Keys)
+                {
+                    float x = ENTITY.DOES_ENTITY_EXIST(h) ? ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(at) : float.MaxValue;
+                    if (x > d)
+                    {
+                        d = x;
+                        far = h;
+                    }
+                }
+                HeldLetGo(far, "the ring drew in", now, false);
+                _ringDrawnIn++;
+            }
+        }
 
         private bool IsHeld(int h)
         {
@@ -66,8 +116,17 @@ namespace EnrageWestworld.InGame
             if (now < _heldStepAt && now >= _heldStepAt - 5000)
                 return;
             _heldStepAt = now + HeldStepMs;
+            long t0 = Stopwatch.GetTimestamp();
+            HeldStepWork(now);
+            _ringGuard.Spent(Micros(t0), now);   // every step measured, whatever it did: the gauge in F7 and the log, and the guard's check
+        }
+
+        private void HeldStepWork(int now)
+        {
             Ped me = Game.Player.Character;
             Vector3 at = me.Position;
+            if (RingOn)
+                RingUpdate(me, now);
             string all = HeldAllWhy(me);
             foreach (int h in _held.Keys.ToList())
             {
@@ -77,11 +136,13 @@ namespace EnrageWestworld.InGame
             }
             if (all != null)
                 return;
+            if (RingOn)
+                RingDrawIn(at, now);
             // who comes in: the named people the mind has near, nearest first
-            if (_held.Count < HeldMost)
+            if (_held.Count < HeldMostNow)
                 foreach (int h in _mindNear.OrderBy(x => ENTITY.GET_ENTITY_COORDS(x, true, true).DistanceTo(at)))
                 {
-                    if (_held.Count >= HeldMost)
+                    if (_held.Count >= HeldMostNow)
                         break;
                     if (_held.ContainsKey(h))
                         continue;
@@ -131,7 +192,11 @@ namespace EnrageWestworld.InGame
             if (me.IsDead) return "you died";
             if (PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0) return "you're wanted";
             if (PED.IS_PED_SHOOTING(me.Handle)) return "you fired";
-            if (PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false)) return "you're riding";
+            if (RingOn)
+            {
+                if (_ringReach.Most <= 0) return "you're moving too fast to be watched";
+            }
+            else if (PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false)) return "you're riding";
             return null;
         }
 
@@ -187,6 +252,7 @@ namespace EnrageWestworld.InGame
             {
                 hd.Acts++;
                 _heldChained++;
+                _ringActsThisMinute++;
                 hd.Last = _mindActLast;
                 _heldLast = _mindActLast;
                 Log.Detail("HELD: " + hd.Name + " goes on: " + _mindActLast);
@@ -249,16 +315,38 @@ namespace EnrageWestworld.InGame
             hd.Acts++;
             hd.Fillers++;
             _heldFills++;
+            _ringActsThisMinute++;
             hd.Last = did;
             _heldLast = w.Name + " " + did;
             Log.Detail("HELD: " + w.Name + " " + did + " (their choice: " + lost + ")");
+        }
+
+        /// The Testing row: a white dot on the map for a minute on everyone the ring holds, to see who it has.
+        private string RingMark(int now, out string said)
+        {
+            said = null;
+            if (!HeldOn)
+                return "off ([Mind] ControlRing, with MindLive and MindActs)";
+            int until = now + 60000, n = 0;
+            foreach (KeyValuePair<int, Held> kv in _held)
+            {
+                if (!ENTITY.DOES_ENTITY_EXIST(kv.Key))
+                    continue;
+                Blip b = new Ped(kv.Key).AddBlip(BlipType.WhiteDot);
+                b.Label = (kv.Value.Name ?? "someone") + " (held)";
+                _regBlips.Add(new KeyValuePair<Blip, int>(b, until));   // taken off with the regulars' marks
+                n++;
+            }
+            said = n + " held by the ring: a white dot on each for a minute";
+            Log.Write("TEST ring: " + HeldWords(Game.Player.Character.Position));
+            return null;
         }
 
         /// The minute's line and F7's: how many in the ring are held, and how it's gone.
         private string HeldWords(Vector3 at)
         {
             if (!HeldOn)
-                return "held ring off ([Mind] HeldRing)";
+                return "control ring off ([Mind] ControlRing)";
             int inRing = 0, held = 0, acting = 0;
             foreach (int h in _mindNear)
             {
@@ -275,9 +363,10 @@ namespace EnrageWestworld.InGame
                         acting++;
                 }
             }
-            return "held ring: " + held + " of " + inRing + " named within " + (int)HeldInMetres + " m held" + (inRing > 0 ? " (" + (100 * held / inRing) + "%)" : "") + ", " + acting + " of them at an act or a spot; " +
+            string gauge = RingOn ? "; ring " + _ringGait.Settled + " " + (int)_ringReach.In + " m, at most " + _ringReach.Most + "; " + _ringActsLastMinute + " decisions last minute; a step " + _ringGuard.AverageMicros + " us on average, peak " + _ringGuard.PeakMicros + " us (budget " + RingGuard.AverageBudget + " / " + RingGuard.PeakBudget + "); guard " + _ringGuard.Scale.ToString("0.00") + ", drawn in " + _ringGuard.Shrinks + " times, eased " + _ringGuard.Eases + "; " + _ringDrawnIn + " let go as it drew in" : "";
+            return (RingOn ? "control ring: " : "held ring: ") + held + " of " + inRing + " named within " + (int)HeldInMetres + " m held" + (inRing > 0 ? " (" + (100 * held / inRing) + "%)" : "") + ", " + acting + " of them at an act or a spot; " +
                    _heldStarts + " held this session, " + _heldChained + " acts chained, " + _heldFills + " spots or strolls, " + _heldEnds + " let go" +
-                   (_heldEndWhy.Count > 0 ? " (" + string.Join(", ", _heldEndWhy.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value)) + ")" : "") + (_heldLast != null ? "; last: " + _heldLast : "");
+                   (_heldEndWhy.Count > 0 ? " (" + string.Join(", ", _heldEndWhy.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value)) + ")" : "") + (_heldLast != null ? "; last: " + _heldLast : "") + gauge;
         }
     }
 }

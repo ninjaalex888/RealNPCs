@@ -370,7 +370,7 @@ namespace EnrageWestworld.InGame
             MindShareMinute(now);   // the share near you acting on their minds, once a minute (WestworldScript.MindActs.cs)
             if (_mindActs.Count > 0)
                 MindActsStep(now);   // those acting on a choice: done, arrived or gone (WestworldScript.MindActs.cs)
-            HeldStep(now);   // the held ring: one act straight into the next for the named near you ([Mind] HeldRing; WestworldScript.HeldRing.cs)
+            HeldStep(now);   // the control ring (the held ring grown): one act straight into the next for the named near you ([Mind] ControlRing; WestworldScript.HeldRing.cs)
             if (_mindNear.Count == 0)
                 return;
             if (_mindChooseCursor >= _mindNear.Count)

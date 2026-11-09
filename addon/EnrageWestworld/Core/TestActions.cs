@@ -72,6 +72,7 @@ namespace EnrageWestworld.Core
             new Entry("fourth", "People", "The Fourth of July (in 2 min here)", "TestFourthKey", needs: "[World] TownEvents, EventFourth; one of the six towns"),
             new Entry("fair", "People", "The county fair (in 2 min, Valentine)", "TestFairKey", needs: "[World] TownEvents, EventFair; in Valentine to see it staged"),
             new Entry("shivaree", "People", "A shivaree (in 2 min here)", "TestShivareeKey", needs: "[World] TownEvents, EventShivarees; a town with a man and a woman among its regulars to stand for the couple"),
+            new Entry("ring", "Tools", "The control ring: mark who's held for a minute", "TestRingKey", needs: "[Mind] ControlRing with MindLive and MindActs; people the mind knows near you; a white dot on the map for each one held, and the ring's numbers in the log"),
             new Entry("marks", "Tools", "A beating's marks: try the next gait and bruising", "TestMarksKey", needs: "a named person within 15 m (each press the next pair; the log says which)"),
             new Entry("fence", "People", "Fence cutters: a wire found cut here (now)", "TestFenceKey", needs: "[World] FenceCutters; a town with two men known to RealNPCs (the row counts you as near last night)"),
             new Entry("saleday", "People", "Sale day at the stockyards (now)", "TestSaleDayKey", needs: "[World] SaleDay; Valentine, the stockyards spot recorded and within 80 m, four named men about it"),
