@@ -141,6 +141,32 @@ namespace EnrageWestworld.Core
             return pool == null || pool.Length == 0 ? null : Voice.Pick(seed, pool);
         }
 
+        // what comes of it (FIVEDAY2 item 22): the nearest town hears of it, and someone you stopped for may write
+
+        /// The town's word of it, the blanks filled.
+        public static string Heard(WaysideKind k, string town, string you)
+        {
+            return k == null || k.News == null ? null : k.News.Replace("{town}", town ?? "town").Replace("{you}", you ?? "a stranger");
+        }
+
+        /// Whether someone you helped writes to say so.
+        public static bool Writes(string seed)
+        {
+            return Voice.Chance(seed + "|writes", 60);
+        }
+
+        private static readonly string[] ThanksBodies =
+        {
+            "I never got your name, and I am told you would not have given it. I walk fine now. I wanted it written down somewhere that a person stopped.",
+            "You will not remember me. You stopped on the road when two others had gone by. There is a dollar owed to you whenever you pass through.",
+            "I have told this to everyone who will listen and most who won't. I only wanted to tell it to you as well."
+        };
+
+        public static string ThanksBody(string seed)
+        {
+            return Voice.Pick(seed + "|thanks", ThanksBodies);
+        }
+
         /// Every line of every kind, for the tests and the translation template.
         public static IEnumerable<string> AllLines()
         {

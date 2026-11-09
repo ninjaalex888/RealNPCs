@@ -51,6 +51,14 @@ namespace EnrageWestworld.Core
             Log("EXECUTION " + p.Name + ": saved by you (" + plan.Reason + ", " + plan.Boss + ")");
         }
 
+        /// What the nearest town hears of something that happened out on the road (Core/Wayside.cs), a while after.
+        public void WaysideHeard(string text, string town, string key, long now)
+        {
+            if (string.IsNullOrEmpty(text) || town == null)
+                return;
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = text, DueAt = Knowing.TalkDue(now, false, key) });
+        }
+
         /// Let go at the last moment, by a captor who wouldn't or kin who paid: nothing of yours in it, and the town has it by evening.
         public void Spared(Resident r, Executions.Plan plan, string town, long now)
         {

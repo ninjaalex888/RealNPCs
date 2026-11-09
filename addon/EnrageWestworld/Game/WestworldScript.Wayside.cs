@@ -602,6 +602,16 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// What comes of it: the nearest town hears, a while on, and someone you stopped for may write, to the post office there.
+        private void WaysideAfterward(WaysideRun w)
+        {
+            long g = Bridge.Now();
+            string seed = w.K.Id + "|" + w.StartedAt;
+            _engine.WaysideHeard(Wayside.Heard(w.K, w.Town, null), w.Town, seed, g);
+            if (w.Outcome == "you helped" && w.R == null && w.Town != null && Wayside.Writes(seed) && _cfg.Letters)
+                _engine.QueueLetter(new Paper { Id = Ids.New(), Kind = "note", Title = "A note left for you at " + w.Town, From = "Someone from the road", Body = Wayside.ThanksBody(seed), At = g, Town = w.Town, Delivered = false });
+        }
+
         private void WaysideEnd(string why)
         {
             EventDotClear("wayside");
@@ -625,6 +635,8 @@ namespace EnrageWestworld.InGame
                     _store.Counts["wayside:" + w.K.Id] = (int)(_store.LastGameMin / 1440);
                 if (w.Noticed)
                     Safe("world events", () => RecordEvent("encounter:wayside", null, w.K.Id, null, w.Town, w.At, 0, 0, 0, why));
+                if (w.Noticed && !w.Test && _engine != null)
+                    WaysideAfterward(w);   // what comes of it
             }
             Ped me = Game.Player.Character;
             if (w.Cast != null)
