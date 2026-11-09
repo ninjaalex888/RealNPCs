@@ -117,6 +117,8 @@ namespace EnrageWestworld.InGame
                 else if (_exec != null && _exec.Captive != null && _exec.Captive.Exists() && h != _exec.Captive.Handle && !_exec.Men.Exists(x => x != null && x.Handle == h) &&
                          ped.Position.DistanceTo(_exec.Captive.Position) < 40f)
                     m.AtScene = "execution";
+                else if (_cfg.RoadThoughts && _eventRun != null && _eventRun.E.Kind == "gallows" && ped.Position.DistanceTo(_eventRun.At) < 40f)
+                    m.AtScene = "gallows";   // the crowd at a hanging (FIVEDAY2 item 26)
             }
             return m;
         }

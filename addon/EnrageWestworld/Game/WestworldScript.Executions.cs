@@ -755,6 +755,13 @@ namespace EnrageWestworld.InGame
         private void ExecutionNear(Ped ped, float d)
         {
             Execution e = _exec;
+            if (_cfg.RoadThoughts && e != null && e.Phase == "held" && e.Men.Exists(x => x != null && x.Handle == ped.Handle))
+            {
+                long at = Bridge.Now();   // those holding him have their own thoughts on it (FIVEDAY2 item 26)
+                string key = "exec:" + ped.Handle;
+                _near.Add(new NearThought { Handle = ped.Handle, Key = key, Name = "One of them", Distance = d + 1f, Text = () => RoadThoughts.ForRole(RoadThoughts.Captor, key + "|" + at / 3) });
+                return;
+            }
             if (e == null || e.Captive == null || ped.Handle != e.Captive.Handle || e.Phase != "held" && e.Phase != "fight")
                 return;
             Resident r = e.R;

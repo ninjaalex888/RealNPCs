@@ -666,7 +666,7 @@ namespace EnrageWestworld.InGame
             _near.Add(new NearThought
             {
                 Handle = ped.Handle, Key = "way:" + ped.Handle, Name = w.K.Cast[i].Name, Distance = d + 2f,
-                Text = () => Wayside.Word(w.K.Thoughts, ped.Handle + "|" + now / 180)
+                Text = () => _cfg.RoadThoughts ? Wayside.ThoughtOf(w.K, i, ped.Handle + "|" + now / 180) : Wayside.Word(w.K.Thoughts, ped.Handle + "|" + now / 180)
             });
         }
 

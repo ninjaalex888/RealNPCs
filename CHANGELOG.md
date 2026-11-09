@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Thoughts from the saddle** (`[Ticker] RoadThoughts`, on; `RoadThoughtsMetres` 35; settings version 329; FIVEDAY2 item 26). Out of town, the riders, drivers and walkers you pass think something, about the road and about you, from as far off as 35 m for someone mounted; they have no names and nothing is kept of them. People at a scene think by their part in it: the captive, those holding them, and those who came to watch (at the roadside and at a hanging).
+  - Why it reads true: on an empty road every stranger is a small decision, and the people watching something terrible are thinking about their supper and their own skin.
+
 - **What they say and what they think** (`[Ticker] Asides`, on; settings version 328; FIVEDAY2 item 25; Testing row "Someone talks and someone listening thinks"). While someone near you is talking, the person standing nearest them may have a private thought about it over their head: read off what was said (begging, a threat, an insult, a boast, grief, thanks, money, a question) and by the listener's temper. Not for lines said to you.
   - Why it reads true: what's said and what's thought are rarely the same, and the distance between them is where a person lives.
 

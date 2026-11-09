@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 328;
+        public const int CurrentVersion = 329;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -70,6 +70,8 @@ namespace EnrageWestworld.Core
         public bool ThoughtMarker = true;
         public bool ThoughtsOverHeads = true;
         public float ThoughtsOverHeadScale = 0.24f;
+        public bool RoadThoughts = true;          // [Ticker] thoughts from those you pass on the road, by how they're travelling and what they make of you, and by their part at a scene (Core/RoadThoughts.cs; FIVEDAY2 item 26; settings version 329)
+        public float RoadThoughtsMetres = 35f;    // ... riders and drivers this far off, out of town
         public bool Asides = true;                // [Ticker] while someone near you talks, whoever's listening may think something about it, over their head (Core/Asides.cs; FIVEDAY2 item 25; settings version 328)
         public int ThoughtsAtOnce = 3;            // [Ticker] how many people's thoughts may be up over their heads at once (FIVEDAY2 item 24; settings version 327); 1: singly, as it was
         public bool TickerShowsScene = true;   // the bar names the street scene playing out near you, while it plays (Lex, 2026-10-30; settings version 122)
@@ -958,6 +960,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 329)
+                    log?.Invoke("Settings: new in this version: [Ticker] RoadThoughts (on), RoadThoughtsMetres (35): thoughts from those you pass on the road, and by their part at a scene.");
                 if (s.SettingsVersion < 328)
                     log?.Invoke("Settings: new in this version: [Ticker] Asides (on): while someone talks near you, the person listening may think something about it.");
                 if (s.SettingsVersion < 327)
@@ -1483,6 +1487,7 @@ namespace EnrageWestworld.Core
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
             ThoughtsOverHeadScale = Math.Max(0.12f, Math.Min(0.6f, ThoughtsOverHeadScale));
             ThoughtsAtOnce = Math.Max(1, Math.Min(4, ThoughtsAtOnce));
+            RoadThoughtsMetres = Math.Max(10f, Math.Min(80f, RoadThoughtsMetres));
             ScenesOnTickerMetres = Math.Max(5f, Math.Min(80f, ScenesOnTickerMetres));
             PanelTimeScale = Math.Max(0f, Math.Min(1f, PanelTimeScale));
             PadSettings = PadChord.Normal(PadSettings) ?? "RB+DPadUp";   // one that can't be read: the default (the panel is how a controller reaches everything)
@@ -1675,6 +1680,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("ThoughtMarker = " + B(ThoughtMarker) + "   ; a small gold mark over the person whose thought is on the ticker");
             b.AppendLine("ThoughtsOverHeads = " + B(ThoughtsOverHeads) + "   ; the thoughts of people near you show above their head in small type, not on the bar (the news and the rest stay on the bar; a thought whose thinker is out of view is passed over, never put on the bar)");
             b.AppendLine("ThoughtsOverHeadScale = " + F(ThoughtsOverHeadScale) + "   ; text size of thoughts above heads (TickerScale is the bar's)");
+            b.AppendLine("RoadThoughts = " + B(RoadThoughts) + "   ; out of town, the riders, drivers and walkers you pass think something about the road and about you, and people at a scene think by their part in it");
+            b.AppendLine("RoadThoughtsMetres = " + F(RoadThoughtsMetres) + "   ; riders and drivers this far off, out of town (at least TickerNearbyMetres)");
             b.AppendLine("Asides = " + B(Asides) + "   ; while someone near you talks, the person listening may have a thought about it over their head (needs ThoughtsAtOnce above 1)");
             b.AppendLine("ThoughtsAtOnce = " + ThoughtsAtOnce + "   ; how many people's thoughts may be up over their heads at once, arriving one after another (1 to 4; 1: singly, as it was; needs ThoughtsOverHeads)");
             b.AppendLine("TickerShowsScene = " + B(TickerShowsScene) + "   ; while a street scene plays out within 40 m, the bar at the bottom says what is going on and who is in it (\"Nearby: ...\")");

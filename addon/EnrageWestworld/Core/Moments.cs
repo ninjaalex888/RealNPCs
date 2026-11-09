@@ -133,7 +133,7 @@ namespace EnrageWestworld.Core
                 return m.Doing;   // the trouble over: still hurt, still on the ground, a thought of it among the rest
             if (m.Robbed)
                 return "robbed";   // their purse gone (FIVEDAY item 32e)
-            if (m.AtScene == "ring" || m.AtScene == "execution")
+            if (m.AtScene == "ring" || m.AtScene == "execution" || m.AtScene == "gallows")
                 return "scene:" + m.AtScene;
             if (m.YouNear && m.YouLook != null && Sights.States.Contains(m.YouLook))
                 return "youlook";
@@ -164,7 +164,7 @@ namespace EnrageWestworld.Core
             switch (quiet)
             {
                 case "hurt": case "down": case "robbed": return 40;
-                case "scene:ring": case "scene:execution": case "youlook": return 38;
+                case "scene:ring": case "scene:execution": case "scene:gallows": case "youlook": return 38;
                 case "storm": return 34;
                 case "riding:rain": return 31;
                 case "drunk": return 36;
@@ -254,6 +254,8 @@ namespace EnrageWestworld.Core
                 w.Add("in the crowd round a fistfight");
             else if (m.AtScene == "execution")
                 w.Add("watching men about to execute someone by the road");
+            else if (m.AtScene == "gallows")
+                w.Add("in the crowd at a hanging");
             if (m.Storm && !m.Indoors)
                 w.Add("a thunderstorm");
             else if (m.Rain && !m.Indoors && m.Doing == "riding")
@@ -612,6 +614,9 @@ namespace EnrageWestworld.Core
             { "scene:ring", new[] {
                 "Hit him! Go on, hit him!", "Two bits on the big one. Don't let me down.", "Blood on the boards already. Good fight.",
                 "Somebody'll fetch the law in a minute. Till then, watch.", "Don't get too close. The last one swung wild into the crowd.", "Haven't seen a fight this good since harvest." } },
+            { "scene:gallows", new[] {
+                "That rope's new. Somebody paid for that.", "Smaller than they said. They're always smaller.", "Quick, they say. Who's they?",
+                "Everyone here has a good view of somebody else's worst day.", "I brought the children. I don't know why I brought the children.", "Hat off or hat on? What does a person do?" } },
             { "scene:execution", new[] {
                 "They're going to kill him. Right there, by the road.", "Don't look. Don't look and keep walking.", "Somebody ought to do something. Somebody with a gun.",
                 "Kin business, that is. You don't put your nose in kin business.", "His hands are tied. A man with tied hands. God help him.", "If I ride on, did I see it? I didn't see it." } },

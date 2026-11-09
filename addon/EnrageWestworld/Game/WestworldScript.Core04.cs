@@ -992,6 +992,9 @@ namespace EnrageWestworld.InGame
             long now = Bridge.Now();
             ReadClock();
             List<KeyValuePair<Ped, float>> strangers = new List<KeyValuePair<Ped, float>>();
+            List<KeyValuePair<Ped, float>> passers = new List<KeyValuePair<Ped, float>>();   // those passing, on the road (FIVEDAY2 item 26)
+            bool road = _cfg.RoadThoughts && _placeTown == null && _interiorType == 0;
+            float wide = road ? Math.Max(r, _cfg.RoadThoughtsMetres) : r;
             int nowMs = Game.GameTime;
             MomentSweepStart();   // the street around you, for everyone's moment (WestworldScript.Moments.cs)
             foreach (Ped ped in Peds.All())
@@ -1036,8 +1039,15 @@ namespace EnrageWestworld.InGame
                 if (h == me.Handle || Spawner.IsOurs(h))
                     continue;
                 float d = ped.Position.DistanceTo(pos);
-                if (d > r || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h))
+                if (d > wide || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h))
                     continue;
+                if (d > r)
+                {
+                    // past the usual reach: only a stranger on a horse or a wagon, seen coming along the road
+                    if ((PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false)) && ENTITY.IS_ENTITY_ON_SCREEN(h) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17) && ResidentEligible(ped))
+                        passers.Add(new KeyValuePair<Ped, float>(ped, d));
+                    continue;
+                }
                 // only people you can see think on the ticker, so it's always clear whose thought it is
                 bool seen = ENTITY.IS_ENTITY_ON_SCREEN(h) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17);
                 // a loud moment (a fight, a flight, a gun on them: WestworldScript.Moments.cs) gets the first turn and a line every few seconds
@@ -1109,6 +1119,8 @@ namespace EnrageWestworld.InGame
                 // someone fighting or fleeing is a stranger with a loud moment (a thought of it), not passed over as before
                 if (seen && d < 12f && (urgent || (!PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h))) && ResidentEligible(ped))
                     strangers.Add(new KeyValuePair<Ped, float>(ped, d));
+                else if (seen && road && d >= 12f && !urgent && !PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h) && ResidentEligible(ped))
+                    passers.Add(new KeyValuePair<Ped, float>(ped, d));
             }
             MomentSweepEnd(me, nowMs);
             // the three nearest ordinary people get turns too (behind anyone with a name, unless right beside you)
@@ -1164,7 +1176,25 @@ namespace EnrageWestworld.InGame
                     });
                 }
             }
+            foreach (KeyValuePair<Ped, float> s in passers.OrderBy(x => x.Value).Take(2))
+                RoadNear(s.Key, s.Value, me);
             NoteNearby();
+        }
+
+        /// Someone you're passing on the road: a thought, and nothing kept. No name and no record: you'll never see them again, and that's the point of them.
+        private void RoadNear(Ped ped, float d, Ped me)
+        {
+            int h = ped.Handle;
+            string key = "road:" + h;
+            long now = Bridge.Now();
+            _near.Add(new NearThought
+            {
+                Key = key,
+                Name = Grammar.UpperFirst(Director.Kind(ped, !PED.IS_PED_MALE(h))),
+                Handle = h,
+                Distance = d + 6f,
+                Text = () => ThoughtNow(ped, me, d, null, null, key, null, lk => RoadThoughts.Passing(lk.Now, Voice.Hash(key) & 3, key + "|" + now / 30))
+            });
         }
 
         private int _nextNearby;
@@ -1178,7 +1208,7 @@ namespace EnrageWestworld.InGame
                 return;
             _nextNearby = t + 5000;
             var list = new List<InnerLife.Nearby>();
-            foreach (NearThought n in _near.Where(x => x.Handle != 0 && x.Key != null && !x.Key.StartsWith("stranger:")).Take(6))
+            foreach (NearThought n in _near.Where(x => x.Handle != 0 && x.Key != null && !x.Key.StartsWith("stranger:") && !x.Key.StartsWith("road:")).Take(6))
             {
                 Ped p = new Ped(n.Handle);
                 if (!p.Exists())

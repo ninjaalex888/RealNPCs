@@ -99,6 +99,27 @@ namespace EnrageWestworld.Core
             return k.From <= k.To ? hour >= k.From && hour < k.To : hour >= k.From || hour < k.To;
         }
 
+        /// What part someone has in a scene (FIVEDAY2 item 26): held, holding them, or come to watch. Null for those in the thick of it, who have the scene's own thoughts.
+        public static string PartOf(WaysideKind k, int i)
+        {
+            WaysideRole r = k.Cast[i];
+            if (r.Name == "A prisoner")
+                return RoadThoughts.Captive;
+            if (r.Arm != null && k.Cast.Any(c => c.Name == "A prisoner"))
+                return RoadThoughts.Captor;
+            bool fights = (k.SideA != null && Array.IndexOf(k.SideA, i) >= 0) || (k.SideB != null && Array.IndexOf(k.SideB, i) >= 0);
+            return !fights && k.SideA != null && r.Act != "dead" ? RoadThoughts.Crowd : null;
+        }
+
+        /// A thought for one of the cast: half the time, for those with a part, the part's; the scene's own otherwise.
+        public static string ThoughtOf(WaysideKind k, int i, string seed)
+        {
+            string part = PartOf(k, i);
+            if (part != null && Voice.Chance(seed + "|part", 50))
+                return RoadThoughts.ForRole(part, seed);
+            return Word(k.Thoughts, seed);
+        }
+
         /// One of those that fit, by weight, leaving out any seen lately. Null: none.
         public static WaysideKind Pick(int hour, bool onRoad, Func<string, bool> lately, string seed)
         {
