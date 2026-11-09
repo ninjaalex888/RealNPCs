@@ -57,10 +57,14 @@ namespace EnrageWestworld.Core
         /// Whether this person comes to your aid: someone who owes you (warmth 3: the bar at AlliesLiking or more, someone you
         /// saved, a trouble you mended) always (Lex, 2026-11-03: a friend "would now protect the main character if fought by the
         /// law or anyone else"); a friend (warmth 2) most times, someone who merely thinks well of you (1) with the nerve for it.
-        /// The bar: their own caution (anxiety, the risk they'll take, assertiveness), a gun against them unless they carry one,
-        /// the first to come readiest and each after less so; a coward never; the drunk and the hot readier; a woman only
-        /// against fists.
-        public static AllyTake Weigh(Traits t, string temper, bool woman, bool drunk, int warmth, bool foeArmed, bool armed, int foes, int helping, string seed)
+        /// The bar: their own caution (anxiety, the risk they'll take, assertiveness), the first to come readiest and each after
+        /// less so; a coward never; the drunk and the hot readier. A gun against them, when they carry none or are a woman the town
+        /// never armed, raises a friend's bar and stops anyone less (a player, 2026-11-04: the green-dot friends "do NOT come to your
+        /// aid"; a friend without a gun of their own is handed a revolver as they come, so a green dot means something in a gunfight).
+        /// `fleeing`: they have already bolted from the shooting. Flight is the body's first answer to gunfire and very nearly
+        /// everyone in a street takes it, so a friend has to be able to turn back: someone who owes you does, a friend
+        /// on a harder bar, and anyone less keeps running. Turning round for someone is the strongest thing a friend can show.
+        public static AllyTake Weigh(Traits t, string temper, bool woman, bool drunk, int warmth, bool foeArmed, bool armed, int foes, int helping, string seed, bool fleeing = false)
         {
             var a = new AllyTake();
             if (warmth <= 0)
@@ -72,7 +76,7 @@ namespace EnrageWestworld.Core
             {
                 a.Comes = true;
                 a.Score = 2f;
-                a.Why = "owes you: comes whatever the odds" + (foeArmed ? ", guns out" : "") + (helping > 0 ? ", " + helping + " with you already" : "");
+                a.Why = "owes you: " + (fleeing ? "turns back from running" : "comes whatever the odds") + (foeArmed ? ", guns out" : "") + (helping > 0 ? ", " + helping + " with you already" : "");
                 return a;
             }
             if (t == null)
@@ -85,16 +89,41 @@ namespace EnrageWestworld.Core
                 a.Why = "a coward";
                 return a;
             }
-            if (foeArmed && !armed)
+            if (fleeing && warmth < 2)
+            {
+                a.Why = "running already, and not friend enough to turn back";
+                return a;
+            }
+            if (foeArmed && !armed && warmth < 2)
             {
                 a.Why = "a gun against them, and none of their own";
                 return a;
             }
-            if (woman && foeArmed)
+            if (woman && foeArmed && warmth < 2)
             {
                 a.Why = "a woman, and guns drawn";
                 return a;
             }
+            float nerve = NerveOf(t, temper, drunk);
+            float pull = warmth == 2 ? 1f : 0.6f;   // an ordinary friend with ordinary nerve comes most times; someone who merely thinks well of you seldom
+            a.Score = nerve * pull;
+            a.Bar = 0.5f + 0.12f * helping + (foeArmed ? 0.15f : 0f) + (foes >= 3 ? 0.1f : 0f) + (foeArmed && !armed ? UnarmedBar : 0f) + (foeArmed && woman ? WomanBar : 0f) + (fleeing ? TurnBackBar : 0f);
+            // a roll a person and a fight, so the same friend doesn't always come and the same shirker always shirk
+            float roll = (Voice.Hash(seed + "ally") % 100) / 100f * 0.3f - 0.15f;
+            a.Comes = a.Score + roll >= a.Bar;
+            a.Why = (warmth == 2 ? "a friend of yours" : "thinks well of you") + ", " + Describe(nerve) + (fleeing ? ", turning back from running" : "") +
+                    (drunk ? ", in drink" : "") + (foeArmed ? ", guns out" : "") + (helping > 0 ? ", " + helping + " with you already" : "");
+            return a;
+        }
+
+        // small on purpose: an ordinary friend's nerve is 0.6 and the roll at most 0.15, so 0.05 leaves them about one chance in six
+        // with no gun, and 0.08 about one in sixteen once they've bolted; the loyal and the hot turn back far oftener
+        private const float UnarmedBar = 0.05f, WomanBar = 0.05f, TurnBackBar = 0.08f;
+
+        /// How far past their own caution someone will go: the risk they'll take, how forward they are, how little they fret,
+        /// how much they feel for another; the hot, the loyal and the drunk go further.
+        private static float NerveOf(Traits t, string temper, bool drunk)
+        {
             float nerve = 0.6f + 0.25f * t[Traits.Risk] + 0.2f * t[Traits.Assertiveness] - 0.3f * t[Traits.Anxiety] + 0.15f * t[Traits.Compassion];
             if (temper == "Hothead")
                 nerve += 0.3f;
@@ -102,16 +131,12 @@ namespace EnrageWestworld.Core
                 nerve += 0.25f;
             if (drunk)
                 nerve += 0.2f;
-            float pull = warmth >= 3 ? 1.15f : warmth == 2 ? 1f : 0.6f;   // an ordinary friend with ordinary nerve comes most times; someone who merely thinks well of you seldom
-            a.Score = nerve * pull;
-            a.Bar = 0.5f + 0.12f * helping + (foeArmed ? 0.15f : 0f) + (foes >= 3 ? 0.1f : 0f);
-            // a roll a person and a fight, so the same friend doesn't always come and the same shirker always shirk
-            float roll = (Voice.Hash(seed + "ally") % 100) / 100f * 0.3f - 0.15f;
-            a.Comes = a.Score + roll >= a.Bar;
-            a.Why = (warmth >= 3 ? "owes you" : warmth == 2 ? "a friend of yours" : "thinks well of you") + ", " + Describe(nerve) +
-                    (drunk ? ", in drink" : "") + (foeArmed ? ", guns out" : "") + (helping > 0 ? ", " + helping + " with you already" : "");
-            return a;
+            return nerve;
         }
+
+        /// How far off someone counts as fighting you: gunmen open up from well past the distance a friend will come from, and a
+        /// fight the mod can't see has nobody to help in it.
+        public const float FoeMetres = 80f;
 
         private static string Describe(float nerve)
         {
@@ -147,10 +172,21 @@ namespace EnrageWestworld.Core
         {
             "Heard the shooting from the road! Hold on!", "Thought that was you! I'm coming!", "Hold them off, I'm here!"
         };
-
-        public static string Shout(bool armed, bool road, string seed)
+        // someone who had already bolted and turned back (a player's report, 2026-11-04): the shame of the running in it
+        private static readonly string[] TurningBack =
         {
-            return Voice.Pick(seed + "shout", road ? RoadComing : armed ? ComingArmed : Coming);
+            "Damn it all. Hold on, I'm turning round!", "Got ten yards and felt sick for it. Here I am!", "Can't do it. Can't leave you to them!",
+            "Ran like a rabbit. Not running now!", "Wait! Lord help me, I came back!", "What a fool I am. Get behind something!"
+        };
+        private static readonly string[] AfterTurned =
+        {
+            "You saw me run. I'd be obliged if that stayed between us.", "Got as far as the corner. Couldn't make my legs go on.",
+            "First thing I did was run. The second thing's the one I'll tell.", "Don't thank me. I bolted before I came back."
+        };
+
+        public static string Shout(bool armed, bool road, string seed, bool turned = false)
+        {
+            return Voice.Pick(seed + "shout", turned ? TurningBack : road ? RoadComing : armed ? ComingArmed : Coming);
         }
 
         // ---- the friend from the road rides in (SIXDAY item 2; [Encounters] AlliesRide) ----------------------------------
@@ -194,9 +230,9 @@ namespace EnrageWestworld.Core
             return (Person.FirstOf(deadName) ?? "Your friend") + " fell standing with you.";
         }
 
-        public static string After(bool foesRan, bool hurt, string seed)
+        public static string After(bool foesRan, bool hurt, string seed, bool turned = false)
         {
-            return Voice.Pick(seed + "after", hurt ? AfterHurt : foesRan ? AfterRan : AfterWon);
+            return Voice.Pick(seed + "after", turned ? AfterTurned : hurt ? AfterHurt : foesRan ? AfterRan : AfterWon);
         }
 
         /// What they keep of it: the memory's words come from the mind's "defend" lines (Minds.Lines.cs); this is the log's.
@@ -207,7 +243,7 @@ namespace EnrageWestworld.Core
 
         public static IEnumerable<string> AllLines()
         {
-            return Coming.Concat(ComingArmed).Concat(AfterWon).Concat(AfterRan).Concat(AfterHurt).Concat(RoadComing)
+            return Coming.Concat(ComingArmed).Concat(AfterWon).Concat(AfterRan).Concat(AfterHurt).Concat(RoadComing).Concat(TurningBack).Concat(AfterTurned)
                          .Concat(new[] { FellNews("Abner", "Arthur Morgan"), FellNews("Abner", null), FellCaption("Abner Tuck") });
         }
     }

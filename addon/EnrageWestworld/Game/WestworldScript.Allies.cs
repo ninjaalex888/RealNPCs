@@ -5,7 +5,8 @@
 // is a foe. While foes stand, the named people near who think well of you (enRAGE's fondness, a kindness of yours they
 // remember, a trouble you mended, someone you saved, talks and your name known; never the afraid or the aggrieved) are
 // weighed by their own nature (Allies.Weigh: someone who owes you, the bar at AlliesLiking or more, comes whatever the
-// odds), and the readiest comes: up out of their seat the game's way, a revolver given against guns (fists kept to
+// odds; a friend who has already bolted from the shooting may turn back, since nearly everyone bolts at the first shot and
+// Lex's log showed seven coming against fists and one against guns), and the readiest comes: up out of their seat the game's way, a revolver given against guns (fists kept to
 // fists), a shout as they come, straight at the nearest foe, retasked as foes fall, a small green dot on the map
 // (the one friends near you wear anyway: WestworldScript.FriendDots.cs; [Encounters] AlliesDot, AlliesDotColour). Out of the towns, with nobody you know in
 // sight and two or more armed against you, a friend from a town's ledger may happen by (AlliesRoadChance): made 30-45 m
@@ -32,6 +33,7 @@ namespace EnrageWestworld.InGame
             public int Handle, Target, Since;
             public string Id, Name;
             public bool Road, GivenGun;
+            public bool Turned;   // had bolted from the shooting and turned back: kept deaf to the gunfire until it's over, and their word after says so
             public Blip Dot;   // the small green dot on the map while they're with you (ours to take away)
         }
 
@@ -111,8 +113,8 @@ namespace EnrageWestworld.InGame
                     if (p == null)
                         continue;
                     int h = p.Handle;
-                    if (h == me.Handle || !p.Exists() || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(me.Position) > _cfg.AlliesMetres)
-                        continue;
+                    if (h == me.Handle || !p.Exists() || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(me.Position) > Math.Max(_cfg.AlliesMetres, Allies.FoeMetres))
+                        continue;   // (farther than a friend will come from: gunmen open up at range, and a fight not seen has nobody to help in it)
                     if (!PED.IS_PED_IN_COMBAT(h, me.Handle) || _allies.Any(a => a.Handle == h))
                         continue;
                     _alliesFoes.Add(h);
@@ -131,7 +133,8 @@ namespace EnrageWestworld.InGame
                 return;
             }
             foreach (int f in _alliesFoes)
-                _alliesSeenFoes.Add(f);
+                if (_alliesSeenFoes.Add(f))
+                    AlliesNoteFoe(f);
             _alliesFoeAt = now;
             if (_alliesFightSince == 0)
             {
@@ -143,10 +146,19 @@ namespace EnrageWestworld.InGame
             {
                 if (ENTITY.IS_ENTITY_DEAD(a.Handle))
                     continue;
-                if (a.Target == 0 || !ENTITY.DOES_ENTITY_EXIST(a.Target) || ENTITY.IS_ENTITY_DEAD(a.Target) || !_alliesFoes.Contains(a.Target))
+                bool bolted = PED.IS_PED_FLEEING(a.Handle);   // the gunfire got to them after all: put back in the fight, and deaf to it now
+                if (bolted)
+                {
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(a.Handle, true);
+                    a.Turned = true;
+                    _alliesKeptIn++;
+                }
+                if (bolted || a.Target == 0 || !ENTITY.DOES_ENTITY_EXIST(a.Target) || ENTITY.IS_ENTITY_DEAD(a.Target) || !_alliesFoes.Contains(a.Target))
                 {
                     Vector3 at = ENTITY.GET_ENTITY_COORDS(a.Handle, true, true);
                     a.Target = _alliesFoes.OrderBy(f => ENTITY.GET_ENTITY_COORDS(f, true, true).DistanceTo(at)).First();
+                    if (bolted)
+                        TASK.CLEAR_PED_TASKS(a.Handle, true, false);
                     TASK.TASK_COMBAT_PED(a.Handle, a.Target, 0, 16);
                 }
             }
@@ -173,6 +185,7 @@ namespace EnrageWestworld.InGame
             AllyTake bestTake = null;
             Ped bestPed = null;
             MindWho bestWho = null;
+            bool bestFleeing = false;
             string lastWhy = null;
             int helping = _allies.Count(a => !ENTITY.IS_ENTITY_DEAD(a.Handle));
             foreach (Ped p in Peds.All())
@@ -184,8 +197,11 @@ namespace EnrageWestworld.InGame
                     continue;
                 if (_alliesFoes.Contains(h) || _allies.Any(a => a.Handle == h) || (Natives.IsLaw(p) && _alliesFoesLaw) || Natives.IsChild(p) || Natives.StoryModel(p) || !IsGrownUp(p))
                     continue;   // (a lawman who thinks well of you comes against anyone but the law; Lex, 2026-11-04)
-                if (Spawner.IsOurs(h) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) ||
-                    _director.Involves(h) || IsStaged(h) || MindGettingUp(h) || InTalk(h) || MayDirectWhyNot(p) != null)
+                // Fleeing doesn't rule them out here (a player, 2026-11-04: friends never came). Nearly everyone in the street bolts or
+                // cowers at the first shot and the game reports both as fleeing, so this used to leave nobody to come in a gunfight
+                // (Lex's own log: seven came against fists, one against guns). Weigh decides who turns back.
+                if (Spawner.IsOurs(h) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_RAGDOLL(h) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) ||
+                    _director.Involves(h) || IsStaged(h) || MindGettingUp(h) || InTalk(h) || MayDirectWhyNot(p, true) != null)
                     continue;
                 int asked;
                 if (_alliesAskedAt.TryGetValue(h, out asked) && now - asked < AlliesAskGapMs && now >= asked)
@@ -200,8 +216,9 @@ namespace EnrageWestworld.InGame
                 if (warmth <= 0)
                     continue;
                 Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
+                bool fleeing = PED.IS_PED_FLEEING(h);
                 AllyTake take = Allies.Weigh(t, w.P != null ? w.P.Personality : null, !PED.IS_PED_MALE(h), InHisCups(p, w.P), warmth, armedFoe, WEAPON.IS_PED_ARMED(h, 4), _alliesFoes.Count, helping,
-                                             w.Id + "|" + _alliesFightSince);
+                                             w.Id + "|" + _alliesFightSince, fleeing);
                 if (!take.Comes)
                 {
                     lastWhy = w.Name + ": " + take.Why;
@@ -212,6 +229,7 @@ namespace EnrageWestworld.InGame
                     bestTake = take;
                     bestPed = p;
                     bestWho = w;
+                    bestFleeing = fleeing;
                 }
             }
             if (bestTake == null)
@@ -220,7 +238,7 @@ namespace EnrageWestworld.InGame
                     _alliesWhyNot = lastWhy;
                 return null;
             }
-            best = AllyStart(bestPed, bestWho.Id, bestWho.Name, armedFoe, false, now, bestTake.Why);
+            best = AllyStart(bestPed, bestWho.Id, bestWho.Name, armedFoe, false, now, bestTake.Why, bestFleeing);
             return best;
         }
 
@@ -254,13 +272,15 @@ namespace EnrageWestworld.InGame
 
         /// They come: up out of whatever they're at the game's way, a revolver against guns (fists against fists), a shout,
         /// a green dot on the map, and at the nearest foe.
-        private Ally AllyStart(Ped p, string id, string name, bool armedFoe, bool road, int now, string why)
+        private Ally AllyStart(Ped p, string id, string name, bool armedFoe, bool road, int now, string why, bool turned = false)
         {
             int h = p.Handle, me = Game.Player.Character.Handle;
             Vector3 at = p.Position;
             int target = _alliesFoes.OrderBy(f => ENTITY.GET_ENTITY_COORDS(f, true, true).DistanceTo(at)).First();
-            var a = new Ally { Handle = h, Id = id, Name = name, Target = target, Since = now, Road = road };
-            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            var a = new Ally { Handle = h, Id = id, Name = name, Target = target, Since = now, Road = road, Turned = turned };
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, turned);   // someone who bolted once would bolt again at the next shot: deaf to it until it's over (AlliesEnd lets it go)
+            if (turned)
+                _alliesTurned++;
             PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, true);    // fights even against the armed
             PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);   // always fights
             if (armedFoe && !WEAPON.IS_PED_ARMED(h, 4))
@@ -272,7 +292,7 @@ namespace EnrageWestworld.InGame
                 WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);   // fists against fists, as those who join your fistfight (JoinYou.cs): a gun of their own stays put (the review)
             ScenarioExit.SoftUp(h, x => TASK.TASK_COMBAT_PED(x, target, 0, 16));   // up the game's way and at them the same tick
             Speech.SayTag(h, "fight", target);
-            SpeechCaption(Person.FirstOf(name), Allies.Shout(armedFoe, road, id + "|" + now), h, 2500, true);
+            SpeechCaption(Person.FirstOf(name), Allies.Shout(armedFoe, road, id + "|" + now, turned), h, 2500, true);
             AllyDot(a);
             _allies.Add(a);
             _alliesCame++;
@@ -348,7 +368,11 @@ namespace EnrageWestworld.InGame
         private void AlliesAbort()
         {
             foreach (Ally a in _allies)
+            {
                 AllyDotClear(a);
+                if (a.Turned && ENTITY.DOES_ENTITY_EXIST(a.Handle))
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(a.Handle, false);   // never left deaf to the street
+            }
             FriendDotsClear();
         }
 
@@ -621,10 +645,37 @@ namespace EnrageWestworld.InGame
             Log.Write("ALLIES test: a revolver man made " + (int)m.Position.DistanceTo(me.Position) + " m off comes at you");
         }
 
+        // Whose people fought you, for the log once a fight is over (a player, 2026-11-06: a robber opens up in town and the townsfolk join
+        // him). RealNPCs sends nobody at you in a gunfight, and enRAGE and the game each have their own rules for townsfolk; this
+        // says whose people they were, so the next log can tell.
+        private int _alliesFoeLaw, _alliesFoeRecords, _alliesFoeFolk;
+        private string _alliesFoeFolkNames;
+
+        private void AlliesNoteFoe(int h)
+        {
+            Ped p = new Ped(h);
+            if (Natives.IsLaw(p))
+                _alliesFoeLaw++;
+            else if (IsRecord(h))
+                _alliesFoeRecords++;
+            else
+            {
+                _alliesFoeFolk++;
+                if (_alliesFoeFolk <= 6)
+                {
+                    MindWho w = MindKnown(h, Game.GameTime);
+                    _alliesFoeFolkNames = (_alliesFoeFolkNames == null ? "" : _alliesFoeFolkNames + ", ") + (w != null && w.Name != null ? w.Name : "someone unnamed");
+                }
+            }
+        }
+
         /// No foe left: those with you leave off, turn to you with a word, remember it, and think better of you for it.
         /// A friend from the road is handed back to the game; the Testing row's man too.
         private void AlliesEnd(Ped me, int now)
         {
+            Log.Write("ALLIES the fight is over: at you were " + _alliesFoeLaw + " of the law, " + _alliesFoeRecords + " of enRAGE's people, " + _alliesFoeFolk + " others" + (_alliesFoeFolkNames != null ? " (" + _alliesFoeFolkNames + ")" : "") + "; " + _allies.Count + " stood with you");
+            _alliesFoeLaw = _alliesFoeRecords = _alliesFoeFolk = 0;
+            _alliesFoeFolkNames = null;
             int fell = 0;
             bool ran = !_alliesFoesFell;
             foreach (Ally a in _allies)
@@ -648,7 +699,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 5000, 0f, 0f, 0f);
                 bool hurt = ENTITY.GET_ENTITY_HEALTH(h) < ENTITY.GET_ENTITY_MAX_HEALTH(h, false) * 0.7f;
                 Speech.SayTag(h, "relieved", me.Handle);
-                SpeechCaption(Person.FirstOf(a.Name), Allies.After(ran, hurt, a.Id + "|" + now), h, 4000, true);
+                SpeechCaption(Person.FirstOf(a.Name), Allies.After(ran, hurt, a.Id + "|" + now, a.Turned), h, 4000, true);
                 // what they keep of it: stood up for you (the mind's defend memory: their thoughts say so for days)
                 try
                 {
@@ -706,6 +757,7 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        private int _alliesTurned, _alliesKeptIn;   // friends who turned back from running; those put back in the fight when the gunfire got to them
         private bool _alliesFoesFell;   // a foe died this fight (the word after says "won" rather than "ran")
         private readonly HashSet<int> _alliesSeenFoes = new HashSet<int>();
 
@@ -762,7 +814,7 @@ namespace EnrageWestworld.InGame
 
         private string AlliesStatus()
         {
-            return (_cfg.AlliesHelp ? "on" : "off ([Encounters] AlliesHelp)") + "; " + _alliesFights + " fights of yours seen, " + _alliesCame + " came to your aid (" + _alliesRoadCame + " from the road, " + _alliesRode + " on horseback), " + _alliesFell + " fell (" + _alliesGrieved + " grieved at a cost to you)" + (_alliesRide != null ? ", one riding in now" : "") +
+            return (_cfg.AlliesHelp ? "on" : "off ([Encounters] AlliesHelp)") + "; " + _alliesFights + " fights of yours seen, " + _alliesCame + " came to your aid (" + _alliesRoadCame + " from the road, " + _alliesRode + " on horseback, " + _alliesTurned + " turned back from running; " + _alliesKeptIn + " times one was put back in the fight), " + _alliesFell + " fell (" + _alliesGrieved + " grieved at a cost to you)" + (_alliesRide != null ? ", one riding in now" : "") +
                    (_allies.Count > 0 ? "; " + _allies.Count + " with you now" : "") + (_alliesPendKind != null ? "; " + (_alliesPendKind == "test" ? "the test's man" : "a friend from the road") + " on the way" : "") +
                    (_alliesLast != null ? "; last: " + _alliesLast : "") + (_alliesWhyNot != null ? "; held back lately: " + _alliesWhyNot : "");
         }

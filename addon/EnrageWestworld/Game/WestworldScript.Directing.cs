@@ -18,16 +18,17 @@ namespace EnrageWestworld.InGame
             return _bridge != null && _bridge.RecordAt(h) != null;
         }
 
-        /// Why we mayn't give this person orders now, or null if we may.
-        private string MayDirectWhyNot(Ped p)
+        /// Why we mayn't give this person orders now, or null if we may. `fleeingOk`: being in flight doesn't count against them
+        /// (a friend who may turn back from running: WestworldScript.Allies.cs); everyone else's flight is the game's.
+        private string MayDirectWhyNot(Ped p, bool fleeingOk = false)
         {
             if (p == null || !p.Exists() || ENTITY.IS_ENTITY_DEAD(p.Handle))
                 return "gone";
             int h = p.Handle;
             bool record = IsRecord(h);
-            bool busy = PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_RAGDOLL(h) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false);
+            bool busy = PED.IS_PED_IN_COMBAT(h, 0) || (PED.IS_PED_FLEEING(h) && !fleeingOk) || PED.IS_PED_RAGDOLL(h) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false);
             return Directing.WhyNot(Natives.StoryModel(p), IsGrownUp(p), MISC.GET_MISSION_FLAG(), record, _cfg.EnragePeopleJoinIn,
-                                    record && _bridge.EnrageFighter(h), record && _bridge.Interrogating, busy, Spawner.IsOurs(h), !record && CanDirect(p));
+                                    record && _bridge.EnrageFighter(h), record && _bridge.Interrogating, busy, Spawner.IsOurs(h), !record && CanDirect(p, fleeingOk));
         }
 
         private bool MayDirect(Ped p)

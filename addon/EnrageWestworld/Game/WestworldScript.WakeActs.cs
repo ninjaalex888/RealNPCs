@@ -202,10 +202,10 @@ namespace EnrageWestworld.InGame
         }
 
         /// Free to be moved about: nobody else's, not busy, not in danger.
-        private bool CanDirect(Ped ped)
+        private bool CanDirect(Ped ped, bool fleeingOk = false)
         {
             int h = ped.Handle;
-            return !ENTITY.IS_ENTITY_DEAD(h) && !PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h) && !PED.IS_PED_RAGDOLL(h) && !PED.IS_PED_ON_MOUNT(h) &&
+            return !ENTITY.IS_ENTITY_DEAD(h) && !PED.IS_PED_IN_COMBAT(h, 0) && (fleeingOk || !PED.IS_PED_FLEEING(h)) && !PED.IS_PED_RAGDOLL(h) && !PED.IS_PED_ON_MOUNT(h) &&
                    !PED.IS_PED_IN_ANY_VEHICLE(h, false) && !PED.IS_PED_SWIMMING(h) && !ENTITY.IS_ENTITY_IN_WATER(h) && !Natives.OtherScripts(h) && !Spawner.IsOurs(h);
         }
 

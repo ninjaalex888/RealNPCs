@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Friends who really come to your aid in a gunfight** (a player's report on Nexus, 2026-11-04: hours of testing and the green-dot friends never came; FIVEDAY2 0b). Friends came for fist fights but almost never when guns were out (Lex's own log: seven against one), and the reason was simple: nearly everyone in a street bolts or cowers at the first shot, the game reports both as fleeing, and anyone fleeing was ruled out. Now a friend can turn back: someone who owes you always does, a friend on a harder bar, with their own shout and their own word after. Once they've turned they don't bolt again. A friend with no gun of their own now comes against guns (they're handed a revolver, on a higher bar), and so does a woman who's a friend. Gunmen count as fighting you out to 80 m, past the 40 m a friend will come from, since a fight the mod can't see has nobody to help in it. Someone who merely thinks well of you still keeps out of it.
+  - Why it reads true: fear is the body's first answer and loyalty is the second. Turning round is the strongest thing a friend can show you.
+  - The log says at the end of a fight who came at you (the law, enRAGE's people, anyone else, by name), to settle another report: townsfolk joining a robber against the player. RealNPCs sends nobody at you in a gunfight, so those come from enRAGE or the game.
+
 - **The Around town box, less of it** (players' finding, 2026-11-07: "How do I disable the window in the top right corner? I couldn't find it anywhere in the settings menu"; settings version 306).
   - It can be turned off: `[Output] NewsTo = off`, now also on the settings panel's UI page as "The Around town box, top right (corner; ticker; game feed; off)", where it had shown only as "NewsTo".
   - It's up less. The town's regard of you keeps the box up for 30 seconds after you come into a town, or when it changes, not the whole time you're there (`[Output] AroundTownStaysSeconds`; 0 brings back always). Each item stays a little shorter (5.5 seconds and a bit for its length, at most 12, where it was 7 and at most 16), and at most four wait their turn (it was six).
