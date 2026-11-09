@@ -602,6 +602,7 @@ namespace EnrageWestworld.InGame
         private void Frame(int now)
         {
             _now = now;
+            Draw.Clean = _cfg != null && _cfg.CleanScreen;   // the clean screen, one check in Draw (Draw.Hidden)
             Draw.Part = Draw.PartVram;
             VramStep();   // the VRAM gauge, top left: one piece of the frame's text, before the rest (WestworldScript.Vram.cs)
             Draw.Part = Draw.PartOther;   // each step says who it is, so a frame's text can be told apart (Draw.Spent)

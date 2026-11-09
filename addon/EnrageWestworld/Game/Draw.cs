@@ -151,6 +151,18 @@ namespace EnrageWestworld.InGame
         private static readonly string[] PartWords = { "other", "the Talk menu", "the thought over a head", "the bar", "a test's words", "the feelings bars",
                                                        "the subtitles", "the name cards", "the mind cards", "the wake tags", "the news", "the VRAM gauge" };
         public static int Part;
+
+        /// The clean screen ([Display] CleanScreen; players on Nexus, 2026-11: at least eight couldn't find how to clear it): the
+        /// names, bars, meter, cards, thoughts, ticker, Around town box and VRAM gauge draw nothing while it's on. One check here
+        /// rather than one in each feature, so everything behind them (who is near, what they think, the queue of news) goes on
+        /// exactly as it was and comes back the moment it's off. What's said to you, the Talk menu, a test's words and the panel
+        /// aren't covered: those are parts you asked for or need.
+        public static bool Clean;
+
+        private static bool Hidden
+        {
+            get { return Clean && Part != PartOther && Part != PartTalk && Part != PartHint && Part != PartSubtitles; }
+        }
         private static readonly int[] _by = new int[Parts];
         private static int _refused;
 
@@ -213,7 +225,7 @@ namespace EnrageWestworld.InGame
         /// Text already formed (Formed), with its top-left corner at (x, y).
         public static void TextFormed(string formed, float x, float y, float scale, int r, int g, int b, int a = 255)
         {
-            if (string.IsNullOrEmpty(formed) || a <= 0 || !Take(1))
+            if (string.IsNullOrEmpty(formed) || a <= 0 || Hidden || !Take(1))
                 return;
             UIDEBUG._BG_SET_TEXT_SCALE(scale, scale);
             UIDEBUG._BG_SET_TEXT_COLOR(r, g, b, a);
@@ -226,7 +238,7 @@ namespace EnrageWestworld.InGame
         /// A filled box given by its top-left corner and size.
         public static void Rect(float x, float y, float w, float h, int r, int g, int b, int a)
         {
-            if (a <= 0 || w <= 0f || h <= 0f)
+            if (a <= 0 || w <= 0f || h <= 0f || Hidden)
                 return;
             GRAPHICS.DRAW_RECT(x + w / 2f, y + h / 2f, w, h, r, g, b, a, true, false);
         }
