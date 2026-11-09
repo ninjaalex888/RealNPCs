@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 355;
+        public const int CurrentVersion = 356;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -178,9 +178,9 @@ namespace EnrageWestworld.Core
         public float FeelingBarsMetres = 15f;
         public bool FeelingBarsShowEmpty;
         public string NameCards = "known";        // off | known | everyone: names over heads, enRAGE's way (2026-10-29)
-        public float NameCardsMetres = 25f;       // strangers' cards within (30 until settings version 129; Lex, 2026-10-30: 25)
+        public float NameCardsMetres = 15f;       // strangers' cards within (30 until settings version 129; Lex, 2026-10-30: 25; Lex, 2026-11-09: 15, for the frame rate)
         public bool NameCardsAlways = true;       // a card over everyone in range, always: hidden only by walls, not tables or people, sixteen at most, drawn before the Testing overlays (Lex, 2026-10-30; settings version 129)
-        public float NameCardsKnownMetres = 75f;  // people you know within
+        public float NameCardsKnownMetres = 30f;  // people you know within (75 until settings version 356; Lex, 2026-11-09: 30, for the frame rate)
         public bool NameCardsBesideEnrage;        // ours beside enRAGE's own cards too (else left to enRAGE while its are on)
         public bool NameCardsStrangerNames;      // a stranger's own name over "Stranger"; off: "Stranger" alone (Lex, 2026-10-30; settings version 124)
         public bool NameCardsSecondLine = true;   // the line under the name (temper, trade, Stranger, gang); off: the name alone (players, 2026-10-30; settings version 117)
@@ -689,6 +689,14 @@ namespace EnrageWestworld.Core
         private static void RaiseOldDefaults(Settings s, Action<string> log)
         {
             List<string> raised = new List<string>();
+            if (s.SettingsVersion < 356)
+            {
+                // 2026-11-09 (Lex): names drawn nearer, for the frame rate: the name cards were the costliest thing in the first session
+                // with this build (0.17-0.36 ms a frame), and every person within the larger distance plus 20 m is looked at each pass.
+                // A distance of your own is kept.
+                if (Math.Abs(s.NameCardsMetres - 25f) < 0.01f) { s.NameCardsMetres = 15f; raised.Add("NameCardsMetres 25 -> 15"); }
+                if (Math.Abs(s.NameCardsKnownMetres - 75f) < 0.01f) { s.NameCardsKnownMetres = 30f; raised.Add("NameCardsKnownMetres 75 -> 30"); }
+            }
             if (s.SettingsVersion < 17)
             {
                 if (s.AwakeningDays == 6) { s.AwakeningDays = 1; raised.Add("AwakeningDays 6 -> 1"); }
