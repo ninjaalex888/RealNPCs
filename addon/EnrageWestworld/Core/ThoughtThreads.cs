@@ -128,12 +128,61 @@ namespace EnrageWestworld.Core
             }
         }
 
+        // the morning after (THREEHOUR R2; [Ticker] ThreadsNextDay): a resident's loud moment is kept in the save, by its day; their first
+        // quiet thought the next game day may pick it up again, once that day. Why it reads true: a fright or a fight comes back in the
+        // morning, smaller, with sleep between, and it's what people walk around with that makes a town feel lived in.
+        public const int NextDayChance = 50;
+
+        private static readonly Dictionary<string, string[]> NextDay_ = new Dictionary<string, string[]>
+        {
+            { "fought", new[] { "My knuckles told me about yesterday before I woke.", "Still can't say what yesterday's fight was even about.", "Folk look at me sideways today. On account of yesterday." } },
+            { "guns", new[] { "Slept in my boots after yesterday's shooting.", "Every door that bangs today, I'm back in it.", "Bullets yesterday. Flour and coffee today. Strange world." } },
+            { "fled", new[] { "Ran like a jackrabbit yesterday. Walked slow today.", "Hardly slept. Kept running in my sleep.", "Somebody saw me run off yesterday. I'd bet on it." } },
+            { "aimed", new[] { "A man held a gun on me yesterday. Can't eat a bite today.", "That barrel was in my dreams all night.", "I keep saying what I should've said to him yesterday." } },
+            { "shots", new[] { "The shooting yesterday. Nobody'll say who.", "Kept the children in today. Not after yesterday.", "Shots yesterday, and the town's quiet as a church today." } },
+            { "watched", new[] { "Still chewing on that fight I saw yesterday.", "Yesterday's two fighters passed in the street. Not a word.", "I'd have done better than either of them yesterday." } },
+            { "body", new[] { "That body yesterday. I saw it again all night.", "Wonder if they've buried the one I saw.", "Can't walk that way since yesterday." } },
+            { "spooked", new[] { "My horse and I aren't speaking. Not since yesterday.", "Still sore from that horse yesterday.", "Went over every inch of the tack this morning." } },
+        };
+
+        /// The morning-after thought for what it was, or null.
+        public static string NextDay(string family, string seed)
+        {
+            string[] pool;
+            return family != null && NextDay_.TryGetValue(family, out pool) ? pool[Math.Abs(Voice.Hash(seed + "|nd") % pool.Length)] : null;
+        }
+
+        /// The day and what it was, packed in one number for the save's counts (day * 16 + the family's place).
+        public static int Pack(long day, string family)
+        {
+            int i = new List<string>(After_.Keys).IndexOf(family);
+            return i < 0 ? -1 : (int)(day * 16 + i);
+        }
+
+        public static bool Unpack(int packed, out long day, out string family)
+        {
+            day = 0;
+            family = null;
+            if (packed < 0)
+                return false;
+            var keys = new List<string>(After_.Keys);
+            int i = packed % 16;
+            if (i >= keys.Count)
+                return false;
+            day = packed / 16;
+            family = keys[i];
+            return true;
+        }
+
         public static IEnumerable<string> AllLines()
         {
             foreach (string[][] t in After_.Values)
                 foreach (string[] g in t)
                     foreach (string l in g)
                         yield return l;
+            foreach (string[] p in NextDay_.Values)
+                foreach (string l in p)
+                    yield return l;
         }
 
         public static IEnumerable<string> Families()

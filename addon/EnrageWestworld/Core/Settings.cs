@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 361;
+        public const int CurrentVersion = 362;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -86,6 +86,7 @@ namespace EnrageWestworld.Core
         public bool RecordMinds = true;
         public bool RecordFates = true;
         public bool MindShadow = true;    // the NPC mind (daytime 2026-10-27): works out traits, needs, feelings and mood and only reports them
+        public bool ThreadsNextDay = true;   // [Ticker] with ThoughtsFollowOn: a resident's loud moment kept in the save; their first quiet thought the next game day may pick it up (THREEHOUR R2; settings version 362)
         public bool OnlookerPicks = true;   // [Mind] with the model's picks: at a fight or a quarrel, the strongest onlooker's own act is the model's pick from what the game plays; late, the rules' (THREEHOUR R1; settings version 361)
         public bool PlacesRemember = true;   // [Mind] memory that behaves like memory (Core/PlaceMemory.cs; roadmap 4; SIXDAY item 24): someone who knew one you killed thinks of it near the spot (a friend's for good, an acquaintance's for a month); people who've seen you on your horse know the horse before the face as you ride up; the same place at the same hour on three different days is a habit the town notices (settings version 240)
         public bool MindLive = true;      // what the mind decides reaches the screen (Lex, 2026-10-30: on for everyone from 0.7.2; off until settings version 126)
@@ -1000,6 +1001,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 362)
+                    log?.Invoke("Settings: new in this version: [Ticker] ThreadsNextDay (on): yesterday's fright comes back the morning after.");
                 if (s.SettingsVersion < 361)
                     log?.Invoke("Settings: new in this version: [Mind] OnlookerPicks (on): the model picks what a fight's strongest onlooker does.");
                 if (s.SettingsVersion < 360)
@@ -1677,6 +1680,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("RecordFates = " + B(RecordFates) + "   ; when one of enRAGE's people dies of something RealNPCs did (despair, a street fight gone too far), it is written into enRAGE's record of them (their history, and their death if enRAGE missed it); it also lets despair reach them");
             b.AppendLine("ShareWithEnrage = " + B(ShareWithEnrage) + "   ; RealNPCs keeps its own record of who has died; when one of enRAGE's townsfolk dies and enRAGE didn't see it (the area unloaded before it looked), RealNPCs marks them dead in enRAGE's records too, so it doesn't bring them back");
             b.AppendLine("MindShadow = " + B(MindShadow) + "   ; the mind underneath (in testing): works out each nearby person's traits, needs, feelings and mood and writes them to the log, the F7 dump and the Show minds cards; it changes nothing they do or think");
+            b.AppendLine("ThreadsNextDay = " + B(ThreadsNextDay) + "   ; with ThoughtsFollowOn: a fight, a fright or a body stays with a resident overnight; the next day, their first quiet thought may come back to it");
             b.AppendLine("OnlookerPicks = " + B(OnlookerPicks) + "   ; with the model's picks on: at a fight or a quarrel, what the strongest onlooker does (watch, walk off, shake their head, square up) is the model's pick, with a thought; late or unreadable, the rules' as before");
             b.AppendLine("PlacesRemember = " + B(PlacesRemember) + "   ; memory that behaves like memory: someone who knew one you killed thinks of it near the spot (once each; a friend's ground for good, an acquaintance's for a month), people who have seen you on your horse know the horse before the face as you ride up (once a day each), and a place you keep at the same hour on three different days is a habit the town notices (once each); false: none of the three");
             b.AppendLine("MindLive = " + B(MindLive) + "   ; what that mind decides reaches the screen (their moods, and thoughts of what they really feel and need, and what they do about it); each part has its own switch below");
