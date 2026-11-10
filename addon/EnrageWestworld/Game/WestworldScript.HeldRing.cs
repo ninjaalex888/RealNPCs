@@ -314,11 +314,11 @@ namespace EnrageWestworld.InGame
                 // their own act under way: only what takes them from it (the act's own step drops it for the rest)
                 if (TakenUp(h)) return "taken up by something else";
                 if (AimedLately(h, now)) return "aimed at";
-                if (!CanDirect(p)) return "the game has them";
+                if (!CanDirect(p)) return "the game has them (" + CantDirectWhy(p) + ")";   // (split: FOURTEENHOUR item 22)
                 return null;
             }
             if (_ringShooting && PED.IS_ANY_PED_SHOOTING_IN_AREA(pos.X - 40f, pos.Y - 40f, pos.Z - 15f, pos.X + 40f, pos.Y + 40f, pos.Z + 15f, false, false)) return "gunfire near";
-            if (!CanDirect(p)) return "the game has them";
+            if (!CanDirect(p)) return "the game has them (" + CantDirectWhy(p) + ")";
             return MindActWhyNot(p, h, true);
         }
 

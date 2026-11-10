@@ -1340,6 +1340,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST rivals: " + RivalsStatus());
 			Log.Write("TEST purse snatch: " + SnatchStatus());
 			Log.Write("TEST fetch the law: " + WitnessLawStatus());
+			Log.Write("TEST control census: " + CensusStatus());
 			Log.Write("TEST vram: " + VramStatus());
 			Log.Write("TEST loads: " + Loads.Status());
 			Log.Write("TEST perform: " + PerformStatus());

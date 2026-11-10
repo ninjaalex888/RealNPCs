@@ -27,8 +27,9 @@ namespace EnrageWestworld.InGame
             int h = p.Handle;
             bool record = IsRecord(h);
             bool busy = PED.IS_PED_IN_COMBAT(h, 0) || (PED.IS_PED_FLEEING(h) && !fleeingOk) || PED.IS_PED_RAGDOLL(h) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false);
-            return Directing.WhyNot(Natives.StoryModel(p), IsGrownUp(p), MISC.GET_MISSION_FLAG(), record, _cfg.EnragePeopleJoinIn,
+            string why = Directing.WhyNot(Natives.StoryModel(p), IsGrownUp(p), MISC.GET_MISSION_FLAG(), record, _cfg.EnragePeopleJoinIn,
                                     record && _bridge.EnrageFighter(h), record && _bridge.Interrogating, busy, Spawner.IsOurs(h), !record && CanDirect(p, fleeingOk));
+            return why == "can't be directed now" ? why + " (" + CantDirectWhy(p, fleeingOk) + ")" : why;   // which part of it (FOURTEENHOUR item 22)
         }
 
         private bool MayDirect(Ped p)

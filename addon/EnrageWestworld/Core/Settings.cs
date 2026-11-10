@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 389;
+        public const int CurrentVersion = 390;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -107,6 +107,7 @@ namespace EnrageWestworld.Core
         public bool WitnessesFetchLaw = true;   // [Mind] with no lawman come to a brawl, an onlooker (the well-off first) runs for one within 150 m; after a beating, a witness fetches one who has a word (FOURTEENHOUR item 21; settings version 389)
         public bool BrawlLawSight = true;    // [Mind] with MindBrawls: the law holds joiners back by sight and distance (in sight within 12 m as before, farther half as much, out of sight a little), a lawman may let a fair fight run, one alone against six or more sends for help, and "Law!" is cried as he comes (FOURTEENHOUR item 5; settings version 373)
         public bool FightHoldStart = true;   // [Mind] two told to fight keep the order until the first blow (the game's own alarms held off them, the order kept), then the game's fists as before; off: the alarms come back the moment they're told (FOURTEENHOUR item 1; settings version 371)
+        public bool ControlCensus = true;    // [Mind] every 3 s who holds each person within 25 m, named or not (the story, the game's encounters, ours, enRAGE's, another script's, the game's own business, free); a CONTROL line in the log a minute (FOURTEENHOUR item 22; settings version 390)
         public bool HandBackLent = true;     // [Mind] what we set on people not ours to make them fight (fight even unarmed, always fight, the hostile group) is put back once they've been out of any fight 20 s and nothing of ours has them (FOURTEENHOUR item 3; settings version 372)
         public bool PaydayNight = true;      // [Scenes] with Payday: Saturday night after eight, the paid hands stay in town and in the saloon, its fights come easier and grow faster, and the town says which night it is (FOURTEENHOUR item 13; settings version 381)
         public bool BrawlAfter = true;       // [Scenes] with MindLive: the week after a brawl: the winner of a saloon's fight stands a round; a big one has the town's news with its numbers, the barkeep's broken chairs (J at the bar), the men of opposite sides sore at each other; the law's prisoner is locked up overnight and his wife or mother waits at the jail door at dawn (J pays his fine) (FOURTEENHOUR item 12; settings version 380)
@@ -1030,6 +1031,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 390)
+                    log?.Invoke("Settings: new in this version: [Mind] ControlCensus (on): a CONTROL line a minute, who holds the people near you.");
                 if (s.SettingsVersion < 389)
                     log?.Invoke("Settings: new in this version: [Mind] WitnessesFetchLaw (on): someone runs for the law when nobody's seen the fight.");
                 if (s.SettingsVersion < 388)
@@ -1772,6 +1775,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("WalkTogether = " + B(WalkTogether) + "   ; with MindLive on: two friends (or a courting couple) whose talk in the street plays to its end may walk on together, side by side, with a thought on the way and a word as they part: two men to the saloon after work, homeward at dusk, a couple's stroll on a Sunday afternoon; two pairs a town at once, a pair once a day; false: they go their own ways");
             b.AppendLine("QuarrelPolitics = " + B(QuarrelPolitics) + "   ; with QuarrelSlights on: two men in drink who hold opposite sides of one of 1899's quarrels (free silver against gold, the trusts, the Philippines, the dry vote, by their trade or their piety) may come to blows over it instead of a look or a word; onlookers on each side lean to their man, and the town retells it by what it was over; false: never");
             b.AppendLine("QuarrelSlights = " + B(QuarrelSlights) + "   ; with QuarrelLadder on: a quarrel between strangers that was \"over nothing\" says what it's over, by the place (a shoulder in passing, the way blocked, a look held, a word about a man's horse or hat; in a saloon a spilled drink, a seat taken, a laugh), a man at the worst of his trouble snaps because of the week he's had, and foes have it out over their old business; the words and the log only, never how far it goes; false: the two old openings");
+            b.AppendLine("ControlCensus = " + B(ControlCensus) + "   ; a CONTROL line in the log once a minute: of the people within 25 m, named or not, how many are the story's, the game's own encounters', ours (and which feature), enRAGE's in a role, another script's, the game's (fighting, fleeing, riding, in a scenario...) and free for us; only reads, a third of them a frame; false: no line");
             b.AppendLine("HandBackLent = " + B(HandBackLent) + "   ; what RealNPCs sets on people who aren't its own to make them fight (an ally, a brawl's holdout, a caller, a gang's man, one who joins your fight, the waking who lash out, the road's fights: 'fight even unarmed', 'always fight', and the hostile group on callers and thieves) is put back once they've been out of any fight 20 s and nothing of ours has them; false: it stays until the body despawns, as before");
             b.AppendLine("BrawlShape = " + B(BrawlShape) + "   ; with MindBrawls on: once six or more are at it, the barkeep shouts from behind his bar (he keeps his post), the timid and the women near slip out, a gun drawn in it scatters the room, and from ten seconds before its least time is up the beaten-looking quit, so it thins out instead of stopping dead; false: none of these");
             b.AppendLine("BrawlStrays = " + B(BrawlStrays) + "   ; with MindBrawls on: someone standing at arm's length of the fighting may take a stray blow (the hot swing back and are in it against the man who hit them, the timid back off, a woman cries out and leaves), and a friend of a man losing badly may pull him out of it, the two leaving together (the one beating him lets them go, or a hothead follows); false: neither");
