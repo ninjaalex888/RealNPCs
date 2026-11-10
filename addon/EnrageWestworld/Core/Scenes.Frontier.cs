@@ -48,6 +48,8 @@ namespace EnrageWestworld.Core
                 case "toothpull": return StreetMore.ToothPull(c, seed);   // a tooth pulled in the street
                 case "wayasked": return StreetMore.WayAsked(c, seed);     // the way asked
                 case "greenhorn": return Greenhorn.Rib(c, seed);          // the newcomer tested (FOURTEENHOUR item 16)
+                case "oldsoldiers": return OldSoldiers.War(c, seed);     // old soldiers: the war argued, or remembered together (item 17)
+                case "warstory": return OldSoldiers.Story(c, seed);      // a young man home from Cuba or the islands tells it
                 case "pitch": return Pitch(c, seed);
                 case "posse": return c.CrimeRumour != null ? Posse(c, seed) : null;
                 case "mourn": return c.DeadName != null ? Mourn(c, seed) : null;

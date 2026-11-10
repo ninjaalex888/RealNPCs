@@ -258,6 +258,7 @@ namespace EnrageWestworld.InGame
             StreetMore.On = _cfg.StreetMore;     // [Scenes] StreetMore (FOURTEENHOUR item 14)
             WalkTogether.On = _cfg.WalkTogether; // [Mind] WalkTogether (FOURTEENHOUR item 15)
             Greenhorn.On = _cfg.Greenhorn;       // [Scenes] Greenhorn (FOURTEENHOUR item 16)
+            OldSoldiers.On = _cfg.OldSoldiers && _cfg.HistoricalAccuracy;   // [Scenes] OldSoldiers: named history, so only with the real history on (item 17)
             AlmanacSides.On = _cfg.AlmanacSides;   // [World] AlmanacSides: their side on the year's quarrels (Core/AlmanacSides.cs)
             QuarrelPolitics.On = _cfg.QuarrelPolitics && _cfg.HistoricalAccuracy;   // [Mind] QuarrelPolitics: men in drink fight over 1899's quarrels (FOURTEENHOUR item 9); named history, so only with [World] HistoricalAccuracy (the review of items 1-13)
             LoopVoice.On = _cfg.WestWorld && _cfg.LoopVoice;   // the centre's thoughts only with the voice on (Core/LoopVoice.cs)

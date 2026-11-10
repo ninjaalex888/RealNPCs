@@ -34,6 +34,7 @@ namespace EnrageWestworld.Core
         public bool Bent;         // of the criminal class: a theft to their name this month (Core/Criminals.cs; SIXDAY item 16), set by the game side
         public string Broke;      // a breakdown's habit this week (Core/StressLoad.cs; FIVEDAY item 17): "temper" snaps as if strained twice over
         public bool Greenhorn;    // off the train in the last two weeks (a resident's NewAt; FOURTEENHOUR item 16), set by the game side
+        public string War;        // the war he was in: "blue", "grey", "cuba", "islands" (Core/OldSoldiers.cs; FOURTEENHOUR item 17), set by the game side
         public string Shamed;     // slighted, had words or beaten in the last four hours and not answered it ("slighted", "had words", "beaten"), else null (NIGHT3: displaced aggression)
     }
 
@@ -375,6 +376,9 @@ namespace EnrageWestworld.Core
             Reason green = Greenhorn.For(x, y, gameDay, where.Saloon, where.Night);   // a regular ribs the greenhorn (FOURTEENHOUR item 16)
             if (green != null)
                 all.Add(green);
+            Reason soldiers = OldSoldiers.For(x, y, gameDay, where.Saloon, where.Night);   // old soldiers of either side, or a young man home from the war (item 17)
+            if (soldiers != null)
+                all.Add(soldiers);
             // someone free and taken with the one beside them makes eyes at them; the answer is the other's own
             Reason court = Courtship(x, y, gameDay, where);
             if (court != null)

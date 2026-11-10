@@ -67,7 +67,7 @@ namespace EnrageWestworld.Core
                     return -2;   // a face into the bar, or a hand caught in a coat, isn't soon forgotten
                 case "horsedeal":
                     return -1;   // sold a lame horse at the hitching post, and he knows it (FOURTEENHOUR item 14): Doer is the dealer
-                case "toothpull": case "wayshown": case "welcomed":
+                case "toothpull": case "wayshown": case "welcomed": case "oldtoast": case "comrades": case "warheard":
                     return 1;    // his tooth out in the street; shown the way, or walked there (item 14): Doer is the one who did it
                 case "welsh":
                     return -2;

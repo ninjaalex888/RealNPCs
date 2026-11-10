@@ -121,8 +121,8 @@ namespace EnrageWestworld.InGame
                     return null;
                 Person who = PersonOf(rec);
                 PersonState rs = _store.Find(who.Id);
-                return Heart(new Someone { Id = who.Id, Name = ShownName(h, who.Name), Woman = who.Woman, Temper = who.Personality, P = who, WakeStage = rs != null ? rs.WakeStage : 0,
-                                     WellOff = WellOff(p), Drunk = InHisCups(p, who), Hurt = HurtLately(who.Id) });
+                return Veteran(p, Heart(new Someone { Id = who.Id, Name = ShownName(h, who.Name), Woman = who.Woman, Temper = who.Personality, P = who, WakeStage = rs != null ? rs.WakeStage : 0,
+                                     WellOff = WellOff(p), Drunk = InHisCups(p, who), Hurt = HurtLately(who.Id) }));   // (his war: item 17)
             }
             FolkRef ac = _bridge.AcquaintanceAt(h);
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
@@ -132,7 +132,7 @@ namespace EnrageWestworld.InGame
                 if (fp.Personality == null)
                     fp.Personality = f.Temper;
                 PersonState st = _store.Find(f.Key);
-                return Heart(new Someone { Id = f.Key, Name = f.Name, Woman = f.Woman, Temper = f.Temper, P = fp, WakeStage = st != null ? st.WakeStage : 0, WellOff = WellOff(p), Drunk = InHisCups(p, fp), Hurt = HurtLately(f.Key) });
+                return Veteran(p, Heart(new Someone { Id = f.Key, Name = f.Name, Woman = f.Woman, Temper = f.Temper, P = fp, WakeStage = st != null ? st.WakeStage : 0, WellOff = WellOff(p), Drunk = InHisCups(p, fp), Hurt = HurtLately(f.Key) }));
             }
             if (!ResidentEligible(p))
                 return null;
@@ -140,8 +140,8 @@ namespace EnrageWestworld.InGame
             if (r == null)
                 return null;
             Person rp = _engine.PersonOfResident(r);
-            return Heart(new Someone { Id = r.Id, Name = ShownName(h, r.Name), Woman = r.Woman, Temper = r.Personality, P = rp, WakeStage = _engine.StageOf(r.Id), WellOff = WellOff(p), Drunk = InHisCups(p, rp), Hurt = HurtLately(r.Id),
-                                       Greenhorn = r.NewAt > 0 && _store.LastGameMin >= r.NewAt && _store.LastGameMin - r.NewAt <= NewFaces.FreshDays * 1440 });   // off the train these two weeks (item 16)
+            return Veteran(p, Heart(new Someone { Id = r.Id, Name = ShownName(h, r.Name), Woman = r.Woman, Temper = r.Personality, P = rp, WakeStage = _engine.StageOf(r.Id), WellOff = WellOff(p), Drunk = InHisCups(p, rp), Hurt = HurtLately(r.Id),
+                                       Greenhorn = r.NewAt > 0 && _store.LastGameMin >= r.NewAt && _store.LastGameMin - r.NewAt <= NewFaces.FreshDays * 1440 }));   // off the train these two weeks (item 16); his war (item 17)
         }
 
         /// Slighted, spoken to hard or beaten in the last four game hours, by their own memories (as the one it was done to),

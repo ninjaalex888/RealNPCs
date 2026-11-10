@@ -14,6 +14,7 @@ namespace EnrageWestworld.Core
         public string Id, KinId, Group, Home, Surname;
         public bool Outsider;   // a newcomer, a drifter, a stranger to the town
         public bool Pious;      // the church-minded (the dry vote's side; item 9)
+        public string War;      // the war he was in (Core/OldSoldiers.cs; item 17): "blue", "grey", or a young man's, else null
     }
 
     /// What pulls an onlooker to a fighter: how much, and why (for the log).
@@ -31,6 +32,20 @@ namespace EnrageWestworld.Core
         /// fighting is on the other; a little (QuarrelPull), and only with the topic's words.
         public static SideTie QuarrelTie(string over, SidePerson on, SidePerson fighter, SidePerson other)
         {
+            // the old soldiers' war (FOURTEENHOUR item 17): a man who wore the same coat leans to his old side, as a trade does; in
+            // Lemoyne the town's young men to the grey (the honour country's own, Core/Honour.cs), a little
+            if (over == "war")
+            {
+                if (!OldSoldiers.On || on == null || fighter == null || !OldSoldiers.Old(fighter.War) || (other != null && other.War == fighter.War))
+                    return null;
+                if (on.War == fighter.War)
+                    return new SideTie { Pull = TradePull, Why = "for his old side, the " + fighter.War };
+                if (on.War == null && fighter.War == "grey" && !on.Outsider && Honour.Holds(on.Home))
+                    return new SideTie { Pull = QuarrelPull, Why = "a son of the South, for the grey" };
+                return null;
+            }
+            if (!QuarrelPolitics.On)
+                return null;   // (the game side no longer asks only with it on: the war above has its own switch)
             if (over == null || !over.StartsWith("politics:") || on == null || fighter == null)
                 return null;
             string key = over.Substring(9);

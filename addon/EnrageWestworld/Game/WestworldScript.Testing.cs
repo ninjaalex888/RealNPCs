@@ -729,6 +729,14 @@ namespace EnrageWestworld.InGame
                         skipped = "the hour, the rarity and the rests (Pacing \"lostchild\")";
                         return LostChildScene(Game.Player.Character, now, true, out lw) ? null : lw;
                     }
+                case "oldsoldiers":
+                case "warstory":
+                    {
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already: " + SceneNow() + " (let it finish)";
+                        skipped = "the pair's day roll and the strongest reason near you";
+                        return OldSoldiersFire(a.Id == "warstory", now);   // WestworldScript.OldSoldiers.cs (FOURTEENHOUR item 17)
+                    }
                 case "olddays":
                     {
                         if (_director.Busy && !TestMakeRoom())

@@ -141,6 +141,8 @@ namespace EnrageWestworld.Core
             new Entry("fall", "People", "Someone takes a fall (and is helped up, or not)", "TestFallKey", needs: "two named people outdoors, one of them within 14 m and in view"),
             new Entry("preacher", "People", "A street preacher (Sunday afternoons)", "TestPreacherKey", needs: "a town street, a devout named person and another within 8 m"),
             new Entry("olddays", "People", "Two old men argue about the old days", "TestOldDaysKey", needs: "two named old men within 10 m"),
+            new Entry("oldsoldiers", "People", "Two old soldiers of either side argue the war", "TestOldSoldiersKey", needs: "two named old men within 10 m; [Scenes] OldSoldiers and [World] HistoricalAccuracy on"),
+            new Entry("warstory", "People", "A young man home from the islands tells his war", "TestWarStoryKey", needs: "two named men within 10 m; [Scenes] OldSoldiers and [World] HistoricalAccuracy on"),
             new Entry("below", "People", "The voice below the saloon floor (West World)", "TestBelowKey", needs: "West World on, in a saloon with the town's barkeep within 14 m; then stand by the bar"),
             new Entry("bell", "People", "The bell at three (only the awake hear it)", "TestBellKey", needs: "West World on, out of doors in a town with a church, someone awake (stage 2+) within 30 m in view"),
             new Entry("sabbath", "People", "Someone kneels by the church (Sunday mornings)", "TestSabbathKey", needs: "within 60 m of a town's church, a named person within 25 m in view"),

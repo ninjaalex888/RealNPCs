@@ -587,6 +587,16 @@ namespace EnrageWestworld.Core
             // the newcomer tested and taken in (FOURTEENHOUR item 16)
             { "welcomed|did:doer|fresh", new[] { "Had some sport with {who}, the new man. Gave as good as he got.", "{who}'s got a tongue on him. He'll do.", "Ribbed {who} about his boots. He ribbed me back. Fair." } },
             { "welcomed|did:done|fresh", new[] { "{who} had a go at my hat. I had a go at his face. With words.", "Fresh off the train and {who} tries me. I think I passed.", "{who} laughed at me, then with me. A start." } },
+            // the old soldiers (FOURTEENHOUR item 17)
+            { "oldtoast|did:doer|fresh", new[] { "Had it out with {who} about the war. Then we drank to the dead. Strange night.", "{who} wore the other coat. We drank together all the same.", "Thirty years on, and {who} still yields nothing. Nor do I." } },
+            { "oldtoast|did:done|fresh", new[] { "{who} and me fought the war again over a glass. Called it a draw.", "{who} was on the other side. Good man, for one of them.", "Drank to the dead with {who}. Both sides of them." } },
+            { "oldtoast|saw|fresh", new[] { "{who} and an old soldier of the other side had words, then raised a glass to the dead.", "Two old soldiers, {who} one of them. The war, again. It ended in a toast." } },
+            { "comrades|did:doer|fresh", new[] { "{who} wore the same coat I did. We remembered it together.", "Found an old soldier of my side in {who}. Not many of us left." } },
+            { "comrades|did:done|fresh", new[] { "{who} was in it too, on our side. We drank to the boys.", "{who} knew the same war I did. Didn't have to explain a thing." } },
+            { "comrades|saw|fresh", new[] { "{who} and another old soldier talking over the war, quiet, like men at church." } },
+            { "warheard|did:doer|fresh", new[] { "Told {who} about the war. He listened. That's more than most.", "{who} let me talk about it. Felt better after." } },
+            { "warheard|did:done|fresh", new[] { "{who} told me of his war. Young to have seen that.", "Heard {who} out about the fighting. It doesn't leave a man." } },
+            { "warheard|saw|fresh", new[] { "{who} was telling of his war. The room went quiet for it." } },
             { "welcomed|saw|fresh", new[] { "{who} gave the new man a ribbing. The new man gave it back. Good.", "The greenhorn's quick. {who} found that out." } },
             { "round|did:doer|fresh", new[] { "Bought the house a round. Purse lighter. Heart too.", "{who} drank my health. Felt good to be thanked.", "Whiskey all round, and every face turned my way. Felt tall.", "Barkeep winked at me. First time ever.",
                 "Slapped the coins down for the house. {who} cheered loudest. Never been cheered in my life.",

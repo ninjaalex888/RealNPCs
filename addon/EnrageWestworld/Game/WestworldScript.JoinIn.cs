@@ -357,7 +357,8 @@ namespace EnrageWestworld.InGame
                 Id = w.Id, KinId = p != null ? p.KinId : null, Group = TradeGroupOf(w), Home = p != null ? p.Home : null,
                 Surname = w.Name != null ? Residents.SurnameOf(w.Name) : null,
                 Outsider = p == null || p.Home == null || (_placeTown != null && p.Home != _placeTown),
-                Pious = w.Src != null && (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))).Z[Traits.Piety] > 1f
+                Pious = w.Src != null && (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))).Z[Traits.Piety] > 1f,
+                War = WarOfKnown(w)   // the war he was in, for a fight over it (FOURTEENHOUR item 17)
             };
             _brawlSides[w.Id] = s;
             return s;
@@ -376,7 +377,7 @@ namespace EnrageWestworld.InGame
             if (other != null)
                 _brawlSides.TryGetValue(other, out x);
             SideTie own = BrawlSides.Tie(o, f, x, _placeTown);
-            Scene sc = _cfg.QuarrelPolitics ? _director.CurrentScene : null;
+            Scene sc = _director.CurrentScene;   // (QuarrelTie minds the switches: 1899's quarrels, the old soldiers' war)
             SideTie quarrel = sc != null ? BrawlSides.QuarrelTie(sc.Over, o, f, x) : null;   // a fight over silver: his side of it (item 9)
             return own == null ? quarrel : quarrel == null || own.Pull >= quarrel.Pull ? own : quarrel;
         }

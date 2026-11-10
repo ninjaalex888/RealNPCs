@@ -1012,6 +1012,13 @@ namespace EnrageWestworld.InGame
                 WellOff = new[] { CastWellOff(a), CastWellOff(b) }
             };
             cast.Knows = CastKnows(a, b, crowd);
+            if (OldSoldiers.On)
+            {
+                // each one's war and trade, for the old soldiers' scenes (FOURTEENHOUR item 17; Veteran keeps the war by id)
+                Someone sa = a != null && a.Exists() ? SomeoneOf(a) : null, sb = b != null && b.Exists() ? SomeoneOf(b) : null;
+                cast.Wars = new[] { sa != null ? sa.War : null, sb != null ? sb.War : null };
+                cast.Groups = new[] { sa != null && sa.P != null ? InnerLife.TradeGroup(sa.P.Trade) : null, sb != null && sb.P != null ? InnerLife.TradeGroup(sb.P.Trade) : null };
+            }
             CastWarmth(a, b, crowd, cast);
             if (_cfg.WestWorld && _cfg.WakeLines)
             {
