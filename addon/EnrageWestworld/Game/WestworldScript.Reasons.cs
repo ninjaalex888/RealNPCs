@@ -532,7 +532,7 @@ namespace EnrageWestworld.InGame
                 return true;
             }
             Scene unladdered = s;
-            s = LadderScene(s, first, second, doer, done, cast, seed, pr.Why.Matter, cast2, now);   // an argue or a brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs)
+            s = LadderScene(s, first, second, doer, done, cast, seed, pr.Why.Matter, cast2, now, over: pr.Why.Over);   // an argue or a brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs); what it's over in words (FOURTEENHOUR item 1)
             if (_hush && by == null && s != unladdered && TownMood.Hushed(s.Kind))
                 s = unladdered;   // hushed: the quarrel stays words (the ladder would take it to blows or a gun)
             AddMeet(s, kind, first, second, pr.Apart);

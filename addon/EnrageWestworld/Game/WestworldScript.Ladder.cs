@@ -31,10 +31,11 @@ namespace EnrageWestworld.InGame
         private bool LadderOn { get { return _cfg.MindLive && _cfg.QuarrelLadder; } }
 
         /// The argue or brawl `old` rebuilt from the ladder when the mind knows both; else `old` as it was. `people` is
-        /// the scene's cast so far (the two): a friend who steps in is added to it. `matter`: the reason's, or null.
-        private Scene LadderScene(Scene old, Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, string matter, List<Ped> people, int now, bool force = false)
+        /// the scene's cast so far (the two): a friend who steps in is added to it. `matter`: the reason's, or null. `over`: what
+        /// the reason says it's over in words, or null (the snap's bad week; FOURTEENHOUR item 1).
+        private Scene LadderScene(Scene old, Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, string matter, List<Ped> people, int now, bool force = false, string over = null)
         {
-            Scene s = LadderSceneOf(old, first, second, doer, done, cast, seed, matter, people, now, force);
+            Scene s = LadderSceneOf(old, first, second, doer, done, cast, seed, matter, people, now, force, over);
             // the ladder came to blows between two who are sat or leaning: the chair keeps them (Lex, 2026-10-30), so the
             // quarrel stays words
             if (s != null && s != old && s.Fight && !_cfg.SeatedBrawls && (PED.IS_PED_USING_ANY_SCENARIO(first.Handle) || PED.IS_PED_USING_ANY_SCENARIO(second.Handle)))
@@ -45,7 +46,7 @@ namespace EnrageWestworld.InGame
             return s;
         }
 
-        private Scene LadderSceneOf(Scene old, Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, string matter, List<Ped> people, int now, bool force)
+        private Scene LadderSceneOf(Scene old, Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, string matter, List<Ped> people, int now, bool force, string over)
         {
             if (old == null || (!LadderOn && !force) || _ladderFailed || (old.Kind != "argue" && old.Kind != "brawl") || old.Cast != 2 || people == null || people.Count != 2 || _engine == null || _store == null)
                 return old;
@@ -108,6 +109,10 @@ namespace EnrageWestworld.InGame
                         matter = Scenes.MatterOf(saloon, q.DrunkA || q.DrunkB, seed, cast.Knows != null && (!cast.Knows[0] || !cast.Knows[1]));
                 }
                 q.Matter = matter;
+                // and what it's over in so many words ([Mind] QuarrelSlights; FOURTEENHOUR item 1): a slight by the place, the doer's
+                // own bad week, the old business between foes. The matter above is untouched, so the ladder runs as before.
+                q.Over = _cfg.QuarrelSlights ? Scenes.OverFor(matter, over, saloon, tie != null ? tie.Warmth : 0, tie != null ? tie.Kind : null,
+                                                              cast.Knows != null && (!cast.Knows[0] || !cast.Knows[1]), seed) : null;
                 // a friend of either within 10 m who could step in (as the stand-up finds one): the warmer side's
                 Candidate friend = LadderFriend(people, cast, mid, aId, bId, now, out int side);
                 cast.Friend = friend != null ? side : -1;
@@ -154,7 +159,7 @@ namespace EnrageWestworld.InGame
                              (q.ArmedA && q.ArmedB ? ", both armed" : q.ArmedA ? ", " + an + " armed" : q.ArmedB ? ", " + bn + " armed" : ", unarmed") + (q.LawNear ? ", the law near" : "") +
                              ", " + q.Witnesses + " watching" + (tie != null ? ", " + (tie.Warmth < 0 ? "foes" : tie.Warmth > 0 ? "friends" : "acquainted") + (q.History > 0 ? " (" + q.History + " quarrels before)" : "") : ", strangers") +
                              (q.Aggrieved != null ? ", " + (q.Aggrieved == "a" ? an : bn) + " the wronged" : "") + (friend != null ? ", a friend of " + (side == 0 ? an : bn) + " by" : "") + (_ladderFriendMind != null ? (friend != null ? " (the mind: " : ", no friend stepped in (the mind: ") + _ladderFriendMind + ")" : "") +
-                             ", over " + matter + (start > 0 ? ", from the " + Escalation.Rungs[start] : "");
+                             ", over " + Scenes.OverWords(matter, q.Over) + (q.Over != null ? " (the ladder's matter: " + matter + ")" : "") + (start > 0 ? ", from the " + Escalation.Rungs[start] : "");
                 _ladderLast = an + " & " + bn + ": " + Escalation.Rungs[start] + " -> " + run + " (" + s.Kind + ")";
                 Log.Write("LADDER " + an + " & " + bn + " (" + ctx + "): " + Escalation.Rungs[start] + " -> " + run + "; played as " + (s.Kind == "argue" ? "an argue" : "a " + s.Kind) +
                           (old.Kind != s.Kind ? " (the fixed scene was " + (old.Kind == "argue" ? "an argue" : "a brawl") + ")" : "") + guns + (s.LadderNote != null ? "; " + s.LadderNote : ""));

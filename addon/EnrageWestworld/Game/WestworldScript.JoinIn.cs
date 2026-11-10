@@ -44,8 +44,12 @@ namespace EnrageWestworld.InGame
             _director.FightMostMs = BrawlsOn ? Math.Max(45000, least + 15000) : 20000;
             _director.BraveryNow = _cfg.Bravery;   // the scene's own frights hold their ground by [World] Bravery
             _director.DownsOn = BrawlsOn;   // a man beaten down in a brawl: killed or knocked out, and it goes on (WestworldScript.Brawl.cs)
+            _director.HoldFightStart = _cfg.FightHoldStart;   // [Mind] FightHoldStart: the two keep the order until the first blow (FOURTEENHOUR item 1a)
+            _director.MeetAgain = _cfg.MeetWalkAgain;         // [Scenes] MeetWalkAgain: a walker who stops short is told again (item 1b)
             if (_director.FighterDown == null)
                 _director.FighterDown = OnFighterDown;
+            if (_director.GoneWhose == null)
+                _director.GoneWhose = GoneWhose;   // a cast member's body gone: whose it was, for the line (item 1d)
             List<int> a, b;
             if (_joinPending.Count > 0 && now - _joinPendingAt >= 0)
             {

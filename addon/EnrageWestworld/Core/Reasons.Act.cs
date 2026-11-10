@@ -16,7 +16,7 @@ namespace EnrageWestworld.Core
             if (r == null || string.IsNullOrEmpty(r.Kind))
                 return null;
             string o = string.IsNullOrEmpty(other) ? "them" : other;
-            string over = MatterWords(r.Matter);
+            string over = r.Over != null && r.Over.StartsWith("snap:", System.StringComparison.Ordinal) ? " out of a bad week" : MatterWords(r.Matter);   // the snap's own (FOURTEENHOUR item 1)
             string k = r.Kind;
             if (k.StartsWith("court:", System.StringComparison.Ordinal))
                 return "goes to sweet-talk " + o;

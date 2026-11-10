@@ -26,6 +26,22 @@ namespace EnrageWestworld.InGame
         private LooseFight _loose;
         private int _looseHeard, _looseBroken;
 
+        /// Whose body a handle was, once it's gone (FOURTEENHOUR item 1d; the Director's line when one of a scene stops existing,
+        /// as Lonnie did at his fight's first blow in Valentine, 2026-11-09): one we made or borrowed, the test cast's, one enRAGE
+        /// keeps as a record, or the game's own, with the name the mind knew it by. Reads only what we hold: no native on the handle.
+        private string GoneWhose(int h)
+        {
+            MindWho w;
+            string mind = _mindWho.TryGetValue(h, out w) && w != null && !string.IsNullOrEmpty(w.Name) ? " (the mind knew it as " + w.Name + ")" : "";
+            if (Spawner.IsOurs(h))
+                return "a body we made or borrowed" + mind;
+            if (Spawner.IsCast(h))
+                return "a body of the test cast" + mind;
+            if (IsRecord(h))
+                return "a body enRAGE keeps as one of its records" + mind;
+            return "a body the game made, nobody's that we know of" + mind;
+        }
+
         private void OnFightLeftLoose(int a, int b, int blowsAt)
         {
             Ped me = Game.Player.Character;

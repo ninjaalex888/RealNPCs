@@ -45,6 +45,7 @@ namespace EnrageWestworld.Core
         public string Fallback;   // the scene instead, if the game side can't play this one (no surface by him for "rough")
         public string Leaned;     // the mind's lean on it, for the log (Reasons.MoodLean; with MindMeetings), else null
         public string Matter;     // what the quarrel is over, when the reason knows (drink, money, honour, woman, land); null: the game side works it out (Scenes.Ladder.cs)
+        public string Over;       // what it's over in words, when the matter's "nothing" but the reason knows better ("snap:<worry>": the doer's own bad week; FOURTEENHOUR item 1); never the ladder's odds
     }
 
     public static partial class Reasons
@@ -265,7 +266,8 @@ namespace EnrageWestworld.Core
                 bool hot = Hot(x);
                 // a hot man at the worst of it snaps at a man who won't take it: it comes to blows
                 if (hot && Hot(y) && MayFight(x, y, where, "snap" + gameDay) && Voice.Chance(x.Id + gameDay + "snapblows", Weighted(35, where.Trouble)))   // was 20 (Lex, 2026-10-28: brawls often)
-                    all.Add(new Reason { Kind = "brawl", Fallback = "argue", Strength = 56, Matter = "nothing", Why = x.Name + " is at the worst of it (" + kind + ") and snaps at " + y.Name + ", who won't take it" });
+                    all.Add(new Reason { Kind = "brawl", Fallback = "argue", Strength = 56, Matter = "nothing", Over = "snap:" + kind,   // the matter stays "nothing" for the ladder's odds; the words say it's his own bad week (FOURTEENHOUR item 1)
+                                         Why = x.Name + " is at the worst of it (" + kind + ") and snaps at " + y.Name + ", who won't take it" });
                 else
                     all.Add(new Reason { Kind = "x:snap", Strength = hot ? 55 : where.Variety ? 42 : 45, Why = x.Name + " is at the worst of it (" + kind + ")" });
             }

@@ -53,6 +53,12 @@ namespace EnrageWestworld.InGame
             public int Shover, Shoved, ShoveUntil;    // "shove": who shoved whom, and until when stopping him is no crime
             public int MeetWalker = 1;           // who walks over in "meet" (the second, or the first for trouble)
             public int MeetGoAt;                 // the walker was sitting or leaning: he sets off once he's up (0: on his way)
+            public float MeetBest = float.MaxValue;   // the walker's nearest yet, and when he last got nearer ([Scenes] MeetWalkAgain; FOURTEENHOUR item 1)
+            public int MeetCheckAt, MeetLookAt;  // (when he last got nearer; the next look, once a second)
+            public int MeetAgains;               // told again so far (at most two)
+            public bool MeetRaised;              // the one waiting was got up to meet them
+            public bool HoldStart;               // [Mind] FightHoldStart: the two keep the fight order (events held, KEEP_TASK) until the first blow
+            public Vector3[] LastPos;            // where each of the cast was at the last look, for the line if one is gone (FOURTEENHOUR item 1d)
             public bool Downed;                  // "passout" played: he's lying there until "cometo", or the end gets him up
             public bool MadeDrunk;               // A was given a drunk voice for the scene
             public int DrunkHandle;              // ...and who that was: an endfight may have swapped him to B since (the review of items 15-19)
@@ -140,6 +146,11 @@ namespace EnrageWestworld.InGame
         /// now, or null. They were free when the scene was built; a story mission, enRAGE or a fight may have taken them
         /// up since (night 2026-10-29: the mind moves people, checked at the roll and again at the moment).
         public Func<Ped, string> ThirdFree;
+        /// Asked when one of a scene's cast no longer exists (Lonnie, Valentine 2026-11-09: gone the second the fists began):
+        /// what the game layer knows of that handle (whose body it was), for the log. Null: nothing known.
+        public Func<int, string> GoneWhose;
+        /// [Mind] FightHoldStart and [Scenes] MeetWalkAgain, set by the game layer every look (FOURTEENHOUR item 1).
+        public bool HoldFightStart = true, MeetAgain = true;
 
         // the drunk who calls a man out (Scenes.Drunk): the game's own drunk-dueler moves, one ped at a time
         public const string DrunkDict = "script_re@drunk_dueler";
@@ -601,6 +612,8 @@ namespace EnrageWestworld.InGame
                     if (ENTITY.DOES_ENTITY_EXIST(fa.Key))
                         for (int a = 0; a < FightAttrIds.Length; a++)
                             PED.SET_PED_COMBAT_ATTRIBUTES(fa.Key, FightAttrIds[a], fa.Value[a]);   // their own again
+            if (l.HoldStart)
+                FightHoldEnd(l);   // stopped before the first blow: the kept order goes too (FOURTEENHOUR item 1a)
             for (int i = 0; i < l.Cast.Length; i++)
             {
                 Ped p = l.Cast[i];
@@ -743,6 +756,8 @@ namespace EnrageWestworld.InGame
                     int idx = Array.IndexOf(l.Cast, p);
                     string whoStop = idx >= 0 && l.Names != null && idx < l.Names.Length && !string.IsNullOrEmpty(l.Names[idx]) ? l.Names[idx] : "someone";
                     string what = gone ? (p == null || !p.Exists() ? " gone" : " dead") : atYou ? " in combat with you" : ", you aimed at them";
+                    if (gone && p != null && !p.Exists())
+                        what += GoneLine(l, idx, p.Handle, player, now);   // what's known of the body (FOURTEENHOUR item 1d)
                     Stop(l, l.ShootUntil > 0 ? "shot down" : "someone in the scene is gone or threatened (" + whoStop + what + ")");
                     // a fistfight between the two of them that goes on without the scene: the law still hears it
                     if (l.Fighting && l.FightOn && FightLeftLoose != null && l.FightA != 0 && l.FightB != 0)
@@ -761,9 +776,15 @@ namespace EnrageWestworld.InGame
                 mostMs = Math.Max(mostMs, l.FightOnAt - l.StartedAt + BrawlLeastMs + Math.Max(60000, FightMostMs + 15000));
             Vector3 youAt = player.Position;
             float nearest = float.MaxValue;
+            if (l.LastPos == null || l.LastPos.Length != l.Cast.Length)
+                l.LastPos = new Vector3[l.Cast.Length];   // once a scene (and again if a third is added), never a frame
             for (int i = 0; i < l.Cast.Length; i++)   // a loop, not Min: no closure a frame (the frame-cost audit)
                 if (l.Cast[i] != null)
-                    nearest = Math.Min(nearest, l.Cast[i].Position.DistanceTo(youAt));
+                {
+                    Vector3 at = l.Cast[i].Position;
+                    l.LastPos[i] = at;   // kept for the line if this one is gone at the next look (item 1d)
+                    nearest = Math.Min(nearest, at.DistanceTo(youAt));
+                }
             bool far = nearest > (brawl ? 80f : 50f);
             if (far || now - l.StartedAt > mostMs)
             {
@@ -783,14 +804,22 @@ namespace EnrageWestworld.InGame
                         l.Blows = true;
                         l.FightOnAt = now;
                         l.FightUntil = now + l.FightMs;
+                        if (l.HoldStart)
+                            FightHoldEnd(l);   // the first blow: the game's own fists from here, as every fight that started before item 1
                         Log.Write("SCENE fight: at it " + ((now - l.FightAskedAt) / 1000.0).ToString("0.0") + " s after the word");
                         try { Shock?.Invoke("blows", l.FightA, l.Scene.Kind, l.Seed); } catch (Exception ex) { Log.Write("STREET: the blows weren't raised: " + ex.Message); }   // the street reacts (SIXDAY 5b)
                     }
                     else if (now >= l.FightUntil)
                     {
+                        // which it was, for the next log (FOURTEENHOUR item 1a; Valentine 2026-11-09: Seth was running off, the
+                        // game's alarms back on him the moment he was told, and Ellis had been at a rail)
+                        bool fleeA = PED.IS_PED_FLEEING(l.FightA), fleeB = PED.IS_PED_FLEEING(l.FightB);
+                        float apart = ENTITY.GET_ENTITY_COORDS(l.FightA, true, true).DistanceTo(ENTITY.GET_ENTITY_COORDS(l.FightB, true, true));
                         Stop(l, "they never came to blows in " + FightStartMs / 1000 + " s (" +
                               (PED.IS_PED_USING_ANY_SCENARIO(l.FightA) || PED.IS_PED_USING_ANY_SCENARIO(l.FightB) ? "still sat or leaning"
-                               : PED.IS_PED_IN_COMBAT(l.FightA, l.FightB) || PED.IS_PED_IN_COMBAT(l.FightB, l.FightA) ? "in combat, never in melee" : "ordered, never in combat") + ")");
+                               : fleeA || fleeB ? (fleeA ? FightName(l, l.FightA) : FightName(l, l.FightB)) + " ran off"
+                               : PED.IS_PED_IN_COMBAT(l.FightA, l.FightB) || PED.IS_PED_IN_COMBAT(l.FightB, l.FightA) ? "in combat, never in melee" : "ordered, never in combat") +
+                              ", " + apart.ToString("0.0") + " m apart" + (l.Cast.Length > 2 ? ", a third in the scene" : "") + (l.HoldStart ? ", the order held" : ", the game's alarms on them") + ")");
                         return;
                     }
                     else
@@ -919,11 +948,16 @@ namespace EnrageWestworld.InGame
                         NeverMet(l.Cast[0], l.Cast[1], ReferenceEquals(l, _second));
                     Stop(l, "they never got close enough to talk (still " + waiter.Position.DistanceTo(walker.Position).ToString("0.0") + " m apart" +
                           (PED.IS_PED_USING_ANY_SCENARIO(walker.Handle) ? ", a scenario held the walker" : "") +
-                          (PED.IS_PED_USING_ANY_SCENARIO(waiter.Handle) ? ", a scenario held the other" : "") + ")");
+                          (PED.IS_PED_USING_ANY_SCENARIO(waiter.Handle) ? ", a scenario held the other" : "") +
+                          (l.MeetAgains > 0 ? ", told again " + l.MeetAgains + (l.MeetRaised ? ", the other got up" : "") : "") + ")");
                     return;
                 }
                 else
+                {
+                    if (MeetAgain && l.MeetGoAt == 0)
+                        MeetKeepOn(l, now);   // [Scenes] MeetWalkAgain (FOURTEENHOUR item 1b)
                     return;
+                }
             }
             if (l.ApproachUntil > 0 && l.Cast.Length > 2)
             {
@@ -1155,8 +1189,13 @@ namespace EnrageWestworld.InGame
                     uint fists = Natives.Hash("WEAPON_UNARMED");
                     foreach (Ped p in l.Cast.Take(2))
                         WEAPON.SET_CURRENT_PED_WEAPON(p.Handle, fists, true, 0, false, false);
-                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
-                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(t, false);
+                    // [Mind] FightHoldStart (FOURTEENHOUR item 1a): until the first blow, the game's own alarms stay off the two and
+                    // the order is kept (enRAGE's way, and our staged encounters'): Seth, told to fight in Valentine (2026-11-09),
+                    // ran off instead, the alarms back on him the moment he was told, and the scene stopped 16 s on. At the first
+                    // blow (Tick) they go back to the game's fists as before: the fights that started then started that way.
+                    l.HoldStart = HoldFightStart;
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, l.HoldStart);
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(t, l.HoldStart);
                     l.StartHp.Clear();
                     l.StartHp[l.Cast[0].Handle] = Math.Max(1, ENTITY.GET_ENTITY_HEALTH(l.Cast[0].Handle));
                     l.StartHp[l.Cast[1].Handle] = Math.Max(1, ENTITY.GET_ENTITY_HEALTH(l.Cast[1].Handle));
@@ -1792,9 +1831,96 @@ namespace EnrageWestworld.InGame
                 l.FightOrderedAt = now;   // looked at again in 2 s (Tick), not every frame: each ask starts the getting up over
                 return;
             }
-            TASK.TASK_COMBAT_PED(l.FightA, l.FightB, 0, 16);
-            TASK.TASK_COMBAT_PED(l.FightB, l.FightA, 0, 16);
+            // the first order to both; after it, with the order held (FOURTEENHOUR item 1a), only to one not already at the other:
+            // a new order starts the closing in over again
+            bool again = l.FightOrderedAt != 0 && l.HoldStart;
+            if (!again || !PED.IS_PED_IN_COMBAT(l.FightA, l.FightB))
+                TASK.TASK_COMBAT_PED(l.FightA, l.FightB, 0, 16);
+            if (!again || !PED.IS_PED_IN_COMBAT(l.FightB, l.FightA))
+                TASK.TASK_COMBAT_PED(l.FightB, l.FightA, 0, 16);
+            if (l.HoldStart)
+            {
+                PED.SET_PED_KEEP_TASK(l.FightA, true);   // kept until the first blow (FightHoldEnd), as the executions and the stalker keep theirs
+                PED.SET_PED_KEEP_TASK(l.FightB, true);
+            }
             l.FightOrderedAt = now;
+        }
+
+        /// A "meet" walker who has got no nearer in 3 s (Valentine, 2026-11-09: Peter, 8 m from Irving at his work, was still
+        /// 7.3 m off 17 s later, never told again) is told again, at most twice, as the third's approach and the kin walk-up
+        /// are; and the one waiting, held by a seat or their work, gets up to meet them the Director's own way (ScenarioExit.SoftUp,
+        /// as the fight beat gets two up). A look once a second, not every frame.
+        private void MeetKeepOn(Live l, int now)
+        {
+            if (now < l.MeetLookAt)
+                return;
+            l.MeetLookAt = now + 1000;
+            Ped walker = l.Cast[l.MeetWalker], waiter = l.Cast[1 - l.MeetWalker];
+            if (walker == null || waiter == null || !walker.Exists() || !waiter.Exists())
+                return;
+            float d = walker.Position.DistanceTo(waiter.Position);
+            if (l.MeetCheckAt == 0 || d < l.MeetBest - 0.3f)
+            {
+                l.MeetBest = Math.Min(l.MeetBest, d);
+                l.MeetCheckAt = now;
+                return;
+            }
+            if (now - l.MeetCheckAt < 3000 || l.MeetAgains >= 2)
+                return;
+            l.MeetAgains++;
+            l.MeetCheckAt = now;
+            bool raise = !l.MeetRaised && l.Sat < 0 && PED.IS_PED_USING_ANY_SCENARIO(waiter.Handle);
+            if (raise)
+            {
+                l.MeetRaised = true;
+                ScenarioExit.SoftUp(waiter.Handle, x => TASK.TASK_STAND_STILL(x, 2000));
+            }
+            TASK.TASK_GO_TO_ENTITY(walker.Handle, waiter.Handle, 20000, Natives.Brisk, 1.3f, 0f, 0);
+            Log.Write("SCENE   " + l.Names[l.MeetWalker] + " got no nearer in 3 s (" + d.ToString("0.0") + " m off): told again" +
+                      (raise ? "; " + l.Names[1 - l.MeetWalker] + " gets up to meet them" : ""));
+        }
+
+        /// The first blow (or the scene's end before it): the held fight order goes, and the two have the game's alarms back, as
+        /// every fight that started before FOURTEENHOUR item 1 had them from the word.
+        private static void FightHoldEnd(Live l)
+        {
+            l.HoldStart = false;
+            FightHoldRelease(l.FightA, l.Ended);
+            FightHoldRelease(l.FightB, l.Ended);
+        }
+
+        private static void FightHoldRelease(int fighter, bool ended)
+        {
+            bool here = fighter != 0 && ENTITY.DOES_ENTITY_EXIST(fighter);
+            if (!here)
+                return;
+            PED.SET_PED_KEEP_TASK(fighter, false);
+            if (!ended)
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(fighter, false);   // the game's alarms back: the scene still runs
+        }
+
+        private static string FightName(Live l, int h)
+        {
+            int i = l.Cast == null ? -1 : Array.FindIndex(l.Cast, p => p != null && p.Handle == h);
+            return i >= 0 && l.Names != null && i < l.Names.Length && !string.IsNullOrEmpty(l.Names[i]) ? l.Names[i] : "one of them";
+        }
+
+        /// What's known of a cast member whose body no longer exists (FOURTEENHOUR item 1d): where he was at the last look, how far
+        /// into the scene, whether the fists had just been given, and whose body the game layer says it was. The game clearing an
+        /// unseen body, enRAGE, or a handle reused: the next log tells which, before anything holds the cast for it.
+        private string GoneLine(Live l, int idx, int h, Ped player, int now)
+        {
+            string s = ": the body no longer exists";
+            if (l.LastPos != null && idx >= 0 && idx < l.LastPos.Length && l.LastPos[idx] != default(Vector3))
+                s += ", last " + (int)l.LastPos[idx].DistanceTo(player.Position) + " m from you";
+            s += ", " + (now - l.StartedAt) / 1000 + " s into the scene";
+            if (l.Fighting && !l.FightOn)
+                s += ", the fists just given (" + (now - l.FightAskedAt) / 1000.0f + " s)";
+            string whose = null;
+            try { whose = GoneWhose?.Invoke(h); } catch (Exception ex) { whose = "the check failed: " + ex.Message; }
+            if (!string.IsNullOrEmpty(whose))
+                s += ", " + whose;
+            return s;
         }
 
         private static void KeepFists(Ped p)

@@ -12,6 +12,7 @@
 // memories, the plain record and the record fates flow as they do for the fixed scenes. Off, nothing here runs.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EnrageWestworld.Core
 {
@@ -93,8 +94,8 @@ namespace EnrageWestworld.Core
             }
             else if (shot)
                 s.LadderNote = "the ladder said a shot (" + Side(last.By, c.Names[0] ?? a, c.Names[1] ?? b, c) + "); not played, the standoff breaks off (the mind damages nobody yet)";
-            // the words: what it's over
-            string[] open = Opening(q.Matter, seed, a, b);
+            // the words: what it's over (q.Over first, when the game side named it: a slight, a bad week, the old business)
+            string[] open = Opening(q.Matter, q.Over, seed, a, b);
             s.Add(0, open[0], open[3], "face").Add(1, open[1], "no").Add(0, open[2], "angry");
             // the rungs already climbed before the ladder was asked (a brawl reason starts at the blows): A, who opened,
             // did them
@@ -148,7 +149,203 @@ namespace EnrageWestworld.Core
             return by == "a" ? a : by == "b" ? b : by == "friendA" ? "a friend of " + a : by == "friendB" ? "a friend of " + b : by ?? "?";
         }
 
-        /// The opening exchange: A opens, B answers, A presses; the fourth is A's opening voice.
+        // ---- what it's over, in so many words (FOURTEENHOUR item 1; Lex's log of 2026-11-09: four brawls in Valentine, every one
+        // "over nothing" in the ladder's line, though two of the four had a cause). The matter above is what the ladder's odds read
+        // (Escalation: a look or a word over nothing is honour's own matter, and the Lemoyne rule counts it so); it stays exactly as
+        // it was. This names the thing itself, for the opening words and the log only: a slight by the place for strangers, the
+        // doer's own bad week for a man at the worst of his trouble (never a debt's or a sweetheart's words to a stranger: strangers
+        // owe each other nothing), the old business for two who are already foes. Why it reads true: onlookers explain a fight by
+        // its cause and retell it by its cause; "over nothing" reads as a machine, "over a spilled drink" as two men.
+
+        /// The street's slights and the saloon's, by place.
+        public static readonly string[] StreetSlights = { "shoulder", "way", "look", "horse", "hat" };
+        public static readonly string[] SaloonSlights = { "spill", "seat", "laugh", "look" };
+
+        /// A slight by the place, seeded: the street's a shoulder in passing (30%), the way blocked (20), a look held (25), a word
+        /// about a man's horse (13) or hat (12); a saloon's a spilled drink (35), a seat taken (20), a laugh (20), a look (25).
+        public static string SlightOf(bool saloon, string seed)
+        {
+            int r = Voice.Hash(seed + "|slight") % 100;
+            if (saloon)
+                return "slight:" + (r < 35 ? "spill" : r < 55 ? "seat" : r < 75 ? "laugh" : "look");
+            return "slight:" + (r < 30 ? "shoulder" : r < 50 ? "way" : r < 75 ? "look" : r < 88 ? "horse" : "hat");
+        }
+
+        /// What a quarrel is over in words, once its matter is known (null: the matter's own words say it). `over`: the reason's
+        /// own (the snap's worry), kept first. Only where the matter is still "nothing" (after the pair's debt or feud, which win),
+        /// or "honour" between strangers (they have no talk about each other to quarrel over: a word taken wrong).
+        public static string OverFor(string matter, string over, bool saloon, int warmth, string tieKind, bool strangers, string seed)
+        {
+            if (over != null && (matter == null || matter == "nothing"))
+                return over;
+            if (matter == "nothing" || matter == null)
+                return warmth < 0 ? "old:" + (string.IsNullOrEmpty(tieKind) ? "argue" : tieKind) : SlightOf(saloon, seed);
+            if (matter == "honour" && strangers)
+                return "slight:word";
+            return null;
+        }
+
+        /// For the log and the model's list: "a shoulder in passing", "a bad week of his own (secret)", "the old business between
+        /// them (rough)"; the matter itself when there's nothing finer.
+        public static string OverWords(string matter, string over)
+        {
+            if (string.IsNullOrEmpty(over))
+                return matter ?? "nothing";
+            int c = over.IndexOf(':');
+            string head = c > 0 ? over.Substring(0, c) : over, what = c > 0 ? over.Substring(c + 1) : "";
+            switch (head)
+            {
+                case "snap": return "a bad week of their own (" + what + ")";
+                case "old": return "the old business between them (" + what + ")";
+                case "slight":
+                    switch (what)
+                    {
+                        case "shoulder": return "a shoulder in passing";
+                        case "way": return "the way blocked";
+                        case "look": return "a look held too long";
+                        case "horse": return "a word about a horse";
+                        case "hat": return "a word about a hat";
+                        case "spill": return "a spilled drink";
+                        case "seat": return "a seat taken";
+                        case "laugh": return "a laugh at the wrong moment";
+                        case "word": return "a word taken wrong";
+                    }
+                    break;
+            }
+            return matter ?? "nothing";
+        }
+
+        /// The opening exchange: A opens, B answers, A presses; the fourth is A's opening voice. `over` (OverFor) first.
+        private static string[] Opening(string matter, string over, string seed, string a, string b)
+        {
+            string[] o = over != null ? OverOpening(over, seed, b) : null;
+            return o ?? Opening(matter, seed, a, b);
+        }
+
+        /// Every opening an `over` can give (for the tests): each of the four is a line, and the fourth a voice.
+        public static IEnumerable<string[]> OverOpenings(string over, string b)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                string[] o = OverOpening(over, "t" + i, b, i);
+                if (o != null)
+                    yield return o;
+            }
+        }
+
+        private static string[] OverOpening(string over, string seed, string b, int forced = -1)
+        {
+            int c = over.IndexOf(':');
+            string head = c > 0 ? over.Substring(0, c) : over, what = c > 0 ? over.Substring(c + 1) : "";
+            string[][] set = null;
+            switch (head)
+            {
+                case "slight": set = SlightLines(what, b); break;
+                case "snap": set = SnapLines(what); break;
+                case "old": set = OldLines(what, b); break;
+            }
+            if (set == null || set.Length == 0)
+                return null;
+            int i = forced >= 0 ? forced % set.Length : Voice.Hash(seed + "|over|" + over) % set.Length;
+            return set[i];
+        }
+
+        // A slight by the place: what a stranger does that another man won't swallow. The first two are the openings every
+        // quarrel over nothing had before (the look and the shoulder), kept.
+        private static string[][] SlightLines(string what, string b)
+        {
+            switch (what)
+            {
+                case "shoulder": return new[] {
+                    new[] { "Watch where you're walking.", "You walked into me.", "I'd say not.", "angry" },
+                    new[] { "You near knocked me down, " + b + ".", "Then stand out of the road.", "Say that again.", "angry" },
+                    new[] { "That was my shoulder you just went through.", "It was in my way.", "Your way's about to get shorter.", "threat" } };
+                case "look": return new[] {
+                    new[] { "You got something to say to me?", "Didn't say a word.", "You looked it.", "mild" },
+                    new[] { "You've been staring at me since I came out.", "It's a free country.", "Not for staring, it ain't.", "threat" } };
+                case "way": return new[] {
+                    new[] { "You're in my road.", "There's room to go round.", "I don't go round.", "angry" },
+                    new[] { "Stand aside.", "Ask me nicely.", "I don't ask.", "threat" } };
+                case "horse": return new[] {
+                    new[] { "That's my horse you're running down.", "That nag? I'd not give a dollar for it.", "Say that again, close up.", "angry" },
+                    new[] { "Leave my horse be.", "I was only looking at the brute.", "Look at something else.", "threat" } };
+                case "hat": return new[] {
+                    new[] { "Something wrong with my hat?", "Nothing a fire wouldn't mend.", "You'll eat those words.", "angry" },
+                    new[] { "You laughing at my hat?", "Wasn't laughing.", "Smiling, then. Same thing.", "mild" } };
+                case "spill": return new[] {
+                    new[] { "You spilled my drink, " + b + ".", "Then buy another.", "You'll buy it.", "angry" },
+                    new[] { "That's whiskey all down my coat.", "Whiskey's improved it.", "Has it, now.", "angry" } };
+                case "seat": return new[] {
+                    new[] { "That's my seat.", "I saw no name on it.", "It does now.", "threat" },
+                    new[] { "I was sitting there.", "And now you're standing.", "Not for long.", "angry" } };
+                case "laugh": return new[] {
+                    new[] { "Something funny?", "Not you. Something else.", "Laugh at me again.", "threat" },
+                    new[] { "You think that's funny, " + b + "?", "I think you're funny.", "Let's see you laugh with a split lip.", "angry" } };
+                case "word": return new[] {
+                    new[] { "What did you call me?", "Nothing you didn't earn.", "Say it again.", "angry" },
+                    new[] { "I heard that.", "You were meant to.", "Then we'll settle it.", "threat" },
+                    new[] { "Say that again. Louder.", "I said what I said.", "Then come and say it closer.", "angry" } };
+            }
+            return null;
+        }
+
+        // A man at the worst of his own trouble, snapping at whoever is there: his week in the words, never the other's business
+        // (the stranger owes him nothing, and these don't say he does). The displaced anger of a bad week (NIGHT3's lens).
+        private static string[][] SnapLines(string worry)
+        {
+            switch (worry)
+            {
+                case "debt": case "bank": case "cards": case "savings": return new[] {
+                    new[] { "Something funny? A man's owing to his eyes, and you find it funny?", "I wasn't laughing at you.", "You were laughing.", "angry" },
+                    new[] { "Go on, ask me for money too. Everybody else has.", "I never asked you for a thing.", "Not yet you haven't.", "angry" } };
+                case "secret": return new[] {
+                    new[] { "What have you heard? Who's been talking to you?", "Talking? About what?", "Don't lie to me.", "threat" },
+                    new[] { "Quit looking at me like you know something.", "I never laid eyes on you before.", "Then quit looking.", "angry" } };
+                case "law": return new[] {
+                    new[] { "You looking at my face for a reason? Seen it on a paper somewhere?", "Never seen you before.", "See that it stays that way.", "threat" } };
+                case "drink": return new[] {
+                    new[] { "Go on. Say it. Everybody else does.", "Say what?", "That I've been at the bottle again.", "angry" } };
+                case "fever": return new[] {
+                    new[] { "My child's burning up at home, and you're stood in my road.", "Then go round.", "You go round.", "angry" } };
+                case "tooth": return new[] {
+                    new[] { "My jaw's on fire, and you're in my way. Shift.", "There's room enough.", "Not for both of us there ain't.", "angry" } };
+                case "son": return new[] {
+                    new[] { "My boy's gone off and not written, and you want to stand there grinning?", "I wasn't grinning.", "You were.", "angry" } };
+                case "letter": return new[] {
+                    new[] { "Three weeks I've waited on a letter, and here you are crowding me.", "I'm nowhere near you.", "You're near enough.", "angry" } };
+                case "courting": return new[] {
+                    new[] { "She turned me down flat, and now you want to laugh about it?", "Who turned you down?", "Don't you play the innocent.", "angry" } };
+                case "drought": return new[] {
+                    new[] { "Not a drop of rain since spring, and you want to stand in my road?", "It's a wide road.", "Not today it ain't.", "angry" } };
+                case "feud": return new[] {
+                    new[] { "You're thick with my neighbour, ain't you? I've seen you.", "I don't know your neighbour.", "Then what are you smiling at?", "threat" } };
+            }
+            return new[] {
+                new[] { "What are you gawping at? I've had a week, and you're in it.", "I'm only standing here.", "Then stand somewhere else.", "angry" },
+                new[] { "Move. I've trouble enough this week without you.", "Steady, now. I never touched you.", "You're doing it now.", "angry" },
+                new[] { "Don't you start with me. Not today.", "I never said a word.", "You were fixing to.", "threat" } };
+        }
+
+        // Two who are already foes, over the business between them (the tie's kind: what was done last time).
+        private static string[][] OldLines(string kind, string b)
+        {
+            switch (kind)
+            {
+                case "rough": return new[] {
+                    new[] { "You put my face in that bar, " + b + ". I haven't forgotten.", "You had it coming.", "Then here's what you've got coming.", "threat" } };
+                case "pickpocket": case "lift": return new[] {
+                    new[] { "You had your hand in my coat, you thief.", "Prove it.", "I'll prove it on your face.", "angry" } };
+                case "brawl": case "blows": case "rematch": case "standoff": return new[] {
+                    new[] { "Last time was luck, and you know it.", "Luck had nothing to do with it.", "We'll see about that.", "threat" } };
+                case "brushoff": case "avoid": case "snub": return new[] {
+                    new[] { "You walked past me like I was dirt.", "Maybe you are.", "Say that again.", "angry" } };
+            }
+            return new[] {
+                new[] { "I've not forgotten what you said to me, " + b + ".", "I meant every word.", "Then we've business to settle.", "angry" },
+                new[] { "You've a nerve, showing your face to me.", "It's a free street.", "Not for you, it ain't.", "threat" } };
+        }
+
+        /// The opening exchange by the matter alone (as before item 1).
         private static string[] Opening(string matter, string seed, string a, string b)
         {
             string k = seed + "|open|" + matter;
@@ -310,6 +507,25 @@ namespace EnrageWestworld.Core
                         if (bt.Line != null && seen.Add(bt.Line))
                             yield return bt.Line;
                 }
+            // and every opening of what it's over, in words (FOURTEENHOUR item 1), with a name and with a stranger's "mister"
+            foreach (string over in AllOvers())
+                foreach (string b in new[] { "Hollis", "mister" })
+                    foreach (string[] o in OverOpenings(over, b))
+                        for (int k = 0; k < 3; k++)
+                            if (seen.Add(o[k]))
+                                yield return o[k];
+        }
+
+        /// Every `over` the openings know: each slight, each worry's snap (and a worry with no lines of its own), each old business.
+        public static IEnumerable<string> AllOvers()
+        {
+            foreach (string s in StreetSlights.Concat(SaloonSlights).Distinct())
+                yield return "slight:" + s;
+            yield return "slight:word";
+            foreach (string w in new[] { "debt", "bank", "cards", "savings", "secret", "law", "drink", "fever", "tooth", "son", "letter", "courting", "drought", "feud", "none" })
+                yield return "snap:" + w;
+            foreach (string k in new[] { "rough", "pickpocket", "lift", "brawl", "blows", "rematch", "standoff", "brushoff", "avoid", "snub", "argue" })
+                yield return "old:" + k;
         }
     }
 }

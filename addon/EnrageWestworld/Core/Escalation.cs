@@ -35,7 +35,11 @@ namespace EnrageWestworld.Core
         public int Warmth;                   // the pair's tie, -3..3 (friends cool, foes heat)
         public int History;                  // quarrels between them before
         public string Matter = "nothing";    // drink honour money land woman nothing (a look or a word over nothing was the honour matter of the age)
-        public bool Honour;                  // the culture of honour (Lemoyne; NIGHT3): an insult must be answered, backing down costs more
+        // What it's over, in so many words (FOURTEENHOUR item 1; [Mind] QuarrelSlights): "slight:shoulder", "snap:debt",
+        // "old:rough" (Scenes.OverFor). Only the opening lines, the thoughts and the log read it; the odds below never do, so
+        // a quarrel climbs and ends exactly as it would without it (mindtest QuarrelSlightsTest checks the steps are the same).
+        public string Over;
+        public bool Honour;                 // the culture of honour (Lemoyne; NIGHT3): an insult must be answered, backing down costs more
         public string Aggrieved;             // "a" or "b": the one wronged, when the ties say (he pushes harder); null when nobody knows
     }
 
