@@ -117,6 +117,7 @@ namespace EnrageWestworld.Core
                 case "rough": return a + " put " + t + "'s face into the bar";
                 case "drunk": return a + ", in drink, called " + t + " out";
                 case "rowdy": return a + ", in drink, picked on " + t + " in the street";
+                case "runout": return a + " and the card table walked " + t + " out of town";
                 case "help": case "carried": return a + " helped " + t + " up";
                 case "passby": return a + " walked past " + t + " lying in the street";
                 case "comfort": case "condole": return a + " comforted " + t;

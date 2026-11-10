@@ -199,6 +199,13 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// He's running for the doctor (not yet seen home: the escort counts him then): busy for the other features.
+        private bool DoorRunning(int h)
+        {
+            DoorRun r = _doorRun;
+            return r != null && r.Man != null && r.Man.Handle == h && r.Phase != "escort";
+        }
+
         /// J's row as he turns: "I'll walk with you" starts the walk home's escort, at his pace.
         private void DoctorsDoorChoose(string id)
         {

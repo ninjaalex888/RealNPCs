@@ -267,6 +267,7 @@ namespace EnrageWestworld.InGame
             SecondActs.On = _cfg.SecondActs;   // [Encounters] SecondActs (FOURTEENHOUR reserve R3)
             DoctorsDoor.On = _cfg.DoctorsDoor;   // [Scenes] DoctorsDoor (FOURTEENHOUR reserve R4)
             Rowdy.On = _cfg.RowdyDrunks;   // [Scenes] RowdyDrunks (FOURTEENHOUR reserve R5)
+            Cardsharp.On = _cfg.CardsharpRunOut;   // [Scenes] CardsharpRunOut (FOURTEENHOUR reserve R6)
             Rivals.On = _cfg.Rivals;             // [Scenes] Rivals (FOURTEENHOUR item 19)
             PurseSnatch.On = _cfg.PurseSnatch;   // [Scenes] PurseSnatch (FOURTEENHOUR item 20)
             WitnessLaw.On = _cfg.WitnessesFetchLaw;   // [Mind] WitnessesFetchLaw (FOURTEENHOUR item 21)

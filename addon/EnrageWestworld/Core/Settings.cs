@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 398;
+        public const int CurrentVersion = 399;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -556,6 +556,7 @@ namespace EnrageWestworld.Core
         public bool LateThanks = true;   // [Scenes] someone Arthur stood a drink, gave money or whose debt he settled comes over hours or days later and thanks him for it; the proud repay a debt (settings version 153; NIGHT3)
         public bool FriendCalls = true;   // [Scenes] a friend in town comes over unasked now and then: a warning, the news, a small gift or a favour of their trade (Core/FriendCalls.cs; Run 3, item 7; settings version 254)
         public bool FriendGifts = true;   // [Scenes] with FriendCalls: gifts and favours hand something over (a few cents, cartridges, a meal, a drink, the doctor's patching); off, friends bring words only
+        public bool CardsharpRunOut = true;   // [Scenes] a card cheat shown the door is walked out past the last houses by the table's men, and comes back another day, sore (FOURTEENHOUR reserve R6; settings version 399)
         public bool RowdyDrunks = true;     // [Scenes] at night two friends in drink come down the street singing; one picks on a man going by; the friend hauls him home, or it comes to blows (FOURTEENHOUR reserve R5; settings version 398)
         public bool DoctorsDoor = true;     // [Scenes] after dark a man runs for the doctor for his child's fever; J to walk him home (FOURTEENHOUR reserve R4; settings version 397)
         public bool DoctorsPatient = true;   // [Scenes] someone goes to the doctor for what ails them, tells him, hears his word, and walks home (night 2026-10-28, item 14; widened 2026-10-29; settings version 90)
@@ -1041,6 +1042,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 399)
+                    log?.Invoke("Settings: new in this version: [Scenes] CardsharpRunOut (on): a card cheat walked out of town by the table.");
                 if (s.SettingsVersion < 398)
                     log?.Invoke("Settings: new in this version: [Scenes] RowdyDrunks (on): rowdy drunks in the street at night.");
                 if (s.SettingsVersion < 397)
@@ -2196,6 +2199,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("ThanksFiveChance = " + ThanksFiveChance + "   ; ... for five dollars (0-100)");
             b.AppendLine("ThanksMendedChance = " + ThanksMendedChance + "   ; ... for a trouble you mended with money: a debt, the doctor, the dentist, the fare (0-100)");
             b.AppendLine("ThanksLoanDays = " + ThanksLoanDays + "   ; a proud one who took your money for their debt as a loan pays it back after this many game days (0-14)");
+            b.AppendLine("CardsharpRunOut = " + B(CardsharpRunOut) + "   ; a card cheat shown the door, with men at the table to see to it: six times in ten up to two of them (the man he cheated first) walk him out and down the street out past the last houses, a word at the door and one at the edge, and turn back; bad blood with each, and two days to two weeks on he's back in that town, sore, and thinks of it near you; false: he's shown the door, as before");
             b.AppendLine("RowdyDrunks = " + B(RowdyDrunks) + "   ; out of doors in a town at night: a man in drink (never a coward) with a friend in drink beside him picks on a man going by who isn't drunk or his friend; they sing a line apiece as they come; the friend hauls him home, or now and then it comes to blows (the brawl's own rules from there). A drunk alone calls the man out and falls on his face, as in the saloon (with DrunkChallenges); false: never");
             b.AppendLine("DoctorsDoor = " + B(DoctorsDoor) + "   ; after dark (nine till five) in a town whose doctor is at his post near you, once a night: a man whose child's fever is at its worst (or whose wife's time has come) runs to the doctor and calls out; the doctor answers from his post; as the man turns for home, J lets you walk with him to his door (a voice calls from inside), or let him go. Next morning the town hears how the night went, and whether a stranger walked with him; false: never");
             b.AppendLine("DoctorsPatient = " + B(DoctorsPatient) + "   ; by day in a town with its doctor (Valentine, Rhodes, Saint Denis), someone near you walks to him for what ails them (a child's fever, a tooth, ribs after a fight, a back, a cough...), tells him, hears his word, and walks home thinking it over");

@@ -49,6 +49,7 @@ namespace EnrageWestworld.InGame
             PatientStep(now);   // the doctor's patient on the way there and back (WestworldScript.Patient.cs)
             DoorRunStep(now);   // a man running for the doctor at night (WestworldScript.DoctorsDoor.cs; reserve R4)
             ThrownOutStep(now);   // the card cheat on the boardwalk
+            RunOutStep(now);   // ...or walked out past the last houses by the table, and back another day, sore (WestworldScript.Cardsharp.cs; reserve R6)
             SabbathWatchStep(now);   // the one who saw the kneel thinks of it, a few seconds on
             SubEnd(ref _psHelpers, "scenes: helpers", sub);
             sub = SubStart();
@@ -1208,6 +1209,8 @@ namespace EnrageWestworld.InGame
                 Ped cheat = _director.CastAt(1);
                 if (cheat != null && cheat.Exists())
                 {
+                    if (RunOutBegin(cheat, _director.CastAt(0)))
+                        return;   // the table sees him off out past the last houses (WestworldScript.Cardsharp.cs; FOURTEENHOUR reserve R6): its own words, no boardwalk thought
                     _thrownOut = cheat;
                     _thrownOutName = FullNameOf(cheat);
                     _thrownOutAt = Game.GameTime + 9000;

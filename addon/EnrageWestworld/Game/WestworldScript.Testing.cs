@@ -718,6 +718,11 @@ namespace EnrageWestworld.InGame
                         skipped = "the day and hour, the rarity and the rests (Pacing \"sabbath\")";
                         return SabbathScene(Game.Player.Character, now, true, out sw) ? null : sw;
                     }
+                case "runout":
+                    {
+                        skipped = "the cards, the call and the roll (the nearer named man as the cheat, the other as the table)";
+                        return RunOutFire(now, out said);   // WestworldScript.Cardsharp.cs (FOURTEENHOUR reserve R6)
+                    }
                 case "rowdy":
                     {
                         if (_director.Busy && !TestMakeRoom())

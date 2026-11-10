@@ -63,7 +63,7 @@ namespace EnrageWestworld.Core
             {
                 case "argue": case "brawl": case "cheat": case "debt": case "standoff": case "snap": case "envy": case "drunk": case "rowdy":
                     return -1;
-                case "rough": case "pickpocket": case "mugging": case "holdup":
+                case "rough": case "pickpocket": case "mugging": case "holdup": case "runout":   // (runout: the card table walked him out of town; reserve R6)
                     return -2;   // a face into the bar, or a hand caught in a coat, isn't soon forgotten
                 case "horsedeal":
                     return -1;   // sold a lame horse at the hitching post, and he knows it (FOURTEENHOUR item 14): Doer is the dealer
