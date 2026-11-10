@@ -912,6 +912,13 @@ namespace EnrageWestworld.InGame
             _mindScan.Sort((a, b) => a.Value.CompareTo(b.Value));
             for (int i = 0; i < _mindScan.Count; i++)
                 _mindNear.Add(_mindScan[i].Key);
+            // those the ring is walking stay in mind while its own leash holds them (Lex, 2026-11-09: control lost to "the game or enRAGE";
+            // in his logs the commonest let-go, 8 of 19, was "out of the mind's ring": a held man walking his errand past 25 m was dropped
+            // at the mind's edge before the ring's leash, HeldOutMetres, was reached)
+            if (_cfg != null && _cfg.HeldStayInMind && _held.Count > 0)
+                foreach (int hh in _held.Keys)
+                    if (!_mindNear.Contains(hh) && ENTITY.DOES_ENTITY_EXIST(hh) && !ENTITY.IS_ENTITY_DEAD(hh) && ENTITY.GET_ENTITY_COORDS(hh, true, true).DistanceTo(at) <= HeldOutMetres)
+                        _mindNear.Add(hh);
             if (_mindWho.Count > 400)
                 _mindWho.Clear();   // handles come and go; the cache is rebuilt from who's near
         }

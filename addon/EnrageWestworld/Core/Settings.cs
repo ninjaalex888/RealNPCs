@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 368;
+        public const int CurrentVersion = 369;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -93,6 +93,7 @@ namespace EnrageWestworld.Core
         public bool ThreadsNextDay = true;   // [Ticker] with ThoughtsFollowOn: a resident's loud moment kept in the save; their first quiet thought the next game day may pick it up (THREEHOUR R2; settings version 362)
         public bool OnlookerPicks = true;   // [Mind] with the model's picks: at a fight or a quarrel, the strongest onlooker's own act is the model's pick from what the game plays; late, the rules' (THREEHOUR R1; settings version 361)
         public bool PlacesRemember = true;   // [Mind] memory that behaves like memory (Core/PlaceMemory.cs; roadmap 4; SIXDAY item 24): someone who knew one you killed thinks of it near the spot (a friend's for good, an acquaintance's for a month); people who've seen you on your horse know the horse before the face as you ride up; the same place at the same hour on three different days is a habit the town notices (settings version 240)
+        public bool HeldStayInMind = true;   // [Mind] someone the ring is walking stays in mind to the ring's own leash, not dropped at the mind's 25 m edge (Lex, 2026-11-09; settings version 369)
         public bool MindLive = true;      // what the mind decides reaches the screen (Lex, 2026-10-30: on for everyone from 0.7.2; off until settings version 126)
         public bool MindLevels = false;   // the shadow's scan run from the levels scheduler (night 2026-10-28, item 7; settings version 89): a near ring in view, the town around every 10-30 s, the people away one time a game day, a budget of work a frame; off, the scan as it was
         public bool QuarrelLadder = true;  // with MindLive: an argue or a brawl between two people the mind knows is played from the quarrel ladder (Core/Escalation.cs, Scenes.Ladder.cs; night 2026-10-28, item 16; settings version 92): how far it goes and how it ends from their traits and the surroundings; the shot is never played
@@ -1007,6 +1008,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 369)
+                    log?.Invoke("Settings: new in this version: [Mind] HeldStayInMind (on): the ring keeps hold of those it's walking, out to its own leash.");
                 if (s.SettingsVersion < 368)
                     log?.Invoke("Settings: new in this version: [Stalkers] RevenantsAnger (on): the dead come back for you by their anger.");
                 if (s.SettingsVersion < 367)
@@ -1703,6 +1706,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("ThreadsNextDay = " + B(ThreadsNextDay) + "   ; with ThoughtsFollowOn: a fight, a fright or a body stays with a resident overnight; the next day, their first quiet thought may come back to it");
             b.AppendLine("OnlookerPicks = " + B(OnlookerPicks) + "   ; with the model's picks on: at a fight or a quarrel, what the strongest onlooker does (watch, walk off, shake their head, square up) is the model's pick, with a thought; late or unreadable, the rules' as before");
             b.AppendLine("PlacesRemember = " + B(PlacesRemember) + "   ; memory that behaves like memory: someone who knew one you killed thinks of it near the spot (once each; a friend's ground for good, an acquaintance's for a month), people who have seen you on your horse know the horse before the face as you ride up (once a day each), and a place you keep at the same hour on three different days is a habit the town notices (once each); false: none of the three");
+            b.AppendLine("HeldStayInMind = " + B(HeldStayInMind) + "   ; someone the ring is walking on an errand stays in mind out to the ring's own reach; false: dropped at the mind's 25 m edge, as before");
             b.AppendLine("MindLive = " + B(MindLive) + "   ; what that mind decides reaches the screen (their moods, and thoughts of what they really feel and need, and what they do about it); each part has its own switch below");
             b.AppendLine("MindLevels = " + B(MindLevels) + "   ; (in testing) the mind's work spread by distance and a budget a frame: the people in view every look, the town around every 10-30 s, everyone saved elsewhere one time a game day (counted only); off, exactly as before");
             b.AppendLine("QuarrelLadder = " + B(QuarrelLadder) + "   ; with MindLive on: an argue or a brawl between two people the mind knows climbs or cools by the quarrel ladder (words, a shove, blows, a gun drawn; an apology, a joke, backing down, a friend stepping in, a drink, the law in sight) from their natures and the surroundings; the shot is never fired. Off: the fixed scenes");
