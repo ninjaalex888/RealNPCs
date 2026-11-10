@@ -38,6 +38,7 @@ namespace EnrageWestworld.InGame
             RematchFromFight(winner, loser);  // and the beaten man takes it his own way (WestworldScript.Plans.cs, Core/Rematch.cs)
             BrawlWeekAfter(winner, loser);    // the week after a big brawl: the round, the news, the chairs, the sore sides (FOURTEENHOUR item 12)
             RivalsOver(winner, winner, loser); // two rivals' fight: her choice (FOURTEENHOUR item 19)
+            FetchFightOver(winner, loser);     // someone ran for the law from it: whom the lawman will want a word with (item 21)
             if (!_cfg.MindLive || !_cfg.Aftermath || winner == 0 || loser == 0)
                 return;
             int now = Game.GameTime;

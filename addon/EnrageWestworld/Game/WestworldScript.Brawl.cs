@@ -58,6 +58,7 @@ namespace EnrageWestworld.InGame
             {
                 BrawlLawStep(now);
                 BrawlHoldoutsPrune();
+                LawFetchStep(now);   // someone gone for the law, from a brawl or a beating (FOURTEENHOUR item 21; WestworldScript.WitnessLaw.cs)
                 List<int> a, b;
                 if (MISC.GET_MISSION_FLAG() || !_director.FightSides(out a, out b) || !ENTITY.DOES_ENTITY_EXIST(a[0]))
                 {
@@ -133,6 +134,7 @@ namespace EnrageWestworld.InGame
                 law = BrawlFindLaw(mid, BrawlHeardMetres, false, a[0]);   // a fight is heard: after a few seconds any free lawman within 60 m comes, sight or not (Lex, 2026-11-01: the law sometimes never came)
             if (law == null)
             {
+                BrawlFetchBegin(a, b, mid, now);   // nobody's seen it: one onlooker may run for a lawman within 150 m (FOURTEENHOUR item 21)
                 if (test && now - _brawlFightSince > 20000 && _brawlLawFor != -_director.FightId)
                 {
                     _brawlLawFor = -_director.FightId;   // said once
@@ -141,6 +143,13 @@ namespace EnrageWestworld.InGame
                 }
                 return;
             }
+            BrawlLawDispatch(law, a, b, mid, now, test, null);
+        }
+
+        /// The lawman sent to the fight, ours while he works: at a walk from afar, then a run (item 5); at a run at once when someone
+        /// fetched him (`fetchedBy`, FOURTEENHOUR item 21), and counted there only once he could be.
+        private void BrawlLawDispatch(Ped law, List<int> a, List<int> b, Vector3 mid, int now, bool test, string fetchedBy)
+        {
             _brawlLawFor = _director.FightId;
             var lh = new LawHand { Law = law.Handle, Since = now, Phase = 0, Seed = _director.FightId + "|" + now / 1000 };
             _brawlLaw.Add(lh);
@@ -150,10 +159,10 @@ namespace EnrageWestworld.InGame
             // he walks over, then runs (FOURTEENHOUR item 5, built at the review of items 1-13): from beyond 20 m at a walk, 6 s at
             // most, then at a run; nearer, at a run from the start
             lh.StartM = law.Position.DistanceTo(mid);
-            lh.Walking = BrawlsOn && _cfg.BrawlLawSight && lh.StartM > Brawl.LawRunsWithin;
-            lh.ThereBy = now + 9000 + (lh.Walking ? Brawl.LawWalksMostMs : 0);
+            lh.Walking = fetchedBy == null && BrawlsOn && _cfg.BrawlLawSight && lh.StartM > Brawl.LawRunsWithin;
+            lh.ThereBy = now + 9000 + (lh.Walking ? Brawl.LawWalksMostMs : 0) + (fetchedBy != null ? (int)(lh.StartM / 2.5f * 1000) : 0);
             TASK.TASK_GO_TO_ENTITY(lh.Law, a[0], -1, 4f, lh.Walking ? 1f : 2f, 0f, 0);   // at a walk from afar, else at a run
-            Log.Write("LAW breaks up: a lawman " + (int)law.Position.DistanceTo(mid) + " m off sees the fight (" + (a.Count + b.Count) + " fighting) and comes over (" + LawTakeWords(owned) + ")" + (test ? ", a test" : ""));
+            Log.Write("LAW breaks up: a lawman " + (int)law.Position.DistanceTo(mid) + " m off " + (fetchedBy != null ? "is fetched to the fight by " + fetchedBy : "sees the fight") + " (" + (a.Count + b.Count) + " fighting) and comes over (" + LawTakeWords(owned) + ")" + (test ? ", a test" : ""));
         }
 
         // ---- the badge across the street (FOURTEENHOUR item 5; [Mind] BrawlLawSight) ----

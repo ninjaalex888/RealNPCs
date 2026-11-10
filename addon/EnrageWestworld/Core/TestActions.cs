@@ -142,6 +142,7 @@ namespace EnrageWestworld.Core
             new Entry("preacher", "People", "A street preacher (Sunday afternoons)", "TestPreacherKey", needs: "a town street, a devout named person and another within 8 m"),
             new Entry("olddays", "People", "Two old men argue about the old days", "TestOldDaysKey", needs: "two named old men within 10 m"),
             new Entry("oldsoldiers", "People", "Two old soldiers of either side argue the war", "TestOldSoldiersKey", needs: "two named old men within 10 m; [Scenes] OldSoldiers and [World] HistoricalAccuracy on"),
+            new Entry("fetchlaw", "Street scenes", "A face into the bar, and a witness runs for the law", "TestFetchLawKey", needs: "the rough scene's two near you, a witness near them, a lawman 15-150 m off"),
             new Entry("snatch", "Street scenes", "A purse snatched, and a man near gives chase", "TestSnatchKey", needs: "a named man and another within 16 m (the pickpocket's), and another man near her"),
             new Entry("rivals", "People", "Two men courting the same woman have it out", "TestRivalsKey", needs: "two named men within 10 m (a test: rivals for a made-up woman, no ties written)"),
             new Entry("snub", "People", "A gentleman snubs a working man", "TestSnubKey", needs: "a named working man and a gentleman within 10 m, in the street; a lady by the gentleman joins in"),

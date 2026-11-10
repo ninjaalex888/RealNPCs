@@ -33,6 +33,8 @@ namespace EnrageWestworld.InGame
         {
             if (_rivals != null && a != null && b != null)
                 Safe("rivals", () => RivalsOver(0, a.Handle, b.Handle));   // two rivals had it out in words: her choice (FOURTEENHOUR item 19)
+            if (kind == "rough" && _cfg != null && _cfg.MindLive)
+                Safe("fetch the law", () => RoughFetchBegin(a, b));   // a face into the bar: a witness may run for the law (FOURTEENHOUR item 21)
             if (_cfg == null || !_cfg.WalkTogether || !_cfg.MindLive || !WalkTogether.TalkKind(kind) || a == null || b == null || _store == null || _placeTown == null)
                 return;
             Safe("walk together", () => WalkTogetherBegin(kind, a, b));

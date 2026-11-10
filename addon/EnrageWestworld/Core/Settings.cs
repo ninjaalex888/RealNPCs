@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 388;
+        public const int CurrentVersion = 389;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -104,6 +104,7 @@ namespace EnrageWestworld.Core
         public bool BrawlStrays = true;      // [Mind] with MindBrawls: someone at arm's length of the fighting may take a stray blow (the hot swing back and are in it, the timid back off, a woman cries out and leaves), and a friend of a man losing badly may pull him out of it (FOURTEENHOUR item 8; settings version 376)
         public bool BrawlCascade = true;     // [Mind] with MindBrawls: an onlooker with no stake joins only once enough are at it for a man of his nature (low for the hot, the reckless, the drunk), so most fights stay small and a few tip into a brawl (Granovetter's thresholds; FOURTEENHOUR item 7; settings version 375)
         public bool BrawlSides = true;       // [Mind] with MindBrawls: onlookers lean to their own in a fight (kin, a man of their trade, the town's own against an outsider), those sat or leaning get up for a fight of two when they have a stake in it, and the well-off stay out (FOURTEENHOUR item 6; settings version 374)
+        public bool WitnessesFetchLaw = true;   // [Mind] with no lawman come to a brawl, an onlooker (the well-off first) runs for one within 150 m; after a beating, a witness fetches one who has a word (FOURTEENHOUR item 21; settings version 389)
         public bool BrawlLawSight = true;    // [Mind] with MindBrawls: the law holds joiners back by sight and distance (in sight within 12 m as before, farther half as much, out of sight a little), a lawman may let a fair fight run, one alone against six or more sends for help, and "Law!" is cried as he comes (FOURTEENHOUR item 5; settings version 373)
         public bool FightHoldStart = true;   // [Mind] two told to fight keep the order until the first blow (the game's own alarms held off them, the order kept), then the game's fists as before; off: the alarms come back the moment they're told (FOURTEENHOUR item 1; settings version 371)
         public bool HandBackLent = true;     // [Mind] what we set on people not ours to make them fight (fight even unarmed, always fight, the hostile group) is put back once they've been out of any fight 20 s and nothing of ours has them (FOURTEENHOUR item 3; settings version 372)
@@ -1029,6 +1030,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 389)
+                    log?.Invoke("Settings: new in this version: [Mind] WitnessesFetchLaw (on): someone runs for the law when nobody's seen the fight.");
                 if (s.SettingsVersion < 388)
                     log?.Invoke("Settings: new in this version: [Scenes] PurseSnatch (on): a man near gives chase to a thief, and J asks what's done with the one you catch.");
                 if (s.SettingsVersion < 387)
@@ -1774,6 +1777,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("BrawlStrays = " + B(BrawlStrays) + "   ; with MindBrawls on: someone standing at arm's length of the fighting may take a stray blow (the hot swing back and are in it against the man who hit them, the timid back off, a woman cries out and leaves), and a friend of a man losing badly may pull him out of it, the two leaving together (the one beating him lets them go, or a hothead follows); false: neither");
             b.AppendLine("BrawlCascade = " + B(BrawlCascade) + "   ; with MindBrawls on: an onlooker with no stake in a fight joins only once enough are already at it for a man of his nature (the hot, the reckless and the drunk first, the self-possessed and the law-abiding last; more with the law near), so most fights stay two or three and a few tip into a brawl; friends, foes and their own kind join by their own reasons; false: everyone weighed alike, so nearly every fight with no law near grows to a brawl");
             b.AppendLine("BrawlSides = " + B(BrawlSides) + "   ; with MindBrawls on: an onlooker leans to the fighter who is his own kind (his kin, a man of his trade against another: the farm hands for the farm hand, the working men for the miner; the town's own against an outsider), about half a friend's pull; those sat or leaning get up for a fight of two when they have a stake in it; the well-off stay out and leave it to the law; false: friends, foes and heat alone, as before");
+            b.AppendLine("WitnessesFetchLaw = " + B(WitnessesFetchLaw) + "   ; with MindLive: in a brawl of three or more that no lawman has seen or heard, one onlooker (a gentleman or a lady first, else the law-abiding by nature) runs to a lawman within 150 m and brings him at a run; after a face put into a bar or a window, a witness may fetch one who has a word with the man who did it; false: the law comes only to what it sees or hears");
             b.AppendLine("BrawlLawSight = " + B(BrawlLawSight) + "   ; with MindBrawls on: a lawman holds onlookers back from joining a fight by what they can see (in sight within 12 m as before; in sight farther, half as much; out of sight, a little), some lawmen let a fair fight between two run a while and step in when it turns two on one, one deputy alone against six or more holds off and sends for help, and someone cries 'Law!' as he comes, so the law-abiding slip away; false: any lawman within 30 m holds every joiner, as before");
             b.AppendLine("FightHoldStart = " + B(FightHoldStart) + "   ; two people told to fight in a street scene keep the order until the first blow lands (the game's own alarms held off them, as enRAGE does), then the game's fists as before; false: the alarms come back the moment they're told, and a man may run off instead (Valentine, 2026-11-09)");
             b.AppendLine("MindLive = " + B(MindLive) + "   ; what that mind decides reaches the screen (their moods, and thoughts of what they really feel and need, and what they do about it); each part has its own switch below");

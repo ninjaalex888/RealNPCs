@@ -261,6 +261,7 @@ namespace EnrageWestworld.InGame
             Snub.On = _cfg.Snubs;                // [Scenes] Snubs (FOURTEENHOUR item 18)
             Rivals.On = _cfg.Rivals;             // [Scenes] Rivals (FOURTEENHOUR item 19)
             PurseSnatch.On = _cfg.PurseSnatch;   // [Scenes] PurseSnatch (FOURTEENHOUR item 20)
+            WitnessLaw.On = _cfg.WitnessesFetchLaw;   // [Mind] WitnessesFetchLaw (FOURTEENHOUR item 21)
             OldSoldiers.On = _cfg.OldSoldiers && _cfg.HistoricalAccuracy;   // [Scenes] OldSoldiers: named history, so only with the real history on (item 17)
             AlmanacSides.On = _cfg.AlmanacSides;   // [World] AlmanacSides: their side on the year's quarrels (Core/AlmanacSides.cs)
             QuarrelPolitics.On = _cfg.QuarrelPolitics && _cfg.HistoricalAccuracy;   // [Mind] QuarrelPolitics: men in drink fight over 1899's quarrels (FOURTEENHOUR item 9); named history, so only with [World] HistoricalAccuracy (the review of items 1-13)
