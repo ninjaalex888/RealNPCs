@@ -268,6 +268,7 @@ namespace EnrageWestworld.InGame
             DoctorsDoor.On = _cfg.DoctorsDoor;   // [Scenes] DoctorsDoor (FOURTEENHOUR reserve R4)
             Rowdy.On = _cfg.RowdyDrunks;   // [Scenes] RowdyDrunks (FOURTEENHOUR reserve R5)
             Cardsharp.On = _cfg.CardsharpRunOut;   // [Scenes] CardsharpRunOut (FOURTEENHOUR reserve R6)
+            BestFist.On = _cfg.BestFist;   // [Scenes] BestFist (FOURTEENHOUR reserve R7)
             Rivals.On = _cfg.Rivals;             // [Scenes] Rivals (FOURTEENHOUR item 19)
             PurseSnatch.On = _cfg.PurseSnatch;   // [Scenes] PurseSnatch (FOURTEENHOUR item 20)
             WitnessLaw.On = _cfg.WitnessesFetchLaw;   // [Mind] WitnessesFetchLaw (FOURTEENHOUR item 21)
@@ -1423,6 +1424,7 @@ namespace EnrageWestworld.InGame
             Safe("court thoughts", _aCourtThoughts);
             PassingStep(now);   // people who know each other acknowledge it as they pass (WestworldScript.Passing.cs)
             TaleStep(now);      // the town's tales in the thoughts of those near you (WestworldScript.Tales.cs; FOURTEENHOUR item 24)
+            FistLook(now);      // the town's best fist thinks of it near you, once a day (WestworldScript.BestFist.cs; reserve R7)
             CensusStep(now);    // who holds the people near you, a CONTROL line a minute (WestworldScript.Census.cs; FOURTEENHOUR item 22)
             HandBackStep(now);  // what we set on people to make them fight, put back once they're done (WestworldScript.HandBack.cs; FOURTEENHOUR item 3)
             SightsStep(now);    // people notice how you look (WestworldScript.Sights.cs)

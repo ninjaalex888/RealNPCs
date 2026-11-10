@@ -718,6 +718,14 @@ namespace EnrageWestworld.InGame
                         skipped = "the day and hour, the rarity and the rests (Pacing \"sabbath\")";
                         return SabbathScene(Game.Player.Character, now, true, out sw) ? null : sw;
                     }
+                case "bestfist":
+                    {
+                        skipped = "the three wins and the day's roll (a regular named, a man from another town come in two minutes)";
+                        string bf = _engine.BestFistTest(_placeTown, _store.LastGameMin);
+                        if (bf == null)
+                            said = "the best fist named here, and a challenge out back in two minutes";
+                        return bf;
+                    }
                 case "runout":
                     {
                         skipped = "the cards, the call and the roll (the nearer named man as the cheat, the other as the table)";

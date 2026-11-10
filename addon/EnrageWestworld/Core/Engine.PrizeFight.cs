@@ -26,14 +26,24 @@ namespace EnrageWestworld.Core
                 if (!Voice.Chance(seed, PrizeFight.Chance))
                     continue;
                 List<Resident> regulars = Store.Residents.Where(r => r.Regular && !r.Dead && !r.Fled && r.Held == null && r.Town == town).ToList();
-                Resident[] two = PrizeFight.Pick(regulars, Voice.NowYear, seed);
+                // the town's best fist, if it has one: men from other towns come to try him (FOURTEENHOUR reserve R7)
+                Resident holder = BestFist.On ? FistHolder(town, regulars) : null;
+                Resident challenger = holder != null && Voice.Chance(seed + "|challenge", BestFist.ChallengePercent) ? ChallengerFor(town, seed) : null;
+                Resident[] two = challenger != null ? new[] { holder, challenger } : PrizeFight.Pick(regulars, Voice.NowYear, seed);
                 if (two == null)
                     continue;
                 TownEvent e = PrizeFight.Make(town, today, two[0], two[1], seed);
+                if (challenger != null)
+                {
+                    e.Extra = "challenge:" + challenger.Town;   // a man come over to try the town's best fist
+                    e.Count *= 2;   // twice the purse for it
+                    _fistChallenges++;
+                }
                 e.Posted = true;
                 e.PostedAt = now;
                 Store.Events.Add(e);
-                Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = PrizeFight.WordText(e, seed), DueAt = today * 1440 + PrizeFight.WordHour * 60 });
+                Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = challenger != null ? BestFist.ChallengeWord(e.AName, e.BName, challenger.Town, town, e.Count, seed) : PrizeFight.WordText(e, seed),
+                                     DueAt = today * 1440 + PrizeFight.WordHour * 60 });
                 Log("EVENT prizefight " + town + ": " + e.AName + " against " + e.BName + " tonight, a $" + e.Count + " purse (the word goes round at " + PrizeFight.WordHour + ":00)");
             }
         }
@@ -66,6 +76,78 @@ namespace EnrageWestworld.Core
                 return;
             e.Part = string.IsNullOrEmpty(e.Part) ? part : e.Part + "|" + part;
             Log("EVENT prizefight " + e.Town + ": you " + (part == "tipped" ? "tipped off the sheriff" : "put a dollar on " + (part == "bet:A" ? e.AName : e.BName)));
+        }
+
+        private int _fistNamed, _fistChallenges, _fistLost;
+
+        /// The town's best fist among its regulars, or null (FOURTEENHOUR reserve R7).
+        private Resident FistHolder(string town, List<Resident> regulars)
+        {
+            foreach (Resident r in regulars)
+                if (r != null && Store.Counts.ContainsKey(BestFist.HolderKey(town, r.Id)))
+                    return r;
+            return null;
+        }
+
+        /// A man of a fighting temper from another of the towns, come to try him.
+        private Resident ChallengerFor(string town, string seed)
+        {
+            return Store.Residents.Where(r => r != null && r.Regular && !r.Dead && !r.Fled && r.Held == null && r.Town != null && r.Town != town && PrizeFight.Towns.Contains(r.Town) && PrizeFight.Fighter(r, Voice.NowYear))
+                                  .OrderBy(r => Voice.Hash(seed + "|ch|" + r.Id)).FirstOrDefault();
+        }
+
+        /// A fight won in a town (the street's, the saloon's, the prize fight's): counted; the third gives him the name, when the town
+        /// has nobody holding it. True when he got it now.
+        public bool FistWin(string town, string id, string name, long now)
+        {
+            if (!BestFist.On || town == null || id == null || Store == null)
+                return false;
+            string wk = BestFist.WinsKey(town, id);
+            int wins = Store.Count(wk) + 1;
+            Store.Counts[wk] = wins;
+            if (wins < BestFist.NameAfter || Store.Counts.ContainsKey(BestFist.HolderKey(town, id)))
+                return false;
+            string prefix = BestFist.HolderPrefix(town);
+            if (Store.Counts.Keys.Any(k => k.StartsWith(prefix, StringComparison.Ordinal)))
+                return false;   // the town has its best fist already: he'll have to beat him for it
+            Store.Counts[BestFist.HolderKey(town, id)] = (int)(now / 1440);
+            _fistNamed++;
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = BestFist.Named(name, town, wins, id + "|" + now / 1440), DueAt = Knowing.TalkDue(now, false, id + "|fist") });
+            Log("BESTFIST " + name + " is the best fist in " + town + " now (" + wins + " fights won there)");
+            return true;
+        }
+
+        /// The Testing row: the first regular of a fighting temper here named the best fist, and a challenge booked in two minutes.
+        public string BestFistTest(string town, long now)
+        {
+            if (!BestFist.On)
+                return "off ([Scenes] BestFist)";
+            if (!Cfg.TownEvents || !Cfg.EventPrizeFights)
+                return "off ([World] TownEvents, EventPrizeFights)";
+            if (town == null)
+                return "no town here";
+            List<Resident> regulars = Store.Residents.Where(r => r.Regular && !r.Dead && !r.Fled && r.Held == null && r.Town == town && PrizeFight.Fighter(r, Voice.NowYear)).ToList();
+            Resident holder = FistHolder(town, regulars) ?? regulars.FirstOrDefault();
+            Resident challenger = ChallengerFor(town, "test|" + now);
+            if (holder == null || challenger == null)
+                return holder == null ? "no regular of a fighting temper in " + town : "no man of a fighting temper in another town to come and try him";
+            Store.Counts[BestFist.HolderKey(town, holder.Id)] = (int)(now / 1440);
+            TownEvent e = PrizeFight.Make(town, now / 1440, holder, challenger, "test|" + now);
+            e.Extra = "challenge:" + challenger.Town;
+            e.Count *= 2;
+            e.At = now + 2;
+            e.Until = now + 62;
+            e.Posted = true;
+            e.PostedAt = now;
+            Store.Events.Add(e);
+            Log("BESTFIST the test: " + holder.Name + " named the best fist in " + town + "; " + challenger.Name + " of " + challenger.Town + " comes to try him in two minutes");
+            return null;
+        }
+
+        /// F7's engine part.
+        public string BestFistStatus()
+        {
+            return _fistNamed + " named a town's best fist, " + _fistChallenges + " challenges booked, " + _fistLost + " lost the name";
         }
 
         /// Who won it (0 A, 1 B), worked out once and kept (Count2: 1 + the winner), so the staging and the end agree.
@@ -111,8 +193,14 @@ namespace EnrageWestworld.Core
                 }
                 if (part.Contains("bet:A") && w == 0 || part.Contains("bet:B") && w == 1)
                     paid = PrizeFight.StakeCents * 2;
+                if (BestFist.On && wonId != null)
+                    FistWin(e.Town, wonId, wonName, now);   // a win toward the town's name (FOURTEENHOUR reserve R7)
             }
-            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(e.Town), At = now, Text = PrizeFight.Morning(e, w, raided), DueAt = (now / 1440 + 1) * 1440 + 7 * 60 });
+            string from = e.Extra != null && e.Extra.StartsWith("challenge:", StringComparison.Ordinal) ? e.Extra.Substring(10) : null;
+            if (from != null && !raided && w == 1 && e.AId != null && Store.Counts.Remove(BestFist.HolderKey(e.Town, e.AId)))
+                _fistLost++;   // the man from the other town took the name with the purse
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(e.Town), At = now, Text = from != null && !raided ? BestFist.ChallengeMorning(e.AName, e.BName, from, e.Town, w == 0, e.Id ?? e.Town) : PrizeFight.Morning(e, w, raided),
+                                 DueAt = (now / 1440 + 1) * 1440 + 7 * 60 });
             Log("EVENT prizefight " + e.Town + ": " + e.Outcome + (paid > 0 ? "; your dollar paid two" : part.Contains("bet:") ? "; your dollar lost" : ""));
             return paid;
         }
