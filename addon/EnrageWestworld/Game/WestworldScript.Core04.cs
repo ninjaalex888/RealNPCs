@@ -255,6 +255,7 @@ namespace EnrageWestworld.InGame
             Almanac.On = _cfg.Almanac;   // [World] Almanac: the year's dated news (Core/Almanac.cs)
             Almanac.Share = _cfg.AlmanacShare;
             Payday.NightOn = _cfg.PaydayNight;   // [Scenes] PaydayNight (FOURTEENHOUR item 13)
+            StreetMore.On = _cfg.StreetMore;     // [Scenes] StreetMore (FOURTEENHOUR item 14)
             AlmanacSides.On = _cfg.AlmanacSides;   // [World] AlmanacSides: their side on the year's quarrels (Core/AlmanacSides.cs)
             QuarrelPolitics.On = _cfg.QuarrelPolitics;   // [Mind] QuarrelPolitics: men in drink fight over 1899's quarrels (FOURTEENHOUR item 9)
             LoopVoice.On = _cfg.WestWorld && _cfg.LoopVoice;   // the centre's thoughts only with the voice on (Core/LoopVoice.cs)

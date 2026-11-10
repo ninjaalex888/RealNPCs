@@ -92,7 +92,7 @@ namespace EnrageWestworld.Core
             {
                 case "brawl": case "rough": case "fight":
                     return "blows";
-                case "argue": case "cheat": case "debt": case "standoff": case "snap": case "envy": case "faced":
+                case "argue": case "cheat": case "debt": case "standoff": case "snap": case "envy": case "faced": case "horsedeal":
                 case "welsh": case "wagerowed":   // a bet on a fight welshed on, or owed (Core/Wagers.cs)
                     return "quarrel";
                 case "wagerpaid":
@@ -104,6 +104,7 @@ namespace EnrageWestworld.Core
                 case "drunk":
                     return "drunk";
                 case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "makeup": case "help": case "defend": case "round": case "apology": case "settled":
+                case "toothpull": case "wayshown":
                     return "warmth";
                 case "smalltalk": case "gossip": case "haggle": case "hosts":
                     return "talk";
@@ -156,7 +157,8 @@ namespace EnrageWestworld.Core
         {
             return kind == "rough" || kind == "pickpocket" || kind == "lift" || kind == "drunk" || kind == "charity" || kind == "scorn" || kind == "avoid" ||
                    kind == "help" || kind == "passby" || kind == "defend" || kind == "faced" || kind == "round" || kind == "settled" ||
-                   kind == "welsh" || kind == "wagerowed" || kind == "wagerpaid";   // a bet on a fight: the one who lost it first (Core/Wagers.cs)
+                   kind == "welsh" || kind == "wagerowed" || kind == "wagerpaid" ||   // a bet on a fight: the one who lost it first (Core/Wagers.cs)
+                   kind == "horsedeal" || kind == "toothpull" || kind == "wayshown";   // the street's own (FOURTEENHOUR item 14)
         }
 
         /// How much it stays with someone, by group and by how they knew it.

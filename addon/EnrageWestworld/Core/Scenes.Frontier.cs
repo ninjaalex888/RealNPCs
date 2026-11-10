@@ -44,6 +44,9 @@ namespace EnrageWestworld.Core
                 case "nighttale": return NightTale(c, seed);
                 case "paper": return ReadPaper(c, seed);
                 case "haggle": return Haggle(c, seed);
+                case "horsetrade": return StreetMore.HorseDeal(c, seed);   // the horse trade at the hitching post (FOURTEENHOUR item 14)
+                case "toothpull": return StreetMore.ToothPull(c, seed);   // a tooth pulled in the street
+                case "wayasked": return StreetMore.WayAsked(c, seed);     // the way asked
                 case "pitch": return Pitch(c, seed);
                 case "posse": return c.CrimeRumour != null ? Posse(c, seed) : null;
                 case "mourn": return c.DeadName != null ? Mourn(c, seed) : null;

@@ -42,6 +42,9 @@ namespace EnrageWestworld.Core
                 case "x:badnews": return "goes to tell " + o + " the bad news";
                 case "x:quarrel": return "goes to " + o + " with a grievance";
                 case "x:sweet": return "goes to have a tender word with " + o;
+                case "horsetrade": return "offers " + o + " a horse";   // the street's own (FOURTEENHOUR item 14)
+                case "toothpull": return "offers to pull " + o + "'s bad tooth";
+                case "wayasked": return "asks " + o + " the way";
                 default:
                     return k.StartsWith("x:", System.StringComparison.Ordinal) ? "goes to see " + o + " about what's between them" : "goes over to " + o;
             }

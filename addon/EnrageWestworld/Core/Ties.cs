@@ -65,6 +65,10 @@ namespace EnrageWestworld.Core
                     return -1;
                 case "rough": case "pickpocket": case "mugging":
                     return -2;   // a face into the bar, or a hand caught in a coat, isn't soon forgotten
+                case "horsedeal":
+                    return -1;   // sold a lame horse at the hitching post, and he knows it (FOURTEENHOUR item 14): Doer is the dealer
+                case "toothpull": case "wayshown":
+                    return 1;    // his tooth out in the street; shown the way, or walked there (item 14): Doer is the one who did it
                 case "welsh":
                     return -2;
                 case "fencecut":
@@ -131,6 +135,7 @@ namespace EnrageWestworld.Core
         public static bool Trouble(string kind)
         {
             return kind == "rough" || kind == "pickpocket" || kind == "lift" || kind == "drunk" || kind == "charity" || kind == "scorn" ||   // (the asking is A's doing too)
+                   kind == "horsedeal" || kind == "toothpull" || kind == "wayshown" ||   // the dealer, the man with the pliers, the one who showed the way (FOURTEENHOUR item 14)
                    kind == "help" || kind == "passby" ||   // A helped B up, or walked past B
                    kind == "defend" || kind == "faced" ||  // A stood up for B; A faced B down
                    kind == "round" ||                      // A stood B a drink

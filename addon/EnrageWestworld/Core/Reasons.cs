@@ -366,6 +366,11 @@ namespace EnrageWestworld.Core
                                              : hx || hy ? (hx ? x.Name : y.Name) + " has a temper, and " + (hx ? y.Name : x.Name) + " won't be pushed"
                                              : x.Name + " and " + y.Name + " rub each other the wrong way, and neither will give way" });
             }
+            // the street's own business (FOURTEENHOUR item 14; Core/StreetMore.cs): a horse to sell, a tooth at its worst, the way
+            // asked; under the fights' strengths (ties go to them), over a mild snap and the talk
+            Reason more = StreetMore.For(x, y, gameDay, where.Saloon, where.Night, twoMen);
+            if (more != null)
+                all.Add(more);
             // someone free and taken with the one beside them makes eyes at them; the answer is the other's own
             Reason court = Courtship(x, y, gameDay, where);
             if (court != null)

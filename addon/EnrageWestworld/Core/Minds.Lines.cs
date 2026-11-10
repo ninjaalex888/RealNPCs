@@ -573,6 +573,17 @@ namespace EnrageWestworld.Core
                 "Folk grin at me since {who} spoke up. Grinning. I note every grin.",
                 "Can't go near that corner without hearing {who}'s voice. Quit it. Like I was a dog." } },
             // a round bought: the one buying (doer), the one stood a drink (done), and those who saw it
+            // the street's own (FOURTEENHOUR item 14): a horse sold lame, a tooth pulled in the street, the way shown
+            { "horsedeal|did:doer|fresh", new[] { "Sold {who} the bay. He'll learn about her wind soon enough.", "Got a fair price off {who}. Fairer for me than him.", "{who} looked at her teeth and nothing else. More fool him." } },
+            { "horsedeal|did:done|fresh", new[] { "{who} sold me a horse with a cough in her. Sold as seen, he says.", "Paid {who} good money for a lame mare. I'll remember it.", "{who} and his sound as a bell. The bell's cracked." } },
+            { "horsedeal|did:done|chewing", new[] { "Every time she coughs I think of {who}.", "Owe {who} a word about that horse. More than a word.", "Lame in the near fore since the day {who} sold her." } },
+            { "horsedeal|saw|fresh", new[] { "Watched {who} sell a lame horse at the rail. Never buy off a man who smiles that much.", "{who} got the worse of a horse deal. Everybody saw but him." } },
+            { "toothpull|did:doer|fresh", new[] { "Had {who}'s tooth out with my pliers. Roots like a turnip.", "{who} yelled loud enough to wake the dead. Tooth's out, though.", "Steady hands. {who} owes me a drink." } },
+            { "toothpull|did:done|fresh", new[] { "{who} had my tooth out in the street. Jaw's sore. Sore's better than that ache.", "Owe {who} a drink for that tooth. Two drinks.", "Never thought I'd thank a man for pliers. Thank you, {who}." } },
+            { "toothpull|saw|fresh", new[] { "Saw {who} lose a tooth in the street. My own jaw aches for it.", "{who} hollered like a stuck hog when it came out. Can't blame him.", "Pliers in the street. I looked away. Then I looked." } },
+            { "wayshown|did:doer|fresh", new[] { "Showed a stranger the way. {who}, he said his name was.", "Walked {who} to where he was going. Strangers get lost here.", "{who}'s new in town. Seemed decent enough." } },
+            { "wayshown|did:done|fresh", new[] { "{who} showed me the way. Kind town, this, some of it.", "Asked {who} the way and got took there. Didn't expect that.", "First friendly face in town: {who}." } },
+            { "wayshown|saw|fresh", new[] { "{who} showed a stranger the way. Decent of him.", "Saw {who} with a newcomer. He'll know everybody's business by Sunday." } },
             { "round|did:doer|fresh", new[] { "Bought the house a round. Purse lighter. Heart too.", "{who} drank my health. Felt good to be thanked.", "Whiskey all round, and every face turned my way. Felt tall.", "Barkeep winked at me. First time ever.",
                 "Slapped the coins down for the house. {who} cheered loudest. Never been cheered in my life.",
                 "{who} sang a song in my honour. Off key. Best song I ever heard." } },
