@@ -1,7 +1,7 @@
 // Vouch for a prisoner, the game side (FOURTEENHOUR reserve R22; Core/Vouch.cs; [Scenes] Vouch). At item 12's jail door
 // (WestworldScript.BrawlAfter.cs: the morning after a brawl, his wife or his mother waits there) J has a third row: vouch for
 // him. He's out now, bound over to keep the peace a week, you his surety for five dollars. While a week runs, a look every 5 s:
-// seen in a fight near you on the side that began it (the man set upon is excused), or tied up by the law again, and his word
+// seen in a fight near you on the side that began it (the side set upon is excused), or tied up by the law again, and his word
 // is broken; else the week's own word, fixed when you stood for him (Vouch.BreaksOn), or the week out and kept. Its end is told
 // the next time you're in his town: broken, your five dollars to the county, the town's word, and that sheriff won't take your
 // word for a month (the row greyed); kept, he's fonder of you and the town hears it. Runners: the J menu (seen), the jail door
@@ -16,7 +16,7 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private int _vouchLookAt, _vouchStood, _vouchBroke, _vouchKept, _afterSetUpon;   // _afterSetUpon: the man a fight's starter went for
+        private int _vouchLookAt, _vouchStood, _vouchBroke, _vouchKept;
         private string _vouchLast;
 
         private bool VouchOn { get { return Vouch.On && BrawlAfterOn; } }
@@ -161,14 +161,15 @@ namespace EnrageWestworld.InGame
                 VouchBroke(v, how, _store.LastGameMin);
         }
 
-        /// From BrawlWeekAfter, once a fight: any man in it you vouched for, on the side that began it (the man set upon is excused).
+        /// From BrawlWeekAfter, once a fight: any man in it you vouched for, on the side that began it (side 0: AfterNote puts the
+        /// starter's side there). The man set upon and those who stood with him are excused: defending isn't breaking the peace.
         private void VouchSeenFight(int now)
         {
             if (!VouchOn || _store == null || !Vouch.AnyOpen(_store.Vouches))
                 return;
             foreach (KeyValuePair<int, int> kv in _afterSide)
             {
-                if (kv.Key == _afterSetUpon || !ENTITY.DOES_ENTITY_EXIST(kv.Key))
+                if (kv.Value != 0 || !ENTITY.DOES_ENTITY_EXIST(kv.Key))
                     continue;
                 MindWho w = MindKnown(kv.Key, now);
                 if (w != null && w.Id != null)

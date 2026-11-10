@@ -86,7 +86,7 @@ namespace EnrageWestworld.Core
             if (vs == null || town == null)
                 return false;
             foreach (Vouched v in vs)
-                if (v != null && v.Town == town && v.Ended == "broke" && now - v.EndedAt < NoWordDays * 1440L)
+                if (v != null && !v.Test && v.Town == town && v.Ended == "broke" && now - v.EndedAt < NoWordDays * 1440L)   // (the Testing row's never greys it)
                     return true;
             return false;
         }

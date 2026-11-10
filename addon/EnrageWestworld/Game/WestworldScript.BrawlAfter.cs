@@ -49,7 +49,6 @@ namespace EnrageWestworld.InGame
                 _afterDowns = 0;
                 _afterSaloon = _placeKind == "saloon";
                 _afterStarter = a.Count > 0 ? NameOfFighter(a[0]) : null;   // who began it, for the tale (FOURTEENHOUR item 24)
-                _director.FightStarter(out _afterSetUpon);   // the man he went for: set upon isn't breaking the peace (a vouched man's week; reserve R22)
             }
             foreach (int h in a)
                 _afterSide[h] = 0;
@@ -184,7 +183,7 @@ namespace EnrageWestworld.InGame
                         Log.Write("BRAWL after: " + j.Waits + " waits at the jail door in " + j.Town + " for " + j.Name);
                     }
                 }
-                if (j.Waiter != null && !j.Asked && j.Waiter.Exists() && me.Position.DistanceTo(j.Waiter.Position) <= BrawlAfter.AskMetres &&
+                if (j.Waiter != null && !j.Asked && j.Waiter.Exists() && !PED.IS_PED_IN_COMBAT(j.Waiter.Handle, 0) && me.Position.DistanceTo(j.Waiter.Position) <= BrawlAfter.AskMetres &&
                     _eventMenu == null && (_eventPrompt == null || Game.GameTime > _eventPromptUntil))
                 {
                     j.Asked = true;
@@ -232,8 +231,10 @@ namespace EnrageWestworld.InGame
             j.ReleaseAt = 0;
             if (!p.Exists())
                 return;
-            TASK.TASK_WANDER_STANDARD(p.Handle, 10f, 10);
-            Spawner.Release(p, !ENTITY.IS_ENTITY_ON_SCREEN(p.Handle));
+            bool fighting = PED.IS_PED_IN_COMBAT(p.Handle, 0);
+            if (!fighting)
+                TASK.TASK_WANDER_STANDARD(p.Handle, 10f, 10);   // (never an order to one in a fight: the reserve's review)
+            Spawner.Release(p, !ENTITY.IS_ENTITY_ON_SCREEN(p.Handle) && !fighting);
         }
 
         /// What the chairs come to here today, unpaid (for J at the bar).

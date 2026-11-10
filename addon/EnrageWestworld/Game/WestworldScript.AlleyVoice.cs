@@ -115,6 +115,14 @@ namespace EnrageWestworld.InGame
             }
             int h = r.Man.Handle;
             float d = r.Man.Position.DistanceTo(me.Position);
+            if (!r.Fight && AlleyWentForYou(r, me))
+            {
+                if (r.Trap && r.Agents.Count > 0)
+                    AlleyFight(r, me, "a blow from you first");   // their fight with you from here, the game's (one order, as when you draw)
+                else
+                    AlleyEnd("struck by you: handed back");   // let go at once (the rule)
+                return;
+            }
             switch (r.Phase)
             {
                 case "call":
@@ -153,6 +161,19 @@ namespace EnrageWestworld.InGame
                         AlleyEnd(_alleyLast ?? "over");
                     return;
             }
+        }
+
+        /// Arthur struck one of them before it was their fight (a blow or a shot, or the man on the stones brawling with him): the
+        /// reserve's review found the run would still order them about. Their aim at you is our order, not a fight, so for the two
+        /// behind you only a hit from you counts.
+        private static bool AlleyWentForYou(AlleyRun r, Ped me)
+        {
+            if (r.Man != null && r.Man.Exists() && !r.Man.IsDead && (PED.IS_PED_IN_COMBAT(r.Man.Handle, me.Handle) || ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(r.Man.Handle, me.Handle, true, true)))
+                return true;
+            foreach (Ped a in r.Agents)
+                if (a != null && a.Exists() && !a.IsDead && ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(a.Handle, me.Handle, true, true))
+                    return true;
+            return false;
         }
 
         private void AlleyReach(AlleyRun r, Ped me, int now)

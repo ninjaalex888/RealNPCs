@@ -76,6 +76,11 @@ namespace EnrageWestworld.InGame
                 ElopeEnd("a mission, or you");
                 return;
             }
+            if (ElopeFight(r, me))
+            {
+                ElopeEnd("a fight, or one of them down: they're the game's now");   // let go at once (the rule): no order after it
+                return;
+            }
             if (r.Phase == "spawn")
             {
                 if (now - r.Started > 20000 || r.Tries > 10)
@@ -301,9 +306,26 @@ namespace EnrageWestworld.InGame
                     continue;
                 _encounterPeds.Remove(p.Handle);
                 bool seen = ENTITY.IS_ENTITY_ON_SCREEN(p.Handle) && p.Position.DistanceTo(me.Position) < 120f;
-                Spawner.Release(p, !p.IsDead && !seen);
+                Spawner.Release(p, !p.IsDead && !seen && !PED.IS_PED_IN_COMBAT(p.Handle, me.Handle));   // the unseen vanish; one fighting you stays the game's
             }
             Log.Write("ELOPE over: " + why);
+        }
+
+        /// Any of the four brawling, struck by Arthur, or dead: the scene is over and the game has them back
+        /// (the reserve's review: the run gave orders to whoever it held, fighting or not).
+        private static bool ElopeFight(ElopeRun r, Ped me)
+        {
+            if (ElopeFighting(r.Her, me) || ElopeFighting(r.Him, me))
+                return true;
+            foreach (Ped p in r.Pursuers)
+                if (ElopeFighting(p, me))
+                    return true;
+            return false;
+        }
+
+        private static bool ElopeFighting(Ped p, Ped me)
+        {
+            return p != null && p.Exists() && (p.IsDead || PED.IS_PED_IN_COMBAT(p.Handle, 0) || ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(p.Handle, me.Handle, true, true));
         }
 
         /// Busy for the other features (IsAcknowledging; a loop, asked every frame).
