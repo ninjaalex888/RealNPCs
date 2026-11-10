@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 378;
+        public const int CurrentVersion = 379;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -106,6 +106,7 @@ namespace EnrageWestworld.Core
         public bool BrawlLawSight = true;    // [Mind] with MindBrawls: the law holds joiners back by sight and distance (in sight within 12 m as before, farther half as much, out of sight a little), a lawman may let a fair fight run, one alone against six or more sends for help, and "Law!" is cried as he comes (FOURTEENHOUR item 5; settings version 373)
         public bool FightHoldStart = true;   // [Mind] two told to fight keep the order until the first blow (the game's own alarms held off them, the order kept), then the game's fists as before; off: the alarms come back the moment they're told (FOURTEENHOUR item 1; settings version 371)
         public bool HandBackLent = true;     // [Mind] what we set on people not ours to make them fight (fight even unarmed, always fight, the hostile group) is put back once they've been out of any fight 20 s and nothing of ours has them (FOURTEENHOUR item 3; settings version 372)
+        public bool BrawlVerbs = true;       // [Scenes] with MindBrawls: J in a fight near you: break it up (heeded by their natures and what they think of you), stand with the man losing (the one beating him turns on you), or take a waiting onlooker's bet (FOURTEENHOUR item 11; settings version 379)
         public bool MeetWalkAgain = true;    // [Scenes] a street scene's walker who gets no nearer in 3 s is told again, and the one waiting in a seat or at work gets up to meet them (FOURTEENHOUR item 1; settings version 371)
         public bool SaidLately = true;   // the street's talk avoids lines said in the last ~300 (the no-model run, item 5; settings version 183)
         public bool WrittenWakes = true;   // [Mind] with MindWakes: a rare written wondering in someone with cause below the second stage chips "things are as they seem" as the model's does (the no-model run, item 10); settings version 188
@@ -1019,6 +1020,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 379)
+                    log?.Invoke("Settings: new in this version: [Scenes] BrawlVerbs (on): J in a fight near you: break it up, stand with the man losing, or take a bet.");
                 if (s.SettingsVersion < 378)
                     log?.Invoke("Settings: new in this version: [Mind] BrawlShape (on): a big brawl has its beats, and burns out instead of stopping dead.");
                 if (s.SettingsVersion < 377)
@@ -2079,6 +2082,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("Debts = " + B(Debts) + "   ; people collect what they're owed");
             b.AppendLine();
             b.AppendLine("[Scenes]");
+            b.AppendLine("BrawlVerbs = " + B(BrawlVerbs) + "   ; with MindBrawls on: once a fight near you (20 m), J offers to break it up (each heeds by their nature and what they think of you; one who won't may turn on you), to stand with the man losing (the one beating him turns on you; that side thinks the better of you, he the worse), or to take the bet of an onlooker waiting for a taker (a dollar on the other man; a lost bet unpaid is a welsh he holds against you); false: none of it");
             b.AppendLine("MeetWalkAgain = " + B(MeetWalkAgain) + "   ; a street scene's walker who gets no nearer in 3 s is told again, and the one waiting for them in a seat or at their work gets up to meet them, the game's own way; false: the walker is told once, and the scene stops if they never get there");
             b.AppendLine("ShoutsCarry = " + B(ShoutsCarry) + "   ; what's shouted is shouted (anger, threats, fright, a cry for the law, fight talk, cheering, calling out): the game lets a shout carry much farther than talk, so you hear it from down the street; ordinary talk is as before");
             b.AppendLine("RealVoiceTalk = " + B(RealVoiceTalk) + "   ; now and then two people standing together near you have a word in their real recorded voices: the weather, how they're getting on, a piece of news, a hello");

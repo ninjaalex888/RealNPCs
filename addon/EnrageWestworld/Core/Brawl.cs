@@ -195,7 +195,7 @@ namespace EnrageWestworld.Core
         /// Whether one of those fighting stops when the lawman shouts: the law-abiding and the self-possessed do, the angry,
         /// the drunk and the reckless less; one who's winning is slower to stop than one who's losing. Seeded. Two lawmen at
         /// it together are heeded more (item 5: the sheriff come with another).
-        public static bool Heeds(Traits t, bool drunk, bool winning, string seed, out int chance, int lawmen = 1)
+        public static bool Heeds(Traits t, bool drunk, bool winning, string seed, out int chance, int lawmen = 1, float standing = 0f)
         {
             float c = 0.55f;
             if (t != null)
@@ -206,6 +206,7 @@ namespace EnrageWestworld.Core
                 c -= 0.08f;
             if (lawmen >= 2)
                 c += 0.12f;
+            c += standing;   // Arthur's own shout: what this man thinks of him (BrawlVerbs.Standing; FOURTEENHOUR item 11)
             c = Math.Max(0.10f, Math.Min(0.95f, c));
             chance = (int)Math.Round(c * 100);
             return Voice.Chance(seed + "|heeds", chance);

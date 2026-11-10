@@ -1,0 +1,249 @@
+// Arthur in a brawl, on J (FOURTEENHOUR item 11; Core/BrawlVerbs.cs; [Scenes] BrawlVerbs). Once a fight, when its fists are
+// flying within 20 m of him and he's on foot and not fighting himself: J offers to break it up, to stand with the man losing,
+// or (with an onlooker of the wagers' waiting for a taker) to take his bet. Anyone who turns on Arthur is the game's and
+// enRAGE's at once: let go by the Director the same tick (TWELVEHOUR.md's rule). Seen runners: the J menu (the slate), the
+// Director's brawls, the wagers. A look a second, never a frame.
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using EnrageWestworld.Core;
+using RDR2;
+using RDR2.Math;
+using RDR2.Native;
+
+namespace EnrageWestworld.InGame
+{
+    public partial class WestworldScript
+    {
+        private int _bvNextLook, _bvAgainAt, _bvOfferedFor = -1, _bvBreakups, _bvStands, _bvBets, _bvPaid, _bvWelshed, _bvWon;
+        private int _bvLoser, _bvBeater, _bvOwedCents, _bvOwedUntil;
+        private WagerMan _bvBacker, _bvOwedTo;
+        private string _bvLast;
+
+        private void BrawlVerbsStep(int now)
+        {
+            if (_cfg == null || !_cfg.BrawlVerbs || !BrawlsOn || now < _bvNextLook)
+                return;
+            _bvNextLook = now + 1000;
+            Safe("brawl verbs", () => BrawlVerbsLook(now));
+        }
+
+        private void BrawlVerbsLook(int now)
+        {
+            if (_bvOwedTo != null && now > _bvOwedUntil)
+                BrawlVerbsWelsh("the prompt lapsed");   // a lost bet owed and never paid: a welsh
+            if (_eventMenu != null || (_eventPrompt != null && Game.GameTime <= _eventPromptUntil) || now < _bvAgainAt)
+                return;   // something else is on J just now
+            List<int> a, b;
+            if (!_director.FightSides(out a, out b) || _director.FightOnFor(now) <= 0 || a.Count == 0 || b.Count == 0 || _bvOfferedFor == _director.FightId)
+                return;
+            Ped me = Game.Player.Character;
+            if (PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false) || PED.IS_PED_IN_MELEE_COMBAT(me.Handle))
+                return;
+            if (!ENTITY.DOES_ENTITY_EXIST(a[0]) || !ENTITY.DOES_ENTITY_EXIST(b[0]) || me.Position.DistanceTo(ENTITY.GET_ENTITY_COORDS(a[0], true, true)) > BrawlVerbs.NearMetres)
+                return;
+            _bvLoser = BrawlHealth(a[0]) <= BrawlHealth(b[0]) ? a[0] : b[0];
+            _bvBeater = _bvLoser == a[0] ? b[0] : a[0];
+            _bvOfferedFor = _director.FightId;
+            _bvAgainAt = now + BrawlVerbs.AgainMs;
+            _bvBacker = WagersOn ? _wagerOpen.FirstOrDefault(o => !o.Matched && ENTITY.DOES_ENTITY_EXIST(o.H) && !ENTITY.IS_ENTITY_DEAD(o.H) && o.H != me.Handle) : null;
+            PromptSet(BrawlVerbs.Kind, new TownEvent { Kind = BrawlVerbs.Kind, Town = _placeTown, AName = NameOfFighter(_bvLoser) }, BrawlVerbs.PromptMs);
+        }
+
+        /// The menu's rows: break it up, stand with the man losing, the bet (with a backer waiting), leave them to it.
+        private List<InteractOption> BrawlVerbsRows()
+        {
+            List<int> a, b;
+            string backed = null, other = null;
+            if (_bvBacker != null && _director.FightSides(out a, out b) && a.Count > 0 && b.Count > 0)
+            {
+                backed = NameOfFighter(_bvBacker.Side == 0 ? a[0] : b[0]);
+                other = NameOfFighter(_bvBacker.Side == 0 ? b[0] : a[0]);
+            }
+            return BrawlVerbs.Rows(NameOfFighter(_bvLoser), _bvBacker != null ? Person.FirstOf(_bvBacker.Name) : null, backed, other, MONEY._MONEY_GET_CASH_BALANCE());
+        }
+
+        private void BrawlVerbChoose(string id)
+        {
+            int now = Game.GameTime;
+            Ped me = Game.Player.Character;
+            string seed = "bv|" + _director.FightId + "|" + now / 1000;
+            List<int> a, b;
+            bool fight = _director.FightSides(out a, out b);
+            switch (id)
+            {
+                case "brawl:breakup":
+                    if (fight)
+                        BrawlVerbsBreakUp(me, a, b, seed, now);
+                    break;
+                case "brawl:stand":
+                    if (fight)
+                        BrawlVerbsStand(me, seed, now);
+                    break;
+                case "brawl:bet":
+                    if (fight && _bvBacker != null)
+                        BrawlVerbsBet(me, a, b, seed);
+                    break;
+                case "brawlpay:pay":
+                    if (_bvOwedTo != null && MONEY._MONEY_GET_CASH_BALANCE() >= _bvOwedCents)
+                    {
+                        MONEY._MONEY_DECREMENT_CASH_BALANCE(_bvOwedCents);
+                        _bvPaid++;
+                        _bvLast = "you paid " + _bvOwedTo.Name + " the " + BrawlVerbs.Money(_bvOwedCents) + " you lost";
+                        Log.Write("BRAWL bet: " + _bvLast);
+                        _bvOwedTo = null;
+                    }
+                    break;
+                case "brawlpay:no":
+                    BrawlVerbsWelsh("you wouldn't pay");
+                    break;
+            }
+        }
+
+        /// "Break it up!": each fighter heeds it by his nature and by what he thinks of Arthur (the fond and the afraid more, the
+        /// hostile less); those who heed stop and go their ways; of those who don't, one who'd go for a man near him turns on Arthur
+        /// (Brawl.AtYou), his fight the game's from then on. With one side emptied, it's over.
+        private void BrawlVerbsBreakUp(Ped me, List<int> a, List<int> b, string seed, int now)
+        {
+            SpeechCaption("You", BrawlVerbs.Shout(seed), me.Handle, 2500, false, false);
+            int stopped = 0, at = 0, all = a.Count + b.Count;
+            bool saloon = _placeKind == "saloon";
+            var said = new List<string>();
+            foreach (int h in a.Concat(b).ToList())
+            {
+                if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                    continue;
+                MindWho w = MindKnown(h, now);
+                Traits t = w != null && w.Src != null ? (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))) : null;
+                bool drunk = w != null && InHisCups(new Ped(h), w.P);
+                string regard = SightRegard(new Ped(h), w != null ? w.Id : null);
+                int chance;
+                bool stops = Brawl.Heeds(t, drunk, BrawlHealth(h) >= 0.75f, seed + "|" + h, out chance, 1, BrawlVerbs.Standing(regard));
+                string name = w != null && w.Name != null ? Person.FirstOf(w.Name) : "a stranger";
+                if (stops)
+                {
+                    if (_director.LeaveFight(h) || all <= 2)
+                    {
+                        TASK.CLEAR_PED_TASKS(h, true, false);
+                        TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 2500, 0f, 0f, 0f);
+                        WanderLater(h, now + 6000);
+                    }
+                    stopped++;
+                    said.Add(name + " stops (" + chance + "%" + (regard != null ? ", " + regard : "") + ")");
+                    continue;
+                }
+                string why;
+                if (Brawl.AtYou(t, drunk, regard == "hostile", regard == "afraid", false, Math.Max(4, all), saloon, seed + "|atyou|" + h, out why) && _director.LeaveFight(h))
+                {
+                    TASK.TASK_COMBAT_PED(h, me.Handle, 0, 16);   // his fight is the game's now (and enRAGE's): we let go of him
+                    at++;
+                    said.Add(name + " turns on you (" + why + ")");
+                    continue;
+                }
+                said.Add(name + " keeps swinging (" + chance + "%)");
+            }
+            _bvBreakups++;
+            if (_director.FightSides(out a, out b) && (a.Count == 0 || b.Count == 0 || stopped >= all - 1))
+                _director.Abort("Arthur broke it up");
+            _bvLast = "you broke it up: " + string.Join("; ", said);
+            Log.Write("BRAWL you shout to break it up: " + string.Join("; ", said));
+        }
+
+        /// "Stand with him": the one beating the man losing turns on Arthur (the game's from there); the man losing and his side
+        /// think the better of him for it, the one beating him the worse.
+        private void BrawlVerbsStand(Ped me, string seed, int now)
+        {
+            int loser = _bvLoser, beater = _bvBeater;
+            if (!ENTITY.DOES_ENTITY_EXIST(loser) || !ENTITY.DOES_ENTITY_EXIST(beater) || ENTITY.IS_ENTITY_DEAD(beater))
+                return;
+            MindWho lw = MindKnown(loser, now), bw = MindKnown(beater, now);
+            _director.LeaveFight(beater);
+            TASK.TASK_COMBAT_PED(beater, me.Handle, 0, 16);   // at you now: the game's and enRAGE's (we let go of him)
+            FolkRef la = _bridge != null ? _bridge.AcquaintanceAt(loser) : null, ba = _bridge != null ? _bridge.AcquaintanceAt(beater) : null;
+            if (la != null)
+                _bridge.LikeMore(la.Id, 10);   // as the allies' standing with someone in a fight (enRAGE's own method for its townsfolk)
+            if (ba != null)
+                _bridge.LikeMore(ba.Id, -10);
+            if (lw != null && lw.Id != null)
+                RecordEvent("stoodby", "player", "you", lw.Id, lw.Name, ENTITY.GET_ENTITY_COORDS(loser, true, true), me.Handle, me.Handle, loser, "stood with him in a fight");
+            _bvStands++;
+            _bvLast = "you stood with " + (lw != null ? lw.Name : "a stranger") + " against " + (bw != null ? bw.Name : "a stranger");
+            Log.Write("BRAWL you stand with " + (lw != null ? lw.Name : "a stranger") + "; " + (bw != null ? bw.Name : "the man beating him") + " turns on you");
+        }
+
+        /// The bet: Arthur takes the waiting backer's, a dollar on the other man; nothing changes hands until it's settled.
+        private void BrawlVerbsBet(Ped me, List<int> a, List<int> b, string seed)
+        {
+            WagerMan backer = _bvBacker;
+            if (backer == null || backer.Matched || a.Count == 0 || b.Count == 0)
+                return;
+            backer.Matched = true;
+            var you = new WagerMan { H = me.Handle, Side = 1 - backer.Side, Cents = BrawlVerbs.StakeCents, Id = "player", Name = "you" };
+            var bet = new WagerBet { A = backer, B = you, OnA = backer.Side == 0 ? a[0] : b[0], OnB = backer.Side == 0 ? b[0] : a[0], Cents = BrawlVerbs.StakeCents, Seed = seed + "|bet" };
+            _wagerBets.Add(bet);
+            _bvBets++;
+            WagerSay(me, backer, BrawlVerbs.TakesYourBet(seed), me.Handle);
+            Log.Write("BRAWL bet: you take " + backer.Name + "'s bet, " + BrawlVerbs.Money(bet.Cents) + " on " + NameOfFighter(bet.OnB) + " against " + NameOfFighter(bet.OnA));
+        }
+
+        /// From the wagers' settling (WagersFightOver): a bet of Arthur's. Won, the backer pays by his nature (or owes it, or
+        /// won't); lost, Arthur owes it, and J offers to pay for 30 s.
+        private void BrawlVerbsSettle(WagerBet bet, bool youWon, Ped me)
+        {
+            WagerMan other = bet.A.Id == "player" ? bet.B : bet.A;
+            if (!youWon)
+            {
+                _bvOwedTo = other;
+                _bvOwedCents = bet.Cents;
+                _bvOwedUntil = Game.GameTime + BrawlVerbs.PayPromptMs;
+                WagerSay(me, other, BrawlVerbs.WantsHisDollar(bet.Seed), me.Handle);
+                PromptSet(BrawlVerbs.PayKind, new TownEvent { Kind = BrawlVerbs.PayKind, Town = _placeTown, AName = other.Name, Count = bet.Cents }, BrawlVerbs.PayPromptMs);
+                Log.Write("BRAWL bet: your man lost; you owe " + other.Name + " " + BrawlVerbs.Money(bet.Cents));
+                return;
+            }
+            int pct;
+            Vector3 at = ENTITY.GET_ENTITY_COORDS(other.H, true, true);
+            string how = Wagers.Settle(other.T, other.Drunk, 0, BrawlFindLaw(at, 30f, false, 0) != null, bet.Cents, bet.Seed + "|settle", out pct);
+            if (how == Wagers.Welshes || how == Wagers.Owes)
+            {
+                WagerSay(me, other, Wagers.Fill(Wagers.LoserLine(how, bet.Seed), bet.Cents, null, null, "you"), me.Handle);
+                Log.Write("BRAWL bet: your man won; " + other.Name + " " + (how == Wagers.Welshes ? "won't pay you" : "says he'll owe it you"));
+                return;
+            }
+            MONEY._MONEY_INCREMENT_CASH_BALANCE(bet.Cents, 0);
+            _bvWon++;
+            WagerSay(me, other, BrawlVerbs.PaysYourBet(bet.Seed), me.Handle);
+            Log.Write("BRAWL bet: your man won; " + other.Name + " pays you " + BrawlVerbs.Money(bet.Cents));
+        }
+
+        /// Arthur didn't pay a lost bet: the one he owed thinks the worse of him, says so, and keeps it.
+        private void BrawlVerbsWelsh(string why)
+        {
+            WagerMan m = _bvOwedTo;
+            _bvOwedTo = null;
+            if (m == null)
+                return;
+            _bvWelshed++;
+            Ped me = Game.Player.Character;
+            FolkRef ac = _bridge != null && ENTITY.DOES_ENTITY_EXIST(m.H) ? _bridge.AcquaintanceAt(m.H) : null;
+            if (ac != null)
+                _bridge.LikeMore(ac.Id, -15);
+            if (m.Id != null && ENTITY.DOES_ENTITY_EXIST(m.H))
+            {
+                RecordEvent("welshed", "player", "you", m.Id, m.Name, ENTITY.GET_ENTITY_COORDS(m.H, true, true), me.Handle, me.Handle, m.H, "welshed on a bet");
+                WagerSay(me, m, BrawlVerbs.WelshedOn("w|" + m.Id), me.Handle);
+            }
+            _bvLast = "you welshed on " + m.Name + " (" + why + ")";
+            Log.Write("BRAWL bet: " + _bvLast);
+        }
+
+        /// F7: what Arthur has done in brawls this session.
+        private string BrawlVerbsStatus()
+        {
+            if (!_cfg.BrawlVerbs)
+                return "off ([Scenes] BrawlVerbs)";
+            return "broke up " + _bvBreakups + ", stood with " + _bvStands + ", bets " + _bvBets + " (won " + _bvWon + ", paid " + _bvPaid + ", welshed " + _bvWelshed + ")" +
+                   (_bvOwedTo != null ? "; you owe " + _bvOwedTo.Name + " " + BrawlVerbs.Money(_bvOwedCents) : "") + (_bvLast != null ? "; last: " + _bvLast : "");
+        }
+    }
+}

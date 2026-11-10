@@ -7,7 +7,8 @@
 // When the Director says the fight is over and who was left standing (FightOver), each bet settles: the winner's backer
 // crows, the loser's backer pays, pays with a sour word, says he'll owe it, or won't pay (Wagers.Settle), and the tie and
 // both memories keep it; a welsh leaves a hostile tie the street's reasons pick up when the two next meet. A fight with
-// nobody left standing, or one the scene drops, calls the bets off. Arthur is never part of it. Behind [Scenes]
+// nobody left standing, or one the scene drops, calls the bets off. Arthur is part of it only through J (FOURTEENHOUR item 11,
+// WestworldScript.BrawlVerbs.cs: he takes a waiting backer's bet). Behind [Scenes]
 // BrawlWagers and MindLive. The Testing row "A fistfight with bets on it" (TestWagerKey) starts a fistfight in which
 // everyone the mind knows nearby bets (the bar and the roll skipped).
 using System;
@@ -164,6 +165,15 @@ namespace EnrageWestworld.InGame
                 {
                     // A won if the man A backed is the winner, or the man B backed is the loser (a leader replaced counts as his side)
                     bool aWon = bet.OnA == winner || bet.OnB == loser, aLost = bet.OnA == loser || bet.OnB == winner;
+                    if (bet.A.Id == "player" || bet.B.Id == "player")
+                    {
+                        // Arthur's own bet (FOURTEENHOUR item 11): settled his way, or off
+                        if (aWon != aLost && ENTITY.DOES_ENTITY_EXIST(bet.A.Id == "player" ? bet.B.H : bet.A.H))
+                            BrawlVerbsSettle(bet, bet.A.Id == "player" ? aWon : !aWon, me);
+                        else
+                            _wagerOff++;
+                        continue;
+                    }
                     if (aWon == aLost)
                     {
                         WagerSay(me, bet.A, Wagers.Fill(Wagers.OffLine(bet.Seed), bet.Cents, null, null, Person.FirstOf(bet.B.Name)), bet.B.H);
