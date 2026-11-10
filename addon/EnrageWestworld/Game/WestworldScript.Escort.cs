@@ -56,18 +56,24 @@ namespace EnrageWestworld.InGame
         /// there's no spot to walk to (the list goes on as after any answer).
         private bool EscortStart(TalkMenu t, int now)
         {
-            if (_escort != null || t == null || !ENTITY.DOES_ENTITY_EXIST(t.Handle))
+            return t != null && EscortStartFor(t.Handle, t.Id, t.Name, t.Temper, t.Woman, t.Drunk, now);
+        }
+
+        /// The walk for whoever said yes: through Talk, or to J (THREEHOUR item 4, WestworldScript.WalkHome.cs).
+        private bool EscortStartFor(int handle, string id, string name, string temper, bool woman, bool drunk, int now)
+        {
+            if (_escort != null || !ENTITY.DOES_ENTITY_EXIST(handle))
                 return false;
-            Ped p = new Ped(t.Handle);
+            Ped p = new Ped(handle);
             Vector3 home;
             if (!EscortSpot(p.Position, out home))
             {
-                Log.Write("FOND escort: no way home found for " + t.Name + " (no spot 60-100 m off to walk to)");
+                Log.Write("FOND escort: no way home found for " + name + " (no spot 60-100 m off to walk to)");
                 return false;
             }
-            _escort = new EscortRun { Ped = p, Id = t.Id, Name = t.Name, Temper = t.Temper, Woman = t.Woman, Drunk = t.Drunk, Home = home, StartedAt = now, StepAt = now + 1500, Test = _escortTest };
+            _escort = new EscortRun { Ped = p, Id = id, Name = name, Temper = temper, Woman = woman, Drunk = drunk, Home = home, StartedAt = now, StepAt = now + 1500, Test = _escortTest };
             _escortsStarted++;
-            Log.Write("FOND escort: you're seeing " + t.Name + " home (" + (int)home.DistanceTo(p.Position) + " m off)" + (_escortTest ? " (a test)" : ""));
+            Log.Write("FOND escort: you're seeing " + name + " home (" + (int)home.DistanceTo(p.Position) + " m off)" + (_escortTest ? " (a test)" : ""));
             return true;
         }
 
