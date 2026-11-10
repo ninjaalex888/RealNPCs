@@ -256,6 +256,7 @@ namespace EnrageWestworld.InGame
             Almanac.Share = _cfg.AlmanacShare;
             Payday.NightOn = _cfg.PaydayNight;   // [Scenes] PaydayNight (FOURTEENHOUR item 13)
             StreetMore.On = _cfg.StreetMore;     // [Scenes] StreetMore (FOURTEENHOUR item 14)
+            WalkTogether.On = _cfg.WalkTogether; // [Mind] WalkTogether (FOURTEENHOUR item 15)
             AlmanacSides.On = _cfg.AlmanacSides;   // [World] AlmanacSides: their side on the year's quarrels (Core/AlmanacSides.cs)
             QuarrelPolitics.On = _cfg.QuarrelPolitics;   // [Mind] QuarrelPolitics: men in drink fight over 1899's quarrels (FOURTEENHOUR item 9)
             LoopVoice.On = _cfg.WestWorld && _cfg.LoopVoice;   // the centre's thoughts only with the voice on (Core/LoopVoice.cs)
@@ -1448,6 +1449,7 @@ namespace EnrageWestworld.InGame
             KeeperBackStep(now);    // a keeper shot down, seen back (WestworldScript.KeeperBack.cs, THREEHOUR R3)
             PlacesMournedStep(now);   // where someone died, those close to them stop (WestworldScript.PlacesMourned.cs, THREEHOUR item 5)
             WalkHomeStep(now);      // J after dark: see someone home (WestworldScript.WalkHome.cs, THREEHOUR item 4)
+            WalkTogetherStep(now);  // two friends walking on together (WestworldScript.WalkTogether.cs; FOURTEENHOUR item 15)
             PaydayNightStep(now);   // Saturday night: the town's word that the hands are paid (WestworldScript.BrawlAfter.cs; FOURTEENHOUR item 13)
             JailDoorStep(now);      // the morning after a brawl the law broke up: his wife at the jail door (WestworldScript.BrawlAfter.cs; FOURTEENHOUR item 12)
             BrawlVerbsStep(now);    // J in a fight near you: break it up, stand with the man losing, the bet (WestworldScript.BrawlVerbs.cs; FOURTEENHOUR item 11)

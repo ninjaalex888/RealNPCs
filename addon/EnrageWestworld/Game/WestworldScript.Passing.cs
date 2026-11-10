@@ -294,7 +294,7 @@ namespace EnrageWestworld.InGame
         /// Taken by something else of ours already: a street scene, a waking act, a conversation, a nod, a sight, a walk-up.
         private bool NotFree(int h)
         {
-            if (_director.Involves(h) || IsAcknowledging(h) || InTalk(h) || InWakeAct(h) || IsStaged(h))   // (IsStaged: a re-staged encounter holds them, WestworldScript.Staged.cs)
+            if (_director.Involves(h) || IsAcknowledging(h) || InTalk(h) || InWakeAct(h) || IsStaged(h) || WalkingTogether(h))   // (WalkingTogether: two friends on their way, FOURTEENHOUR item 15)   // (IsStaged: a re-staged encounter holds them, WestworldScript.Staged.cs)
                 return true;
             if (MindGettingUp(h))
                 return true;   // a stage-1 get-up not yet handed on: the waking's sequence isn't cut by a new order (NIGHT4 item 6)

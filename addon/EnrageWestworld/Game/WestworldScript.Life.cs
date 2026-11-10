@@ -98,6 +98,7 @@ namespace EnrageWestworld.InGame
             if (_director.Custom == null)
             {
                 _director.Custom = SceneAction;
+                _director.PlayedOut = OnPlayedOut;   // two friends whose talk is done may walk on together (WestworldScript.WalkTogether.cs; FOURTEENHOUR item 15)
                 _director.CustomScene = SceneActionIn;   // the words that must know their scene (a line that wakes)
                 _director.OutsideSpot = () => SaloonDoorNear(40f);   // the drunk taking it outside (WestworldScript.Saloon.cs)
             }

@@ -137,6 +137,9 @@ namespace EnrageWestworld.InGame
         /// A fight between the scene's two is over, blows having been traded: the one left standing (the better off), then the
         /// other (WestworldScript.Aftermath.cs).
         public Action<int, int> FightOver;
+        /// A scene played to its end (not stopped): its kind and its first two, after the Director has let them go (FOURTEENHOUR
+        /// item 15: two friends whose talk is done may walk on together).
+        public Action<string, Ped, Ped> PlayedOut;
         /// A fight scene stopped (someone in combat with the player, or aimed at) while its two were at it: (A, B, when the
         /// blows began), so the law can still hear it if they go on (WestworldScript.LooseFight.cs).
         public Action<int, int, int> FightLeftLoose;
@@ -1001,6 +1004,10 @@ namespace EnrageWestworld.InGame
             {
                 Log.Write("SCENE " + (l.Side ? "(beside) " : ReferenceEquals(l, _second) ? "(second) " : "") + "over: " + l.Scene.Kind + " (" + string.Join(" & ", l.Names) + "), played to the end");
                 End(l);
+                if (PlayedOut != null && l.Cast.Length >= 2 && l.Cast[0] != null && l.Cast[1] != null)
+                {
+                    try { PlayedOut(l.Scene.Kind, l.Cast[0], l.Cast[1]); } catch (Exception ex) { Log.Write("SCENE played-out hook failed: " + ex.Message); }
+                }
                 return;
             }
             Beat b = l.Scene.Beats[l.Index++];
