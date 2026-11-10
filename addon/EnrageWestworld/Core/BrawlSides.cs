@@ -26,7 +26,9 @@ namespace EnrageWestworld.Core
 
     public static class BrawlSides
     {
-        public const float KinPull = 0.22f, TradePull = 0.12f, TownPull = 0.10f, NamePull = 0.10f, QuarrelPull = 0.08f;
+        public const float KinPull = 0.22f, TradePull = 0.12f, TownPull = 0.10f, NamePull = 0.10f, QuarrelPull = 0.08f, ClassPull = 0.14f;
+
+        static bool WorkingClass(string g) { return g == "working" || g == "farm" || g == "rough" || g == "trapper"; }
 
         /// A fight over one of 1899's quarrels (item 9): an onlooker on the fighter's side of it leans to him, when the one he's
         /// fighting is on the other; a little (QuarrelPull), and only with the topic's words.
@@ -43,6 +45,14 @@ namespace EnrageWestworld.Core
                 if (on.War == null && fighter.War == "grey" && !on.Outsider && Honour.Holds(on.Home))
                     return new SideTie { Pull = QuarrelPull, Why = "a son of the South, for the grey" };
                 return null;
+            }
+            // a working man against a gentleman (FOURTEENHOUR item 18): the working men near lean to their own, a little more than to a
+            // trade's (it's two of them against his kind)
+            if (over == "class")
+            {
+                if (!Snub.On || on == null || fighter == null || other == null || other.Group != "gentry" || !WorkingClass(on.Group) || !WorkingClass(fighter.Group))
+                    return null;
+                return new SideTie { Pull = ClassPull, Why = "for a working man against a swell" };
             }
             if (!QuarrelPolitics.On)
                 return null;   // (the game side no longer asks only with it on: the war above has its own switch)

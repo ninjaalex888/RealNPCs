@@ -50,6 +50,7 @@ namespace EnrageWestworld.Core
                 case "greenhorn": return Greenhorn.Rib(c, seed);          // the newcomer tested (FOURTEENHOUR item 16)
                 case "oldsoldiers": return OldSoldiers.War(c, seed);     // old soldiers: the war argued, or remembered together (item 17)
                 case "warstory": return OldSoldiers.Story(c, seed);      // a young man home from Cuba or the islands tells it
+                case "snub": return Snub.Play(c, seed);                  // the well-off and the working man (FOURTEENHOUR item 18)
                 case "pitch": return Pitch(c, seed);
                 case "posse": return c.CrimeRumour != null ? Posse(c, seed) : null;
                 case "mourn": return c.DeadName != null ? Mourn(c, seed) : null;

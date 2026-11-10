@@ -81,7 +81,7 @@ namespace EnrageWestworld.Core
                     return 0;    // the mark never saw who: nothing between them that he knows of (the thief knows)
                 case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "help": case "defend": case "round": case "apology": case "settled":
                     return 1;
-                case "scorn": case "passby": case "faced":
+                case "scorn": case "passby": case "faced": case "snub":
                     return -1;   // asked for a coin and sent off with a flea in the ear; left lying in the street
                 case "carried": case "thanks":
                     return 1;    // got home on a friend's arm

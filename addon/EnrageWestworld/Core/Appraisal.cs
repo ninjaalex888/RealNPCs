@@ -113,7 +113,7 @@ namespace EnrageWestworld.Core
 
         // scene kinds where one did it to the other (the tie's Doer says which: a scene's cast is by who speaks first,
         // not by who did what); the rest are mutual (a quarrel, a brawl, a standoff: each did it to the other)
-        private static readonly string[] OneSided = { "rough", "pickpocket", "scorn", "charity", "help", "passby", "faced", "defend", "round", "settled", "apology", "comfort", "cheer", "debt", "x:debt", "brushoff", "drunk" };
+        private static readonly string[] OneSided = { "rough", "pickpocket", "scorn", "snub", "charity", "help", "passby", "faced", "defend", "round", "settled", "apology", "comfort", "cheer", "debt", "x:debt", "brushoff", "drunk" };
         private static readonly string[] Mutual = { "brawl", "argue", "x:quarrel", "snap", "x:snap", "standoff" };
 
         /// What a recorded happening (WorldEvents) is, as an event this person appraises, by their part in it: the one it
@@ -190,7 +190,7 @@ namespace EnrageWestworld.Core
                 case "rough": case "deed:assault": case "deed:shove": kind = "shove"; break;
                 case "brawl": case "standoff": case "drunk": kind = id == target ? "challenge" : "brawl"; break;
                 case "pickpocket": case "deed:theft": case "deed:robbery": case "deed:looting": case "deed:horsetheft": kind = "theft"; break;
-                case "argue": case "x:quarrel": case "snap": case "x:snap": case "brushoff": case "faced": kind = "slight"; break;
+                case "argue": case "x:quarrel": case "snap": case "x:snap": case "brushoff": case "faced": case "snub": kind = "slight"; break;
                 case "threat": kind = id == target ? "challenge" : "slight"; break;   // warned off by him in the interaction menu: words, no gun drawn (Interact.cs)
                 case "passby": kind = id == target ? "pratfall" : "slight"; break;   // the one who fell feels the fall before the street (after item 14); whoever saw him stepped round, the slight
                 case "scorn": kind = id == target ? "refused" : "slight"; break;

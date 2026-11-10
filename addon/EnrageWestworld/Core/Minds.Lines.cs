@@ -587,6 +587,10 @@ namespace EnrageWestworld.Core
             // the newcomer tested and taken in (FOURTEENHOUR item 16)
             { "welcomed|did:doer|fresh", new[] { "Had some sport with {who}, the new man. Gave as good as he got.", "{who}'s got a tongue on him. He'll do.", "Ribbed {who} about his boots. He ribbed me back. Fair." } },
             { "welcomed|did:done|fresh", new[] { "{who} had a go at my hat. I had a go at his face. With words.", "Fresh off the train and {who} tries me. I think I passed.", "{who} laughed at me, then with me. A start." } },
+            // the well-off and the working man (FOURTEENHOUR item 18): the gentleman did it
+            { "snub|did:doer|fresh", new[] { "Some fellow stopped me in the street. {who}. Wanted something, I suppose.", "Had to put {who} in his place. They forget themselves." } },
+            { "snub|did:done|fresh", new[] { "{who} looked at me like I was something on his boot.", "Asked {who} a civil question. Got the back of his coat.", "Fine coat, {who}. Fine manners to go with it." } },
+            { "snub|saw|fresh", new[] { "{who} cut a working man dead in the street. Everybody saw.", "Saw {who} snub a man who only asked the time." } },
             // the old soldiers (FOURTEENHOUR item 17)
             { "oldtoast|did:doer|fresh", new[] { "Had it out with {who} about the war. Then we drank to the dead. Strange night.", "{who} wore the other coat. We drank together all the same.", "Thirty years on, and {who} still yields nothing. Nor do I." } },
             { "oldtoast|did:done|fresh", new[] { "{who} and me fought the war again over a glass. Called it a draw.", "{who} was on the other side. Good man, for one of them.", "Drank to the dead with {who}. Both sides of them." } },

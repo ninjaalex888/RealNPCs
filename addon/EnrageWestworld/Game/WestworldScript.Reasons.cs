@@ -464,7 +464,8 @@ namespace EnrageWestworld.InGame
         {
             Ped first = pr.Why.BFirst ? pr.B.Ped : pr.A.Ped, second = pr.Why.BFirst ? pr.A.Ped : pr.B.Ped;
             string seed = first.Handle + "|" + second.Handle + "|" + now / 60000;
-            SceneCast cast = BuildCast(first, second, null, saloon, me, now, seed);
+            Ped lady = pr.Why.Kind == "snub" ? LadyBeside(second, first) : null;   // a lady with the gentleman: her word in it (FOURTEENHOUR item 18)
+            SceneCast cast = BuildCast(first, second, lady, saloon, me, now, seed);
             string kind = pr.Why.Kind;
             Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
             // the trouble scenes (Scenes.Trouble.cs): each needs its setting, and the rough move a surface by the victim;
@@ -514,6 +515,8 @@ namespace EnrageWestworld.InGame
                       " (strength " + pr.Why.Strength + (pr.Why.Leaned != null ? ", the mind: " + pr.Why.Leaned : "") + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you" +
                       (by != null ? "; " + by : "") + ")");
             List<Ped> cast2 = new List<Ped> { first, second };
+            if (lady != null && s.Cast == 3)
+                cast2.Add(lady);   // (no stand-up or bystander joins a cast of three: StandUpFor and AddBystander need two)
             NotePairPlayed(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);
             if (asSecond)
             {

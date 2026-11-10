@@ -379,6 +379,9 @@ namespace EnrageWestworld.Core
             Reason soldiers = OldSoldiers.For(x, y, gameDay, where.Saloon, where.Night);   // old soldiers of either side, or a young man home from the war (item 17)
             if (soldiers != null)
                 all.Add(soldiers);
+            Reason snub = Snub.For(x, y, gameDay, where.Saloon, where.Night);   // a gentleman snubs a working man in the street (item 18)
+            if (snub != null)
+                all.Add(snub);
             // someone free and taken with the one beside them makes eyes at them; the answer is the other's own
             Reason court = Courtship(x, y, gameDay, where);
             if (court != null)
