@@ -271,6 +271,7 @@ namespace EnrageWestworld.InGame
             BestFist.On = _cfg.BestFist;   // [Scenes] BestFist (FOURTEENHOUR reserve R7)
             GameEncounters.On = _cfg.GameEncounters;   // [World] GameEncounters (FOURTEENHOUR reserve R8)
             Riders.On = _cfg.Riders;   // [Encounters] Riders (FOURTEENHOUR reserve R9)
+            NoMapRider.On = _cfg.NoMapRider && _cfg.Riders;   // [Encounters] NoMapRider (FOURTEENHOUR reserve R11)
             Stories.On = _cfg.Stories && _cfg.Letters;   // [World] Stories, offered by letter (FOURTEENHOUR reserve R10)
             Rivals.On = _cfg.Rivals;             // [Scenes] Rivals (FOURTEENHOUR item 19)
             PurseSnatch.On = _cfg.PurseSnatch;   // [Scenes] PurseSnatch (FOURTEENHOUR item 20)

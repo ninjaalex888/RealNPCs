@@ -729,6 +729,18 @@ namespace EnrageWestworld.InGame
                         }
                         return sw;   // WestworldScript.Stories.cs (FOURTEENHOUR reserve R10)
                     }
+                case "nomap":
+                    {
+                        if (_rider != null)
+                            return "a rider is out already";
+                        if (_bridge.TownOnly(Game.Player.Character.Position) != null)
+                            return "out of town only";
+                        skipped = "the night, the road, the roll and the two weeks between (no news after a test)";
+                        if (!StartRider(now, true, false, true))
+                            return "the rider couldn't be readied";
+                        said = "a stranger sets off toward you, asking the way to " + _rider.Place;
+                        return null;   // WestworldScript.Riders.cs (FOURTEENHOUR reserve R11)
+                    }
                 case "rider":
                 case "deputy":
                     {

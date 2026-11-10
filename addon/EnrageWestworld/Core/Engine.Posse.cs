@@ -80,6 +80,21 @@ namespace EnrageWestworld.Core
         }
 
         /// The Testing row's "back now": the posse out of this town comes back at once (its outcome rolled as ever).
+        /// The rider who asked the way to a town on no map rode on into the dark (FOURTEENHOUR reserve R11): the nearest town's news a
+        /// day or two on, and its people think of it once it's come (the game side's look).
+        public void NoMapRode(string town, string place, long now)
+        {
+            if (town == null || place == null)
+                return;
+            Store.Counts[NoMapRider.LastKey] = (int)(now / 1440);
+            string seed = place + "|" + now;
+            long due = now + (1 + Voice.Hash(seed + "|due") % 2) * 1440L;
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = NoMapRider.News(place, town, seed), DueAt = due });
+            Store.Counts["nomap:news|" + town] = (int)(due / 1440);
+            Store.Counts["nomap:place|" + town + "|" + place] = (int)(due / 1440);
+            Log("NOMAP a rider asked the way to " + place + " and rode on into the dark: " + town + " hears of a man found dead on that road in " + (due - now) / 1440 + " days");
+        }
+
         public bool PosseBackNow(string town, long now)
         {
             int rode;

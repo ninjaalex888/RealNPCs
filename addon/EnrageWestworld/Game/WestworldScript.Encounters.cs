@@ -256,6 +256,8 @@ namespace EnrageWestworld.InGame
                 case 4:
                     if (!_cfg.Travellers || _traveller != null)
                         return false;
+                    if (NoMapNight(now))
+                        return true;   // the night's turn (he walks by day): the rider who asks the way to a town on no map (reserve R11)
                     not = TravellerNotNow() ?? Pacing.WhyNot(_store.Pace, "traveller", null, null, _store.LastGameMin, 0, false, out skipped, true);
                     if (not != null)
                     {

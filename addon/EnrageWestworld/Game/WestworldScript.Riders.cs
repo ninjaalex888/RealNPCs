@@ -23,6 +23,8 @@ namespace EnrageWestworld.InGame
             public Ped Man, Horse;
             public Resident R;
             public bool Deputy, Mounted, Test, Together, Greeted, Chose;
+            public bool NoMap;            // the rider who asks the way to a town on no map (reserve R11)
+            public string Place;          // ...the town he asks for
             public string Town, Name, Seed, Temper, Phase = "spawn";   // spawn, come, along, leave
             public uint Model, HorseModel;
             public int Started, PhaseAt, NextTalkAt, Talks, CheckAt, OrderAt, Tries;
@@ -30,11 +32,63 @@ namespace EnrageWestworld.InGame
         }
 
         private RiderRun _rider;
-        private int _riders, _ridersAlong, _ridersTogether, _riderDeputies, _riderPointed, _riderWalked;
+        private int _riders, _ridersAlong, _ridersTogether, _riderDeputies, _riderPointed, _riderWalked, _noMapAsked, _noMapLookAt, _noMapThoughts;
+
+        /// The traveller's turn at night (he walks by day): now and then the rider who asks for a town on no map (reserve R11).
+        private bool NoMapNight(int now)
+        {
+            if (!NoMapRider.On || !Riders.On || _rider != null || _store == null || !NoMapRider.Hour(CLOCK.GET_CLOCK_HOURS()))
+                return false;
+            Ped me = Game.Player.Character;
+            Vector3 p = me.Position;
+            if (_bridge.TownOnly(p) != null || !PATHFIND.IS_POINT_ON_ROAD(p.X, p.Y, p.Z, 0))
+                return false;
+            long today = _store.LastGameMin / 1440;
+            if (!NoMapRider.Due(today, _store.Count(NoMapRider.LastKey), "nomap|" + _store.LastGameMin / 60))
+                return false;
+            return StartRider(now, false, false, true);
+        }
+
+        /// The news come to a town: one of the mind's near you thinks of it, once (a look every 10 s).
+        private void NoMapLook(int now)
+        {
+            if (!NoMapRider.On || _placeTown == null || _store == null || now < _noMapLookAt)
+                return;
+            _noMapLookAt = now + 10000;
+            int due;
+            string key = "nomap:news|" + _placeTown;
+            if (!_store.Counts.TryGetValue(key, out due) || _store.LastGameMin / 1440 < due)
+                return;
+            if (_store.LastGameMin / 1440 - due > 3)
+            {
+                _store.Counts.Remove(key);   // too long ago: let it lie
+                return;
+            }
+            string place = null;
+            foreach (string k in _store.Counts.Keys)
+                if (k.StartsWith("nomap:place|" + _placeTown + "|", StringComparison.Ordinal))
+                {
+                    place = k.Substring(k.LastIndexOf('|') + 1);
+                    break;
+                }
+            foreach (int h in _mindNear)
+            {
+                MindWho w;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || !ENTITY.IS_ENTITY_ON_SCREEN(h))
+                    continue;
+                if (!_ticker.Aside(Person.FirstOf(w.Name ?? "Someone") + ", thinking", NoMapRider.Thought(place ?? "that town", w.Id), "nomap|" + w.Id, h, 8000, now))
+                    continue;
+                _store.Counts.Remove(key);
+                if (place != null)
+                    _store.Counts.Remove("nomap:place|" + _placeTown + "|" + place);
+                _noMapThoughts++;
+                return;
+            }
+        }
         private string _riderLast;
 
         /// On the traveller's turn, or a test: a rider sets off toward you. False when none could be readied.
-        private bool StartRider(int now, bool test, bool deputy)
+        private bool StartRider(int now, bool test, bool deputy, bool noMap = false)
         {
             if (!Riders.On || _rider != null || _store == null)
                 return false;
@@ -44,7 +98,15 @@ namespace EnrageWestworld.InGame
             string town = Travellers.Nearest(p.X, p.Y, out metres, out tx, out ty);
             bool asDeputy = test ? deputy : town != null && _engine.PosseOut(town) && Voice.Chance("deputy|" + town + "|" + _store.LastGameMin / 60, Riders.DeputyPercent);
             var r = new RiderRun { Deputy = asDeputy, Test = test, Town = town, Seed = "rider|" + now, Started = now, PhaseAt = now, To = new Vector3(tx, ty, p.Z) };
-            if (asDeputy)
+            if (noMap)
+            {
+                asDeputy = r.Deputy = false;
+                r.NoMap = true;
+                r.Place = NoMapRider.Place(r.Seed);
+                r.Model = Spawner.ModelFor(null, false, Voice.Hash(r.Seed));   // a stranger nobody knew
+                r.Name = "The rider";
+            }
+            else if (asDeputy)
             {
                 r.Model = Natives.Hash("s_m_m_ambientlawrural_01");
                 r.Name = "The deputy";
@@ -171,10 +233,14 @@ namespace EnrageWestworld.InGame
                     if (now >= r.OrderAt)
                         RiderOrder(r, me, now);   // keeps near: the order again about once a second
                     RiderWatch(r, now);
-                    if (r.Deputy)
+                    if (r.Deputy || r.NoMap)
                     {
                         if (r.Chose || (now - r.PhaseAt > Riders.PromptMs + 3000 && !(_eventMenu != null && _eventMenu.Mode == Riders.Kind)))
+                        {
+                            if (r.NoMap && !r.Chose)
+                                SpeechCaption("The rider", NoMapRider.Thanks("on", r.Seed), mh, 3500, true, true);   // no word: he goes on all the same
                             RiderLeave(r, me, now, r.Chose ? "had his answer" : "had no answer");
+                        }
                         return;
                     }
                     if (now >= r.NextTalkAt && r.Talks < 3 && d < 15f)
@@ -226,15 +292,17 @@ namespace EnrageWestworld.InGame
             r.PhaseAt = now;
             r.Greeted = true;
             r.NextTalkAt = now + 6000;
-            string line = r.Deputy ? Riders.DeputyAsks(r.Town, r.Seed) : Riders.Greeting(r.Temper, r.Town, r.Seed);
+            string line = r.NoMap ? NoMapRider.Asks(r.Place, r.Seed) : r.Deputy ? Riders.DeputyAsks(r.Town, r.Seed) : Riders.Greeting(r.Temper, r.Town, r.Seed);
             SpeechCaption(Person.FirstOf(r.Name), line, h, Math.Min(7000, 1800 + line.Length * 55), true, true);
             TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 8000, 0, 51, 0);
-            if (r.Deputy)
+            if (r.NoMap)
+                _noMapAsked++;
+            else if (r.Deputy)
                 _riderDeputies++;
             else
                 _ridersAlong++;
             if (_eventMenu == null && (_eventPrompt == null || Game.GameTime > _eventPromptUntil))
-                PromptSet(Riders.Kind, new TownEvent { Kind = Riders.Kind, Town = r.Town, AName = r.Name, Extra = r.Deputy ? "deputy" : "along" }, Riders.PromptMs);
+                PromptSet(Riders.Kind, new TownEvent { Kind = Riders.Kind, Town = r.Town, AName = r.Name, Extra = r.NoMap ? "nomap" : r.Deputy ? "deputy" : "along" }, Riders.PromptMs);
             Log.Write("RIDER " + r.Name + " beside you: " + line);
         }
 
@@ -259,6 +327,13 @@ namespace EnrageWestworld.InGame
                 return;
             Ped me = Game.Player.Character;
             int h = r.Man.Handle;
+            if (r.NoMap)
+            {
+                r.Chose = true;
+                SpeechCaption("The rider", NoMapRider.Thanks(id == "nomap:never" ? "never" : id == "nomap:back" ? "back" : "on", r.Seed), h, 3500, true, true);   // whatever you say, he goes on
+                Log.Write("RIDER the rider who asked for " + r.Place + ": you said " + id.Substring(6));
+                return;
+            }
             if (r.Deputy)
             {
                 string how = id == "rider:right" ? "right" : id == "rider:wrong" ? "wrong" : "none";
@@ -298,11 +373,13 @@ namespace EnrageWestworld.InGame
             if (_eventPrompt == Riders.Kind)
                 PromptClear();
             int h = r.Man.Handle;
-            if (!r.Deputy && r.Greeted)
+            if (!r.Deputy && !r.NoMap && r.Greeted)
                 SpeechCaption(Person.FirstOf(r.Name), Riders.Parting(r.Together, r.Town, r.Seed), h, 3500, true, true);
+            if (r.NoMap && r.Greeted && !r.Test)
+                Safe("no-map rider", () => _engine.NoMapRode(r.Town, r.Place, _store.LastGameMin));   // on into the dark: the news a day or two on (reserve R11)
             // off toward his town (or on ahead of you to it), else away from you along the road
             Vector3 to = r.To;
-            if (to.DistanceTo(r.Man.Position) < 30f || r.Deputy)
+            if (to.DistanceTo(r.Man.Position) < 30f || r.Deputy || r.NoMap)
             {
                 Vector3 dir = r.Man.Position - me.Position;
                 dir.Z = 0f;
@@ -341,7 +418,7 @@ namespace EnrageWestworld.InGame
         {
             if (!Riders.On)
                 return "off ([Encounters] Riders)";
-            return _riders + " riders came (" + _ridersAlong + " rode along, " + _ridersTogether + " on together; " + _riderDeputies + " deputies asked, pointed " + _riderPointed + "; " + _riderWalked +
+            return _riders + " riders came (" + _noMapAsked + " asked the way to a town on no map, " + _noMapThoughts + " thought of after; " + _ridersAlong + " rode along, " + _ridersTogether + " on together; " + _riderDeputies + " deputies asked, pointed " + _riderPointed + "; " + _riderWalked +
                    " horses wouldn't take it and he walked)" + (_rider != null ? "; one out now (" + _rider.Phase + ")" : "") + (_riderLast != null ? "; last: " + _riderLast : "");
         }
     }
