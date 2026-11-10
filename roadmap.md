@@ -260,7 +260,7 @@ One date to start with: Easter 1899 fell on 2 April, the very Sunday your game's
 | **The posse rides** | The posse talk turns real: three to five named regulars ride out after a bad crime. They bring a man back, or one of them comes back dead. | Posse scene, Regulars, Spawner | L |  |
 | **Pinkertons asking** | A man in a bowler asks regulars about the player. Those who like him lie for him; those who fear him talk; a friend tells him which. | Rumours, Feelings, Ties | M |  |
 | **Vigilance committee** | Where the law is weak (sheriff dead, killings unsolved), men band together to catch a suspect. Ride with them or stand in their way. | Posts (sheriff), Deeds, Crowd | L |  |
-| **Bail and the cells** | A regular sleeps off a brawl in the cell. Talk through the bars, pay his fine, and he owes you. | Links, Exchanges | M |  |
+| **Bail and the cells** | A regular sleeps off a brawl in the cell. Talk through the bars, pay his fine, and he owes you. | Links, Exchanges | M | Partly built (14h item 12: his fine paid at the jail door; no talk through the bars) |
 | **Witnesses can be leaned on** | After a crime, threaten or pay a named witness. The frightened tell a different story; the paid say nothing; the rumour changes. | enRAGE witness memories, Rumours | M |  |
 | **A reward for a neighbour** | A brawl ends in a death and the sheriff posts a reward for the regular who did it. The town splits; collect, warn or leave it. | Brawl scenes, Posts, Ties | M |  |
 
@@ -287,7 +287,7 @@ One date to start with: Easter 1899 fell on 2 April, the very Sunday your game's
 | **Box social** | Young women's supper boxes are auctioned to the men, and the winner eats with the maker. Courting and jealousy follow. | Romance, Ties, jealous scene | M |  |
 | **Barn raising** | Neighbours raise a barn in a day. A man and his feud neighbour have to hold the same beam; help, and the family remembers. | Links (feud), Ties | L |  |
 | **Quilting bee** | Women at a quilting frame talk over the town's rumours, overheard through the window. | Rumours, gossip scene | S |  |
-| **Temperance ladies** | Women pray and sing outside the saloon. Drinkers jeer or slink off; one husband is marched home; the barkeep sours. | Worries (drink), Posts, Crowd | M |  |
+| **Temperance ladies** | Women pray and sing outside the saloon. Drinkers jeer or slink off; one husband is marched home; the barkeep sours. | Worries (drink), Posts, Crowd | M | Partly built (14h item 25: the saloon door, the pledge, kin taking sides) |
 | **The shivaree** | The night after a wedding, friends bang pots and pans under the couple's window until the groom stands drinks. | Weddings, Crowd | S |  |
 
 ### Sickness, death and mourning
@@ -357,7 +357,7 @@ One date to start with: Easter 1899 fell on 2 April, the very Sunday your game's
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **Rain ends the drought** | A dry-well worry ends well only if it actually rains on that farm. The county talks about rain. | Worries (drought), weather | S |  |
+| **Rain ends the drought** | A dry-well worry ends well only if it actually rains on that farm. The county talks about rain. | Worries (drought), weather | S | Built (14h item 26) |
 | **Wolves at the calves** | Ranchers lose stock to wolves. Kill wolves nearby (the hunting deed already knows them) and the rancher thanks you. | Deeds (wolf), worries | S |  |
 | **Cold snap** | Snow in the high country: people huddle by stoves, an old man doesn't wake, the store runs out of coal oil. | Weather, inner lives | M |  |
 | **Planting and harvest** | Talk follows the season: planting in April, haying in summer, harvest in autumn, idle winters at the saloon. | Clock month, day lines | S |  |
@@ -372,7 +372,7 @@ One date to start with: Easter 1899 fell on 2 April, the very Sunday your game's
 | **The rougarou** | Lemoyne swears something walks the bayou on two legs. One night a man in skins runs from the player's lantern. | Tall tales, Encounters | M |  |
 | **Murder ballads** | Drifters at a fire sing old murder ballads (Pretty Polly, Omie Wise). The waking change the names to people they know. | Song scene, Awakening | S |  |
 | **Lantern procession** | After midnight on a back road, mourners follow a coffin on a cart, singing, then turn into a field and are gone. | Gathering mechanics | M |  |
-| **The rider who asks the way** | A rider asks the way to a town on no map. Days later, a man is found dead on that road. | Encounters, Rumours | S |  |
+| **The rider who asks the way** | A rider asks the way to a town on no map. Days later, a man is found dead on that road. | Encounters, Rumours | S | Built (14h R11) |
 | **The bell at three** | The church bell rings in the small hours in an empty church. The preacher swears he locked it. | Encounters, audio | S |  |
 
 ### Saint Denis and the river parishes
@@ -517,41 +517,41 @@ streets with more between people. "14h N" is the fourteen-hour plan's item (R: i
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **The badge across the street** | A deputy five yards off stops a crowd joining in; one inside his office doesn't. He comes over, and the fight has a minute to grow before he's there. | `Brawl.LawHolds`, the lawmen's jobs (14h 5) | M |  |
-| **The deputy out of his depth** | One deputy against a room hangs back and sends for the sheriff, who comes with another man; they take the two who started it. | `Brawl.Heeds`, LawTake, the hogtie (14h 5) | S |  |
-| **Sides by who they are** | The farmhands pile in for the farmhand, the working men for the miner, the town's own against the stranger; the well-dressed send for the sheriff. | JoinIn, `InnerLife.TradeGroup`, Family (14h 6) | M |  |
-| **The cascade** | Most fights stay two men. Now and then one more joins, then three, and the whole saloon goes; you can't tell which until it tips. | JoinIn, `Brawl.Momentum` (14h 7) | M |  |
-| **The stray blow** | A man knocked back into a bystander gets a fist for it, and the bystander is in it. | the join's run-over (14h 8) | S |  |
-| **The friend who pulls him out** | A friend drags a beaten man out of it, and the other side lets him go, or follows. | the Director's leavewith (14h 8) | S |  |
-| **A fight over silver** | Two men on opposite sides of 1899's quarrels (silver, the Philippines, the dry vote) come to blows, and each side's men join their own. | AlmanacSides, the ladder (14h 9) | M |  |
-| **The shape of a big fight** | It climbs, sprawls and dies: the barkeep shouting, a coward out the door, men down, the bets growing, and an end by the law, a gun or tiredness. | the Director's brawl beats (14h 10) | M |  |
-| **Break it up** | J in a brawl: Arthur's shout. Those who like or fear him stop; the rest may turn on him. | `Brawl.Heeds`, `Brawl.AtYou` (14h 11) | S |  |
-| **Stand with the losing man** | J: take his side. His friends remember it, and so do the men on the other side. | JoinYou, allies (14h 11) | S |  |
-| **Your money on it** | The onlooker waiting for a taker turns to you. Take the bet; welsh on it and he remembers. | Wagers (14h 11) | S |  |
-| **The week after the fight** | The winner's round, the beaten at the doctor's, a friend walking the knocked-out man home, the barkeep's broken chairs, the jail door in the morning. | Round, Patient, GroupActs, LawTake (14h 12) | M |  |
-| **Sore sides** | The men who fought on opposite sides stay sore for a week, so the next fight among them grows faster. | Ties, JoinIn (14h 12) | S |  |
-| **Payday night** | The night the ranch and the mine pay, the saloon fills and the fights get big. You learn which night it is. | the notice board's payday, the cascade (14h 13) | S |  |
-| **The town's best fist** | A man who wins three brawls gets a name; men come from other towns to try him, for a purse. | PrizeFight, Ties (14h R7) | M |  |
+| **The badge across the street** | A deputy five yards off stops a crowd joining in; one inside his office doesn't. He comes over, and the fight has a minute to grow before he's there. | `Brawl.LawHolds`, the lawmen's jobs (14h 5) | M | Built (14h item 5) |
+| **The deputy out of his depth** | One deputy against a room hangs back and sends for the sheriff, who comes with another man; they take the two who started it. | `Brawl.Heeds`, LawTake, the hogtie (14h 5) | S | Built (14h item 5) |
+| **Sides by who they are** | The farmhands pile in for the farmhand, the working men for the miner, the town's own against the stranger; the well-dressed send for the sheriff. | JoinIn, `InnerLife.TradeGroup`, Family (14h 6) | M | Built (14h item 6) |
+| **The cascade** | Most fights stay two men. Now and then one more joins, then three, and the whole saloon goes; you can't tell which until it tips. | JoinIn, `Brawl.Momentum` (14h 7) | M | Built (14h item 7) |
+| **The stray blow** | A man knocked back into a bystander gets a fist for it, and the bystander is in it. | the join's run-over (14h 8) | S | Built (14h item 8) |
+| **The friend who pulls him out** | A friend drags a beaten man out of it, and the other side lets him go, or follows. | the Director's leavewith (14h 8) | S | Built (14h item 8) |
+| **A fight over silver** | Two men on opposite sides of 1899's quarrels (silver, the Philippines, the dry vote) come to blows, and each side's men join their own. | AlmanacSides, the ladder (14h 9) | M | Built (14h item 9) |
+| **The shape of a big fight** | It climbs, sprawls and dies: the barkeep shouting, a coward out the door, men down, the bets growing, and an end by the law, a gun or tiredness. | the Director's brawl beats (14h 10) | M | Built (14h item 10) |
+| **Break it up** | J in a brawl: Arthur's shout. Those who like or fear him stop; the rest may turn on him. | `Brawl.Heeds`, `Brawl.AtYou` (14h 11) | S | Built (14h item 11) |
+| **Stand with the losing man** | J: take his side. His friends remember it, and so do the men on the other side. | JoinYou, allies (14h 11) | S | Built (14h item 11) |
+| **Your money on it** | The onlooker waiting for a taker turns to you. Take the bet; welsh on it and he remembers. | Wagers (14h 11) | S | Built (14h item 11) |
+| **The week after the fight** | The winner's round, the beaten at the doctor's, a friend walking the knocked-out man home, the barkeep's broken chairs, the jail door in the morning. | Round, Patient, GroupActs, LawTake (14h 12) | M | Built (14h item 12) |
+| **Sore sides** | The men who fought on opposite sides stay sore for a week, so the next fight among them grows faster. | Ties, JoinIn (14h 12) | S | Built (14h item 12) |
+| **Payday night** | The night the ranch and the mine pay, the saloon fills and the fights get big. You learn which night it is. | the notice board's payday, the cascade (14h 13) | S | Built (14h item 13) |
+| **The town's best fist** | A man who wins three brawls gets a name; men come from other towns to try him, for a purse. | PrizeFight, Ties (14h R7) | M | Built (14h R7) |
 | **The fight at the dance** | A jealous word at the Saturday dance; the fiddler plays on while two men take it outside, and their friends follow. | Dances, jealous, the cascade | M |  |
 | **Election day** | The polls in the saloon, as they often were, the parties' men and the whiskey: the year's worst brawl. | Election day (P22), AlmanacSides | M |  |
-| **The fight retold wrong** | Three days on, the town's version has twelve men and a knife in it, and the man who started it is somebody else. | Rumours, memories that blur | S |  |
-| **The brawler's wife** | The morning after, she has words for him in the street where everyone can hear, and the men who fought beside him keep their heads down. | Domestic, Exchanges | S |  |
+| **The fight retold wrong** | Three days on, the town's version has twelve men and a knife in it, and the man who started it is somebody else. | Rumours, memories that blur | S | Built (14h item 24) |
+| **The brawler's wife** | The morning after, she has words for him in the street where everyone can hear, and the men who fought beside him keep their heads down. | Domestic, Exchanges | S | Partly built (14h item 12: she waits at the jail door; no words in the street) |
 
 ### The town between people
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **Friends walk together** | Two friends walk to the saloon side by side after work, talking; a courting couple walks out on a Sunday; a man walks his drunk friend home. | the ring's walking (14h 15) | M |  |
-| **The newcomer tested** | Two regulars rib the greenhorn off the train. He laughs, fights or gets help, and is one of the town after. | NewFaces, StandUp (14h 16) | M |  |
-| **The old soldiers** | Two old men from opposite sides argue the war over a bottle: a toast to the dead, or blows, and the young men take sides. | OldDays, Times (14h 17) | S |  |
-| **The well-off and the working man** | A well-dressed couple brushes off a working man; he answers back; the husband's pride, the wife's word. | the brush-off, Opinions, AlmanacSides (14h 18) | S |  |
-| **Rivals for one woman** | Two men courting the same woman meet at her gate; their friends join the fight; she may pick the one who walked away. | the courting links, jealous (14h 19) | M |  |
-| **Rowdy drunks** | Three friends in drink come down the street singing; one picks on a passer-by; a friend hauls him home. | song, drunk, the walk home (14h R5) | S |  |
-| **The cardsharp run out of town** | A cheat called at the table; the table's men walk him to the edge of town; weeks later he's back. | cheat, the ring's walking (14h R6) | M |  |
-| **The horse trade** | At the hitching post one man gets the worse of a horse deal and knows it: a grudge with a cause. | haggle (14h 14) | S |  |
-| **A tooth pulled in the street** | The barber and a man whose tooth is at its worst; whoever is near winces in their thoughts. | the tooth worry (14h 14) | S |  |
-| **The collector and his hired man** | The debt at its worst: the debtor pays, begs or runs, and a bystander has a word. | the debt links (14h 14) | S |  |
-| **An apology before the street** | The man who wronged another says so in public; the kind take it, the proud don't. | Grudges' apology (14h 14) | S |  |
+| **Friends walk together** | Two friends walk to the saloon side by side after work, talking; a courting couple walks out on a Sunday; a man walks his drunk friend home. | the ring's walking (14h 15) | M | Built (14h item 15) |
+| **The newcomer tested** | Two regulars rib the greenhorn off the train. He laughs, fights or gets help, and is one of the town after. | NewFaces, StandUp (14h 16) | M | Built (14h item 16) |
+| **The old soldiers** | Two old men from opposite sides argue the war over a bottle: a toast to the dead, or blows, and the young men take sides. | OldDays, Times (14h 17) | S | Built (14h item 17) |
+| **The well-off and the working man** | A well-dressed couple brushes off a working man; he answers back; the husband's pride, the wife's word. | the brush-off, Opinions, AlmanacSides (14h 18) | S | Built (14h item 18) |
+| **Rivals for one woman** | Two men courting the same woman meet at her gate; their friends join the fight; she may pick the one who walked away. | the courting links, jealous (14h 19) | M | Built (14h item 19) |
+| **Rowdy drunks** | Three friends in drink come down the street singing; one picks on a passer-by; a friend hauls him home. | song, drunk, the walk home (14h R5) | S | Built (14h R5) |
+| **The cardsharp run out of town** | A cheat called at the table; the table's men walk him to the edge of town; weeks later he's back. | cheat, the ring's walking (14h R6) | M | Built (14h R6) |
+| **The horse trade** | At the hitching post one man gets the worse of a horse deal and knows it: a grudge with a cause. | haggle (14h 14) | S | Built (14h item 14) |
+| **A tooth pulled in the street** | The barber and a man whose tooth is at its worst; whoever is near winces in their thoughts. | the tooth worry (14h 14) | S | Built (14h item 14) |
+| **The collector and his hired man** | The debt at its worst: the debtor pays, begs or runs, and a bystander has a word. | the debt links (14h 14) | S | Already there (x:debt; checked in 14h item 14) |
+| **An apology before the street** | The man who wronged another says so in public; the kind take it, the proud don't. | Grudges' apology (14h 14) | S | Already there (the grudge apology; checked in 14h item 14) |
 | **The peeping tom** | A scream from a window at night, a man running, the husband after him in his nightshirt; the town laughs for a week. | the night scenes, a chase | M |  |
 | **Talk at the pump** | Women at the pump trade the town's news; what's said there is in every house by supper. | Gossip, MindTalk, Rumours | S |  |
 | **The barber's chair** | The barber knows everything; the man in the chair hears the town's news and passes it on. | Gossip, the barber | S |  |
@@ -560,7 +560,7 @@ streets with more between people. "14h N" is the fourteen-hour plan's item (R: i
 | **The tonic and the sceptic** | A drummer sells a tonic in the street; a sceptic heckles; a buyer is sick by Tuesday and wants his money back. | pitch, NewFaces' drummer | S |  |
 | **A son comes home** | A resident's son back from the army or the city: his mother at the depot, his old friends, the girl who married someone else. | NewFaces, Family, Times (the war) | M |  |
 | **The schoolteacher and the father** | A father wants his boy in the fields, not the schoolroom; the new teacher stands her ground in the street. | NewFaces' schoolteacher, Exchanges | S |  |
-| **Rain brings strangers together** | Two or three under one roof in the rain talk, and nod in passing after. | shelter, the nods (14h R2) | S |  |
+| **Rain brings strangers together** | Two or three under one roof in the rain talk, and nod in passing after. | shelter, the nods (14h R2) | S | Built (14h item 26) |
 
 Why these read true, in short: crowds don't join a fight for the fight's sake, but for their own (Tajfel's minimal groups) and
 once enough others have (Granovetter's thresholds, 1978); the law deters by being certain and near, not by being in town; and a
@@ -799,15 +799,15 @@ Each of the 13 worry kinds gets one fix and one dark mirror. The ending is writt
 | **Write a letter yourself** | At any post office, write to someone you've met: a warning, an apology, a love note, a threat, money. It lands a few days later and changes them like a spoken word. | Answering letters | M |  |
 | **Spread a rumour** | Tell a regular something untrue about another person, or about yourself ("I hear Morgan's dead"). It travels and bends like your deeds do. | Rumours, the menu | M |  |
 | **Make an introduction** | Introduce two people you know. A tie starts; between a fitting pair, a courtship might. | Ties, Links | S |  |
-| **Hire a regular** | Pay a down-on-his-luck regular to watch your horse, carry a message or keep lookout. He talks about working for you. | Regard, Links | M |  |
-| **Vouch for a prisoner** | Vouch for a jailed regular and he's let go into your keeping. If he does it again, your name suffers. | Bail and the cells, Deeds | M |  |
+| **Hire a regular** | Pay a down-on-his-luck regular to watch your horse, carry a message or keep lookout. He talks about working for you. | Regard, Links | M | Partly built (14h R21: a man to watch your horse) |
+| **Vouch for a prisoner** | Vouch for a jailed regular and he's let go into your keeping. If he does it again, your name suffers. | Bail and the cells, Deeds | M | Built (14h R22) |
 | **Post a reward** | Put up your own reward for a horse thief or a man who hurt someone you know. Men go after him; the paper reports it. | Posts (sheriff), papers | L |  |
 | **Testify** | At the circuit judge's trial, say what you saw, true or not, and the verdict follows. | Circuit judge, Deeds | M |  |
 | **Teach a young man to shoot** | He worships you after. In 1907 he's a lawman or an outlaw, and he tells John who taught him. | Regulars, 1907 continuity | M |  |
-| **The collection plate** | Give on Sunday and the preacher thanks a generous stranger from the pulpit; the town warms a little. | Sunday service, Deeds | S |  |
+| **The collection plate** | Give on Sunday and the preacher thanks a generous stranger from the pulpit; the town warms a little. | Sunday service, Deeds | S | Partly built (14h R20: the widow's collection, thanked from the pulpit) |
 | **A wager in the saloon** | Bet a regular on a horse race or a bottle at twenty paces; win money and a reputation, or lose both. | Saloon, Deeds, Regard | M |  |
 | **Walk someone home** | After dark, an old man or a woman afraid of the road asks to be walked home. Some nights, something waits on it. | Night encounters, escort | M |  |
-| **Stand the wake** | Pay for the drinks after a funeral; the mourners remember who did. | enRAGE funerals, Deeds | S |  |
+| **Stand the wake** | Pay for the drinks after a funeral; the mourners remember who did. | enRAGE funerals, Deeds | S | Built (14h R19) |
 
 ## West World and the night: designs
 
