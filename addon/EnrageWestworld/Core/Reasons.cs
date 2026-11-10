@@ -114,6 +114,12 @@ namespace EnrageWestworld.Core
                 long rest = tie.Kind == "brawl" ? 1440 : tie.Warmth < 0 ? HostileRest : PairRest;   // after a fight, a day before the next thing between them
                 if (now - tie.At >= 0 && now - tie.At < rest)
                     return null;   // they've just had words, or a walk together
+                // sore sides of a big brawl, and nothing between them since: strangers still as far as what starts between them goes,
+                // and the join reads the warmth (a stake in the next fight among them). As a quarrel of its own it made a fight begin a
+                // tenth more often in the week after, against the plan's rule on how often fights start (the run's-end measure;
+                // FOURTEENHOUR item 12)
+                if (tie.Sore && tie.Count <= 1)
+                    tie = null;
             }
             // one is the real person at the other end of the other's worry: the strongest reason there is (Links.cs)
             if (link != null && Links.Linkable(link.Kind))

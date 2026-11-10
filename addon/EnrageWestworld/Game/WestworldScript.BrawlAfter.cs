@@ -93,7 +93,9 @@ namespace EnrageWestworld.InGame
                 {
                     if (pairs >= BrawlAfter.SoreMostPairs || x.Id == y.Id || LadderWarmth(x.Id, y.Id) < 0)
                         continue;   // a tie already sore stays as it is
-                    Ties.Note(_store.Ties, x.Id, x.Name, y.Id, y.Name, _placeTown, "brawl", Bridge.Now());
+                    SceneTie st = Ties.Note(_store.Ties, x.Id, x.Name, y.Id, y.Name, _placeTown, "brawl", Bridge.Now());
+                    if (st != null && st.Count == 1)
+                        st.Sore = true;   // strangers till now: a stake in the next fight among them, not a quarrel of its own (Reasons)
                     pairs++;
                 }
             _soreTies += pairs;
