@@ -1358,6 +1358,13 @@ namespace EnrageWestworld.Core
         {
             PersonState st = Store.Find(p.Id);
             EnsureLink(p);
+            if (Cfg.NewFaces && Resident.IsResident(p.Id))
+            {
+                Resident nr = Store.FindResident(p.Id);
+                string fresh = nr != null ? NewFaces.Thought(nr.NewAs, nr.NewAt, Store.LastGameMin, seed) : null;   // their first two weeks here (Core/NewFaces.cs)
+                if (fresh != null)
+                    return fresh;
+            }
             if (Cfg.Minds)
             {
                 // the world feeling unreal keeps its full RealityChance, first, as before

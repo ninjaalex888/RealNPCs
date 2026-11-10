@@ -148,10 +148,42 @@ namespace EnrageWestworld.Core
             }
             else
                 r.From = Trains.NewcomerFrom(r.Id);
+            string groom = kinOf == null && Cfg.NewFaces ? NewFaceArrives(r, town, now) : null;   // who the stranger comes as (Core/NewFaces.cs)
             r.ByTrain = true;   // the ledger counts these alone (a post's successor has Kin too; the review of items 11-12)
             _trainArrivals++;
-            Push(new Toast { Kind = "life", Title = "Off the train in " + ShortTown(town), Weight = 25, Text = Trains.ArrivedNotice(town, r.Name, r.Kin, r.KinOf, r.From) });
+            Push(new Toast { Kind = "life", Title = "Off the train in " + ShortTown(town), Weight = 25, Text = NewFaces.Notice(r.NewAs, ShortTown(town), r.Name, groom, r.From) ?? Trains.ArrivedNotice(town, r.Name, r.Kin, r.KinOf, r.From) });
             Log("TRAIN " + town + ": arrival " + r.Name + (r.Kin != null ? " (" + r.KinOf + "'s " + r.Kin + ")" : " (from " + r.From + ")"));
+        }
+
+        /// A stranger off the train comes as somebody: their trade, and for a bride, the man she's promised to (a courting tie). The groom's name, or null.
+        private string NewFaceArrives(Resident r, string town, long now)
+        {
+            string kind = NewFaces.KindOf(r.Id, r.Woman);
+            if (kind == null)
+                return null;
+            Resident groom = null;
+            if (kind == "bride")
+            {
+                groom = Store.Residents.Where(x => x != null && x.Town == town && !x.Woman && x.Regular && !x.Dead && !x.Fled && !x.Left && x.Id != r.Id && x.Name != null && !Store.Ties.Any(t => t != null && t.Courted && t.Has(x.Id)))
+                                       .OrderBy(x => Voice.Hash(r.Id + "|groom|" + x.Id)).FirstOrDefault();
+                if (groom == null)
+                    kind = "settler";   // nobody here free to have sent for her: she comes to settle
+            }
+            r.NewAs = kind;
+            r.NewAt = now;
+            if (NewFaces.TradeOf(kind) != null)
+                r.Trade = NewFaces.TradeOf(kind);
+            if (groom != null)
+            {
+                SceneTie t = Ties.Note(Store.Ties, groom.Id, groom.Name, r.Id, r.Name, town, "flirt", now);
+                if (t != null)
+                {
+                    t.Courted = true;
+                    t.Warmth = Math.Max(t.Warmth, 1);
+                }
+            }
+            Log("TRAIN " + town + ": " + r.Name + " comes as " + kind + (groom != null ? ", to marry " + groom.Name : ""));
+            return groom != null ? groom.Name : null;
         }
 
         public string TrainsEngineStatus()

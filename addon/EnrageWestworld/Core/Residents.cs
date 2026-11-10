@@ -35,6 +35,8 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public string Kin;            // how they're related to the one who kept it before ("son"), null for a newcomer
         [DataMember(EmitDefaultValue = false)] public string KinOf;          // the one who kept it before, by name
         [DataMember(EmitDefaultValue = false)] public string From;           // a newcomer's old town
+        [DataMember(EmitDefaultValue = false)] public string NewAs;        // who a stranger off the train came as: settler, schoolteacher, preacher, bride (Core/NewFaces.cs)
+        [DataMember(EmitDefaultValue = false)] public long NewAt;          // and when (game minute): a newcomer's thoughts for two weeks
         [DataMember(EmitDefaultValue = false)] public bool ByTrain;          // stepped down from a train (Core/Engine.Trains.cs): the ledger's arrivals; a post's successor has Kin too, but came no such way
         [DataMember(EmitDefaultValue = false)] public string Since1899;      // the epilogue (Core/Epilogue.cs): what the eight years did to one of Arthur's people carried into John's world (stayed, married, widowed, moved, died)
         [DataMember(EmitDefaultValue = false)] public long TookOverAt;       // game minute they took the post over, 0 for the first
