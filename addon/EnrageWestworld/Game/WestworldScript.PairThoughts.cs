@@ -48,7 +48,9 @@ namespace EnrageWestworld.InGame
         private void PairShow(SceneTie t, NearThought a, NearThought b, string seed, int now)
         {
             Someone wa = SomeoneOf(new Ped(a.Handle)), wb = SomeoneOf(new Ped(b.Handle));
-            string la = PairThoughts.Line(t, t.A, wa != null ? wa.Temper : null, seed + "a"), lb = PairThoughts.Line(t, t.B, wb != null ? wb.Temper : null, seed + "b");
+            string va = OpinionOf(t, t.A, wa, b.Handle), vb = OpinionOf(t, t.B, wb, a.Handle);   // their views of each other (Core/Opinions.cs)
+            string la = (va != null ? Opinions.Line(va, Person.FirstOf(t.BName), seed + "a") : null) ?? PairThoughts.Line(t, t.A, wa != null ? wa.Temper : null, seed + "a");
+            string lb = (vb != null ? Opinions.Line(vb, Person.FirstOf(t.AName), seed + "b") : null) ?? PairThoughts.Line(t, t.B, wb != null ? wb.Temper : null, seed + "b");
             _pairForce = false;
             if (la == null || lb == null || !_ticker.Aside(a.Name + ", thinking", la, a.Key, a.Handle, PairThoughts.ForMs, now) || !_ticker.Aside(b.Name + ", thinking", lb, b.Key, b.Handle, PairThoughts.ForMs, now))
                 return;
@@ -56,8 +58,20 @@ namespace EnrageWestworld.InGame
             _pairsShown++;
             NoteTheirThought(a.Handle, now, la);
             NoteTheirThought(b.Handle, now, lb);
-            _pairLast = a.Name + ": " + la + " / " + b.Name + ": " + lb;
+            _pairLast = a.Name + (va != null ? " (" + va + ")" : "") + ": " + la + " / " + b.Name + (vb != null ? " (" + vb + ")" : "") + ": " + lb;
             Log.Write("PAIR " + _pairLast);
+        }
+
+        /// This one's view of the other, seven times in ten when they have one; null for the tie's plain thought.
+        private string OpinionOf(SceneTie t, string id, Someone me, int otherHandle)
+        {
+            if (!_cfg.Opinions || t == null || id == null)
+                return null;
+            Resident mine = _store.FindResident(id), theirs = _store.FindResident(t.OtherId(id));
+            bool iGentry = mine != null && InnerLife.TradeGroup(mine.Trade) == "gentry", otherGentry = theirs != null && InnerLife.TradeGroup(theirs.Trade) == "gentry";
+            bool otherDrunk = ENTITY.DOES_ENTITY_EXIST(otherHandle) && InHisCups(new Ped(otherHandle), null);
+            string v = Opinions.View(t, id, me != null ? me.Temper : null, iGentry, otherGentry, otherDrunk);
+            return v != null && Voice.Chance(t.A + "|" + t.B + "|" + id + "|view|" + _store.LastGameMin / 60, Opinions.ShownChance) ? v : null;
         }
 
         /// The Testing row.

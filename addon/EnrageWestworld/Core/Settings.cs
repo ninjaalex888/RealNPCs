@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 364;
+        public const int CurrentVersion = 365;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -77,6 +77,7 @@ namespace EnrageWestworld.Core
         public bool Asides = true;                // [Ticker] while someone near you talks, whoever's listening may think something about it, over their head (Core/Asides.cs; FIVEDAY2 item 25; settings version 328)
         public bool WeatherChecked = true;   // [Ticker] what people think and say about the weather is held to what's really out, the temperature too (Core/WeatherTruth.cs; a player's report, 2026-11-09; settings version 342)
         public bool WeatherTalk = true;      // [Ticker] with WeatherChecked: people remark on the weather more the worse it is, and for a couple of minutes after it turns
+        public bool Opinions = true;   // [Ticker] with PairThoughts: a view of each other read off the tie (respect, contempt, envy, fear), one-sided, in their thoughts when they meet (the roadmap's idea bank; settings version 365)
         public bool PairThoughts = true;   // [Ticker] two in view with a history between them each think about the other, at the same moment, in the boxes over their heads (TENHOUR item 14; settings version 345)
         public int ThoughtsAtOnce = 3;            // [Ticker] how many people's thoughts may be up over their heads at once (FIVEDAY2 item 24; settings version 327); 1: singly, as it was
         public bool TickerShowsScene = true;   // the bar names the street scene playing out near you, while it plays (Lex, 2026-10-30; settings version 122)
@@ -1003,6 +1004,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 365)
+                    log?.Invoke("Settings: new in this version: [Ticker] Opinions (on): townsfolk hold views of each other.");
                 if (s.SettingsVersion < 364)
                     log?.Invoke("Settings: new in this version: [Mind] DiaryDreams (on): hard days come back as dreams in the diaries.");
                 if (s.SettingsVersion < 363)
@@ -1809,6 +1812,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Asides = " + B(Asides) + "   ; while someone near you talks, the person listening may have a thought about it over their head (needs ThoughtsAtOnce above 1)");
             b.AppendLine("WeatherChecked = " + B(WeatherChecked) + "   ; what people think and say about the weather is held to what's really out, the temperature too: no heat talk in a cold drizzle");
             b.AppendLine("WeatherTalk = " + B(WeatherTalk) + "   ; with WeatherChecked: people remark on the weather more the worse it is, and for a couple of minutes after it turns (the first drops, thunder, snow, the rain stopping)");
+            b.AppendLine("Opinions = " + B(Opinions) + "   ; with PairThoughts: what one thinks of the other, from what's passed between them (fear of who hurt them, contempt, envy of the better off, respect), in their thoughts when two who know each other are in view");
             b.AppendLine("PairThoughts = " + B(PairThoughts) + "   ; two people in view with a history between them each think about the other, at the same moment, in the boxes over their heads. Needs ThoughtsAtOnce 3 or more");
             b.AppendLine("ThoughtsAtOnce = " + ThoughtsAtOnce + "   ; how many people's thoughts may be up over their heads at once, arriving one after another (1 to 4; 1: singly, as it was; needs ThoughtsOverHeads)");
             b.AppendLine("TickerShowsScene = " + B(TickerShowsScene) + "   ; while a street scene plays out within 40 m, the bar at the bottom says what is going on and who is in it (\"Nearby: ...\")");
