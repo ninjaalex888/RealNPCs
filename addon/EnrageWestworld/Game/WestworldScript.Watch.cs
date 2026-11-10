@@ -1086,7 +1086,10 @@ namespace EnrageWestworld.InGame
                     heldId = heldBind.R.Id;   // a bound resident the people ledger marked dead first: LastingId answers false for the dead (the review of items 20-27)
                 if (heldId != null)
                     f.Held = Nemesis.Held(_store.WorldLog, heldId, gameMin);   // what they held against you before (nemesis memory past death; item 22)
-                if (!law && _rng.Next(100) < _cfg.StrangerReturnChance)
+                MindWho vw;
+                if (_cfg.RevenantsAnger && _mindWho.TryGetValue(h, out vw) && vw.Traits != null)
+                    f.Anger = vw.Traits.Z[Traits.Anger];   // their temper, as the mind knew it: the angry come back, and come at you (Core/Vengeance.cs)
+                if (!law && _rng.Next(100) < (_cfg.RevenantsAnger ? Vengeance.ReturnChance(_cfg.StrangerReturnChance, f.Anger) : _cfg.StrangerReturnChance))
                     f.ReturnAt = gameMin + 1440 + _rng.Next(1440 * 5);
                 _store.Fallen.Add(f);
                 Log.Detail("FALLEN " + (f.Name ?? f.Label) + " near " + place + (f.ReturnAt > 0 ? " - will come back" : "") + (f.Held != null ? " (held: " + f.Held + ")" : ""));

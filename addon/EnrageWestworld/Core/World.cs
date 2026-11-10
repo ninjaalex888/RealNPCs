@@ -82,6 +82,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public bool Done;
         [DataMember(EmitDefaultValue = false)] public int Seen;         // people who saw it happen
         [DataMember(EmitDefaultValue = false)] public bool Begged;      // shot while pleading for their life
+        [DataMember(EmitDefaultValue = false)] public float Anger;      // their anger as the mind knew it (Traits.Anger, a z-score; 0 unknown): how readily they come back for you (Core/Vengeance.cs)
         [DataMember(EmitDefaultValue = false)] public bool Mourned;     // their widow (or brother) has grieved on screen
         [DataMember(EmitDefaultValue = false)] public long MournedAt;   // the game minute they were grieved on screen: one mourner a town a game day (NIGHT4 fix 6)
         [DataMember(EmitDefaultValue = false)] public string Held;      // what they held against the player before he killed them, in their own words (Core/Nemesis.cs; SIXDAY item 22); the revenant says so

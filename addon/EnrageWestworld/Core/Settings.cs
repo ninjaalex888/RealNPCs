@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 367;
+        public const int CurrentVersion = 368;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -233,6 +233,7 @@ namespace EnrageWestworld.Core
         public bool WagonOthersStop = true;   // [Encounters] with WagonWheel: someone else on the road may pull up for the wagon when you haven't helped, and set the wheel with the driver (FIVEDAY item 32d, settings version 287)
         public bool StalkerRides = true;      // [Stalkers] a mounted stalker stays in the saddle to follow, come in close and ride off; checked, and down on foot if the horse doesn't go (Core/StalkerRide.cs; FIVEDAY item 32c, settings version 286)
         public int StalkerHorse = 35;          // percent of stalkers who appear on horseback and sit the horse watching; they get down to move (SIXDAY item 19; settings version 235)
+        public bool RevenantsAnger = true;     // [Stalkers] someone you killed comes back by their anger: the angry walk again more often and come at you readier, the mild mostly stay down (Lex, 2026-11-09; settings version 368)
         public bool RevenantsHunt = true;      // [Stalkers] someone you killed may come to kill you back, by their grudge (Lex, 2026-10-31; violence against Arthur on by default, 2026-11-01; settings version 326)
         public int RevenantHuntChance = 30;    // ... percent at each chance once close, before what they hold against you adds to it
         public bool RevenantsMinds = true;     // [Stalkers] with the AI model on, it chooses what someone you killed does when they've found you; the rules choose without it (Core/RevenantMind.cs; settings version 325)
@@ -1006,6 +1007,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 368)
+                    log?.Invoke("Settings: new in this version: [Stalkers] RevenantsAnger (on): the dead come back for you by their anger.");
                 if (s.SettingsVersion < 367)
                     log?.Invoke("Settings: new in this version: [Ticker] HistoryNotes (on): the history behind 1899's thoughts, in the news box.");
                 if (s.SettingsVersion < 366)
@@ -1883,6 +1886,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("StalkerStrangers = " + B(StalkerStrangers) + "   ; with StalkerBlack off: if nobody near can be turned for a few minutes, a stranger turns up behind you instead");
             b.AppendLine("StalkerRides = " + B(StalkerRides) + "   ; a stalker on horseback stays in the saddle: he follows at a distance, rides in close and back out again round you, pulls up short of you, and rides off when he flees or falls back (if the horse won't go within five seconds, he gets down and does it on foot as before). Hiding and his eerie acts stay on foot");
             b.AppendLine("StalkerHorse = " + StalkerHorse + "   ; percent of stalkers who appear on horseback: he sits the horse watching from where he appeared and gets down the first time he moves (the horse is given back out of view); 0: always on foot");
+            b.AppendLine("RevenantsAnger = " + B(RevenantsAnger) + "   ; someone you killed comes back by their temper: the angrier they were, the likelier they walk again and come at you; the mild mostly stay in the ground");
             b.AppendLine("RevenantsHunt = " + B(RevenantsHunt) + "   ; someone you killed who has come back may try to kill you, by what they hold against you; false: they follow and stare, and never lay a hand on you");
             b.AppendLine("RevenantHuntChance = " + RevenantHuntChance + "   ; percent at each chance once they are within 25 m, more for a grievance from before, for having begged, for having come back before (0 to 100)");
             b.AppendLine("RevenantsMinds = " + B(RevenantsMinds) + "   ; someone you killed who has come back chooses what to do next: the AI model chooses from how they died and what they held against you, if it is on; the rules choose if not; false: they go about it the old way");

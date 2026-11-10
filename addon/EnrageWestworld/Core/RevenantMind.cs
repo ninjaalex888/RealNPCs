@@ -100,7 +100,7 @@ namespace EnrageWestworld.Core
         {
             if (f == null || setting <= 0)
                 return setting;
-            int c = setting + (f.Held != null ? 20 : 0) + (f.Begged ? 15 : 0) + (f.Headshot ? 5 : 0) + 10 * Math.Min(2, f.Returned);
+            int c = setting + (f.Held != null ? 20 : 0) + (f.Begged ? 15 : 0) + (f.Headshot ? 5 : 0) + 10 * Math.Min(2, f.Returned) + Vengeance.AttackShift(f.Anger);   // and their temper (Core/Vengeance.cs; 0 when not known)
             return Math.Max(0, Math.Min(100, c));
         }
 
