@@ -25,7 +25,7 @@ namespace EnrageWestworld.InGame
             public Person P;
             public string Id, Name, DoctorName, Why, Child, Seed, Town, Phase = "run";   // run, answer, turn, escort, home
             public bool Girl, Walked, Test;
-            public int StartedAt, PhaseAt, HomeCount;   // HomeCount: the escorts seen home before yours (did yours reach his door)
+            public int StartedAt, PhaseAt, HomeCount, StepAt;   // HomeCount: the escorts seen home before yours (did yours reach his door)
             public long Day;
         }
 
@@ -131,8 +131,9 @@ namespace EnrageWestworld.InGame
         private void DoorRunStep(int now)
         {
             DoorRun r = _doorRun;
-            if (r == null)
+            if (r == null || now < r.StepAt)
                 return;
+            r.StepAt = now + 250;   // a look a quarter second
             Ped me = Game.Player.Character;
             bool manOk = r.Man != null && r.Man.Exists() && !r.Man.IsDead && !PED.IS_PED_IN_COMBAT(r.Man.Handle, 0) && !_director.Involves(r.Man.Handle) && MayDirectWhyNot(r.Man) == null;
             if (!manOk || MISC.GET_MISSION_FLAG())

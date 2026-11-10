@@ -729,6 +729,9 @@ namespace EnrageWestworld.InGame
                         }
                         return sw;   // WestworldScript.Stories.cs (FOURTEENHOUR reserve R10)
                     }
+                case "alley":
+                    skipped = "the night, the night's roll and the man's nature (real, then bait, by turns)";
+                    return AlleyFire(now, out said);   // WestworldScript.AlleyVoice.cs (FOURTEENHOUR reserve R15)
                 case "nomap":
                     {
                         if (_rider != null)

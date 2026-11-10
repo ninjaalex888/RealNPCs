@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 405;
+        public const int CurrentVersion = 406;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -302,6 +302,7 @@ namespace EnrageWestworld.Core
         public bool Travellers = true;
         public int TravellerChance = 20;
         public bool SecondActs = true;    // [Encounters] the people of the encounters come back: the saved to thank you, the kin of a man you watched die, the men you let get away (FOURTEENHOUR reserve R3; settings version 396)
+        public bool AlleyVoice = true;    // [Encounters] Saint Denis after dark: a voice calls for help from the dark; real, or bait (FOURTEENHOUR reserve R15; settings version 406)
         public bool NoMapRider = true;    // [Encounters] at night, rarely, a rider asks the way to a town on no map, and goes on into the dark (FOURTEENHOUR reserve R11; settings version 404)
         public bool Riders = true;        // [Encounters] on the traveller's turn, a rider: someone of the next town rides along a while, or a deputy asks after the posse's man (FOURTEENHOUR reserve R9; settings version 402)
         public bool WagonWheel = true;    // [Encounters] a wagon ahead of you on the road loses a wheel (roadmap 32; Core/WagonWheel.cs; settings version 245)
@@ -1048,6 +1049,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 406)
+                    log?.Invoke("Settings: new in this version: [Encounters] AlleyVoice (on): a voice from the dark in Saint Denis.");
                 if (s.SettingsVersion < 405)
                     log?.Invoke("Settings: new in this version: [Scenes] StandTheWake (on): a drink to the dead's memory on a wake night.");
                 if (s.SettingsVersion < 404)
@@ -2054,6 +2057,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("WagonWheel = " + B(WagonWheel) + "   ; by day on the roads (06:00-20:00), once a day: a wagon ahead of you, out of view, loses a wheel and stops, the driver down beside it; within 25 m he calls to you. On foot within 3 m of the wagon for three seconds you set the wheel with him (his thanks, his liking for you up, and he drives on); ride past and once you're 40 m gone he calls after you to send word: reach any town within thirty game minutes and it's sent. Nothing is spawned: the wagon is the game's own, handed back");
             b.AppendLine("WagonOthersStop = " + B(WagonOthersStop) + "   ; with WagonWheel on: twenty-five seconds after the driver is down beside his wagon with no help from you, or once you ride on, six wagons in ten get a passer-by who turns aside, offers a hand and sets the wheel with him (he says so if you rode past)");
             b.AppendLine("SecondActs = " + B(SecondActs) + "   ; the people of the encounters come back: someone you saved (at an execution, cut loose, from a beating, warned of a poster, on the road) comes over in their town half a day to three weeks on to thank you for that very thing, with a token of their trade (with [Scenes] FriendCalls); an execution you found and never stepped into: one of the dead man's menfolk comes to say it to your face five to nine days on (with [Scenes] KinGrudges); the men who got away after you saved their man are heard of again, and the region's next outlaws are the same men, who know you; false: as before");
+            b.AppendLine("AlleyVoice = " + B(AlleyVoice) + "   ; in Saint Denis after dark (nine till four), on foot and out of doors, once a night at most: a man you can't see calls for help; go to him and he's real (beaten and robbed: J, help him up or leave him) or bait (two men step out behind you with their revolvers: J, pay five to twenty dollars or refuse, and it's their fight with you); ignore him and the voice stops; false: never");
             b.AppendLine("NoMapRider = " + B(NoMapRider) + "   ; with Riders: on a road at night (nine till four), on the traveller's turn (he walks by day), one time in ten and never within two weeks of the last, a stranger rides up and asks the way to a town nobody has heard of, thanks you whatever you say, and goes on into the dark; a day or two later the nearest town hears of a man found dead on that road, and those near you think of it; false: never");
             b.AppendLine("Riders = " + B(Riders) + "   ; on the road, half the traveller's turns are a rider instead (the road's pace is the same): someone of the nearest town comes up beside you (on a horse when you're in the saddle), rides along a while talking by nature and worry, and turns off (J: ride on together, and he knows you in town; or good day); while a posse is out of that town, a deputy may ride up asking after the man (J: the right way, the wrong way, or nothing, and the posse's end follows your word); false: travellers only");
             b.AppendLine("WagonWheelChance = " + WagonWheelChance + "   ; percent on each encounter roll (0 to 100)");

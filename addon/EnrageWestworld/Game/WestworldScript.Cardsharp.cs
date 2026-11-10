@@ -24,7 +24,7 @@ namespace EnrageWestworld.InGame
             public readonly List<Ped> Escorts = new List<Ped>();   // the table's men walking him
             public string CheatId, CheatName, Town, Seed;
             public Vector3 Edge;
-            public int StartAt, Until, FollowAt;
+            public int StartAt, Until, FollowAt, StepAt;
             public bool Walking;
         }
 
@@ -82,8 +82,9 @@ namespace EnrageWestworld.InGame
         {
             SoreLook(now);
             RunOut r = _runOut;
-            if (r == null || now < r.StartAt)
+            if (r == null || now < r.StartAt || now < r.StepAt)
                 return;
+            r.StepAt = now + 250;   // a look a quarter second: nothing made a frame
             Ped me = Game.Player.Character;
             if (!r.Walking)
             {
