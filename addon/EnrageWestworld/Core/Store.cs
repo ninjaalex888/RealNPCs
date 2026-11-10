@@ -32,6 +32,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<Wedding> Weddings = new List<Wedding>();
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, long> TownLastAbout = new Dictionary<string, long>();   // town -> the game minute he was last about it (TownVisits is when he last came in) (Core/WhileAway.cs; FIVEDAY item 19)
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, int> Mends = new Dictionary<string, int>();   // "id|wrong" -> kindnesses since that wrong of his (Core/Trust.cs; FIVEDAY item 20)
+        [DataMember(EmitDefaultValue = false)] public List<StoryRun> Stories = new List<StoryRun>();   // stories over days (Core/Stories.cs; FOURTEENHOUR reserve R10)
         [DataMember(EmitDefaultValue = false)] public List<TownTale> Tales = new List<TownTale>();   // the town's own tales, grown in the telling (Core/Tales.cs; FOURTEENHOUR item 24)
         [DataMember(EmitDefaultValue = false)] public List<TieHeard> TieHeard = new List<TieHeard>();   // word of his deeds passed along a tie (Core/TieGossip.cs; FIVEDAY item 23)
         [DataMember(EmitDefaultValue = false)] public List<Breakdown> Breakdowns = new List<Breakdown>();   // who broke under the week's load, and how (Core/StressLoad.cs; FIVEDAY item 17)
@@ -337,6 +338,8 @@ namespace EnrageWestworld.Core
                         WorryWorsened[id] = before.At;   // an earlier turn for the worse, which the later one overwrote: back from the log (the review)
                 }
             Pacing.Rewind(Pace, cut);
+            if (Stories != null)
+                n += Stories.RemoveAll(x => x == null || x.At > cut);   // a story asked after the cut was never asked (reserve R10)
             if (Tales != null)
                 n += Tales.RemoveAll(t => t == null || t.At > cut);   // a tale from after the cut never happened (the review of items 22-26)
             if (Deaths != null)
@@ -626,6 +629,8 @@ namespace EnrageWestworld.Core
             if (Breakdowns == null) Breakdowns = new List<Breakdown>();
             if (TieHeard == null) TieHeard = new List<TieHeard>();
             if (Mends == null) Mends = new Dictionary<string, int>();
+            if (Stories == null) Stories = new List<StoryRun>();   // saves from before reserve R10 (the lesson of review 3: no initializer runs on a read)
+            Stories.RemoveAll(x => x == null || (x.Id != null && x.Id.StartsWith("test-")));
             if (Tales == null) Tales = new List<TownTale>();   // saves from before item 24 load it null (no initializer runs): the add-on switched itself off in the first town (the review of items 22-26)
             Tales.RemoveAll(t => t == null || (t.Id != null && t.Id.StartsWith("test-")));   // the Testing row's tale goes on load
             if (Mends.Count > 500) Mends.Clear();   // (kindnesses since a wrong: losing them only slows a mending)

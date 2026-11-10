@@ -592,6 +592,9 @@ namespace EnrageWestworld.Core
             { "pledge|did:done|fresh", new[] { "Signed {who}'s card. God help me, I signed it.", "{who} looked at me like my mother used to. So I signed." } },
             { "pledge|saw|fresh", new[] { "{who} signed the temperance pledge at the saloon door. Give it a week." } },
             // the game's own encounters, seen (FOURTEENHOUR reserve R8): {who} is the thing seen, in our words
+            // a story over days (FOURTEENHOUR reserve R10): the stranger who found his son, or never came back to say
+            { "storyhelp|did:done|fresh", new[] { "That stranger found my boy at the mine. I'd given up asking anyone.", "Asked a stranger a favour and he did it. Doesn't happen often." } },
+            { "storylapse|did:done|fresh", new[] { "Asked that stranger to look for my boy. Never heard a word back.", "Shouldn't have hoped on a stranger. Should've gone myself." } },
             { "encounter|saw|fresh", new[] { "Saw {who} out there. Can't get it out of my head.", "I keep coming back to it: {who}, plain as day." } },
             // the well-off and the working man (FOURTEENHOUR item 18): the gentleman did it
             { "snub|did:doer|fresh", new[] { "Some fellow stopped me in the street. {who}. Wanted something, I suppose.", "Had to put {who} in his place. They forget themselves." } },

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 402;
+        public const int CurrentVersion = 403;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -557,6 +557,7 @@ namespace EnrageWestworld.Core
         public bool LateThanks = true;   // [Scenes] someone Arthur stood a drink, gave money or whose debt he settled comes over hours or days later and thanks him for it; the proud repay a debt (settings version 153; NIGHT3)
         public bool FriendCalls = true;   // [Scenes] a friend in town comes over unasked now and then: a warning, the news, a small gift or a favour of their trade (Core/FriendCalls.cs; Run 3, item 7; settings version 254)
         public bool FriendGifts = true;   // [Scenes] with FriendCalls: gifts and favours hand something over (a few cents, cartridges, a meal, a drink, the doctor's patching); off, friends bring words only
+        public bool Stories = true;          // [World] a story over days: a father whose son is at the Annesburg mine writes to you (FOURTEENHOUR reserve R10; settings version 403)
         public bool GameEncounters = true;   // [World] the game's own encounters near you are seen by the people of the mind and told in the town's talk (FOURTEENHOUR reserve R8; settings version 401)
         public bool BestFist = true;          // [Scenes] three fights won in a town make a man its best fist; men from other towns come to try him at the prize fight (FOURTEENHOUR reserve R7; settings version 400)
         public bool CardsharpRunOut = true;   // [Scenes] a card cheat shown the door is walked out past the last houses by the table's men, and comes back another day, sore (FOURTEENHOUR reserve R6; settings version 399)
@@ -1045,6 +1046,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 403)
+                    log?.Invoke("Settings: new in this version: [World] Stories (on): a story over days, the son at the mine.");
                 if (s.SettingsVersion < 402)
                     log?.Invoke("Settings: new in this version: [Encounters] Riders (on): riders on the road.");
                 if (s.SettingsVersion < 401)
@@ -2209,6 +2212,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("ThanksFiveChance = " + ThanksFiveChance + "   ; ... for five dollars (0-100)");
             b.AppendLine("ThanksMendedChance = " + ThanksMendedChance + "   ; ... for a trouble you mended with money: a debt, the doctor, the dentist, the fare (0-100)");
             b.AppendLine("ThanksLoanDays = " + ThanksLoanDays + "   ; a proud one who took your money for their debt as a loan pays it back after this many game days (0-14)");
+            b.AppendLine("Stories = " + B(Stories) + "   ; a story over days (with Letters): a father in a town you've been to, whose son went up to the Annesburg mine, writes to you (the letter waits at his post office); ride to Annesburg and the son finds you: J, carry his letter home or send him home on the train; either way the father's worry ends well, he thanks you, and the town has it. Ten days and it lapses, and he remembers who never came back; and the mine whistle doesn't wait. One open at a time; false: none");
             b.AppendLine("GameEncounters = " + B(GameEncounters) + "   ; the game's own random encounters near you (a snakebite, a coach robbery, a prison wagon; read by their models' names, never touched): someone of the mind who saw it keeps it in mind and thinks of it, and the nearest town talks of it the next day, with whether you stopped or rode on. A few kinds are left out on purpose (your camp's visitors, the lewd, the game's story people); false: as before");
             b.AppendLine("BestFist = " + B(BestFist) + "   ; three fights won in a town (the street's, the saloon's, the prize fight out back) make a man its best fist: the town's talk says so, and he thinks of it near you once a day; then six times in ten the town's prize fight is his, against a man of a fighting temper from another town, for twice the purse; lose it and the name goes (with [World] EventPrizeFights for the challenges); false: no names");
             b.AppendLine("CardsharpRunOut = " + B(CardsharpRunOut) + "   ; a card cheat shown the door, with men at the table to see to it: six times in ten up to two of them (the man he cheated first) walk him out and down the street out past the last houses, a word at the door and one at the edge, and turn back; bad blood with each, and two days to two weeks on he's back in that town, sore, and thinks of it near you; false: he's shown the door, as before");

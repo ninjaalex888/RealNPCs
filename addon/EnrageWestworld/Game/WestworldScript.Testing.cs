@@ -718,6 +718,17 @@ namespace EnrageWestworld.InGame
                         skipped = "the day and hour, the rarity and the rests (Pacing \"sabbath\")";
                         return SabbathScene(Game.Player.Character, now, true, out sw) ? null : sw;
                     }
+                case "story":
+                    {
+                        skipped = "the father's worry and the day's roll (a regular of this town writes; in Annesburg, one of Valentine's)";
+                        string sw = _engine.StoryTest(_placeTown, _store.LastGameMin);
+                        if (sw == null)
+                        {
+                            _storyCastAt = 0;
+                            said = _placeTown == Stories.SonTown ? "a father's son to find here: he'll come over" : "a father's letter waits at this post office";
+                        }
+                        return sw;   // WestworldScript.Stories.cs (FOURTEENHOUR reserve R10)
+                    }
                 case "rider":
                 case "deputy":
                     {

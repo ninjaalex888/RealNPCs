@@ -1445,6 +1445,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST best fist: " + BestFistStatus());
 			Log.Write("TEST game encounters: " + GameEncountersStatus());
 			Log.Write("TEST riders: " + RidersStatus());
+			Log.Write("TEST stories: " + StoriesStatus());
 			Log.Write("TEST test cast: " + Guarded(TestCastStatus));
 			Log.Write("TEST controller: " + Guarded(PadStatus));
 			Log.Write("TEST sabbath: " + SabbathStatus());
