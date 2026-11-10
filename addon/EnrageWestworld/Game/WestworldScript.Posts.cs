@@ -75,7 +75,9 @@ namespace EnrageWestworld.InGame
             if (post != null && post.FellAt > post.BackAt && _cfg.TownPostsAfterDeath != "successor")
             {
                 // shot down here, and the game has brought them back bandaged
+                List<string> saw = post.SawFall != null ? new List<string>(post.SawFall) : null;
                 string news = _engine.PostBack(post, r, Bridge.Now());
+                KeeperBackNote(h, r, saw);   // they saw the fall: they stare when they see the face (WestworldScript.KeeperBack.cs, THREEHOUR R3)
                 if (news != null)
                     News(post.Town, news, "news");
             }

@@ -1434,6 +1434,7 @@ namespace EnrageWestworld.InGame
             BalladStep(now);        // a murder ballad from the next fire (WestworldScript.MurderBallad.cs; FIVEDAY R20)
             QuiltStep(now);         // the quilting bee overheard by the church (WestworldScript.QuiltingBee.cs; FIVEDAY R8)
             ForeclosureStep(now);   // the sheriff's sale when the bank takes a place (WestworldScript.Foreclosure.cs; FIVEDAY R3)
+            KeeperBackStep(now);    // a keeper shot down, seen back (WestworldScript.KeeperBack.cs, THREEHOUR R3)
             PlacesMournedStep(now);   // where someone died, those close to them stop (WestworldScript.PlacesMourned.cs, THREEHOUR item 5)
             WalkHomeStep(now);      // J after dark: see someone home (WestworldScript.WalkHome.cs, THREEHOUR item 4)
             BarRoundStep(now);      // J at a saloon's bar: the house a round (WestworldScript.BarRound.cs, THREEHOUR item 3)
