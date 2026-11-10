@@ -45,6 +45,7 @@ namespace EnrageWestworld.Core
                 case "horsetrade": return "offers " + o + " a horse";   // the street's own (FOURTEENHOUR item 14)
                 case "toothpull": return "offers to pull " + o + "'s bad tooth";
                 case "wayasked": return "asks " + o + " the way";
+                case "greenhorn": return "has some sport with " + o + ", the greenhorn";   // (FOURTEENHOUR item 16)
                 default:
                     return k.StartsWith("x:", System.StringComparison.Ordinal) ? "goes to see " + o + " about what's between them" : "goes over to " + o;
             }

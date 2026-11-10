@@ -47,6 +47,7 @@ namespace EnrageWestworld.Core
                 case "horsetrade": return StreetMore.HorseDeal(c, seed);   // the horse trade at the hitching post (FOURTEENHOUR item 14)
                 case "toothpull": return StreetMore.ToothPull(c, seed);   // a tooth pulled in the street
                 case "wayasked": return StreetMore.WayAsked(c, seed);     // the way asked
+                case "greenhorn": return Greenhorn.Rib(c, seed);          // the newcomer tested (FOURTEENHOUR item 16)
                 case "pitch": return Pitch(c, seed);
                 case "posse": return c.CrimeRumour != null ? Posse(c, seed) : null;
                 case "mourn": return c.DeadName != null ? Mourn(c, seed) : null;

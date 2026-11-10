@@ -140,7 +140,8 @@ namespace EnrageWestworld.InGame
             if (r == null)
                 return null;
             Person rp = _engine.PersonOfResident(r);
-            return Heart(new Someone { Id = r.Id, Name = ShownName(h, r.Name), Woman = r.Woman, Temper = r.Personality, P = rp, WakeStage = _engine.StageOf(r.Id), WellOff = WellOff(p), Drunk = InHisCups(p, rp), Hurt = HurtLately(r.Id) });
+            return Heart(new Someone { Id = r.Id, Name = ShownName(h, r.Name), Woman = r.Woman, Temper = r.Personality, P = rp, WakeStage = _engine.StageOf(r.Id), WellOff = WellOff(p), Drunk = InHisCups(p, rp), Hurt = HurtLately(r.Id),
+                                       Greenhorn = r.NewAt > 0 && _store.LastGameMin >= r.NewAt && _store.LastGameMin - r.NewAt <= NewFaces.FreshDays * 1440 });   // off the train these two weeks (item 16)
         }
 
         /// Slighted, spoken to hard or beaten in the last four game hours, by their own memories (as the one it was done to),

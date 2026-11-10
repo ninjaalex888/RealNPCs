@@ -48,7 +48,7 @@ namespace EnrageWestworld.InGame
 
         private Scene LadderSceneOf(Scene old, Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, string matter, List<Ped> people, int now, bool force, string over)
         {
-            if (old == null || (!LadderOn && !force) || _ladderFailed || (old.Kind != "argue" && old.Kind != "brawl") || old.Cast != 2 || people == null || people.Count != 2 || _engine == null || _store == null)
+            if (old == null || old.NoLadder || (!LadderOn && !force) || _ladderFailed || (old.Kind != "argue" && old.Kind != "brawl") || old.Cast != 2 || people == null || people.Count != 2 || _engine == null || _store == null)
                 return old;
             try
             {

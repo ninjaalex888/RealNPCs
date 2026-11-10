@@ -33,6 +33,7 @@ namespace EnrageWestworld.Core
         public bool Known;        // known lately for a face in the bar or a hand in a coat
         public bool Bent;         // of the criminal class: a theft to their name this month (Core/Criminals.cs; SIXDAY item 16), set by the game side
         public string Broke;      // a breakdown's habit this week (Core/StressLoad.cs; FIVEDAY item 17): "temper" snaps as if strained twice over
+        public bool Greenhorn;    // off the train in the last two weeks (a resident's NewAt; FOURTEENHOUR item 16), set by the game side
         public string Shamed;     // slighted, had words or beaten in the last four hours and not answered it ("slighted", "had words", "beaten"), else null (NIGHT3: displaced aggression)
     }
 
@@ -371,6 +372,9 @@ namespace EnrageWestworld.Core
             Reason more = StreetMore.For(x, y, gameDay, where.Saloon, where.Night, twoMen);
             if (more != null)
                 all.Add(more);
+            Reason green = Greenhorn.For(x, y, gameDay, where.Saloon, where.Night);   // a regular ribs the greenhorn (FOURTEENHOUR item 16)
+            if (green != null)
+                all.Add(green);
             // someone free and taken with the one beside them makes eyes at them; the answer is the other's own
             Reason court = Courtship(x, y, gameDay, where);
             if (court != null)

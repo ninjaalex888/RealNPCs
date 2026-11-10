@@ -584,6 +584,10 @@ namespace EnrageWestworld.Core
             { "wayshown|did:doer|fresh", new[] { "Showed a stranger the way. {who}, he said his name was.", "Walked {who} to where he was going. Strangers get lost here.", "{who}'s new in town. Seemed decent enough." } },
             { "wayshown|did:done|fresh", new[] { "{who} showed me the way. Kind town, this, some of it.", "Asked {who} the way and got took there. Didn't expect that.", "First friendly face in town: {who}." } },
             { "wayshown|saw|fresh", new[] { "{who} showed a stranger the way. Decent of him.", "Saw {who} with a newcomer. He'll know everybody's business by Sunday." } },
+            // the newcomer tested and taken in (FOURTEENHOUR item 16)
+            { "welcomed|did:doer|fresh", new[] { "Had some sport with {who}, the new man. Gave as good as he got.", "{who}'s got a tongue on him. He'll do.", "Ribbed {who} about his boots. He ribbed me back. Fair." } },
+            { "welcomed|did:done|fresh", new[] { "{who} had a go at my hat. I had a go at his face. With words.", "Fresh off the train and {who} tries me. I think I passed.", "{who} laughed at me, then with me. A start." } },
+            { "welcomed|saw|fresh", new[] { "{who} gave the new man a ribbing. The new man gave it back. Good.", "The greenhorn's quick. {who} found that out." } },
             { "round|did:doer|fresh", new[] { "Bought the house a round. Purse lighter. Heart too.", "{who} drank my health. Felt good to be thanked.", "Whiskey all round, and every face turned my way. Felt tall.", "Barkeep winked at me. First time ever.",
                 "Slapped the coins down for the house. {who} cheered loudest. Never been cheered in my life.",
                 "{who} sang a song in my honour. Off key. Best song I ever heard." } },
