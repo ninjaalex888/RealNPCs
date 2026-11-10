@@ -156,6 +156,30 @@ namespace EnrageWestworld.Core
 
         public const float PullOutHealth = 0.35f;
 
+        // ---- the big brawl's shape (FOURTEENHOUR item 10; [Mind] BrawlShape). A big fight climbs, sprawls, and dies of tiredness or
+        // the law; the shape is what makes it a story. Six or more at it: the barkeep's shout from behind his bar (keepers keep their
+        // posts: words and a look), the timid and the women near slip out of it, and a gun drawn in it scatters the room. From ten
+        // seconds before its least time is up, the beaten-looking quit at each look, so it thins and the last of them finish it.
+
+        public const int BigAt = 6;
+        public const int BurnOutPercent = 35;
+        public const float BurnOutHealth = 0.5f;
+        public const int BurnOutLeadMs = 10000;   // the thinning starts this long before the brawl's least time is up
+
+        /// Whether one watching a big brawl slips out of the room: the timid (the anxious, the meek), and women.
+        public static bool SlipsOut(Traits t, bool woman, string seed)
+        {
+            float c = woman ? 0.55f : 0.10f;
+            if (t != null)
+                c += 0.20f * t.Z[Traits.Anxiety] - 0.12f * t.Z[Traits.Risk] - 0.08f * t.Z[Traits.Anger];
+            return Voice.Chance(seed + "|slipsout", (int)Math.Round(Math.Max(0.02f, Math.Min(0.85f, c)) * 100));
+        }
+
+        private static readonly string[] KeeperShouts = { "Not in here! Take it outside!", "That's my mirror, damn you!", "Who's paying for those chairs?", "Somebody fetch the marshal!",
+                                                          "I'll have every one of you barred!", "Break it up or I'll break it up for you!" };
+        public static string KeeperShout(string seed) { return KeeperShouts[Voice.Hash(seed + "|keeper") % KeeperShouts.Length]; }
+        public static IEnumerable<string> ShapeLines() { return KeeperShouts; }
+
         public static float CascadeStreetBase = 4.0f, CascadeSaloonBase = 6.6f;   // tuned in the simulator (item 7): bigger than before where the law is (Valentine with a lawman in sight, four or more 14% to 28%), the lawless street about as it was, a saloon at night a riot 65% of the time, not 97%   // (static, not const: the simulator tunes them)
 
         /// "Law!" cried as he comes (within 20 m, three or more at it): only the law-abiding (deference over half a step) who'd

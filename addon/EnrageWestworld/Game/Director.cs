@@ -2104,6 +2104,13 @@ namespace EnrageWestworld.InGame
         }
 
         /// Out of the fight without a fate (he drew a gun: the game layer has him now). True while the fight goes on.
+        /// How long the live fight has had its fists flying (0 before the first blow, or with no fight).
+        public int FightOnFor(int now)
+        {
+            Live l = _live;
+            return l != null && l.Fighting && l.FightOn ? now - l.FightOnAt : 0;
+        }
+
         public bool LeaveFight(int h)
         {
             Live l = _live;

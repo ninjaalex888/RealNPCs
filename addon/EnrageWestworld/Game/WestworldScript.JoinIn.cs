@@ -36,6 +36,100 @@ namespace EnrageWestworld.InGame
 
         private int _joinFightSince, _joinLawSaidFor, _joinWhoSaidFor;
 
+        // ---- the big brawl's shape (FOURTEENHOUR item 10; [Mind] BrawlShape) ----
+        private int _shapeFor, _shapeBigAt, _shapeSlipped, _shapeQuit, _shapeScattered, _shapeDrewAt;
+        private bool _shapeKeeperSaid, _shapeScatterDone;
+
+        /// At a look: once a fight is big (six or more), the barkeep's shout (words and a look: he keeps his post) and the timid
+        /// and the women near slip out (three at most); a gun drawn in it (a holdout of BrawlDraw's) scatters the room; and from
+        /// ten seconds before the brawl's least time, the beaten-looking quit at each look, so it thins and the last finish it.
+        private void ShapeLook(List<int> a, List<int> b, List<Ped> looking, Vector3 mid, int now)
+        {
+            if (_shapeFor != _director.FightId)
+            {
+                _shapeFor = _director.FightId;
+                _shapeBigAt = 0;
+                _shapeKeeperSaid = _shapeScatterDone = false;
+                _shapeDrewAt = _brawlDrew;
+            }
+            int fighting = a.Count + b.Count;
+            string seed = "f" + _director.FightId + "|shape";
+            if (fighting >= Brawl.BigAt && _shapeBigAt == 0)
+            {
+                _shapeBigAt = now;
+                Log.Write("BRAWL big: " + fighting + " at it" + (_placeKind == "saloon" ? " in the saloon" : " in the street"));
+                if (_placeKind == "saloon" && !_shapeKeeperSaid)
+                {
+                    _shapeKeeperSaid = true;
+                    Ped keep = Peds.All().FirstOrDefault(p => p != null && p.Exists() && !ENTITY.IS_ENTITY_DEAD(p.Handle) && PostKindOf(p) != null && PostKindOf(p).Role == "the barkeep" &&
+                                                               p.Position.DistanceTo(mid) < 25f && !_director.Involves(p.Handle));
+                    if (keep != null && !Natives.StoryModel(keep))
+                    {
+                        TASK.TASK_LOOK_AT_ENTITY(keep.Handle, a[0], 8000, 0, 51, 0);   // a look, no order: he keeps his post
+                        if (_cfg.ScenesOnTicker && _cfg.Ticker && keep.Position.DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
+                            SpeechCaption("The barkeep", Brawl.KeeperShout(seed), keep.Handle, 2500);
+                        Log.Write("BRAWL big: the barkeep shouts from behind his bar");
+                    }
+                }
+                int slipped = 0;
+                for (int i = looking.Count - 1; i >= 0 && slipped < 3; i--)
+                {
+                    Ped p = looking[i];
+                    if (p.Position.DistanceTo(mid) > 20f)
+                        continue;
+                    MindWho w = MindKnown(p.Handle, now);
+                    Traits t = w != null && w.Src != null ? (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))) : null;
+                    if (!Brawl.SlipsOut(t, !PED.IS_PED_MALE(p.Handle), seed + "|" + p.Handle))
+                        continue;
+                    looking.RemoveAt(i);
+                    TASK.TASK_SMART_FLEE_PED(p.Handle, a[0], 25f, 9000, 0, 1f, 0);   // out of it, at a walk (the brave's back-off, farther)
+                    slipped++;
+                    _shapeSlipped++;
+                }
+                if (slipped > 0)
+                    Log.Write("BRAWL big: " + slipped + " slip out of it");
+            }
+            // a gun drawn in a big brawl: the room scatters (the onlookers near; the fighters are BrawlDraw's own)
+            if (!_shapeScatterDone && fighting >= Brawl.BigAt - 2 && _brawlDrew > _shapeDrewAt)   // a gun drawn in this fight (BrawlDraw counts them)
+            {
+                _shapeScatterDone = true;
+                int n = 0;
+                for (int i = looking.Count - 1; i >= 0 && n < 6; i--)
+                {
+                    Ped p = looking[i];
+                    if (p.Position.DistanceTo(mid) > 25f)
+                        continue;
+                    looking.RemoveAt(i);
+                    TASK.TASK_SMART_FLEE_PED(p.Handle, a[0], 40f, -1, 0, 3f, 0);   // at a run
+                    n++;
+                }
+                _shapeScattered += n;
+                Log.Write("BRAWL big: a gun out in it, and " + n + " near scatter");
+            }
+            // burning out: from ten seconds before the least time, the beaten-looking quit (35% a look), never a side's last man
+            if (_shapeBigAt != 0 && _director.FightOnFor(now) >= _cfg.BrawlLeastSeconds * 1000 - Brawl.BurnOutLeadMs)
+            {
+                foreach (List<int> side in new[] { a, b })
+                {
+                    int left = side.Count;
+                    foreach (int h in side.ToList())
+                    {
+                        if (left <= 1)
+                            break;
+                        if (h == a[0] || (b.Count > 0 && h == b[0]) || !ENTITY.DOES_ENTITY_EXIST(h) || BrawlHealth(h) >= Brawl.BurnOutHealth)
+                            continue;
+                        if (!Voice.Chance(seed + "|quit|" + h + "|" + now / 2500, Brawl.BurnOutPercent) || !_director.LeaveFight(h))
+                            continue;
+                        left--;
+                        TASK.CLEAR_PED_TASKS(h, true, false);
+                        WanderLater(h, now + 2000);
+                        _shapeQuit++;
+                        Log.Detail("BRAWL burning out: " + NameOfFighter(h) + " has had enough and drops out of it");
+                    }
+                }
+            }
+        }
+
         // ---- the stray blow and the friend who pulls him out (FOURTEENHOUR item 8; [Mind] BrawlStrays) ----
         private readonly Dictionary<int, int> _strayNear = new Dictionary<int, int>();   // within arm's length of the fighting since (this fight)
         private readonly HashSet<int> _strayRolled = new HashSet<int>(), _pulledOut = new HashSet<int>();
@@ -363,6 +457,8 @@ namespace EnrageWestworld.InGame
                 _joinWhoSaidFor = _director.FightId;
                 Log.Write("BRAWL who could join: " + witnesses + " near, " + looking.Count + " to weigh" + (passedOver.Count > 0 ? "; passed over: " + string.Join(", ", passedOver.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value)) : ""));
             }
+            if (BrawlsOn && _cfg.BrawlShape)
+                ShapeLook(a, b, looking, mid, now);   // the big brawl's beats (FOURTEENHOUR item 10)
             if (BrawlsOn && _cfg.BrawlStrays)
             {
                 StraysLook(a, b, looking, now);   // the stray blow (FOURTEENHOUR item 8)
