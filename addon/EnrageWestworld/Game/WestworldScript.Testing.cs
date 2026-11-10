@@ -729,6 +729,9 @@ namespace EnrageWestworld.InGame
                         }
                         return sw;   // WestworldScript.Stories.cs (FOURTEENHOUR reserve R10)
                     }
+                case "collection":
+                    skipped = "the death, the hour and the look's wait (as if a townsman had died; nothing kept)";
+                    return CollectionFire(now, out said);   // WestworldScript.WidowCollection.cs (FOURTEENHOUR reserve R20)
                 case "elope":
                     skipped = "the hour, the day's roll (the men 15 s behind for the test)";
                     return ElopeFire(now, out said);   // WestworldScript.Elopers.cs (FOURTEENHOUR reserve R18)

@@ -40,7 +40,7 @@ namespace EnrageWestworld.InGame
             _eventPrompt = kind;
             _eventPromptFor = e;
             _eventPromptUntil = Game.GameTime + ms;
-            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == Wayside.Kind ? ": what you do" : kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == BarRound.Kind ? ": buy the house a round" : kind == WalkHome.Kind ? ": offer to see them home" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : kind == BrawlVerbs.Kind ? ": the fight" : kind == PurseSnatch.Kind ? ": the thief you caught" : kind == Holdup.Kind ? ": your word" : kind == DoctorsDoor.Kind ? ": walk with him" : kind == Riders.Kind ? ": your word" : kind == Stories.Kind ? ": his father" : kind == AlleyVoice.Kind ? ": what you do" : kind == Elopers.Kind ? ": your word" : kind == BrawlAfter.JailKind ? ": his fine" : kind == BrawlVerbs.PayKind ? ": pay the bet you lost" : kind == NeighbourReward.Kind ? ": the reward" : kind == WantedWhich.Kind ? ": the poster" : ": the cell");
+            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == Wayside.Kind ? ": what you do" : kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == BarRound.Kind ? ": buy the house a round" : kind == WalkHome.Kind ? ": offer to see them home" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : kind == BrawlVerbs.Kind ? ": the fight" : kind == PurseSnatch.Kind ? ": the thief you caught" : kind == Holdup.Kind ? ": your word" : kind == DoctorsDoor.Kind ? ": walk with him" : kind == Riders.Kind ? ": your word" : kind == Stories.Kind ? ": his father" : kind == AlleyVoice.Kind ? ": what you do" : kind == Elopers.Kind ? ": your word" : kind == WidowCollection.Kind ? ": give" : kind == BrawlAfter.JailKind ? ": his fine" : kind == BrawlVerbs.PayKind ? ": pay the bet you lost" : kind == NeighbourReward.Kind ? ": the reward" : kind == WantedWhich.Kind ? ": the poster" : ": the cell");
         }
 
         private void PromptClear()
@@ -626,6 +626,7 @@ namespace EnrageWestworld.InGame
                 case BrawlVerbs.PayKind: menu.Rows = BrawlVerbs.PayRows(Person.FirstOf(_eventPromptFor.AName), _eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "The bet you lost:"; break;
                 case PurseSnatch.Kind: menu.Rows = PurseSnatch.Rows(Person.FirstOf(_eventPromptFor.AName), _theftAsk != null && NearLawFor(_theftAsk.Thief, PurseSnatch.LawNearMetres) != null); menu.Title = "The thief:"; break;   // (FOURTEENHOUR item 20)
                 case Holdup.Kind: menu.Rows = Holdup.Rows(Person.FirstOf(_eventPromptFor.AName)); menu.Title = "The holdup:"; break;   // (FOURTEENHOUR reserve R1)
+                case WidowCollection.Kind: menu.Rows = WidowCollection.Rows(MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "For the widow:"; break;   // (reserve R20)
                 case Elopers.Kind: menu.Rows = _eventPromptFor.Extra == "first" ? Elopers.FirstRows() : Elopers.PursuerRows(_eventPromptFor.Extra == "gaveup"); menu.Title = _eventPromptFor.Extra == "first" ? "The young couple:" : "Her father:"; break;   // (reserve R18)
                 case AlleyVoice.Kind: menu.Rows = AlleyVoice.Rows(_eventPromptFor.Extra == "trap", _eventPromptFor.Count); menu.Title = _eventPromptFor.Extra == "trap" ? "In the dark, two guns on you:" : "The man on the stones:"; break;   // (reserve R15)
                 case Stories.Kind: menu.Rows = new List<InteractOption> { new InteractOption { Id = "story:carry", Label = "\"I'll carry a letter home for you.\"" }, new InteractOption { Id = "story:train", Label = "\"Go home to him. Take the next train.\"" } }; menu.Title = Person.FirstOf(_eventPromptFor.AName) + ", his father's son:"; break;   // (reserve R10)
@@ -678,6 +679,11 @@ namespace EnrageWestworld.InGame
             if (m.Mode == BrawlVerbs.Kind || m.Mode == BrawlVerbs.PayKind)
             {
                 BrawlVerbChoose(row.Id);   // WestworldScript.BrawlVerbs.cs (FOURTEENHOUR item 11)
+                return;
+            }
+            if (m.Mode == WidowCollection.Kind)
+            {
+                CollectionChoose(row.Id);   // WestworldScript.WidowCollection.cs (FOURTEENHOUR reserve R20)
                 return;
             }
             if (m.Mode == Elopers.Kind)

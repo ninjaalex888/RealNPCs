@@ -95,6 +95,14 @@ namespace EnrageWestworld.Core
             Log("NOMAP a rider asked the way to " + place + " and rode on into the dark: " + town + " hears of a man found dead on that road in " + (due - now) / 1440 + " days");
         }
 
+        /// A piece of the town's news due at a given game minute (the widow's collection's Sunday pulpit: FOURTEENHOUR reserve R20).
+        public void NewsAt(string text, string town, long dueAt, long now)
+        {
+            if (string.IsNullOrEmpty(text) || town == null)
+                return;
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = text, DueAt = dueAt });
+        }
+
         public bool PosseBackNow(string town, long now)
         {
             int rode;

@@ -1448,6 +1448,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST stories: " + StoriesStatus());
 			Log.Write("TEST alley voice: " + AlleyStatus());
 			Log.Write("TEST elopers: " + ElopersStatus());
+			Log.Write("TEST widow's collection: " + CollectionStatus());
 			Log.Write("TEST test cast: " + Guarded(TestCastStatus));
 			Log.Write("TEST controller: " + Guarded(PadStatus));
 			Log.Write("TEST sabbath: " + SabbathStatus());
