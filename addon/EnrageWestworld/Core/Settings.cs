@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 409;
+        public const int CurrentVersion = 410;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -501,6 +501,7 @@ namespace EnrageWestworld.Core
         public bool Fever = true;   // [World] rarely, a fever goes through a town along its warm ties: the sick keep to home a week, a quarantine is posted at three, and with FeverDeaths one in twelve dies (Core/Fever.cs; FIVEDAY R9, settings version 297)
         public bool FeverDeaths = true;   // [World] with Fever: one in twelve of the sick dies of it, mourned like anyone
         public bool MineWhistle = true;   // [World] rarely, three whistles at the Annesburg mine: one or two of its men killed below, off screen; the town runs to the pithead, the names, the grief, the collection (Core/MineWhistle.cs; FIVEDAY item 28, settings version 280)
+        public bool Vouch = true;             // [Scenes] at the jail door the morning after a brawl, vouch for the man in the cells (FOURTEENHOUR reserve R22; settings version 410)
         public bool HorseWatch = true;        // [Scenes] down off your horse in town, a man down on his luck offers to watch her for a dime (FOURTEENHOUR reserve R21; settings version 409)
         public bool WidowCollection = true;   // [Scenes] after a death in town a woman takes up a collection for the widow; J to give (FOURTEENHOUR reserve R20; settings version 408)
         public bool StandTheWake = true;   // [Scenes] with BarRound and Wakes: on a wake night, J at the bar can stand a drink to the dead's memory (FOURTEENHOUR reserve R19; settings version 405)
@@ -1052,6 +1053,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 410)
+                    log?.Invoke("Settings: new in this version: [Scenes] Vouch (on): vouch for a man in the cells.");
                 if (s.SettingsVersion < 409)
                     log?.Invoke("Settings: new in this version: [Scenes] HorseWatch (on): a man to watch your horse.");
                 if (s.SettingsVersion < 408)
@@ -2327,6 +2330,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("Fever = " + B(Fever) + "   ; rarely (a town in about a hundred and fifty a day, ninety days apart), a fever breaks out in a town and passes along its warm ties, one in seven a tie a day, among its residents: the sick keep to home about a week and think of it; at three sick the board of health posts a quarantine; it's over when nobody's sick, and the box says what it cost");
             b.AppendLine("FeverDeaths = " + B(FeverDeaths) + "   ; with Fever on: one in twelve of the sick dies of it, named and mourned like anyone (the wake, the grave). Off: they all get up again");
             b.AppendLine("MineWhistle = " + B(MineWhistle) + "   ; rarely (a day in twenty-five, never within three weeks of the last), the mine whistle at Annesburg blows three times: one or two of the town's men are killed below, named, never shown, and mourned like anyone. In Annesburg you hear it, people run for the pithead, the names come up, and the hat goes round; away, the word reaches you");
+            b.AppendLine("Vouch = " + B(Vouch) + "   ; at the jail door the morning after a brawl ([Scenes] BrawlAfter), a third row: vouch for the man in the cells. He's out, bound over to keep the peace a week; break it and your $5 goes to the county and that sheriff won't take your word for a month; keep it and he's fonder of you; false: never");
             b.AppendLine("HorseWatch = " + B(HorseWatch) + "   ; down off your horse in a town by day, once a town a day: a man who's down on his luck offers to watch her for a dime (J); hired, he stands by her, shouts off a horse thief who goes for a horse near him, and says so when you're back in the saddle; false: never");
             b.AppendLine("WidowCollection = " + B(WidowCollection) + "   ; in the three days after a death in town, by day, a townswoman comes round with a collection for his widow or family: J, give a dollar, five, or not today; she remembers who gave, the town hears of it, and the Sunday after the preacher thanks a generous stranger; once for each death; false: never");
             b.AppendLine("StandTheWake = " + B(StandTheWake) + "   ; with BarRound and Wakes: on a wake night in town (8 till 2), J at the bar can stand the house a drink to his memory (a round's price, once a day); the barkeep says it for him, and those near you who knew him warmly think better of you; false: the round only");

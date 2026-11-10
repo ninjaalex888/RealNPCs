@@ -24,6 +24,8 @@ namespace EnrageWestworld.InGame
             public Ped Waiter;
             public bool Asked, Paid;
             public int Tries, ReleaseAt;
+            public Person P;      // who he is, for the chance he keeps the peace if you vouch for him (reserve R22)
+            public bool Test;     // the Testing row's "vouch": waited for at any hour
         }
 
         private readonly List<Jailed> _jailed = new List<Jailed>();
@@ -47,6 +49,7 @@ namespace EnrageWestworld.InGame
                 _afterDowns = 0;
                 _afterSaloon = _placeKind == "saloon";
                 _afterStarter = a.Count > 0 ? NameOfFighter(a[0]) : null;   // who began it, for the tale (FOURTEENHOUR item 24)
+                _director.FightStarter(out _afterSetUpon);   // the man he went for: set upon isn't breaking the peace (a vouched man's week; reserve R22)
             }
             foreach (int h in a)
                 _afterSide[h] = 0;
@@ -66,6 +69,7 @@ namespace EnrageWestworld.InGame
             _afterFor = -1;   // once a fight
             int now = Game.GameTime;
             long g = _store.LastGameMin;
+            VouchSeenFight(now);   // a man you vouched for, in it on the side that began it (WestworldScript.Vouch.cs; reserve R22)
             MindWho ww = winner != 0 && ENTITY.DOES_ENTITY_EXIST(winner) ? MindKnown(winner, now) : null;
             if (_afterSaloon && ww != null && ww.Id != null)
                 _brawlWon[ww.Id] = g + 120;   // he stands the house a round, these two hours (the round's reason "won")
@@ -103,10 +107,12 @@ namespace EnrageWestworld.InGame
             if (!BrawlAfterOn || _placeTown == null || _store == null)
                 return;   // (the door needn't be known yet: she waits once it is; the review of items 1-13 found most arrests dropped for it)
             MindWho w = ENTITY.DOES_ENTITY_EXIST(t) ? MindKnown(t, Game.GameTime) : null;
+            if (w != null && w.Id != null)
+                VouchAgain(w.Id, "law");   // a man you vouched for, taken in again inside his week (WestworldScript.Vouch.cs; reserve R22)
             if (w == null || w.Id == null || w.Name == null || _jailed.Any(j => j.Id == w.Id))
                 return;
             bool married = w.P != null && w.P.Family == "married";
-            _jailed.Add(new Jailed { Id = w.Id, Name = w.Name, Town = _placeTown, Day = JailNight(), Waits = married ? "his wife" : "his mother" });
+            _jailed.Add(new Jailed { Id = w.Id, Name = w.Name, Town = _placeTown, Day = JailNight(), Waits = married ? "his wife" : "his mother", P = w.P });
             if (_jailed.Count > 6)
                 _jailed.RemoveAt(0);
             Log.Write("BRAWL after: " + w.Name + " is locked up overnight at " + _placeTown + "; " + (married ? "his wife" : "his mother") + " will be at the door in the morning" +
@@ -146,7 +152,7 @@ namespace EnrageWestworld.InGame
             for (int i = _jailed.Count - 1; i >= 0; i--)
             {
                 Jailed j = _jailed[i];
-                bool over = day > j.Day + 1 || (day == j.Day + 1 && hour >= BrawlAfter.ToHour);
+                bool over = day > j.Day + 1 || (!j.Test && day == j.Day + 1 && hour >= BrawlAfter.ToHour);   // (the Testing row's waits at any hour)
                 if (over)
                 {
                     if (!j.Paid)
@@ -163,7 +169,7 @@ namespace EnrageWestworld.InGame
                 if (j.ReleaseAt > 0 && now >= j.ReleaseAt)
                     JailWaiterGo(j, false);
                 Vector3 door;
-                if (day != j.Day + 1 || hour < BrawlAfter.FromHour || j.Paid || _placeTown != j.Town || !_jailDoor.TryGetValue(j.Town, out door) || me.Position.DistanceTo(door) > BrawlAfter.DoorMetres)
+                if (day != j.Day + 1 || (!j.Test && hour < BrawlAfter.FromHour) || j.Paid || _placeTown != j.Town || !_jailDoor.TryGetValue(j.Town, out door) || me.Position.DistanceTo(door) > BrawlAfter.DoorMetres)
                     continue;
                 if (j.Waiter == null && j.Tries < 30 && !Natives.Looking(door + new Vector3(0f, 0f, 1f), 50f) && Spawner.SafeToSpawn())
                 {
@@ -195,6 +201,11 @@ namespace EnrageWestworld.InGame
         {
             Jailed j = _jailAsking;
             _jailAsking = null;
+            if (j != null && id == Vouch.RowId)
+            {
+                VouchDo(j);   // he's out on your word, bound over a week (WestworldScript.Vouch.cs; FOURTEENHOUR reserve R22)
+                return;
+            }
             if (j == null || id != "jaildoor:pay" || MONEY._MONEY_GET_CASH_BALANCE() < BrawlAfter.FineCents)
                 return;
             Ped me = Game.Player.Character;
