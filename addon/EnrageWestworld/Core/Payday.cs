@@ -23,6 +23,39 @@ namespace EnrageWestworld.Core
             return weekday == 6 && hour >= FromHour && hour < ToHour;
         }
 
+        // ---- payday night (FOURTEENHOUR item 13; [Scenes] PaydayNight): the afternoon's money still in their pockets after eight,
+        // the hands stay in town; the saloon is where they are, in drink and among their own, so the night's fights come easier and
+        // grow faster (the cascade's thresholds fall), and the town knows which night it is. The ranches and the mines paid by the
+        // month or the fortnight, the mills and the shops on Saturday; the saloon keeper and the marshal both knew the night.
+        public static bool NightOn = true;   // [Scenes] PaydayNight, from the settings
+        public const int NightFrom = 20, NightTo = 2;   // Saturday eight o'clock until two on Sunday morning
+        public const float NightThreshold = 0.8f;       // how much nearer each man's threshold to join a saloon's fight comes
+
+        /// Payday night: Saturday from eight, into the small hours of Sunday (weekday 0).
+        public static bool Night(int weekday, int hour)
+        {
+            return NightOn && ((weekday == 6 && hour >= NightFrom) || (weekday == 0 && hour < NightTo));
+        }
+
+        /// How payday night leans a working person's choice: the saloon, the bottle and the cards, a little less than the afternoon.
+        public static float NightLean(int weekday, int hour, bool works, string act)
+        {
+            if (!works || !Night(weekday, hour))
+                return 0f;
+            switch (act)
+            {
+                case "saloon": return 0.10f;
+                case "drink": return 0.08f;
+                case "cards": return 0.06f;
+                default: return 0f;
+            }
+        }
+
+        private static readonly string[] NightNews = { "Saturday night, and the hands are paid: the saloon's loud tonight.", "Pay night. The saloon's full, and the marshal's keeping late hours.",
+                                                       "The week's wages are in town tonight, and so is every hand who drew them." };
+        public static string NightNewsLine(string seed) { return Voice.Pick(seed + "|paynight", NightNews); }
+        public static IEnumerable<string> NightLines() { return NightNews; }
+
         /// How payday leans a choice for a working person (Choosing's act ids). Nothing for those who don't draw a wage.
         public static float Lean(int weekday, int hour, bool works, string act)
         {

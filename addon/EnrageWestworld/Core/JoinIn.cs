@@ -42,6 +42,8 @@ namespace EnrageWestworld.Core
         public static float OpeningBoost;
         /// [World] Bravery's pull on every onlooker (Bravery.JoinPull, set by the game side; 0 here and at 85): with brawls on or off.
         public static float BraveryPull;
+        /// It's payday night (Core/Payday.cs Night; set by the game side every look; FOURTEENHOUR item 13): a saloon's thresholds fall.
+        public static bool PaydayNight;
 
         /// Whether this onlooker joins, and on whose side. sides[0] and sides[1]: who is fighting on each side; warmth(x, y):
         /// the tie between two ids (-3..3, 0 none); witnesses: how many watch; saloon: a saloon's fights draw the drunk and
@@ -140,7 +142,7 @@ namespace EnrageWestworld.Core
                 // for a man of his nature; his own kind fighting (his trade, his town) brings his threshold two nearer
                 if (cascade && tie <= 0f && kin < BrawlSides.KinPull && !sure)
                 {
-                    int th = Brawl.Threshold(t, drunk, saloon, lawNear, seed + "|" + id) - (kin > 0f ? 2 : 0);
+                    int th = Brawl.Threshold(t, drunk, saloon, lawNear, seed + "|" + id, PaydayNight) - (kin > 0f ? 2 : 0);
                     if (fighting < th)
                     {
                         if (best.Side < 0 && best.Why == null)

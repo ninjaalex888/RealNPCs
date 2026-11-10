@@ -289,7 +289,7 @@ namespace EnrageWestworld.Core
             if (c.RoundupPay)
                 s += Roundup.Lean(d.Id);
             if (c.Payday)
-                s += Payday.Lean(c.Weekday, c.Hour, c.Works && !c.SaloonGirl, d.Id);   // (a saloon girl's busiest afternoon: her work isn't stopped; the Part 3 review)   // the week's pay in their pocket (FIVEDAY item 11)
+                s += Payday.Lean(c.Weekday, c.Hour, c.Works && !c.SaloonGirl, d.Id) + Payday.NightLean(c.Weekday, c.Hour, c.Works && !c.SaloonGirl, d.Id);   // (and its night: FOURTEENHOUR item 13) (a saloon girl's busiest afternoon: her work isn't stopped; the Part 3 review)   // the week's pay in their pocket (FIVEDAY item 11)
             if (c.Mood == "glad" && (d.Id == "talk" || d.Id == "stroll" || d.Id == "greet"))
                 s += 0.08f;
             s -= d.Effort * (n != null ? 0.3f + n[NeedState.Rest] : 0.3f);   // effort weighs more on the tired

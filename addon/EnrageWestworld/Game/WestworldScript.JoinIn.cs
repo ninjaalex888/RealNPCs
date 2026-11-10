@@ -382,6 +382,7 @@ namespace EnrageWestworld.InGame
             // the first seconds of a fight draw people in more readily, so two at it can grow before one goes down (Lex,
             // 2026-11-01: someone may go down early, but bystanders more likely to join) ([Mind] BrawlOpeningBoost)
             JoinIn.OpeningBoost = now - _joinFightSince < BrawlOpeningMs && now >= _joinFightSince ? _cfg.BrawlOpeningBoost / 100f : 0f;
+            JoinIn.PaydayNight = _cfg.Payday && Payday.Night(InnerLife.Weekday, CLOCK.GET_CLOCK_HOURS());   // payday night: the saloon's thresholds fall (FOURTEENHOUR item 13)
             if (a.Count + b.Count > _brawlBiggest)
                 _brawlBiggest = a.Count + b.Count;
             if (!_director.FightSides(out a, out b))

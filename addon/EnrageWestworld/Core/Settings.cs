@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 380;
+        public const int CurrentVersion = 381;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -106,6 +106,7 @@ namespace EnrageWestworld.Core
         public bool BrawlLawSight = true;    // [Mind] with MindBrawls: the law holds joiners back by sight and distance (in sight within 12 m as before, farther half as much, out of sight a little), a lawman may let a fair fight run, one alone against six or more sends for help, and "Law!" is cried as he comes (FOURTEENHOUR item 5; settings version 373)
         public bool FightHoldStart = true;   // [Mind] two told to fight keep the order until the first blow (the game's own alarms held off them, the order kept), then the game's fists as before; off: the alarms come back the moment they're told (FOURTEENHOUR item 1; settings version 371)
         public bool HandBackLent = true;     // [Mind] what we set on people not ours to make them fight (fight even unarmed, always fight, the hostile group) is put back once they've been out of any fight 20 s and nothing of ours has them (FOURTEENHOUR item 3; settings version 372)
+        public bool PaydayNight = true;      // [Scenes] with Payday: Saturday night after eight, the paid hands stay in town and in the saloon, its fights come easier and grow faster, and the town says which night it is (FOURTEENHOUR item 13; settings version 381)
         public bool BrawlAfter = true;       // [Scenes] with MindLive: the week after a brawl: the winner of a saloon's fight stands a round; a big one has the town's news with its numbers, the barkeep's broken chairs (J at the bar), the men of opposite sides sore at each other; the law's prisoner is locked up overnight and his wife or mother waits at the jail door at dawn (J pays his fine) (FOURTEENHOUR item 12; settings version 380)
         public bool BrawlVerbs = true;       // [Scenes] with MindBrawls: J in a fight near you: break it up (heeded by their natures and what they think of you), stand with the man losing (the one beating him turns on you), or take a waiting onlooker's bet (FOURTEENHOUR item 11; settings version 379)
         public bool MeetWalkAgain = true;    // [Scenes] a street scene's walker who gets no nearer in 3 s is told again, and the one waiting in a seat or at work gets up to meet them (FOURTEENHOUR item 1; settings version 371)
@@ -1021,6 +1022,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 381)
+                    log?.Invoke("Settings: new in this version: [Scenes] PaydayNight (on): Saturday night the paid hands fill the saloon, and its fights grow faster.");
                 if (s.SettingsVersion < 380)
                     log?.Invoke("Settings: new in this version: [Scenes] BrawlAfter (on): the week after a brawl: the winner's round, the chairs, sore sides, and the jail door at dawn.");
                 if (s.SettingsVersion < 379)
@@ -2085,6 +2088,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("Debts = " + B(Debts) + "   ; people collect what they're owed");
             b.AppendLine();
             b.AppendLine("[Scenes]");
+            b.AppendLine("PaydayNight = " + B(PaydayNight) + "   ; with Payday on: Saturday from eight into the small hours, the paid hands stay in town and lean to the saloon, the bottle and the cards; a saloon's fights grow faster that night (each man's threshold to join comes nearer); the town says which night it is; false: payday ends at eight, as before");
             b.AppendLine("BrawlAfter = " + B(BrawlAfter) + "   ; the week after a brawl: the winner of a saloon's fight stands the house a round; a big one (six or more) is in the town's news with its numbers, leaves the barkeep's chairs broken (J at the bar pays for them) and the men of opposite sides sore at each other; a man the law tied up is locked up overnight, and from seven to noon the next morning his wife or mother waits at the jail door (J pays his $2 fine); false: none of it");
             b.AppendLine("BrawlVerbs = " + B(BrawlVerbs) + "   ; with MindBrawls on: once a fight near you (20 m), J offers to break it up (each heeds by their nature and what they think of you; one who won't may turn on you), to stand with the man losing (the one beating him turns on you; that side thinks the better of you, he the worse), or to take the bet of an onlooker waiting for a taker (a dollar on the other man; a lost bet unpaid is a welsh he holds against you); false: none of it");
             b.AppendLine("MeetWalkAgain = " + B(MeetWalkAgain) + "   ; a street scene's walker who gets no nearer in 3 s is told again, and the one waiting for them in a seat or at their work gets up to meet them, the game's own way; false: the walker is told once, and the scene stops if they never get there");

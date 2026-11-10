@@ -225,6 +225,24 @@ namespace EnrageWestworld.InGame
             Log.Write("BRAWL after: you paid the barkeep " + BrawlVerbs.Money(d) + " for the damage");
         }
 
+        // ---- payday night's word (FOURTEENHOUR item 13): once a town a payday night, as you come into a town with a saloon ----
+        private readonly HashSet<string> _payNightSaid = new HashSet<string>();
+        private int _payNightLookAt;
+
+        private void PaydayNightStep(int now)
+        {
+            if (now < _payNightLookAt || _cfg == null || !_cfg.Payday || !_cfg.PaydayNight || _placeTown == null || _store == null)
+                return;
+            _payNightLookAt = now + 10000;
+            if (!Payday.Night(InnerLife.Weekday, CLOCK.GET_CLOCK_HOURS()) || !_saloonDoor.ContainsKey(_placeTown))
+                return;
+            string key = _placeTown + "|" + (_store.LastGameMin - 240) / 1440;   // (the small hours count with the Saturday they follow)
+            if (!_payNightSaid.Add(key))
+                return;
+            NewsPush(_placeTown, Payday.NightNewsLine(key), "news");
+            Log.Write("PAYDAY night in " + _placeTown + ": the hands are paid and in town; the saloon's fights come easier tonight");
+        }
+
         /// F7: the week after this session's fights.
         private string BrawlAfterStatus()
         {

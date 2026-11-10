@@ -104,9 +104,11 @@ namespace EnrageWestworld.Core
 
         /// How many must be fighting before this onlooker, with no stake in it, would join (1 to 12). Seeded, so the same man
         /// at the same fight has the same threshold.
-        public static int Threshold(Traits t, bool drunk, bool saloon, bool lawNear, string seed)
+        public static int Threshold(Traits t, bool drunk, bool saloon, bool lawNear, string seed, bool paydayNight = false)
         {
             float x = saloon ? CascadeSaloonBase : CascadeStreetBase;
+            if (paydayNight && saloon)
+                x -= Payday.NightThreshold;   // paid, in drink, among their own: payday night's saloon (FOURTEENHOUR item 13)
             if (t != null)
                 x += -1.1f * t.Z[Traits.Anger] - 0.6f * t.Z[Traits.Risk] - 0.4f * t.Z[Traits.Assertiveness] + 0.7f * t.Z[Traits.SelfControl] + 0.5f * t.Z[Traits.Deference] + 0.4f * t.Z[Traits.Anxiety];
             if (drunk)
