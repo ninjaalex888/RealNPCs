@@ -303,7 +303,7 @@ namespace EnrageWestworld.InGame
                     SideNote(w);
                 Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
                 JoinTake take = JoinIn.Weigh(w.Id, t, !PED.IS_PED_MALE(p.Handle), InHisCups(p, w.P), sides, LadderWarmth, witnesses, law, saloon,
-                                             _cfg.WomenInFights, _director.JoinerCount + _joinPending.Count, fight + "|" + w.Id, most, BrawlsOn, sure, lawHold, sideTie);
+                                             _cfg.WomenInFights, _director.JoinerCount + _joinPending.Count, fight + "|" + w.Id, most, BrawlsOn, sure, lawHold, sideTie, BrawlsOn && _cfg.BrawlCascade);
                 if (take.Side >= 0)
                     takes.Add(new KeyValuePair<JoinTake, KeyValuePair<Ped, MindWho>>(take, new KeyValuePair<Ped, MindWho>(p, w)));
                 else if (take.Why != null && take.Score > 0.2f)
@@ -322,7 +322,7 @@ namespace EnrageWestworld.InGame
                 {
                     // weighed again against the sides as this wave has left them, so a wave doesn't all pile onto one man
                     best = JoinIn.Weigh(bw.Id, bw.Traits, !PED.IS_PED_MALE(bestPed.Handle), InHisCups(bestPed, bw.P), sides, LadderWarmth, witnesses, law, saloon,
-                                        _cfg.WomenInFights, joinedNow, fight + "|" + bw.Id, most, BrawlsOn, sure, lawHold, sideTie);
+                                        _cfg.WomenInFights, joinedNow, fight + "|" + bw.Id, most, BrawlsOn, sure, lawHold, sideTie, BrawlsOn && _cfg.BrawlCascade);
                     if (best.Side < 0)
                         continue;
                 }

@@ -93,6 +93,32 @@ namespace EnrageWestworld.Core
         /// One deputy alone against this many or more holds off and sends for help before he gives the word.
         public const int WaitsForHelpAt = 6;
 
+        // ---- the cascade (FOURTEENHOUR item 7; [Mind] BrawlCascade). Granovetter's threshold model (1978): what a crowd does
+        // depends on the spread of its thresholds, not its average mood. Each onlooker with no stake in a fight has a threshold,
+        // how many must be at it before he'd join: low for the hot, the reckless and the drunk, high for the self-possessed, the
+        // law-abiding and the anxious, higher with the law near. Below it he only watches; past it the join's own weighing
+        // (the score, the bar, the roll) decides as before. So a fight with nobody quick to join stays two men, and one with a
+        // hothead or two in the crowd tips: each who joins brings the next man's threshold nearer. Friends, foes and his own kind
+        // aren't held by it: they have their own reasons. Measured in the simulator (item 4): most fights stay small and a few
+        // grow large, where before nearly every lawless fight grew to a brawl of six or more.
+
+        /// How many must be fighting before this onlooker, with no stake in it, would join (1 to 12). Seeded, so the same man
+        /// at the same fight has the same threshold.
+        public static int Threshold(Traits t, bool drunk, bool saloon, bool lawNear, string seed)
+        {
+            float x = saloon ? CascadeSaloonBase : CascadeStreetBase;
+            if (t != null)
+                x += -1.1f * t.Z[Traits.Anger] - 0.6f * t.Z[Traits.Risk] - 0.4f * t.Z[Traits.Assertiveness] + 0.7f * t.Z[Traits.SelfControl] + 0.5f * t.Z[Traits.Deference] + 0.4f * t.Z[Traits.Anxiety];
+            if (drunk)
+                x -= 1.5f;
+            if (lawNear)
+                x += 1.0f;
+            x += ((Voice.Hash(seed + "|threshold") & 0x7fffffff) % 200) / 100f - 1f;   // a man's own day: -1 to +1
+            return Math.Max(1, Math.Min(12, (int)Math.Round(x)));
+        }
+
+        public static float CascadeStreetBase = 4.0f, CascadeSaloonBase = 6.6f;   // tuned in the simulator (item 7): bigger than before where the law is (Valentine with a lawman in sight, four or more 14% to 28%), the lawless street about as it was, a saloon at night a riot 65% of the time, not 97%   // (static, not const: the simulator tunes them)
+
         /// "Law!" cried as he comes (within 20 m, three or more at it): only the law-abiding (deference over half a step) who'd
         /// heed his word slip away before he's there; the rest swing on.
         public static bool SlipsAwayAtTheCry(Traits t, bool drunk, string seed)

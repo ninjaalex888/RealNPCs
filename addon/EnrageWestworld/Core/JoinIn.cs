@@ -49,8 +49,9 @@ namespace EnrageWestworld.Core
         public static JoinTake Weigh(string id, Traits t, bool woman, bool drunk, IList<Fighter>[] sides, Func<string, string, int> warmth,
                                      int witnesses, bool lawNear, bool saloon, bool womenFight, int joined, string seed,
                                      int mostJoiners = MostJoiners, bool brawls = false, bool sure = false, float lawHold = -1f,
-                                     Func<string, string, string, SideTie> sideTie = null)
+                                     Func<string, string, string, SideTie> sideTie = null, bool cascade = false)
         {
+            // cascade: [Mind] BrawlCascade (FOURTEENHOUR item 7): one with no stake waits for his threshold (Brawl.Threshold)
             // sideTie(onlooker, fighter, the one he's fighting): what pulls the onlooker to a fighter by who they are (kin, his own
             // trade, the town's own; Core/BrawlSides.cs, FOURTEENHOUR item 6), else null
             // lawHold: the law's hold worked out by sight and distance (Brawl.LawHoldsSeen; FOURTEENHOUR item 5), else -1 for
@@ -135,6 +136,18 @@ namespace EnrageWestworld.Core
                 // a stranger to both sides must clear the crowd's bar and more; a friend or a foe is moved by their own; one of his
                 // own, halfway between (item 6)
                 float bar = tie > 0f ? 0.25f : kin > 0f ? 0.25f + Appraisal.CrowdBar(witnesses) * 0.5f : Appraisal.CrowdBar(witnesses) + 0.25f;
+                // the cascade (item 7): with no stake of his own in it (no friend or foe, no kin), he waits until enough are at it
+                // for a man of his nature; his own kind fighting (his trade, his town) brings his threshold two nearer
+                if (cascade && tie <= 0f && kin < BrawlSides.KinPull && !sure)
+                {
+                    int th = Brawl.Threshold(t, drunk, saloon, lawNear, seed + "|" + id) - (kin > 0f ? 2 : 0);
+                    if (fighting < th)
+                    {
+                        if (best.Side < 0 && best.Why == null)
+                            best = new JoinTake { Score = score, Bar = bar, Why = "waits for more to be at it (his threshold " + th + ", " + fighting + " fighting)" };
+                        continue;
+                    }
+                }
                 if (score <= bar && !sure)   // sure: the Testing row's waves, no bar and no roll (the sex rules still hold)
                 {
                     if (best.Side < 0 && score > best.Score)

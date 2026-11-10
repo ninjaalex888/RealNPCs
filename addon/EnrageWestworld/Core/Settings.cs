@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 374;
+        public const int CurrentVersion = 375;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -98,6 +98,7 @@ namespace EnrageWestworld.Core
         public bool MindLevels = false;   // the shadow's scan run from the levels scheduler (night 2026-10-28, item 7; settings version 89): a near ring in view, the town around every 10-30 s, the people away one time a game day, a budget of work a frame; off, the scan as it was
         public bool QuarrelLadder = true;  // with MindLive: an argue or a brawl between two people the mind knows is played from the quarrel ladder (Core/Escalation.cs, Scenes.Ladder.cs; night 2026-10-28, item 16; settings version 92): how far it goes and how it ends from their traits and the surroundings; the shot is never played
         public bool QuarrelSlights = true;   // [Mind] with QuarrelLadder: a quarrel "over nothing" says what it is over (a shoulder in passing, a spilled drink, a bad week, the old business between foes); words and the log only, never the ladder's odds (FOURTEENHOUR item 1; settings version 371)
+        public bool BrawlCascade = true;     // [Mind] with MindBrawls: an onlooker with no stake joins only once enough are at it for a man of his nature (low for the hot, the reckless, the drunk), so most fights stay small and a few tip into a brawl (Granovetter's thresholds; FOURTEENHOUR item 7; settings version 375)
         public bool BrawlSides = true;       // [Mind] with MindBrawls: onlookers lean to their own in a fight (kin, a man of their trade, the town's own against an outsider), those sat or leaning get up for a fight of two when they have a stake in it, and the well-off stay out (FOURTEENHOUR item 6; settings version 374)
         public bool BrawlLawSight = true;    // [Mind] with MindBrawls: the law holds joiners back by sight and distance (in sight within 12 m as before, farther half as much, out of sight a little), a lawman may let a fair fight run, one alone against six or more sends for help, and "Law!" is cried as he comes (FOURTEENHOUR item 5; settings version 373)
         public bool FightHoldStart = true;   // [Mind] two told to fight keep the order until the first blow (the game's own alarms held off them, the order kept), then the game's fists as before; off: the alarms come back the moment they're told (FOURTEENHOUR item 1; settings version 371)
@@ -1015,6 +1016,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 375)
+                    log?.Invoke("Settings: new in this version: [Mind] BrawlCascade (on): a crowd joins a fight by thresholds: most fights stay small, a few tip into a brawl.");
                 if (s.SettingsVersion < 374)
                     log?.Invoke("Settings: new in this version: [Mind] BrawlSides (on): onlookers take a fighter's side by who they are: kin, their trade, the town's own.");
                 if (s.SettingsVersion < 373)
@@ -1726,6 +1729,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("HeldStayInMind = " + B(HeldStayInMind) + "   ; someone the ring is walking on an errand stays in mind out to the ring's own reach; false: dropped at the mind's 25 m edge, as before");
             b.AppendLine("QuarrelSlights = " + B(QuarrelSlights) + "   ; with QuarrelLadder on: a quarrel between strangers that was \"over nothing\" says what it's over, by the place (a shoulder in passing, the way blocked, a look held, a word about a man's horse or hat; in a saloon a spilled drink, a seat taken, a laugh), a man at the worst of his trouble snaps because of the week he's had, and foes have it out over their old business; the words and the log only, never how far it goes; false: the two old openings");
             b.AppendLine("HandBackLent = " + B(HandBackLent) + "   ; what RealNPCs sets on people who aren't its own to make them fight (an ally, a brawl's holdout, a caller, a gang's man, one who joins your fight, the waking who lash out, the road's fights: 'fight even unarmed', 'always fight', and the hostile group on callers and thieves) is put back once they've been out of any fight 20 s and nothing of ours has them; false: it stays until the body despawns, as before");
+            b.AppendLine("BrawlCascade = " + B(BrawlCascade) + "   ; with MindBrawls on: an onlooker with no stake in a fight joins only once enough are already at it for a man of his nature (the hot, the reckless and the drunk first, the self-possessed and the law-abiding last; more with the law near), so most fights stay two or three and a few tip into a brawl; friends, foes and their own kind join by their own reasons; false: everyone weighed alike, so nearly every fight with no law near grows to a brawl");
             b.AppendLine("BrawlSides = " + B(BrawlSides) + "   ; with MindBrawls on: an onlooker leans to the fighter who is his own kind (his kin, a man of his trade against another: the farm hands for the farm hand, the working men for the miner; the town's own against an outsider), about half a friend's pull; those sat or leaning get up for a fight of two when they have a stake in it; the well-off stay out and leave it to the law; false: friends, foes and heat alone, as before");
             b.AppendLine("BrawlLawSight = " + B(BrawlLawSight) + "   ; with MindBrawls on: a lawman holds onlookers back from joining a fight by what they can see (in sight within 12 m as before; in sight farther, half as much; out of sight, a little), some lawmen let a fair fight between two run a while and step in when it turns two on one, one deputy alone against six or more holds off and sends for help, and someone cries 'Law!' as he comes, so the law-abiding slip away; false: any lawman within 30 m holds every joiner, as before");
             b.AppendLine("FightHoldStart = " + B(FightHoldStart) + "   ; two people told to fight in a street scene keep the order until the first blow lands (the game's own alarms held off them, as enRAGE does), then the game's fists as before; false: the alarms come back the moment they're told, and a man may run off instead (Valentine, 2026-11-09)");
