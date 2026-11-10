@@ -365,6 +365,8 @@ namespace EnrageWestworld.InGame
                 return true;   // on the way to the doctor's and back (WestworldScript.Patient.cs)
             if (DoorRunning(h))
                 return true;   // running for the doctor at night (WestworldScript.DoctorsDoor.cs; reserve R4)
+            if (WatchWalking(h))
+                return true;   // the man watching your horse (reserve R21)
             if (CollectorWalking(h))
                 return true;   // a woman coming round with the widow's collection (reserve R20)
             if (InElope(h))
