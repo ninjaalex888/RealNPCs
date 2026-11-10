@@ -13,6 +13,7 @@ namespace EnrageWestworld.Core
     {
         public string Id, KinId, Group, Home, Surname;
         public bool Outsider;   // a newcomer, a drifter, a stranger to the town
+        public bool Pious;      // the church-minded (the dry vote's side; item 9)
     }
 
     /// What pulls an onlooker to a fighter: how much, and why (for the log).
@@ -24,7 +25,21 @@ namespace EnrageWestworld.Core
 
     public static class BrawlSides
     {
-        public const float KinPull = 0.22f, TradePull = 0.12f, TownPull = 0.10f, NamePull = 0.10f;
+        public const float KinPull = 0.22f, TradePull = 0.12f, TownPull = 0.10f, NamePull = 0.10f, QuarrelPull = 0.08f;
+
+        /// A fight over one of 1899's quarrels (item 9): an onlooker on the fighter's side of it leans to him, when the one he's
+        /// fighting is on the other; a little (QuarrelPull), and only with the topic's words.
+        public static SideTie QuarrelTie(string over, SidePerson on, SidePerson fighter, SidePerson other)
+        {
+            if (over == null || !over.StartsWith("politics:") || on == null || fighter == null)
+                return null;
+            string key = over.Substring(9);
+            int mine = QuarrelPolitics.Stance(key, on.Group, on.Pious), his = QuarrelPolitics.Stance(key, fighter.Group, fighter.Pious);
+            int theirs = other != null ? QuarrelPolitics.Stance(key, other.Group, other.Pious) : 0;
+            if (mine == 0 || mine != his || theirs == his)
+                return null;
+            return new SideTie { Pull = QuarrelPull, Why = "on his side of " + QuarrelPolitics.Words(key) };
+        }
 
         /// The trades that stand together in a fight: the rest (plain, town, gentry, old, girl, drummer, law) don't make a side.
         public static bool SideGroup(string g)

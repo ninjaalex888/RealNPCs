@@ -40,6 +40,7 @@ namespace EnrageWestworld.Core
         public bool NoteAtCue;   // its tie and memories wait for the scene's own cue (a cb: act), not its start
         public int Doer = -1;    // which of the cast did the one-sided thing when the scene's own shape says (the creditor who called a debt in, the one who brushed the other off); -1: the tie's rule (Ties.Trouble: A) or nobody (item 17)
         public List<Escalation.Step> Ladder;   // the quarrel ladder's run this scene was built from (Scenes.Ladder.cs; behind [Mind] MindLive); null for the fixed scenes
+        public string Over;                    // what it was over in words (Scenes.OverFor: a slight, a bad week, the old business, 1899's quarrels; FOURTEENHOUR items 1, 9), else null
         public string LadderNote;              // what the ladder said that the scene doesn't play (the shot), for the log
         public int Amount;                     // dollars at stake, where the scene has a sum (the debt called in): what the player can cover (Core/Fondness.cs)
         public readonly List<Beat> Beats = new List<Beat>();

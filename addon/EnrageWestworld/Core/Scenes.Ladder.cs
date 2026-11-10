@@ -96,6 +96,10 @@ namespace EnrageWestworld.Core
                 s.LadderNote = "the ladder said a shot (" + Side(last.By, c.Names[0] ?? a, c.Names[1] ?? b, c) + "); not played, the standoff breaks off (the mind damages nobody yet)";
             // the words: what it's over (q.Over first, when the game side named it: a slight, a bad week, the old business)
             string[] open = Opening(q.Matter, q.Over, seed, a, b);
+            s.Over = q.Over;
+            string said = OverSummary(q.Over);
+            if (said != null && s.Summary != null && s.LadderNote == null)
+                s.Summary += " " + said;   // the town retells it by what it was over (item 9)
             s.Add(0, open[0], open[3], "face").Add(1, open[1], "no").Add(0, open[2], "angry");
             // the rungs already climbed before the ladder was asked (a brawl reason starts at the blows): A, who opened,
             // did them
@@ -174,10 +178,18 @@ namespace EnrageWestworld.Core
         /// What a quarrel is over in words, once its matter is known (null: the matter's own words say it). `over`: the reason's
         /// own (the snap's worry), kept first. Only where the matter is still "nothing" (after the pair's debt or feud, which win),
         /// or "honour" between strangers (they have no talk about each other to quarrel over: a word taken wrong).
-        public static string OverFor(string matter, string over, bool saloon, int warmth, string tieKind, bool strangers, string seed)
+        public static string OverFor(string matter, string over, bool saloon, int warmth, string tieKind, bool strangers, string seed,
+                                     string groupA = null, bool piousA = false, string groupB = null, bool piousB = false, bool drunk = false, int year = 1899)
         {
             if (over != null && (matter == null || matter == "nothing"))
                 return over;
+            // two in drink on opposite sides of one of 1899's quarrels (FOURTEENHOUR item 9): where it would be a look or a word
+            if (drunk && (matter == null || matter == "nothing" || matter == "honour" || (matter == "drink" && saloon)) && warmth >= 0)   // (a saloon's drink is the setting, not a grievance)
+            {
+                string pol = QuarrelPolitics.OverFor(groupA, piousA, groupB, piousB, year, seed);
+                if (pol != null)
+                    return pol;
+            }
             if (matter == "nothing" || matter == null)
                 return warmth < 0 ? "old:" + (string.IsNullOrEmpty(tieKind) ? "argue" : tieKind) : SlightOf(saloon, seed);
             if (matter == "honour" && strangers)
@@ -196,6 +208,7 @@ namespace EnrageWestworld.Core
             switch (head)
             {
                 case "snap": return "a bad week of their own (" + what + ")";
+                case "politics": return QuarrelPolitics.Words(what);
                 case "old": return "the old business between them (" + what + ")";
                 case "slight":
                     switch (what)
@@ -213,6 +226,24 @@ namespace EnrageWestworld.Core
                     break;
             }
             return matter ?? "nothing";
+        }
+
+        /// What it was over, for the scene's summary (the bar's words and the town's talk after: "two men came to blows over a
+        /// spilled drink"); null when there's nothing finer than the matter.
+        public static string OverSummary(string over)
+        {
+            if (string.IsNullOrEmpty(over))
+                return null;
+            int c = over.IndexOf(':');
+            string head = c > 0 ? over.Substring(0, c) : over, what = c > 0 ? over.Substring(c + 1) : "";
+            switch (head)
+            {
+                case "politics": return QuarrelPolitics.Summary(what);
+                case "snap": return "over one man's bad week";
+                case "old": return "over old business";
+                case "slight": return "over " + OverWords(null, over);
+            }
+            return null;
         }
 
         /// The opening exchange: A opens, B answers, A presses; the fourth is A's opening voice. `over` (OverFor) first.
@@ -243,6 +274,7 @@ namespace EnrageWestworld.Core
                 case "slight": set = SlightLines(what, b); break;
                 case "snap": set = SnapLines(what); break;
                 case "old": set = OldLines(what, b); break;
+                case "politics": set = QuarrelPolitics.Openers(what); break;
             }
             if (set == null || set.Length == 0)
                 return null;
@@ -526,6 +558,8 @@ namespace EnrageWestworld.Core
                 yield return "snap:" + w;
             foreach (string k in new[] { "rough", "pickpocket", "lift", "brawl", "blows", "rematch", "standoff", "brushoff", "avoid", "snub", "argue" })
                 yield return "old:" + k;
+            foreach (string k in QuarrelPolitics.Keys())
+                yield return "politics:" + k;
         }
     }
 }

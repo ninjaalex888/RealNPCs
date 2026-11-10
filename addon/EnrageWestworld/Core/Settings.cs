@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 376;
+        public const int CurrentVersion = 377;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -97,6 +97,7 @@ namespace EnrageWestworld.Core
         public bool MindLive = true;      // what the mind decides reaches the screen (Lex, 2026-10-30: on for everyone from 0.7.2; off until settings version 126)
         public bool MindLevels = false;   // the shadow's scan run from the levels scheduler (night 2026-10-28, item 7; settings version 89): a near ring in view, the town around every 10-30 s, the people away one time a game day, a budget of work a frame; off, the scan as it was
         public bool QuarrelLadder = true;  // with MindLive: an argue or a brawl between two people the mind knows is played from the quarrel ladder (Core/Escalation.cs, Scenes.Ladder.cs; night 2026-10-28, item 16; settings version 92): how far it goes and how it ends from their traits and the surroundings; the shot is never played
+        public bool QuarrelPolitics = true;  // [Mind] with QuarrelSlights: two in drink on opposite sides of 1899's quarrels (free silver, the trusts, the Philippines, the dry vote) may come to blows over it, onlookers on each side lean to their man, and the town retells it by what it was over (FOURTEENHOUR item 9; settings version 377)
         public bool QuarrelSlights = true;   // [Mind] with QuarrelLadder: a quarrel "over nothing" says what it is over (a shoulder in passing, a spilled drink, a bad week, the old business between foes); words and the log only, never the ladder's odds (FOURTEENHOUR item 1; settings version 371)
         public bool BrawlStrays = true;      // [Mind] with MindBrawls: someone at arm's length of the fighting may take a stray blow (the hot swing back and are in it, the timid back off, a woman cries out and leaves), and a friend of a man losing badly may pull him out of it (FOURTEENHOUR item 8; settings version 376)
         public bool BrawlCascade = true;     // [Mind] with MindBrawls: an onlooker with no stake joins only once enough are at it for a man of his nature (low for the hot, the reckless, the drunk), so most fights stay small and a few tip into a brawl (Granovetter's thresholds; FOURTEENHOUR item 7; settings version 375)
@@ -1017,6 +1018,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 377)
+                    log?.Invoke("Settings: new in this version: [Mind] QuarrelPolitics (on): men in drink come to blows over silver, the trusts, the Philippines and the dry vote.");
                 if (s.SettingsVersion < 376)
                     log?.Invoke("Settings: new in this version: [Mind] BrawlStrays (on): a stray blow pulls a bystander in; a friend pulls a beaten man out.");
                 if (s.SettingsVersion < 375)
@@ -1730,6 +1733,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("OnlookerPicks = " + B(OnlookerPicks) + "   ; with the model's picks on: at a fight or a quarrel, what the strongest onlooker does (watch, walk off, shake their head, square up) is the model's pick, with a thought; late or unreadable, the rules' as before");
             b.AppendLine("PlacesRemember = " + B(PlacesRemember) + "   ; memory that behaves like memory: someone who knew one you killed thinks of it near the spot (once each; a friend's ground for good, an acquaintance's for a month), people who have seen you on your horse know the horse before the face as you ride up (once a day each), and a place you keep at the same hour on three different days is a habit the town notices (once each); false: none of the three");
             b.AppendLine("HeldStayInMind = " + B(HeldStayInMind) + "   ; someone the ring is walking on an errand stays in mind out to the ring's own reach; false: dropped at the mind's 25 m edge, as before");
+            b.AppendLine("QuarrelPolitics = " + B(QuarrelPolitics) + "   ; with QuarrelSlights on: two men in drink who hold opposite sides of one of 1899's quarrels (free silver against gold, the trusts, the Philippines, the dry vote, by their trade or their piety) may come to blows over it instead of a look or a word; onlookers on each side lean to their man, and the town retells it by what it was over; false: never");
             b.AppendLine("QuarrelSlights = " + B(QuarrelSlights) + "   ; with QuarrelLadder on: a quarrel between strangers that was \"over nothing\" says what it's over, by the place (a shoulder in passing, the way blocked, a look held, a word about a man's horse or hat; in a saloon a spilled drink, a seat taken, a laugh), a man at the worst of his trouble snaps because of the week he's had, and foes have it out over their old business; the words and the log only, never how far it goes; false: the two old openings");
             b.AppendLine("HandBackLent = " + B(HandBackLent) + "   ; what RealNPCs sets on people who aren't its own to make them fight (an ally, a brawl's holdout, a caller, a gang's man, one who joins your fight, the waking who lash out, the road's fights: 'fight even unarmed', 'always fight', and the hostile group on callers and thieves) is put back once they've been out of any fight 20 s and nothing of ours has them; false: it stays until the body despawns, as before");
             b.AppendLine("BrawlStrays = " + B(BrawlStrays) + "   ; with MindBrawls on: someone standing at arm's length of the fighting may take a stray blow (the hot swing back and are in it against the man who hit them, the timid back off, a woman cries out and leaves), and a friend of a man losing badly may pull him out of it, the two leaving together (the one beating him lets them go, or a hothead follows); false: neither");

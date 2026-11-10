@@ -221,7 +221,8 @@ namespace EnrageWestworld.InGame
             {
                 Id = w.Id, KinId = p != null ? p.KinId : null, Group = TradeGroupOf(w), Home = p != null ? p.Home : null,
                 Surname = w.Name != null ? Residents.SurnameOf(w.Name) : null,
-                Outsider = p == null || p.Home == null || (_placeTown != null && p.Home != _placeTown)
+                Outsider = p == null || p.Home == null || (_placeTown != null && p.Home != _placeTown),
+                Pious = w.Src != null && (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))).Z[Traits.Piety] > 1f
             };
             _brawlSides[w.Id] = s;
             return s;
@@ -239,7 +240,10 @@ namespace EnrageWestworld.InGame
                 return null;
             if (other != null)
                 _brawlSides.TryGetValue(other, out x);
-            return BrawlSides.Tie(o, f, x, _placeTown);
+            SideTie own = BrawlSides.Tie(o, f, x, _placeTown);
+            Scene sc = _cfg.QuarrelPolitics ? _director.CurrentScene : null;
+            SideTie quarrel = sc != null ? BrawlSides.QuarrelTie(sc.Over, o, f, x) : null;   // a fight over silver: his side of it (item 9)
+            return own == null ? quarrel : quarrel == null || own.Pull >= quarrel.Pull ? own : quarrel;
         }
         private const int BrawlOpeningMs = 10000;
 
