@@ -28,6 +28,9 @@ namespace EnrageWestworld.InGame
             public int NotBefore;                // a follow-up (the hurry after a freeze) waits till then
             public uint Model;
             public string Id, Name, Act, Why, Role;   // Role: the appraisal's (onlooker, friend)
+            public string Kind, Place, AskKey;   // the happening's kind and place; the model's ask, while it's out (THREEHOUR R1)
+            public List<string> Menu;
+            public LanguageRequest Request;
             public bool Woman;
             public Feeling Felt;
             public Vector3 At;                   // where it happened (run from there when there's nobody to run from)
@@ -81,7 +84,7 @@ namespace EnrageWestworld.InGame
                 if (from == 0)
                     from = MindHandleById(ev.TargetId);
                 _onlookPending.Add(new OnlookerAct { Handle = h, Model = ENTITY.GET_ENTITY_MODEL(h), From = from, QueuedAt = _now, Id = id, Name = w.Name, Woman = w.P != null && w.P.Woman, Act = act, Felt = f,
-                                                     Role = ae.Role, At = new Vector3(ev.X, ev.Y, ev.Z),
+                                                     Role = ae.Role, At = new Vector3(ev.X, ev.Y, ev.Z), Kind = ev.Kind, Place = ev.Place,
                                                      Why = ev.Kind + (ev.DoerName != null ? " (" + (ev.DoerId == "player" ? "you" : ev.DoerName) + (ev.TargetName != null ? " and " + ev.TargetName : "") + ")" : "") });
             }
             catch (Exception ex)
@@ -118,6 +121,8 @@ namespace EnrageWestworld.InGame
                         _onlookPending[i].Act = _onlookActs[i];
                         _onlookQueue.Add(_onlookPending[i]);
                     }
+                if (picked.Count > 0)
+                    OnlookAskModel(_onlookPending[picked[0]]);   // the strongest: the model's word, in the wait they have anyway (THREEHOUR R1)
             }
             catch (Exception ex)
             {
@@ -196,6 +201,50 @@ namespace EnrageWestworld.InGame
             Log.Write("ONLOOK " + a.Name + " takes " + (partnerName ?? "their own") + " away from it: " + line);
         }
 
+        private int _onlookByModel, _onlookByRules;
+
+        /// The strongest onlooker of a fight or a quarrel: their act put to the model (Core/OnlookAsk.cs). Nothing if the model's off.
+        private void OnlookAskModel(OnlookerAct a)
+        {
+            if (a == null || !_cfg.OnlookerPicks || !PicksOn || !OnlookAsk.AskedFor(a.Kind))
+                return;
+            a.Menu = OnlookAsk.Menu(a.Act, a.Place == "saloon");
+            if (a.Menu.Count < 2)
+                return;
+            LanguageRequest r = OnlookAsk.Request(a.Name, a.Woman, null, _placeTown, a.Place == "saloon" ? "a saloon" : "the street", CLOCK.GET_CLOCK_HOURS(), Voice.NowYear, null, a.Kind, a.Menu);
+            string key = "onlook|" + a.Id + "|" + a.QueuedAt;
+            if (_engine.LanguageAnswers.AskPick(new LanguageAsk { Key = key, Name = a.Name, PersonId = a.Id, Request = r, AskedAtMs = Environment.TickCount }))
+            {
+                a.AskKey = key;
+                a.Request = r;
+            }
+        }
+
+        /// The model's answer for this onlooker, taken: true when it's settled (the model's act, or the rules' if late), false to wait a moment more.
+        private bool OnlookTakeModel(OnlookerAct a, int now)
+        {
+            string answer;
+            long ms;
+            bool came = _engine.LanguageAnswers.TakePick(a.AskKey, out answer, out ms);
+            if (!came && now >= a.QueuedAt && now - a.QueuedAt < OnlookDelayMs + OnlookAsk.WaitMs)
+                return false;
+            a.AskKey = null;
+            string thought = null;
+            int idx = came ? Language.ParseThinkPick(answer, a.Menu.Count, out thought) : -1;
+            string was = a.Act;
+            if (idx >= 0)
+            {
+                a.Act = a.Menu[idx];
+                _onlookByModel++;
+                if (!string.IsNullOrEmpty(thought) && a.Request != null && Language.Check(a.Request, thought) == null)
+                    _ticker.Push(Person.FirstOf(a.Name ?? "Someone") + ", thinking", thought, "near", a.Handle);
+            }
+            else
+                _onlookByRules++;
+            Log.Write("ONLOOK " + a.Name + ": " + OnlookAsk.Words(a.Act) + (idx >= 0 ? " (the model" + (a.Act != was ? ", over the rules' " + was : "") + ", " + ms + " ms)" : " (the rules: " + (came ? "unreadable" : "late") + ")"));
+            return true;
+        }
+
         private void OnlookPlay(int now)
         {
             OnlookerAct a = _onlookQueue[0];
@@ -208,6 +257,8 @@ namespace EnrageWestworld.InGame
                 return;   // a follow-up's moment hasn't come (the hurry after the freeze)
             if (now >= a.QueuedAt && now - a.QueuedAt < OnlookDelayMs)
                 return;   // the trouble shows first: it waits, first in line
+            if (a.AskKey != null && !OnlookTakeModel(a, now))
+                return;   // the model's answer, a moment more (THREEHOUR R1)
             _onlookQueue.RemoveAt(0);
             if (now - a.QueuedAt > OnlookStaleMs || now < a.QueuedAt)
             {
