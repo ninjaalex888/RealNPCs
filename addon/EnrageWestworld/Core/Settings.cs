@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 366;
+        public const int CurrentVersion = 367;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -71,6 +71,7 @@ namespace EnrageWestworld.Core
         public bool ThoughtMarker = true;
         public bool ThoughtsOverHeads = true;
         public float ThoughtsOverHeadScale = 0.24f;
+        public bool HistoryNotes = true;   // [Ticker] when someone near thinks of 1899's (or 1907's) real news, the paper's own sentence of what happened in the news box; once a story, every 90 s at most (Lex, 2026-11-09: a historical education toggle; settings version 367)
         public bool ThoughtsFollowOn = true;      // [Ticker] someone's next thoughts pick up from what just happened to them, and with the AI model on from their last thought (Core/ThoughtThreads.cs; FIVEDAY2 item 27; settings version 330)
         public bool RoadThoughts = true;          // [Ticker] thoughts from those you pass on the road, by how they're travelling and what they make of you, and by their part at a scene (Core/RoadThoughts.cs; FIVEDAY2 item 26; settings version 329)
         public float RoadThoughtsMetres = 35f;    // ... riders and drivers this far off, out of town
@@ -1005,6 +1006,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 367)
+                    log?.Invoke("Settings: new in this version: [Ticker] HistoryNotes (on): the history behind 1899's thoughts, in the news box.");
                 if (s.SettingsVersion < 366)
                     log?.Invoke("Settings: new in this version: [World] NewFaces (on): settlers, a schoolteacher, a preacher, a mail-order bride off the train.");
                 if (s.SettingsVersion < 365)
@@ -1809,6 +1812,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("ThoughtMarker = " + B(ThoughtMarker) + "   ; a small gold mark over the person whose thought is on the ticker");
             b.AppendLine("ThoughtsOverHeads = " + B(ThoughtsOverHeads) + "   ; the thoughts of people near you show above their head in small type, not on the bar (the news and the rest stay on the bar; a thought whose thinker is out of view is passed over, never put on the bar)");
             b.AppendLine("ThoughtsOverHeadScale = " + F(ThoughtsOverHeadScale) + "   ; text size of thoughts above heads (TickerScale is the bar's)");
+            b.AppendLine("HistoryNotes = " + B(HistoryNotes) + "   ; the history behind the thought: when someone near you thinks of the real news of the day, the news box says what happened, as the papers had it (once a story, one every 90 seconds at most); false: the thought alone");
             b.AppendLine("ThoughtsFollowOn = " + B(ThoughtsFollowOn) + "   ; for a few minutes after a fight, a run for it or a gun in their face, someone's next thoughts pick up from it; with the AI model on, some carry on from the last thing they thought");
             b.AppendLine("RoadThoughts = " + B(RoadThoughts) + "   ; out of town, the riders, drivers and walkers you pass think something about the road and about you, and people at a scene think by their part in it");
             b.AppendLine("RoadThoughtsMetres = " + F(RoadThoughtsMetres) + "   ; riders and drivers this far off, out of town (at least TickerNearbyMetres)");

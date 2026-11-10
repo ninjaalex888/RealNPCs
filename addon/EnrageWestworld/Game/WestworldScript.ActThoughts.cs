@@ -41,10 +41,29 @@ namespace EnrageWestworld.InGame
                 if (_theirThoughtText.Count > 300)
                     _theirThoughtText.Clear();
                 _theirThoughtText[h] = text;
+                if (_cfg != null && _cfg.HistoryNotes)
+                    HistoryNoteFor(text, now);   // a thought of 1899's news: the paper's own sentence beside it (Core/HistoryNotes.cs)
             }
             if (_theirThoughtAt.Count > 300)
                 PruneTimes(_theirThoughtAt, now, ActThoughts.TheirsGapMs);
             _theirThoughtAt[h] = now;
+        }
+
+        private int _historyNoteAt = -100000, _historyNotes;
+        private readonly HashSet<string> _historyNoted = new HashSet<string>();   // the stories noted this session
+
+        /// The almanac story behind a thought just shown, in the news box: once a story a session, one every 90 s at most.
+        private void HistoryNoteFor(string text, int now)
+        {
+            if (now - _historyNoteAt < HistoryNotes.GapMs && now >= _historyNoteAt)
+                return;
+            AlmanacEvent e = HistoryNotes.StoryOf(text);
+            if (e == null || !_historyNoted.Add(e.Key))
+                return;
+            _historyNoteAt = now;
+            _historyNotes++;
+            News(HistoryNotes.Title(e), e.Body, "news");
+            Log.Write("HISTORY note: " + e.Key + " (" + e.Year + ")");
         }
 
         private int TheirThoughtAt(int h)
