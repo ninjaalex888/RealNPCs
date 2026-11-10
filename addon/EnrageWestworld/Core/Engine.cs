@@ -200,6 +200,10 @@ namespace EnrageWestworld.Core
 				{
 					WriteDiary(p, Store.Get(p), m, now);
 				}
+				else if (a.Kind == "dream" && Cfg.Diaries && Cfg.DiaryDreams)
+				{
+					WriteDream(p, Store.Get(p), m, now);   // a night or two after it was written down (Core/Dreams.cs)
+				}
 				else if (a.Kind == "word" && Cfg.WordOfMouth)
 				{
 					Spread(p, m, now);
@@ -247,6 +251,8 @@ namespace EnrageWestworld.Core
 				}
 				DiaryChanged.Add(p.Id);
 				st.Thought.Add(m.Key);
+				if (Cfg.DiaryDreams && Dreams.Dreamt(m) && Voice.Chance(p.Id + "|" + m.Key + "|dream", Dreams.Chance))
+					Later(LaterAct.Of("dream", p.Id, m, Dreams.DueAt(now, p.Id + m.Key)));   // it comes back in the night (Core/Dreams.cs)
 				PushAbout(p, new Toast
 				{
 					Kind = "diary",
@@ -256,6 +262,19 @@ namespace EnrageWestworld.Core
 					Weight = m.Intensity
 				});
 			}
+		}
+
+		/// A dream of a hard thing they wrote down a night or two ago, in the same diary (Core/Dreams.cs).
+		private void WriteDream(Person p, PersonState st, MemoryItem m, long now)
+		{
+			string text = Dreams.Entry(m, Talk.RefFor(p, st, Player), DateText(now), p.Id + m.Key);
+			if (text == null)
+				return;
+			st.Diary.Add(new DiaryEntry { At = now, Date = DateText(now), Text = text });
+			if (st.Diary.Count > 60)
+				st.Diary.RemoveAt(0);
+			DiaryChanged.Add(p.Id);
+			Log("DREAM " + p.Name + ": " + text);
 		}
 
 		private void Spread(Person p, MemoryItem m, long now)
