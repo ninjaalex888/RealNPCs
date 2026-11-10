@@ -325,7 +325,20 @@ namespace EnrageWestworld.Core
               "With the Bell patents run out, new companies are stringing telephone wire into the small towns and along the farm roads, and a girl at the exchange puts the calls through.",
               "Telephone wire's going up along the farm roads back East. Next they'll be ringing the cows home.",
               "Saint Denis has telephones in the big houses. A man can be rude to his neighbour without leaving his chair.",
-              "Talked into a telephone once in Saint Denis. A girl at the exchange put me through. Felt a fool, shouting.")
+              "Talked into a telephone once in Saint Denis. A girl at the exchange put me through. Felt a fool, shouting."),
+            // ---- added 2026-11-09 (Lex: "inner thoughts related to 1899 America") --------------------------------------
+            E("homestead", 1899, 0, 0, "west", 1, "west", "STILL LAND FOR THE TAKING, SAYS THE LAND OFFICE",
+              "Under the Homestead Act a settler may still file on 160 acres of public land and own it outright after five years of living on it and working it.",
+              "A hundred and sixty acres, the homestead law says. Five years on it and it's yours, if it don't kill you.",
+              "Proved up my homestead claim last spring. Five winters. The land office clerk didn't even look up."),
+            E("railroadtime", 1899, 0, 0, null, 1, "life", "THE RAILROADS KEEP THE NATION'S TIME",
+              "Since the railroads set their clocks to four standard time zones in 1883, most towns run on the railroad's time and not the sun's.",
+              "Station clock says noon. Sun says otherwise. We live on railroad time now, ever since '83.",
+              "Railroad time. Some fellow in an office decided when noon is, and the whole country does as it's told."),
+            E("pullman94", 1899, 0, 0, null, 1, "money", "THE PULLMAN STRIKE, FIVE YEARS ON",
+              "In 1894 the Pullman workers' strike tied up the railroads of the West until federal troops broke it, and Debs of the railway union went to jail.",
+              "Five years since the Pullman strike. Troops on the tracks, Debs in a cell, and the company won.",
+              "Rode a Pullman car once. Velvet seats. The men who built it struck in '94 and the army broke them."),
         };
     }
 }
