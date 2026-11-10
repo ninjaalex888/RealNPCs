@@ -281,8 +281,7 @@ namespace EnrageWestworld.InGame
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, turned);   // someone who bolted once would bolt again at the next shot: deaf to it until it's over (AlliesEnd lets it go)
             if (turned)
                 _alliesTurned++;
-            PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, true);    // fights even against the armed
-            PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);   // always fights
+            LendFists(h, "an ally");   // fights even against the armed, always fights; their own back once it's over (FOURTEENHOUR item 3)
             if (armedFoe && !WEAPON.IS_PED_ARMED(h, 4))
             {
                 p.GiveWeapon(eWeapon.RevolverCattleman, 60, eWeaponAttachPoint.PistolR, true);

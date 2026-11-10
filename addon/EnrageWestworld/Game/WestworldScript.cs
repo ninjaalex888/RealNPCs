@@ -569,6 +569,7 @@ namespace EnrageWestworld.InGame
 			try { EventDotsClearAll(); } catch { }   // the event dots go with us
 			try { AlliesAbort(); } catch { }   // the allies' green dots go with us
 			try { JoinPendingDrop("the script stopped"); RingBreak(); } catch { }   // those on their way to a brawl, and the ring round it, let go to the game
+			try { HandBackAll("the script stopped"); } catch { }   // everyone we lent fists or a group to has their own back (FOURTEENHOUR item 3)
 			Shutdown04();
 			Save();
 			try { VramReader.Stop(); } catch { }   // the VRAM gauge's reader thread (WestworldScript.Vram.cs)
@@ -1330,6 +1331,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST horse thieves: " + HorseStatus());
 			Log.Write("TEST plans: " + PlansStatus());
 			Log.Write("TEST perf: " + PerfStatus() + "; Core compiled ahead: " + _prejitStatus);
+			Log.Write("TEST hand back: " + HandBackStatus());
 			Log.Write("TEST vram: " + VramStatus());
 			Log.Write("TEST loads: " + Loads.Status());
 			Log.Write("TEST perform: " + PerformStatus());

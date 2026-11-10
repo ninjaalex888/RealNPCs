@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 371;
+        public const int CurrentVersion = 372;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -99,6 +99,7 @@ namespace EnrageWestworld.Core
         public bool QuarrelLadder = true;  // with MindLive: an argue or a brawl between two people the mind knows is played from the quarrel ladder (Core/Escalation.cs, Scenes.Ladder.cs; night 2026-10-28, item 16; settings version 92): how far it goes and how it ends from their traits and the surroundings; the shot is never played
         public bool QuarrelSlights = true;   // [Mind] with QuarrelLadder: a quarrel "over nothing" says what it is over (a shoulder in passing, a spilled drink, a bad week, the old business between foes); words and the log only, never the ladder's odds (FOURTEENHOUR item 1; settings version 371)
         public bool FightHoldStart = true;   // [Mind] two told to fight keep the order until the first blow (the game's own alarms held off them, the order kept), then the game's fists as before; off: the alarms come back the moment they're told (FOURTEENHOUR item 1; settings version 371)
+        public bool HandBackLent = true;     // [Mind] what we set on people not ours to make them fight (fight even unarmed, always fight, the hostile group) is put back once they've been out of any fight 20 s and nothing of ours has them (FOURTEENHOUR item 3; settings version 372)
         public bool MeetWalkAgain = true;    // [Scenes] a street scene's walker who gets no nearer in 3 s is told again, and the one waiting in a seat or at work gets up to meet them (FOURTEENHOUR item 1; settings version 371)
         public bool SaidLately = true;   // the street's talk avoids lines said in the last ~300 (the no-model run, item 5; settings version 183)
         public bool WrittenWakes = true;   // [Mind] with MindWakes: a rare written wondering in someone with cause below the second stage chips "things are as they seem" as the model's does (the no-model run, item 10); settings version 188
@@ -1012,6 +1013,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 372)
+                    log?.Invoke("Settings: new in this version: [Mind] HandBackLent (on): what we set on people to make them fight is put back once they're done.");
                 if (s.SettingsVersion < 371)
                     log?.Invoke("Settings: new in this version: [Mind] QuarrelSlights (on): a quarrel over nothing says what it's over; [Mind] FightHoldStart (on): two told to fight keep at it until the first blow; [Scenes] MeetWalkAgain (on): a walker who stops short is told again, and the one waiting gets up.");
                 if (s.SettingsVersion < 370)
@@ -1716,6 +1719,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("PlacesRemember = " + B(PlacesRemember) + "   ; memory that behaves like memory: someone who knew one you killed thinks of it near the spot (once each; a friend's ground for good, an acquaintance's for a month), people who have seen you on your horse know the horse before the face as you ride up (once a day each), and a place you keep at the same hour on three different days is a habit the town notices (once each); false: none of the three");
             b.AppendLine("HeldStayInMind = " + B(HeldStayInMind) + "   ; someone the ring is walking on an errand stays in mind out to the ring's own reach; false: dropped at the mind's 25 m edge, as before");
             b.AppendLine("QuarrelSlights = " + B(QuarrelSlights) + "   ; with QuarrelLadder on: a quarrel between strangers that was \"over nothing\" says what it's over, by the place (a shoulder in passing, the way blocked, a look held, a word about a man's horse or hat; in a saloon a spilled drink, a seat taken, a laugh), a man at the worst of his trouble snaps because of the week he's had, and foes have it out over their old business; the words and the log only, never how far it goes; false: the two old openings");
+            b.AppendLine("HandBackLent = " + B(HandBackLent) + "   ; what RealNPCs sets on people who aren't its own to make them fight (an ally, a brawl's holdout, a caller, a gang's man, one who joins your fight, the waking who lash out, the road's fights: 'fight even unarmed', 'always fight', and the hostile group on callers and thieves) is put back once they've been out of any fight 20 s and nothing of ours has them; false: it stays until the body despawns, as before");
             b.AppendLine("FightHoldStart = " + B(FightHoldStart) + "   ; two people told to fight in a street scene keep the order until the first blow lands (the game's own alarms held off them, as enRAGE does), then the game's fists as before; false: the alarms come back the moment they're told, and a man may run off instead (Valentine, 2026-11-09)");
             b.AppendLine("MindLive = " + B(MindLive) + "   ; what that mind decides reaches the screen (their moods, and thoughts of what they really feel and need, and what they do about it); each part has its own switch below");
             b.AppendLine("MindLevels = " + B(MindLevels) + "   ; (in testing) the mind's work spread by distance and a budget a frame: the people in view every look, the town around every 10-30 s, everyone saved elsewhere one time a game day (counted only); off, exactly as before");

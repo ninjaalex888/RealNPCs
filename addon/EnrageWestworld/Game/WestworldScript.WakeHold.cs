@@ -743,13 +743,13 @@ namespace EnrageWestworld.InGame
             if (armed)
             {
                 WEAPON.SET_CURRENT_PED_WEAPON(h, gun, true, 0, false, false);
+                KeepOwn(h, "the waking lashing out");   // their own back once it's over (FOURTEENHOUR item 3)
                 PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, false);
             }
             else
             {
                 WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
-                PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, true);   // fists
-                PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);
+                LendFists(h, "the waking lashing out");   // fists; their own back once it's over (FOURTEENHOUR item 3)
             }
             TASK.TASK_COMBAT_PED(h, target, 0, 16);
             act.Target = target;
@@ -818,8 +818,7 @@ namespace EnrageWestworld.InGame
             if (!gun)
             {
                 WEAPON.SET_CURRENT_PED_WEAPON(l, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
-                PED.SET_PED_COMBAT_ATTRIBUTES(l, 5, true);   // fists for fists
-                PED.SET_PED_COMBAT_ATTRIBUTES(l, 46, true);
+                LendFists(l, "the lawman at a lash-out");   // fists for fists; his own back once it's over
             }
             TASK.TASK_COMBAT_PED(l, h, 0, 16);
             LawSay(law, "The deputy", WakeOdd.LawStep(act.P.Id + "|" + now / 1000), "SHOUT_STOP");

@@ -1400,6 +1400,7 @@ namespace EnrageWestworld.InGame
             Safe("scenes", _aDrama);
             Safe("court thoughts", _aCourtThoughts);
             PassingStep(now);   // people who know each other acknowledge it as they pass (WestworldScript.Passing.cs)
+            HandBackStep(now);  // what we set on people to make them fight, put back once they're done (WestworldScript.HandBack.cs; FOURTEENHOUR item 3)
             SightsStep(now);    // people notice how you look (WestworldScript.Sights.cs)
             StreetStep(now);    // the street reacts to other people's fights, and to who walks among them (WestworldScript.Street.cs)
             LettersStep(now);   // a letter's writer waiting to meet you (WestworldScript.Letters.cs)

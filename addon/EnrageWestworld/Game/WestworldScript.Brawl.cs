@@ -228,11 +228,10 @@ namespace EnrageWestworld.InGame
             Log.Write("LAW breaks up: the lawman shouts, " + (int)law.Position.DistanceTo(ENTITY.GET_ENTITY_COORDS(all.Count > 0 ? all[0] : lh.Law, true, true)) + " m from the fight, " + (now - lh.Since) / 1000 + " s after he set off; " + _brawlLast);
         }
 
-        private void BrawlFists(int h)
+        private void BrawlFists(int h, string by = "a brawl's holdout")
         {
             WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
-            PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, true);   // fists for fists
-            PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);
+            LendFists(h, by);   // fists for fists; their own back once it's over (FOURTEENHOUR item 3)
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
         }
 
@@ -341,7 +340,7 @@ namespace EnrageWestworld.InGame
                                 PED.SET_PED_COMBAT_ATTRIBUTES(lh.Law, 5, false);
                             }
                             else
-                                BrawlFists(lh.Law);
+                                BrawlFists(lh.Law, "the lawman at a brawl");
                             TASK.TASK_COMBAT_PED(lh.Law, next, 0, 16);
                             Log.Write("LAW breaks up: the lawman goes for " + (MindNameOf(next) ?? "a man") + (lh.Gun ? ", his gun out (a gun was drawn)" : ", with his fists"));
                             break;

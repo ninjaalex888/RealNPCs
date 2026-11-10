@@ -291,7 +291,7 @@ namespace EnrageWestworld.InGame
             else
             {
                 _cyFights++;
-                BrawlFists(h);
+                BrawlFists(h, "a caller");
                 c.Outcome = "they put up their fists";
             }
             TASK.TASK_COMBAT_PED(h, me.Handle, 0, 16);
@@ -301,7 +301,7 @@ namespace EnrageWestworld.InGame
                     _staged.Remove(f.Handle);
                     PED.SET_PED_KEEP_TASK(f.Handle, false);
                     MakeHostile(f, now);   // they came at you with them: self-defence too
-                    BrawlFists(f.Handle);
+                    BrawlFists(f.Handle, "a caller's friend");
                     TASK.TASK_COMBAT_PED(f.Handle, me.Handle, 0, 16);
                 }
             c.FacedAt = now;

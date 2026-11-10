@@ -930,9 +930,8 @@ namespace EnrageWestworld.InGame
             uint playerGroup = PED.GET_PED_RELATIONSHIP_GROUP_HASH(me);
             PED.SET_RELATIONSHIP_BETWEEN_GROUPS(5, _hostileGroup, playerGroup);
             PED.SET_RELATIONSHIP_BETWEEN_GROUPS(5, playerGroup, _hostileGroup);
-            PED.SET_PED_RELATIONSHIP_GROUP_HASH(h, _hostileGroup);
-            PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, true);    // fights even against the armed
-            PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);   // always fights
+            LendGroup(h, _hostileGroup, "a caller turned hostile");   // their own group back once it's over (FOURTEENHOUR item 3)
+            LendFists(h, "a caller turned hostile");                 // fights even against the armed, always fights
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
             _cameAtYouSeen[h] = now;
         }

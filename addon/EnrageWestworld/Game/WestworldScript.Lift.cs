@@ -281,7 +281,7 @@ namespace EnrageWestworld.InGame
             uint playerGroup = PED.GET_PED_RELATIONSHIP_GROUP_HASH(me);
             PED.SET_RELATIONSHIP_BETWEEN_GROUPS(5, _hostileGroup, playerGroup);
             PED.SET_RELATIONSHIP_BETWEEN_GROUPS(5, playerGroup, _hostileGroup);
-            PED.SET_PED_RELATIONSHIP_GROUP_HASH(h, _hostileGroup);
+            LendGroup(h, _hostileGroup, "a thief");   // his own group back once it's over and the theft is done (FOURTEENHOUR item 3)
             _cameAtYouSeen[h] = now;
             if (_cfg.SelfDefenceNoBounty)
                 NoWanted(h, true);   // at once, as the game does its own thief: dealing with him is no murder

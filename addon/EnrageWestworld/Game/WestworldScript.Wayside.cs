@@ -664,8 +664,7 @@ namespace EnrageWestworld.InGame
                 return;
             int h = p.Handle, f = foe.Handle;
             WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
-            PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, true);
-            PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);
+            LendFists(h, "a road scene's fighter");   // their own back once it's over (FOURTEENHOUR item 3)
             ScenarioExit.SoftUp(h, x => TASK.TASK_COMBAT_PED(x, f, 0, 16));
         }
 

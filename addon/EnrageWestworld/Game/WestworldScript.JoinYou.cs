@@ -140,8 +140,7 @@ namespace EnrageWestworld.InGame
             int h2 = bestPed.Handle;
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h2, false);
             WEAPON.SET_CURRENT_PED_WEAPON(h2, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
-            PED.SET_PED_COMBAT_ATTRIBUTES(h2, 5, true);   // fists
-            PED.SET_PED_COMBAT_ATTRIBUTES(h2, 46, true);
+            LendFists(h2, "one who joined your fight");   // fists; their own back once it's over (FOURTEENHOUR item 3)
             TASK.TASK_COMBAT_PED(h2, target, 0, 16);
             _youJoiners.Add(h2);
             _youJoined++;

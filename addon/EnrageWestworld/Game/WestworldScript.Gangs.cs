@@ -206,7 +206,7 @@ namespace EnrageWestworld.InGame
             GangOrder(b, a);
         }
 
-        private static void GangOrder(List<int> mine, List<int> theirs)
+        private void GangOrder(List<int> mine, List<int> theirs)
         {
             foreach (int h in mine)
             {
@@ -218,7 +218,7 @@ namespace EnrageWestworld.InGame
                 uint gun = WEAPON.GET_BEST_PED_WEAPON(h, false, false);
                 if (gun != 0 && gun != Natives.Hash("WEAPON_UNARMED"))
                     WEAPON.SET_CURRENT_PED_WEAPON(h, gun, true, 0, false, false);
-                PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);   // fights it out
+                LendFists(h, "a gang's man", unarmedToo: false);   // fights it out; his own back once it's over (FOURTEENHOUR item 3)
                 TASK.TASK_COMBAT_PED(h, target, 0, 16);
             }
         }
