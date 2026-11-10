@@ -20,13 +20,14 @@ namespace EnrageWestworld.InGame
         {
             public Ped Fetcher, Law, Culprit, Victim;
             public string Name, Kind, Seed, CulpritName, CulpritTemper;   // Kind: "brawl" or "rough"
-            public int FightId, Since, LookAt, Phase;                     // 0 running to the lawman; 1 the lawman walking to the culprit (rough)
+            public int FightId, Since, LookAt, Phase, ReorderAt;          // 0 running to the lawman; 1 the lawman walking to the culprit (rough)
             public bool Saloon;
             public Vector3 At;
         }
 
         private LawFetch _lawFetch;
-        private Ped _fetchWinner, _fetchLoser;   // the fight a fetcher ran from: who was left standing (OnFightOver)
+        private Ped _fetchWinner, _fetchLoser;   // the last fight: who was left standing (OnFightOver), and its id
+        private int _fetchWinnerFight;
         private int _fetchFor = -1, _fetchSureUntil, _fetches, _fetchBrought, _fetchWords, _fetchAsked, _fetchLate, _fetchNone;
         private string _fetchLast;
 
@@ -40,7 +41,8 @@ namespace EnrageWestworld.InGame
             bool sure = now < _fetchSureUntil;
             var near = Peds.All().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && !not.Contains(p.Handle) && PED.IS_PED_HUMAN(p.Handle) && IsGrownUp(p) &&
                                              !Natives.IsLaw(p) && p.Position.DistanceTo(at) < metres && !_director.Involves(p.Handle) && !NotFree(p.Handle) && !Spawner.IsOurs(p.Handle) &&
-                                             !PED.IS_PED_IN_COMBAT(p.Handle, 0) && !PED.IS_PED_ON_MOUNT(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_USING_ANY_SCENARIO(p.Handle))
+                                             !PED.IS_PED_IN_COMBAT(p.Handle, 0) && !PED.IS_PED_ON_MOUNT(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_USING_ANY_SCENARIO(p.Handle) &&
+                                             MayDirectWhyNot(p) == null)   // (the review of items 14-21: the story's, enRAGE's in a role, the fleeing...)
                                  .OrderBy(p => WellOff(p) ? 0 : 1).ThenBy(p => p.Position.DistanceTo(at)).Take(6).ToList();
             foreach (Ped p in near)
             {
@@ -94,6 +96,11 @@ namespace EnrageWestworld.InGame
         private void FetchStart(Ped f, string name, Ped law, string kind, Ped culprit, Ped victim, Vector3 at, int now)
         {
             MindWho cw = culprit != null ? MindKnown(culprit.Handle, now) : null;
+            if (kind == "brawl")
+            {
+                _fetchWinner = _fetchLoser = null;   // (an older fight's never stands in: the review of items 14-21)
+                _fetchWinnerFight = 0;
+            }
             _lawFetch = new LawFetch
             {
                 Fetcher = f, Name = name, Law = law, Kind = kind, Culprit = culprit, Victim = victim, At = at, FightId = _director.FightId, Since = now, LookAt = now + 500,
@@ -118,7 +125,7 @@ namespace EnrageWestworld.InGame
             if (f.Phase == 0)
             {
                 bool over = f.Kind == "brawl" && (f.FightId != _director.FightId || _director.FightId == 0 || _brawlLawFor == f.FightId);
-                if (over && _brawlLawFor != f.FightId && _director.EndedFightId == f.FightId && Up(_fetchWinner))
+                if (over && _brawlLawFor != f.FightId && _director.EndedFightId == f.FightId && _fetchWinnerFight == f.FightId && Up(_fetchWinner))
                 {
                     // the fight's over before he got to the lawman: he tells him all the same, and the lawman has a word with the one left
                     // standing (a brawl's 30 s is over long before a lawman 70 m off could be there: the simulator, item 21)
@@ -144,8 +151,11 @@ namespace EnrageWestworld.InGame
                 }
                 if (f.Fetcher.Position.DistanceTo(f.Law.Position) > 3.5f)
                 {
-                    if ((now - f.Since) % 2000 < 500)
-                        TASK.TASK_GO_TO_ENTITY(f.Fetcher.Handle, f.Law.Handle, -1, 2.5f, 3f, 0f, 0);   // he may be walking his rounds: the order again
+                    if (now >= f.ReorderAt)
+                    {
+                        f.ReorderAt = now + 2000;
+                        TASK.TASK_GO_TO_ENTITY(f.Fetcher.Handle, f.Law.Handle, -1, 2.5f, 3f, 0f, 0);
+                    }   // he may be walking his rounds: the order again
                     return;
                 }
                 if (_cfg.ScenesOnTicker && _cfg.Ticker && f.Fetcher.Position.DistanceTo(me.Position) <= _cfg.ScenesOnTickerMetres)
@@ -158,8 +168,7 @@ namespace EnrageWestworld.InGame
                     {
                         BrawlLawDispatch(f.Law, a, b, ENTITY.GET_ENTITY_COORDS(a[0], true, true), now, false, f.Name);   // item 5's arrival from here
                         _fetchBrought++;
-                        TASK.TASK_GO_TO_ENTITY(f.Fetcher.Handle, a[0], 20000, 8f, 2f, 0f, 0);   // back with him, to watch from a way off
-                        WanderLater(f.Fetcher.Handle, now + 20000);
+                        WanderLater(f.Fetcher.Handle, now + 2000);   // and off about his day: never back to watch (Lex's no-crowds rule; the review of items 14-21)
                         _fetchLast = f.Name + " brought the law to the brawl";
                     }
                     _lawFetch = null;
@@ -173,12 +182,13 @@ namespace EnrageWestworld.InGame
                 Ped to = Up(f.Culprit) && f.Culprit.Position.DistanceTo(f.At) < 40f ? f.Culprit : f.Victim;
                 if (Up(to))
                     TASK.TASK_GO_TO_ENTITY(f.Law.Handle, to.Handle, 25000, 2.5f, 2f, 0f, 0);
-                WanderLater(f.Fetcher.Handle, now + 3000);
+                if (Up(f.Fetcher))
+                    WanderLater(f.Fetcher.Handle, now + 3000);
                 return;
             }
             // phase 1: the lawman's word with the man who did it (still about, and not fighting you), or he asks the one it was done to
             Ped target = Up(f.Culprit) && f.Culprit.Position.DistanceTo(f.At) < 40f && !PED.IS_PED_IN_COMBAT(f.Culprit.Handle, me.Handle) ? f.Culprit : Up(f.Victim) ? f.Victim : null;
-            if (!Up(f.Law) || target == null || now - f.Since > 30000)
+            if (!Up(f.Law) || target == null || now - f.Since > 30000 || PED.IS_PED_IN_COMBAT(f.Law.Handle, me.Handle))   // (at you: the game's, let go: the review of items 14-21)
             {
                 if (Up(f.Law))
                     LawRoundsAgain(f.Law.Handle, now + 1000);
@@ -187,8 +197,11 @@ namespace EnrageWestworld.InGame
             }
             if (f.Law.Position.DistanceTo(target.Position) > 3f)
             {
-                if ((now - f.Since) % 2000 < 500)
+                if (now >= f.ReorderAt)
+                {
+                    f.ReorderAt = now + 2000;
                     TASK.TASK_GO_TO_ENTITY(f.Law.Handle, target.Handle, 25000, 2.5f, 2f, 0f, 0);
+                }
                 return;
             }
             TASK.TASK_TURN_PED_TO_FACE_ENTITY(f.Law.Handle, target.Handle, 4000, 0f, 0f, 0f);
@@ -197,13 +210,13 @@ namespace EnrageWestworld.InGame
                 LawSay(f.Law, "The deputy", f.Kind == "after" ? WitnessLaw.WordAfter(f.Seed) : WitnessLaw.Word(f.Seed), "SHOUT_STOP");
                 SayLater(2200, Person.FirstOf(f.CulpritName ?? "The man"), WitnessLaw.Answer(f.CulpritTemper, f.Seed), f.Culprit.Handle, "mild");
                 _fetchWords++;
-                _fetchLast = "the law had a word with " + (f.CulpritName ?? "the man") + ", fetched by " + f.Name;
+                _fetchLast = "the law had a word with " + (f.CulpritName ?? "the man") + (f.Fetcher != null ? ", fetched by " + f.Name : ", come late to the fight");
             }
             else
             {
                 LawSay(f.Law, "The deputy", WitnessLaw.Asks(f.Seed), "GENERIC_SHOCKED_MED");
                 _fetchAsked++;
-                _fetchLast = "the law asked after the man who did it, fetched by " + f.Name;
+                _fetchLast = "the law asked after the man who did it" + (f.Fetcher != null ? ", fetched by " + f.Name : "");
             }
             Log.Write("FETCH " + _fetchLast);
             LawRoundsAgain(f.Law.Handle, now + 6000);
@@ -213,10 +226,28 @@ namespace EnrageWestworld.InGame
         /// From OnFightOver: while someone has run for the law from this fight, who won it (the lawman's word, if he's late).
         private void FetchFightOver(int winner, int loser)
         {
-            if (_lawFetch == null || _lawFetch.Kind != "brawl")
-                return;
+            _fetchWinnerFight = _director.EndedFightId;   // (every fight's: a lawman fetched to one may come late, BrawlLawFetchedLate)
             _fetchWinner = winner != 0 && ENTITY.DOES_ENTITY_EXIST(winner) ? new Ped(winner) : null;
             _fetchLoser = loser != 0 && ENTITY.DOES_ENTITY_EXIST(loser) ? new Ped(loser) : null;
+        }
+
+        /// From the brawl law (phase 0): a lawman someone fetched got there after the fight was over: he has his word with the one
+        /// left standing instead of going straight back (the review of items 14-21: he said nothing). True when he's taken it up.
+        private bool BrawlLawFetchedLate(Ped law, int fightId, int now)
+        {
+            if (_lawFetch != null || fightId == 0 || _fetchWinnerFight != fightId || !Up(_fetchWinner) || !Up(law))
+                return false;
+            MindWho ww = MindKnown(_fetchWinner.Handle, now);
+            _lawFetch = new LawFetch
+            {
+                Fetcher = null, Name = "someone", Law = law, Kind = "after", Culprit = _fetchWinner, Victim = Up(_fetchLoser) ? _fetchLoser : null, At = _fetchWinner.Position, FightId = fightId,
+                Since = now, LookAt = now + 500, Phase = 1, Seed = "late|" + fightId, CulpritName = ww != null ? ww.Name : null, CulpritTemper = ww != null && ww.P != null ? ww.P.Personality : null
+            };
+            LawTake(law.Handle);
+            TASK.CLEAR_PED_TASKS(law.Handle, true, false);
+            TASK.TASK_GO_TO_ENTITY(law.Handle, _fetchWinner.Handle, 25000, 2.5f, 2f, 0f, 0);
+            _fetchLate++;
+            return true;
         }
 
         /// The Testing row: the street's rough scene now, and the first witness runs for a lawman within 150 m.

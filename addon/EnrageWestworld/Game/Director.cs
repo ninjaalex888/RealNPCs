@@ -563,7 +563,7 @@ namespace EnrageWestworld.InGame
             {
                 Ped p = l.Cast[i];
                 if (p == null || !p.Exists() || p.Handle == _player || ENTITY.IS_ENTITY_DEAD(p.Handle) || l.Out.Contains(p.Handle) ||
-                    PED.IS_PED_USING_ANY_SCENARIO(p.Handle) || PED.IS_PED_RAGDOLL(p.Handle))
+                    PED.IS_PED_USING_ANY_SCENARIO(p.Handle) || PED.IS_PED_RAGDOLL(p.Handle) || PED.IS_PED_IN_COMBAT(p.Handle, _player))   // (one fighting you is the game's: the review of items 14-21)
                     continue;
                 TASK.CLEAR_PED_TASKS(p.Handle, true, false);
                 TASK.TASK_WANDER_STANDARD(p.Handle, 10f, 10);

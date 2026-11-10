@@ -36,7 +36,7 @@ namespace EnrageWestworld.InGame
                 foreach (Ped p in Peds.All().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Handle != h && (mark == null || p.Handle != mark.Handle) &&
                                                          PED.IS_PED_MALE(p.Handle) && PED.IS_PED_HUMAN(p.Handle) && !Natives.IsLaw(p) && !Natives.IsChild(p) && p.Position.DistanceTo(at) < PurseSnatch.ChaseFromMetres &&
                                                          !PED.IS_PED_ON_MOUNT(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_IN_COMBAT(p.Handle, 0) && !NotFree(p.Handle) &&
-                                                         !Spawner.IsOurs(p.Handle) && !PED.IS_PED_USING_ANY_SCENARIO(p.Handle))
+                                                         !Spawner.IsOurs(p.Handle) && !PED.IS_PED_USING_ANY_SCENARIO(p.Handle) && MayDirectWhyNot(p) == null)   // (the review of items 14-21)
                                               .OrderBy(p => p.Position.DistanceTo(at)).Take(4).ToList())
                 {
                     MindWho w = MindKnown(p.Handle, now);
@@ -124,12 +124,12 @@ namespace EnrageWestworld.InGame
             MindWho mw = markHere ? MindKnown(mark.Handle, now) : null;
             if (_store != null && t.ChaserId != null && mw != null && mw.Id != null)
                 Ties.Note(_store.Ties, t.ChaserId, t.ChaserName, mw.Id, mw.Name, t.Town, "help", Bridge.Now());   // he did her a good turn (a warmer tie)
-            if (t.Lawman != null && t.Lawman.Exists())
+            if (t.Lawman != null && t.Lawman.Exists() && !PED.IS_PED_IN_COMBAT(t.Lawman.Handle, me.Handle))
             {
                 TASK.CLEAR_PED_TASKS(t.Lawman.Handle, true, false);   // the lawman who was after him too: back to his rounds
                 WanderLater(t.Lawman.Handle, now + 3000);
             }
-            if (t.Thief.Exists() && !t.Thief.IsDead)
+            if (t.Thief.Exists() && !t.Thief.IsDead && !PED.IS_PED_IN_COMBAT(h, me.Handle))
             {
                 TASK.CLEAR_PED_TASKS(h, true, false);
                 TASK.TASK_SMART_FLEE_PED(h, c != null && c.Exists() ? c.Handle : me.Handle, 120f, -1, 0, 3f, 0);   // up and off, empty-handed
@@ -152,8 +152,9 @@ namespace EnrageWestworld.InGame
         /// Your catch, alive: J asks what's done with him first (15 s; unasked, he gives it back). False when J is taken just now.
         private bool ThiefAskFirst(Theft t, int now)
         {
-            if (!PurseSnatch.On || t.PlayerMark || _eventMenu != null || (_eventPrompt != null && Game.GameTime <= _eventPromptUntil))
-                return false;
+            if (!PurseSnatch.On || t.PlayerMark || t.LawHeld || _eventMenu != null || (_eventPrompt != null && Game.GameTime <= _eventPromptUntil) ||
+                PED.IS_PED_IN_COMBAT(t.Thief.Handle, Game.Player.Character.Handle))
+                return false;   // (the lawman's tackle is his catch; a thief fighting you is the game's: the review of items 14-21)
             t.Asking = true;
             t.AskUntil = now + PurseSnatch.AskMs;
             ChaseLetGo(t, now);

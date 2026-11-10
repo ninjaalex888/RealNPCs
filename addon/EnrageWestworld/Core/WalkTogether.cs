@@ -19,7 +19,7 @@ namespace EnrageWestworld.Core
         {
             switch (kind)
             {
-                case "smalltalk": case "mindtalk": case "gossip": case "timestalk": case "hosts": case "comfort": case "cheer": case "apology": case "sweet": case "wayshown":
+                case "smalltalk": case "mindtalk": case "gossip": case "timestalk": case "hosts": case "comfort": case "cheer": case "apology": case "sweet":
                     return true;
                 default:
                     return false;

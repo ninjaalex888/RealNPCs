@@ -33,7 +33,7 @@ namespace EnrageWestworld.Core
             string kind;
             int stage;
             bool good;
-            if (!y.Woman && y.Temper != "Coward" && y.Temper != "Hothead" && InnerLife.WorryNow(x.P, gameDay, out kind, out stage, out good) && kind == "tooth" && stage == 2 &&
+            if (!x.Woman && !y.Woman && y.Temper != "Coward" && y.Temper != "Hothead" && InnerLife.WorryNow(x.P, gameDay, out kind, out stage, out good) && kind == "tooth" && stage == 2 &&
                 Voice.Chance(key + gameDay + "|tooth", ToothPercent))
                 return new Reason { Kind = "toothpull", Strength = ToothStrength, BFirst = true, Why = x.Name + "'s tooth is at its worst, and " + y.Name + " has pliers and the nerve" };
             // a horse to sell at the hitching post

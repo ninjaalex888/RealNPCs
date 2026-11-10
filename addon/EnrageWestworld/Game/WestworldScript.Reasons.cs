@@ -469,6 +469,8 @@ namespace EnrageWestworld.InGame
             Ped first = pr.Why.BFirst ? pr.B.Ped : pr.A.Ped, second = pr.Why.BFirst ? pr.A.Ped : pr.B.Ped;
             string seed = first.Handle + "|" + second.Handle + "|" + now / 60000;
             Ped lady = pr.Why.Kind == "snub" ? LadyBeside(second, first) : null;   // a lady with the gentleman: her word in it (FOURTEENHOUR item 18)
+            if (pr.Why.Kind == "snub")
+                SnubCount(lady);
             SceneCast cast = BuildCast(first, second, lady, saloon, me, now, seed);
             string kind = pr.Why.Kind;
             Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
@@ -509,6 +511,19 @@ namespace EnrageWestworld.InGame
                 return false;
             Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);
             _rivalsScene = pr.Why.Kind == "rivals" ? s : null;   // her choice waits on it (NotePlayedReason; FOURTEENHOUR item 19)
+            if (s.Fight && gate != "brawl" && gate != "rough" && gate != "rematch")
+            {
+                // a reason of its own that comes to blows (the greenhorn, the snub, the rivals, the old soldiers, the temperance door): the
+                // brawl's own gates too, the sat, the hushed town and the law's eye (the review of items 14-21)
+                string cantFight = TroubleCant("brawl", first, second, cast);
+                if (cantFight != null || (_hush && by == null && !side && TownMood.Hushed("brawl")) || (!side && by == null && WatchedHolds("brawl", first, doer, second, me, seed, now)))
+                {
+                    _rivalsScene = null;
+                    NotePairCant(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);
+                    Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + kind + " would come to blows, held back (" + (cantFight ?? "the town hushed, or the law looking") + ")");
+                    return false;
+                }
+            }
             if (s == null || (side && !Director.Quiet(s)))
                 return false;
             if (asSecond)

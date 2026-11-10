@@ -273,7 +273,9 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(p.Handle, spot.X - side.X, spot.Y - side.Y, spot.Z, 1f, -1, 1f, 0, 0f);
                     WanderLater(f, now + 15000);
                     WanderLater(p.Handle, now + 15000);
-                    if (!follows && beater != 0 && ENTITY.DOES_ENTITY_EXIST(beater))
+                    if (beater != 0 && AtArthur(beater))
+                        follows = false;   // (his fight is the game's: never an order of ours; the review of items 14-21)
+                    else if (!follows && beater != 0 && ENTITY.DOES_ENTITY_EXIST(beater))
                         TASK.TASK_TURN_PED_TO_FACE_ENTITY(beater, f, 2000, 0f, 0f, 0f);   // he lets them go, and watches them off
                     else if (follows)
                         TASK.TASK_COMBAT_PED(beater, f, 0, 16);

@@ -49,7 +49,7 @@ namespace EnrageWestworld.Core
                      .Add(1, Voice.Pick(seed + "|ok", "I'll hold you to that drink.", "Obliged. I think.", "Glad to be here. Mostly."), "yes");
                     break;
                 case "takes":
-                    s = new Scene { Kind = "scorn", Doer = 0, Summary = "a regular made sport of the greenhorn in the street" };
+                    s = new Scene { Kind = "scorn", Doer = 0, Summary = "a regular made sport of the greenhorn" };
                     s.Add(0, r[0], "mock", "face").Add(1, Voice.Pick(seed + "|meek", "Now, now. I mean no offence.", "I'll just be going.", "Excuse me, I have an errand."), "scared")
                      .Add(0, Voice.Pick(seed + "|scorn", "Then run along home to your mother.", "Off he goes. Mind the horse apples, city boy.", "Didn't think so."), "mock")
                      .Add(1, null, null, "walkaway");

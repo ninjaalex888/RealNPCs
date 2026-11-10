@@ -30,15 +30,11 @@ namespace EnrageWestworld.InGame
                     continue;
                 float d = p.Position.DistanceTo(gent.Position);
                 if (d >= bestD || PED.IS_PED_MALE(p.Handle) || !PED.IS_PED_HUMAN(p.Handle) || !WellOff(p) || NotFree(p.Handle) || _director.Involves(p.Handle) ||
-                    PED.IS_PED_USING_ANY_SCENARIO(p.Handle) || Spawner.IsOurs(p.Handle))
+                    PED.IS_PED_USING_ANY_SCENARIO(p.Handle) || Spawner.IsOurs(p.Handle) || MayDirectWhyNot(p) != null)   // (MayDirect: the story's, enRAGE's in a role, mounted...: the review of items 14-21)
                     continue;
                 bestD = d;
                 best = p;
             }
-            if (best != null)
-                _snubLady++;
-            else
-                _snubAlone++;
             return best;
         }
 
@@ -57,6 +53,7 @@ namespace EnrageWestworld.InGame
                 return gent == null ? "no named gentleman near you (a town's well-off part: Saint Denis, Rhodes)" : "no named working man within 10 m of " + gent.Who.Name;
             string seed = hand.Who.Id + "|" + gent.Who.Id + "|" + now + "|snub";
             Ped lady = LadyBeside(gent.Ped, hand.Ped);
+            SnubCount(lady);
             SceneCast cast = BuildCast(hand.Ped, gent.Ped, lady, _placeKind == "saloon", me, now, seed);
             Scene s = Snub.Play(cast, seed);
             var people = new List<Ped> { hand.Ped, gent.Ped };
@@ -71,12 +68,21 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
+        /// Counted once a snub is cast (not every look for a lady).
+        private void SnubCount(Ped lady)
+        {
+            if (lady != null)
+                _snubLady++;
+            else
+                _snubAlone++;
+        }
+
         /// F7: how often a lady was by the gentleman, and the tests.
         private string SnubStatus()
         {
             if (!Snub.On)
                 return "off ([Scenes] Snubs)";
-            return "played with a lady beside him " + _snubLady + ", alone " + _snubAlone + "; tests " + _snubTests + (_snubLast != null ? ", last: " + _snubLast : "");
+            return "cast with a lady beside him " + _snubLady + ", alone " + _snubAlone + "; tests " + _snubTests + (_snubLast != null ? ", last: " + _snubLast : "");
         }
     }
 }

@@ -16,7 +16,7 @@ namespace EnrageWestworld.InGame
     {
         private sealed class RivalsRun
         {
-            public string HerId, HerName, AId, AName, BId, BName, ATemper, BTemper, Town;
+            public string HerId, HerName, HerFull, AId, AName, BId, BName, ATemper, BTemper, Town;
             public int AH, BH, WalkedAway = -1, Until;
             public bool Fight, Test;
         }
@@ -24,6 +24,7 @@ namespace EnrageWestworld.InGame
         private RivalsRun _rivals;
         private Scene _rivalsScene;   // the rivals' scene just built, for NotePlayedReason
         private readonly Dictionary<string, KeyValuePair<long, string[]>> _courtingOf = new Dictionary<string, KeyValuePair<long, string[]>>();
+        private readonly Dictionary<string, string> _rivalLost = new Dictionary<string, string>();   // id -> "her id|game minute" she chose the other man (a week)
         private int _rivalsMet, _rivalsChosen, _rivalsNeither, _rivalsTests;
         private string _rivalsLast;
 
@@ -39,6 +40,10 @@ namespace EnrageWestworld.InGame
             {
                 string n;
                 string other = Rivals.CourtingOf(_store, id, IsWomanId, out n);
+                string lost;
+                long lostAt;
+                if (other != null && _rivalLost.TryGetValue(id, out lost) && lost.StartsWith(other + "|") && long.TryParse(lost.Substring(other.Length + 1), out lostAt) && g - lostAt < 7 * 1440)
+                    other = n = null;   // she turned him down for the other man: not this week
                 c = new KeyValuePair<long, string[]>(g, new[] { other, n });
                 if (_courtingOf.Count > 800)
                     _courtingOf.Clear();
@@ -78,7 +83,7 @@ namespace EnrageWestworld.InGame
                     walked = bt.Who;
             _rivals = new RivalsRun
             {
-                HerId = herId, HerName = herName != null ? Person.FirstOf(herName) : "her", AId = aId, AName = aName, ATemper = aTemper, AH = ah, BId = bId, BName = bName, BTemper = bTemper, BH = bh,
+                HerId = herId, HerName = herName != null ? Person.FirstOf(herName) : "her", HerFull = herName ?? "her", AId = aId, AName = aName, ATemper = aTemper, AH = ah, BId = bId, BName = bName, BTemper = bTemper, BH = bh,
                 Town = _placeTown, Fight = s.Fight, WalkedAway = s.Fight || s.Summary.Contains("left it to her") ? -1 : walked, Until = Game.GameTime + 180000, Test = test
             };
             _rivalsMet++;
@@ -96,10 +101,12 @@ namespace EnrageWestworld.InGame
                 _rivals = null;   // never played out (cut short before blows): another day
                 return;
             }
-            if (a != r.AH && a != r.BH && b != r.AH && b != r.BH)
-                return;
+            if (!((a == r.AH && b == r.BH) || (a == r.BH && b == r.AH)))
+                return;   // the two of them, not another scene of one of them (the review of items 14-21)
             _rivals = null;
-            int won = r.Fight ? (winner == r.AH ? 0 : winner == r.BH ? 1 : -1) : -1;
+            bool fought = r.Fight && winner != 0;   // (a fight cut off before any blows is words: the review of items 14-21)
+            r.Fight = fought;
+            int won = fought ? (winner == r.AH ? 0 : winner == r.BH ? 1 : -1) : -1;
             Person her = r.HerId != null && _engine != null ? _engine.Find(r.HerId) : null;
             string herTemper = her != null && her.Personality != null ? her.Personality : Voice.Pick((r.HerId ?? r.AId) + "|temper", "Plain", "Loyal", "Proud", "Cold", "Greedy");
             string seed = (r.HerId ?? "her") + "|" + r.AId + "|" + r.BId + "|" + (_store != null ? _store.LastGameMin / 1440 : 0);
@@ -112,7 +119,11 @@ namespace EnrageWestworld.InGame
                 long g = Bridge.Now();
                 string chosenId = chose == 0 ? r.AId : chose == 1 ? r.BId : null;
                 foreach (string[] man in new[] { new[] { r.AId, r.AName }, new[] { r.BId, r.BName } })
-                    Ties.Note(_store.Ties, r.HerId, r.HerName, man[0], man[1], r.Town, man[0] == chosenId ? "sweet" : "brushoff", g);   // her yes, her no (a brush-off ends a courting)
+                {
+                    Ties.Note(_store.Ties, r.HerId, r.HerFull, man[0], man[1], r.Town, man[0] == chosenId ? "sweet" : "brushoff", g);   // her yes, her no (a brush-off ends a courting)
+                    if (man[0] != chosenId)
+                        _rivalLost[man[0]] = r.HerId + "|" + g;   // he courts her no more this week, whatever courted her (the review of items 14-21)
+                }
                 _courtingOf.Remove(r.AId);
                 _courtingOf.Remove(r.BId);
             }

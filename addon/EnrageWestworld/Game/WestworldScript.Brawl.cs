@@ -34,6 +34,9 @@ namespace EnrageWestworld.InGame
             public float StartM;     // how far off he set out from (a lawman on top of it stops it at once)
             public bool Walking;     // he walks over, then runs (the review of items 1-13 built it)
             public int ThereBy;      // when he counts as there whatever the distance (9 s, and his walk's most on top)
+            public int FightId;      // the fight he was sent to
+            public string FetchedBy; // someone ran for him (FOURTEENHOUR item 21)
+            public bool HandedOn;    // taken up by another job of ours at the end (a late word with the winner): not handed back here
         }
 
         private readonly List<LawHand> _brawlLaw = new List<LawHand>();
@@ -159,6 +162,8 @@ namespace EnrageWestworld.InGame
             // he walks over, then runs (FOURTEENHOUR item 5, built at the review of items 1-13): from beyond 20 m at a walk, 6 s at
             // most, then at a run; nearer, at a run from the start
             lh.StartM = law.Position.DistanceTo(mid);
+            lh.FightId = _director.FightId;
+            lh.FetchedBy = fetchedBy;
             lh.Walking = fetchedBy == null && BrawlsOn && _cfg.BrawlLawSight && lh.StartM > Brawl.LawRunsWithin;
             lh.ThereBy = now + 9000 + (lh.Walking ? Brawl.LawWalksMostMs : 0) + (fetchedBy != null ? (int)(lh.StartM / 2.5f * 1000) : 0);
             TASK.TASK_GO_TO_ENTITY(lh.Law, a[0], -1, 4f, lh.Walking ? 1f : 2f, 0f, 0);   // at a walk from afar, else at a run
@@ -358,7 +363,7 @@ namespace EnrageWestworld.InGame
             for (int i = _brawlLaw.Count - 1; i >= 0; i--)
             {
                 LawHand lh = _brawlLaw[i];
-                if (!ENTITY.DOES_ENTITY_EXIST(lh.Law) || ENTITY.IS_ENTITY_DEAD(lh.Law) || now - lh.Since > 120000)
+                if (!ENTITY.DOES_ENTITY_EXIST(lh.Law) || ENTITY.IS_ENTITY_DEAD(lh.Law) || now - lh.Since > 120000 || PED.IS_PED_IN_COMBAT(lh.Law, Game.Player.Character.Handle))   // (at you: the game's, his fight kept: the review of items 14-21)
                 {
                     if (ENTITY.DOES_ENTITY_EXIST(lh.Law) && !ENTITY.IS_ENTITY_DEAD(lh.Law))
                     {
@@ -379,6 +384,8 @@ namespace EnrageWestworld.InGame
                             {
                                 Log.Write((lh.Watching ? "LAW lets it run: it ended while he watched (" : "LAW breaks up: the fight was over before he got there (") + (int)law.Position.DistanceTo(_brawlLawAt) + " m off, " + (now - lh.Since) / 1000 + " s after he set off)");
                                 lh.Phase = 9;   // it ended before he got there
+                                if (lh.FetchedBy != null && BrawlLawFetchedLate(law, lh.FightId, now))
+                                    lh.HandedOn = true;   // fetched to it: a word with the one left standing (WestworldScript.WitnessLaw.cs)
                                 break;
                             }
                             float dl = ENTITY.DOES_ENTITY_EXIST(a[0]) ? law.Position.DistanceTo(ENTITY.GET_ENTITY_COORDS(a[0], true, true)) : 99f;
@@ -513,7 +520,8 @@ namespace EnrageWestworld.InGame
                 }
                 if (lh.Phase == 9)
                 {
-                    LawRoundsAgain(lh.Law, now + (lh.Tied ? 15000 : 2000));   // back to his rounds once the rope is done
+                    if (!lh.HandedOn)
+                        LawRoundsAgain(lh.Law, now + (lh.Tied ? 15000 : 2000));   // back to his rounds once the rope is done
                     _brawlLaw.RemoveAt(i);
                 }
             }

@@ -68,8 +68,6 @@ namespace EnrageWestworld.InGame
                         continue;
                     string seed = men[i].Who.Id + "|" + men[j].Who.Id + "|" + now + "|soldiers";
                     SceneCast cast = BuildCast(men[i].Ped, men[j].Ped, null, _placeKind == "saloon", me, now, seed);
-                    if (cast.Off.Contains("smalltalk"))
-                        return "its own setting is off ([Scenes] SmallTalk)";
                     string heard = cast.Wars != null ? cast.Wars[1] : null;
                     if (story)
                         cast.Wars = new[] { "islands", heard };   // (the test's: he's home from the islands)

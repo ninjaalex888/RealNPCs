@@ -116,7 +116,7 @@ namespace EnrageWestworld.InGame
             {
                 WalkPair p = _walkPairs[i];
                 bool gone = !p.A.Exists() || !p.B.Exists() || p.A.IsDead || p.B.IsDead;
-                if (gone || _director.Involves(p.A.Handle) || _director.Involves(p.B.Handle) || PED.IS_PED_IN_COMBAT(p.A.Handle, 0) || PED.IS_PED_IN_COMBAT(p.B.Handle, 0) || PED.IS_PED_FLEEING(p.A.Handle))
+                if (gone || _director.Involves(p.A.Handle) || _director.Involves(p.B.Handle) || PED.IS_PED_IN_COMBAT(p.A.Handle, 0) || PED.IS_PED_IN_COMBAT(p.B.Handle, 0) || PED.IS_PED_FLEEING(p.A.Handle) || PED.IS_PED_FLEEING(p.B.Handle))
                 {
                     _walkPairs.RemoveAt(i);   // left as they are: something else has them
                     continue;
