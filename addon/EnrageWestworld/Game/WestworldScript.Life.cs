@@ -50,6 +50,7 @@ namespace EnrageWestworld.InGame
             DoorRunStep(now);   // a man running for the doctor at night (WestworldScript.DoctorsDoor.cs; reserve R4)
             ThrownOutStep(now);   // the card cheat on the boardwalk
             RunOutStep(now);   // ...or walked out past the last houses by the table, and back another day, sore (WestworldScript.Cardsharp.cs; reserve R6)
+            EncounterLook(now);   // the game's own encounters near you, seen and told (WestworldScript.GameEncounters.cs; reserve R8)
             SabbathWatchStep(now);   // the one who saw the kneel thinks of it, a few seconds on
             SubEnd(ref _psHelpers, "scenes: helpers", sub);
             sub = SubStart();

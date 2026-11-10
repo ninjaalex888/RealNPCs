@@ -591,6 +591,8 @@ namespace EnrageWestworld.Core
             { "pledge|did:doer|fresh", new[] { "{who} signed today. One more soul out of that saloon.", "Got {who} to sign the pledge. Pray he holds." } },
             { "pledge|did:done|fresh", new[] { "Signed {who}'s card. God help me, I signed it.", "{who} looked at me like my mother used to. So I signed." } },
             { "pledge|saw|fresh", new[] { "{who} signed the temperance pledge at the saloon door. Give it a week." } },
+            // the game's own encounters, seen (FOURTEENHOUR reserve R8): {who} is the thing seen, in our words
+            { "encounter|saw|fresh", new[] { "Saw {who} out there. Can't get it out of my head.", "I keep coming back to it: {who}, plain as day." } },
             // the well-off and the working man (FOURTEENHOUR item 18): the gentleman did it
             { "snub|did:doer|fresh", new[] { "Some fellow stopped me in the street. {who}. Wanted something, I suppose.", "Had to put {who} in his place. They forget themselves." } },
             { "snub|did:done|fresh", new[] { "{who} looked at me like I was something on his boot.", "Asked {who} a civil question. Got the back of his coat.", "Fine coat, {who}. Fine manners to go with it." } },

@@ -718,6 +718,12 @@ namespace EnrageWestworld.InGame
                         skipped = "the day and hour, the rarity and the rests (Pacing \"sabbath\")";
                         return SabbathScene(Game.Player.Character, now, true, out sw) ? null : sw;
                     }
+                case "owners":
+                    skipped = "nothing: it only asks and logs";
+                    return OwnersProbe(out said);   // WestworldScript.GameEncounters.cs (FOURTEENHOUR reserve R8)
+                case "encounter":
+                    skipped = "the encounter itself (a snakebite, as if seen)";
+                    return EncounterTest(out said);   // (reserve R8)
                 case "bestfist":
                     {
                         skipped = "the three wins and the day's roll (a regular named, a man from another town come in two minutes)";
