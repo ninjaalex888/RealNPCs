@@ -729,6 +729,13 @@ namespace EnrageWestworld.InGame
                         skipped = "the hour, the rarity and the rests (Pacing \"lostchild\")";
                         return LostChildScene(Game.Player.Character, now, true, out lw) ? null : lw;
                     }
+                case "snatch":
+                    {
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already: " + SceneNow() + " (let it finish)";
+                        skipped = "the reason, the chance meeting's wait and the chaser's nature (the first man near her goes)";
+                        return SnatchFire(now, seed, out said);   // WestworldScript.PurseSnatch.cs (FOURTEENHOUR item 20)
+                    }
                 case "rivals":
                     {
                         if (_director.Busy && !TestMakeRoom())

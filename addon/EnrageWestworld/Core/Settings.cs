@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 387;
+        public const int CurrentVersion = 388;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -110,6 +110,7 @@ namespace EnrageWestworld.Core
         public bool PaydayNight = true;      // [Scenes] with Payday: Saturday night after eight, the paid hands stay in town and in the saloon, its fights come easier and grow faster, and the town says which night it is (FOURTEENHOUR item 13; settings version 381)
         public bool BrawlAfter = true;       // [Scenes] with MindLive: the week after a brawl: the winner of a saloon's fight stands a round; a big one has the town's news with its numbers, the barkeep's broken chairs (J at the bar), the men of opposite sides sore at each other; the law's prisoner is locked up overnight and his wife or mother waits at the jail door at dawn (J pays his fine) (FOURTEENHOUR item 12; settings version 380)
         public bool BrawlVerbs = true;       // [Scenes] with MindBrawls: J in a fight near you: break it up (heeded by their natures and what they think of you), stand with the man losing (the one beating him turns on you), or take a waiting onlooker's bet (FOURTEENHOUR item 11; settings version 379)
+        public bool PurseSnatch = true;      // [Scenes] at a thief's snatch a man near may give chase and bring him down; your own catch asks on J what's done with him (FOURTEENHOUR item 20; settings version 388)
         public bool Rivals = true;           // [Scenes] two men courting the same woman have it out (words, blows, or one walks away), and then she chooses (FOURTEENHOUR item 19; settings version 387)
         public bool Snubs = true;            // [Scenes] a gentleman snubs a working man in the street; his lady's word ends it or makes it worse; alone, it can come to blows (FOURTEENHOUR item 18; settings version 386)
         public bool OldSoldiers = true;      // [Scenes] old soldiers of either side argue the war or remember it, and a young man home from Cuba or the islands tells his; with [World] HistoricalAccuracy (FOURTEENHOUR item 17; settings version 385)
@@ -1028,6 +1029,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 388)
+                    log?.Invoke("Settings: new in this version: [Scenes] PurseSnatch (on): a man near gives chase to a thief, and J asks what's done with the one you catch.");
                 if (s.SettingsVersion < 387)
                     log?.Invoke("Settings: new in this version: [Scenes] Rivals (on): two men courting the same woman have it out, and she chooses.");
                 if (s.SettingsVersion < 386)
@@ -2110,6 +2113,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("PaydayNight = " + B(PaydayNight) + "   ; with Payday on: Saturday from eight into the small hours, the paid hands stay in town and lean to the saloon, the bottle and the cards; a saloon's fights grow faster that night (each man's threshold to join comes nearer); the town says which night it is; false: payday ends at eight, as before");
             b.AppendLine("BrawlAfter = " + B(BrawlAfter) + "   ; the week after a brawl: the winner of a saloon's fight stands the house a round; a big one (six or more) is in the town's news with its numbers, leaves the barkeep's chairs broken (J at the bar pays for them) and the men of opposite sides sore at each other; a man the law tied up is locked up overnight, and from seven to noon the next morning his wife or mother waits at the jail door (J pays his $2 fine); false: none of it");
             b.AppendLine("BrawlVerbs = " + B(BrawlVerbs) + "   ; with MindBrawls on: once a fight near you (20 m), J offers to break it up (each heeds by their nature and what they think of you; one who won't may turn on you), to stand with the man losing (the one beating him turns on you; that side thinks the better of you, he the worse), or to take the bet of an onlooker waiting for a taker (a dollar on the other man; a lost bet unpaid is a welsh he holds against you); false: none of it");
+            b.AppendLine("PurseSnatch = " + B(PurseSnatch) + "   ; when a thief snatches and runs, one man near may give chase, by his nature (the bold, the kind, a friend of hers), bring him down and hand back what he took; and when you catch a thief yourself, J asks: make him give it back, hand him to the law, or let him run; false: as before");
             b.AppendLine("Rivals = " + B(Rivals) + "   ; two men courting the same woman (a courting worry, a sweetheart, an affair) meet and have it out: words, blows their friends may join, or one walks away; then she chooses by her nature and how it went (the winner, the one who walked away, or neither), her ties change, and the town hears of it; false: never");
             b.AppendLine("Snubs = " + B(Snubs) + "   ; a working man asks a gentleman something in the street by day and is brushed off; he takes it, sneers or answers back; the gentleman's pride; with a lady beside him, her word ends it or makes it worse and they walk on together; alone, a hot man and a proud one can come to blows, and the working men near lean to their own; false: never");
             b.AppendLine("OldSoldiers = " + B(OldSoldiers) + "   ; with [World] HistoricalAccuracy: two old men who fought on opposite sides in the war find each other out, mostly in the saloon, and argue it (it ends in a toast to the dead, a cold parting or blows, by their natures; in a brawl over it the old soldiers near lean to their own side); two of the same side remember it together; and a young man home from Cuba or the islands tells his war: an old soldier hears him out, a man against the islands won't; false: never");

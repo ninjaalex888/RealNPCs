@@ -40,7 +40,7 @@ namespace EnrageWestworld.InGame
             _eventPrompt = kind;
             _eventPromptFor = e;
             _eventPromptUntil = Game.GameTime + ms;
-            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == Wayside.Kind ? ": what you do" : kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == BarRound.Kind ? ": buy the house a round" : kind == WalkHome.Kind ? ": offer to see them home" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : kind == BrawlVerbs.Kind ? ": the fight" : kind == BrawlAfter.JailKind ? ": his fine" : kind == BrawlVerbs.PayKind ? ": pay the bet you lost" : kind == NeighbourReward.Kind ? ": the reward" : kind == WantedWhich.Kind ? ": the poster" : ": the cell");
+            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == Wayside.Kind ? ": what you do" : kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == BarRound.Kind ? ": buy the house a round" : kind == WalkHome.Kind ? ": offer to see them home" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : kind == BrawlVerbs.Kind ? ": the fight" : kind == PurseSnatch.Kind ? ": the thief you caught" : kind == BrawlAfter.JailKind ? ": his fine" : kind == BrawlVerbs.PayKind ? ": pay the bet you lost" : kind == NeighbourReward.Kind ? ": the reward" : kind == WantedWhich.Kind ? ": the poster" : ": the cell");
         }
 
         private void PromptClear()
@@ -624,6 +624,7 @@ namespace EnrageWestworld.InGame
                 case BrawlVerbs.Kind: menu.Rows = BrawlVerbsRows(); menu.Title = "The fight here:"; break;   // (FOURTEENHOUR item 11)
                 case BrawlAfter.JailKind: menu.Rows = BrawlAfter.JailRows(Person.FirstOf(_eventPromptFor.AName), MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "At the jail door:"; break;   // (FOURTEENHOUR item 12)
                 case BrawlVerbs.PayKind: menu.Rows = BrawlVerbs.PayRows(Person.FirstOf(_eventPromptFor.AName), _eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "The bet you lost:"; break;
+                case PurseSnatch.Kind: menu.Rows = PurseSnatch.Rows(Person.FirstOf(_eventPromptFor.AName), _theftAsk != null && NearLawFor(_theftAsk.Thief, PurseSnatch.LawNearMetres) != null); menu.Title = "The thief:"; break;   // (FOURTEENHOUR item 20)
                 case NeighbourReward.Kind: menu.Rows = NeighbourReward.Rows(_eventPromptFor.AName, _eventPromptFor.Count); menu.Title = "The reward on " + Person.FirstOf(_eventPromptFor.AName) + ":"; break;   // (FIVEDAY R30)
                 default: menu.Rows = Trials.BreakoutRows(_eventPromptFor.AName); menu.Title = Person.FirstOf(_eventPromptFor.AName) + " is in the cell:"; break;
             }
@@ -666,6 +667,11 @@ namespace EnrageWestworld.InGame
             if (m.Mode == BrawlVerbs.Kind || m.Mode == BrawlVerbs.PayKind)
             {
                 BrawlVerbChoose(row.Id);   // WestworldScript.BrawlVerbs.cs (FOURTEENHOUR item 11)
+                return;
+            }
+            if (m.Mode == PurseSnatch.Kind)
+            {
+                ThiefChoose(row.Id);   // WestworldScript.PurseSnatch.cs (FOURTEENHOUR item 20)
                 return;
             }
             if (m.Mode == "testify")

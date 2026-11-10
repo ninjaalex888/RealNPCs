@@ -298,7 +298,8 @@ namespace EnrageWestworld.InGame
                 return true;
             if (MindGettingUp(h))
                 return true;   // a stage-1 get-up not yet handed on: the waking's sequence isn't cut by a new order (NIGHT4 item 6)
-            return (_bodyClear != null && (_bodyClear.Law == h || _bodyClear.Mourner == h)) || (_theft != null && _theft.Lawman != null && _theft.Lawman.Handle == h);   // (the mourner walking behind the lawman too: the review of items 15-19)   // the law at work too: a body, a lash-out, a chase (the cross-cutting review)
+            return (_bodyClear != null && (_bodyClear.Law == h || _bodyClear.Mourner == h)) || (_theft != null && _theft.Lawman != null && _theft.Lawman.Handle == h) ||
+                   (_theft != null && _theft.Chaser != null && _theft.Chaser.Handle == h);   // (the theft's chaser too: FOURTEENHOUR item 20)   // (the mourner walking behind the lawman too: the review of items 15-19)   // the law at work too: a body, a lash-out, a chase (the cross-cutting review)
         }
 
         /// A wake act has them, or they're its other or its lawman.

@@ -42,6 +42,11 @@ namespace EnrageWestworld.InGame
             public int LawHeldAt;
             public int RunCheckAt, RunStalls;   // the watch on his run: where he was at the last look, and how often he stood (StillRunning)
             public Vector3 RunFrom;
+            // a purse snatched (FOURTEENHOUR item 20; WestworldScript.PurseSnatch.cs): a man near gives chase; your catch asks first
+            public Ped Chaser, ToLaw;
+            public string ChaserName, ChaserId;
+            public int ChaseSince, ChaseLookAt, ChaseHeldAt, AskUntil, ToLawSince;
+            public bool ChaseLooked, ChaseHeld, Asking, HandsUp;
         }
 
         private sealed class Pleading
@@ -193,15 +198,34 @@ namespace EnrageWestworld.InGame
             }
             Ped me = Game.Player.Character;
             int h = t.Thief.Handle;
+            if (t.ChaseHeld || t.Asking)
+            {
+                if (t.Thief.IsDead)
+                {
+                    t.Asking = false;
+                    _theftAsk = null;
+                    ResolveTheft(t, "killed", now);
+                    return;
+                }
+                if (t.ChaseHeld)
+                    ChaseHeldStep(t, now);   // a man near ran him down: her purse back (FOURTEENHOUR item 20; WestworldScript.PurseSnatch.cs)
+                else
+                    ThiefAskStep(t, now);    // you caught him: what's done with him waits on J
+                return;
+            }
             bool dead = t.Thief.IsDead;
             float dist = t.Thief.Position.DistanceTo(me.Position);
             bool caught = !dead && (PED.IS_PED_HOGTIED(h) || PED.IS_PED_LASSOED(h) || PED.IS_PED_INCAPACITATED(h) ||
                                     ((PED.IS_PED_RAGDOLL(h) || ENTITY.GET_ENTITY_HEALTH(h) < t.ThiefHealth * 0.6f) && dist < 6f));
             if (dead || caught)
             {
+                if (caught && ThiefAskFirst(t, now))
+                    return;   // J asks what's done with him first (FOURTEENHOUR item 20)
                 ResolveTheft(t, dead ? "killed" : "caught", now);
                 return;
             }
+            if (PurseSnatch.On && !t.PlayerMark && ChaseStep(t, me, now))
+                return;   // a man near gives chase (FOURTEENHOUR item 20)
             if (LawChaseStep(t, me, now))
                 return;
             StillRunning(t, me, now);
@@ -407,7 +431,7 @@ namespace EnrageWestworld.InGame
             if (how == "escaped")
             {
                 if (markHere)
-                    SayLater(500, label, Voice.Pick(seed, "Gone. Every cent I had.", "Well, that's that. Lord, what'll I tell them at home?", "Nobody lifted a finger. Not one of you."),
+                    SayLater(500, label, t.ChaserName != null ? Voice.Pick(seed, "He tried. Bless him, he tried.", "Gone, and " + Person.FirstOf(t.ChaserName) + " near killed himself running.") : Voice.Pick(seed, "Gone. Every cent I had.", "Well, that's that. Lord, what'll I tell them at home?", "Nobody lifted a finger. Not one of you."),
                         t.Mark.Handle, "mild");
                 Log.Write("PICKPOCKET got away");
                 return;
