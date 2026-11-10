@@ -146,8 +146,9 @@ namespace EnrageWestworld.InGame
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
                 return;
-            if (NightScene(me, now) || HorseThiefScene(me, now))
-                return;   // the night's mugging or a drunk taken home (WestworldScript.Night.cs)
+            string holdWhy;
+            if (NightScene(me, now) || HorseThiefScene(me, now) || HoldupScene(me, now, false, out holdWhy))
+                return;   // the night's mugging or a drunk taken home (WestworldScript.Night.cs); by day, a holdup by the store (WestworldScript.Holdup.cs; reserve R1)
             string fallWhy;
             if (_interiorType == 0 && PreacherScene(me, now, false, out fallWhy))
                 return;   // a Sunday afternoon's street preacher (WestworldScript.Preacher.cs)
@@ -1179,6 +1180,8 @@ namespace EnrageWestworld.InGame
             if (what == "thief")
             {
                 StartTheft();
+                if (_holdup != null && _director.CastAt(0) != null && _holdup.Robber != null && _director.CastAt(0).Handle == _holdup.Robber.Handle)
+                    HoldupRan();   // a holdup's robber has it, and runs (WestworldScript.Holdup.cs)
                 return;
             }
             if (what == "stoodup")

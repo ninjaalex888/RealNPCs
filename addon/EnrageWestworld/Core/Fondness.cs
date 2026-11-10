@@ -476,7 +476,7 @@ namespace EnrageWestworld.Core
             SceneTie best = null;
             foreach (SceneTie t in ties)
             {
-                if (t == null || !t.Has(id) || t.Kind == "lift" || t.Kind == "pickpocket" || t.Kind == "mugging" || t.Kind == "makeup" || now - t.At < 0 || now - t.At >= 7 * 1440L)
+                if (t == null || !t.Has(id) || t.Kind == "lift" || t.Kind == "pickpocket" || t.Kind == "mugging" || t.Kind == "holdup" || t.Kind == "makeup" || now - t.At < 0 || now - t.At >= 7 * 1440L)
                     continue;   // a quarrel mended (by a carried word, or their own making up) isn't a quarrel (the review: a tie at -3 mended to -1 was offered again)
                 if (!(t.Warmth < 0 || (t.Courted && t.Warmth <= 0)))
                     continue;

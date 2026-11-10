@@ -26,7 +26,7 @@ namespace EnrageWestworld.Core
     public static class Plans
     {
         public const int MostEach = 2;
-        private static readonly HashSet<string> Wrongs = new HashSet<string> { "rough", "brawl", "mugging", "pickpocket", "drunk", "scorn" };
+        private static readonly HashSet<string> Wrongs = new HashSet<string> { "rough", "brawl", "mugging", "holdup", "pickpocket", "drunk", "scorn" };
         private static readonly HashSet<string> Kindnesses = new HashSet<string> { "comfort", "help", "defend", "tend", "carried", "charity", "round" };
 
         /// What a plan wants played between the two: the scene kinds that settle it.

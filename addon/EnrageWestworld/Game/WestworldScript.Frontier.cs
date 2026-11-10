@@ -120,17 +120,21 @@ namespace EnrageWestworld.InGame
         {
             if (_cfg == null || !_cfg.SceneReactions || _engine == null || !_director.Busy || !_director.Involves(handle))
                 return false;
+            if (_holdup != null && _holdup.Ran && ((_holdup.Robber != null && handle == _holdup.Robber.Handle) || (_holdup.Mark != null && handle == _holdup.Mark.Handle)))
+                return false;   // he's off with it: too late for a word (catch him; WestworldScript.Holdup.cs)
             try
             {
                 string kind;
                 string outcome = _director.Intrude(handle, friendly, out kind);
                 if (kind == null)
                     return false;
+                if (kind == Holdup.Kind)
+                    HoldupWorded(outcome);   // (FOURTEENHOUR reserve R1)
                 if (outcome == "peace" && _cfg.Deeds)
                 {
                     Vector3 pos = Game.Player.Character.Position;
                     long g = Bridge.Now();
-                    NoteDeedMinds(_engine.OnDeed(Deeds.Make("peace", kind == "standoff" ? "a standoff" : "a fight", _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z,
+                    NoteDeedMinds(_engine.OnDeed(Deeds.Make("peace", kind == "standoff" ? "a standoff" : kind == Holdup.Kind ? "a holdup" : "a fight", _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z,
                         CountPeopleNear(pos, 0, 25f)), WitnessesNear(pos, 0, 25f), g), pos, 0);
                 }
                 return true;
@@ -187,6 +191,7 @@ namespace EnrageWestworld.InGame
         private void TheftTick(int now)
         {
             HogtieCheck(now);
+            HoldupStep(now);   // a holdup by the store, while one is on (WestworldScript.Holdup.cs; reserve R1)
             LiftStep(now);   // a thief who lifts your own money (WestworldScript.Lift.cs)
             Theft t = _theft;
             if (t == null)

@@ -23,6 +23,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public long At;                          // game minute
         [DataMember(EmitDefaultValue = false)] public List<string> Were;                // the ids of those who were in it (the eyewitnesses)
         [DataMember(EmitDefaultValue = false)] public List<string> Hurt;                // ...and of those laid out in it
+        [DataMember(EmitDefaultValue = false)] public string Held, How;                 // a holdup's (reserve R1): the one held up, and how it ended
     }
 
     public static class Tales
@@ -40,6 +41,14 @@ namespace EnrageWestworld.Core
         public static TownTale Pledge(string town, string man, long at)
         {
             return new TownTale { Id = Ids.New(), Kind = "pledge", Town = town, Starter = man, At = at };
+        }
+
+        /// A holdup by the store (FOURTEENHOUR reserve R1): the robber and the one held up (first names), how it ended ("ran": he ran with it;
+        /// "down": the stranger talked him down; "bolted": they ran for help; "shot": they ran and he fired; "drawn": cut short).
+        /// Count is the robbers: one, grown into a gang in the telling.
+        public static TownTale Holdup(string town, string robber, string held, string how, long at, int hour, List<string> were)
+        {
+            return new TownTale { Id = Ids.New(), Kind = "holdup", Town = town, Starter = robber, Held = held, How = how, Count = 1, At = at, Hour = hour, Were = were };
         }
 
         /// Whether it's still talked of.
@@ -60,6 +69,37 @@ namespace EnrageWestworld.Core
                 return t.Count;
             double grow = was ? 1.0 + 0.05 * days : 1.0 + 0.25 * days + 0.10 * t.Told;
             return Math.Max(t.Count, Math.Min(16, (int)Math.Round(t.Count * Math.Min(2.5, grow))));
+        }
+
+        /// A holdup as told now (reserve R1): the one held up tells it true; told on, the one man grows into two, then a gang, the sum
+        /// grows, the stranger who talked him down becomes a man who faced him down, and the name slides to one the teller scorns.
+        static string HoldupTelling(TownTale t, long now, bool was, string blamed, string seed)
+        {
+            int days = (int)Math.Max(0, (now - t.At) / 1440);
+            string when = When(t, now, false);
+            string held = t.Held ?? "somebody";
+            if (was)
+                return t.How == "down" ? Voice.Pick(seed + "|hw0", "He had a gun in my face at the store " + when + ". A stranger talked him out of it. I'd know that stranger anywhere.",
+                                                     "I was held up at the store " + when + ". If that stranger hadn't spoken up, I'd be poorer, or worse.")
+                     : t.How == "bolted" || t.How == "shot" ? Voice.Pick(seed + "|hw1", "I ran from a gun at the store " + when + ". It rings in my ears yet.", "He held me up at the store " + when + " and I ran. Fool thing to do. I'd do it again.")
+                     : Voice.Pick(seed + "|hw2", "He held me up at the store " + when + ". I see that gun when I close my eyes.", "I was robbed at the store " + when + ", in broad day. Every cent.");
+            int n = CountNow(t, now, false, false);   // the one robber, grown
+            string them = n <= 1 ? "a man" : n == 2 ? "two men" : "a gang of " + Count(n);
+            string who = !was && blamed != null && days >= 1 ? blamed : t.Starter;
+            bool far = days >= 2 || t.Told >= 3;
+            string told = Voice.Pick(seed + "|ht", Grammar.UpperFirst(held) + " was held up at the store " + when + " by " + them + ", they say",
+                                     "Did you hear? " + Grammar.UpperFirst(them) + " held up " + held + " by the store " + when);
+            if (who != null && n <= 2)
+                told += ", " + Voice.Pick(seed + "|hn", "and it was " + who, "and they're saying it was " + who);
+            if (t.How == "down")
+                told += far ? Voice.Pick(seed + "|hd", ". A stranger faced the lot of them down.", ". Some stranger stared them down, gun to gun.") : ". A stranger talked him out of it.";
+            else if (t.How == "shot")
+                told += ". Shots in the street, in broad day.";
+            else if (t.How == "bolted")
+                told += far ? ". " + Grammar.UpperFirst(held) + " ran, and bullets flew." : ". " + Grammar.UpperFirst(held) + " ran for it.";
+            else
+                told += far ? Voice.Pick(seed + "|hs", ". Took a fortune off them.", ". Cleaned them out, every cent and the watch.") : ".";
+            return told;
         }
 
         static string When(TownTale t, long now, bool shifted)
@@ -86,6 +126,8 @@ namespace EnrageWestworld.Core
                     ? Voice.Pick(seed + "|p1", man + " signed the pledge, and he was back at the brass rail by Friday.", man + "'s pledge lasted till payday. They always do.")
                     : Voice.Pick(seed + "|p2", man + " signed the pledge, and he's held to it, they say.", man + " hasn't touched a drop since he signed. Who'd have thought it.");
             }
+            if (t.Kind == "holdup")
+                return HoldupTelling(t, now, was, blamed, seed);
             int n = CountNow(t, now, was, hurt);
             bool far = !was && (days >= 2 || t.Told >= 3);
             bool knife = far && Voice.Chance(seed + "|knife", 45);

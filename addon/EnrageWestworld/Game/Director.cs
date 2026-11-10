@@ -1592,7 +1592,7 @@ namespace EnrageWestworld.InGame
                 foreach (int[] j in l.Joiners)
                     if (ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
                         all.Add(new[] { j[0], j.Length > 2 ? j[2] : 0 });
-            if (l.Scene.Kind == "mugging" && l.Cast.Length > 1 && l.Cast[0] != null && l.Cast[0].Exists() && !l.Cast[0].IsDead)
+            if ((l.Scene.Kind == "mugging" || l.Scene.Kind == Holdup.Kind) && l.Cast.Length > 1 && l.Cast[0] != null && l.Cast[0].Exists() && !l.Cast[0].IsDead)
                 all.Add(new[] { l.Cast[0].Handle, l.Cast[1] != null ? l.Cast[1].Handle : 0 });   // a man robbing another: stopping him is no crime
             if (l.ShootUntil > 0 && l.Shooter != 0 && ENTITY.DOES_ENTITY_EXIST(l.Shooter) && !ENTITY.IS_ENTITY_DEAD(l.Shooter))
                 all.Add(new[] { l.Shooter, l.ShotAt });

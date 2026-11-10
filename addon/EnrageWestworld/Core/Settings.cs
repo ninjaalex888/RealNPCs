@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 394;
+        public const int CurrentVersion = 395;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -116,6 +116,9 @@ namespace EnrageWestworld.Core
         public bool BrawlVerbs = true;       // [Scenes] with MindBrawls: J in a fight near you: break it up (heeded by their natures and what they think of you), stand with the man losing (the one beating him turns on you), or take a waiting onlooker's bet (FOURTEENHOUR item 11; settings version 379)
         public bool PurseSnatch = true;      // [Scenes] at a thief's snatch a man near may give chase and bring him down; your own catch asks on J what's done with him (FOURTEENHOUR item 20; settings version 388)
         public bool Rivals = true;           // [Scenes] two men courting the same woman have it out (words, blows, or one walks away), and then she chooses (FOURTEENHOUR item 19; settings version 387)
+        public bool StoreHoldups = true;     // [Scenes] by day a man holds up a customer outside the store near you; J: talk him down (FOURTEENHOUR reserve R1; settings version 395)
+        public int HoldupChance = 15;        // [Scenes] with StoreHoldups: percent, the day's roll once a robber and a customer fit
+        public bool HoldupShots = false;     // [Scenes] with StoreHoldups: now and then he fires at one who bolts (someone can die on screen; off as shipped)
         public bool RainShelter = true;      // [Scenes] the town keeps a record of the rain: in it the street's errands wait, strangers under one roof get acquainted, and rain days end a farmer's drought (FOURTEENHOUR item 26; settings version 394)
         public bool TemperanceDoor = true;   // [Scenes] at dusk a churchwoman puts the pledge to a drinker at the saloon door, a second woman beside her; a hothead's insult brings her kin; a pledge is the town's talk and the preacher's (FOURTEENHOUR item 25; settings version 393)
         public bool Snubs = true;            // [Scenes] a gentleman snubs a working man in the street; his lady's word ends it or makes it worse; alone, it can come to blows (FOURTEENHOUR item 18; settings version 386)
@@ -1035,6 +1038,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 395)
+                    log?.Invoke("Settings: new in this version: [Scenes] StoreHoldups (on): by day a man holds up a customer outside the store near you, and J is your word; HoldupShots (off): he may fire at one who bolts.");
                 if (s.SettingsVersion < 394)
                     log?.Invoke("Settings: new in this version: [Scenes] RainShelter (on): rain empties the street and fills the saloon.");
                 if (s.SettingsVersion < 393)
@@ -1616,6 +1621,7 @@ namespace EnrageWestworld.Core
             NightVisitorChance = Math.Max(0, Math.Min(100, NightVisitorChance));
             TravellerChance = Math.Max(0, Math.Min(100, TravellerChance));
             WagonWheelChance = Math.Max(0, Math.Min(100, WagonWheelChance));
+            HoldupChance = Math.Max(0, Math.Min(100, HoldupChance));
             AlmanacShare = Math.Max(0, Math.Min(200, AlmanacShare));
             TimesTalkShare = Math.Max(0, Math.Min(300, TimesTalkShare));
             ReturnersChance = Math.Max(0, Math.Min(100, ReturnersChance));
@@ -2137,6 +2143,9 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("BrawlVerbs = " + B(BrawlVerbs) + "   ; with MindBrawls on: once a fight near you (20 m), J offers to break it up (each heeds by their nature and what they think of you; one who won't may turn on you), to stand with the man losing (the one beating him turns on you; that side thinks the better of you, he the worse), or to take the bet of an onlooker waiting for a taker (a dollar on the other man; a lost bet unpaid is a welsh he holds against you); false: none of it");
             b.AppendLine("PurseSnatch = " + B(PurseSnatch) + "   ; when a thief snatches and runs, one man near may give chase, by his nature (the bold, the kind, a friend of hers), bring him down and hand back what he took; and when you catch a thief yourself, J asks: make him give it back, hand him to the law, or let him run; false: as before");
             b.AppendLine("Rivals = " + B(Rivals) + "   ; two men courting the same woman (a courting worry, a sweetheart, an affair) meet and have it out: words, blows their friends may join, or one walks away; then she chooses by her nature and how it went (the winner, the one who walked away, or neither), her ties change, and the town hears of it; false: never");
+            b.AppendLine("StoreHoldups = " + B(StoreHoldups) + "   ; by day (9 till 6) in a town, once a town a day at most: a man who leans to it (known for theft, honest with nobody and short of money, or at the worst of a money worry) shows his gun to a customer on their own outside the store near you; they plead, hand it over, or bolt; he runs with it (the law's chase and a man near giving chase, as a pickpocket), or empty-handed. J (or a greeting) is your word: talked down by his nature, the desperate least. Never with a lawman within 50 m; false: never");
+            b.AppendLine("HoldupChance = " + HoldupChance + "   ; with StoreHoldups: percent, the day's roll once a man who leans to it and a customer on their own are by the store near you (0 to 100; offline, 15 gave a holdup on about 3 town-days in 100 by a store)");
+            b.AppendLine("HoldupShots = " + B(HoldupShots) + "   ; with StoreHoldups: one in four who bolt are fired after (someone can die on screen); false: he curses and runs");
             b.AppendLine("RainShelter = " + B(RainShelter) + "   ; the town keeps a record of its rain while you're in it: in the rain the street's errands wait (nobody is walked anywhere), strangers under one roof talk and leave acquainted (they nod in passing after), and two days of rain in a farmer's town end his drought well; false: as before");
             b.AppendLine("TemperanceDoor = " + B(TemperanceDoor) + "   ; with Temperance on: at dusk a churchwoman by the saloon door puts the pledge to a man in drink going in, with a second woman of the church beside her if one is near (never a crowd); a hothead's insult brings her kin if he's near, and blows with sides; a man who signs is the town's talk for a week (and back at the bar by Friday, as often as not) and the preacher's word on Sunday; false: the pledge only in chance meetings, as before");
             b.AppendLine("Snubs = " + B(Snubs) + "   ; a working man asks a gentleman something in the street by day and is brushed off; he takes it, sneers or answers back; the gentleman's pride; with a lady beside him, her word ends it or makes it worse and they walk on together; alone, a hot man and a proud one can come to blows, and the working men near lean to their own; false: never");

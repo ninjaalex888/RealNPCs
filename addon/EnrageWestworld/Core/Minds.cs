@@ -99,7 +99,7 @@ namespace EnrageWestworld.Core
                     return "talk";
                 case "brushoff": case "scorn": case "avoid": case "passby": case "snub":
                     return "slight";
-                case "pickpocket": case "lift":
+                case "pickpocket": case "lift": case "holdup":
                     return "theft";
                 case "drunk":
                     return "drunk";

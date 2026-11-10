@@ -523,6 +523,8 @@ namespace EnrageWestworld.Core
                             s.Beats.Insert(2, new Beat(2, "Here we go!", "cheer"));
                     }
                     return s;
+                case "holdup":
+                    return Holdup.YourWord(c, friendly, seed, out outcome);   // talked down by his nature, or he runs with it (FOURTEENHOUR reserve R1)
                 case "flirt":
                 case "propose":
                 {

@@ -16,7 +16,7 @@ namespace EnrageWestworld.Core
         public const int BentDays = 30, ReformDays = 30;
         public const int KeepsChance = 70;              // the bent's chance of going for a pocket on a day (money trouble 30, light fingers 25)
         public const string KeepsToIt = "keeps to it";  // Reasons.Thief's word for it
-        public static readonly string[] Kinds = { "pickpocket", "lift", "mugging" };
+        public static readonly string[] Kinds = { "pickpocket", "lift", "mugging", "holdup" };
 
         public static bool IsCrime(string tieKind)
         {

@@ -261,6 +261,9 @@ namespace EnrageWestworld.InGame
             Snub.On = _cfg.Snubs;                // [Scenes] Snubs (FOURTEENHOUR item 18)
             Temperance.DoorOn = _cfg.TemperanceDoor && _cfg.Temperance;   // [Scenes] TemperanceDoor (FOURTEENHOUR item 25)
             RainShelter.On = _cfg.RainShelter;   // [Scenes] RainShelter (FOURTEENHOUR item 26)
+            Holdup.On = _cfg.StoreHoldups;   // [Scenes] StoreHoldups (FOURTEENHOUR reserve R1)
+            Holdup.Shots = _cfg.HoldupShots;
+            Holdup.Percent = _cfg.HoldupChance;
             Rivals.On = _cfg.Rivals;             // [Scenes] Rivals (FOURTEENHOUR item 19)
             PurseSnatch.On = _cfg.PurseSnatch;   // [Scenes] PurseSnatch (FOURTEENHOUR item 20)
             WitnessLaw.On = _cfg.WitnessesFetchLaw;   // [Mind] WitnessesFetchLaw (FOURTEENHOUR item 21)

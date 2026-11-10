@@ -105,6 +105,7 @@ namespace EnrageWestworld.Core
         public string MindWorry;                            // ... and the asker's money worry (debt, bank, savings, cards)
         public string WakeLine;                             // a stage-four person's line that wakes (Core/WakeLines.cs), said as a talk closes
         public int WakeLineBy = -1;                         // ...by A (0) or B (1); -1 nobody
+        public bool Desperate;                              // the holdup's robber at the worst of his money trouble: hardest to talk down (Core/Holdup.cs, FOURTEENHOUR reserve R1)
         public int Friend = -1;                             // the quarrel ladder's friend at hand, the cast's third: 0 a friend of A, 1 of B, -1 nobody (Scenes.Ladder.cs)
     }
 

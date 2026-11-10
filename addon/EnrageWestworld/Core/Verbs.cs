@@ -86,7 +86,7 @@ namespace EnrageWestworld.Core
                 string k = e.Kind;
                 if (k == "death" || k.Contains("kill") || k.Contains("murder"))
                     return "killer";
-                if (k.Contains("pickpocket") || k.Contains("lift") || k.Contains("mugging") || k.Contains("theft") || k.Contains("robbery"))
+                if (k.Contains("pickpocket") || k.Contains("lift") || k.Contains("mugging") || k.Contains("holdup") || k.Contains("theft") || k.Contains("robbery"))
                     worst = "thief";
                 else if (worst == null && (k.Contains("brawl") || k.Contains("rough") || k.Contains("assault")))
                     worst = "brawler";
@@ -152,7 +152,7 @@ namespace EnrageWestworld.Core
                     a.Line = Pick(seed + "|hc", first + " cheats at cards. Watch your hand.", "Don't sit at a table with " + first + ". Not unless you like losing.");
                 else if (k == "standoff")
                     a.Line = Pick(seed + "|hs", "Guns came out between " + first + " and me once. Both still breathing, more's the pity.", first + "? Keep {him} where you can see {his} hands.");
-                else if (k == "rough" || k == "pickpocket" || k == "mugging")
+                else if (k == "rough" || k == "pickpocket" || k == "mugging" || k == "holdup")
                     a.Line = theyDid ? Pick(seed + "|hr", first + " had {his} hand in my coat once. Keep yours buttoned.", first + " put my face into a bar. I'll not forget it.")
                                      : Pick(seed + "|hr2", "We had a disagreement, " + first + " and me. It ended my way.", first + " and I don't speak. {He} knows why.");
                 else

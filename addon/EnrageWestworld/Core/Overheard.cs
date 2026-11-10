@@ -113,6 +113,7 @@ namespace EnrageWestworld.Core
                 case "hosts": return a + " and " + t + " spoke strangely together";
                 case "pickpocket": case "lift": return a + " picked " + t + "'s pocket";
                 case "mugging": return a + " robbed " + t;
+                case "holdup": return a + " held " + t + " up at gunpoint";
                 case "rough": return a + " put " + t + "'s face into the bar";
                 case "drunk": return a + ", in drink, called " + t + " out";
                 case "help": case "carried": return a + " helped " + t + " up";
@@ -178,6 +179,8 @@ namespace EnrageWestworld.Core
                     return "Raised voices behind you.";
                 case "brawl": case "rough": case "mugging":
                     return "A scuffle behind you.";
+                case "holdup":
+                    return "A cry of 'Thief!' behind you.";
                 case "song": case "talltale": case "cheer": case "glad": case "gossip": case "hosts":
                     return "Laughter behind you.";
                 case "nighttale":
@@ -196,7 +199,7 @@ namespace EnrageWestworld.Core
         /// Every line, for the offline checks.
         public static IEnumerable<string> AllLines()
         {
-            string[] kinds = { "brawl", "argue", "snap", "standoff", "callout", "debt", "settled", "cheat", "feud", "flirt", "propose", "brushoff", "smalltalk", "gossip", "song", "talltale", "pitch", "hosts", "pickpocket", "mugging", "rough", "drunk", "help", "passby", "comfort", "cheer", "envy", "makeup", "round", "charity", "scorn", "defend", "faced", "apology", "thanks", "mourn", "lawword", "avoid", "introduced", "death" };
+            string[] kinds = { "brawl", "argue", "snap", "standoff", "callout", "debt", "settled", "cheat", "feud", "flirt", "propose", "brushoff", "smalltalk", "gossip", "song", "talltale", "pitch", "hosts", "pickpocket", "mugging", "holdup", "rough", "drunk", "help", "passby", "comfort", "cheer", "envy", "makeup", "round", "charity", "scorn", "defend", "faced", "apology", "thanks", "mourn", "lawword", "avoid", "introduced", "death" };
             foreach (string k in kinds)
             {
                 yield return What(k == "death" ? k : "scene:" + k, "Simon Walsh", "Ezra Whitlow");
