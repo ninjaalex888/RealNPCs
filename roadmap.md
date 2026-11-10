@@ -505,6 +505,67 @@ The richest seam is already in the code: every resident lives through a week-lon
 | **Towns that shrink** | Where the player has killed many, fewer regulars remain; a shop closes and people talk of leaving. | Deeds, Regulars | M |  |
 | **The epilogue remembers** | On John's first load, some of Arthur's regulars carry over eight years older: married, widowed, moved on, and a few remember a man called Morgan. | Store, Regulars | L |  |
 
+## Idea bank: brawls that grow, and the town between people (2026-11-10)
+
+Lex, 2026-11-10: "More NPC on NPC interactions, brawls that escalate larger." Lex's log of 2026-11-09 shows why the brawls stay
+small: four in three minutes in Valentine, one joiner in all, and every man who stayed out did so for "the law at hand" (any
+lawman within 30 m, seen or not). The machinery to grow a brawl is built (waves of joiners, `BrawlMost` 12, the downs, the draw,
+wagers, rematches); what's missing is a reason for a stranger to join. These ideas give the reasons, then fill the town's
+streets with more between people. "14h N" is the fourteen-hour plan's item (R: its reserve); nothing needs Talk.
+
+### Brawls that grow
+
+| Idea | What the player sees | Builds on | Size | Your call |
+| --- | --- | --- | --- | --- |
+| **The badge across the street** | A deputy five yards off stops a crowd joining in; one inside his office doesn't. He comes over, and the fight has a minute to grow before he's there. | `Brawl.LawHolds`, the lawmen's jobs (14h 5) | M |  |
+| **The deputy out of his depth** | One deputy against a room hangs back and sends for the sheriff, who comes with another man; they take the two who started it. | `Brawl.Heeds`, LawTake, the hogtie (14h 5) | S |  |
+| **Sides by who they are** | The farmhands pile in for the farmhand, the working men for the miner, the town's own against the stranger; the well-dressed send for the sheriff. | JoinIn, `InnerLife.TradeGroup`, Family (14h 6) | M |  |
+| **The cascade** | Most fights stay two men. Now and then one more joins, then three, and the whole saloon goes; you can't tell which until it tips. | JoinIn, `Brawl.Momentum` (14h 7) | M |  |
+| **The stray blow** | A man knocked back into a bystander gets a fist for it, and the bystander is in it. | the join's run-over (14h 8) | S |  |
+| **The friend who pulls him out** | A friend drags a beaten man out of it, and the other side lets him go, or follows. | the Director's leavewith (14h 8) | S |  |
+| **A fight over silver** | Two men on opposite sides of 1899's quarrels (silver, the Philippines, the dry vote) come to blows, and each side's men join their own. | AlmanacSides, the ladder (14h 9) | M |  |
+| **The shape of a big fight** | It climbs, sprawls and dies: the barkeep shouting, a coward out the door, men down, the bets growing, and an end by the law, a gun or tiredness. | the Director's brawl beats (14h 10) | M |  |
+| **Break it up** | J in a brawl: Arthur's shout. Those who like or fear him stop; the rest may turn on him. | `Brawl.Heeds`, `Brawl.AtYou` (14h 11) | S |  |
+| **Stand with the losing man** | J: take his side. His friends remember it, and so do the men on the other side. | JoinYou, allies (14h 11) | S |  |
+| **Your money on it** | The onlooker waiting for a taker turns to you. Take the bet; welsh on it and he remembers. | Wagers (14h 11) | S |  |
+| **The week after the fight** | The winner's round, the beaten at the doctor's, a friend walking the knocked-out man home, the barkeep's broken chairs, the jail door in the morning. | Round, Patient, GroupActs, LawTake (14h 12) | M |  |
+| **Sore sides** | The men who fought on opposite sides stay sore for a week, so the next fight among them grows faster. | Ties, JoinIn (14h 12) | S |  |
+| **Payday night** | The night the ranch and the mine pay, the saloon fills and the fights get big. You learn which night it is. | the notice board's payday, the cascade (14h 13) | S |  |
+| **The town's best fist** | A man who wins three brawls gets a name; men come from other towns to try him, for a purse. | PrizeFight, Ties (14h R7) | M |  |
+| **The fight at the dance** | A jealous word at the Saturday dance; the fiddler plays on while two men take it outside, and their friends follow. | Dances, jealous, the cascade | M |  |
+| **Election day** | The polls in the saloon, as they often were, the parties' men and the whiskey: the year's worst brawl. | Election day (P22), AlmanacSides | M |  |
+| **The fight retold wrong** | Three days on, the town's version has twelve men and a knife in it, and the man who started it is somebody else. | Rumours, memories that blur | S |  |
+| **The brawler's wife** | The morning after, she has words for him in the street where everyone can hear, and the men who fought beside him keep their heads down. | Domestic, Exchanges | S |  |
+
+### The town between people
+
+| Idea | What the player sees | Builds on | Size | Your call |
+| --- | --- | --- | --- | --- |
+| **Friends walk together** | Two friends walk to the saloon side by side after work, talking; a courting couple walks out on a Sunday; a man walks his drunk friend home. | the ring's walking (14h 15) | M |  |
+| **The newcomer tested** | Two regulars rib the greenhorn off the train. He laughs, fights or gets help, and is one of the town after. | NewFaces, StandUp (14h 16) | M |  |
+| **The old soldiers** | Two old men from opposite sides argue the war over a bottle: a toast to the dead, or blows, and the young men take sides. | OldDays, Times (14h 17) | S |  |
+| **The well-off and the working man** | A well-dressed couple brushes off a working man; he answers back; the husband's pride, the wife's word. | the brush-off, Opinions, AlmanacSides (14h 18) | S |  |
+| **Rivals for one woman** | Two men courting the same woman meet at her gate; their friends join the fight; she may pick the one who walked away. | the courting links, jealous (14h 19) | M |  |
+| **Rowdy drunks** | Three friends in drink come down the street singing; one picks on a passer-by; a friend hauls him home. | song, drunk, the walk home (14h R5) | S |  |
+| **The cardsharp run out of town** | A cheat called at the table; the table's men walk him to the edge of town; weeks later he's back. | cheat, the ring's walking (14h R6) | M |  |
+| **The horse trade** | At the hitching post one man gets the worse of a horse deal and knows it: a grudge with a cause. | haggle (14h 14) | S |  |
+| **A tooth pulled in the street** | The barber and a man whose tooth is at its worst; whoever is near winces in their thoughts. | the tooth worry (14h 14) | S |  |
+| **The collector and his hired man** | The debt at its worst: the debtor pays, begs or runs, and a bystander has a word. | the debt links (14h 14) | S |  |
+| **An apology before the street** | The man who wronged another says so in public; the kind take it, the proud don't. | Grudges' apology (14h 14) | S |  |
+| **The peeping tom** | A scream from a window at night, a man running, the husband after him in his nightshirt; the town laughs for a week. | the night scenes, a chase | M |  |
+| **Talk at the pump** | Women at the pump trade the town's news; what's said there is in every house by supper. | Gossip, MindTalk, Rumours | S |  |
+| **The barber's chair** | The barber knows everything; the man in the chair hears the town's news and passes it on. | Gossip, the barber | S |  |
+| **Mail day** | The mail comes in on the train: letters read on the post office steps, good news called out, bad news taken home. | Letters, good and bad news | S |  |
+| **After the service** | Sunday on the church steps: who came, who didn't, who sat with whom; the preacher's word to a backslider. | Sundays, the preacher, Gossip | S |  |
+| **The tonic and the sceptic** | A drummer sells a tonic in the street; a sceptic heckles; a buyer is sick by Tuesday and wants his money back. | pitch, NewFaces' drummer | S |  |
+| **A son comes home** | A resident's son back from the army or the city: his mother at the depot, his old friends, the girl who married someone else. | NewFaces, Family, Times (the war) | M |  |
+| **The schoolteacher and the father** | A father wants his boy in the fields, not the schoolroom; the new teacher stands her ground in the street. | NewFaces' schoolteacher, Exchanges | S |  |
+| **Rain brings strangers together** | Two or three under one roof in the rain talk, and nod in passing after. | shelter, the nods (14h R2) | S |  |
+
+Why these read true, in short: crowds don't join a fight for the fight's sake, but for their own (Tajfel's minimal groups) and
+once enough others have (Granovetter's thresholds, 1978); the law deters by being certain and near, not by being in town; and a
+street reads as a town when you can see who walks with whom, who won't look at whom, and who comes to the door the morning after.
+
 ## How to build them
 
 Three building blocks carry most of the idea bank: a saved outcome for worries so the player can change them, one town-events framework grown from the wedding code, and a small interaction menu. Below are those three and eleven more. The last, who steers whom, sits under all of them.
