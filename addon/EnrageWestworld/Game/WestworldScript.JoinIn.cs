@@ -116,9 +116,9 @@ namespace EnrageWestworld.InGame
                     {
                         if (left <= 1)
                             break;
-                        if (h == a[0] || (b.Count > 0 && h == b[0]) || !ENTITY.DOES_ENTITY_EXIST(h) || BrawlHealth(h) >= Brawl.BurnOutHealth)
+                        if (h == a[0] || (b.Count > 0 && h == b[0]) || !ENTITY.DOES_ENTITY_EXIST(h) || _director.FightHealth(h) >= Brawl.BurnOutHealth || AtArthur(h))
                             continue;
-                        if (!Voice.Chance(seed + "|quit|" + h + "|" + now / 2500, Brawl.BurnOutPercent) || !_director.LeaveFight(h))
+                        if (!Voice.Chance(seed + "|quit|" + h + "|" + now / 2500, Brawl.BurnOutPercent) || !DropFighter(h))
                             continue;
                         left--;
                         TASK.CLEAR_PED_TASKS(h, true, false);
@@ -133,6 +133,7 @@ namespace EnrageWestworld.InGame
         // ---- the stray blow and the friend who pulls him out (FOURTEENHOUR item 8; [Mind] BrawlStrays) ----
         private readonly Dictionary<int, int> _strayNear = new Dictionary<int, int>();   // within arm's length of the fighting since (this fight)
         private readonly HashSet<int> _strayRolled = new HashSet<int>(), _pulledOut = new HashSet<int>();
+        private readonly Dictionary<int, int> _pullers = new Dictionary<int, int>();   // a friend taking a beaten man out of it: not weighed till then (the review of items 1-13)
         private int _strayFor, _strays, _strayJoins, _pullOuts;
 
         /// At a look: someone free within 1.5 m of one of the fighters at two looks running takes a stray blow, once a fight
@@ -156,7 +157,7 @@ namespace EnrageWestworld.InGame
                 Vector3 at = p.Position;
                 int hitter = 0;
                 foreach (int f in a.Concat(b))
-                    if (ENTITY.DOES_ENTITY_EXIST(f) && ENTITY.GET_ENTITY_COORDS(f, true, true).DistanceTo(at) < 1.5f)
+                    if (ENTITY.DOES_ENTITY_EXIST(f) && !AtArthur(f) && ENTITY.GET_ENTITY_COORDS(f, true, true).DistanceTo(at) < 1.5f)
                     {
                         hitter = f;
                         break;
@@ -182,6 +183,7 @@ namespace EnrageWestworld.InGame
                 bool woman = !PED.IS_PED_MALE(h);
                 string answer = Brawl.StrayAnswer(t, w != null && InHisCups(p, w.P), woman, _cfg.WomenInFights, seed);
                 string name = w != null && w.Name != null ? w.Name : "a stranger", by = NameOfFighter(hitter);
+                bool doubled = StrayShows(h, woman, answer, seed);   // the blow seen: a word over his head, a man doubled over (the review of items 1-13)
                 int room = MostJoinersNow - _director.JoinerCount - _joinPending.Count;
                 if (answer == "swing" && room > 0 && w != null && w.Id != null)
                 {
@@ -192,19 +194,53 @@ namespace EnrageWestworld.InGame
                     continue;
                 }
                 looking.RemoveAt(i);
-                TASK.TASK_SMART_FLEE_PED(h, hitter, answer == "cry" ? 20f : 8f, answer == "cry" ? 8000 : 4000, 0, 1f, 0);   // off out of reach (as the Director's brave back off)
+                if (doubled)
+                    WanderLater(h, now + 3000);   // doubled over, then off out of it
+                else
+                    TASK.TASK_SMART_FLEE_PED(h, hitter, answer == "cry" ? 20f : 8f, answer == "cry" ? 8000 : 4000, 0, 1f, 0);   // off out of reach (as the Director's brave back off)
                 Log.Write("BRAWL " + name + " takes a stray blow from " + by + (answer == "cry" ? " and cries out and goes" : " and backs off out of it"));
             }
         }
 
-        /// At a look: a fighter losing badly (his health under a third) with a friend near and free (warmth 2 or more) may be
+        /// A stray blow you can see: a word over their head (a woman's cry, a man's protest), and a man not swinging back doubled
+        /// over with the street fight's own hurt move where the game has it (the reactions' clip, seen). True when he doubled over.
+        private bool StrayShows(int h, bool woman, string answer, string seed)
+        {
+            if (_cfg.ScenesOnTicker && _cfg.Ticker && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
+                SpeechCaption(MindNameOf(h) ?? (woman ? "A woman" : "A man"), Brawl.StrayCry(woman, answer, seed), h, 2200);
+            if (woman || answer == "swing" || !_streetFight || !STREAMING.HAS_ANIM_DICT_LOADED(StreetFightDict))
+                return false;
+            TASK.CLEAR_PED_TASKS(h, true, false);
+            TASK.TASK_PLAY_ANIM(h, StreetFightDict, HurtClip, 4f, -4f, -1, 0, 0f, false, 0, false, "", false);
+            return true;
+        }
+
+        /// Fighting Arthur: the game's and enRAGE's from then on, never given an order of ours (TWELVEHOUR.md's rule; the
+        /// review of items 1-13 found the burn-out, the cry, the pull-out and "Break it up!" clearing such a man).
+        private bool AtArthur(int h)
+        {
+            int me = Game.Player.Character.Handle;
+            return h != 0 && (PED.IS_PED_IN_COMBAT(h, me) || _director.TargetOf(h) == me);
+        }
+
+        /// Drops him from the fight; true when he's out of it by this call, whether or not it goes on without him (LeaveFight's false
+        /// also meant "dropped, and his side is empty now", so the last of a side kept swinging: the review of items 1-13).
+        private bool DropFighter(int h)
+        {
+            if (_director.IsOut(h))
+                return false;
+            _director.LeaveFight(h);
+            return _director.IsOut(h);
+        }
+
+        /// At a look: a fighter losing badly (under 60% of his health as the fight began) with a friend near and free (warmth 2 or more) may be
         /// pulled out of it; the two leave together, side by side, away from the fight, and the one beating him lets them go
         /// (or a hothead follows). Once a man a fight.
         private void PullOutLook(List<int> a, List<int> b, List<Ped> looking, int now)
         {
             foreach (int f in a.Concat(b).ToList())
             {
-                if (_pulledOut.Contains(f) || !ENTITY.DOES_ENTITY_EXIST(f) || ENTITY.IS_ENTITY_DEAD(f) || BrawlHealth(f) >= Brawl.PullOutHealth)
+                if (_pulledOut.Contains(f) || !ENTITY.DOES_ENTITY_EXIST(f) || ENTITY.IS_ENTITY_DEAD(f) || _director.FightHealth(f) >= Brawl.PullOutHealth || AtArthur(f))
                     continue;
                 MindWho fw = MindKnown(f, now);
                 if (fw == null || fw.Id == null)
@@ -220,9 +256,9 @@ namespace EnrageWestworld.InGame
                         continue;
                     _pulledOut.Add(f);
                     Traits t = w.Traits ?? (w.Traits = w.Src != null ? _engine.Shadow.TraitsOf(w.Src) : null);
-                    if (!Brawl.PullsOut(t, warmth, "f" + _director.FightId + "|" + w.Id + "|" + fw.Id) || !_director.LeaveFight(f))
+                    int beater = _director.TargetOf(f);   // before he's dropped (a leader dropped is replaced, and TargetOf no longer knows him)
+                    if (!Brawl.PullsOut(t, warmth, "f" + _director.FightId + "|" + w.Id + "|" + fw.Id) || !DropFighter(f))
                         break;
-                    int beater = _director.TargetOf(f);
                     MindWho bw = beater != 0 && ENTITY.DOES_ENTITY_EXIST(beater) ? MindKnown(beater, now) : null;
                     Traits bt = bw != null && bw.Src != null ? (bw.Traits ?? (bw.Traits = _engine.Shadow.TraitsOf(bw.Src))) : null;
                     bool follows = bw != null && Brawl.FollowsThem(bt, InHisCups(new Ped(beater), bw.P));
@@ -241,6 +277,8 @@ namespace EnrageWestworld.InGame
                         TASK.TASK_TURN_PED_TO_FACE_ENTITY(beater, f, 2000, 0f, 0f, 0f);   // he lets them go, and watches them off
                     else if (follows)
                         TASK.TASK_COMBAT_PED(beater, f, 0, 16);
+                    looking.Remove(p);                  // not weighed toward the man he's taking out (the loop is left at once, below)
+                    _pullers[p.Handle] = now + 15000;
                     _pullOuts++;
                     Log.Write("BRAWL " + w.Name + " pulls " + fw.Name + " out of it, beaten; they leave together" + (beater != 0 ? ", and " + NameOfFighter(beater) + (follows ? " goes after them" : " lets them go") : ""));
                     break;
@@ -258,6 +296,9 @@ namespace EnrageWestworld.InGame
         {
             if (Spawner.IsOurs(h))
                 return "ours";
+            int pulling;
+            if (_pullers.TryGetValue(h, out pulling) && now < pulling)
+                return "taking a friend out of it";
             if (Natives.StoryModel(p) || !IsGrownUp(p))
                 return "the story's or a child";
             if (PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false))
@@ -387,11 +428,14 @@ namespace EnrageWestworld.InGame
                 _brawlBiggest = a.Count + b.Count;
             if (!_director.FightSides(out a, out b))
                 return;   // the sides again: those who got up to join are on them now, so the balance sees them (the review, 2026-10-31)
-            if (_director.JoinerCount + _joinPending.Count >= MostJoinersNow)
+            // at the cap the looks still run (the notes, the shape, the strays, the pull-out), and nobody new is weighed (the review of
+            // items 1-13: the biggest brawls lost their beats)
+            bool full = _director.JoinerCount + _joinPending.Count >= MostJoinersNow;
+            if (full && !BrawlAfterOn && !(BrawlsOn && (_cfg.BrawlShape || _cfg.BrawlStrays)))
                 return;
             try
             {
-                JoinLook(a, b, now);
+                JoinLook(a, b, now, full);
             }
             catch (Exception ex)
             {
@@ -400,13 +444,12 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        private void JoinLook(List<int> a, List<int> b, int now)
+        private void JoinLook(List<int> a, List<int> b, int now, bool full = false)
         {
             Ped me = Game.Player.Character;
             if (!ENTITY.DOES_ENTITY_EXIST(a[0]))
                 return;
             Vector3 mid = ENTITY.GET_ENTITY_COORDS(a[0], true, true);
-            var sides = new[] { a.Select(FighterOf).ToList(), b.Select(FighterOf).ToList() };
             var looking = new List<Ped>();
             int witnesses = 0;
             // why those near were passed over, once a fight (FOURTEENHOUR item 6: of 21 near Lex's one long fight, three were weighed)
@@ -414,6 +457,7 @@ namespace EnrageWestworld.InGame
             bool law = false;
             float lawD = 99f;
             int lawH = 0;   // the nearest lawman within 30 m, for the hold by sight and distance (FOURTEENHOUR item 5)
+            var lawNearAll = new List<KeyValuePair<int, float>>();   // every lawman within 30 m (each by his own sight, below)
             foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Position.DistanceTo(mid) > JoinMetres + 12f)
@@ -427,6 +471,7 @@ namespace EnrageWestworld.InGame
                     if (ld < 30f)
                     {
                         law = true;
+                        lawNearAll.Add(new KeyValuePair<int, float>(h, ld));
                         if (ld < lawD)
                         {
                             lawD = ld;
@@ -467,18 +512,38 @@ namespace EnrageWestworld.InGame
                 StraysLook(a, b, looking, now);   // the stray blow (FOURTEENHOUR item 8)
                 PullOutLook(a, b, looking, now);  // a friend pulls a beaten man out of it
             }
-            if (looking.Count == 0)
+            if (looking.Count == 0 || full)
                 return;
+            // the sides as the looks have left them (a man pulled out, a quitter: gone from them; the review of items 1-13 had a
+            // friend weighed toward the man he'd just taken out)
+            if (!_director.FightSides(out a, out b) || a.Count == 0 || b.Count == 0)
+                return;
+            var sides = new[] { a.Select(FighterOf).ToList(), b.Select(FighterOf).ToList() };
             string fight = (_director.FightId != 0 ? "f" + _director.FightId : a[0] + "|" + b[0]) + "|" + (a.Count + b.Count);
             bool saloon = _placeKind == "saloon", sure = BrawlsOn && now < _brawlTestUntil;   // the Testing row: the waves without the bar or the roll
             int most = MostJoinersNow, room = most - _director.JoinerCount - _joinPending.Count;
             // [Mind] BrawlLawSight (FOURTEENHOUR item 5): the badge holds by sight and distance, not by being within 30 m (one
             // ray from him to the fight, a look every 2.5 s)
             float lawHold = -1f;
+            bool lawSeen = true;
             if (law && BrawlsOn && _cfg.BrawlLawSight && lawH != 0)
             {
-                bool sees = ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(lawH, a[0], 17);
-                lawHold = Brawl.LawHoldsSeen(saloon, a.Count + b.Count, lawD, sees);
+                // each of the nearest three within 30 m by his own sight, the strongest hold of them (the review of items 1-13: only the
+                // nearest was looked at, so one behind a wall hid another in plain sight); the cascade's threshold rises only for one seen
+                lawSeen = false;
+                bool sees = false;
+                foreach (KeyValuePair<int, float> lw in lawNearAll.OrderBy(x => x.Value).Take(3))
+                {
+                    bool s = ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(lw.Key, a[0], 17);
+                    float hold = Brawl.LawHoldsSeen(saloon, a.Count + b.Count, lw.Value, s);
+                    if (lawHold < 0f || hold < lawHold)
+                    {
+                        lawHold = hold;
+                        lawD = lw.Value;
+                        sees = s;
+                    }
+                    lawSeen |= s;
+                }
                 if (_joinLawSaidFor != _director.FightId)
                 {
                     _joinLawSaidFor = _director.FightId;
@@ -529,7 +594,7 @@ namespace EnrageWestworld.InGame
                     SideNote(w);
                 Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
                 JoinTake take = JoinIn.Weigh(w.Id, t, !PED.IS_PED_MALE(p.Handle), InHisCups(p, w.P), sides, LadderWarmth, witnesses, law, saloon,
-                                             _cfg.WomenInFights, _director.JoinerCount + _joinPending.Count, fight + "|" + w.Id, most, BrawlsOn, sure, lawHold, sideTie, BrawlsOn && _cfg.BrawlCascade);
+                                             _cfg.WomenInFights, _director.JoinerCount + _joinPending.Count, fight + "|" + w.Id, most, BrawlsOn, sure, lawHold, sideTie, BrawlsOn && _cfg.BrawlCascade, lawSeen);
                 if (take.Side >= 0)
                     takes.Add(new KeyValuePair<JoinTake, KeyValuePair<Ped, MindWho>>(take, new KeyValuePair<Ped, MindWho>(p, w)));
                 else if (take.Why != null && take.Score > 0.2f)
@@ -548,7 +613,7 @@ namespace EnrageWestworld.InGame
                 {
                     // weighed again against the sides as this wave has left them, so a wave doesn't all pile onto one man
                     best = JoinIn.Weigh(bw.Id, bw.Traits, !PED.IS_PED_MALE(bestPed.Handle), InHisCups(bestPed, bw.P), sides, LadderWarmth, witnesses, law, saloon,
-                                        _cfg.WomenInFights, joinedNow, fight + "|" + bw.Id, most, BrawlsOn, sure, lawHold, sideTie, BrawlsOn && _cfg.BrawlCascade);
+                                        _cfg.WomenInFights, joinedNow, fight + "|" + bw.Id, most, BrawlsOn, sure, lawHold, sideTie, BrawlsOn && _cfg.BrawlCascade, lawSeen);
                     if (best.Side < 0)
                         continue;
                 }

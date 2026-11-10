@@ -28,6 +28,7 @@ namespace EnrageWestworld.InGame
             public uint Group;        // their own relationship group, when one of ours changed it
             public int Since, QuietSince;
             public string By;         // the path that first lent them (for the log)
+            public uint Model;        // whose handle it was: the game reuses them (the review of items 1-13)
         }
 
         private static readonly int[] LentAttrIds = { 5, 46 };   // what the paths set: fight even unarmed, always fight
@@ -44,9 +45,10 @@ namespace EnrageWestworld.InGame
             if (_cfg == null || !_cfg.HandBackLent || h == 0 || h == Game.Player.Character.Handle || !ENTITY.DOES_ENTITY_EXIST(h))
                 return;
             LentState s;
-            if (!_lent.TryGetValue(h, out s))
+            uint model = ENTITY.GET_ENTITY_MODEL(h);
+            if (!_lent.TryGetValue(h, out s) || s.Model != model)
             {
-                s = new LentState { Attrs = new bool[LentAttrIds.Length], Since = _now, QuietSince = -1, By = by };
+                s = new LentState { Attrs = new bool[LentAttrIds.Length], Since = _now, QuietSince = -1, By = by, Model = model };
                 for (int i = 0; i < LentAttrIds.Length; i++)
                     s.Attrs[i] = PED._GET_PED_COMBAT_ATTRIBUTE(h, LentAttrIds[i]);
                 _lent[h] = s;
@@ -100,6 +102,8 @@ namespace EnrageWestworld.InGame
                 return true;
             if (_theft != null && _theft.Thief != null && _theft.Thief.Handle == h)
                 return true;
+            if (_thieves.Contains(h) || (_horseTheft != null && _horseTheft.Thief != null && _horseTheft.Thief.Handle == h))
+                return true;   // a thief still fair game, a horse thief's chase (the review of items 1-13: his group came back mid-chase)
             for (int i = 0; i < _allies.Count; i++)
                 if (_allies[i].Handle == h)
                     return true;
@@ -138,7 +142,7 @@ namespace EnrageWestworld.InGame
                 LentState s;
                 if (!_lent.TryGetValue(h, out s))
                     continue;
-                if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || ENTITY.GET_ENTITY_MODEL(h) != s.Model)   // (another's now: the handle reused)
                 {
                     _lent.Remove(h);
                     _lentGone++;

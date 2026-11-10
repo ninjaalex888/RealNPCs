@@ -1980,6 +1980,26 @@ namespace EnrageWestworld.InGame
             return l != null && l.Out.Count > 0 && l.Out.Contains(h);
         }
 
+        /// A fighter's health as the fight measures it: the share of what he had when he came into it (FightDownStep drops a man
+        /// under 45% of that), 1 with no fight on. The review of items 1-13: the pull-out and the burn-out read max health, which
+        /// a man's start often isn't, so the down always came first.
+        public float FightHealth(int h)
+        {
+            Live l = _live;
+            return l != null && l.Fighting ? HealthOf(l, h) : 1f;
+        }
+
+        /// The two the fight began between (the scene's own two, whoever leads the sides now); 0 each with no fight on.
+        public void FightBegan(out int a, out int b)
+        {
+            a = b = 0;
+            Live l = _live;
+            if (l == null || !l.Fighting || l.Cast.Length < 2)
+                return;
+            a = l.Cast[0] != null && l.Cast[0].Exists() ? l.Cast[0].Handle : 0;
+            b = l.Cast[1] != null && l.Cast[1].Exists() ? l.Cast[1].Handle : 0;
+        }
+
         /// How many in the fight are going for this man now (the two leaders count for each other).
         public int AttackersOn(int h)
         {

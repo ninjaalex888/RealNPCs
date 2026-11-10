@@ -26,7 +26,8 @@ namespace EnrageWestworld.Core
         {
             string when = hour >= 5 && hour < 12 ? "this morning" : hour >= 12 && hour < 18 ? "this afternoon" : "tonight";
             string where = saloon ? "in the saloon" : "in the street";
-            string lying = down <= 0 ? "" : down == 1 ? ", and one carried off" : ", and " + Count(down) + " carried off";
+            // laid out, not carried off: the knocked out count with the dead, and most of them get up (the review of items 1-13)
+            string lying = down <= 0 ? "" : down == 1 ? ", and one laid out" : ", and " + Count(down) + " laid out";
             return Voice.Pick(seed + "|brawlnews", Count(fighters, true) + " men in a brawl " + where + " " + when + lying + ".",
                               "A brawl " + where + " " + when + ": " + Count(fighters) + " at it" + lying + ".");
         }

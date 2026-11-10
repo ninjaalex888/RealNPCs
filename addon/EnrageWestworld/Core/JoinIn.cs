@@ -51,7 +51,7 @@ namespace EnrageWestworld.Core
         public static JoinTake Weigh(string id, Traits t, bool woman, bool drunk, IList<Fighter>[] sides, Func<string, string, int> warmth,
                                      int witnesses, bool lawNear, bool saloon, bool womenFight, int joined, string seed,
                                      int mostJoiners = MostJoiners, bool brawls = false, bool sure = false, float lawHold = -1f,
-                                     Func<string, string, string, SideTie> sideTie = null, bool cascade = false)
+                                     Func<string, string, string, SideTie> sideTie = null, bool cascade = false, bool lawSeen = true)
         {
             // cascade: [Mind] BrawlCascade (FOURTEENHOUR item 7): one with no stake waits for his threshold (Brawl.Threshold)
             // sideTie(onlooker, fighter, the one he's fighting): what pulls the onlooker to a fighter by who they are (kin, his own
@@ -63,7 +63,7 @@ namespace EnrageWestworld.Core
                 return no;
             // with [Mind] MindBrawls (Core/Brawl.cs): the law at hand holds most back, not all, and the brawl's own size pulls
             int fighting = sides[0].Count + sides[1].Count;
-            float momentum = brawls ? Brawl.Momentum(fighting, saloon) : 0f, lawFactor = 1f;
+            float momentum = brawls ? Brawl.Momentum(fighting, saloon, cascade) : 0f, lawFactor = 1f;
             if (lawNear)
             {
                 if (!brawls)
@@ -142,7 +142,8 @@ namespace EnrageWestworld.Core
                 // for a man of his nature; his own kind fighting (his trade, his town) brings his threshold two nearer
                 if (cascade && tie <= 0f && kin < BrawlSides.KinPull && !sure)
                 {
-                    int th = Brawl.Threshold(t, drunk, saloon, lawNear, seed + "|" + id, PaydayNight) - (kin > 0f ? 2 : 0);
+                    // a lawman near raises it only when he can be seen (lawSeen; the review of items 1-13: one behind a wall raised it too)
+                    int th = Brawl.Threshold(t, drunk, saloon, lawNear && lawSeen, seed + "|" + id, PaydayNight) - (kin > 0f ? 2 : 0);
                     if (fighting < th)
                     {
                         if (best.Side < 0 && best.Why == null)

@@ -57,8 +57,12 @@ namespace EnrageWestworld.InGame
         /// From OnFightOver: the winner's round, and for a big brawl the news, the chairs and the sore sides.
         private void BrawlWeekAfter(int winner, int loser)
         {
-            if (!BrawlAfterOn || _afterFor != _director.FightId || _store == null)
+            // EndedFightId: by OnFightOver the live fight is gone and FightId reads 0, so until the review of items 1-13 this never
+            // got past here (only the jail door worked)
+            if (!BrawlAfterOn || _afterFor <= 0 || _afterFor != _director.EndedFightId || _store == null)
                 return;
+            int fid = _afterFor;
+            _afterFor = -1;   // once a fight
             int now = Game.GameTime;
             long g = _store.LastGameMin;
             MindWho ww = winner != 0 && ENTITY.DOES_ENTITY_EXIST(winner) ? MindKnown(winner, now) : null;
@@ -67,7 +71,7 @@ namespace EnrageWestworld.InGame
             if (_afterPeak < Brawl.BigAt)
                 return;
             _bigNews++;
-            NewsPush(_placeTown ?? "Around here", BrawlAfter.News(_afterPeak, _afterDowns, _afterSaloon, CLOCK.GET_CLOCK_HOURS(), "f" + _afterFor), "news");
+            NewsPush(_placeTown ?? "Around here", BrawlAfter.News(_afterPeak, _afterDowns, _afterSaloon, CLOCK.GET_CLOCK_HOURS(), "f" + fid), "news");
             if (_afterSaloon && _placeTown != null)
             {
                 string k = _placeTown + "|" + g / 1440;
@@ -94,16 +98,32 @@ namespace EnrageWestworld.InGame
         /// The law tied him up for it (WestworldScript.Brawl.cs): locked up overnight, and his wife or mother at the door at dawn.
         private void AfterJailed(int t)
         {
-            if (!BrawlAfterOn || _placeTown == null || _store == null || !_jailDoor.ContainsKey(_placeTown))
-                return;
+            if (!BrawlAfterOn || _placeTown == null || _store == null)
+                return;   // (the door needn't be known yet: she waits once it is; the review of items 1-13 found most arrests dropped for it)
             MindWho w = ENTITY.DOES_ENTITY_EXIST(t) ? MindKnown(t, Game.GameTime) : null;
             if (w == null || w.Id == null || w.Name == null || _jailed.Any(j => j.Id == w.Id))
                 return;
             bool married = w.P != null && w.P.Family == "married";
-            _jailed.Add(new Jailed { Id = w.Id, Name = w.Name, Town = _placeTown, Day = _store.LastGameMin / 1440, Waits = married ? "his wife" : "his mother" });
+            _jailed.Add(new Jailed { Id = w.Id, Name = w.Name, Town = _placeTown, Day = JailNight(), Waits = married ? "his wife" : "his mother" });
             if (_jailed.Count > 6)
                 _jailed.RemoveAt(0);
-            Log.Write("BRAWL after: " + w.Name + " is locked up overnight at " + _placeTown + "; " + (married ? "his wife" : "his mother") + " will be at the door in the morning");
+            Log.Write("BRAWL after: " + w.Name + " is locked up overnight at " + _placeTown + "; " + (married ? "his wife" : "his mother") + " will be at the door in the morning" +
+                      (_jailDoor.ContainsKey(_placeTown) ? "" : " (the jail door here isn't known yet: walk out of the sheriff's office once and she'll be there)"));
+        }
+
+        /// The day of the night he's locked up for: a man tied up after midnight (payday night runs to 2) is waited for that
+        /// same morning, not the next day's (the review of items 1-13).
+        private long JailNight()
+        {
+            long day = _store.LastGameMin / 1440;
+            return CLOCK.GET_CLOCK_HOURS() < 4 ? day - 1 : day;
+        }
+
+        /// A saloon in this town: one he's come out of, or the town's own on the map (Places.TownSpots' second door).
+        private bool SaloonInTown(string town)
+        {
+            Vector3?[] doors;
+            return town != null && (_saloonDoor.ContainsKey(town) || (EnrageWestworld.InGame.Places.TownSpots.TryGetValue(town, out doors) && doors.Length > 1 && doors[1].HasValue));
         }
 
         /// The morning after: every 2 s, the jail door of the town he's in.
@@ -234,7 +254,7 @@ namespace EnrageWestworld.InGame
             if (now < _payNightLookAt || _cfg == null || !_cfg.Payday || !_cfg.PaydayNight || _placeTown == null || _store == null)
                 return;
             _payNightLookAt = now + 10000;
-            if (!Payday.Night(InnerLife.Weekday, CLOCK.GET_CLOCK_HOURS()) || !_saloonDoor.ContainsKey(_placeTown))
+            if (!Payday.Night(InnerLife.Weekday, CLOCK.GET_CLOCK_HOURS()) || !SaloonInTown(_placeTown))   // (the map's saloon too: the review of items 1-13)
                 return;
             string key = _placeTown + "|" + (_store.LastGameMin - 240) / 1440;   // (the small hours count with the Saturday they follow)
             if (!_payNightSaid.Add(key))

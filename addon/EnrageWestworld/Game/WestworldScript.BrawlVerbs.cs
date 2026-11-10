@@ -30,8 +30,17 @@ namespace EnrageWestworld.InGame
 
         private void BrawlVerbsLook(int now)
         {
-            if (_bvOwedTo != null && now > _bvOwedUntil)
-                BrawlVerbsWelsh("the prompt lapsed");   // a lost bet owed and never paid: a welsh
+            if (_bvOwedTo != null)
+            {
+                // a lost bet: its prompt only when J is free (it took another's place before), the 30 s from when it shows, held while
+                // a menu is open, his own pay menu most likely (the review of items 1-13)
+                if (_eventMenu != null)
+                    _bvOwedUntil = Math.Max(_bvOwedUntil, now + 1500);
+                else if (!_bvPayShown)
+                    BrawlVerbsPayPrompt(now);
+                else if (now > _bvOwedUntil)
+                    BrawlVerbsWelsh("the prompt lapsed");   // a lost bet owed and never paid: a welsh
+            }
             if (_eventMenu != null || (_eventPrompt != null && Game.GameTime <= _eventPromptUntil) || now < _bvAgainAt)
                 return;   // something else is on J just now
             List<int> a, b;
@@ -48,6 +57,18 @@ namespace EnrageWestworld.InGame
             _bvAgainAt = now + BrawlVerbs.AgainMs;
             _bvBacker = WagersOn ? _wagerOpen.FirstOrDefault(o => !o.Matched && ENTITY.DOES_ENTITY_EXIST(o.H) && !ENTITY.IS_ENTITY_DEAD(o.H) && o.H != me.Handle) : null;
             PromptSet(BrawlVerbs.Kind, new TownEvent { Kind = BrawlVerbs.Kind, Town = _placeTown, AName = NameOfFighter(_bvLoser) }, BrawlVerbs.PromptMs);
+        }
+
+        private bool _bvPayShown;
+
+        /// The lost bet's prompt on J, once J is free; its 30 s count from then.
+        private void BrawlVerbsPayPrompt(int now)
+        {
+            if (_bvOwedTo == null || _bvPayShown || _eventMenu != null || (_eventPrompt != null && Game.GameTime <= _eventPromptUntil))
+                return;
+            _bvPayShown = true;
+            _bvOwedUntil = now + BrawlVerbs.PayPromptMs;
+            PromptSet(BrawlVerbs.PayKind, new TownEvent { Kind = BrawlVerbs.PayKind, Town = _placeTown, AName = _bvOwedTo.Name, Count = _bvOwedCents }, BrawlVerbs.PayPromptMs);
         }
 
         /// The menu's rows: break it up, stand with the man losing, the bet (with a backer waiting), leave them to it.
@@ -111,8 +132,8 @@ namespace EnrageWestworld.InGame
             var said = new List<string>();
             foreach (int h in a.Concat(b).ToList())
             {
-                if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
-                    continue;
+                if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || AtArthur(h))
+                    continue;   // (one already at Arthur is the game's: the review of items 1-13)
                 MindWho w = MindKnown(h, now);
                 Traits t = w != null && w.Src != null ? (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))) : null;
                 bool drunk = w != null && InHisCups(new Ped(h), w.P);
@@ -122,7 +143,7 @@ namespace EnrageWestworld.InGame
                 string name = w != null && w.Name != null ? Person.FirstOf(w.Name) : "a stranger";
                 if (stops)
                 {
-                    if (_director.LeaveFight(h) || all <= 2)
+                    if (DropFighter(h))   // (dropped even as the last of his side: the review of items 1-13)
                     {
                         TASK.CLEAR_PED_TASKS(h, true, false);
                         TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 2500, 0f, 0f, 0f);
@@ -133,7 +154,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 }
                 string why;
-                if (Brawl.AtYou(t, drunk, regard == "hostile", regard == "afraid", false, Math.Max(4, all), saloon, seed + "|atyou|" + h, out why) && _director.LeaveFight(h))
+                if (Brawl.AtYou(t, drunk, regard == "hostile", regard == "afraid", false, Math.Max(4, all), saloon, seed + "|atyou|" + h, out why) && DropFighter(h))
                 {
                     TASK.TASK_COMBAT_PED(h, me.Handle, 0, 16);   // his fight is the game's now (and enRAGE's): we let go of him
                     at++;
@@ -153,11 +174,18 @@ namespace EnrageWestworld.InGame
         /// think the better of him for it, the one beating him the worse.
         private void BrawlVerbsStand(Ped me, string seed, int now)
         {
-            int loser = _bvLoser, beater = _bvBeater;
-            if (!ENTITY.DOES_ENTITY_EXIST(loser) || !ENTITY.DOES_ENTITY_EXIST(beater) || ENTITY.IS_ENTITY_DEAD(beater))
+            // whoever is beating him now (the review of items 1-13: the one at the offer may since be down, out or replaced)
+            int loser = _bvLoser, beater = _director.TargetOf(_bvLoser);
+            if (beater == 0)
+                beater = _bvBeater;
+            if (!ENTITY.DOES_ENTITY_EXIST(loser) || ENTITY.IS_ENTITY_DEAD(loser) || _director.IsOut(loser) || !ENTITY.DOES_ENTITY_EXIST(beater) || ENTITY.IS_ENTITY_DEAD(beater) ||
+                _director.IsOut(beater) || _brawlOut.ContainsKey(beater) || AtArthur(beater) || !DropFighter(beater))
+            {
+                _bvLast = "too late to stand with " + NameOfFighter(loser) + ": the man beating him is down or out of it";
+                Log.Write("BRAWL " + _bvLast);
                 return;
+            }
             MindWho lw = MindKnown(loser, now), bw = MindKnown(beater, now);
-            _director.LeaveFight(beater);
             TASK.TASK_COMBAT_PED(beater, me.Handle, 0, 16);   // at you now: the game's and enRAGE's (we let go of him)
             FolkRef la = _bridge != null ? _bridge.AcquaintanceAt(loser) : null, ba = _bridge != null ? _bridge.AcquaintanceAt(beater) : null;
             if (la != null)
@@ -196,8 +224,9 @@ namespace EnrageWestworld.InGame
                 _bvOwedTo = other;
                 _bvOwedCents = bet.Cents;
                 _bvOwedUntil = Game.GameTime + BrawlVerbs.PayPromptMs;
+                _bvPayShown = false;
                 WagerSay(me, other, BrawlVerbs.WantsHisDollar(bet.Seed), me.Handle);
-                PromptSet(BrawlVerbs.PayKind, new TownEvent { Kind = BrawlVerbs.PayKind, Town = _placeTown, AName = other.Name, Count = bet.Cents }, BrawlVerbs.PayPromptMs);
+                BrawlVerbsPayPrompt(Game.GameTime);   // now if J is free, else at the first look that finds it free
                 Log.Write("BRAWL bet: your man lost; you owe " + other.Name + " " + BrawlVerbs.Money(bet.Cents));
                 return;
             }

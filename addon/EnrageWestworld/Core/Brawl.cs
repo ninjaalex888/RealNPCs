@@ -42,11 +42,14 @@ namespace EnrageWestworld.Core
 
         /// The pull of the brawl itself, added to a would-be joiner's score: nothing while it's two or three, then a little
         /// more for each in it, more in a saloon, up to a cap (a dozen swinging is hard to stand and watch).
-        public static float Momentum(int fighting, bool saloon)
+        /// `fromThree`: [Mind] BrawlCascade's own (FOURTEENHOUR item 7 asked for the pull from three; the review of items 1-13 found
+        /// it still began at four): the same steps, one sooner.
+        public static float Momentum(int fighting, bool saloon, bool fromThree = false)
         {
-            if (fighting < 4)
+            int from = fromThree ? 3 : 4;
+            if (fighting < from)
                 return 0f;
-            float m = (saloon ? 0.035f : 0.02f) * (fighting - 3);   // a saloon's riot pulls; a street crowd too, less (0.012 to a cap of 0.07 until 2026-10-31)
+            float m = (saloon ? 0.035f : 0.02f) * (fighting - from + 1);   // a saloon's riot pulls; a street crowd too, less (0.012 to a cap of 0.07 until 2026-10-31)
             return Math.Min(saloon ? 0.20f : 0.15f, m);
         }
 
@@ -78,6 +81,11 @@ namespace EnrageWestworld.Core
         }
 
         public const float OutOfSightHold = 0.85f, NearMetres = 12f;
+
+        // He walks over, then runs (FOURTEENHOUR item 5, built at the review of items 1-13): from beyond LawRunsWithin at a walk, for
+        // LawWalksMostMs at most, then at a run. A lawman within LawOnTopMetres when he set off stops a fight at once, fair or not.
+        public const float LawRunsWithin = 20f, LawOnTopMetres = 8f;
+        public const int LawWalksMostMs = 6000;
 
         /// Some lawmen let two men settle it with their fists a while, as many marshals did: this one (seeded by the town and
         /// the man), and for how long. He steps in at once when it turns two on one, a man goes down, or a gun shows.
@@ -139,7 +147,18 @@ namespace EnrageWestworld.Core
             return roll < swing ? "swing" : "back";
         }
 
-        /// Whether a friend near a man losing badly (his health under a third) drags him out of it: the warmer the friend and the
+        /// The word over a stray blow's head (the review of items 1-13: the blow was never seen): a woman's cry, a man's protest as
+        /// he backs off, or the man who swings back.
+        public static string StrayCry(bool woman, string answer, string seed)
+        {
+            if (woman)
+                return Voice.Pick(seed + "|cry", "Oh! You brute!", "Ow! Mind me!", "Watch your fists, you animal!");
+            if (answer == "swing")
+                return Voice.Pick(seed + "|cry", "Who swung that?", "Right. That does it.", "That one'll cost you!");
+            return Voice.Pick(seed + "|cry", "Hey! I ain't in this!", "Watch your elbows!", "Not me, you fool!");
+        }
+
+        /// Whether a friend near a man losing badly (under 60% of his health as the fight began) drags him out of it: the warmer the friend and the
         /// kinder, the likelier; the anxious less (it means walking into the fight). Seeded.
         public static bool PullsOut(Traits friend, int warmth, string seed)
         {
@@ -156,7 +175,9 @@ namespace EnrageWestworld.Core
             return t != null && (t.Z[Traits.Anger] > 0.8f || (drunk && t.Z[Traits.Anger] > 0.3f));
         }
 
-        public const float PullOutHealth = 0.35f;
+        // against his health as the fight began (Director.FightHealth), and above the Director's 45% down (FightDownStep), or the
+        // down comes first and nobody is ever pulled out (0.35 of max health until the review of items 1-13)
+        public const float PullOutHealth = 0.6f;
 
         // ---- the big brawl's shape (FOURTEENHOUR item 10; [Mind] BrawlShape). A big fight climbs, sprawls, and dies of tiredness or
         // the law; the shape is what makes it a story. Six or more at it: the barkeep's shout from behind his bar (keepers keep their
@@ -165,7 +186,7 @@ namespace EnrageWestworld.Core
 
         public const int BigAt = 6;
         public const int BurnOutPercent = 35;
-        public const float BurnOutHealth = 0.5f;
+        public const float BurnOutHealth = 0.75f;   // of his health as the fight began (0.5 of max until the review of items 1-13: only 45-50% was caught)
         public const int BurnOutLeadMs = 10000;   // the thinning starts this long before the brawl's least time is up
 
         /// Whether one watching a big brawl slips out of the room: the timid (the anxious, the meek), and women.

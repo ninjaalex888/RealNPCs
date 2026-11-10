@@ -184,7 +184,8 @@ namespace EnrageWestworld.Core
             if (over != null && (matter == null || matter == "nothing"))
                 return over;
             // two in drink on opposite sides of one of 1899's quarrels (FOURTEENHOUR item 9): where it would be a look or a word
-            if (drunk && (matter == null || matter == "nothing" || matter == "honour" || (matter == "drink" && saloon)) && warmth >= 0)   // (a saloon's drink is the setting, not a grievance)
+            // (honour only between strangers: a feud between neighbours is honour too, and is never over silver; the review of items 1-13)
+            if (drunk && (matter == null || matter == "nothing" || (matter == "honour" && strangers) || (matter == "drink" && saloon)) && warmth >= 0)   // (a saloon's drink is the setting, not a grievance)
             {
                 string pol = QuarrelPolitics.OverFor(groupA, piousA, groupB, piousB, year, seed);
                 if (pol != null)

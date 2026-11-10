@@ -31,6 +31,9 @@ namespace EnrageWestworld.InGame
             // [Mind] BrawlLawSight (FOURTEENHOUR item 5): phase 5 holds off for help; the cry once; a fair fight let run
             public bool Cried, LetRunAsked, LetsRun, Watching, HelpAsked;
             public int LetRunMs, Helper, HelpUntil;
+            public float StartM;     // how far off he set out from (a lawman on top of it stops it at once)
+            public bool Walking;     // he walks over, then runs (the review of items 1-13 built it)
+            public int ThereBy;      // when he counts as there whatever the distance (9 s, and his walk's most on top)
         }
 
         private readonly List<LawHand> _brawlLaw = new List<LawHand>();
@@ -144,7 +147,12 @@ namespace EnrageWestworld.InGame
             _brawlLawAt = mid;
             bool owned = LawTake(lh.Law);   // ours while he works (WestworldScript.LawTake.cs): the game took lawmen back before they got there
             TASK.CLEAR_PED_TASKS(lh.Law, true, false);
-            TASK.TASK_GO_TO_ENTITY(lh.Law, a[0], -1, 4f, 2f, 0f, 0);   // at a run
+            // he walks over, then runs (FOURTEENHOUR item 5, built at the review of items 1-13): from beyond 20 m at a walk, 6 s at
+            // most, then at a run; nearer, at a run from the start
+            lh.StartM = law.Position.DistanceTo(mid);
+            lh.Walking = BrawlsOn && _cfg.BrawlLawSight && lh.StartM > Brawl.LawRunsWithin;
+            lh.ThereBy = now + 9000 + (lh.Walking ? Brawl.LawWalksMostMs : 0);
+            TASK.TASK_GO_TO_ENTITY(lh.Law, a[0], -1, 4f, lh.Walking ? 1f : 2f, 0f, 0);   // at a walk from afar, else at a run
             Log.Write("LAW breaks up: a lawman " + (int)law.Position.DistanceTo(mid) + " m off sees the fight (" + (a.Count + b.Count) + " fighting) and comes over (" + LawTakeWords(owned) + ")" + (test ? ", a test" : ""));
         }
 
@@ -161,11 +169,11 @@ namespace EnrageWestworld.InGame
             foreach (int h in a.Concat(b).ToList())
             {
                 bool mine0 = a.Contains(h);
-                if ((mine0 ? left0 : left1) <= 1 || h == a[0] || (b.Count > 0 && h == b[0]))
-                    continue;   // the two who began it fight on, and a side keeps one man at least
+                if ((mine0 ? left0 : left1) <= 1 || h == a[0] || (b.Count > 0 && h == b[0]) || AtArthur(h))
+                    continue;   // the two who began it fight on, and a side keeps one man at least; one at Arthur is the game's
                 MindWho w = MindKnown(h, now);
                 Traits t = w != null && w.Src != null ? (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))) : null;
-                if (!Brawl.SlipsAwayAtTheCry(t, w != null && InHisCups(new Ped(h), w.P), seed + "|" + h) || !_director.LeaveFight(h))
+                if (!Brawl.SlipsAwayAtTheCry(t, w != null && InHisCups(new Ped(h), w.P), seed + "|" + h) || !DropFighter(h))
                     continue;
                 if (mine0) left0--; else left1--;
                 TASK.CLEAR_PED_TASKS(h, true, false);
@@ -215,7 +223,7 @@ namespace EnrageWestworld.InGame
                 lh.LetsRun = Brawl.LetsItRun(_placeTown, ENTITY.GET_ENTITY_MODEL(lh.Law).ToString(), out secs);
                 lh.LetRunMs = secs * 1000;
             }
-            bool fair = a.Count == 1 && b.Count == 1 && _joinPending.Count == 0;
+            bool fair = a.Count == 1 && b.Count == 1 && _joinPending.Count == 0 && lh.StartM > Brawl.LawOnTopMetres;   // one a few steps off stops it at once (the plan's; the review of items 1-13)
             if (lh.LetsRun && fair && now - _brawlFightSince < lh.LetRunMs)
             {
                 if (!lh.Watching)
@@ -244,9 +252,12 @@ namespace EnrageWestworld.InGame
                 lh.Phase = 9;   // over before he got there: the aftermath's word does
                 return;
             }
-            var all = a.Concat(b).Where(h => ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h)).ToList();
+            var all = a.Concat(b).Where(h => ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !AtArthur(h)).ToList();   // never one fighting Arthur (the review of items 1-13)
             var targets = all.ToDictionary(h => h, h => _director.TargetOf(h));
             var holdouts = new List<int>();
+            var taken = new HashSet<int>();
+            int began0, began1;
+            _director.FightBegan(out began0, out began1);   // two lawmen take the two who started it, whatever those two would do (item 5)
             var said = new List<string>();
             foreach (int h in all)
             {
@@ -255,8 +266,13 @@ namespace EnrageWestworld.InGame
                 bool drunk = w != null && InHisCups(new Ped(h), w.P);
                 int chance;
                 bool stops = Brawl.Heeds(t, drunk, BrawlHealth(h) >= 0.75f, lh.Seed + "|" + (w != null ? w.Id : h.ToString()), out chance, lawmen);
+                if (lawmen >= 2 && (h == began0 || h == began1))
+                {
+                    stops = false;
+                    taken.Add(h);
+                }
                 string name = w != null && w.Name != null ? w.Name : "a stranger";
-                said.Add(name + (stops ? " stops" : " keeps swinging") + " (" + chance + "%" + (drunk ? ", drunk" : "") + ")");
+                said.Add(name + (taken.Contains(h) ? " is taken, one who started it" : stops ? " stops" : " keeps swinging") + " (" + chance + "%" + (drunk ? ", drunk" : "") + ")");
                 if (stops)
                     lh.Stopped.Add(h);
                 else
@@ -286,8 +302,8 @@ namespace EnrageWestworld.InGame
             {
                 int t;
                 targets.TryGetValue(h, out t);
-                if (t == 0 || !ENTITY.DOES_ENTITY_EXIST(t) || ENTITY.IS_ENTITY_DEAD(t) || lh.Stopped.Contains(t))
-                    t = lh.Law;
+                if (t == 0 || !ENTITY.DOES_ENTITY_EXIST(t) || ENTITY.IS_ENTITY_DEAD(t) || lh.Stopped.Contains(t) || taken.Contains(h))
+                    t = lh.Law;   // (one taken has the law to answer, not the man he was at)
                 BrawlFists(h);
                 TASK.TASK_COMBAT_PED(h, t, 0, 16);
                 _brawlHoldouts[h] = t;
@@ -295,9 +311,10 @@ namespace EnrageWestworld.InGame
             lh.Queue.AddRange(holdouts);
             // a riot: a second lawman takes half of them, if one is free near
             Ped helper = lh.Helper != 0 && ENTITY.DOES_ENTITY_EXIST(lh.Helper) && !ENTITY.IS_ENTITY_DEAD(lh.Helper) ? new Ped(lh.Helper) : null;   // the one he sent for (item 5)
-            if (helper != null && holdouts.Count < 3)
+            int share = taken.Count >= 2 ? 2 : 3;   // two lawmen together share even two holdouts: the two who started it, one each
+            if (helper != null && holdouts.Count < share)
                 LawRoundsAgain(lh.Helper, now + 4000);   // not needed after all: back to his rounds
-            if (holdouts.Count >= 3)
+            if (holdouts.Count >= share)
             {
                 Ped second = helper ?? BrawlFindLaw(law.Position, 45f, false, 0);
                 if (second != null)
@@ -338,6 +355,8 @@ namespace EnrageWestworld.InGame
                     {
                         LawRoundsAgain(lh.Law, now + 2000);   // two minutes at it: back to his rounds
                     }
+                    if (lh.Helper != 0)
+                        LawRoundsAgain(lh.Helper, now + 2000);   // the one he sent for, handed back too (the review of items 1-13: he was left deaf and borrowed)
                     _brawlLaw.RemoveAt(i);
                     continue;
                 }
@@ -354,7 +373,12 @@ namespace EnrageWestworld.InGame
                                 break;
                             }
                             float dl = ENTITY.DOES_ENTITY_EXIST(a[0]) ? law.Position.DistanceTo(ENTITY.GET_ENTITY_COORDS(a[0], true, true)) : 99f;
-                            bool there = dl < 9f || now - lh.Since > 9000;
+                            if (lh.Walking && (dl < Brawl.LawRunsWithin || now - lh.Since > Brawl.LawWalksMostMs) && ENTITY.DOES_ENTITY_EXIST(a[0]))
+                            {
+                                lh.Walking = false;
+                                TASK.TASK_GO_TO_ENTITY(lh.Law, a[0], -1, 4f, 2f, 0f, 0);   // near it now, or he's seen enough: at a run
+                            }
+                            bool there = dl < 9f || now > (lh.ThereBy > 0 ? lh.ThereBy : lh.Since + 9000);
                             if (BrawlsOn && _cfg.BrawlLawSight)
                             {
                                 // the badge across the street (FOURTEENHOUR item 5): the cry as he comes, a fair fight let run, one
