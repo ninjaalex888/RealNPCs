@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 404;
+        public const int CurrentVersion = 405;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -499,6 +499,7 @@ namespace EnrageWestworld.Core
         public bool Fever = true;   // [World] rarely, a fever goes through a town along its warm ties: the sick keep to home a week, a quarantine is posted at three, and with FeverDeaths one in twelve dies (Core/Fever.cs; FIVEDAY R9, settings version 297)
         public bool FeverDeaths = true;   // [World] with Fever: one in twelve of the sick dies of it, mourned like anyone
         public bool MineWhistle = true;   // [World] rarely, three whistles at the Annesburg mine: one or two of its men killed below, off screen; the town runs to the pithead, the names, the grief, the collection (Core/MineWhistle.cs; FIVEDAY item 28, settings version 280)
+        public bool StandTheWake = true;   // [Scenes] with BarRound and Wakes: on a wake night, J at the bar can stand a drink to the dead's memory (FOURTEENHOUR reserve R19; settings version 405)
         public bool Wakes = true;   // [World] the night before a burial the neighbours sit up with the dead: the box tells you, the street talks of them, and in West World one swears the dead moved (Core/WakeNight.cs; FIVEDAY item 27, settings version 279)
         public bool AllSaintsGraves = true;   // [World] with Mourning: on All Saints' Day in the south, those with someone dead go to the tombs, the ones you put there among them (TENHOUR R8; settings version 355)
         public bool Mourning = true;   // [World] three weeks of mourning a friend: quieter days and thoughts, hushed neighbours, the grave on a Sunday afternoon (Core/Mourning.cs; FIVEDAY item 26, settings version 278)
@@ -1047,6 +1048,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 405)
+                    log?.Invoke("Settings: new in this version: [Scenes] StandTheWake (on): a drink to the dead's memory on a wake night.");
                 if (s.SettingsVersion < 404)
                     log?.Invoke("Settings: new in this version: [Encounters] NoMapRider (on): the rider who asks the way to a town on no map.");
                 if (s.SettingsVersion < 403)
@@ -2310,6 +2313,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("Fever = " + B(Fever) + "   ; rarely (a town in about a hundred and fifty a day, ninety days apart), a fever breaks out in a town and passes along its warm ties, one in seven a tie a day, among its residents: the sick keep to home about a week and think of it; at three sick the board of health posts a quarantine; it's over when nobody's sick, and the box says what it cost");
             b.AppendLine("FeverDeaths = " + B(FeverDeaths) + "   ; with Fever on: one in twelve of the sick dies of it, named and mourned like anyone (the wake, the grave). Off: they all get up again");
             b.AppendLine("MineWhistle = " + B(MineWhistle) + "   ; rarely (a day in twenty-five, never within three weeks of the last), the mine whistle at Annesburg blows three times: one or two of the town's men are killed below, named, never shown, and mourned like anyone. In Annesburg you hear it, people run for the pithead, the names come up, and the hat goes round; away, the word reaches you");
+            b.AppendLine("StandTheWake = " + B(StandTheWake) + "   ; with BarRound and Wakes: on a wake night in town (8 till 2), J at the bar can stand the house a drink to his memory (a round's price, once a day); the barkeep says it for him, and those near you who knew him warmly think better of you; false: the round only");
             b.AppendLine("Wakes = " + B(Wakes) + "   ; the night after a death in town (or before one of enRAGE's funerals), from eight to two, the neighbours sit up with the dead: the Around town box tells you once, the street's quiet talks are of the dead half the time, and with West World one of the waking swears the dead one moved");
             b.AppendLine("AllSaintsGraves = " + B(AllSaintsGraves) + "   ; with Mourning: on the first of November in the south, those with someone dead go to the tombs, the ones you put there among them");
             b.AppendLine("Mourning = " + B(Mourning) + "   ; for three weeks after a friend's death they mourn: quieter days (home, prayer, not the cards or the saloon), their thoughts of the dead, neighbours hushing near them, and on a Sunday afternoon a walk to the grave to kneel (the town's cemetery spot, else by the church). At the grave of one you killed, they know you");

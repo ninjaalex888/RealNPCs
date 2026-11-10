@@ -33,13 +33,18 @@ namespace EnrageWestworld.Core
             return (town ?? "?") + "|" + gameMinute / 1440;
         }
 
-        public static List<InteractOption> Rows(int cents, int cashCents, int company, int damageCents = 0, bool roundToday = false)
+        public static bool WakeOn = true;   // [Scenes] StandTheWake (FOURTEENHOUR reserve R19): a wake tonight, and the round drunk to the dead
+
+        public static List<InteractOption> Rows(int cents, int cashCents, int company, int damageCents = 0, bool roundToday = false, string wakeFor = null)
         {
             var rows = new List<InteractOption>
             {
                 new InteractOption { Id = "barround:buy", Label = "Buy the house a round (" + Dollars(cents) + ", " + company + " at the bar).", Why = roundToday ? "you stood one here today" : cashCents < cents ? "you haven't the money" : null },
                 new InteractOption { Id = "barround:no", Label = "Just the one for me." }
             };
+            if (wakeFor != null && WakeOn)   // a wake tonight: the round drunk to the dead (FOURTEENHOUR reserve R19)
+                rows.Insert(0, new InteractOption { Id = "barround:wake", Label = "Stand a drink to " + Person.FirstOf(wakeFor) + "'s memory (" + Dollars(cents) + ").",
+                                                    Why = roundToday ? "you stood one here today" : cashCents < cents ? "you haven't the money" : null });
             if (damageCents > 0)   // the chairs a big brawl broke today (FOURTEENHOUR item 12)
                 rows.Insert(1, new InteractOption { Id = "barround:damage", Label = "Pay for the broken chairs (" + Dollars(damageCents) + ").", Why = cashCents < damageCents ? "you haven't the money" : null });
             return rows;
@@ -58,6 +63,20 @@ namespace EnrageWestworld.Core
         public static string KeeperLine(string seed)
         {
             return Keeper[System.Math.Abs(Voice.Hash(seed) % Keeper.Length)];
+        }
+
+        /// The barkeep's word as the round goes to the dead's memory, and a mourner's thought after (reserve R19).
+        public static string WakeLine(string dead, string seed)
+        {
+            string f = Person.FirstOf(dead ?? "him");
+            return Voice.Pick(seed + "|wk", "Glasses up, boys. To " + f + ".", "The stranger's standing one for " + f + ". Drink it slow.", "For " + f + ", then. There was none better at a bar.");
+        }
+
+        public static string MournerThought(string dead, string seed)
+        {
+            string f = Person.FirstOf(dead ?? "him");
+            return Voice.Pick(seed + "|mt", "A drink to " + f + "'s memory, from a man who never knew him. " + f + " would have called it a waste of good whiskey, and drunk it.", "Somebody remembered " + f + " tonight. Good.",
+                                             "I'll tell his widow a stranger stood a round for him. She'll cry, but the good kind.");
         }
 
         public static IEnumerable<string> AllLines()

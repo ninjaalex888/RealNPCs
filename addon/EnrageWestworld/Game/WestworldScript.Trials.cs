@@ -618,7 +618,7 @@ namespace EnrageWestworld.InGame
                 case BoxSocial.Kind: menu.Rows = BoxSocial.Rows(_boxHigh, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "The box social:"; break;   // (FIVEDAY R6)
                 case Foreclosure.Kind: menu.Rows = Foreclosure.Rows(_eventPromptFor.Extra, _eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "The sheriff's sale:"; break;   // (FIVEDAY R3)
                 case WalkHome.Kind: menu.Rows = WalkHome.Rows(_eventPromptFor.AName); menu.Title = Person.FirstOf(_eventPromptFor.AName) + ", after dark:"; break;   // (THREEHOUR item 4)
-                case BarRound.Kind: int barAt; int.TryParse(_eventPromptFor.Extra, out barAt); menu.Rows = BarRound.Rows(_eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE(), barAt, SaloonDamageToday(), _barRoundDays.Contains(BarRound.DayKey(_placeTown, _store.LastGameMin))); menu.Title = "At the bar:"; break;   // (THREEHOUR item 3)
+                case BarRound.Kind: int barAt; int.TryParse(_eventPromptFor.Extra, out barAt); menu.Rows = BarRound.Rows(_eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE(), barAt, SaloonDamageToday(), _barRoundDays.Contains(BarRound.DayKey(_placeTown, _store.LastGameMin)), _eventPromptFor.AName); menu.Title = _eventPromptFor.AName != null ? Person.FirstOf(_eventPromptFor.AName) + "'s wake night, at the bar:" : "At the bar:"; break;   // (THREEHOUR item 3; the wake's row: reserve R19)
                 case Slate.Kind: menu.Rows = Slate.Rows(_eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "At the counter:"; break;   // (FIVEDAY R2)
                 case WantedWhich.Kind: menu.Rows = WantedWhich.Rows(_eventPromptFor.AName, _eventPromptFor.AId, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "You know " + Person.FirstOf(_eventPromptFor.AName) + "'s face:"; break;   // (FIVEDAY R31)
                 case BrawlVerbs.Kind: menu.Rows = BrawlVerbsRows(); menu.Title = "The fight here:"; break;   // (FOURTEENHOUR item 11)
@@ -661,6 +661,11 @@ namespace EnrageWestworld.InGame
             if (m.Mode == BrawlAfter.JailKind)
             {
                 JailDoorChoose(row.Id);   // WestworldScript.BrawlAfter.cs (FOURTEENHOUR item 12)
+                return;
+            }
+            if (m.Mode == BarRound.Kind && row.Id == "barround:wake")
+            {
+                BarRoundWake(e);   // WestworldScript.BarRound.cs (FOURTEENHOUR reserve R19)
                 return;
             }
             if (m.Mode == BarRound.Kind && row.Id == "barround:damage")

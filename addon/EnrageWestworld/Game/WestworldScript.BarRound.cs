@@ -4,6 +4,7 @@
 // WestworldScript.Fondness.cs): the room cheers, each named person treated is fonder, the drunk most, and keeps a "round".
 // Not offered again for 20 s if you let it pass. Behind [Scenes] BarRound. F7 "TEST fondness:" counts it; log "FOND bar round".
 using System.Collections.Generic;
+using System.Linq;
 using EnrageWestworld.Core;
 using RDR2;
 using RDR2.Native;
@@ -56,7 +57,47 @@ namespace EnrageWestworld.InGame
             _barKeeper = keeper;
             _barKeeperName = holder != null ? Person.FirstOf(holder.Name) : "The barkeep";
             _barAgainAt = now + BarRound.AgainMs;
-            PromptSet(BarRound.Kind, new TownEvent { Kind = BarRound.Kind, Town = _placeTown, Count = BarRound.Cents(company), Extra = company.ToString() }, BarRound.PromptMs);
+            WakeFor wake = BarRound.WakeOn && _cfg.Wakes && WakeNight.Hour(CLOCK.GET_CLOCK_HOURS()) ? WakeNight.Due(_store, _placeTown, _store.LastGameMin).FirstOrDefault() : null;   // a wake tonight (reserve R19)
+            PromptSet(BarRound.Kind, new TownEvent { Kind = BarRound.Kind, Town = _placeTown, Count = BarRound.Cents(company), Extra = company.ToString(), AName = wake != null ? wake.Name : null, AId = wake != null ? wake.Id : null }, BarRound.PromptMs);
+        }
+
+        private int _wakeRounds;
+
+        /// J, "Stand a drink to his memory" (FOURTEENHOUR reserve R19): the round's own code, the barkeep's word for the dead, and those
+        /// near you who knew him warmer to you, one of them thinking of it.
+        private void BarRoundWake(TownEvent e)
+        {
+            if (e == null || e.Kind != BarRound.Kind || e.AName == null)
+                return;
+            int cash = MONEY._MONEY_GET_CASH_BALANCE();
+            Ped k = _barKeeper;
+            if (cash < e.Count || k == null || !k.Exists() || k.IsDead)
+            {
+                Hint(cash < e.Count ? "You haven't the money." : "The barkeep's not there.", 2500);
+                return;
+            }
+            MONEY._MONEY_DECREMENT_CASH_BALANCE(e.Count);
+            _barRoundDays.Add(BarRound.DayKey(e.Town, _store.LastGameMin));
+            int now = Game.GameTime;
+            SpeechCaption(_barKeeperName ?? "The barkeep", BarRound.WakeLine(e.AName, e.Town + "|" + _store.LastGameMin), k.Handle, 4500);
+            HouseRoundAt(k.Handle, "barround|" + e.Town, now);   // the round's own code: the glasses, the ties, the thanks
+            int mourners = 0;
+            bool thought = false;
+            foreach (int h in _mindNear)
+            {
+                MindWho w;
+                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || e.AId == null || !_store.Ties.Any(t => t != null && t.Has(w.Id) && t.Has(e.AId) && t.Warmth > 0))
+                    continue;   // only those who knew him warmly
+                PersonState st = _store.Find(w.Id);
+                if (st != null)
+                    st.Affection = Romance.Clamp(st.Affection + 6, -100, 100);   // a stranger who honoured their dead
+                mourners++;
+                if (!thought && ENTITY.DOES_ENTITY_EXIST(h))
+                    thought = _ticker.Aside(Person.FirstOf(w.Name ?? "Someone") + ", thinking", BarRound.MournerThought(e.AName, w.Id), "wake|" + w.Id, h, 8000, now);
+            }
+            _wakeRounds++;
+            _barRounds++;
+            Log.Write("FOND wake round: you stood a drink to " + e.AName + "'s memory in " + e.Town + " for " + BarRound.Dollars(e.Count) + " (" + mourners + " who knew him warmer to you)");
         }
 
         /// J, "Buy the house a round": the cash, the barkeep's word, and the round.
