@@ -729,6 +729,9 @@ namespace EnrageWestworld.InGame
                         skipped = "the hour, the rarity and the rests (Pacing \"lostchild\")";
                         return LostChildScene(Game.Player.Character, now, true, out lw) ? null : lw;
                     }
+                case "tale":
+                    skipped = "a big brawl to make one";
+                    return TaleTestFire(now, out said);   // WestworldScript.Tales.cs (FOURTEENHOUR item 24)
                 case "fetchlaw":
                     {
                         if (_director.Busy && !TestMakeRoom())

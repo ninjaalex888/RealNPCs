@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 391;
+        public const int CurrentVersion = 392;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -107,6 +107,7 @@ namespace EnrageWestworld.Core
         public bool WitnessesFetchLaw = true;   // [Mind] with no lawman come to a brawl, an onlooker (the well-off first) runs for one within 150 m; after a beating, a witness fetches one who has a word (FOURTEENHOUR item 21; settings version 389)
         public bool BrawlLawSight = true;    // [Mind] with MindBrawls: the law holds joiners back by sight and distance (in sight within 12 m as before, farther half as much, out of sight a little), a lawman may let a fair fight run, one alone against six or more sends for help, and "Law!" is cried as he comes (FOURTEENHOUR item 5; settings version 373)
         public bool FightHoldStart = true;   // [Mind] two told to fight keep the order until the first blow (the game's own alarms held off them, the order kept), then the game's fists as before; off: the alarms come back the moment they're told (FOURTEENHOUR item 1; settings version 371)
+        public bool MemoriesBlur = true;     // [Mind] a big brawl leaves a tale in the town that grows in the telling (more men, a knife, the night), truest from those who were in it (FOURTEENHOUR item 24; settings version 392)
         public bool OpinionsAct = true;      // [Mind] what people think of each other decides things: fear keeps clear and out of a brawl, contempt picks a side, respect walks together, and what's said behind backs is the teller's view (FOURTEENHOUR item 23; settings version 391)
         public bool ControlCensus = true;    // [Mind] every 3 s who holds each person within 25 m, named or not (the story, the game's encounters, ours, enRAGE's, another script's, the game's own business, free); a CONTROL line in the log a minute (FOURTEENHOUR item 22; settings version 390)
         public bool HandBackLent = true;     // [Mind] what we set on people not ours to make them fight (fight even unarmed, always fight, the hostile group) is put back once they've been out of any fight 20 s and nothing of ours has them (FOURTEENHOUR item 3; settings version 372)
@@ -1032,6 +1033,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 392)
+                    log?.Invoke("Settings: new in this version: [Mind] MemoriesBlur (on): the town's tales grow in the telling.");
                 if (s.SettingsVersion < 391)
                     log?.Invoke("Settings: new in this version: [Mind] OpinionsAct (on): what people think of each other decides things.");
                 if (s.SettingsVersion < 390)
@@ -1778,6 +1781,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("WalkTogether = " + B(WalkTogether) + "   ; with MindLive on: two friends (or a courting couple) whose talk in the street plays to its end may walk on together, side by side, with a thought on the way and a word as they part: two men to the saloon after work, homeward at dusk, a couple's stroll on a Sunday afternoon; two pairs a town at once, a pair once a day; false: they go their own ways");
             b.AppendLine("QuarrelPolitics = " + B(QuarrelPolitics) + "   ; with QuarrelSlights on: two men in drink who hold opposite sides of one of 1899's quarrels (free silver against gold, the trusts, the Philippines, the dry vote, by their trade or their piety) may come to blows over it instead of a look or a word; onlookers on each side lean to their man, and the town retells it by what it was over; false: never");
             b.AppendLine("QuarrelSlights = " + B(QuarrelSlights) + "   ; with QuarrelLadder on: a quarrel between strangers that was \"over nothing\" says what it's over, by the place (a shoulder in passing, the way blocked, a look held, a word about a man's horse or hat; in a saloon a spilled drink, a seat taken, a laugh), a man at the worst of his trouble snaps because of the week he's had, and foes have it out over their old business; the words and the log only, never how far it goes; false: the two old openings");
+            b.AppendLine("MemoriesBlur = " + B(MemoriesBlur) + "   ; a big brawl leaves a tale in the town for a week, told in the gossip and in the thoughts of those near you, and it grows in the telling: more men each day, the hour sliding into the night, a knife, the starting of it put on someone the teller despises; those who were in it tell it truest; false: the brawl's news once, as before");
             b.AppendLine("OpinionsAct = " + B(OpinionsAct) + "   ; with MindLive: the views people hold of each other (respect, contempt, envy, fear) decide things: the fearful keep clear of the one they fear and out of any brawl he's in, contempt for a fighter pulls an onlooker against him, respect draws two to walk on together, and a friend tells a friend what they think of someone not there; false: views are thoughts only, as before");
             b.AppendLine("ControlCensus = " + B(ControlCensus) + "   ; a CONTROL line in the log once a minute: of the people within 25 m, named or not, how many are the story's, the game's own encounters', ours (and which feature), enRAGE's in a role, another script's, the game's (fighting, fleeing, riding, in a scenario...) and free for us; only reads, a third of them a frame; false: no line");
             b.AppendLine("HandBackLent = " + B(HandBackLent) + "   ; what RealNPCs sets on people who aren't its own to make them fight (an ally, a brawl's holdout, a caller, a gang's man, one who joins your fight, the waking who lash out, the road's fights: 'fight even unarmed', 'always fight', and the hostile group on callers and thieves) is put back once they've been out of any fight 20 s and nothing of ours has them; false: it stays until the body despawns, as before");

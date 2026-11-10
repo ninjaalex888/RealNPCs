@@ -46,6 +46,7 @@ namespace EnrageWestworld.InGame
                 _afterPeak = 0;
                 _afterDowns = 0;
                 _afterSaloon = _placeKind == "saloon";
+                _afterStarter = a.Count > 0 ? NameOfFighter(a[0]) : null;   // who began it, for the tale (FOURTEENHOUR item 24)
             }
             foreach (int h in a)
                 _afterSide[h] = 0;
@@ -72,6 +73,7 @@ namespace EnrageWestworld.InGame
                 return;
             _bigNews++;
             NewsPush(_placeTown ?? "Around here", BrawlAfter.News(_afterPeak, _afterDowns, _afterSaloon, CLOCK.GET_CLOCK_HOURS(), "f" + fid), "news");
+            TaleNote(fid, loser);   // and its tale, to grow in the telling (FOURTEENHOUR item 24; WestworldScript.Tales.cs)
             if (_afterSaloon && _placeTown != null)
             {
                 string k = _placeTown + "|" + g / 1440;

@@ -793,6 +793,14 @@ namespace EnrageWestworld.Core
             // and the lives of people they know
             foreach (Affair a in Store.Affairs.Where(x => x.Stage >= 2 && (town == null || x.Town == town)).OrderByDescending(x => x.At).Take(2))
                 pool.Add(a.AName + " has been " + (a.Stage >= 5 ? "married to " : a.Stage == 4 ? "engaged to " : "courting ") + a.BName);
+            // the town's own tales, grown with the days (FOURTEENHOUR item 24): the newest live one, as the town tells it today
+            if (Tales.On && Store.Tales != null)
+                foreach (TownTale t in Store.Tales.Where(x => (town == null || x.Town == town) && Tales.Live(x, Store.LastGameMin)).OrderByDescending(x => x.At).Take(1))
+                {
+                    string tale = Tales.Telling(t, Store.LastGameMin, false, false, null, t.Id + "|" + Store.LastGameMin / 1440);
+                    if (tale != null && !pool.Contains(tale))
+                        pool.Add(tale);
+                }
             foreach (Reverie rv in Store.Reveries.Values.Where(x => Cfg.WestWorld && x.Woke).OrderByDescending(x => x.WokeAt).Take(1))
                 pool.Add(rv.Name + " was dead" + (rv.Buried ? " and buried" : "") + ", and now " + (rv.Woman ? "she" : "he") + "'s walking around like nothing happened");
             return pool;

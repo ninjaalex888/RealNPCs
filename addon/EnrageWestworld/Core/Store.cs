@@ -32,6 +32,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<Wedding> Weddings = new List<Wedding>();
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, long> TownLastAbout = new Dictionary<string, long>();   // town -> the game minute he was last about it (TownVisits is when he last came in) (Core/WhileAway.cs; FIVEDAY item 19)
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, int> Mends = new Dictionary<string, int>();   // "id|wrong" -> kindnesses since that wrong of his (Core/Trust.cs; FIVEDAY item 20)
+        [DataMember(EmitDefaultValue = false)] public List<TownTale> Tales = new List<TownTale>();   // the town's own tales, grown in the telling (Core/Tales.cs; FOURTEENHOUR item 24)
         [DataMember(EmitDefaultValue = false)] public List<TieHeard> TieHeard = new List<TieHeard>();   // word of his deeds passed along a tie (Core/TieGossip.cs; FIVEDAY item 23)
         [DataMember(EmitDefaultValue = false)] public List<Breakdown> Breakdowns = new List<Breakdown>();   // who broke under the week's load, and how (Core/StressLoad.cs; FIVEDAY item 17)
         [DataMember(EmitDefaultValue = false)] public List<Transfer> Transfers = new List<Transfer>();

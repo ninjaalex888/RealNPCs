@@ -264,6 +264,7 @@ namespace EnrageWestworld.InGame
             WitnessLaw.On = _cfg.WitnessesFetchLaw;   // [Mind] WitnessesFetchLaw (FOURTEENHOUR item 21)
             Census.On = _cfg.ControlCensus;      // [Mind] ControlCensus (FOURTEENHOUR item 22)
             Opinions.Act = _cfg.OpinionsAct && _cfg.MindLive;   // [Mind] OpinionsAct (FOURTEENHOUR item 23)
+            Tales.On = _cfg.MemoriesBlur;        // [Mind] MemoriesBlur (FOURTEENHOUR item 24)
             OldSoldiers.On = _cfg.OldSoldiers && _cfg.HistoricalAccuracy;   // [Scenes] OldSoldiers: named history, so only with the real history on (item 17)
             AlmanacSides.On = _cfg.AlmanacSides;   // [World] AlmanacSides: their side on the year's quarrels (Core/AlmanacSides.cs)
             QuarrelPolitics.On = _cfg.QuarrelPolitics && _cfg.HistoricalAccuracy;   // [Mind] QuarrelPolitics: men in drink fight over 1899's quarrels (FOURTEENHOUR item 9); named history, so only with [World] HistoricalAccuracy (the review of items 1-13)
@@ -1412,6 +1413,7 @@ namespace EnrageWestworld.InGame
             Safe("scenes", _aDrama);
             Safe("court thoughts", _aCourtThoughts);
             PassingStep(now);   // people who know each other acknowledge it as they pass (WestworldScript.Passing.cs)
+            TaleStep(now);      // the town's tales in the thoughts of those near you (WestworldScript.Tales.cs; FOURTEENHOUR item 24)
             CensusStep(now);    // who holds the people near you, a CONTROL line a minute (WestworldScript.Census.cs; FOURTEENHOUR item 22)
             HandBackStep(now);  // what we set on people to make them fight, put back once they're done (WestworldScript.HandBack.cs; FOURTEENHOUR item 3)
             SightsStep(now);    // people notice how you look (WestworldScript.Sights.cs)
