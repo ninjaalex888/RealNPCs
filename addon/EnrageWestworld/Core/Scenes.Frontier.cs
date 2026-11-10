@@ -53,6 +53,7 @@ namespace EnrageWestworld.Core
                 case "snub": return Snub.Play(c, seed);                  // the well-off and the working man (FOURTEENHOUR item 18)
                 case "rivals": return Rivals.Play(c, seed);              // two men courting the same woman (item 19)
                 case "talkof": return Opinions.TalkScene(c, seed);       // a friend's view of someone not there, passed on (item 23)
+                case "shelter": return RainShelter.Play(c, seed);        // strangers under one roof in the rain (item 26)
                 case "pitch": return Pitch(c, seed);
                 case "posse": return c.CrimeRumour != null ? Posse(c, seed) : null;
                 case "mourn": return c.DeadName != null ? Mourn(c, seed) : null;

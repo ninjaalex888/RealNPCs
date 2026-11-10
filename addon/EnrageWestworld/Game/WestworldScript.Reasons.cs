@@ -248,6 +248,8 @@ namespace EnrageWestworld.InGame
                 Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance, Trouble = _cfg.TroubleWeight, WomenFight = _cfg.WomenInFights, MindDecides = LadderOn,
                 Strain = _cfg.MindLive && _cfg.MindTempers,
                 Hour = CLOCK.GET_CLOCK_HOURS(),   // (the temperance door at dusk: FOURTEENHOUR item 25)
+                Rain = RainShelter.On && (_engine.NowWeather == "rain" || _engine.NowWeather == "storm" || _engine.WetLately(_store.LastGameMin)),   // (item 26)
+                Indoors = _engine.NowIndoors,
                 Variety = _cfg.ReasonVariety,
                 MindTalks = _cfg.MindTalks,   // people talk of what's on their minds (WestworldScript.MindTalk.cs)
                 TimesTalk = _cfg.MindTalks && _cfg.TimesTalk && InnerLife.Historical,   // and talk over the times (Run 3, item 2); never with HistoricalAccuracy off

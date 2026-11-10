@@ -260,6 +260,7 @@ namespace EnrageWestworld.InGame
             Greenhorn.On = _cfg.Greenhorn;       // [Scenes] Greenhorn (FOURTEENHOUR item 16)
             Snub.On = _cfg.Snubs;                // [Scenes] Snubs (FOURTEENHOUR item 18)
             Temperance.DoorOn = _cfg.TemperanceDoor && _cfg.Temperance;   // [Scenes] TemperanceDoor (FOURTEENHOUR item 25)
+            RainShelter.On = _cfg.RainShelter;   // [Scenes] RainShelter (FOURTEENHOUR item 26)
             Rivals.On = _cfg.Rivals;             // [Scenes] Rivals (FOURTEENHOUR item 19)
             PurseSnatch.On = _cfg.PurseSnatch;   // [Scenes] PurseSnatch (FOURTEENHOUR item 20)
             WitnessLaw.On = _cfg.WitnessesFetchLaw;   // [Mind] WitnessesFetchLaw (FOURTEENHOUR item 21)

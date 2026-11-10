@@ -1344,6 +1344,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST opinions that act: " + OpinionsActStatus());
 			Log.Write("TEST tales: " + TalesStatus());
 			Log.Write("TEST temperance door: " + TemperanceDoorStatus());
+			Log.Write("TEST the rain: " + (RainShelter.On ? "today here " + (_store != null && _placeTown != null ? _store.Count(RainShelter.RainKey(_placeTown, _store.LastGameMin / 1440)) + " minutes of rain in " + _store.Count(RainShelter.SkyKey(_placeTown, _store.LastGameMin / 1440)) + " of sky; rain days this week " + _engine.RainDaysIn(_placeTown, _store.LastGameMin / 1440 - 6, _store.LastGameMin / 1440) : "no town here") + (_engine.WetLately(_store != null ? _store.LastGameMin : 0) ? "; wet lately" : "") : "off ([Scenes] RainShelter)"));
 			Log.Write("TEST vram: " + VramStatus());
 			Log.Write("TEST loads: " + Loads.Status());
 			Log.Write("TEST perform: " + PerformStatus());

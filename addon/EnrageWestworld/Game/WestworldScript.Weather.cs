@@ -46,6 +46,8 @@ namespace EnrageWestworld.InGame
                     Log.Write("WEATHER turned: " + fresh + " (" + WeatherTruth.Describe(s) + ")");
                 }
             }
+            if (RainShelter.On && _placeTown != null && _store != null)
+                _engine.NoteSky(_placeTown, s.Wet, _store.LastGameMin);   // the town's record of the rain (FOURTEENHOUR item 26)
             _skyType = seen;
             WeatherTruth.Now = s;
             _engine.NowSky = s;

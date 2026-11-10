@@ -53,6 +53,7 @@ namespace EnrageWestworld.Core
 			InnerLife.CounterpartDead = LinkedDead;
 			InnerLife.SettledAt = SettledAt;      // a worry the player settled for them reads as ended well (roadmap 9)
 			InnerLife.WorsenedAt = WorsenedAt;    // ...and one he turned the wrong way reads as ended badly (Core/Helps.cs; SIXDAY item 9)
+			InnerLife.RainDaysIn = RainDaysIn;  // the drought worry reads the town's own record of the rain (Core/Engine.Rain.cs; FOURTEENHOUR item 26)
 			InnerLife.WorryIdOf = WorryIdOf;      // enRAGE's person keeps the worry of the resident it took up (NIGHT3 For Lex 9a)
 			InnerLife.WorrySelf = WorrySelfOf;
 			HostNotes.On = () => Cfg != null && Cfg.WestWorld && Cfg.HostNotes;   // the waking test the world together (FIVEDAY R28)

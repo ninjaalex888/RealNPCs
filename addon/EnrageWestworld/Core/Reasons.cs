@@ -63,6 +63,7 @@ namespace EnrageWestworld.Core
         public sealed class Place
         {
             public bool Saloon, Night, Rumours, DeedsHere;
+            public bool Rain, Indoors;   // raining (or within the hour after), and under a roof (FOURTEENHOUR item 26)
             public int Hour = 12;   // the clock's hour (the temperance door's dusk: FOURTEENHOUR item 25); noon in the old harnesses
             public bool Courting;   // [Romance] NpcFlirting: people make eyes at each other
             public bool SameSex;    // [Romance] SameSexRomance
@@ -406,7 +407,9 @@ namespace EnrageWestworld.Core
             }
             // the street's own business (FOURTEENHOUR item 14; Core/StreetMore.cs): a horse to sell, a tooth at its worst, the way
             // asked; under the fights' strengths (ties go to them), over a mild snap and the talk
-            Reason more = StreetMore.For(x, y, gameDay, where.Saloon, where.Night, twoMen);
+            // in the rain out of doors the street's errands wait (FOURTEENHOUR item 26): its own business, the snub, the temperance door
+            bool wetOut = where.Rain && !where.Indoors && RainShelter.On;
+            Reason more = wetOut ? null : StreetMore.For(x, y, gameDay, where.Saloon, where.Night, twoMen);
             if (more != null)
                 all.Add(more);
             Reason green = Greenhorn.For(x, y, gameDay, where.Saloon, where.Night);   // a regular ribs the greenhorn (FOURTEENHOUR item 16)
@@ -415,12 +418,15 @@ namespace EnrageWestworld.Core
             Reason soldiers = OldSoldiers.For(x, y, gameDay, where.Saloon, where.Night);   // old soldiers of either side, or a young man home from the war (item 17)
             if (soldiers != null)
                 all.Add(soldiers);
-            Reason snub = Snub.For(x, y, gameDay, where.Saloon, where.Night);   // a gentleman snubs a working man in the street (item 18)
+            Reason snub = wetOut ? null : Snub.For(x, y, gameDay, where.Saloon, where.Night);   // a gentleman snubs a working man in the street (item 18)
             string yKind;
             int yStage;
             bool yGood;
             bool yDrink = y.P != null && InnerLife.WorryNow(y.P, gameDay, out yKind, out yStage, out yGood) && yKind == "drink";
-            Reason door = Temperance.For(x, y, gameDay, where.Saloon, where.Hour, yDrink);   // the pledge at the saloon door at dusk (item 25)
+            Reason door = wetOut ? null : Temperance.For(x, y, gameDay, where.Saloon, where.Hour, yDrink);   // the pledge at the saloon door at dusk (item 25)
+            Reason shelter = RainShelter.For(x, y, gameDay, where.Rain, where.Indoors);   // strangers under one roof in the rain (item 26)
+            if (shelter != null)
+                all.Add(shelter);
             if (door != null)
                 all.Add(door);
             if (snub != null)

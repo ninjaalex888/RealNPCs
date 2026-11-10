@@ -57,6 +57,8 @@ namespace EnrageWestworld.InGame
             if (PED.IS_PED_USING_ANY_SCENARIO(a.Handle) || PED.IS_PED_USING_ANY_SCENARIO(b.Handle) || MayDirectWhyNot(a) != null || MayDirectWhyNot(b) != null || NotFree(a.Handle) || NotFree(b.Handle))
                 return;
             bool couple = _store.Links.Any(l => l.Kind == "courting" && ((Links.IsOf(l, wa.Id) && Links.IsOtherOf(l, wb.Id)) || (Links.IsOf(l, wb.Id) && Links.IsOtherOf(l, wa.Id))));
+            if (RainShelter.On && !_engine.NowIndoors && (_engine.NowWeather == "rain" || _engine.NowWeather == "storm"))
+                return;   // nobody strolls in the rain (FOURTEENHOUR item 26)
             int warmth = LadderWarmth(wa.Id, wb.Id);
             string va = Opinions.Act ? ViewOfIds(wa.Id, wb.Id) : null, vb = Opinions.Act ? ViewOfIds(wb.Id, wa.Id) : null;
             if (va == "contempt" || vb == "contempt" || va == "fear" || vb == "fear")

@@ -468,10 +468,36 @@ namespace EnrageWestworld.Core
             return fits[raw == before ? (raw + 1) % fits.Count : raw];
         }
 
+        /// Days with rain in a town between two game days (the engine's record; FOURTEENHOUR item 26), -1 when nobody saw its sky. Only reads.
+        public static Func<string, long, long, int> RainDaysIn;
+
+        /// The rain days in a farmer's town while this drought arc ran, or -1 (no record).
+        private static int ArcRain(Person p, WorryKind k, long arc)
+        {
+            if (k.Key != "drought" || RainDaysIn == null || p == null || p.Home == null)
+                return -1;
+            long first = arc * WorryDays - Voice.Hash(p.Id + "|wo") % WorryDays;
+            return RainDaysIn(p.Home, first, first + WorryDays - 1);
+        }
+
+        /// The good end's lines, read against the record: rain seen, the rain lines; the sky watched and no rain, the rest (the well dug).
+        private static string[] GoodLines(Person p, WorryKind k, long arc)
+        {
+            int rain = ArcRain(p, k, arc);
+            if (rain < 0)
+                return k.Good;
+            string[] wet = k.Good.Where(l => l.IndexOf("rain", StringComparison.OrdinalIgnoreCase) >= 0 || l.IndexOf("creek", StringComparison.OrdinalIgnoreCase) >= 0).ToArray();
+            string[] dry = k.Good.Where(l => !wet.Contains(l)).ToArray();
+            string[] pool = rain > 0 ? wet : dry;
+            return pool.Length > 0 ? pool : k.Good;
+        }
+
         private static bool EndsWell(Person p, WorryKind k, long arc)
         {
             if (WorsenedIn(p.Id, arc))
                 return false;   // he turned it the wrong way, and they believed him (Core/Helps.cs), later than any mend
+            if (ArcRain(p, k, arc) >= 2)
+                return true;   // two days of rain or more in his town while it ran: the drought's broken (FOURTEENHOUR item 26)
             return SettledIn(p.Id, arc, long.MaxValue) || Voice.Hash(p.Id + "|wg" + arc) % 100 < k.GoodChance;
         }
 
@@ -639,7 +665,7 @@ namespace EnrageWestworld.Core
             GrowWorries();   // the more lines a stage (InnerLife.WorriesMore.cs; the no-model run, item 6b)
             string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis
                           : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? (k.PaidToday != null && PaidOn(p.Id, gameDay) ? k.PaidToday : k.Settled)   // the day he paid: not mended yet
-                          : EndsWell(p, k, arc) ? k.Good : k.Bad;
+                          : EndsWell(p, k, arc) ? GoodLines(p, k, arc) : k.Bad;
             return Fill(Pick(pool, p, seed, told), p, k, arc);
         }
 
@@ -664,7 +690,7 @@ namespace EnrageWestworld.Core
             if (stage == 3 && k.ToHimToday != null && SettledIn(p.Id, arc, gameDay))
                 return Fill(Pick(PaidOn(p.Id, gameDay) ? k.ToHimToday : k.ToHimSince, p, seed, told), p, k, arc);   // to the man who paid: the Settled lines speak of him (the review)
             GrowWorries();   // the more lines a stage (InnerLife.WorriesMore.cs; the no-model run, item 6b)
-            string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? k.Settled : EndsWell(p, k, arc) ? k.Good : k.Bad;
+            string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? k.Settled : EndsWell(p, k, arc) ? GoodLines(p, k, arc) : k.Bad;
             string[] said = pool.Where(l => !NotSaid.Any(n => l.Contains(n))).ToArray();
             return Fill(Pick(said.Length > 0 ? said : pool, p, seed, told), p, k, arc);   // `told`: not their ticker thought said again
         }

@@ -56,6 +56,7 @@ namespace EnrageWestworld.Core
                 case "x:sweet": return ReasonPick(seed, "Just a word with " + o + ". Just a kind one.", "There's " + o + ". My heart's going like a drum.");
                 case "horsetrade": return ReasonPick(seed, o + "'s looking for a horse. I've just the one.", "Sell " + o + " the bay. Don't mention the cough.");   // (FOURTEENHOUR item 14)
                 case "toothpull": return ReasonPick(seed, o + "'s tooth again. I've pliers and a strong arm.", "Somebody ought to put " + o + " out of his misery.");
+                case "shelter": return ReasonPick(seed, "Stuck in here with " + o + " till it lets up. Might as well talk.", "No going anywhere in this. " + o + " looks like a talker.");   // (item 26)
                 case "talkof": return ReasonPick(seed, "Wait till " + o + " hears what I've got to say.", o + "'ll want to know about that one.");   // (item 23)
                 case "rivals": return ReasonPick(seed, "There's " + o + ". Sniffing round my girl again.", o + " thinks he's got a chance with her. We'll see about that.");   // (item 19)
                 case "snub": return ReasonPick(seed, "I'll ask the gentleman. Can't hurt to ask.", o + " in his fine coat. Wonder if he'd give a working man the time of day.");   // (item 18)
