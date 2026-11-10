@@ -117,6 +117,45 @@ namespace EnrageWestworld.Core
             return Math.Max(1, Math.Min(12, (int)Math.Round(x)));
         }
 
+        // ---- the stray blow and the friend who pulls him out (FOURTEENHOUR item 8; [Mind] BrawlStrays). The stray punch is the
+        // oldest way a two-man fight becomes a room's; the friend dragging his man out by the collar is the oldest way it ends.
+
+        /// Someone standing within arm's length of the fighting two looks running takes a stray blow this often.
+        public const int StrayPercent = 35;
+
+        /// What a man does with a stray blow: "swing" (he's in it, against the one who hit him: the hot, the reckless, the
+        /// drunk), "back" (he backs off: the timid), or "cry" (a woman cries out and leaves, unless WomenInFights has her swing).
+        public static string StrayAnswer(Traits t, bool drunk, bool woman, bool womenFight, string seed)
+        {
+            float hot = t == null ? 0f : 0.6f * t.Z[Traits.Anger] + 0.3f * t.Z[Traits.Risk] + 0.2f * t.Z[Traits.Assertiveness] - 0.3f * t.Z[Traits.SelfControl] - 0.3f * t.Z[Traits.Anxiety];
+            if (drunk)
+                hot += 0.5f;
+            int roll = (Voice.Hash(seed + "|stray") & 0x7fffffff) % 100;
+            if (woman)
+                return womenFight && hot > 0.6f && roll < 40 ? "swing" : "cry";
+            int swing = Math.Max(10, Math.Min(90, 50 + (int)(hot * 40)));
+            return roll < swing ? "swing" : "back";
+        }
+
+        /// Whether a friend near a man losing badly (his health under a third) drags him out of it: the warmer the friend and the
+        /// kinder, the likelier; the anxious less (it means walking into the fight). Seeded.
+        public static bool PullsOut(Traits friend, int warmth, string seed)
+        {
+            float c = 0.40f + 0.10f * Math.Max(0, warmth - 1);
+            if (friend != null)
+                c += 0.15f * friend.Z[Traits.Compassion] + 0.08f * friend.Z[Traits.Assertiveness] - 0.10f * friend.Z[Traits.Anxiety];
+            c = Math.Max(0.10f, Math.Min(0.90f, c));
+            return Voice.Chance(seed + "|pullout", (int)Math.Round(c * 100));
+        }
+
+        /// Whether the one beating him goes after the two as they leave: the hot and the drunk do, the rest let him go.
+        public static bool FollowsThem(Traits t, bool drunk)
+        {
+            return t != null && (t.Z[Traits.Anger] > 0.8f || (drunk && t.Z[Traits.Anger] > 0.3f));
+        }
+
+        public const float PullOutHealth = 0.35f;
+
         public static float CascadeStreetBase = 4.0f, CascadeSaloonBase = 6.6f;   // tuned in the simulator (item 7): bigger than before where the law is (Valentine with a lawman in sight, four or more 14% to 28%), the lawless street about as it was, a saloon at night a riot 65% of the time, not 97%   // (static, not const: the simulator tunes them)
 
         /// "Law!" cried as he comes (within 20 m, three or more at it): only the law-abiding (deference over half a step) who'd

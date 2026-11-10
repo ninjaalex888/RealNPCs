@@ -35,6 +35,124 @@ namespace EnrageWestworld.InGame
         private int _brawlBiggest, _joinPendingAt, _joinSidesFor, _joinCameOver, _joinGaveUp;
 
         private int _joinFightSince, _joinLawSaidFor, _joinWhoSaidFor;
+
+        // ---- the stray blow and the friend who pulls him out (FOURTEENHOUR item 8; [Mind] BrawlStrays) ----
+        private readonly Dictionary<int, int> _strayNear = new Dictionary<int, int>();   // within arm's length of the fighting since (this fight)
+        private readonly HashSet<int> _strayRolled = new HashSet<int>(), _pulledOut = new HashSet<int>();
+        private int _strayFor, _strays, _strayJoins, _pullOuts;
+
+        /// At a look: someone free within 1.5 m of one of the fighters at two looks running takes a stray blow, once a fight
+        /// (Brawl.StrayPercent); the hot swing back and are in it against the man who hit them, the timid back off, a woman
+        /// cries out and leaves.
+        private void StraysLook(List<int> a, List<int> b, List<Ped> looking, int now)
+        {
+            if (_strayFor != _director.FightId)
+            {
+                _strayFor = _director.FightId;
+                _strayNear.Clear();
+                _strayRolled.Clear();
+                _pulledOut.Clear();
+            }
+            for (int i = looking.Count - 1; i >= 0; i--)
+            {
+                Ped p = looking[i];
+                int h = p.Handle;
+                if (_strayRolled.Contains(h))
+                    continue;
+                Vector3 at = p.Position;
+                int hitter = 0;
+                foreach (int f in a.Concat(b))
+                    if (ENTITY.DOES_ENTITY_EXIST(f) && ENTITY.GET_ENTITY_COORDS(f, true, true).DistanceTo(at) < 1.5f)
+                    {
+                        hitter = f;
+                        break;
+                    }
+                if (hitter == 0)
+                {
+                    _strayNear.Remove(h);
+                    continue;
+                }
+                int since;
+                if (!_strayNear.TryGetValue(h, out since))
+                {
+                    _strayNear[h] = now;
+                    continue;
+                }
+                _strayRolled.Add(h);
+                string seed = "f" + _director.FightId + "|stray|" + h;
+                if (!Voice.Chance(seed, Brawl.StrayPercent))
+                    continue;
+                _strays++;
+                MindWho w = MindKnown(h, now);
+                Traits t = w != null && w.Src != null ? (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))) : null;
+                bool woman = !PED.IS_PED_MALE(h);
+                string answer = Brawl.StrayAnswer(t, w != null && InHisCups(p, w.P), woman, _cfg.WomenInFights, seed);
+                string name = w != null && w.Name != null ? w.Name : "a stranger", by = NameOfFighter(hitter);
+                int room = MostJoinersNow - _director.JoinerCount - _joinPending.Count;
+                if (answer == "swing" && room > 0 && w != null && w.Id != null)
+                {
+                    int side = a.Contains(hitter) ? 1 : 0;   // against the man who hit him
+                    looking.RemoveAt(i);
+                    _strayJoins++;
+                    JoinAdd(h, side, hitter, name, "a stray blow from " + by + ", and swings back", NameOfFighter(side == 0 ? a[0] : b[0]), by);
+                    continue;
+                }
+                looking.RemoveAt(i);
+                TASK.TASK_SMART_FLEE_PED(h, hitter, answer == "cry" ? 20f : 8f, answer == "cry" ? 8000 : 4000, 0, 1f, 0);   // off out of reach (as the Director's brave back off)
+                Log.Write("BRAWL " + name + " takes a stray blow from " + by + (answer == "cry" ? " and cries out and goes" : " and backs off out of it"));
+            }
+        }
+
+        /// At a look: a fighter losing badly (his health under a third) with a friend near and free (warmth 2 or more) may be
+        /// pulled out of it; the two leave together, side by side, away from the fight, and the one beating him lets them go
+        /// (or a hothead follows). Once a man a fight.
+        private void PullOutLook(List<int> a, List<int> b, List<Ped> looking, int now)
+        {
+            foreach (int f in a.Concat(b).ToList())
+            {
+                if (_pulledOut.Contains(f) || !ENTITY.DOES_ENTITY_EXIST(f) || ENTITY.IS_ENTITY_DEAD(f) || BrawlHealth(f) >= Brawl.PullOutHealth)
+                    continue;
+                MindWho fw = MindKnown(f, now);
+                if (fw == null || fw.Id == null)
+                    continue;
+                Vector3 fat = ENTITY.GET_ENTITY_COORDS(f, true, true);
+                foreach (Ped p in looking)
+                {
+                    MindWho w = MindKnown(p.Handle, now);
+                    if (w == null || w.Id == null || p.Position.DistanceTo(fat) > 15f)
+                        continue;
+                    int warmth = LadderWarmth(w.Id, fw.Id);
+                    if (warmth < 2)
+                        continue;
+                    _pulledOut.Add(f);
+                    Traits t = w.Traits ?? (w.Traits = w.Src != null ? _engine.Shadow.TraitsOf(w.Src) : null);
+                    if (!Brawl.PullsOut(t, warmth, "f" + _director.FightId + "|" + w.Id + "|" + fw.Id) || !_director.LeaveFight(f))
+                        break;
+                    int beater = _director.TargetOf(f);
+                    MindWho bw = beater != 0 && ENTITY.DOES_ENTITY_EXIST(beater) ? MindKnown(beater, now) : null;
+                    Traits bt = bw != null && bw.Src != null ? (bw.Traits ?? (bw.Traits = _engine.Shadow.TraitsOf(bw.Src))) : null;
+                    bool follows = bw != null && Brawl.FollowsThem(bt, InHisCups(new Ped(beater), bw.P));
+                    // away from the fight, 20 m, the two a metre apart (the walk the Director's leavewith uses, seen working)
+                    Vector3 away = fat - ENTITY.GET_ENTITY_COORDS(beater != 0 && ENTITY.DOES_ENTITY_EXIST(beater) ? beater : a[0], true, true);
+                    away.Z = 0f;
+                    away = Math.Abs(away.X) + Math.Abs(away.Y) < 0.1f ? new Vector3(1f, 0f, 0f) : away.Normalized;
+                    Vector3 spot = fat + away * 20f, side = new Vector3(-away.Y, away.X, 0f) * 1.1f;
+                    TASK.CLEAR_PED_TASKS(f, true, false);
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(f, false);
+                    TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(f, spot.X + side.X, spot.Y + side.Y, spot.Z, 1f, -1, 1f, 0, 0f);
+                    TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(p.Handle, spot.X - side.X, spot.Y - side.Y, spot.Z, 1f, -1, 1f, 0, 0f);
+                    WanderLater(f, now + 15000);
+                    WanderLater(p.Handle, now + 15000);
+                    if (!follows && beater != 0 && ENTITY.DOES_ENTITY_EXIST(beater))
+                        TASK.TASK_TURN_PED_TO_FACE_ENTITY(beater, f, 2000, 0f, 0f, 0f);   // he lets them go, and watches them off
+                    else if (follows)
+                        TASK.TASK_COMBAT_PED(beater, f, 0, 16);
+                    _pullOuts++;
+                    Log.Write("BRAWL " + w.Name + " pulls " + fw.Name + " out of it, beaten; they leave together" + (beater != 0 ? ", and " + NameOfFighter(beater) + (follows ? " goes after them" : " lets them go") : ""));
+                    break;
+                }
+            }
+        }
         private readonly Dictionary<string, SidePerson> _brawlSides = new Dictionary<string, SidePerson>();   // the people of this fight, by id (item 6)
         private int _brawlSidesFor;
         private Func<string, string, string, SideTie> _sideTieOf;
@@ -240,6 +358,11 @@ namespace EnrageWestworld.InGame
             {
                 _joinWhoSaidFor = _director.FightId;
                 Log.Write("BRAWL who could join: " + witnesses + " near, " + looking.Count + " to weigh" + (passedOver.Count > 0 ? "; passed over: " + string.Join(", ", passedOver.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value)) : ""));
+            }
+            if (BrawlsOn && _cfg.BrawlStrays)
+            {
+                StraysLook(a, b, looking, now);   // the stray blow (FOURTEENHOUR item 8)
+                PullOutLook(a, b, looking, now);  // a friend pulls a beaten man out of it
             }
             if (looking.Count == 0)
                 return;
