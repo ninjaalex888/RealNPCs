@@ -436,6 +436,7 @@ namespace EnrageWestworld.InGame
                             lh.Tied = true;
                             _brawlHoldouts.Remove(t);
                             _brawlTied++;
+                            AfterJailed(t);   // locked up overnight, and his wife or mother at the jail door at dawn (FOURTEENHOUR item 12)
                             LawSay(law, "The lawman", Brawl.LawTakes(lh.Seed + "|" + t), "WON_FIGHT");
                             Log.Write("LAW breaks up: the lawman hogties " + (MindNameOf(t) ?? "a man who wouldn't stop"));
                             lh.Phase = 3;

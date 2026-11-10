@@ -30,8 +30,9 @@ namespace EnrageWestworld.InGame
         private void BarRoundLook(int now)
         {
             Ped me = Game.Player.Character;
-            if (PED.IS_PED_ON_MOUNT(me.Handle) || _barRoundDays.Contains(BarRound.DayKey(_placeTown, _store.LastGameMin)))
-                return;
+            bool roundToday = _barRoundDays.Contains(BarRound.DayKey(_placeTown, _store.LastGameMin));
+            if (PED.IS_PED_ON_MOUNT(me.Handle) || (roundToday && SaloonDamageToday() <= 0))
+                return;   // (a brawl's broken chairs still to pay for: J at the bar for those, FOURTEENHOUR item 12)
             Ped keeper = null;
             PostKind kind = null;
             foreach (Ped p in Peds.All())

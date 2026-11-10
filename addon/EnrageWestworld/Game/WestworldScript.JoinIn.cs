@@ -457,6 +457,8 @@ namespace EnrageWestworld.InGame
                 _joinWhoSaidFor = _director.FightId;
                 Log.Write("BRAWL who could join: " + witnesses + " near, " + looking.Count + " to weigh" + (passedOver.Count > 0 ? "; passed over: " + string.Join(", ", passedOver.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value)) : ""));
             }
+            if (BrawlAfterOn)
+                AfterNote(a, b);   // who was on which side, and the most it grew to (FOURTEENHOUR item 12)
             if (BrawlsOn && _cfg.BrawlShape)
                 ShapeLook(a, b, looking, mid, now);   // the big brawl's beats (FOURTEENHOUR item 10)
             if (BrawlsOn && _cfg.BrawlStrays)

@@ -1333,6 +1333,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST perf: " + PerfStatus() + "; Core compiled ahead: " + _prejitStatus);
 			Log.Write("TEST hand back: " + HandBackStatus());
 			Log.Write("TEST brawl verbs: " + BrawlVerbsStatus());
+			Log.Write("TEST brawl after: " + BrawlAfterStatus());
 			Log.Write("TEST vram: " + VramStatus());
 			Log.Write("TEST loads: " + Loads.Status());
 			Log.Write("TEST perform: " + PerformStatus());

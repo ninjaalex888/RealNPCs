@@ -1446,6 +1446,7 @@ namespace EnrageWestworld.InGame
             KeeperBackStep(now);    // a keeper shot down, seen back (WestworldScript.KeeperBack.cs, THREEHOUR R3)
             PlacesMournedStep(now);   // where someone died, those close to them stop (WestworldScript.PlacesMourned.cs, THREEHOUR item 5)
             WalkHomeStep(now);      // J after dark: see someone home (WestworldScript.WalkHome.cs, THREEHOUR item 4)
+            JailDoorStep(now);      // the morning after a brawl the law broke up: his wife at the jail door (WestworldScript.BrawlAfter.cs; FOURTEENHOUR item 12)
             BrawlVerbsStep(now);    // J in a fight near you: break it up, stand with the man losing, the bet (WestworldScript.BrawlVerbs.cs; FOURTEENHOUR item 11)
             BarRoundStep(now);      // J at a saloon's bar: the house a round (WestworldScript.BarRound.cs, THREEHOUR item 3)
             SlateStep(now);         // credit at the store's counter (WestworldScript.Slate.cs; FIVEDAY R2)

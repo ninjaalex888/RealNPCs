@@ -44,6 +44,8 @@ namespace EnrageWestworld.InGame
         {
             if (!ENTITY.DOES_ENTITY_EXIST(h))
                 return;
+            if (_afterFor == _director.FightId)
+                _afterDowns++;   // for the town's word on it after (FOURTEENHOUR item 12)
             int now = Game.GameTime;
             string shockKey = "down|" + h + "|" + now / 10000;   // the street's event for him, once per fall (a handle is reused: the time keeps it one man's; the review)
             Ped p = new Ped(h);

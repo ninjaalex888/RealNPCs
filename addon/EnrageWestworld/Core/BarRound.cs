@@ -33,13 +33,16 @@ namespace EnrageWestworld.Core
             return (town ?? "?") + "|" + gameMinute / 1440;
         }
 
-        public static List<InteractOption> Rows(int cents, int cashCents, int company)
+        public static List<InteractOption> Rows(int cents, int cashCents, int company, int damageCents = 0, bool roundToday = false)
         {
-            return new List<InteractOption>
+            var rows = new List<InteractOption>
             {
-                new InteractOption { Id = "barround:buy", Label = "Buy the house a round (" + Dollars(cents) + ", " + company + " at the bar).", Why = cashCents < cents ? "you haven't the money" : null },
+                new InteractOption { Id = "barround:buy", Label = "Buy the house a round (" + Dollars(cents) + ", " + company + " at the bar).", Why = roundToday ? "you stood one here today" : cashCents < cents ? "you haven't the money" : null },
                 new InteractOption { Id = "barround:no", Label = "Just the one for me." }
             };
+            if (damageCents > 0)   // the chairs a big brawl broke today (FOURTEENHOUR item 12)
+                rows.Insert(1, new InteractOption { Id = "barround:damage", Label = "Pay for the broken chairs (" + Dollars(damageCents) + ").", Why = cashCents < damageCents ? "you haven't the money" : null });
+            return rows;
         }
 
         private static readonly string[] Keeper =

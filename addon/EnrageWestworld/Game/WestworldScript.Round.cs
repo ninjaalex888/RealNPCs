@@ -38,6 +38,13 @@ namespace EnrageWestworld.InGame
         }
 
         /// Someone in the saloon stands the house a drink. True if a scene started.
+        /// He won a saloon's fight in the last two game hours and hasn't stood his round yet ([Scenes] BrawlAfter).
+        private bool BrawlWonNow(string id, long g)
+        {
+            long until;
+            return BrawlAfterOn && id != null && _brawlWon.TryGetValue(id, out until) && until >= g;
+        }
+
         private bool RoundScene(Ped me, int now, bool test, out string why)
         {
             why = null;
@@ -80,6 +87,7 @@ namespace EnrageWestworld.InGame
                 bool good;
                 bool news = InnerLife.WorryNow(c.Who.P, g / 1440, out wk, out ws, out good) && ws >= 3 && good && !InnerLife.IsSettled(c.Who.Id, g / 1440);   // a debt he paid for them is no reason to stand the house a round
                 string w = couple != null && c.Who.Temper != "Greedy" && c.Who.Id != wed.AId && c.Who.Id != wed.BId && !AgainstCouple(c.Who.Id, wed) ? "wedding" :   // not the newlyweds themselves
+                            BrawlWonNow(c.Who.Id, g) ? "won" :   // he won a fight in here a while ago (FOURTEENHOUR item 12)
                             Scenes.RoundWhy(news, c.Who.Mood, c.Who.P.Outgoing, c.Who.WellOff, c.Who.Temper, c.Who.Woman, InnerLife.TradeGroup(c.Who.P.Trade) == "girl") ?? (test ? "glad" : null);
                 int r = w != null ? Array.IndexOf(Scenes.RoundWhys, w) : 9;
                 // a round for a man with bad news (roadmap 21; item 14): a friend of someone drinking it away tonight stands the house a drink, him

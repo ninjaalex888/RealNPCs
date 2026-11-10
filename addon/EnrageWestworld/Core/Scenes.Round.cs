@@ -9,7 +9,7 @@ namespace EnrageWestworld.Core
 {
     public static partial class Scenes
     {
-        public static readonly string[] RoundWhys = { "wedding", "goodnews", "cheer", "glad", "flush" };   // cheer: a round for a man with bad news (roadmap 21; SIXDAY item 14), ranked above a glad mood   // a wedding toast first (Tier 4: an enRAGE wedding in this town today)
+        public static readonly string[] RoundWhys = { "wedding", "goodnews", "cheer", "won", "glad", "flush" };   // won: the winner of a saloon's fight stands his round (FOURTEENHOUR item 12)   // cheer: a round for a man with bad news (roadmap 21; SIXDAY item 14), ranked above a glad mood   // a wedding toast first (Tier 4: an enRAGE wedding in this town today)
 
         /// Why this person would buy the house a drink tonight, or null: good news today first, then a glad mood, then
         /// an outgoing nature and money in the pocket (never the Greedy, who'd sooner keep it).
@@ -39,10 +39,11 @@ namespace EnrageWestworld.Core
             string a = N(c, 0, seed);
             string pair = string.IsNullOrEmpty(couple) ? "the newlyweds" : couple;
             string low = string.IsNullOrEmpty(couple) ? "the fellow down the bar" : couple;
-            Scene s = new Scene { Kind = "round", Summary = why == "wedding" ? "someone stood the house a round for the newlyweds" : why == "cheer" ? "a friend stood the house a round for a man with bad news" : "someone stood the house a round" };
+            Scene s = new Scene { Kind = "round", Summary = why == "wedding" ? "someone stood the house a round for the newlyweds" : why == "cheer" ? "a friend stood the house a round for a man with bad news" : why == "won" ? "the winner of the fight stood the house a round" : "someone stood the house a round" };
             string call = why == "wedding" ? Voice.Pick(seed + "rw", "A round for " + pair + "! Married this very day!", "Drinks all round! To " + pair + ", and long life to them!", "Fill 'em up! I mean to drink to " + pair + ", wed this very day.", "Glasses up! " + LostChild.Up(pair) + " are wed, and the whiskey's on me.")
                         : why == "goodnews" ? Voice.Pick(seed + "rg", "A round for the house! Good news came today, and I mean to drink to it.", "Drinks for everybody! Something finally went right.")
                         : why == "cheer" ? Voice.Pick(seed + "rc", "A round for the house. First glass to " + low + ". He's had a day of it.", "Set 'em up, the room and " + low + " first. He's had news enough today.", "Drinks all round, and " + low + " doesn't drink alone tonight.")
+                        : why == "won" ? Voice.Pick(seed + "rn", "Set 'em up! I'm still standing, and that's worth a drink.", "Drinks on me. You all saw how it went.", "A round, boys. He'll think twice next time.")
                         : why == "glad" ? Voice.Pick(seed + "rl", "Set 'em up, barkeep. One for everybody.", "Drinks all round! Don't ask why. Just drink.", "Everybody's glass, on me. It's been that kind of a day.")
                         : Voice.Pick(seed + "rf", "Put the room's drinks on my account tonight.", "A round for the house, and keep the change.");
             s.Add(0, call, "cheer", "face")
