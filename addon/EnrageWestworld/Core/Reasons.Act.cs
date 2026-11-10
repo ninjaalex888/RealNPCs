@@ -51,7 +51,8 @@ namespace EnrageWestworld.Core
                 case "snub": return "has a word for " + o + ", the gentleman";   // (FOURTEENHOUR item 18)
                 case "rivals": return "squares up to " + o + " over the woman they both court";   // (item 19)
                 case "talkof": return "tells " + o + " what they think of someone";   // (item 23)
-                case "shelter": return "passes the time with " + o + " till the rain stops";   // (item 26)   // (FOURTEENHOUR item 16)
+                case "shelter": return "passes the time with " + o + " till the rain stops";   // (item 26)
+                case "rowdy": return "comes down the street singing, and picks on " + o;   // (reserve R5)   // (FOURTEENHOUR item 16)
                 default:
                     return k.StartsWith("x:", System.StringComparison.Ordinal) ? "goes to see " + o + " about what's between them" : "goes over to " + o;
             }

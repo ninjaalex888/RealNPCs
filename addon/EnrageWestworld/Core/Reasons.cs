@@ -369,6 +369,10 @@ namespace EnrageWestworld.Core
             // a drunk in a saloon at night calls a man out, and falls down before a blow is struck
             if (x.Drunk && twoMen && where.Saloon && where.Night && x.Temper != "Coward")
                 all.Add(new Reason { Kind = "drunk", Strength = 44, Why = x.Name + " is drunk and spoiling for a fight" });
+            // out in the street at night, a man in drink picks on a man going by (FOURTEENHOUR reserve R5): the game side finds his friend in
+            // drink beside him for the song and the walk home; alone, it's the saloon's drunk who falls on his face
+            if (twoMen && Rowdy.Picks(x, y, where.Night, !where.Saloon && !where.Indoors, false, gameDay))
+                all.Add(new Reason { Kind = Rowdy.Kind, Strength = Rowdy.Strength, Why = x.Name + " is drunk and loud in the street, and picks on " + y.Name });
             // drink and temper in a saloon, any hour (at night only until Lex asked for saloon fights by day too, 2026-10-28):
             // two men, one of them hot, one of them drunk, come to blows (a coward only gets words); now and then the hot
             // one does it rough

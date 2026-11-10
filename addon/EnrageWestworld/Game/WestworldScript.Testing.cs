@@ -718,6 +718,13 @@ namespace EnrageWestworld.InGame
                         skipped = "the day and hour, the rarity and the rests (Pacing \"sabbath\")";
                         return SabbathScene(Game.Player.Character, now, true, out sw) ? null : sw;
                     }
+                case "rowdy":
+                    {
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already: " + SceneNow() + " (let it finish)";
+                        skipped = "the night, the drink, the pair-night's roll and the strongest reason near you; hauled home and blows by turns";
+                        return RowdyFire(now, out said);   // WestworldScript.Rowdy.cs (FOURTEENHOUR reserve R5)
+                    }
                 case "doctorsdoor":
                     {
                         skipped = "the hour, the night's roll and the fever (the nearest named man 15-80 m from the doctor goes)";

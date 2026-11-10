@@ -476,6 +476,8 @@ namespace EnrageWestworld.InGame
                 SnubCount(lady);
             bool kinStands = false, churchSecond = false;
             string kinId = null;
+            if (pr.Why.Kind == Rowdy.Kind)
+                lady = DrinkingFriendBeside(first, second, now);   // his friend in drink, for the song and the walk home (FOURTEENHOUR reserve R5)
             if (pr.Why.Kind == "temperance" && Temperance.DoorOn)
             {
                 // the temperance door (FOURTEENHOUR item 25): her kin near to answer a hothead's insult (he's A, the drinker B, she the
@@ -506,6 +508,8 @@ namespace EnrageWestworld.InGame
                 cast.KinId = kinId;
             }
             string kind = pr.Why.Kind;
+            if (kind == Rowdy.Kind && lady == null)
+                kind = "drunk";   // alone in the street: the saloon's drunk, who calls the man out and falls on his face (reserve R5)
             Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
             if (kind == "talkof")
                 cast.TalkOf = TalkOfCast(doer, done);   // whom he talks of, and what each thinks of him (FOURTEENHOUR item 23)
@@ -559,6 +563,12 @@ namespace EnrageWestworld.InGame
             }
             if (s == null || (side && !Director.Quiet(s)))
                 return false;
+            if (s.Kind == Rowdy.Kind)
+            {
+                _rowdyPicked++;   // (F7: TEST rowdy drunks; reserve R5)
+                if (s.Fight)
+                    _rowdyBlows++;
+            }
             if (asSecond)
             {
                 if (!cast.KinStands)

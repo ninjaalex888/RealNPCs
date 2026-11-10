@@ -54,6 +54,12 @@ namespace EnrageWestworld.Core
                 case "rivals": return Rivals.Play(c, seed);              // two men courting the same woman (item 19)
                 case "talkof": return Opinions.TalkScene(c, seed);       // a friend's view of someone not there, passed on (item 23)
                 case "shelter": return RainShelter.Play(c, seed);        // strangers under one roof in the rain (item 26)
+                case "rowdy":                                            // two drunks singing in the street, one picks on a man going by (reserve R5)
+                {
+                    string ans = Rowdy.Answer(c.Tempers != null && c.Tempers.Length > 1 ? c.Tempers[1] : null);
+                    int pct = Rowdy.FightPercent(c.Tempers != null && c.Tempers.Length > 0 ? c.Tempers[0] : null, c.Tempers != null && c.Tempers.Length > 2 ? c.Tempers[2] : null, ans);
+                    return Rowdy.Play(c, seed, ans, Voice.Chance(seed + "|rowdyfight", pct));
+                }
                 case "pitch": return Pitch(c, seed);
                 case "posse": return c.CrimeRumour != null ? Posse(c, seed) : null;
                 case "mourn": return c.DeadName != null ? Mourn(c, seed) : null;

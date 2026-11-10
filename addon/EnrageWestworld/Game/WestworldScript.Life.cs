@@ -687,7 +687,7 @@ namespace EnrageWestworld.InGame
         private string _condoleLast;
         private string _loversLast;
 
-        private static readonly HashSet<string> TroubleKinds = new HashSet<string> { "rough", "lift", "pickpocket", "drunk", "charity", "scorn", "avoid", "comfort" };
+        private static readonly HashSet<string> TroubleKinds = new HashSet<string> { "rough", "lift", "pickpocket", "drunk", "charity", "scorn", "avoid", "comfort", "rowdy" };   // (rowdy: reserve R5)
         private readonly Dictionary<string, int> _troubleCount = new Dictionary<string, int>();
         private string _troubleLast;
 

@@ -1440,6 +1440,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST lost child: " + LostChildStatus());
 			Log.Write("TEST doctor's patient: " + PatientStatus());
 			Log.Write("TEST doctor's door: " + DoctorsDoorStatus());
+			Log.Write("TEST rowdy drunks: " + RowdyStatus());
 			Log.Write("TEST test cast: " + Guarded(TestCastStatus));
 			Log.Write("TEST controller: " + Guarded(PadStatus));
 			Log.Write("TEST sabbath: " + SabbathStatus());

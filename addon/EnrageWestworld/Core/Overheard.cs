@@ -116,6 +116,7 @@ namespace EnrageWestworld.Core
                 case "holdup": return a + " held " + t + " up at gunpoint";
                 case "rough": return a + " put " + t + "'s face into the bar";
                 case "drunk": return a + ", in drink, called " + t + " out";
+                case "rowdy": return a + ", in drink, picked on " + t + " in the street";
                 case "help": case "carried": return a + " helped " + t + " up";
                 case "passby": return a + " walked past " + t + " lying in the street";
                 case "comfort": case "condole": return a + " comforted " + t;
@@ -181,6 +182,8 @@ namespace EnrageWestworld.Core
                     return "A scuffle behind you.";
                 case "holdup":
                     return "A cry of 'Thief!' behind you.";
+                case "rowdy":
+                    return "Drunken singing behind you, and then raised voices.";
                 case "song": case "talltale": case "cheer": case "glad": case "gossip": case "hosts":
                     return "Laughter behind you.";
                 case "nighttale":

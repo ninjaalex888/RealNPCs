@@ -221,7 +221,7 @@ namespace EnrageWestworld.Core
                 case "mourn": case "propose": case "grudge": case "haggle": case "song": case "talltale": case "nighttale": case "lostchild": case "preacher":
                 case "marry": case "beg": case "condole": case "avenger": case "defend":
                     return 2;
-                case "argue": case "fall": case "help": case "round": case "standup": case "apology": case "patient": case "tend": case "charity":
+                case "argue": case "fall": case "help": case "round": case "standup": case "apology": case "patient": case "tend": case "charity": case "rowdy":
                     return 1;
                 default:
                     return 0;   // x:* and how they were dressed (snap, comfort, brushoff, cheer, envy, makeup, sweet), smalltalk, gossip ...

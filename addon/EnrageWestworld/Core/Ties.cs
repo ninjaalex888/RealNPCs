@@ -61,7 +61,7 @@ namespace EnrageWestworld.Core
         {
             switch (kind)
             {
-                case "argue": case "brawl": case "cheat": case "debt": case "standoff": case "snap": case "envy": case "drunk":
+                case "argue": case "brawl": case "cheat": case "debt": case "standoff": case "snap": case "envy": case "drunk": case "rowdy":
                     return -1;
                 case "rough": case "pickpocket": case "mugging": case "holdup":
                     return -2;   // a face into the bar, or a hand caught in a coat, isn't soon forgotten
