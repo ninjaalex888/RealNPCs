@@ -28,6 +28,14 @@ namespace EnrageWestworld.Core
                         foreach (string l in e.Lines)
                             if (!string.IsNullOrEmpty(l) && !d.ContainsKey(l))
                                 d[l] = e;
+                foreach (KeyValuePair<string, string> kv in AlmanacSides.LinesByKey())   // the sides' own lines, each of its story (Core/AlmanacSides.cs)
+                {
+                    AlmanacEvent e = null;
+                    foreach (AlmanacEvent x in Almanac.All)
+                        if (x != null && x.Key == kv.Key) { e = x; break; }
+                    if (e != null && e.Body != null && !d.ContainsKey(kv.Value))
+                        d[kv.Value] = e;
+                }
                 _byLine = d;
             }
             AlmanacEvent ev;

@@ -254,6 +254,7 @@ namespace EnrageWestworld.InGame
             Folklore.On = _cfg.NightTales;   // [Scenes] NightTales: the old tales, in the street's scenes and by a campfire (Core/Folklore.cs)
             Almanac.On = _cfg.Almanac;   // [World] Almanac: the year's dated news (Core/Almanac.cs)
             Almanac.Share = _cfg.AlmanacShare;
+            AlmanacSides.On = _cfg.AlmanacSides;   // [World] AlmanacSides: their side on the year's quarrels (Core/AlmanacSides.cs)
             LoopVoice.On = _cfg.WestWorld && _cfg.LoopVoice;   // the centre's thoughts only with the voice on (Core/LoopVoice.cs)
             Natives.Brisk = _cfg.ErrandPace;
             Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;

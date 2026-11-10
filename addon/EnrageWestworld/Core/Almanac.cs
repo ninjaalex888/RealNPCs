@@ -316,7 +316,16 @@ namespace EnrageWestworld.Core
         /// One of the thing's lines for this person, not thought lately (marked as thought as it's given).
         public static string ThoughtOf(AlmanacEvent e, Person p, string seed, List<string> told)
         {
-            return e == null || p == null ? null : InnerLife.PickLine(e.Lines, p, seed + "|al" + e.Key, told);
+            if (e == null || p == null)
+                return null;
+            string[] side = AlmanacSides.For(e.Key, p);   // their side on the year's quarrels, six times in ten (Core/AlmanacSides.cs)
+            if (side != null && Voice.Chance(seed + "|side|" + e.Key, AlmanacSides.Chance))
+            {
+                string mine = InnerLife.PickLine(side, p, seed + "|als" + e.Key, told);
+                if (mine != null)
+                    return mine;
+            }
+            return InnerLife.PickLine(e.Lines, p, seed + "|al" + e.Key, told);
         }
 
         /// What this person thinks of the times today, and `source` names it ("almanac:wilcox"); null for nothing.
