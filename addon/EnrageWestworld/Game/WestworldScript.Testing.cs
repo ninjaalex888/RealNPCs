@@ -718,6 +718,19 @@ namespace EnrageWestworld.InGame
                         skipped = "the day and hour, the rarity and the rests (Pacing \"sabbath\")";
                         return SabbathScene(Game.Player.Character, now, true, out sw) ? null : sw;
                     }
+                case "rider":
+                case "deputy":
+                    {
+                        if (_rider != null)
+                            return "a rider is out already";
+                        if (_bridge.TownOnly(Game.Player.Character.Position) != null)
+                            return "out of town only (riders are the road's)";
+                        skipped = "the traveller's turn and its roll, the road, the hour" + (a.Id == "deputy" ? ", the posse (as if one were out)" : "");
+                        if (!StartRider(now, true, a.Id == "deputy"))
+                            return "nobody of the nearest town free to ride out";
+                        said = (a.Id == "deputy" ? "a deputy" : _rider.Name) + " sets off toward you";
+                        return null;   // WestworldScript.Riders.cs (FOURTEENHOUR reserve R9)
+                    }
                 case "owners":
                     skipped = "nothing: it only asks and logs";
                     return OwnersProbe(out said);   // WestworldScript.GameEncounters.cs (FOURTEENHOUR reserve R8)

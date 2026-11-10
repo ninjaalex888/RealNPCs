@@ -96,7 +96,8 @@ namespace EnrageWestworld.Core
             List<string> manKeys = Store.Counts.Keys.Where(k => k.StartsWith(PosseRides.ManPrefix, StringComparison.Ordinal) && Store.Counts[k] == rode)
                                        .Where(k => { Resident x = Store.FindResident(k.Substring(PosseRides.ManPrefix.Length)); return x == null || x.Town == town; }).ToList();
             List<Resident> men = manKeys.Select(k => Store.FindResident(k.Substring(PosseRides.ManPrefix.Length))).Where(r => r != null && r.Town == town).ToList();
-            string outcome = PosseRides.Outcome(seed), deadName = null;
+            string outcome = Riders.PosseOutcome(PosseRides.Outcome(seed), Store.Count("possepoint:" + town)), deadName = null;   // your word to the deputy on the road (FOURTEENHOUR reserve R9)
+            Store.Counts.Remove("possepoint:" + town);
             if (outcome == "dead")
             {
                 Resident v = men.Where(r => !r.Dead && !r.Left && !r.Fled && r.Cast == null)   // never one walking in the world now (the review)

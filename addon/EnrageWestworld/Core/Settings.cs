@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 401;
+        public const int CurrentVersion = 402;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -302,6 +302,7 @@ namespace EnrageWestworld.Core
         public bool Travellers = true;
         public int TravellerChance = 20;
         public bool SecondActs = true;    // [Encounters] the people of the encounters come back: the saved to thank you, the kin of a man you watched die, the men you let get away (FOURTEENHOUR reserve R3; settings version 396)
+        public bool Riders = true;        // [Encounters] on the traveller's turn, a rider: someone of the next town rides along a while, or a deputy asks after the posse's man (FOURTEENHOUR reserve R9; settings version 402)
         public bool WagonWheel = true;    // [Encounters] a wagon ahead of you on the road loses a wheel (roadmap 32; Core/WagonWheel.cs; settings version 245)
         public int WagonWheelChance = 20;
         public bool Pinkertons = true;    // [Encounters] by day in a town where a violent deed of yours is known this week, now and then a Pinkerton man asks its people after you; friends lie, the afraid talk, and a friend warns you after (Core/Pinkertons.cs; FIVEDAY item 15, settings version 267)
@@ -1044,6 +1045,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 402)
+                    log?.Invoke("Settings: new in this version: [Encounters] Riders (on): riders on the road.");
                 if (s.SettingsVersion < 401)
                     log?.Invoke("Settings: new in this version: [World] GameEncounters (on): the game's own encounters are seen and talked of.");
                 if (s.SettingsVersion < 400)
@@ -2042,6 +2045,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("WagonWheel = " + B(WagonWheel) + "   ; by day on the roads (06:00-20:00), once a day: a wagon ahead of you, out of view, loses a wheel and stops, the driver down beside it; within 25 m he calls to you. On foot within 3 m of the wagon for three seconds you set the wheel with him (his thanks, his liking for you up, and he drives on); ride past and once you're 40 m gone he calls after you to send word: reach any town within thirty game minutes and it's sent. Nothing is spawned: the wagon is the game's own, handed back");
             b.AppendLine("WagonOthersStop = " + B(WagonOthersStop) + "   ; with WagonWheel on: twenty-five seconds after the driver is down beside his wagon with no help from you, or once you ride on, six wagons in ten get a passer-by who turns aside, offers a hand and sets the wheel with him (he says so if you rode past)");
             b.AppendLine("SecondActs = " + B(SecondActs) + "   ; the people of the encounters come back: someone you saved (at an execution, cut loose, from a beating, warned of a poster, on the road) comes over in their town half a day to three weeks on to thank you for that very thing, with a token of their trade (with [Scenes] FriendCalls); an execution you found and never stepped into: one of the dead man's menfolk comes to say it to your face five to nine days on (with [Scenes] KinGrudges); the men who got away after you saved their man are heard of again, and the region's next outlaws are the same men, who know you; false: as before");
+            b.AppendLine("Riders = " + B(Riders) + "   ; on the road, half the traveller's turns are a rider instead (the road's pace is the same): someone of the nearest town comes up beside you (on a horse when you're in the saddle), rides along a while talking by nature and worry, and turns off (J: ride on together, and he knows you in town; or good day); while a posse is out of that town, a deputy may ride up asking after the man (J: the right way, the wrong way, or nothing, and the posse's end follows your word); false: travellers only");
             b.AppendLine("WagonWheelChance = " + WagonWheelChance + "   ; percent on each encounter roll (0 to 100)");
             b.AppendLine("Pinkertons = " + B(Pinkertons) + "   ; by day in a town where a violent deed of yours is known from the past week, now and then (at most once a town in five days) a man from the Pinkerton agency walks in and asks two or three of its people after you: your friends lie for you, those afraid of you tell him, the rest shrug; a friend comes over later to warn you and says who talked");
             b.AppendLine("Campfires = " + B(Campfires) + "   ; at night in the wilds, two or three men round a fire off the road call you over for coffee and a tale; now and then a traveller walks in from the dark");

@@ -68,6 +68,8 @@ namespace EnrageWestworld.InGame
                     return "a figure is abroad in the dark";
                 if (_traveller != null)
                     return "a traveller is on the road";
+                if (_rider != null)
+                    return "a rider is out (riders: reserve R9)";
                 if (_campfire != null)
                     return "strangers sit at a fire";
                 if (_supper != null)
@@ -104,6 +106,8 @@ namespace EnrageWestworld.InGame
                 VisitorStep(now);
             if (_traveller != null)
                 TravellerStep(now);
+            if (_rider != null)
+                RiderStep(now);   // (reserve R9)
             if (_campfire != null)
                 CampfireStep(now);
             if (_supper != null)
@@ -260,6 +264,8 @@ namespace EnrageWestworld.InGame
                     }
                     if (!EncounterRoll("a traveller asking the way", _cfg.TravellerChance))
                         return false;
+                    if (Riders.On && _rider == null && Voice.Chance("rider|" + _store.LastGameMin / 60, Riders.SharePercent) && StartRider(now, false, false))
+                        return true;   // the traveller's turn, a rider this time (FOURTEENHOUR reserve R9): the road's pace doesn't rise
                     StartTraveller(now);   // Pacing notes it once he's on the road (TravellerSpawn)
                     return true;
                 case 13:
@@ -381,7 +387,7 @@ namespace EnrageWestworld.InGame
             get
             {
                 return (_wayside != null ? 1 : 0) + (_crying != null ? 1 : 0) + (_exec != null ? 1 : 0) + (HermitWithYou() ? 1 : 0) + (_gathering != null ? 1 : 0) + (_visitor != null ? 1 : 0) +
-                       (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0) + (_streetCallout != null ? 1 : 0) + (_domestic != null ? 1 : 0) + (_hog != null ? 1 : 0) + (_callYou != null ? 1 : 0) + (_wagonScene != null ? 1 : 0);
+                       (_traveller != null ? 1 : 0) + (_rider != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0) + (_streetCallout != null ? 1 : 0) + (_domestic != null ? 1 : 0) + (_hog != null ? 1 : 0) + (_callYou != null ? 1 : 0) + (_wagonScene != null ? 1 : 0);
             }
         }
 
@@ -1013,6 +1019,8 @@ namespace EnrageWestworld.InGame
                 EndVisitor(why);
             if (_traveller != null)
                 EndTraveller(why);
+            if (_rider != null)
+                EndRider(why);
             if (_campfire != null)
                 EndCampfire(why);
             if (_streetCallout != null)

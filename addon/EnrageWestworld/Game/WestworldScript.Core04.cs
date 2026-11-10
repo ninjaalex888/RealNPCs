@@ -270,6 +270,7 @@ namespace EnrageWestworld.InGame
             Cardsharp.On = _cfg.CardsharpRunOut;   // [Scenes] CardsharpRunOut (FOURTEENHOUR reserve R6)
             BestFist.On = _cfg.BestFist;   // [Scenes] BestFist (FOURTEENHOUR reserve R7)
             GameEncounters.On = _cfg.GameEncounters;   // [World] GameEncounters (FOURTEENHOUR reserve R8)
+            Riders.On = _cfg.Riders;   // [Encounters] Riders (FOURTEENHOUR reserve R9)
             Rivals.On = _cfg.Rivals;             // [Scenes] Rivals (FOURTEENHOUR item 19)
             PurseSnatch.On = _cfg.PurseSnatch;   // [Scenes] PurseSnatch (FOURTEENHOUR item 20)
             WitnessLaw.On = _cfg.WitnessesFetchLaw;   // [Mind] WitnessesFetchLaw (FOURTEENHOUR item 21)
