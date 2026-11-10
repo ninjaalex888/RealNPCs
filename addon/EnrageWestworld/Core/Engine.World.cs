@@ -795,9 +795,9 @@ namespace EnrageWestworld.Core
                 pool.Add(a.AName + " has been " + (a.Stage >= 5 ? "married to " : a.Stage == 4 ? "engaged to " : "courting ") + a.BName);
             // the town's own tales, grown with the days (FOURTEENHOUR item 24): the newest live one, as the town tells it today
             if (Tales.On && Store.Tales != null)
-                foreach (TownTale t in Store.Tales.Where(x => (town == null || x.Town == town) && Tales.Live(x, Store.LastGameMin)).OrderByDescending(x => x.At).Take(1))
+                foreach (TownTale t in Store.Tales.Where(x => x != null && (town == null || x.Town == town) && (x.Id == null || !x.Id.StartsWith("test-")) && Tales.Live(x, Store.LastGameMin)).OrderByDescending(x => x.At).Take(1))
                 {
-                    string tale = Tales.Telling(t, Store.LastGameMin, false, false, null, t.Id + "|" + Store.LastGameMin / 1440);
+                    string tale = Tales.Rumour(t, Store.LastGameMin);   // a clause for "They say ...", not a telling with its question (the review of items 22-26)
                     if (tale != null && !pool.Contains(tale))
                         pool.Add(tale);
                 }

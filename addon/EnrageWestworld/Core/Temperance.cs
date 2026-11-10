@@ -94,15 +94,19 @@ namespace EnrageWestworld.Core
             Scene s = new Scene { Kind = "temperance", Summary = "a temperance woman put the pledge to a man outside the saloon" };
             s.Add(her, null, null, "approach", 200)
              .Add(her, Pick(Plea, seed + "|plea").Replace("{b}", b), "mild", "face");
-            bool second = c.HasCrowd && c.CWoman;   // a second woman of the church beside her (item 25)
+            bool second = c.HasCrowd && c.CWoman && c.SecondChurch;   // a second woman of the church beside her (item 25), she and nobody else near
             if (second)
+            {
                 s.Beats.Add(new Beat(2, Pick(Second, seed + "|second").Replace("{b}", b), "mild", "face") { To = him });
+                s.Cast = 3;   // cast with her: without it the Director gave her line to the drinker (the review of items 22-26)
+            }
             if (how < 35)
                 s.Add(him, Pick(Jeer, seed + "|j"), "mock", "walkaway").Add(her, Pick(HerRebuffed, seed + "|a"), "mild");
             else if (how < 65)
                 s.Add(him, Pick(Slink, seed + "|s"), "mild", "walkaway").Add(her, Pick(HerRebuffed, seed + "|a"), "mild");
             else if (how < 85)
             {
+                s.Doer = her;   // she put it, he signed: the memories' roles (pledge is one-sided (the review of items 22-26))
                 s.Kind = "pledge";   // he signed: the town's talk tomorrow, and the preacher's on Sunday (item 25)
                 s.Summary = "a man signed the pledge at the saloon door";
                 s.Add(him, Pick(Swear, seed + "|w"), "thanks").Add(her, Pick(HerAfter, seed + "|a"), "thanks", "walkaway").Add(him, null, null, "walkaway");

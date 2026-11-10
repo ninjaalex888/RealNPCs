@@ -477,7 +477,7 @@ namespace EnrageWestworld.Core
             if (k.Key != "drought" || RainDaysIn == null || p == null || p.Home == null)
                 return -1;
             long first = arc * WorryDays - Voice.Hash(p.Id + "|wo") % WorryDays;
-            return RainDaysIn(p.Home, first, first + WorryDays - 1);
+            return RainDaysIn(p.Home, first, first + 5);   // the days before its ending (StageOf: day 6 on is stage 3): rain after can't turn an ending once told (the review of items 22-26)
         }
 
         /// The good end's lines, read against the record: rain seen, the rain lines; the sky watched and no rain, the rest (the well dug).

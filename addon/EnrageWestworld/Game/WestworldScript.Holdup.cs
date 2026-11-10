@@ -246,7 +246,7 @@ namespace EnrageWestworld.InGame
         /// The town's tale of it (Core/Tales.cs): told on, the one man grows into a gang.
         private void HoldupTale(HoldupNote h, string how)
         {
-            if (!Tales.On || _store == null || h.Town == null)
+            if (!Tales.On || _store == null || _store.Tales == null || h.Town == null)
                 return;
             var were = new List<string>();
             MindWho mw = h.Mark != null && h.Mark.Exists() ? MindKnown(h.Mark.Handle, Game.GameTime) : null;

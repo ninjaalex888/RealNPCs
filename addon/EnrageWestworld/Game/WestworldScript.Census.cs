@@ -101,7 +101,10 @@ namespace EnrageWestworld.InGame
         {
             if (Spawner.IsOurs(h)) return "spawned or borrowed";
             if (_director.Involves(h)) return "a scene";
-            if (_ring.Contains(h)) return "the ring";
+            if (IsHeld(h)) return "the ring";   // the control ring (HeldRing.cs) (the review of items 22-26)
+            if (IsMindActing(h)) return "a mind's act";
+            if (IsPerforming(h)) return "a performance";
+            if (_ring.Contains(h)) return "the fight's crowd";   // (the fight's crowd ring, FightCrowds: not the control ring)
             if (IsStaged(h)) return "an encounter's cast";
             if (InWakeAct(h)) return "a wake act";
             if (InTalk(h)) return "talking with you";

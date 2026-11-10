@@ -77,7 +77,11 @@ namespace EnrageWestworld.InGame
                 int h = _lawGiveBack[i].Key;
                 _lawGiveBack.RemoveAt(i);
                 if (Spawner.IsBorrowed(h) && !(_bodyClear != null && _bodyClear.Law == h) && !_brawlLaw.Exists(x => x.Law == h) && !(_domestic != null && _domestic.Law != null && _domestic.Law.Handle == h))
+                {
+                    if (ENTITY.DOES_ENTITY_EXIST(h) && PED.IS_PED_IN_COMBAT(h, Game.Player.Character.Handle))
+                        Spawner.LeaveTasks(h);   // he's turned on you since the hand-back was set: his fight stands (the review of items 22-26)
                     Spawner.Release(new Ped(h), false);   // back to his rounds (GiveBack: stood up, unblocked, tasks cleared, wandering)
+                }
             }
         }
     }

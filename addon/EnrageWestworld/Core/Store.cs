@@ -337,6 +337,8 @@ namespace EnrageWestworld.Core
                         WorryWorsened[id] = before.At;   // an earlier turn for the worse, which the later one overwrote: back from the log (the review)
                 }
             Pacing.Rewind(Pace, cut);
+            if (Tales != null)
+                n += Tales.RemoveAll(t => t == null || t.At > cut);   // a tale from after the cut never happened (the review of items 22-26)
             if (Deaths != null)
             {
                 foreach (DeathEntry d in Deaths.Where(d => d.At > cut).ToList())
@@ -624,6 +626,8 @@ namespace EnrageWestworld.Core
             if (Breakdowns == null) Breakdowns = new List<Breakdown>();
             if (TieHeard == null) TieHeard = new List<TieHeard>();
             if (Mends == null) Mends = new Dictionary<string, int>();
+            if (Tales == null) Tales = new List<TownTale>();   // saves from before item 24 load it null (no initializer runs): the add-on switched itself off in the first town (the review of items 22-26)
+            Tales.RemoveAll(t => t == null || (t.Id != null && t.Id.StartsWith("test-")));   // the Testing row's tale goes on load
             if (Mends.Count > 500) Mends.Clear();   // (kindnesses since a wrong: losing them only slows a mending)
             if (TownLastAbout == null) TownLastAbout = new Dictionary<string, long>();
             if (TownLedgers == null) TownLedgers = new Dictionary<string, TownLedger>();

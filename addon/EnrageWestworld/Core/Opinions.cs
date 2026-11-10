@@ -22,7 +22,7 @@ namespace EnrageWestworld.Core
                 return null;
             string other = t.OtherId(id);
             string group = Minds.TemperGroup(temper);
-            bool hurtMe = t.Doer != null && t.Doer == other;   // the tie keeps who did it to whom (a beating, a theft, a drunk who went for them)
+            bool hurtMe = t.Doer != null && t.Doer == other && t.Warmth < 0;   // the tie keeps who did it to whom (a beating, a theft, a drunk who went for them); a kindness done isn't a hurt (the review of items 22-26)
             bool robbedSomeone = t.CrimeDoer != null && t.CrimeDoer == other;
             if (hurtMe && (group == "fearful" || t.Warmth <= -2))
                 return "fear";
@@ -104,12 +104,20 @@ namespace EnrageWestworld.Core
             bool warmTold = told == "respect", warmOwn = own == "respect";
             if (own == null)
                 return Voice.Pick(seed + "|ans0", "I wouldn't know.", "Is that so?", "Hm. I'll bear it in mind.");
-            if (own == told || (!warmTold && !warmOwn))
+            if (Agrees(told, own))
                 return Voice.Pick(seed + "|ans1", "You're not wrong.", "I've said as much myself.", "Ain't that so.");
+            if (warmTold && !warmOwn)
+                return Voice.Pick(seed + "|ans3", "Respect? For " + name + "? You don't know him like I do.", "I'd not trust " + name + " as far as I could throw him.");   // he thinks ill of him (the review of items 22-26)
             return Voice.Pick(seed + "|ans2", "That's not the " + name + " I know.", "You've got " + name + " wrong.", "Funny. " + name + "'s always been square with me.");
         }
 
         /// A tells B what he thinks of someone (c.TalkOf: his name, A's view, B's view or null, "w" for a woman).
+        /// Whether the friend's view agrees with the one told him: the same, or both cold.
+        public static bool Agrees(string told, string own)
+        {
+            return own != null && (own == told || (told != "respect" && own != "respect"));
+        }
+
         public static Scene TalkScene(SceneCast c, string seed)
         {
             string a = Scenes.N(c, 0, seed), b = Scenes.N(c, 1, seed);
@@ -124,7 +132,7 @@ namespace EnrageWestworld.Core
                 return s;
             }
             s.Add(0, said, va == "respect" ? "mild" : va == "fear" ? "scared" : "mock", "face")
-             .Add(1, AnswerOf(va, vb, z, seed), vb == null ? "mild" : vb == va ? "yes" : "no");
+             .Add(1, AnswerOf(va, vb, z, seed), vb == null ? "mild" : Agrees(va, vb) ? "yes" : "no");   // the tone as the words (the review of items 22-26)
             return s;
         }
 

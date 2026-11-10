@@ -66,13 +66,13 @@ namespace EnrageWestworld.InGame
         /// From OnPlayedOut: a man signed the pledge at the door: the town's tale of it (and back at the bar by Friday, as often as not).
         private void PledgeNote(Ped a, Ped b)
         {
-            if (!Temperance.DoorOn || !Tales.On || _store == null || _placeTown == null)
+            if (!Temperance.DoorOn || !Tales.On || _store == null || _store.Tales == null || _placeTown == null)
                 return;
             Ped man = a != null && a.Exists() && PED.IS_PED_MALE(a.Handle) ? a : b;
             MindWho w = man != null && man.Exists() ? MindKnown(man.Handle, Game.GameTime) : null;
             if (w == null || w.Name == null)
                 return;
-            _store.Tales.Add(Tales.Pledge(_placeTown, Person.FirstOf(w.Name), _store.LastGameMin));
+            _store.Tales.Add(Tales.Pledge(_placeTown, Person.FirstOf(w.Name), _store.LastGameMin, CLOCK.GET_CLOCK_HOURS()));
             while (_store.Tales.Count > Tales.Kept)
                 _store.Tales.RemoveAt(0);
             _doorPledges++;
@@ -82,7 +82,7 @@ namespace EnrageWestworld.InGame
         /// Pledges signed at this town's door this week (the preacher's word on Sunday).
         private int PledgesThisWeek()
         {
-            if (_store == null || _placeTown == null || _store.Tales.Count == 0)
+            if (_store == null || _placeTown == null || _store.Tales == null || _store.Tales.Count == 0)
                 return 0;
             long g = _store.LastGameMin;
             return _store.Tales.Count(t => t.Kind == "pledge" && t.Town == _placeTown && g >= t.At && g - t.At < 7 * 1440);

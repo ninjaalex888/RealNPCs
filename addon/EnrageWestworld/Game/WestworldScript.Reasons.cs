@@ -248,7 +248,7 @@ namespace EnrageWestworld.InGame
                 Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance, Trouble = _cfg.TroubleWeight, WomenFight = _cfg.WomenInFights, MindDecides = LadderOn,
                 Strain = _cfg.MindLive && _cfg.MindTempers,
                 Hour = CLOCK.GET_CLOCK_HOURS(),   // (the temperance door at dusk: FOURTEENHOUR item 25)
-                Rain = RainShelter.On && (_engine.NowWeather == "rain" || _engine.NowWeather == "storm" || _engine.WetLately(_store.LastGameMin)),   // (item 26)
+                Rain = RainShelter.On && (_engine.NowWeather == "rain" || _engine.NowWeather == "storm"),   // raining now (item 26; the hour after left out: the shelter's lines are of rain falling, and the next town's sky is its own (the review of items 22-26))
                 Indoors = _engine.NowIndoors,
                 Variety = _cfg.ReasonVariety,
                 MindTalks = _cfg.MindTalks,   // people talk of what's on their minds (WestworldScript.MindTalk.cs)
@@ -474,7 +474,7 @@ namespace EnrageWestworld.InGame
             Ped lady = pr.Why.Kind == "snub" ? LadyBeside(second, first) : null;   // a lady with the gentleman: her word in it (FOURTEENHOUR item 18)
             if (pr.Why.Kind == "snub")
                 SnubCount(lady);
-            bool kinStands = false;
+            bool kinStands = false, churchSecond = false;
             string kinId = null;
             if (pr.Why.Kind == "temperance" && Temperance.DoorOn)
             {
@@ -493,9 +493,13 @@ namespace EnrageWestworld.InGame
                     second = hisPed;
                 }
                 else
+                {
                     lady = ChurchwomanBeside(herPed, hisPed, now);
+                    churchSecond = lady != null;   // one of the church women, not just any woman near (the review of items 22-26)
+                }
             }
             SceneCast cast = BuildCast(first, second, lady, saloon, me, now, seed);
+            cast.SecondChurch = churchSecond;
             if (kinStands)
             {
                 cast.KinStands = true;
@@ -540,7 +544,7 @@ namespace EnrageWestworld.InGame
                 return false;
             Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);
             _rivalsScene = pr.Why.Kind == "rivals" ? s : null;   // her choice waits on it (NotePlayedReason; FOURTEENHOUR item 19)
-            if (s.Fight && gate != "brawl" && gate != "rough" && gate != "rematch")
+            if (s != null && s.Fight && gate != "brawl" && gate != "rough" && gate != "rematch")   // (null: no scene for the kind (the review of items 22-26))
             {
                 // a reason of its own that comes to blows (the greenhorn, the snub, the rivals, the old soldiers, the temperance door): the
                 // brawl's own gates too, the sat, the hushed town and the law's eye (the review of items 14-21)
@@ -557,7 +561,8 @@ namespace EnrageWestworld.InGame
                 return false;
             if (asSecond)
             {
-                AddMeet(s, kind, first, second, pr.Apart);   // the second full scene: the walk-over may come; no ladder, barkeep or step-in (theirs is the first's)
+                if (!cast.KinStands)
+                    AddMeet(s, kind, first, second, pr.Apart);   // the second full scene: the walk-over may come; no ladder, barkeep or step-in (theirs is the first's)
                 if (!Director.SecondOk(s))
                 {
                     _secondRefusedOk++;
@@ -592,7 +597,8 @@ namespace EnrageWestworld.InGame
             s = LadderScene(s, first, second, doer, done, cast, seed, pr.Why.Matter, cast2, now, over: pr.Why.Over);   // an argue or a brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs); what it's over in words (FOURTEENHOUR item 1)
             if (_hush && by == null && s != unladdered && TownMood.Hushed(s.Kind))
                 s = unladdered;   // hushed: the quarrel stays words (the ladder would take it to blows or a gun)
-            AddMeet(s, kind, first, second, pr.Apart);
+            if (!cast.KinStands)
+                AddMeet(s, kind, first, second, pr.Apart);   // (the kin's scene has its own walk-over, after her plea: the drinker walked to the kin first (the review of items 22-26))
             AddBarkeep(s, cast2, cast, seed, saloon, doer != null && doer.Drunk);
             string stood;
             if (s.Ladder == null || s.Cast == 2)   // (the ladder found no friend of its own: a stranger may still step in, the review)

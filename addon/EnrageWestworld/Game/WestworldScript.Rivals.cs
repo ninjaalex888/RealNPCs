@@ -24,7 +24,6 @@ namespace EnrageWestworld.InGame
         private RivalsRun _rivals;
         private Scene _rivalsScene;   // the rivals' scene just built, for NotePlayedReason
         private readonly Dictionary<string, KeyValuePair<long, string[]>> _courtingOf = new Dictionary<string, KeyValuePair<long, string[]>>();
-        private readonly Dictionary<string, string> _rivalLost = new Dictionary<string, string>();   // id -> "her id|game minute" she chose the other man (a week)
         private int _rivalsMet, _rivalsChosen, _rivalsNeither, _rivalsTests;
         private string _rivalsLast;
 
@@ -40,10 +39,15 @@ namespace EnrageWestworld.InGame
             {
                 string n;
                 string other = Rivals.CourtingOf(_store, id, IsWomanId, out n);
-                string lost;
-                long lostAt;
-                if (other != null && _rivalLost.TryGetValue(id, out lost) && lost.StartsWith(other + "|") && long.TryParse(lost.Substring(other.Length + 1), out lostAt) && g - lostAt < 7 * 1440)
-                    other = n = null;   // she turned him down for the other man: not this week
+                int lostDay;
+                string lostKey = other != null ? "rivallost|" + id + "|" + other : null;
+                if (lostKey != null && _store.Counts.TryGetValue(lostKey, out lostDay))
+                {
+                    if (g / 1440 - lostDay < 7)
+                        other = n = null;   // she turned him down for the other man: not this week (kept in the save (the review of items 22-26))
+                    else
+                        _store.Counts.Remove(lostKey);
+                }
                 c = new KeyValuePair<long, string[]>(g, new[] { other, n });
                 if (_courtingOf.Count > 800)
                     _courtingOf.Clear();
@@ -101,8 +105,8 @@ namespace EnrageWestworld.InGame
                 _rivals = null;   // never played out (cut short before blows): another day
                 return;
             }
-            if (!((a == r.AH && b == r.BH) || (a == r.BH && b == r.AH)))
-                return;   // the two of them, not another scene of one of them (the review of items 14-21)
+            if (a != r.AH && a != r.BH && b != r.AH && b != r.BH)
+                return;   // theirs: either side's lead a rival (a fight that grew can have a joiner leading one side), within its time (the review of items 22-26)
             _rivals = null;
             bool fought = r.Fight && winner != 0;   // (a fight cut off before any blows is words: the review of items 14-21)
             r.Fight = fought;
@@ -122,7 +126,7 @@ namespace EnrageWestworld.InGame
                 {
                     Ties.Note(_store.Ties, r.HerId, r.HerFull, man[0], man[1], r.Town, man[0] == chosenId ? "sweet" : "brushoff", g);   // her yes, her no (a brush-off ends a courting)
                     if (man[0] != chosenId)
-                        _rivalLost[man[0]] = r.HerId + "|" + g;   // he courts her no more this week, whatever courted her (the review of items 14-21)
+                        _store.Counts["rivallost|" + man[0] + "|" + r.HerId] = (int)(g / 1440);   // he courts her no more this week, whatever courted her (the review of items 14-21; in the save (the review of items 22-26))
                 }
                 _courtingOf.Remove(r.AId);
                 _courtingOf.Remove(r.BId);

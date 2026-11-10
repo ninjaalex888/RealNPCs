@@ -22,7 +22,7 @@ namespace EnrageWestworld.InGame
         /// From BrawlWeekAfter, for a big one: its tale, into the save.
         private void TaleNote(int fid, int loser)
         {
-            if (!Tales.On || _store == null || _placeTown == null)
+            if (!Tales.On || _store == null || _store.Tales == null || _placeTown == null)
                 return;
             int now = Game.GameTime;
             var were = new List<string>();
@@ -36,7 +36,16 @@ namespace EnrageWestworld.InGame
                 if (_brawlOut.ContainsKey(h) || _brawlFatal.Contains(h) || h == loser)
                     hurt.Add(w.Id);
             }
-            TownTale t = Tales.Brawl(_placeTown, _afterSaloon, _afterPeak, _afterDowns, _afterStarter != null ? Person.FirstOf(_afterStarter) : null, _store.LastGameMin, CLOCK.GET_CLOCK_HOURS(), were, hurt);
+            var saw = new List<string>();
+            foreach (int oh in _mindNear)
+            {
+                MindWho o;
+                if (_mindWho.TryGetValue(oh, out o) && o.Id != null && !were.Contains(o.Id) && !saw.Contains(o.Id) && ENTITY.DOES_ENTITY_EXIST(oh) && !ENTITY.IS_ENTITY_DEAD(oh))
+                    saw.Add(o.Id);   // the onlookers near: they tell it nearer the truth (the review of items 22-26)
+            }
+            string starter = _afterStarter == null ? null : _afterStarter == "a stranger" ? "a stranger" : Person.FirstOf(_afterStarter);   // ("a stranger" came out "a started it")
+            TownTale t = Tales.Brawl(_placeTown, _afterSaloon, _afterPeak, _afterDowns, starter, _store.LastGameMin, CLOCK.GET_CLOCK_HOURS(), were, hurt);
+            t.Saw = saw;
             _store.Tales.Add(t);
             while (_store.Tales.Count > Tales.Kept)
                 _store.Tales.RemoveAt(0);
@@ -50,7 +59,7 @@ namespace EnrageWestworld.InGame
         /// A look every 5 s: one near you who knows of a live tale in this town thinks of it, every 90 s at most.
         private void TaleStep(int now)
         {
-            if (!Tales.On || _store == null || _placeTown == null || now < _taleLookAt || _store.Tales.Count == 0)
+            if (!Tales.On || _store == null || _store.Tales == null || _placeTown == null || now < _taleLookAt || _store.Tales.Count == 0)
                 return;
             _taleLookAt = now + 5000;
             if (_aTale == null)
@@ -72,16 +81,20 @@ namespace EnrageWestworld.InGame
                 if (p == null || !p.Exists() || p.IsDead || p.Handle == me.Handle || p.Position.DistanceTo(me.Position) > 20f || !ENTITY.IS_ENTITY_ON_SCREEN(p.Handle) || _director.Involves(p.Handle))
                     continue;
                 MindWho w;
-                if (!_mindWho.TryGetValue(p.Handle, out w) || w.Id == null || w.Name == null || !_taleTold.Add(w.Id + "|" + t.Id))
+                if (!_mindWho.TryGetValue(p.Handle, out w) || w.Id == null || w.Name == null || _taleTold.Contains(w.Id + "|" + t.Id))
                     continue;
-                bool was = t.Were != null && t.Were.Contains(w.Id), hurt = t.Hurt != null && t.Hurt.Contains(w.Id);
+                bool was = t.Were != null && t.Were.Contains(w.Id), hurt = t.Hurt != null && t.Hurt.Contains(w.Id), saw = !was && t.Saw != null && t.Saw.Contains(w.Id);
                 List<Opinions.Held> views = Opinions.Act ? ViewsHeldBy(w.Id) : null;
                 Opinions.Held scorned = views != null ? views.FirstOrDefault(v => v.View == "contempt") : null;
-                string text = Tales.Telling(t, g, was, hurt, scorned != null ? Person.FirstOf(scorned.Name) : null, t.Id + "|" + w.Id);
+                string text = Tales.Telling(t, g, was, hurt, scorned != null ? Person.FirstOf(scorned.Name) : null, t.Id + "|" + w.Id, saw);
                 if (text == null || !_ticker.Aside(Person.FirstOf(w.Name) + ", thinking", text, "tale|" + w.Id, p.Handle, 8000, now))
                     continue;
-                if (!was)
-                    t.Told++;   // passed on once more: it grows (the eyewitness's own never does)
+                _taleTold.Add(w.Id + "|" + t.Id);   // told: only once shown (with the thoughts over heads off, nobody was marked for nothing) (the review of items 22-26)
+                if (!was && !saw && t.ToldDay != g / 1440)
+                {
+                    t.Told++;   // passed on: it grows, a telling a day at most (each thought counted: a brawl of six was fifteen by evening) (the review of items 22-26)
+                    t.ToldDay = g / 1440;
+                }
                 _taleShowAt = now + Tales.ThoughtGapMs;
                 _talesThought++;
                 _taleLast = w.Name + (was ? " (who was in it)" : "") + ": " + text;
@@ -98,7 +111,11 @@ namespace EnrageWestworld.InGame
                 return "off ([Mind] MemoriesBlur)";
             if (_store == null || _placeTown == null)
                 return "it wants a town (there's none here)";
-            _store.Tales.Add(Tales.Brawl(_placeTown, _placeKind == "saloon", 6, 2, "Abe", _store.LastGameMin - 2 * 1440, 21, new List<string>(), new List<string>()));
+            if (_store.Tales == null)
+                return "no tales kept on this save yet";
+            TownTale test = Tales.Brawl(_placeTown, _placeKind == "saloon", 6, 2, "Abe", _store.LastGameMin - 2 * 1440, 21, new List<string>(), new List<string>());
+            test.Id = "test-" + test.Id;   // the save drops it on load, and the town's gossip never has it (the review of items 22-26)
+            _store.Tales.Add(test);
             _taleShowAt = 0;
             _taleTold.Clear();
             said = "a test tale in " + _placeTown + ": six men two days back; those near you will tell it, grown";

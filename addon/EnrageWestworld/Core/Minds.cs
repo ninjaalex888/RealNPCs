@@ -158,7 +158,8 @@ namespace EnrageWestworld.Core
             return kind == "rough" || kind == "pickpocket" || kind == "lift" || kind == "drunk" || kind == "charity" || kind == "scorn" || kind == "avoid" ||
                    kind == "help" || kind == "passby" || kind == "defend" || kind == "faced" || kind == "round" || kind == "settled" ||
                    kind == "welsh" || kind == "wagerowed" || kind == "wagerpaid" ||   // a bet on a fight: the one who lost it first (Core/Wagers.cs)
-                   kind == "horsedeal" || kind == "toothpull" || kind == "wayshown";   // the street's own (FOURTEENHOUR item 14)
+                   kind == "horsedeal" || kind == "toothpull" || kind == "wayshown" ||   // the street's own (FOURTEENHOUR item 14)
+                   kind == "pledge";   // she put it, he signed (item 25): its memory lines had no role and were never read (the review of items 22-26)
         }
 
         /// How much it stays with someone, by group and by how they knew it.

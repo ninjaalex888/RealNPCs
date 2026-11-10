@@ -47,7 +47,7 @@ namespace EnrageWestworld.InGame
                 }
             }
             if (RainShelter.On && _placeTown != null && _store != null)
-                _engine.NoteSky(_placeTown, s.Wet, _store.LastGameMin);   // the town's record of the rain (FOURTEENHOUR item 26)
+                _engine.NoteSky(_placeTown, s.Wet, Bridge.Now());   // the town's record of the rain (FOURTEENHOUR item 26), by the game's clock: LastGameMin moves once a round (the review of items 22-26)
             _skyType = seen;
             WeatherTruth.Now = s;
             _engine.NowSky = s;

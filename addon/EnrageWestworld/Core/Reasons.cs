@@ -232,6 +232,9 @@ namespace EnrageWestworld.Core
             Opinions.Held z = TalkOfWhom(x, y);
             if (z == null || !Voice.Chance(PairKey(x, y) + gameDay + "talkof", Opinions.TalkOfPercent))
                 return null;
+            string wk; int st; bool good;
+            if (x.P != null && InnerLife.WorryNow(x.P, gameDay, out wk, out st, out good) && st >= 1)
+                return null;   // a worry on him: his friend hears that, not his view of a third (talkof outranked the worry talk) (the review of items 22-26)
             return new Reason { Kind = "talkof", Strength = Opinions.TalkOfStrength, BFirst = bFirst, Why = x.Name + " tells " + y.Name + " what they think of " + z.Name + " (" + z.View + ")" };
         }
 
