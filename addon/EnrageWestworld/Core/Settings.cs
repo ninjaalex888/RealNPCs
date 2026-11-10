@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 357;
+        public const int CurrentVersion = 358;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -406,6 +406,7 @@ namespace EnrageWestworld.Core
         public bool Payday = true;   // [Scenes] Saturday noon to eight in town: the working people's day bends to the week's pay, and a woman may meet a man at the door for his wages (Core/Payday.cs; FIVEDAY item 11, settings version 263)
         public bool MurderBallads = true;   // [Scenes] at a campfire at night, once a night, a murder ballad from the next fire: your most-told killing, else a death known (Core/MurderBallad.cs; FIVEDAY R20, settings version 309)
         public bool QuiltingBee = true;   // [Scenes] Tuesday and Thursday afternoons, still by the church steps: the quilting bee through the window, the town's goings-on and a word of you, on the ticker (Core/QuiltingBee.cs; FIVEDAY R8, settings version 296)
+        public bool BarRound = true;   // [Scenes] at a saloon's bar, J: buy the house a round, a dime a head; the room cheers and is fonder of you, one a day in each saloon (THREEHOUR item 3; settings version 358)
         public bool StoreSlate = true;   // [Scenes] at the store: someone asks to put it on the slate; the keeper chalks it, asks for something first, or says it's full, and J lets you pay what they owe; on payday they pay it down (Core/Slate.cs; FIVEDAY R2, settings version 290)
         public bool MoneyTalk = true;   // [Scenes] two men meeting in a town argue gold against silver, the banks and the trusts; who they are decides the side, and those who disagree are the colder for it (TENHOUR item 15; settings version 346)
         public bool Suffrage = true;   // [Scenes] by day in Saint Denis: a woman says what she thinks about the vote to a man she meets; he forbids it, laughs, is shaken or agrees (Core/Suffrage.cs; TENHOUR item 16, settings version 347)
@@ -996,6 +997,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 358)
+                    log?.Invoke("Settings: new in this version: [Scenes] BarRound (on): J at a saloon's bar buys the house a round.");
                 if (s.SettingsVersion < 357)
                     log?.Invoke("Settings: new in this version: [Encounters] SceneClips (on): the scenes' own clips, seen to play in game, in the executions and the road scenes.");
                 if (s.SettingsVersion < 355)
@@ -2068,6 +2071,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("Payday = " + B(Payday) + "   ; Saturday from noon till eight in a town: wages paid, the working people lean to the saloon, the cards, the store and a drink and away from work, and a woman may stop a man on his way to the saloon for the week's money");
             b.AppendLine("MurderBallads = " + B(MurderBallads) + "   ; sitting by a campfire out of the towns at night, once a night: a murder ballad from the next fire on the ticker, four verses, of your most-told killing if one has been told, else of a death RealNPCs knows, by name and place");
             b.AppendLine("QuiltingBee = " + B(QuiltingBee) + "   ; Tuesday and Thursday from one till half past four, on foot and still for a few seconds within 25 m of a town's church steps spot: half a minute of the quilting bee through the open window on the ticker, the town's last three days by name as the women tell them, and what they say of you. Once a town a day");
+            b.AppendLine("BarRound = " + B(BarRound) + "   ; at a saloon's bar by the barkeep, with a few others about: J to buy the house a round (a dime a head, $1 to $4); the room cheers and each one treated thinks better of you, the drunk most; one a day in each saloon");
             b.AppendLine("StoreSlate = " + B(StoreSlate) + "   ; at the store, now and then: a townsman or townswoman asks the keeper to put it on the slate, and he chalks it up, asks for something on account first, or says the slate's full (by what they owe this week and his manner). Refused, J for ten seconds lets you pay what they owe, a kindness remembered. On Saturday afternoon they pay it down instead");
             b.AppendLine("MoneyTalk = " + B(MoneyTalk) + "   ; two men meeting in a town argue gold against silver, the banks and the trusts (the bank panic in 1907); how they're fixed decides the side, and those who fall out are the colder for it");
             b.AppendLine("Suffrage = " + B(Suffrage) + "   ; by day in Saint Denis: a woman says what she thinks about the vote to a man she meets; he forbids it, laughs, is shaken or agrees");

@@ -92,18 +92,25 @@ namespace EnrageWestworld.InGame
         /// in the world log (the same within the hour is said, not counted again: no buying a room's heart twice an hour).
         private void HouseRound(TalkMenu t, int now)
         {
+            if (t != null)
+                HouseRoundAt(t.Handle, t.Id, now);
+        }
+
+        /// The round itself, at whoever it was said to: the one you spoke to (Talk) or the barkeep (J at the bar, THREEHOUR item 3).
+        private void HouseRoundAt(int at, string atId, int now)
+        {
             Ped me = Game.Player.Character;
-            if (t == null || !ENTITY.DOES_ENTITY_EXIST(t.Handle))
+            if (!ENTITY.DOES_ENTITY_EXIST(at))
                 return;
-            Vector3 bar = ENTITY.GET_ENTITY_COORDS(t.Handle, true, true);
+            Vector3 bar = ENTITY.GET_ENTITY_COORDS(at, true, true);
             long g = _store.LastGameMin;
-            string seed = t.Id + "|house|" + now / 1000;
+            string seed = atId + "|house|" + now / 1000;
             int cheered = 0, treated = 0;
             bool thought = false;
             _kindSeenOff = true;
             try
             {
-                foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Handle != t.Handle && x.Position.DistanceTo(bar) < Fondness.HouseMetres)
+                foreach (Ped p in Peds.All().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Handle != at && x.Position.DistanceTo(bar) < Fondness.HouseMetres)
                                             .OrderBy(x => x.Position.DistanceTo(bar)).ToList())
                 {
                     if (cheered >= Fondness.HouseMost)
