@@ -729,6 +729,9 @@ namespace EnrageWestworld.InGame
                         }
                         return sw;   // WestworldScript.Stories.cs (FOURTEENHOUR reserve R10)
                     }
+                case "elope":
+                    skipped = "the hour, the day's roll (the men 15 s behind for the test)";
+                    return ElopeFire(now, out said);   // WestworldScript.Elopers.cs (FOURTEENHOUR reserve R18)
                 case "alley":
                     skipped = "the night, the night's roll and the man's nature (real, then bait, by turns)";
                     return AlleyFire(now, out said);   // WestworldScript.AlleyVoice.cs (FOURTEENHOUR reserve R15)

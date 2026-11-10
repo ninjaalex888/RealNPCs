@@ -51,6 +51,7 @@ namespace EnrageWestworld.InGame
             ThrownOutStep(now);   // the card cheat on the boardwalk
             RunOutStep(now);   // ...or walked out past the last houses by the table, and back another day, sore (WestworldScript.Cardsharp.cs; reserve R6)
             EncounterLook(now);   // the game's own encounters near you, seen and told (WestworldScript.GameEncounters.cs; reserve R8)
+            ElopeStep(now);       // a couple running off from her family (WestworldScript.Elopers.cs; reserve R18)
             AlleyStep(now);       // a voice from the dark in Saint Denis (WestworldScript.AlleyVoice.cs; reserve R15)
             NoMapLook(now);       // the town's news of the rider found dead, thought of near you (WestworldScript.Riders.cs; reserve R11)
             StoriesStep(now);     // a story over days: the son found at Annesburg, the letter carried home (WestworldScript.Stories.cs; reserve R10)

@@ -273,6 +273,7 @@ namespace EnrageWestworld.InGame
             Riders.On = _cfg.Riders;   // [Encounters] Riders (FOURTEENHOUR reserve R9)
             BarRound.WakeOn = _cfg.StandTheWake;   // [Scenes] StandTheWake (FOURTEENHOUR reserve R19)
             AlleyVoice.On = _cfg.AlleyVoice;   // [Encounters] AlleyVoice (FOURTEENHOUR reserve R15)
+            Elopers.On = _cfg.Elopers;   // [Encounters] Elopers (FOURTEENHOUR reserve R18)
             NoMapRider.On = _cfg.NoMapRider && _cfg.Riders;   // [Encounters] NoMapRider (FOURTEENHOUR reserve R11)
             Stories.On = _cfg.Stories && _cfg.Letters;   // [World] Stories, offered by letter (FOURTEENHOUR reserve R10)
             Rivals.On = _cfg.Rivals;             // [Scenes] Rivals (FOURTEENHOUR item 19)
