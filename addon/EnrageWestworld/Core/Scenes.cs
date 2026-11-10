@@ -95,6 +95,9 @@ namespace EnrageWestworld.Core
         public string[] Tempers = new string[3];            // A, B and C's temperaments (Reactions.Listener); null: none known
         public bool[] WellOff;                              // A and B dressed like money (the money argument, Core/MoneyTalk.cs); null: unknown
         public string[] Wars;                               // A's and B's war ("blue", "grey", "cuba", "islands"; Core/OldSoldiers.cs, FOURTEENHOUR item 17); null: unknown
+        public bool KinStands;                              // the temperance door: A is her kin, B the drinker, C the churchwoman (item 25)
+        public string KinId;                                // ...and her kin's id, for the sides
+        public int PledgesThisWeek;                         // pledges signed at this town's saloon door this week, for the preacher (item 25)
         public string[] TalkOf;                             // a talk of someone not there: his name, A's view, B's view or null, "w" for a woman (item 23); null: none
         public string Courted;                              // the woman two rivals both court, her first name (Core/Rivals.cs, FOURTEENHOUR item 19); null: none
         public string[] Groups;                             // A's and B's trade group (InnerLife.TradeGroup), for who hears a war story how; null: unknown

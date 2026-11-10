@@ -665,6 +665,10 @@ namespace EnrageWestworld.Core
             { "scrip", new[] {
                 "Heard {a} say it out loud. About the scrip. Out loud.", "Somebody's going to get let go for talking like that.",
                 "{a}'s right, and it'll do him no good.", "Keep walking. You didn't hear a thing about the store.", } },
+            // the temperance door's signed pledge (FOURTEENHOUR item 25): its own kind, so the town remembers it as one
+            { "pledge", new[] {
+                "A man signed the pledge right there on the boardwalk. Give him a week.", "{b} signed. I saw the pen move. I still don't believe it.",
+                "The temperance ladies got one today. They'll be insufferable.", "Signed the pledge in front of the whole street, {b} did. That takes something.", } },
             { "temperance", new[] {
                 "Temperance woman had a man by the sleeve outside the saloon. Brave, or foolish.", "Pledge cards on the boardwalk again. Half the men cross the street.",
                 "Pledge put to a man right there in the street. I'd have run.", "Somebody ought to sign. Not me. Somebody.",

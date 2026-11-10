@@ -29,6 +29,9 @@ namespace EnrageWestworld.Core
              .Add(0, Voice.Pick(seed + "p2", "Not a sparrow falls but He sees it. Nor a dollar spent in that saloon.", sunday ? "The whiskey's free of a Sunday, they say. Nothing's free. Nothing." : "Payday's coming. The saloon knows it. So does the Lord.",
                                 "A man can run from the law. He can't outrun the Lord.",
                                 "The railroad brought us everything but grace. That we have to walk to.", "Six days for the world. One for Him. Is that too dear a price?"), "mild");
+            if (sunday && c.PledgesThisWeek > 0)   // the week's pledges at the saloon door (FOURTEENHOUR item 25)
+                s.Add(0, Voice.Pick(seed + "pl", (c.PledgesThisWeek == 1 ? "A man of this town" : Grammar.UpperFirst(Grammar.NumberWord(c.PledgesThisWeek)) + " men of this town") + " signed the pledge at the saloon door this week. Pray they hold to it!",
+                                    "The pledge was signed this week at those very doors. The Lord counts every one!"), "cheer");
             switch (answerDevotion)
             {
                 case "Devout":

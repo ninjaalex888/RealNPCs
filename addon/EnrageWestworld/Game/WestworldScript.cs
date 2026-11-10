@@ -1343,6 +1343,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST control census: " + CensusStatus());
 			Log.Write("TEST opinions that act: " + OpinionsActStatus());
 			Log.Write("TEST tales: " + TalesStatus());
+			Log.Write("TEST temperance door: " + TemperanceDoorStatus());
 			Log.Write("TEST vram: " + VramStatus());
 			Log.Write("TEST loads: " + Loads.Status());
 			Log.Write("TEST perform: " + PerformStatus());

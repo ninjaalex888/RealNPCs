@@ -63,6 +63,7 @@ namespace EnrageWestworld.Core
         public sealed class Place
         {
             public bool Saloon, Night, Rumours, DeedsHere;
+            public int Hour = 12;   // the clock's hour (the temperance door's dusk: FOURTEENHOUR item 25); noon in the old harnesses
             public bool Courting;   // [Romance] NpcFlirting: people make eyes at each other
             public bool SameSex;    // [Romance] SameSexRomance
             public float Trouble = 1f;   // [Scenes] TroubleWeight: every chance of blows or a quarrel scaled by it (Lex, 2026-10-28)
@@ -415,6 +416,13 @@ namespace EnrageWestworld.Core
             if (soldiers != null)
                 all.Add(soldiers);
             Reason snub = Snub.For(x, y, gameDay, where.Saloon, where.Night);   // a gentleman snubs a working man in the street (item 18)
+            string yKind;
+            int yStage;
+            bool yGood;
+            bool yDrink = y.P != null && InnerLife.WorryNow(y.P, gameDay, out yKind, out yStage, out yGood) && yKind == "drink";
+            Reason door = Temperance.For(x, y, gameDay, where.Saloon, where.Hour, yDrink);   // the pledge at the saloon door at dusk (item 25)
+            if (door != null)
+                all.Add(door);
             if (snub != null)
                 all.Add(snub);
             // someone free and taken with the one beside them makes eyes at them; the answer is the other's own

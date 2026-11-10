@@ -587,6 +587,10 @@ namespace EnrageWestworld.Core
             // the newcomer tested and taken in (FOURTEENHOUR item 16)
             { "welcomed|did:doer|fresh", new[] { "Had some sport with {who}, the new man. Gave as good as he got.", "{who}'s got a tongue on him. He'll do.", "Ribbed {who} about his boots. He ribbed me back. Fair." } },
             { "welcomed|did:done|fresh", new[] { "{who} had a go at my hat. I had a go at his face. With words.", "Fresh off the train and {who} tries me. I think I passed.", "{who} laughed at me, then with me. A start." } },
+            // the pledge signed at the saloon door (FOURTEENHOUR item 25): she put it, he signed
+            { "pledge|did:doer|fresh", new[] { "{who} signed today. One more soul out of that saloon.", "Got {who} to sign the pledge. Pray he holds." } },
+            { "pledge|did:done|fresh", new[] { "Signed {who}'s card. God help me, I signed it.", "{who} looked at me like my mother used to. So I signed." } },
+            { "pledge|saw|fresh", new[] { "{who} signed the temperance pledge at the saloon door. Give it a week." } },
             // the well-off and the working man (FOURTEENHOUR item 18): the gentleman did it
             { "snub|did:doer|fresh", new[] { "Some fellow stopped me in the street. {who}. Wanted something, I suppose.", "Had to put {who} in his place. They forget themselves." } },
             { "snub|did:done|fresh", new[] { "{who} looked at me like I was something on his boot.", "Asked {who} a civil question. Got the back of his coat.", "Fine coat, {who}. Fine manners to go with it." } },

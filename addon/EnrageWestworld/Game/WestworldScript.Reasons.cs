@@ -247,6 +247,7 @@ namespace EnrageWestworld.InGame
             {
                 Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance, Trouble = _cfg.TroubleWeight, WomenFight = _cfg.WomenInFights, MindDecides = LadderOn,
                 Strain = _cfg.MindLive && _cfg.MindTempers,
+                Hour = CLOCK.GET_CLOCK_HOURS(),   // (the temperance door at dusk: FOURTEENHOUR item 25)
                 Variety = _cfg.ReasonVariety,
                 MindTalks = _cfg.MindTalks,   // people talk of what's on their minds (WestworldScript.MindTalk.cs)
                 TimesTalk = _cfg.MindTalks && _cfg.TimesTalk && InnerLife.Historical,   // and talk over the times (Run 3, item 2); never with HistoricalAccuracy off
@@ -471,7 +472,33 @@ namespace EnrageWestworld.InGame
             Ped lady = pr.Why.Kind == "snub" ? LadyBeside(second, first) : null;   // a lady with the gentleman: her word in it (FOURTEENHOUR item 18)
             if (pr.Why.Kind == "snub")
                 SnubCount(lady);
+            bool kinStands = false;
+            string kinId = null;
+            if (pr.Why.Kind == "temperance" && Temperance.DoorOn)
+            {
+                // the temperance door (FOURTEENHOUR item 25): her kin near to answer a hothead's insult (he's A, the drinker B, she the
+                // third: the Director's fights are the first two's), else a second churchwoman beside her
+                Someone d0 = pr.Why.BFirst ? pr.B.Who : pr.A.Who, d1 = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
+                bool firstHer = d0.Woman;
+                Ped herPed = firstHer ? first : second, hisPed = firstHer ? second : first;
+                Someone her = firstHer ? d0 : d1, him = firstHer ? d1 : d0;
+                Ped kin = him.Temper == "Hothead" || him.Temper == "Proud" ? DoorKinNear(her, herPed, hisPed, now, out kinId) : null;
+                if (kin != null)
+                {
+                    kinStands = true;
+                    lady = herPed;
+                    first = kin;
+                    second = hisPed;
+                }
+                else
+                    lady = ChurchwomanBeside(herPed, hisPed, now);
+            }
             SceneCast cast = BuildCast(first, second, lady, saloon, me, now, seed);
+            if (kinStands)
+            {
+                cast.KinStands = true;
+                cast.KinId = kinId;
+            }
             string kind = pr.Why.Kind;
             Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
             if (kind == "talkof")

@@ -36,6 +36,12 @@ namespace EnrageWestworld.Core
             return new TownTale { Id = Ids.New(), Kind = "brawl", Town = town, Saloon = saloon, Count = fighters, Down = down, Starter = starter, At = at, Hour = hour, Were = were, Hurt = hurt };
         }
 
+        /// A man's pledge signed at the saloon door (FOURTEENHOUR item 25): told as the town's talk, and whether he held to it.
+        public static TownTale Pledge(string town, string man, long at)
+        {
+            return new TownTale { Id = Ids.New(), Kind = "pledge", Town = town, Starter = man, At = at };
+        }
+
         /// Whether it's still talked of.
         public static bool Live(TownTale t, long now)
         {
@@ -71,6 +77,15 @@ namespace EnrageWestworld.Core
             if (!Live(t, now))
                 return null;
             int days = (int)Math.Max(0, (now - t.At) / 1440);
+            if (t.Kind == "pledge")
+            {
+                string man = t.Starter ?? "A man";
+                if (days < 3)
+                    return Voice.Pick(seed + "|p0", man + " signed the pledge at the saloon door " + When(t, now, false) + ".", "Heard " + man + " signed the pledge? Give it a week.");
+                return Voice.Chance(t.Id + "|held", 60)
+                    ? Voice.Pick(seed + "|p1", man + " signed the pledge, and he was back at the brass rail by Friday.", man + "'s pledge lasted till payday. They always do.")
+                    : Voice.Pick(seed + "|p2", man + " signed the pledge, and he's held to it, they say.", man + " hasn't touched a drop since he signed. Who'd have thought it.");
+            }
             int n = CountNow(t, now, was, hurt);
             bool far = !was && (days >= 2 || t.Told >= 3);
             bool knife = far && Voice.Chance(seed + "|knife", 45);

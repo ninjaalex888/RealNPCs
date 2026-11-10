@@ -1012,6 +1012,8 @@ namespace EnrageWestworld.InGame
                 WellOff = new[] { CastWellOff(a), CastWellOff(b) }
             };
             cast.Knows = CastKnows(a, b, crowd);
+            if (Temperance.DoorOn)
+                cast.PledgesThisWeek = PledgesThisWeek();   // the preacher's word on Sunday (FOURTEENHOUR item 25)
             if (OldSoldiers.On)
             {
                 // each one's war and trade, for the old soldiers' scenes (FOURTEENHOUR item 17; Veteran keeps the war by id)

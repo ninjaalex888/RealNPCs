@@ -54,6 +54,19 @@ namespace EnrageWestworld.Core
                     return null;
                 return new SideTie { Pull = ClassPull, Why = "for a working man against a swell" };
             }
+            // the temperance door (FOURTEENHOUR item 25): the pious lean to the man who stood up for the churchwoman, the drinking men
+            // (the rough, the card men, the working men) to the drinker
+            if (over != null && over.StartsWith("temperance:"))
+            {
+                if (!Temperance.DoorOn || on == null || fighter == null)
+                    return null;
+                string defender = over.Substring(11);
+                if (on.Pious && fighter.Id == defender)
+                    return new SideTie { Pull = QuarrelPull, Why = "for the man who stood up for the temperance ladies" };
+                if (!on.Pious && (on.Group == "rough" || on.Group == "card" || on.Group == "working") && fighter.Id != defender && other != null && other.Id == defender)
+                    return new SideTie { Pull = QuarrelPull, Why = "for a drinking man against the church" };
+                return null;
+            }
             if (!QuarrelPolitics.On)
                 return null;   // (the game side no longer asks only with it on: the war above has its own switch)
             if (over == null || !over.StartsWith("politics:") || on == null || fighter == null)
