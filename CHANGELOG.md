@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The voices on AMD and other cards, experimental.** The voice model needs NVIDIA's CUDA to run on a graphics card, which is why the voices never started on AMD cards (a player's request). Now `install-voice.cmd` sets them up to run on the processor when it finds no NVIDIA card (or when run as `install-voice.cmd cpu`): a smaller download, and slower, so short lines get their voice and longer ones fall back to the game's own recording, and the game can lose a few frames while a line is being made. On a Core Ultra 9 a line of a second and a half took about four seconds. `install-voice.cmd cuda` goes back to the card; `start-voice-server.cmd` remembers which (`device.txt`).
+
 - **Weather talk now fits the weather** (`[Ticker] WeatherChecked` and `WeatherTalk`, both on; settings version 342). A player's report: people talking about the heat in a cold drizzle. What they think and say is now held to the actual weather and temperature where you are, and follows a change as it happens. They also remark on it more the worse it is, and most just after it turns: the first drops, thunder, snow, the rain stopping.
 
 - **All Saints' Day at the tombs** (`[World] AllSaintsGraves`, on; settings version 355). On the first of November in the south, those with someone dead go to the tombs, the ones you put there among them.

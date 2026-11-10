@@ -269,6 +269,9 @@ def load_model():
             log("note: the model speaks at %d Hz, the mixer plays at 24000" % SR)
         log("model %s loaded in %.1f s on %s%s%s" % (MODEL_NAME, time.time() - t, ARGS.device,
             (", %.2f GB" % (torch.cuda.memory_allocated() / 1e9)) if ARGS.device == "cuda" else "", " (half)" if ARGS.half and not ARGS.turbo else ""))
+        if ARGS.device == "cpu":
+            log("EXPERIMENTAL: on the processor (no NVIDIA card, or --device cpu). A line takes a few seconds to make, so short ones get "
+                "their voice and long ones fall back to the game's own recording; the line the warm-up makes next shows the speed here")
         warm = next(iter(REFS_BY_MODEL.values()), None)
         try:   # the first line said is slow (kernels, caches): say one nobody hears, in a clip's voice or the model's own
             t = time.time()
