@@ -48,8 +48,10 @@ namespace EnrageWestworld.Core
         /// the hot; joined: how many have joined already.
         public static JoinTake Weigh(string id, Traits t, bool woman, bool drunk, IList<Fighter>[] sides, Func<string, string, int> warmth,
                                      int witnesses, bool lawNear, bool saloon, bool womenFight, int joined, string seed,
-                                     int mostJoiners = MostJoiners, bool brawls = false, bool sure = false)
+                                     int mostJoiners = MostJoiners, bool brawls = false, bool sure = false, float lawHold = -1f)
         {
+            // lawHold: the law's hold worked out by sight and distance (Brawl.LawHoldsSeen; FOURTEENHOUR item 5), else -1 for
+            // the old rule, Brawl.LawHolds for any lawman within 30 m
             var no = new JoinTake();
             if (t == null || sides == null || sides.Length != 2 || joined >= mostJoiners)
                 return no;
@@ -63,7 +65,7 @@ namespace EnrageWestworld.Core
                     no.Why = "the law at hand";
                     return no;
                 }
-                lawFactor = Brawl.LawHolds(saloon, fighting);
+                lawFactor = lawHold >= 0f ? lawHold : Brawl.LawHolds(saloon, fighting);
             }
             if (woman && !womenFight)
             {

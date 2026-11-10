@@ -8,6 +8,8 @@
 // people in the same fight answer the same way. Plain C#, no game; the game layer is WestworldScript.Brawl.cs and
 // WestworldScript.JoinIn.cs.
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EnrageWestworld.Core
 {
@@ -58,9 +60,53 @@ namespace EnrageWestworld.Core
             return f;
         }
 
+        // ---- the badge across the street (FOURTEENHOUR item 5; [Mind] BrawlLawSight). Lex's log of 2026-11-09: every man who
+        // stayed out of a Valentine fight was held by "the law at hand", any lawman within 30 m, seen or not. People are deterred
+        // by a sanction they believe is certain and near (the deterrence literature's oldest finding: certainty and immediacy
+        // count for more than severity); a badge they can't see doesn't stop a punch, and one 25 m off is a man walking over.
+
+        /// The hold by sight and distance: in sight within 12 m, as LawHolds; in sight farther (to 30 m), half the hold
+        /// (0.30 becomes 0.65); out of sight (behind a wall, indoors, at his desk), a little (0.85).
+        public static float LawHoldsSeen(bool saloon, int fighting, float metres, bool sees)
+        {
+            float near = LawHolds(saloon, fighting);
+            if (!sees)
+                return Math.Max(near, OutOfSightHold);
+            if (metres <= NearMetres)
+                return near;
+            return near + (1f - near) * 0.5f;
+        }
+
+        public const float OutOfSightHold = 0.85f, NearMetres = 12f;
+
+        /// Some lawmen let two men settle it with their fists a while, as many marshals did: this one (seeded by the town and
+        /// the man), and for how long. He steps in at once when it turns two on one, a man goes down, or a gun shows.
+        public static bool LetsItRun(string town, string lawSeed, out int seconds)
+        {
+            int h = Voice.Hash((town ?? "") + "|" + lawSeed + "|letrun");
+            seconds = 12 + (h & 0x7fffffff) % 14;   // 12-25 s
+            return Voice.Chance((town ?? "") + "|" + lawSeed + "|letsrun", LetsRunPercent);
+        }
+
+        public const int LetsRunPercent = 40;
+
+        /// One deputy alone against this many or more holds off and sends for help before he gives the word.
+        public const int WaitsForHelpAt = 6;
+
+        /// "Law!" cried as he comes (within 20 m, three or more at it): only the law-abiding (deference over half a step) who'd
+        /// heed his word slip away before he's there; the rest swing on.
+        public static bool SlipsAwayAtTheCry(Traits t, bool drunk, string seed)
+        {
+            if (t == null || t.Z[Traits.Deference] <= 0.5f)
+                return false;
+            int chance;
+            return Heeds(t, drunk, false, seed + "|cry", out chance);
+        }
+
         /// Whether one of those fighting stops when the lawman shouts: the law-abiding and the self-possessed do, the angry,
-        /// the drunk and the reckless less; one who's winning is slower to stop than one who's losing. Seeded.
-        public static bool Heeds(Traits t, bool drunk, bool winning, string seed, out int chance)
+        /// the drunk and the reckless less; one who's winning is slower to stop than one who's losing. Seeded. Two lawmen at
+        /// it together are heeded more (item 5: the sheriff come with another).
+        public static bool Heeds(Traits t, bool drunk, bool winning, string seed, out int chance, int lawmen = 1)
         {
             float c = 0.55f;
             if (t != null)
@@ -69,6 +115,8 @@ namespace EnrageWestworld.Core
                 c -= 0.20f;
             if (winning)
                 c -= 0.08f;
+            if (lawmen >= 2)
+                c += 0.12f;
             c = Math.Max(0.10f, Math.Min(0.95f, c));
             chance = (int)Math.Round(c * 100);
             return Voice.Chance(seed + "|heeds", chance);
@@ -290,5 +338,15 @@ namespace EnrageWestworld.Core
         public static string LawTakes(string seed) { return Taken[Voice.Hash(seed + "|taken") % Taken.Length]; }
         public static string Stopping(string seed) { return Stops[Voice.Hash(seed + "|stops") % Stops.Length]; }
         public static string ComesAtYou(string seed) { return AtYouLines[Voice.Hash(seed + "|atyou") % AtYouLines.Length]; }
+
+        // the badge across the street's words (FOURTEENHOUR item 5): the cry as he comes, the deputy who sends for help, the one
+        // who lets a fair fight run
+        private static readonly string[] Cries = { "Law! Law's coming!", "Here comes the deputy!", "Badge! Break off, he's coming!", "Marshal's on his way, boys!" };
+        private static readonly string[] SendsHelp = { "Fetch the sheriff! Run!", "I need another man here! Go!", "Somebody get the office! Now!", "One of you, run for the sheriff!" };
+        private static readonly string[] LetsRunLines = { "Let 'em have it out. Fair's fair.", "Two men, fair and square. I'll wait.", "Go on, then. Get it out of your systems.", "Fists, and nothing else. I'm watching." };
+        public static string Cry(string seed) { return Cries[Voice.Hash(seed + "|cry") % Cries.Length]; }
+        public static string SendsForHelp(string seed) { return SendsHelp[Voice.Hash(seed + "|help") % SendsHelp.Length]; }
+        public static string LetsRunLine(string seed) { return LetsRunLines[Voice.Hash(seed + "|letsrun") % LetsRunLines.Length]; }
+        public static IEnumerable<string> LawLines() { return Cries.Concat(SendsHelp).Concat(LetsRunLines); }
     }
 }

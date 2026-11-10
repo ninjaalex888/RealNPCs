@@ -28,6 +28,9 @@ namespace EnrageWestworld.InGame
             public bool Gun, Tied;   // Tied: a rope of his to finish before he goes back to his rounds
             public string Seed;
             public List<int> Stopped = new List<int>(), Queue = new List<int>();
+            // [Mind] BrawlLawSight (FOURTEENHOUR item 5): phase 5 holds off for help; the cry once; a fair fight let run
+            public bool Cried, LetRunAsked, LetsRun, Watching, HelpAsked;
+            public int LetRunMs, Helper, HelpUntil;
         }
 
         private readonly List<LawHand> _brawlLaw = new List<LawHand>();
@@ -145,9 +148,94 @@ namespace EnrageWestworld.InGame
             Log.Write("LAW breaks up: a lawman " + (int)law.Position.DistanceTo(mid) + " m off sees the fight (" + (a.Count + b.Count) + " fighting) and comes over (" + LawTakeWords(owned) + ")" + (test ? ", a test" : ""));
         }
 
-        /// The word: who stops and who keeps swinging, from their minds; the fight is ended, and those who won't stop go on.
-        private void BrawlBreakUp(LawHand lh, int now)
+        // ---- the badge across the street (FOURTEENHOUR item 5; [Mind] BrawlLawSight) ----
+
+        /// "Law!" as he comes (within 20 m, three or more at it), once: the law-abiding who would heed his word slip away
+        /// before he's there, never so many that a side is left empty; the rest swing on.
+        private void BrawlLawCry(LawHand lh, List<int> a, List<int> b, int now)
         {
+            lh.Cried = true;
+            string seed = lh.Seed + "|cry";
+            var gone = new List<string>();
+            int left0 = a.Count, left1 = b.Count;
+            foreach (int h in a.Concat(b).ToList())
+            {
+                bool mine0 = a.Contains(h);
+                if ((mine0 ? left0 : left1) <= 1 || h == a[0] || (b.Count > 0 && h == b[0]))
+                    continue;   // the two who began it fight on, and a side keeps one man at least
+                MindWho w = MindKnown(h, now);
+                Traits t = w != null && w.Src != null ? (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))) : null;
+                if (!Brawl.SlipsAwayAtTheCry(t, w != null && InHisCups(new Ped(h), w.P), seed + "|" + h) || !_director.LeaveFight(h))
+                    continue;
+                if (mine0) left0--; else left1--;
+                TASK.CLEAR_PED_TASKS(h, true, false);
+                WanderLater(h, now + 1500);
+                gone.Add(w != null && w.Name != null ? w.Name : "a stranger");
+            }
+            int crier = a.Concat(b).FirstOrDefault(x => ENTITY.DOES_ENTITY_EXIST(x));
+            if (_cfg.ScenesOnTicker && _cfg.Ticker && crier != 0 && ENTITY.GET_ENTITY_COORDS(crier, true, true).DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
+                SpeechCaption("Someone", Brawl.Cry(seed), crier, 2500);
+            Log.Write("LAW coming: someone cries it out, " + (a.Count + b.Count) + " fighting" + (gone.Count > 0 ? "; " + string.Join(", ", gone) + " slip" + (gone.Count == 1 ? "s" : "") + " away before he's there" : "; nobody slips away"));
+        }
+
+        /// One deputy alone against a room (six or more): he holds off and sends for the sheriff, a second lawman within 80 m,
+        /// and gives the word when he's with him (or 15 s on). False: nobody to send for, so he gives it alone, now.
+        private bool BrawlLawSendsForHelp(LawHand lh, Ped law, List<int> a, int now)
+        {
+            lh.HelpAsked = true;
+            Ped second = BrawlFindLaw(law.Position, 80f, false, 0);
+            if (second == null)
+            {
+                Log.Write("LAW holds off: one lawman against " + a.Count + "+, nobody to send for: he gives the word alone");
+                return false;
+            }
+            lh.Helper = second.Handle;
+            bool owned = LawTake(lh.Helper);   // ours while he comes (the borrowing every lawman of the brawl's has)
+            TASK.CLEAR_PED_TASKS(lh.Helper, true, false);
+            TASK.TASK_GO_TO_ENTITY(lh.Helper, lh.Law, -1, 4f, 3f, 0f, 0);   // at a run, to him
+            TASK.CLEAR_PED_TASKS(lh.Law, true, false);
+            if (ENTITY.DOES_ENTITY_EXIST(a[0]))
+                TASK.TASK_TURN_PED_TO_FACE_ENTITY(lh.Law, a[0], 2000, 0f, 0f, 0f);
+            LawSay(law, "The lawman", Brawl.SendsForHelp(lh.Seed), "SHOUT_STOP");
+            lh.Phase = 5;
+            lh.HelpUntil = now + 15000;
+            Log.Write("LAW holds off: one lawman against a brawl of " + a.Count + "+; he sends for help, and a second comes from " + (int)second.Position.DistanceTo(law.Position) + " m (" + LawTakeWords(owned) + ")");
+            return true;
+        }
+
+        /// A fair fight (one on each side, nobody on his way) may be let run a while by this lawman's way (Brawl.LetsItRun, by
+        /// the town and the man): he keeps his distance with an eye on it, and steps in at once when it turns unfair or its time is up. True while
+        /// he watches.
+        private bool BrawlLawLetsRun(LawHand lh, Ped law, List<int> a, List<int> b, int now)
+        {
+            if (!lh.LetRunAsked)
+            {
+                lh.LetRunAsked = true;
+                int secs;
+                lh.LetsRun = Brawl.LetsItRun(_placeTown, ENTITY.GET_ENTITY_MODEL(lh.Law).ToString(), out secs);
+                lh.LetRunMs = secs * 1000;
+            }
+            bool fair = a.Count == 1 && b.Count == 1 && _joinPending.Count == 0;
+            if (lh.LetsRun && fair && now - _brawlFightSince < lh.LetRunMs)
+            {
+                if (!lh.Watching)
+                {
+                    lh.Watching = true;
+                    LawSay(law, "The lawman", Brawl.LetsRunLine(lh.Seed), "GENERIC_CURSE_MED");
+                    Log.Write("LAW lets it run: a fair fight, one on one; he watches up to " + lh.LetRunMs / 1000 + " s from the first blow");
+                }
+                if (ENTITY.DOES_ENTITY_EXIST(a[0]))
+                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(lh.Law, a[0], 2000, 0f, 0f, 0f);
+                return true;
+            }
+            if (lh.Watching)
+                Log.Write("LAW steps in: " + (fair ? "it ran its time" : "it turned unfair (" + (a.Count + b.Count) + " in it" + (_joinPending.Count > 0 ? ", " + _joinPending.Count + " on the way" : "") + ")"));
+            return false;
+        }
+
+        /// The word: who stops and who keeps swinging, from their minds; the fight is ended, and those who won't stop go on.
+        private void BrawlBreakUp(LawHand lh, int now, int lawmen = 1)
+        {   // lawmen: two when the sheriff came with another (FOURTEENHOUR item 5): heeded more
             List<int> a, b;
             Ped law = new Ped(lh.Law);
             if (!_director.FightSides(out a, out b))
@@ -166,7 +254,7 @@ namespace EnrageWestworld.InGame
                 Traits t = w != null && w.Src != null ? (w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src))) : null;
                 bool drunk = w != null && InHisCups(new Ped(h), w.P);
                 int chance;
-                bool stops = Brawl.Heeds(t, drunk, BrawlHealth(h) >= 0.75f, lh.Seed + "|" + (w != null ? w.Id : h.ToString()), out chance);
+                bool stops = Brawl.Heeds(t, drunk, BrawlHealth(h) >= 0.75f, lh.Seed + "|" + (w != null ? w.Id : h.ToString()), out chance, lawmen);
                 string name = w != null && w.Name != null ? w.Name : "a stranger";
                 said.Add(name + (stops ? " stops" : " keeps swinging") + " (" + chance + "%" + (drunk ? ", drunk" : "") + ")");
                 if (stops)
@@ -206,9 +294,12 @@ namespace EnrageWestworld.InGame
             }
             lh.Queue.AddRange(holdouts);
             // a riot: a second lawman takes half of them, if one is free near
+            Ped helper = lh.Helper != 0 && ENTITY.DOES_ENTITY_EXIST(lh.Helper) && !ENTITY.IS_ENTITY_DEAD(lh.Helper) ? new Ped(lh.Helper) : null;   // the one he sent for (item 5)
+            if (helper != null && holdouts.Count < 3)
+                LawRoundsAgain(lh.Helper, now + 4000);   // not needed after all: back to his rounds
             if (holdouts.Count >= 3)
             {
-                Ped second = BrawlFindLaw(law.Position, 45f, false, 0);
+                Ped second = helper ?? BrawlFindLaw(law.Position, 45f, false, 0);
                 if (second != null)
                 {
                     var lh2 = new LawHand { Law = second.Handle, Since = now, Phase = 1, At = now + 1500, Seed = lh.Seed + "|2" };
@@ -258,12 +349,52 @@ namespace EnrageWestworld.InGame
                             List<int> a, b;
                             if (!_director.FightSides(out a, out b))
                             {
-                                Log.Write("LAW breaks up: the fight was over before he got there (" + (int)law.Position.DistanceTo(_brawlLawAt) + " m off, " + (now - lh.Since) / 1000 + " s after he set off)");
+                                Log.Write((lh.Watching ? "LAW lets it run: it ended while he watched (" : "LAW breaks up: the fight was over before he got there (") + (int)law.Position.DistanceTo(_brawlLawAt) + " m off, " + (now - lh.Since) / 1000 + " s after he set off)");
                                 lh.Phase = 9;   // it ended before he got there
                                 break;
                             }
-                            if (ENTITY.DOES_ENTITY_EXIST(a[0]) && law.Position.DistanceTo(ENTITY.GET_ENTITY_COORDS(a[0], true, true)) < 9f || now - lh.Since > 9000)
-                                BrawlBreakUp(lh, now);
+                            float dl = ENTITY.DOES_ENTITY_EXIST(a[0]) ? law.Position.DistanceTo(ENTITY.GET_ENTITY_COORDS(a[0], true, true)) : 99f;
+                            bool there = dl < 9f || now - lh.Since > 9000;
+                            if (BrawlsOn && _cfg.BrawlLawSight)
+                            {
+                                // the badge across the street (FOURTEENHOUR item 5): the cry as he comes, a fair fight let run, one
+                                // deputy against a room holding off for help
+                                if (!lh.Cried && dl < 20f && a.Count + b.Count >= 3)
+                                    BrawlLawCry(lh, a, b, now);
+                                if (!there)
+                                    break;
+                                if (!lh.HelpAsked && a.Count + b.Count >= Brawl.WaitsForHelpAt && _brawlLaw.Count == 1 && BrawlLawSendsForHelp(lh, law, a, now))
+                                    break;   // phase 5: he waits for the second
+                                if (BrawlLawLetsRun(lh, law, a, b, now))
+                                    break;   // a fair fight: he watches a while
+                            }
+                            else if (!there)
+                                break;
+                            BrawlBreakUp(lh, now);
+                            break;
+                        }
+                    case 5:
+                        {
+                            // one deputy against a room, holding off: the word once the second is with him, or 15 s on
+                            List<int> a, b;
+                            if (!_director.FightSides(out a, out b))
+                            {
+                                Log.Write("LAW holds off: the brawl was over before help came (" + (now - lh.Since) / 1000 + " s after he set off)");
+                                if (lh.Helper != 0)
+                                    LawRoundsAgain(lh.Helper, now + 2000);
+                                lh.Phase = 9;
+                                break;
+                            }
+                            bool helped = lh.Helper != 0 && ENTITY.DOES_ENTITY_EXIST(lh.Helper) && !ENTITY.IS_ENTITY_DEAD(lh.Helper) &&
+                                          ENTITY.GET_ENTITY_COORDS(lh.Helper, true, true).DistanceTo(law.Position) < 10f;
+                            if (!helped && now < lh.HelpUntil)
+                            {
+                                if (ENTITY.DOES_ENTITY_EXIST(a[0]))
+                                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(lh.Law, a[0], 2000, 0f, 0f, 0f);   // he keeps his distance and his eye on it
+                                break;
+                            }
+                            Log.Write("LAW holds off: " + (helped ? "the second lawman is with him" : "no help in 15 s") + "; the word, " + (a.Count + b.Count) + " fighting");
+                            BrawlBreakUp(lh, now, helped ? 2 : 1);
                             break;
                         }
                     case 1:

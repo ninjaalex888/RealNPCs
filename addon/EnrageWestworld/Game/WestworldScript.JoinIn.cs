@@ -34,7 +34,7 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<int, int> _joinSideOf = new Dictionary<int, int>();   // this fight's picks: whose side each took, kept for the fight
         private int _brawlBiggest, _joinPendingAt, _joinSidesFor, _joinCameOver, _joinGaveUp;
 
-        private int _joinFightSince;
+        private int _joinFightSince, _joinLawSaidFor;
         private const int BrawlOpeningMs = 10000;
 
         private void JoinStep(int now)
@@ -105,6 +105,8 @@ namespace EnrageWestworld.InGame
             var looking = new List<Ped>();
             int witnesses = 0;
             bool law = false;
+            float lawD = 99f;
+            int lawH = 0;   // the nearest lawman within 30 m, for the hold by sight and distance (FOURTEENHOUR item 5)
             foreach (Ped p in Peds.All())
             {
                 if (p == null || p.Position.DistanceTo(mid) > JoinMetres + 12f)
@@ -114,8 +116,16 @@ namespace EnrageWestworld.InGame
                     continue;
                 if (Natives.IsLaw(p))
                 {
-                    if (p.Position.DistanceTo(mid) < 30f)
+                    float ld = p.Position.DistanceTo(mid);
+                    if (ld < 30f)
+                    {
                         law = true;
+                        if (ld < lawD)
+                        {
+                            lawD = ld;
+                            lawH = h;
+                        }
+                    }
                     continue;
                 }
                 if (p.Position.DistanceTo(mid) > JoinMetres || _director.Involves(h))
@@ -134,6 +144,19 @@ namespace EnrageWestworld.InGame
             string fight = (_director.FightId != 0 ? "f" + _director.FightId : a[0] + "|" + b[0]) + "|" + (a.Count + b.Count);
             bool saloon = _placeKind == "saloon", sure = BrawlsOn && now < _brawlTestUntil;   // the Testing row: the waves without the bar or the roll
             int most = MostJoinersNow, room = most - _director.JoinerCount - _joinPending.Count;
+            // [Mind] BrawlLawSight (FOURTEENHOUR item 5): the badge holds by sight and distance, not by being within 30 m (one
+            // ray from him to the fight, a look every 2.5 s)
+            float lawHold = -1f;
+            if (law && BrawlsOn && _cfg.BrawlLawSight && lawH != 0)
+            {
+                bool sees = ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(lawH, a[0], 17);
+                lawHold = Brawl.LawHoldsSeen(saloon, a.Count + b.Count, lawD, sees);
+                if (_joinLawSaidFor != _director.FightId)
+                {
+                    _joinLawSaidFor = _director.FightId;
+                    Log.Detail("BRAWL the law: a lawman " + (int)lawD + " m off, " + (sees ? "in sight" : "out of sight") + ": joiners held to " + (int)Math.Round(lawHold * 100) + "% of their chance");
+                }
+            }
             int wave = BrawlsOn ? Brawl.Wave(a.Count + b.Count, saloon, room, witnesses) : Math.Min(1, room);
             var takes = new List<KeyValuePair<JoinTake, KeyValuePair<Ped, MindWho>>>();
             int met = 0;
@@ -159,7 +182,7 @@ namespace EnrageWestworld.InGame
                     continue;   // the mind decides who joins: nobody it doesn't know
                 Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
                 JoinTake take = JoinIn.Weigh(w.Id, t, !PED.IS_PED_MALE(p.Handle), InHisCups(p, w.P), sides, LadderWarmth, witnesses, law, saloon,
-                                             _cfg.WomenInFights, _director.JoinerCount + _joinPending.Count, fight + "|" + w.Id, most, BrawlsOn, sure);
+                                             _cfg.WomenInFights, _director.JoinerCount + _joinPending.Count, fight + "|" + w.Id, most, BrawlsOn, sure, lawHold);
                 if (take.Side >= 0)
                     takes.Add(new KeyValuePair<JoinTake, KeyValuePair<Ped, MindWho>>(take, new KeyValuePair<Ped, MindWho>(p, w)));
                 else if (take.Why != null && take.Score > 0.2f)
@@ -178,7 +201,7 @@ namespace EnrageWestworld.InGame
                 {
                     // weighed again against the sides as this wave has left them, so a wave doesn't all pile onto one man
                     best = JoinIn.Weigh(bw.Id, bw.Traits, !PED.IS_PED_MALE(bestPed.Handle), InHisCups(bestPed, bw.P), sides, LadderWarmth, witnesses, law, saloon,
-                                        _cfg.WomenInFights, joinedNow, fight + "|" + bw.Id, most, BrawlsOn, sure);
+                                        _cfg.WomenInFights, joinedNow, fight + "|" + bw.Id, most, BrawlsOn, sure, lawHold);
                     if (best.Side < 0)
                         continue;
                 }
