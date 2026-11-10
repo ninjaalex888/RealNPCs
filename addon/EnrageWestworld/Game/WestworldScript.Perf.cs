@@ -82,6 +82,50 @@ namespace EnrageWestworld.InGame
             return PerfBegin(out depth);
         }
 
+        // ---- sub-slots inside a feature (FOURTEENHOUR item 2; TWELVEHOUR's correction: after THREEHOUR item 1 the add-on still
+        // averaged 1.09-1.38 ms a frame, and "scenes" and "name cards" were too big to say which part): a part of a Safe()
+        // feature timed on its own, its own time only, and taken off its parent's the way a nested Safe() is, so the parent's
+        // line is what's left. A struct, so nothing is allocated; the slot is found once and kept in the caller's field.
+        private struct PerfSub
+        {
+            public long At, Kids;
+        }
+
+        private PerfSub SubStart()
+        {
+            if (_cfg != null && !_cfg.PerfMeter)
+                return default(PerfSub);
+            int d = _perfDepth - 1;
+            return new PerfSub { At = Stopwatch.GetTimestamp(), Kids = d >= 0 && d < _perfChild.Length ? _perfChild[d] : 0 };
+        }
+
+        /// The part since `s` into `slot` (made the first time, named `name`): its time less any Safe() run inside it.
+        private void SubEnd(ref PerfSlot slot, string name, PerfSub s)
+        {
+            if (s.At == 0)
+                return;
+            int d = _perfDepth - 1;
+            long kids = d >= 0 && d < _perfChild.Length ? _perfChild[d] - s.Kids : 0;
+            SubTicks(ref slot, name, Stopwatch.GetTimestamp() - s.At - kids);
+        }
+
+        /// Ticks gathered by the caller (a part spread through a loop: the name cards' placing, walls and drawing), added once.
+        private void SubTicks(ref PerfSlot slot, string name, long ticks)
+        {
+            if (_cfg != null && !_cfg.PerfMeter)
+                return;
+            if (slot == null)
+                slot = PerfSlotOf(name);
+            long own = Math.Max(0, ticks);
+            slot.Frame += own;
+            slot.FrameCalls++;
+            int d = _perfDepth - 1;
+            if (d >= 0 && d < _perfChild.Length)
+                _perfChild[d] += own;   // the parent's own time is what's left
+            else if (d < 0)
+                _perfTop += own;   // outside any feature: not counted again in "step (other)"
+        }
+
         private void StepEnd(string slot, long start, int depth)
         {
             if (depth >= 0)
@@ -108,16 +152,28 @@ namespace EnrageWestworld.InGame
             double otherMs = Math.Max(0, stepTicks - _perfTop) * TicksToMs;
             Roll(_perfOther, otherMs, 1, window);
             _perfTop = 0;
-            PerfSlot worst = null;
-            double worstMs = 0;   // kept apart: each slot's Frame is zeroed below, so comparing with worst.Frame named the last to run
+            PerfSlot worst = null, second = null, third = null;
+            double worstMs = 0, secondMs = 0, thirdMs = 0;   // kept apart: each slot's Frame is zeroed below, so comparing with worst.Frame named the last to run
             for (int i = 0; i < _perfList.Count; i++)
             {
                 PerfSlot s = _perfList[i];
                 double ms = s.Frame * TicksToMs;
+                // the frame's three biggest parts, for the peak line (FOURTEENHOUR item 2: with the sub-slots, one name said too little)
                 if (worst == null || ms > worstMs)
                 {
+                    third = second; thirdMs = secondMs;
+                    second = worst; secondMs = worstMs;
                     worst = s;
                     worstMs = ms;
+                }
+                else if (second == null || ms > secondMs)
+                {
+                    third = second; thirdMs = secondMs;
+                    second = s; secondMs = ms;
+                }
+                else if (third == null || ms > thirdMs)
+                {
+                    third = s; thirdMs = ms;
                 }
                 int calls = s.FrameCalls;
                 s.Frame = 0;
@@ -135,7 +191,7 @@ namespace EnrageWestworld.InGame
                 {
                     _perfOverLogged = now;
                     Log.Write("PERF: over budget: the add-on has averaged " + _perfTotal.Avg.ToString("0.00") + " ms a frame for 10 s (budget " + BudgetAvgMs.ToString("0.0") +
-                              " ms; peak " + _perfTotal.Peak.ToString("0.00") + " ms). Costliest: " + PerfTop(3));
+                              " ms; peak " + _perfTotal.Peak.ToString("0.00") + " ms). Costliest: " + PerfTop(5));
                 }
             }
             else
@@ -144,7 +200,9 @@ namespace EnrageWestworld.InGame
             {
                 _perfPeakLogged = now;
                 Log.Write("PERF: peak: one frame took " + totalMs.ToString("0.00") + " ms (budget " + BudgetPeakMs.ToString("0.0") + " ms)" +
-                          (worst != null && worstMs >= otherMs ? "; the most of it: " + worst.Name : "; the most of it: step (other), outside any feature"));
+                          (worst != null && worstMs >= otherMs ? "; the most of it: " + worst.Name : "; the most of it: step (other), outside any feature") +
+                          (worst != null ? " (" + worst.Name + " " + worstMs.ToString("0.00") + " ms" + (second != null && secondMs > 0.05 ? ", " + second.Name + " " + secondMs.ToString("0.00") + " ms" : "") +
+                                           (third != null && thirdMs > 0.05 ? ", " + third.Name + " " + thirdMs.ToString("0.00") + " ms" : "") + (otherMs > 0.05 ? ", outside any feature " + otherMs.ToString("0.00") + " ms" : "") + ")" : ""));
             }
         }
 

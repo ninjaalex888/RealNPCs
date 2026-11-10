@@ -924,9 +924,13 @@ namespace EnrageWestworld.InGame
             if (frame == _tickerVisFrame)
                 return _tickerVis;
             _tickerVisFrame = frame;
+            PerfSub sub = SubStart();   // its own line on the frame meter: the first feature to ask each frame paid for it (FOURTEENHOUR item 2)
             _tickerVis = TickerVisibleNow(now);
+            SubEnd(ref _psHud, "the screen check (HUD, menus)", sub);
             return _tickerVis;
         }
+
+        private PerfSlot _psHud, _psHudMenus;
 
         private bool TickerVisibleNow(int now)
         {
@@ -946,7 +950,9 @@ namespace EnrageWestworld.InGame
             if (_bridge != null && now >= _nextUi)
             {
                 _nextUi = now + 250;
+                PerfSub sub = SubStart();   // enRAGE's menus, asked through the bridge every 250 ms: its own line (item 2)
                 _uiOpen = _bridge.UiOpen();
+                SubEnd(ref _psHudMenus, "the screen check: enRAGE's menus", sub);
             }
             return !_uiOpen;
         }

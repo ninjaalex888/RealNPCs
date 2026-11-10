@@ -650,6 +650,7 @@ namespace EnrageWestworld.InGame
 			while (_obsAt < _obsQueue.Count)
 			{
 				RecordRef value = _obsQueue[_obsAt++];
+				long one = System.Diagnostics.Stopwatch.GetTimestamp();
 				try
 				{
 					_obsPeople.Add(Snapshot.Of(value, _bridge, byId, _obsNow));
@@ -662,7 +663,11 @@ namespace EnrageWestworld.InGame
 					}
 					_snapshotFailed = true;
 				}
-				if ((_obsAt & 3) == 0 && System.Diagnostics.Stopwatch.GetTimestamp() - t0 >= budget)
+				long after = System.Diagnostics.Stopwatch.GetTimestamp();
+				ObserveSlowOne(value, after - one);
+				// the clock after every one, not every fourth (FOURTEENHOUR item 2: the peak line's "observe: a snapshot of each",
+				// 6.05 ms in one frame, was four people read past a 1.5 ms share); the clock costs a few tens of nanoseconds
+				if (after - t0 >= budget)
 				{
 					break;   // this frame's share spent: the rest next frame
 				}
@@ -691,6 +696,22 @@ namespace EnrageWestworld.InGame
 			ot = StepBegin(out od);
 			WriteDiaries();
 			StepEnd("observe: diaries (step)", ot, od);
+		}
+
+		private int _obsSlowLogged = -60000;
+
+		/// One person whose snapshot took over 2 ms, named in the log once a minute at most (FOURTEENHOUR item 2), so the next
+		/// log says whether a peak is one heavy record or many light ones.
+		private void ObserveSlowOne(RecordRef r, long ticks)
+		{
+			double ms = ticks * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+			if (ms < 2.0)
+				return;
+			int now = Environment.TickCount;
+			if (now - _obsSlowLogged < 60000 && now >= _obsSlowLogged)
+				return;
+			_obsSlowLogged = now;
+			Log.Write("PERF observe: reading " + (r != null ? r.Name : "someone") + " into a snapshot took " + ms.ToString("0.00") + " ms (one person; the frame's share is " + ObserveSliceMs.ToString("0.0") + " ms)");
 		}
 
 		private Person PersonOf(RecordRef r)

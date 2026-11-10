@@ -54,6 +54,8 @@ namespace EnrageWestworld.InGame
         private int _enrageCardsAt = -100000;
         private Action _aNameCards;
         private int _nameCardsProbedIn = -1, _nameCardsProbeAt = -100000;
+        private PerfSlot _psCardsWho, _psCardsPlace, _psCardsWalls, _psCardsDraw;   // the cards' parts on the frame meter (FOURTEENHOUR item 2)
+        private long _nameCardsDormant;   // card-frames skipped behind a wall and faded out (F7: the cut's share)
         private const int NameCardsMost = 10, NameCardsMostAlways = 16, NameCardsRefreshMs = 3000;
         private const int NameCardFloor = 8;   // the nearest this many always get their name, even from the overlays' share of the frame's text (Lex, 2026-10-31)
         private int _nameHeldLogAt = -100000, _nameHeldFrames;
@@ -110,8 +112,14 @@ namespace EnrageWestworld.InGame
             if (now - _nameCardsCandAt >= 250)
             {
                 _nameCardsCandAt = now;
+                PerfSub cs = SubStart();
                 NameCardsCandidates(me, mePos, now);
+                SubEnd(ref _psCardsWho, "name cards: who's near", cs);
             }
+            // the frame's parts on the meter (FOURTEENHOUR item 2): placing (the body, the head, the screen point), the walls (the
+            // ray and the room) and the drawing, each gathered through the loop and added once; "name cards" is what's left
+            bool timed = _cfg.PerfMeter;
+            long tPlace = 0, tWalls = 0, tDraw = 0, tAt = 0;
             _nameCardsFrame++;
             float dt = Math.Max(0.004f, Math.Min(0.1f, (now - _nameCardsLastMs) / 1000f));
             _nameCardsLastMs = now;
@@ -130,6 +138,17 @@ namespace EnrageWestworld.InGame
                     continue;
                 if (now - c.FirstSeen < 1000)
                     continue;   // a body just come into range settles first
+                // behind a wall and faded out, its next look at the walls not due: nothing to place or draw this frame, so none of
+                // the natives below (its body, its head, its screen point, its room) are asked for; the ray, when due, decides as
+                // before whether it comes back (FOURTEENHOUR item 2: in a town, many of those near are indoors)
+                if (c.Blocked && c.Alpha <= 0f && c.BlockedAt != 0 && now - c.BlockedAt <= NameCardPlan.RayEveryMs(c.Metres))
+                {
+                    c.SeenFrame = -1000;
+                    _nameCardsDormant++;
+                    continue;
+                }
+                if (timed)
+                    tAt = System.Diagnostics.Stopwatch.GetTimestamp();
                 Vector3 pos = ENTITY.GET_ENTITY_COORDS(h, true, true);
                 if (pos.X == 0f && pos.Y == 0f)
                 {
@@ -163,7 +182,10 @@ namespace EnrageWestworld.InGame
                 float wx = noHead ? pos.X : pos.X + (head.X - pos.X) * 0.6f;
                 float wy = noHead ? pos.Y : pos.Y + (head.Y - pos.Y) * 0.6f;
                 float x, y;
-                if (!ScreenAt(new Vector3(wx, wy, z + NameCardAbove), out x, out y))
+                bool onScreen = ScreenAt(new Vector3(wx, wy, z + NameCardAbove), out x, out y);
+                if (timed)
+                    tPlace += System.Diagnostics.Stopwatch.GetTimestamp() - tAt;
+                if (!onScreen)
                 {
                     c.SeenFrame = -1000;
                     continue;
@@ -197,6 +219,8 @@ namespace EnrageWestworld.InGame
                     c.VelX = c.VelY = 0f;
                 }
                 c.PrevFrame = _nameCardsFrame;
+                if (timed)
+                    tAt = System.Diagnostics.Stopwatch.GetTimestamp();
                 if ((c.BlockedAt == 0 || now - c.BlockedAt > NameCardPlan.RayEveryMs(c.Metres)) && rays < NameCardPlan.RaysAFrame)
                 {
                     rays++;
@@ -211,7 +235,9 @@ namespace EnrageWestworld.InGame
                     if (interior != 0 && interior != myInterior)
                         hidden = true;
                 }
-                float edge = Math.Max(0f, Math.Min(1f, (c.Range - c.Metres) / (_cfg.NameCardsAlways ? 4f : 12f)));   // always on: full until the last few metres
+                if (timed)
+                    tWalls += System.Diagnostics.Stopwatch.GetTimestamp() - tAt;
+                float edge =Math.Max(0f, Math.Min(1f, (c.Range - c.Metres) / (_cfg.NameCardsAlways ? 4f : 12f)));   // always on: full until the last few metres
                 float alpha = _nameCardsFrame - c.SeenFrame <= 3 ? c.Alpha : 0f;
                 alpha = hidden ? Math.Max(0f, alpha - dt * 6f) : Math.Min(edge, alpha + dt * 4f);
                 c.Alpha = alpha;
@@ -229,6 +255,8 @@ namespace EnrageWestworld.InGame
                 float far = Math.Max(0f, Math.Min(1f, (c.Metres - 6f) / Math.Max(1f, c.Range - 6f)));
                 float s1 = 0.25f - 0.06f * far, s2 = 0.175f - 0.03f * far;
                 float h1 = 0.1f * s1, h2 = 0.094f * s2;
+                if (timed)
+                    tAt = System.Diagnostics.Stopwatch.GetTimestamp();
                 if (!ReferenceEquals(c.FormedOf, c.Name))
                 {
                     c.FormedOf = c.Name;
@@ -246,9 +274,17 @@ namespace EnrageWestworld.InGame
                     }
                     Draw.TextFormed(c.Formed2, x - c.Units2 * s2 * 0.0205f / 2f, y - h2 - 0.0018518518f, s2, c.R2, c.G2, c.B2, (int)(a * 0.88f));
                 }
+                if (timed)
+                    tDraw += System.Diagnostics.Stopwatch.GetTimestamp() - tAt;
                 up++;
                 if (_nameCardsMade++ == 0)
                     Log.Write("NAME cards: the first, over " + c.Name + (c.Line2 != null && c.Line2.Length > 0 ? " (" + c.Line2 + ")" : "") + ", " + (int)c.Metres + " m off");
+            }
+            if (timed)
+            {
+                SubTicks(ref _psCardsPlace, "name cards: placing", tPlace);
+                SubTicks(ref _psCardsWalls, "name cards: walls", tWalls);
+                SubTicks(ref _psCardsDraw, "name cards: drawing", tDraw);
             }
             _nameCardsUp = up;
             if (held && (now - _nameHeldLogAt > 60000 || now < _nameHeldLogAt))
@@ -729,7 +765,7 @@ namespace EnrageWestworld.InGame
                 return "off ([Display] NameCards)";
             string left = _bridge != null && _bridge.Present && NameCardsLeftToEnrage(_now) ? "; left to enRAGE's own cards (NameCardsBesideEnrage off)" : "";
             return _cfg.NameCards + (_cfg.NameCardsSecondLine ? "" : ", names alone") + " within " + (int)_cfg.NameCardsMetres + "/" + (int)_cfg.NameCardsKnownMetres + " m; " + _nameCardsUp + " up now" + (_nameHeldFrames > 0 ? " (short of the frame's text in " + _nameHeldFrames + " frames this session)" : "") + ", " + _nameCardsNow.Count +
-                   " in range, " + _nameCards.Count + " kept; " + _nameCardsMade + " drawn this session" + left;
+                   " in range, " + _nameCards.Count + " kept; " + _nameCardsMade + " drawn this session; " + _nameCardsDormant + " card-frames passed over behind a wall, faded out (FOURTEENHOUR item 2)" + left;
         }
     }
 }

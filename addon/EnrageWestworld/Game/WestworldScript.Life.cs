@@ -27,9 +27,13 @@ namespace EnrageWestworld.InGame
 
         // ---- scenes between strangers -----------------------------------------------------------------
 
+        // the scenes' parts on the frame meter (FOURTEENHOUR item 2): "scenes" itself is what's left, the look for a new scene
+        private PerfSlot _psHelpers, _psDirector, _psBrawls, _psJoins, _psSecond;
+
         private void DramaTick(int now)
         {
             Ped me = Game.Player.Character;
+            PerfSub sub = SubStart();
             GangStep(now);   // rival gangs who meet near you (WestworldScript.Gangs.cs)
             JoinYouStep(now);   // onlookers who join a fistfight of yours (WestworldScript.JoinYou.cs)
             AlliesStep(now);    // people who think well of you come to your aid when you're attacked (WestworldScript.Allies.cs)
@@ -45,6 +49,8 @@ namespace EnrageWestworld.InGame
             PatientStep(now);   // the doctor's patient on the way there and back (WestworldScript.Patient.cs)
             ThrownOutStep(now);   // the card cheat on the boardwalk
             SabbathWatchStep(now);   // the one who saw the kneel thinks of it, a few seconds on
+            SubEnd(ref _psHelpers, "scenes: helpers", sub);
+            sub = SubStart();
             _director.BraveryNow = _cfg.Bravery;   // before the scene ticks: a fight whose first beat comes before JoinStep has run still gets Bravery's CA 77 and 78
             if (_director.AnyPlaying)
             {
@@ -53,6 +59,8 @@ namespace EnrageWestworld.InGame
                 if (_director.AnyPlaying)
                     _director.Tick(me, _dSceneSay ?? (_dSceneSay = SceneSay), _dSideSay ?? (_dSideSay = SideSay), _dSideSay);   // (a second full scene's words: a subtitle near you, as a quiet talk's; the delegates made once, the frame-cost audit)
             }
+            SubEnd(ref _psDirector, "scenes: the Director", sub);
+            sub = SubStart();
             if (_after != null)
                 AftermathStep(me, now);   // what follows a fight: a friend tends the loser, the law has a word (WestworldScript.Aftermath.cs)
             BrawlStep(me, now);   // the law breaks up a brawl, a brawl comes at you, a gun drawn in one (WestworldScript.Brawl.cs)
@@ -73,12 +81,17 @@ namespace EnrageWestworld.InGame
                 JoinPendingDrop("the scene is over");
             if (!_director.Busy && _ring.Count > 0)
                 RingBreak();   // the scene ended with the fight
+            SubEnd(ref _psBrawls, "scenes: brawls and the law", sub);
             if (_director.Busy)
             {
+                sub = SubStart();
                 RingStep(now);   // a crowd rings the fight (WestworldScript.Ring.cs)
                 JoinStep(now);   // onlookers who join a fight, from their minds (WestworldScript.JoinIn.cs)
+                SubEnd(ref _psJoins, "scenes: who joins a fight", sub);
+                sub = SubStart();
                 SideScene(me, now);   // a quiet talk elsewhere while the scene plays (the NPC-life run)
                 SecondMainScene(me, now);   // a second full scene 20 m off ([Scenes] MainScenesAtOnce; NIGHT4 item 3)
+                SubEnd(ref _psSecond, "scenes: a second scene", sub);
                 return;
             }
             _fallWatch = null;
