@@ -48,8 +48,11 @@ namespace EnrageWestworld.Core
         /// the hot; joined: how many have joined already.
         public static JoinTake Weigh(string id, Traits t, bool woman, bool drunk, IList<Fighter>[] sides, Func<string, string, int> warmth,
                                      int witnesses, bool lawNear, bool saloon, bool womenFight, int joined, string seed,
-                                     int mostJoiners = MostJoiners, bool brawls = false, bool sure = false, float lawHold = -1f)
+                                     int mostJoiners = MostJoiners, bool brawls = false, bool sure = false, float lawHold = -1f,
+                                     Func<string, string, string, SideTie> sideTie = null)
         {
+            // sideTie(onlooker, fighter, the one he's fighting): what pulls the onlooker to a fighter by who they are (kin, his own
+            // trade, the town's own; Core/BrawlSides.cs, FOURTEENHOUR item 6), else null
             // lawHold: the law's hold worked out by sight and distance (Brawl.LawHoldsSeen; FOURTEENHOUR item 5), else -1 for
             // the old rule, Brawl.LawHolds for any lawman within 30 m
             var no = new JoinTake();
@@ -107,19 +110,35 @@ namespace EnrageWestworld.Core
                 float tie = friend > 0 ? 0.22f + 0.08f * friend : 0f;
                 if (foe < 0)
                     tie = Math.Max(tie, 0.18f + 0.08f * -foe);
-                float score = tie + heat + momentum + BraveryPull;
+                // his own kind on this side (FOURTEENHOUR item 6): about half a friend's pull, the strongest of them
+                float kin = 0f;
+                string kinWhy = null;
+                if (sideTie != null && id != null && theirs.Count > 0)
+                    foreach (Fighter f in mine)
+                    {
+                        if (f.Id == null)
+                            continue;
+                        SideTie k = sideTie(id, f.Id, theirs[0].Id);
+                        if (k != null && k.Pull > kin)
+                        {
+                            kin = k.Pull;
+                            kinWhy = k.Why;
+                        }
+                    }
+                float score = tie + kin + heat + momentum + BraveryPull;
                 if (brawls)
                     score += BrawlBoost + OpeningBoost;
                 // with brawls on, someone with no stake in it sides with the side that's short (Lex, 2026-10-31: in the
                 // biggest brawl every joiner went for one man): a tenth for each man the other side has more
-                if (brawls && tie <= 0f)
+                if (brawls && tie <= 0f && kin <= 0f)
                     score += Math.Max(-0.2f, Math.Min(0.2f, 0.10f * (theirs.Count - mine.Count)));
-                // a stranger to both sides must clear the crowd's bar and more; a friend or a foe is moved by their own
-                float bar = tie > 0f ? 0.25f : Appraisal.CrowdBar(witnesses) + 0.25f;
+                // a stranger to both sides must clear the crowd's bar and more; a friend or a foe is moved by their own; one of his
+                // own, halfway between (item 6)
+                float bar = tie > 0f ? 0.25f : kin > 0f ? 0.25f + Appraisal.CrowdBar(witnesses) * 0.5f : Appraisal.CrowdBar(witnesses) + 0.25f;
                 if (score <= bar && !sure)   // sure: the Testing row's waves, no bar and no roll (the sex rules still hold)
                 {
                     if (best.Side < 0 && score > best.Score)
-                        best = new JoinTake { Score = score, Bar = bar, Why = Words(friend, foe, heat, drunk) + (momentum > 0f ? ", the brawl's pull" : "") + ": not enough to join" };
+                        best = new JoinTake { Score = score, Bar = bar, Why = Words(friend, foe, heat, drunk) + (kinWhy != null ? ", " + kinWhy : "") + (momentum > 0f ? ", the brawl's pull" : "") + ": not enough to join" };
                     continue;
                 }
                 float chance = Math.Max(0f, Math.Min(0.8f, (score - bar) * 2.5f));
@@ -129,7 +148,7 @@ namespace EnrageWestworld.Core
                     chance *= 0.1f;   // a man's hand against a woman, at a tenth (1899; Lex, 2026-10-30)
                 chance *= lawFactor;
                 bool goes = sure ? !(!woman && theirs[target].Woman) : Voice.Chance(seed + "|join|" + s, (int)Math.Round(chance * 100));
-                string why = Words(friend, foe, heat, drunk) + (momentum > 0f ? ", the brawl's pull" : "") + (lawFactor < 1f ? ", the law at hand" : "");
+                string why = Words(friend, foe, heat, drunk) + (kinWhy != null ? ", " + kinWhy : "") + (momentum > 0f ? ", the brawl's pull" : "") + (lawFactor < 1f ? ", the law at hand" : "");
                 var take = new JoinTake { Side = goes ? s : -1, Target = target, Score = score, Bar = bar, Why = why + " (" + (int)Math.Round(chance * 100) + "%)" };
                 if (goes && (best.Side < 0 || score > best.Score))
                     best = take;

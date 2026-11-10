@@ -34,7 +34,95 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<int, int> _joinSideOf = new Dictionary<int, int>();   // this fight's picks: whose side each took, kept for the fight
         private int _brawlBiggest, _joinPendingAt, _joinSidesFor, _joinCameOver, _joinGaveUp;
 
-        private int _joinFightSince, _joinLawSaidFor;
+        private int _joinFightSince, _joinLawSaidFor, _joinWhoSaidFor;
+        private readonly Dictionary<string, SidePerson> _brawlSides = new Dictionary<string, SidePerson>();   // the people of this fight, by id (item 6)
+        private int _brawlSidesFor;
+        private Func<string, string, string, SideTie> _sideTieOf;
+
+        /// Why someone near a fight isn't weighed at all (null: they are). The sat and the leaning stay put until three are at
+        /// it (pulled off a bar they went into a T pose), unless they have a stake in it ([Mind] BrawlSides: a friend, a foe or
+        /// their own kind fighting; FOURTEENHOUR item 6): then they get up for a fight of two.
+        private string JoinPassOver(Ped p, int h, List<int> a, List<int> b, int now)
+        {
+            if (Spawner.IsOurs(h))
+                return "ours";
+            if (Natives.StoryModel(p) || !IsGrownUp(p))
+                return "the story's or a child";
+            if (PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false))
+                return "riding";
+            if (_wakeActs.Any(w => w.Handle == h))
+                return "a wake act";
+            if (PED.IS_PED_USING_ANY_SCENARIO(h) && !(BrawlsOn && (a.Count + b.Count >= 3 || (_cfg.BrawlSides && SeatedStake(h, a, b, now)))))
+                return "sat or leaning";
+            if (PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h))
+                return "in a fight or fleeing";
+            string why = MayDirectWhyNot(p);
+            if (why != null)
+                return "can't be directed (" + why + ")";
+            if (JoinIsPending(h) || AimedLately(h, now) || IsStaged(h) || MindGettingUp(h) || WalkingUp(h) || InTalk(h))   // (an encounter's, a get-up, a walk-up, a talk: NIGHT4 item 6; not all of NotFree, whose onlookers are the joiners)
+                return "busy with something of ours";
+            return null;
+        }
+
+        /// Someone sat or leaning with a stake in this fight: a tie to one of the fighters, or their own kind in it.
+        private bool SeatedStake(int h, List<int> a, List<int> b, int now)
+        {
+            MindWho w = MindKnown(h, now);
+            if (w == null || w.Id == null)
+                return false;
+            SidePerson me = SideNote(w);
+            int lead0 = a.Count > 0 ? a[0] : 0, lead1 = b.Count > 0 ? b[0] : 0;
+            foreach (int fh in a.Concat(b))
+            {
+                MindWho fw = ENTITY.DOES_ENTITY_EXIST(fh) ? MindKnown(fh, now) : null;
+                if (fw == null || fw.Id == null)
+                    continue;
+                if (LadderWarmth(w.Id, fw.Id) != 0)
+                    return true;
+                int other = a.Contains(fh) ? lead1 : lead0;
+                MindWho ow = other != 0 && ENTITY.DOES_ENTITY_EXIST(other) ? MindKnown(other, now) : null;
+                if (BrawlSides.Tie(me, SideNote(fw), ow != null && ow.Id != null ? SideNote(ow) : null, _placeTown) != null)
+                    return true;
+            }
+            return false;
+        }
+
+        /// The person as the fight's sides see them, noted for this fight (kept by id until the next fight).
+        private SidePerson SideNote(MindWho w)
+        {
+            if (_brawlSidesFor != _director.FightId)
+            {
+                _brawlSidesFor = _director.FightId;
+                _brawlSides.Clear();
+            }
+            SidePerson s;
+            if (_brawlSides.TryGetValue(w.Id, out s))
+                return s;
+            Person p = w.P;
+            s = new SidePerson
+            {
+                Id = w.Id, KinId = p != null ? p.KinId : null, Group = TradeGroupOf(w), Home = p != null ? p.Home : null,
+                Surname = w.Name != null ? Residents.SurnameOf(w.Name) : null,
+                Outsider = p == null || p.Home == null || (_placeTown != null && p.Home != _placeTown)
+            };
+            _brawlSides[w.Id] = s;
+            return s;
+        }
+
+        private static string TradeGroupOf(MindWho w)
+        {
+            return w.TradeGroup ?? (w.TradeGroup = InnerLife.TradeGroup(w.P != null ? w.P.Trade : null));
+        }
+
+        private SideTie SideTieOf(string on, string fighter, string other)
+        {
+            SidePerson o, f, x = null;
+            if (on == null || fighter == null || !_brawlSides.TryGetValue(on, out o) || !_brawlSides.TryGetValue(fighter, out f))
+                return null;
+            if (other != null)
+                _brawlSides.TryGetValue(other, out x);
+            return BrawlSides.Tie(o, f, x, _placeTown);
+        }
         private const int BrawlOpeningMs = 10000;
 
         private void JoinStep(int now)
@@ -104,6 +192,8 @@ namespace EnrageWestworld.InGame
             var sides = new[] { a.Select(FighterOf).ToList(), b.Select(FighterOf).ToList() };
             var looking = new List<Ped>();
             int witnesses = 0;
+            // why those near were passed over, once a fight (FOURTEENHOUR item 6: of 21 near Lex's one long fight, three were weighed)
+            Dictionary<string, int> passedOver = _joinWhoSaidFor != _director.FightId ? new Dictionary<string, int>() : null;
             bool law = false;
             float lawD = 99f;
             int lawH = 0;   // the nearest lawman within 30 m, for the hold by sight and distance (FOURTEENHOUR item 5)
@@ -133,11 +223,23 @@ namespace EnrageWestworld.InGame
                 witnesses++;
                 if (_director.IsOut(h) || _brawlOut.ContainsKey(h) || _brawlFatal.Contains(h))
                     continue;   // knocked out in it, or killed: not getting up to join
-                if (Spawner.IsOurs(h) || Natives.StoryModel(p) || !IsGrownUp(p) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) || _wakeActs.Any(w => w.Handle == h) ||
-                    (PED.IS_PED_USING_ANY_SCENARIO(h) && !(BrawlsOn && a.Count + b.Count >= 3)) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || MayDirectWhyNot(p) != null ||
-                    JoinIsPending(h) || AimedLately(h, now) || IsStaged(h) || MindGettingUp(h) || WalkingUp(h) || InTalk(h))   // (an encounter's, a get-up, a walk-up, a talk: NIGHT4 item 6; not all of NotFree, whose onlookers are the joiners)
-                    continue;   // the sat and the leaning stay put (pulled off a bar they went into a T pose); in a brawl they get up first (JoinPending)
+                string passed = JoinPassOver(p, h, a, b, now);
+                if (passed != null)
+                {
+                    if (passedOver != null)
+                    {
+                        int pn;
+                        passedOver.TryGetValue(passed, out pn);
+                        passedOver[passed] = pn + 1;
+                    }
+                    continue;
+                }
                 looking.Add(p);
+            }
+            if (passedOver != null)
+            {
+                _joinWhoSaidFor = _director.FightId;
+                Log.Write("BRAWL who could join: " + witnesses + " near, " + looking.Count + " to weigh" + (passedOver.Count > 0 ? "; passed over: " + string.Join(", ", passedOver.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + " " + kv.Value)) : ""));
             }
             if (looking.Count == 0)
                 return;
@@ -158,6 +260,18 @@ namespace EnrageWestworld.InGame
                 }
             }
             int wave = BrawlsOn ? Brawl.Wave(a.Count + b.Count, saloon, room, witnesses) : Math.Min(1, room);
+            // [Mind] BrawlSides (FOURTEENHOUR item 6): who each is to the fighters, by kin, trade and town (the fighters noted first)
+            Func<string, string, string, SideTie> sideTie = null;
+            if (BrawlsOn && _cfg.BrawlSides)
+            {
+                foreach (int fh in a.Concat(b))
+                {
+                    MindWho fw = ENTITY.DOES_ENTITY_EXIST(fh) ? MindKnown(fh, now) : null;
+                    if (fw != null && fw.Id != null)
+                        SideNote(fw);
+                }
+                sideTie = _sideTieOf ?? (_sideTieOf = SideTieOf);
+            }
             var takes = new List<KeyValuePair<JoinTake, KeyValuePair<Ped, MindWho>>>();
             int met = 0;
             if (BrawlsOn && !OwnLooksOn)
@@ -180,9 +294,16 @@ namespace EnrageWestworld.InGame
                 }
                 if (w == null || w.Id == null || w.Src == null)
                     continue;   // the mind decides who joins: nobody it doesn't know
+                if (sideTie != null && BrawlSides.SendsForTheLaw(TradeGroupOf(w)))
+                {
+                    Log.Detail("BRAWL " + w.Name + " stays out: the well-off send for the law");
+                    continue;
+                }
+                if (sideTie != null)
+                    SideNote(w);
                 Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
                 JoinTake take = JoinIn.Weigh(w.Id, t, !PED.IS_PED_MALE(p.Handle), InHisCups(p, w.P), sides, LadderWarmth, witnesses, law, saloon,
-                                             _cfg.WomenInFights, _director.JoinerCount + _joinPending.Count, fight + "|" + w.Id, most, BrawlsOn, sure, lawHold);
+                                             _cfg.WomenInFights, _director.JoinerCount + _joinPending.Count, fight + "|" + w.Id, most, BrawlsOn, sure, lawHold, sideTie);
                 if (take.Side >= 0)
                     takes.Add(new KeyValuePair<JoinTake, KeyValuePair<Ped, MindWho>>(take, new KeyValuePair<Ped, MindWho>(p, w)));
                 else if (take.Why != null && take.Score > 0.2f)
@@ -201,7 +322,7 @@ namespace EnrageWestworld.InGame
                 {
                     // weighed again against the sides as this wave has left them, so a wave doesn't all pile onto one man
                     best = JoinIn.Weigh(bw.Id, bw.Traits, !PED.IS_PED_MALE(bestPed.Handle), InHisCups(bestPed, bw.P), sides, LadderWarmth, witnesses, law, saloon,
-                                        _cfg.WomenInFights, joinedNow, fight + "|" + bw.Id, most, BrawlsOn, sure, lawHold);
+                                        _cfg.WomenInFights, joinedNow, fight + "|" + bw.Id, most, BrawlsOn, sure, lawHold, sideTie);
                     if (best.Side < 0)
                         continue;
                 }
