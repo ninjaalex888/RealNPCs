@@ -51,6 +51,7 @@ namespace EnrageWestworld.Core
                 case "oldsoldiers": return OldSoldiers.War(c, seed);     // old soldiers: the war argued, or remembered together (item 17)
                 case "warstory": return OldSoldiers.Story(c, seed);      // a young man home from Cuba or the islands tells it
                 case "snub": return Snub.Play(c, seed);                  // the well-off and the working man (FOURTEENHOUR item 18)
+                case "rivals": return Rivals.Play(c, seed);              // two men courting the same woman (item 19)
                 case "pitch": return Pitch(c, seed);
                 case "posse": return c.CrimeRumour != null ? Posse(c, seed) : null;
                 case "mourn": return c.DeadName != null ? Mourn(c, seed) : null;

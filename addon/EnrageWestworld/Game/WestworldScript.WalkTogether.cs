@@ -31,6 +31,8 @@ namespace EnrageWestworld.InGame
         /// From the Director: a scene played to its end, with its first two.
         private void OnPlayedOut(string kind, Ped a, Ped b)
         {
+            if (_rivals != null && a != null && b != null)
+                Safe("rivals", () => RivalsOver(0, a.Handle, b.Handle));   // two rivals had it out in words: her choice (FOURTEENHOUR item 19)
             if (_cfg == null || !_cfg.WalkTogether || !_cfg.MindLive || !WalkTogether.TalkKind(kind) || a == null || b == null || _store == null || _placeTown == null)
                 return;
             Safe("walk together", () => WalkTogetherBegin(kind, a, b));

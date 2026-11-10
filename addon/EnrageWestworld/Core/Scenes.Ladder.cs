@@ -212,6 +212,7 @@ namespace EnrageWestworld.Core
                 case "politics": return QuarrelPolitics.Words(what);
                 case "war": return "the war, blue and grey";   // the old soldiers (FOURTEENHOUR item 17)
                 case "class": return "a gentleman's snub";     // the well-off and the working man (item 18)
+                case "rival": return "a woman they both court"; // rivals for one woman (item 19)
                 case "old": return "the old business between them (" + what + ")";
                 case "slight":
                     switch (what)
@@ -244,6 +245,7 @@ namespace EnrageWestworld.Core
                 case "politics": return QuarrelPolitics.Summary(what);
                 case "war": return "over the war";
                 case "class": return "over a gentleman's snub";
+                case "rival": return "over a woman";
                 case "snap": return "over one man's bad week";
                 case "old": return "over old business";
                 case "slight": return "over " + OverWords(null, over);

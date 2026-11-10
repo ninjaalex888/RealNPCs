@@ -34,6 +34,7 @@ namespace EnrageWestworld.Core
         public bool Bent;         // of the criminal class: a theft to their name this month (Core/Criminals.cs; SIXDAY item 16), set by the game side
         public string Broke;      // a breakdown's habit this week (Core/StressLoad.cs; FIVEDAY item 17): "temper" snaps as if strained twice over
         public bool Greenhorn;    // off the train in the last two weeks (a resident's NewAt; FOURTEENHOUR item 16), set by the game side
+        public string Courting, CourtingName;   // the woman he's courting, and her name (Core/Rivals.cs; FOURTEENHOUR item 19), set by the game side
         public string War;        // the war he was in: "blue", "grey", "cuba", "islands" (Core/OldSoldiers.cs; FOURTEENHOUR item 17), set by the game side
         public string Shamed;     // slighted, had words or beaten in the last four hours and not answered it ("slighted", "had words", "beaten"), else null (NIGHT3: displaced aggression)
     }
@@ -120,6 +121,10 @@ namespace EnrageWestworld.Core
                     return new Reason { Kind = "x:" + link.Kind, Strength = 85, BFirst = Links.IsOf(link, b.Id),
                                         Why = link.Name + "'s " + link.Kind + " with " + link.OtherName + " (" + what[stage] + ")" };
             }
+            // two men courting the same woman (FOURTEENHOUR item 19): whatever they are to each other, that's what's between them now
+            Reason rivals = Rivals.For(a, b, gameDay, where.Saloon);
+            if (rivals != null)
+                return rivals;
             if (tie != null)
             {
                 // sweethearts at odds since they last met: the cooler head comes to make it up, with a small gift, where

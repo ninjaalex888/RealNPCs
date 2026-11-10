@@ -170,6 +170,8 @@ namespace EnrageWestworld.InGame
                 return null;
             long g = Bridge.Now();
             s.Taken = _engine.SpokenFor(s.Id);
+            if (Rivals.On && !s.Woman)
+                s.Courting = CourtingFor(s.Id, out s.CourtingName);   // whom he's courting, for two men after the same woman (FOURTEENHOUR item 19)
             bool bent = _cfg.CriminalClass && Criminals.Bent(_store.Ties, s.Id, g);   // the criminal class (item 16): a theft this month, and they keep to it
             s.Bent = bent;
             s.Known = bent || _store.Ties.Any(t => t.Doer == s.Id && (t.Kind == "rough" || t.Kind == "pickpocket") && g - t.At >= 0 && g - t.At < 3 * 1440);
@@ -468,6 +470,8 @@ namespace EnrageWestworld.InGame
             SceneCast cast = BuildCast(first, second, lady, saloon, me, now, seed);
             string kind = pr.Why.Kind;
             Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
+            if (kind == "rivals")
+                cast.Courted = Person.FirstOf(doer.CourtingName ?? done.CourtingName ?? "her");   // her name, for the rivals' words (FOURTEENHOUR item 19)
             // the trouble scenes (Scenes.Trouble.cs): each needs its setting, and the rough move a surface by the victim;
             // when one can't be played the reason falls back (a fistfight, or words) or the pair is passed over
             // (blows between two where one is sat or leaning are had out in words, the matter kept: Reasons.Settle; NIGHT4 fix 1)
@@ -500,6 +504,7 @@ namespace EnrageWestworld.InGame
             if (side && (TroubleKinds.Contains(gate) || rematch))
                 return false;
             Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);
+            _rivalsScene = pr.Why.Kind == "rivals" ? s : null;   // her choice waits on it (NotePlayedReason; FOURTEENHOUR item 19)
             if (s == null || (side && !Director.Quiet(s)))
                 return false;
             if (asSecond)
@@ -558,6 +563,8 @@ namespace EnrageWestworld.InGame
         private void NotePlayedReason(PairReason pr, Someone doer, bool asWords)
         {
             Reasons.NoteStreet(_streetKinds, pr.Why.Kind);
+            if (pr.Why.Kind == "rivals")
+                RivalsNote(pr);   // two rivals have begun: her choice when it's over (FOURTEENHOUR item 19)
             if (Reasons.WorrierRests(pr.Why.Kind))
                 NoteWorrierSaid(doer.Id, pr.Why.Kind);
             if (asWords)

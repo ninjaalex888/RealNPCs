@@ -729,6 +729,13 @@ namespace EnrageWestworld.InGame
                         skipped = "the hour, the rarity and the rests (Pacing \"lostchild\")";
                         return LostChildScene(Game.Player.Character, now, true, out lw) ? null : lw;
                     }
+                case "rivals":
+                    {
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already: " + SceneNow() + " (let it finish)";
+                        skipped = "whom they court (a made-up woman), the pair's day roll and the strongest reason near you";
+                        return RivalsFire(now);   // WestworldScript.Rivals.cs (FOURTEENHOUR item 19)
+                    }
                 case "snub":
                     {
                         if (_director.Busy && !TestMakeRoom())

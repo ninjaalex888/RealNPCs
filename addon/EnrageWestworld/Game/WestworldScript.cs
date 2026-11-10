@@ -1337,6 +1337,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST walk together: " + WalkTogetherStatus());
 			Log.Write("TEST old soldiers: " + OldSoldiersStatus());
 			Log.Write("TEST snubs: " + SnubStatus());
+			Log.Write("TEST rivals: " + RivalsStatus());
 			Log.Write("TEST vram: " + VramStatus());
 			Log.Write("TEST loads: " + Loads.Status());
 			Log.Write("TEST perform: " + PerformStatus());

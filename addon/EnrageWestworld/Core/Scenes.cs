@@ -95,6 +95,7 @@ namespace EnrageWestworld.Core
         public string[] Tempers = new string[3];            // A, B and C's temperaments (Reactions.Listener); null: none known
         public bool[] WellOff;                              // A and B dressed like money (the money argument, Core/MoneyTalk.cs); null: unknown
         public string[] Wars;                               // A's and B's war ("blue", "grey", "cuba", "islands"; Core/OldSoldiers.cs, FOURTEENHOUR item 17); null: unknown
+        public string Courted;                              // the woman two rivals both court, her first name (Core/Rivals.cs, FOURTEENHOUR item 19); null: none
         public string[] Groups;                             // A's and B's trade group (InnerLife.TradeGroup), for who hears a war story how; null: unknown
         public int MindLead;                                // a chance meeting the minds chose: whose side a cold shoulder or a loan is on (0 A, 1 B; Scenes.Minds.cs)
         public string MindWorry;                            // ... and the asker's money worry (debt, bank, savings, cards)
