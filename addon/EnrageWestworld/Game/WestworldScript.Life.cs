@@ -47,6 +47,7 @@ namespace EnrageWestworld.InGame
             ScenarioExit.Step(now, _exitBusy ?? (_exitBusy = ExitBusy), _exitAimed ?? (_exitAimed = ExitAimed));   // anyone put back after a get-up, or let go mid-get-up, looked at (Game/ScenarioExit.cs)
             LawGiveBackStep(now);   // lawmen we took for a job, handed back (WestworldScript.LawTake.cs)
             PatientStep(now);   // the doctor's patient on the way there and back (WestworldScript.Patient.cs)
+            DoorRunStep(now);   // a man running for the doctor at night (WestworldScript.DoctorsDoor.cs; reserve R4)
             ThrownOutStep(now);   // the card cheat on the boardwalk
             SabbathWatchStep(now);   // the one who saw the kneel thinks of it, a few seconds on
             SubEnd(ref _psHelpers, "scenes: helpers", sub);
@@ -156,6 +157,8 @@ namespace EnrageWestworld.InGame
                 return;   // a mother asking around for her child (WestworldScript.LostChild.cs)
             if (_interiorType == 0 && PatientScene(me, now, false, out fallWhy))
                 return;   // someone walks to the doctor for a child's fever (WestworldScript.Patient.cs)
+            if (_interiorType == 0 && DoctorsDoorScene(me, now, false, out fallWhy))
+                return;   // after dark, a man runs for the doctor (WestworldScript.DoctorsDoor.cs; reserve R4)
             if (_interiorType == 0 && SabbathScene(me, now, false, out fallWhy))
                 return;   // a Sunday morning's kneel by the church (WestworldScript.Sabbath.cs)
             if (_interiorType == 0 && BellScene(me, now, false, out fallWhy))

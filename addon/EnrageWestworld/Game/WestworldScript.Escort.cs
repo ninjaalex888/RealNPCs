@@ -25,6 +25,8 @@ namespace EnrageWestworld.InGame
             public bool Woman, Drunk, Test;
             public Vector3 Home;
             public int StartedAt, StepAt, LagSince, WaitSince, OrderedAt;
+            public float Pace = 1.0f;   // a walk; a man in a hurry for the doctor goes brisk (FOURTEENHOUR reserve R4)
+            public bool DoorRun;        // he ran for the doctor: his own words at his door, and a voice inside (WestworldScript.DoctorsDoor.cs)
         }
 
         private EscortRun _escort;
@@ -82,7 +84,7 @@ namespace EnrageWestworld.InGame
             int h = e.Ped.Handle;
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             PED.SET_PED_KEEP_TASK(h, true);
-            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, e.Home.X, e.Home.Y, e.Home.Z, 1.0f, 120000, 1.5f, 0, 0f);
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, e.Home.X, e.Home.Y, e.Home.Z, e.Pace, 120000, 1.5f, 0, 0f);
             e.Phase = "walk";
             e.OrderedAt = now;
             e.LagSince = 0;
@@ -176,8 +178,12 @@ namespace EnrageWestworld.InGame
             long g = _store.LastGameMin;
             string seed = e.Id + "|escort|" + now / 1000;
             TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 4000, 0f, 0f, 0f);
-            string line = Fondness.EscortThanks(e.Temper, e.Woman, e.Drunk, seed);
-            Feed.Say(Person.FirstOf(e.Name), line, Speech.For(h, line, me.Handle, 0, 0, true, "thanks"), h, toYou: true);
+            bool door = e.DoorRun && DoorRunAtDoor(h, seed);   // a man who ran for the doctor: his own words at his door, a voice inside (reserve R4)
+            if (!door)
+            {
+                string line = Fondness.EscortThanks(e.Temper, e.Woman, e.Drunk, seed);
+                Feed.Say(Person.FirstOf(e.Name), line, Speech.For(h, line, me.Handle, 0, 0, true, "thanks"), h, toYou: true);
+            }
             if (!e.Test && e.Id != null)
             {
                 RecordEvent("help", "player", "you", e.Id, e.Name, e.Ped.Position, me.Handle, me.Handle, h, Fondness.EscortOutcome);   // what late thanks reads (Thanks.KindOf: escort)
@@ -186,7 +192,8 @@ namespace EnrageWestworld.InGame
                     _bridge.LikeMore(ac.Id, Fondness.EscortLiking);   // enRAGE's own method for its own townsfolk
                 _engine.Escorted(e.Id, e.Name, g, true);
             }
-            _ticker.Push(Person.FirstOf(e.Name) + ", thinking", Fondness.EscortThought(e.Woman, e.Drunk, seed), "near", h);
+            if (!door)
+                _ticker.Push(Person.FirstOf(e.Name) + ", thinking", Fondness.EscortThought(e.Woman, e.Drunk, seed), "near", h);
             _escortsHome++;
             _escortLast = e.Name + " seen home";
             _fondLast = e.Name + " seen home";

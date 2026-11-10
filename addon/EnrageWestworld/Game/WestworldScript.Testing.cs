@@ -718,6 +718,11 @@ namespace EnrageWestworld.InGame
                         skipped = "the day and hour, the rarity and the rests (Pacing \"sabbath\")";
                         return SabbathScene(Game.Player.Character, now, true, out sw) ? null : sw;
                     }
+                case "doctorsdoor":
+                    {
+                        skipped = "the hour, the night's roll and the fever (the nearest named man 15-80 m from the doctor goes)";
+                        return DoctorsDoorFire(now, out said);   // WestworldScript.DoctorsDoor.cs (FOURTEENHOUR reserve R4)
+                    }
                 case "patient":
                     {
                         string pw2;
