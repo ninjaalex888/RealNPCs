@@ -71,7 +71,7 @@ namespace EnrageWestworld.InGame
                         Minds.Note(st.Mind, new MindMemory
                         {
                             Kind = "warmth", Sub = "defend", Who = new List<string> { "player" }, Names = new List<string> { you }, Town = _placeTown, At = _store.LastGameMin,
-                            How = "did", Role = "done", Feel = 3, Strength = 80, Key = "saved:" + id + ":" + _store.LastGameMin / 1440
+                            How = "did", Role = "done", Feel = 3, Strength = 80, Key = "saved:" + id + ":" + _store.LastGameMin / 1440 + ":" + SecondActs.HowKind(how)   // the how, for the thanks later (FOURTEENHOUR reserve R3)
                         }, _store.LastGameMin);
                     }
                 }

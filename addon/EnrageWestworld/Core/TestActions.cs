@@ -144,6 +144,7 @@ namespace EnrageWestworld.Core
             new Entry("oldsoldiers", "People", "Two old soldiers of either side argue the war", "TestOldSoldiersKey", needs: "two named old men within 10 m; [Scenes] OldSoldiers and [World] HistoricalAccuracy on"),
             new Entry("tale", "Tools", "A test tale: a brawl two days back", "TestTaleKey", needs: "a town, and people near you the mind knows"),
             new Entry("fetchlaw", "Street scenes", "A face into the bar, and a witness runs for the law", "TestFetchLawKey", needs: "the rough scene's two near you, a witness near them, a lawman 15-150 m off"),
+            new Entry("secondact", "People", "One you saved walks over with their thanks", "TestSecondActKey", needs: "[Scenes] FriendCalls; someone the mind knows within 20 m who can see you (a test: as if you'd saved them at an execution yesterday; nothing handed over or kept)"),
             new Entry("holdup", "Street scenes", "A holdup by the store (J: talk him down)", "TestHoldupKey", needs: "a named man carrying a sidearm and another within 16 m of him, out of doors in a town, no lawman within 50 m (no store, hour or lean needed for the test)"),
             new Entry("snatch", "Street scenes", "A purse snatched, and a man near gives chase", "TestSnatchKey", needs: "a named man and another within 16 m (the pickpocket's), and another man near her"),
             new Entry("rivals", "People", "Two men courting the same woman have it out", "TestRivalsKey", needs: "two named men within 10 m (a test: rivals for a made-up woman, no ties written)"),

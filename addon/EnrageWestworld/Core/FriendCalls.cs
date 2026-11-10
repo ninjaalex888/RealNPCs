@@ -53,9 +53,13 @@ namespace EnrageWestworld.Core
 
         /// Which of the four they come with: weighed by what there is (a warning first when there is one), seeded so the same
         /// friend on the same day comes with the same thing. Null when they have nothing at all (no gifts allowed, nothing else).
-        public static string Which(bool warning, bool news, string favour, bool gifts, string seed, bool fought = false)
+        public static string Which(bool warning, bool news, string favour, bool gifts, string seed, bool fought = false, bool saved = false)
         {
             var kinds = new List<KeyValuePair<string, int>>();
+            if (saved && !warning)
+                return SecondActs.Saved;   // one you saved, not yet thanked for it: the first visit after is the thanks (FOURTEENHOUR reserve R3)
+            if (saved)
+                kinds.Add(new KeyValuePair<string, int>(SecondActs.Saved, SecondActs.SavedWeight));   // ...unless there's a danger to warn of: then nearly always still
             if (fought)
                 kinds.Add(new KeyValuePair<string, int>(Fought, 180));   // most of the time (about 3 in 5 beside all four), the fight they stood in together comes first
             if (warning)
@@ -267,6 +271,8 @@ namespace EnrageWestworld.Core
         /// The friend's own thought as they go back to their day.
         public static string After(string kind, string seed)
         {
+            if (kind == SecondActs.Saved)
+                return SecondActs.After(seed);   // (FOURTEENHOUR reserve R3)
             return Voice.Pick(seed + "|fca|" + kind,
                 kind == Warn ? new[] { "Said my piece. What he does with it is his business.", "Hope I wasn't too late with that.", "If anything happens to him now, it won't be for want of telling." }
               : kind == News ? new[] { "He didn't know. Glad I was the one to tell him.", "Good to have somebody to tell things to.", "He took it well. Better than I did." }

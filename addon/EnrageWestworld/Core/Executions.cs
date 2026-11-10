@@ -20,6 +20,7 @@ namespace EnrageWestworld.Core
             public string Captors;    // boss (him and a hired man), hired, kin, outlaws
             public string Gang;       // the region's outlaws, for informer and witness
             public string GangKey;    // odriscolls, raiders, murfrees: the models (the game side)
+            public bool Again;        // the same men you let get away from a rescue here lately: they know you (FOURTEENHOUR reserve R3)
         }
 
         /// The plan for him: worry is his worry kind today (or null), who its other person as his thoughts name them,
@@ -120,6 +121,8 @@ namespace EnrageWestworld.Core
         // one of the men to the player, as he comes near: said to him, so it carries the reason to him
         public static string WarnYou(Plan p, string seed)
         {
+            if (p.Again)
+                return SecondActs.Again(seed);   // (reserve R3)
             switch (p.Reason)
             {
                 case "debt":

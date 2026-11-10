@@ -86,8 +86,10 @@ namespace EnrageWestworld.InGame
                     PED.IS_PED_USING_ANY_SCENARIO(h) || AimedLately(h, now))
                     continue;   // standing, not sat, leaning or at work, and not just aimed at (the review of items 5-7, as the lonely and the favours)
                 MindWho w = MindKnown(h, now);
-                if (w == null || w.Id == null || !_engine.CanRemember(w.Id) || AllyWarmth(p, w) < 2)
-                    continue;   // a friend by the friend dot's rule only
+                if (w == null || w.Id == null || !_engine.CanRemember(w.Id) || (_secondTestId != null && w.Id != _secondTestId))
+                    continue;
+                if (w.Id != _secondTestId && AllyWarmth(p, w) < 2)
+                    continue;   // a friend by the friend dot's rule only (the second acts' Testing row's one aside)
                 if (Pacing.WhyNot(_store.Pace, "friendcall", _placeTown, w.Id, g, 0, test, out skipped) != null)
                     continue;
                 Person who = w.P ?? _engine.Find(w.Id);
@@ -110,11 +112,18 @@ namespace EnrageWestworld.InGame
                     foughtMem = FriendFought(w, g, out fallen);
                 if (foughtMem == null)
                     fallen = null;
-                string kind = FriendCalls.Which(warnKind != null, news != null, favour, _cfg.FriendGifts, seed, foughtMem != null);
+                MindMemory savedMem = null;
+                if (SecondActs.On)
+                {
+                    PersonState sst = _store.Find(w.Id);
+                    savedMem = sst != null ? SecondActs.SavedMemory(sst.Mind, g, sst.Told) : null;   // one you saved, not yet thanked for it (FOURTEENHOUR reserve R3)
+                }
+                string kind = FriendCalls.Which(warnKind != null, news != null, favour, _cfg.FriendGifts, seed, foughtMem != null, savedMem != null);
                 if (kind == null)
                     continue;
                 string detail = kind == FriendCalls.Warn ? (warnKind == "law" ? "law" : warnKind == "pinkerton" ? "pinkerton" : danger != null ? "named" : "nameless")
                               : kind == FriendCalls.Gift ? FriendCalls.GiftOf(group, woman, seed)
+                              : kind == SecondActs.Saved ? (_cfg.FriendGifts ? favour ?? FriendCalls.GiftOf(group, woman, seed) : null)   // the token: a favour of their trade, else a gift
                               : kind == FriendCalls.Trade ? favour
                               : kind == FriendCalls.Fought ? (fallen != null ? "fell" : "won") : null;
                 if (detail == "rounds" && !gun)
@@ -122,7 +131,8 @@ namespace EnrageWestworld.InGame
                 if (kind == FriendCalls.Trade && detail == null)
                     continue;
                 string you = _engine.KnowsYourName(w.Id) ? YourSurname() : null;
-                string line = FriendCalls.Line(kind, detail, you, kind == FriendCalls.Fought ? fallen : danger, news, _placeTown, seed);
+                string line = kind == SecondActs.Saved ? SecondActs.Line(SecondActs.HowOf(savedMem.Key), detail, you, seed)
+                                                       : FriendCalls.Line(kind, detail, you, kind == FriendCalls.Fought ? fallen : danger, news, _placeTown, seed);
                 if (kind == FriendCalls.Warn && warnKind == "pinkerton")
                 {
                     line = Pinkertons.Warning(you, danger, seed);   // who talked, or that nobody did
@@ -143,8 +153,8 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, walkMs, 0, 51, 0);
                 _friendWalk = new FriendWalk
                 {
-                    Ped = p, Id = w.Id, Name = w.Name ?? TalkName(p), Kind = kind, Detail = detail, Line = line, After = FriendCalls.After(kind, seed), Mark = kind == FriendCalls.Fought && !test ? FriendCalls.TalkedMark(foughtMem) : null,
-                    Cents = kind == FriendCalls.Gift && detail == "coin" ? FriendCalls.CentsOf(group, seed) : 0, Until = now + walkMs, Test = test
+                    Ped = p, Id = w.Id, Name = w.Name ?? TalkName(p), Kind = kind, Detail = detail, Line = line, After = FriendCalls.After(kind, seed), Mark = kind == FriendCalls.Fought && !test ? FriendCalls.TalkedMark(foughtMem) : kind == SecondActs.Saved && !test ? SecondActs.ThankedMark(savedMem) : null,
+                    Cents = (kind == FriendCalls.Gift || kind == SecondActs.Saved) && detail == "coin" ? FriendCalls.CentsOf(group, seed) : 0, Until = now + walkMs, Test = test
                 };
                 Log.Write("FRIEND " + _friendWalk.Name + " (" + (trade ?? "someone") + ") comes over with " + FriendWhat(kind, detail, _friendWalk.Cents) + " (" + (int)metres + " m)" +
                           (test ? ", a test" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
@@ -225,6 +235,7 @@ namespace EnrageWestworld.InGame
             {
                 case FriendCalls.Warn: return detail == "law" ? "a warning: the law has been asking" : "a warning: someone in town holds a grudge";
                 case FriendCalls.News: return "the news";
+                case SecondActs.Saved: return "their thanks for saving them" + (detail != null ? " (and " + (detail == "coin" ? "$" + (cents / 100.0).ToString("0.00") : detail) + ")" : "");   // (reserve R3)
                 case FriendCalls.Fought: return detail == "fell" ? "the fight they stood in with you, and the one who fell in it" : "the fight they stood in with you";
                 case FriendCalls.Gift: return detail == "coin" ? "a gift of $" + (cents / 100.0).ToString("0.00") : detail == "rounds" ? "a gift of cartridges" : "something to eat";
                 default: return detail == "patch" ? "the doctor's favour: a look at your hurts" : detail == "rounds" ? "the gunsmith's favour: a box of rounds" : detail == "drink" ? "a drink on the house" : "something for the road";
@@ -256,13 +267,15 @@ namespace EnrageWestworld.InGame
                 if (w.Ped.Position.DistanceTo(me.Position) < 2.6f)
                 {
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 4500, 0f, 0f, 0f);
-                    bool warm = w.Kind == FriendCalls.Gift || w.Kind == FriendCalls.Trade;
+                    bool warm = w.Kind == FriendCalls.Gift || w.Kind == FriendCalls.Trade || w.Kind == SecondActs.Saved;
                     Feed.Say(w.Name, w.Line, Speech.For(h, w.Line, me.Handle, 0, 0, true, warm ? "thanks" : "mild"), h, toYou: true);
                     string given = w.Test ? null : FriendGive(me, w);
                     w.SaidAt = now;
                     if (w.Id != null)
                         _youNodAt[w.Id] = now;   // came over to you: no passing hat-tip straight after (ToYou's rest)
                     _friendCalls++;
+                    if (w.Kind == SecondActs.Saved)
+                        SecondActThanked(w.Name, w.Line);   // (FOURTEENHOUR reserve R3)
                     int c;
                     _friendKinds.TryGetValue(w.Kind, out c);
                     _friendKinds[w.Kind] = c + 1;
@@ -306,7 +319,7 @@ namespace EnrageWestworld.InGame
                 return null;
             int you = me.Handle;
             string said = null;
-            if (w.Kind == FriendCalls.Gift && w.Detail == "coin" && w.Cents > 0)
+            if ((w.Kind == FriendCalls.Gift || w.Kind == SecondActs.Saved) && w.Detail == "coin" && w.Cents > 0)
             {
                 MONEY._MONEY_INCREMENT_CASH_BALANCE(w.Cents, 0);
                 _friendGivenCents += w.Cents;

@@ -116,6 +116,7 @@ namespace EnrageWestworld.Core
                 case "deed:robbery": case "deed:theft": case "deed:looting": return "robbed him";
                 case "deed:horsetheft": return "took his horse";
                 case "tryst": return "took my wife off somewhere quiet";   // a husband who found out (Core/Engine.Trysts.cs; item 15)
+                case SecondActs.Watched: return "sat your horse and watched them shoot him";   // an execution you found and never stepped into (FOURTEENHOUR reserve R3)
                 default: return "wronged him";
             }
         }
@@ -130,6 +131,8 @@ namespace EnrageWestworld.Core
             string who = "I'm " + first + "'s " + (k.Relation ?? "kin") + ".";
             string wrong = "You " + (k.WrongWord ?? "wronged him") + " the other week.";
             string close;
+            if (k.Wrong == SecondActs.Watched)
+                return open + " " + who + " " + wrong + " " + SecondActs.WatchedClose(k.Temper, seed);   // he's dead: no 'do it again' (reserve R3)
             switch (k.Temper)
             {
                 case "Hothead":
@@ -158,6 +161,8 @@ namespace EnrageWestworld.Core
         public static string Thought(KinGrudge k, string seed)
         {
             string first = Person.FirstOf(k.VictimName ?? "him");
+            if (k.Wrong == SecondActs.Watched)
+                return SecondActs.WatchedThought(first, seed);   // (reserve R3)
             return Voice.Pick(seed + "|t", "Said it. Said it to his face. Now I can go home to " + first + ".", "That's the man. Smaller than I'd pictured. They always are.", "He looked at me like I was weather. Well. He heard it.", "Came a long way for one sentence. It was the right sentence.");
         }
 

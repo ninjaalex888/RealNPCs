@@ -679,6 +679,9 @@ namespace EnrageWestworld.InGame
                 case "wager":
                     skipped = "the fight's reason and rests, and each onlooker's roll to bet (everyone the mind knows near bets, for two minutes)";
                     return WagerTest(now, seed, out said);   // WestworldScript.Wagers.cs (FIVEDAY item 1)
+                case "secondact":
+                    skipped = "the saving itself (a test memory: the rope, yesterday), the friend rule, the look's wait, the roll and the pace; nothing handed over or kept";
+                    return SecondActTest(now);   // WestworldScript.SecondActs.cs (FOURTEENHOUR reserve R3)
                 case "friendcall":
                     skipped = "the look's wait, the storyteller, the roll and the pace (a friend once in two days); nothing handed over";
                     return FriendCallTest(now);   // WestworldScript.FriendCalls.cs (Run 3, item 7)

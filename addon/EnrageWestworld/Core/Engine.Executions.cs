@@ -19,7 +19,75 @@ namespace EnrageWestworld.Core
             string worry = InnerLife.WorryNow(p, day, out kind, out stage, out good) ? kind : null;
             string who = worry == "debt" || worry == "feud" ? InnerLife.WorryFill(p, day, "{who}") : null;
             WorryLink link = worry != null ? Store.Links.LastOrDefault(l => l.Id == r.Id && l.Kind == worry) : null;
-            return Executions.For(worry, who, link != null ? link.OtherId : null, region, seed);
+            Executions.Plan plan = Executions.For(worry, who, link != null ? link.OtherId : null, region, seed);
+            int was;
+            if (SecondActs.On && plan.Gang != null && region != null && Store.Counts.TryGetValue(AtLargeKey(region), out was) && day - was <= SecondActs.AgainDays)
+            {
+                plan.Again = true;   // the outlaws you let get away here lately: the same men, and they know you (FOURTEENHOUR reserve R3)
+                Store.Counts.Remove(AtLargeKey(region));
+                _secondAgain++;
+            }
+            return plan;
+        }
+
+        private int _secondWatched, _secondAtLarge, _secondAgain;
+
+        private static string AtLargeKey(string region) { return "atlarge|" + region; }
+
+        /// You saved their man and some of them rode off alive (FOURTEENHOUR reserve R3): the region hears of them two to four days
+        /// on, and, outlaws, the next of their executions here within two weeks is the same men.
+        public void CaptorsAtLarge(Executions.Plan plan, string region, long now)
+        {
+            if (!SecondActs.On || plan == null || region == null)
+                return;
+            if (plan.Gang != null)
+                Store.Counts[AtLargeKey(region)] = (int)(now / 1440);
+            string seed = region + "|" + now;
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(region), At = now, Text = SecondActs.AtLargeNews(plan.Gang ?? (plan.Boss != null ? plan.Boss + "'s men" : null), region, seed),
+                                 DueAt = SecondActs.AtLargeNewsDue(now, seed) });
+            _secondAtLarge++;
+            Log("SECOND ACT the men got away from a rescue near " + region + " (" + (plan.Gang ?? plan.Boss ?? "two men") + "): the news in a few days" + (plan.Gang != null ? ", and they'll know you next time" : ""));
+        }
+
+        /// They shot him with you there, and you never stepped in (FOURTEENHOUR reserve R3): a man of his family comes to his town five
+        /// to nine days on and says it to your face (the kin grudges' walk-up; once for each man).
+        public void KinWatched(Resident r, string town, long now)
+        {
+            if (Cfg == null || !Cfg.KinGrudges || !SecondActs.On || r == null)
+                return;
+            Person p = PersonOfResident(r);
+            PersonState st = Store.Get(p);
+            if (st == null || st.Has(SecondActs.WatchedMark))
+                return;
+            if (st.Family == null)
+                st.Family = Family.For(p);
+            Relative rel = KinGrudges.Takes(st.Family);
+            st.Mark(SecondActs.WatchedMark);
+            if (rel == null)
+            {
+                Log("SECOND ACT nobody among " + p.Name + "'s kin to come about it");
+                return;
+            }
+            string where = p.Home ?? town;
+            if (where == null)
+                return;
+            KinGrudge k = new KinGrudge
+            {
+                Id = Ids.New(), VictimId = p.Id, VictimName = p.Name, VictimTown = where, Wrong = SecondActs.Watched, WrongWord = KinGrudges.WrongWord(SecondActs.Watched), At = now,
+                DueAt = KinGrudges.Due(now, p.Id + "|w|" + rel.Name), Name = rel.Name, Relation = rel.Relation, Town = rel.Town, Temper = KinGrudges.TemperOf(rel.Name)
+            };
+            if (Store.KinGrudges == null)
+                Store.KinGrudges = new List<KinGrudge>();
+            Store.KinGrudges.Add(k);
+            _kinMade++;
+            _secondWatched++;
+            Log("SECOND ACT " + rel.Name + " (" + Person.FirstOf(p.Name) + "'s " + rel.Relation + ") will come to " + where + " in " + (k.DueAt - now) / 1440 + " days: you watched them shoot him");
+        }
+
+        /// F7's engine part: the kin coming for a man you watched die, the men at large, and those met again.
+        public string SecondActsStatus()
+        {
+            return _secondWatched + " kin coming for a man you watched die, " + _secondAtLarge + " times the men got away, " + _secondAgain + " times met again";
         }
 
         /// He met the player over it: they've met, whatever happens next (the corner speaks only of people he's met).

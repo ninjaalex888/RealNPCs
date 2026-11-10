@@ -37,6 +37,7 @@ namespace EnrageWestworld.InGame
             public int SpotRetryAt;
             public string Twist = Executions.TwistNone;
             public bool TwistDone, RunnerSent, KinDue, KinSaid, LetGo;
+            public bool SteppedIn;   // you stepped in (the fight): a man you tried for isn't one you watched die (FOURTEENHOUR reserve R3)
             public Ped Runner, Kin;
             public uint RunnerModel, KinModel;
             public int KinAt, NextMutter;
@@ -344,6 +345,7 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_COMBAT_PED(m.Handle, me.Handle, 0, 16);
                 }
                 e.Phase = "fight";
+                e.SteppedIn = true;
                 e.PhaseUntil = now + 180000;
                 Log.Write("EXECUTION " + e.R.Name + ": you stepped in; " + men.Count + " men fight you");
                 return;
@@ -498,6 +500,8 @@ namespace EnrageWestworld.InGame
             int ch = e.Captive.Handle;
             LedgerNote(ch, e.R.Id, e.R.Name, "resident", "a revolver", "another");
             _engine.Executed(e.R, e.Plan, e.Town, Bridge.Now());
+            if (e.Noticed && !e.SteppedIn && !e.Test)
+                Safe("second acts", () => _engine.KinWatched(e.R, e.Town ?? e.Region, Bridge.Now()));   // you found them and never stepped in: his kin will say so (reserve R3)
             if (e.Mark != null && e.Mark.Exists())
                 e.Mark.Delete();
             if (e.KinDue)
@@ -790,6 +794,8 @@ namespace EnrageWestworld.InGame
             {
                 // the outcome says how it ended for him, so the mind can take it as a killing seen or, for him, a rescue (night 2026-10-28)
                 string outcome = e.Captive.IsDead ? "he died; " + why : e.LetGo ? "let go; " + why : e.Phase == "saved" || e.Phase == "leaving" ? "saved; " + why : why;   // let go: nothing of that was yours
+                if (!e.Captive.IsDead && !e.LetGo && (e.Phase == "saved" || e.Phase == "leaving") && !e.Test && e.Men.Any(m => m != null && m.Exists() && !m.IsDead))
+                    Safe("second acts", () => _engine.CaptorsAtLarge(e.Plan, e.Region ?? e.Town, Bridge.Now()));   // you saved him, and some of them rode off: heard of again (reserve R3)
                 Safe("world events", () => RecordEvent("encounter:execution", e.BossR != null ? e.BossR.Id : null, e.Plan != null ? e.Plan.Boss ?? "two men" : "two men", e.R.Id, e.R.Name,
                                                        e.Captive.Position, e.Captive.Handle, e.Captive.Handle, 0, outcome));
             }

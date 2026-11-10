@@ -821,6 +821,8 @@ namespace EnrageWestworld.InGame
                     {
                         if (w.R != null)
                             _engine.HelpedUp(_engine.PersonOfResident(w.R), true, Bridge.Now());   // what you did for them on an empty road: fonder of you, and they remember it
+                        if (SecondActs.On && w.R != null && w.K.NewsIfHelped && w.Cast.Length > 0 && w.Cast[0] != null && w.Cast[0].Exists())
+                            SavedByYou(w.Cast[0].Handle, w.R.Id, w.R.Name, "helped on the road");   // hurt, bitten or stranded and a town's own: saved, so a second act in their town (reserve R3)
                         Ped by = c.By >= 0 && c.By < w.Cast.Length ? w.Cast[c.By] : null;
                         if (by != null && by.Exists() && !by.IsDead && w.K.WalkMetres <= 0f)
                         {
