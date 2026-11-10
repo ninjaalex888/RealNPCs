@@ -170,6 +170,8 @@ namespace EnrageWestworld.InGame
                 return null;
             long g = Bridge.Now();
             s.Taken = _engine.SpokenFor(s.Id);
+            if (Opinions.Act)
+                s.Views = ViewsHeldBy(s.Id);   // what they think of others they know, for the talk behind backs (FOURTEENHOUR item 23)
             if (Rivals.On && !s.Woman)
                 s.Courting = CourtingFor(s.Id, out s.CourtingName);   // whom he's courting, for two men after the same woman (FOURTEENHOUR item 19)
             bool bent = _cfg.CriminalClass && Criminals.Bent(_store.Ties, s.Id, g);   // the criminal class (item 16): a theft this month, and they keep to it
@@ -470,6 +472,8 @@ namespace EnrageWestworld.InGame
             SceneCast cast = BuildCast(first, second, lady, saloon, me, now, seed);
             string kind = pr.Why.Kind;
             Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
+            if (kind == "talkof")
+                cast.TalkOf = TalkOfCast(doer, done);   // whom he talks of, and what each thinks of him (FOURTEENHOUR item 23)
             if (kind == "rivals")
                 cast.Courted = Person.FirstOf(doer.CourtingName ?? done.CourtingName ?? "her");   // her name, for the rivals' words (FOURTEENHOUR item 19)
             // the trouble scenes (Scenes.Trouble.cs): each needs its setting, and the rough move a surface by the victim;

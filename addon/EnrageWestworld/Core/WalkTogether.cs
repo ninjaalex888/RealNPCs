@@ -40,11 +40,12 @@ namespace EnrageWestworld.Core
         }
 
         /// Whether these two go on together: friends (warmth 2 or more) a little over half the time, a couple more often. Seeded.
-        public static bool Goes(int warmth, bool couple, string seed)
+        /// `respect`: one of them looks up to the other (Opinions, FOURTEENHOUR item 23): a little likelier.
+        public static bool Goes(int warmth, bool couple, string seed, bool respect = false)
         {
             if (!On || (warmth < LeastWarmth && !couple))
                 return false;
-            return Voice.Chance(seed + "|walk", couple ? CouplePercent : FriendPercent);
+            return Voice.Chance(seed + "|walk", (couple ? CouplePercent : FriendPercent) + (respect ? Opinions.RespectWalkPercent : 0));
         }
 
         /// The one in front's thought as they set off.

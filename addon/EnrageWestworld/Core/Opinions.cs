@@ -51,6 +51,83 @@ namespace EnrageWestworld.Core
             return pool[System.Math.Abs(Voice.Hash(seed + "|op") % pool.Length)].Replace("{who}", otherFirstName);
         }
 
+        // ---- opinions that act (FOURTEENHOUR item 23; [Mind] OpinionsAct). Until now a view was a thought and nothing more. Now it
+        // decides things: fear keeps a man clear of the one he fears (the avoid reason) and out of any brawl he's in; contempt for one
+        // fighter pulls an onlooker against him (BrawlSides' pull); respect draws two to walk on together (WalkTogether), contempt and
+        // fear never; and what a man says of someone not there is his view of him, in words fit to pass on (the envious pass on the
+        // worst), and his friend answers by his own. Why it reads true: an attitude is a readiness to act (Allport, 1935), and what
+        // people think of each other shows first in whom they stand beside and what they say behind each other's backs.
+
+        public static bool Act = true;   // [Mind] OpinionsAct, from the settings
+        public const float ContemptPull = 0.10f;
+        public const int TalkOfPercent = 40, TalkOfStrength = 38, RespectWalkPercent = 15;
+
+        /// A view one holds of someone else, for the talk of him behind his back (the game side fills Someone.Views).
+        public sealed class Held
+        {
+            public string Id, Name, View;
+            public bool Woman;
+        }
+
+        /// How strongly a view wants passing on: contempt and envy most (the envious pass on the worst), respect least.
+        public static int Weight(string view)
+        {
+            return view == "contempt" ? 4 : view == "envy" ? 3 : view == "fear" ? 2 : view == "respect" ? 1 : 0;
+        }
+
+        private static readonly Dictionary<string, string[]> Behind = new Dictionary<string, string[]>
+        {
+            { "contempt", new[] { "{who}'s at the bottle again, and not even noon.", "You know {who}? Thinks nobody sees what {he} gets up to. Everybody sees.", "{who}? I'd not cross the street to help {him}." } },
+            { "envy", new[] { "Seen {who}'s new coat? Some of us work for ours.", "{who} never went hungry a day. It shows.", "What did {who} ever do to have all that?" } },
+            { "fear", new[] { "Keep clear of {who}, if you've sense.", "Don't cross {who}. I did, once.", "If {who} comes in, I'm out the back." } },
+            { "respect", new[] { "{who}'s a man of {his} word. There's few enough.", "When {who} speaks, I listen.", "{who} has never once done me wrong." } },
+        };
+
+        static string Fill(string line, string name, bool woman)
+        {
+            return line.Replace("{who}", name).Replace("{he}", woman ? "she" : "he").Replace("{him}", woman ? "her" : "him").Replace("{his}", woman ? "her" : "his")
+                       .Replace("a man of her word", "a woman of her word");
+        }
+
+        /// What he says of someone not there, to a friend: his view, in words fit to pass on.
+        public static string TalkOf(string view, string name, bool woman, string seed)
+        {
+            string[] pool;
+            if (view == null || name == null || !Behind.TryGetValue(view, out pool))
+                return null;
+            return Fill(pool[(Voice.Hash(seed + "|talkof") & 0x7fffffff) % pool.Length], name, woman);
+        }
+
+        /// The friend's answer, by his own view of the one talked of: agrees, takes the other part, or doesn't know him.
+        public static string AnswerOf(string told, string own, string name, string seed)
+        {
+            bool warmTold = told == "respect", warmOwn = own == "respect";
+            if (own == null)
+                return Voice.Pick(seed + "|ans0", "I wouldn't know.", "Is that so?", "Hm. I'll bear it in mind.");
+            if (own == told || (!warmTold && !warmOwn))
+                return Voice.Pick(seed + "|ans1", "You're not wrong.", "I've said as much myself.", "Ain't that so.");
+            return Voice.Pick(seed + "|ans2", "That's not the " + name + " I know.", "You've got " + name + " wrong.", "Funny. " + name + "'s always been square with me.");
+        }
+
+        /// A tells B what he thinks of someone (c.TalkOf: his name, A's view, B's view or null, "w" for a woman).
+        public static Scene TalkScene(SceneCast c, string seed)
+        {
+            string a = Scenes.N(c, 0, seed), b = Scenes.N(c, 1, seed);
+            string z = c.TalkOf != null && c.TalkOf.Length > 1 ? c.TalkOf[0] : null, va = z != null ? c.TalkOf[1] : null;
+            string vb = c.TalkOf != null && c.TalkOf.Length > 2 ? c.TalkOf[2] : null;
+            bool woman = c.TalkOf != null && c.TalkOf.Length > 3 && c.TalkOf[3] == "w";
+            Scene s = new Scene { Kind = "gossip", Summary = z != null ? a + " told " + b + " what they think of " + z : "two who know each other talked" };
+            string said = TalkOf(va, z, woman, seed);
+            if (said == null)
+            {
+                s.Add(0, Voice.Pick(seed + "|plain", "Keeping well?", "Weather holding, at least."), "mild", "face").Add(1, Voice.Pick(seed + "|plain2", "Can't complain.", "It is."), "mild");
+                return s;
+            }
+            s.Add(0, said, va == "respect" ? "mild" : va == "fear" ? "scared" : "mock", "face")
+             .Add(1, AnswerOf(va, vb, z, seed), vb == null ? "mild" : vb == va ? "yes" : "no");
+            return s;
+        }
+
         public static IEnumerable<string> Views()
         {
             return Lines.Keys;

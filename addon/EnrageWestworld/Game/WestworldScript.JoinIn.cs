@@ -379,7 +379,13 @@ namespace EnrageWestworld.InGame
             SideTie own = BrawlSides.Tie(o, f, x, _placeTown);
             Scene sc = _director.CurrentScene;   // (QuarrelTie minds the switches: 1899's quarrels, the old soldiers' war)
             SideTie quarrel = sc != null ? BrawlSides.QuarrelTie(sc.Over, o, f, x) : null;   // a fight over silver: his side of it (item 9)
-            return own == null ? quarrel : quarrel == null || own.Pull >= quarrel.Pull ? own : quarrel;
+            SideTie best = own == null ? quarrel : quarrel == null || own.Pull >= quarrel.Pull ? own : quarrel;
+            if (Opinions.Act && other != null && ViewOfIds(on, other) == "contempt" && (best == null || best.Pull < Opinions.ContemptPull))
+            {
+                _opScorn++;
+                return new SideTie { Pull = Opinions.ContemptPull, Why = "against a man he despises" };   // (FOURTEENHOUR item 23)
+            }
+            return best;
         }
         private const int BrawlOpeningMs = 10000;
 
@@ -593,6 +599,12 @@ namespace EnrageWestworld.InGame
                 }
                 if (sideTie != null)
                     SideNote(w);
+                if (Opinions.Act && FearsOneOf(w.Id, a, b, now))
+                {
+                    _opFearHeld++;
+                    Log.Detail("BRAWL " + w.Name + " stays out: afraid of one of them");   // (FOURTEENHOUR item 23)
+                    continue;
+                }
                 Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
                 JoinTake take = JoinIn.Weigh(w.Id, t, !PED.IS_PED_MALE(p.Handle), InHisCups(p, w.P), sides, LadderWarmth, witnesses, law, saloon,
                                              _cfg.WomenInFights, _director.JoinerCount + _joinPending.Count, fight + "|" + w.Id, most, BrawlsOn, sure, lawHold, sideTie, BrawlsOn && _cfg.BrawlCascade, lawSeen);

@@ -49,7 +49,8 @@ namespace EnrageWestworld.Core
                 case "oldsoldiers": return "gets to talking with " + o + " about the war";   // (FOURTEENHOUR item 17)
                 case "warstory": return "tells " + o + " of his war";
                 case "snub": return "has a word for " + o + ", the gentleman";   // (FOURTEENHOUR item 18)
-                case "rivals": return "squares up to " + o + " over the woman they both court";   // (item 19)   // (FOURTEENHOUR item 16)
+                case "rivals": return "squares up to " + o + " over the woman they both court";   // (item 19)
+                case "talkof": return "tells " + o + " what they think of someone";   // (item 23)   // (FOURTEENHOUR item 16)
                 default:
                     return k.StartsWith("x:", System.StringComparison.Ordinal) ? "goes to see " + o + " about what's between them" : "goes over to " + o;
             }

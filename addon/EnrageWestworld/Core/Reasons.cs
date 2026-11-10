@@ -34,6 +34,7 @@ namespace EnrageWestworld.Core
         public bool Bent;         // of the criminal class: a theft to their name this month (Core/Criminals.cs; SIXDAY item 16), set by the game side
         public string Broke;      // a breakdown's habit this week (Core/StressLoad.cs; FIVEDAY item 17): "temper" snaps as if strained twice over
         public bool Greenhorn;    // off the train in the last two weeks (a resident's NewAt; FOURTEENHOUR item 16), set by the game side
+        public List<Opinions.Held> Views;   // what they think of others they know (Core/Opinions.cs; FOURTEENHOUR item 23), set by the game side; null: none
         public string Courting, CourtingName;   // the woman he's courting, and her name (Core/Rivals.cs; FOURTEENHOUR item 19), set by the game side
         public string War;        // the war he was in: "blue", "grey", "cuba", "islands" (Core/OldSoldiers.cs; FOURTEENHOUR item 17), set by the game side
         public string Shamed;     // slighted, had words or beaten in the last four hours and not answered it ("slighted", "had words", "beaten"), else null (NIGHT3: displaced aggression)
@@ -142,7 +143,11 @@ namespace EnrageWestworld.Core
                 if (tie.Warmth < 0 && (tie.Kind == "rough" || tie.Kind == "pickpocket" || tie.Kind == "avoid") && tie.Doer != null)
                 {
                     Someone victim = tie.Doer == a.Id ? b : tie.Doer == b.Id ? a : null;
-                    if (victim != null && Exchanges.Manner(victim, false) == "kind")
+                    Someone doer = victim == a ? b : a;
+                    // fear keeps him clear too (item 23), but never a proud man or a hothead: he has it out, whatever he feels
+                    bool afraid = victim != null && Opinions.Act && victim.Temper != "Proud" && victim.Temper != "Hothead" &&
+                                  Opinions.View(tie, victim.Id, victim.Temper, victim.WellOff, doer.WellOff, doer.Drunk) == "fear";
+                    if (victim != null && (Exchanges.Manner(victim, false) == "kind" || afraid))
                         return new Reason { Kind = "avoid", Strength = 50, BFirst = tie.Doer == b.Id,
                                             Why = victim.Name + " keeps clear of " + (victim == a ? b.Name : a.Name) + " since that business" };
                 }
@@ -190,6 +195,11 @@ namespace EnrageWestworld.Core
                 Reason timesTie = tie.Warmth >= 0 ? TimesReason(a, b, gameDay, where) : null;
                 if (timesTie != null)
                     return timesTie;   // people who know each other talk over the times too, before the plain catching up (Run 3, item 2)
+                // a friend tells a friend what he thinks of someone not there (FOURTEENHOUR item 23): the town's talk of its own, bent
+                // by the teller's view
+                Reason behind = tie.Warmth > 0 && Opinions.Act ? (TalkOf(a, b, gameDay, false) ?? TalkOf(b, a, gameDay, true)) : null;
+                if (behind != null)
+                    return behind;
                 if (tie.Warmth > 0)
                     return new Reason { Kind = where.MindTalks ? "mindtalk" : "smalltalk", Strength = 35, Why = "they're on good terms" + (where.MindTalks ? ", and " + a.Name + " has something on their mind" : "") };
                 return new Reason { Kind = where.MindTalks ? "mindtalk" : where.Rumours ? "gossip" : "smalltalk", Strength = 30, Why = "they know each other" };
@@ -201,6 +211,26 @@ namespace EnrageWestworld.Core
                 return ba;
             }
             return ab;
+        }
+
+        /// x tells y what he thinks of someone else he knows (his strongest view to pass on), on some pair-days; null for none.
+        public static Opinions.Held TalkOfWhom(Someone x, Someone y)
+        {
+            if (x == null || y == null || x.Views == null)
+                return null;
+            Opinions.Held best = null;
+            foreach (Opinions.Held h in x.Views)
+                if (h.Id != y.Id && h.Id != x.Id && (best == null || Opinions.Weight(h.View) > Opinions.Weight(best.View)))
+                    best = h;
+            return best;
+        }
+
+        private static Reason TalkOf(Someone x, Someone y, long gameDay, bool bFirst)
+        {
+            Opinions.Held z = TalkOfWhom(x, y);
+            if (z == null || !Voice.Chance(PairKey(x, y) + gameDay + "talkof", Opinions.TalkOfPercent))
+                return null;
+            return new Reason { Kind = "talkof", Strength = Opinions.TalkOfStrength, BFirst = bFirst, Why = x.Name + " tells " + y.Name + " what they think of " + z.Name + " (" + z.View + ")" };
         }
 
         /// What weighs on someone at once (Own's strain): a worry at its worst or gone wrong today, a slight or a beating

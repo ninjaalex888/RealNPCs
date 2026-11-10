@@ -56,9 +56,18 @@ namespace EnrageWestworld.InGame
                 return;
             bool couple = _store.Links.Any(l => l.Kind == "courting" && ((Links.IsOf(l, wa.Id) && Links.IsOtherOf(l, wb.Id)) || (Links.IsOf(l, wb.Id) && Links.IsOtherOf(l, wa.Id))));
             int warmth = LadderWarmth(wa.Id, wb.Id);
+            string va = Opinions.Act ? ViewOfIds(wa.Id, wb.Id) : null, vb = Opinions.Act ? ViewOfIds(wb.Id, wa.Id) : null;
+            if (va == "contempt" || vb == "contempt" || va == "fear" || vb == "fear")
+            {
+                _opNoWalk++;
+                return;   // never beside one they despise or fear (FOURTEENHOUR item 23)
+            }
             string seed = pairKey + "|" + day;
-            if (!WalkTogether.Goes(warmth, couple, seed))
+            bool respect = va == "respect" || vb == "respect";
+            if (!WalkTogether.Goes(warmth, couple, seed, respect))
                 return;
+            if (respect)
+                _opRespectWalks++;
             bool bothMen = PED.IS_PED_MALE(a.Handle) && PED.IS_PED_MALE(b.Handle);
             Vector3 door;
             bool saloon = _saloonDoor.TryGetValue(_placeTown, out door);
