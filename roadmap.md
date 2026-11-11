@@ -436,12 +436,12 @@ The richest seam is already in the code: every resident lives through a week-lon
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **Pay the debt** | Pay Whitlow the eleven dollars for Elwood and the arc ends well; both remember, and the town hears a stranger paid. Or buy the debt and collect it yourself. | Links (debt), worry arcs, Deeds | M | Partly built (Talk's settle row pays a told debt; SIXDAY item 9: Helps; buying the debt not built; Talk frozen) |
+| **Pay the debt** | Pay Whitlow the eleven dollars for Elwood and the arc ends well; both remember, and the town hears a stranger paid. Or buy the debt and collect it yourself. | Links (debt), worry arcs, Deeds | M | Built (Talk: cover the debt while the creditor stands over him, `Engine.DebtCovered`, or the settle row for a told debt; both settle the worry. Buying the debt to collect it yourself not built: Talk frozen) |
 | **Fetch the doctor** | Ride the doctor out to the feverish child, or pay his two dollars, and the ending you saw coming changes. | Worries (fever), Posts (doctor) | M |  |
 | **Settle the feud** | Stand between the neighbours at the fence: make peace, take a side, or pay for the post. | Links (feud), Exchanges, Ties | M | Partly built (depth item 7: J to step between two about to quarrel, put off, and made up the second time; not taking a side or paying for the post) |
 | **Carry the note** | For the nervous courter, carry a note, put in a word, or tell him the truth he doesn't want to hear. | Links (courting), Romance | M |  |
 | **Find the letter** | The letter that never came is sitting in another town's post office. Fetch it and watch them read it. | Worries (letter), Letters | S | Partly built (Talk's mend: a dollar for the telegraph, its mirror "I'd not wait"; fetching it from another town not built; Talk frozen) |
-| **One more, or none** | The man at the worst of the drink: buy him one more, or take the bottle and walk him home. | Worries (drink), saloon | S | Partly built (Talk's mend: coffee, not whiskey, in a saloon; its mirror another whiskey; walking him home not built; Talk frozen) |
+| **One more, or none** | The man at the worst of the drink: buy him one more, or take the bottle and walk him home. | Worries (drink), saloon | S | Built (Talk's mend: coffee, not whiskey, its mirror another whiskey; and J's walk home now mends it: `[Scenes] WalkHomeMends`, SEAMS item 15) |
 | **The bad tooth** | Take him to the Saint Denis dentist, or pull it yourself in the street with pliers while a crowd winces. | Worries (tooth), Crowd | S |  |
 | **Make it worse** | Every fix has a dark mirror: collect a debt for a cut, fan a feud, steal savings meant for a ticket west. The rumours and letters follow. | Worries, Deeds, Letters | M |  |
 
@@ -615,6 +615,9 @@ Joining systems that already ran but never read each other. All on runners seen 
 | Mourns one you killed, on the card | "Mourns one you killed" under the name of someone grieving a friend you shot, a week | Built (`[Display] NameCardsMourns`) |
 | The debt in the fight's menu | "Stand with Abe (he stood by you)" / "(he owes you)" on J in a fistfight | Built (`[Scenes] StandReminds`) |
 | A friend knows your thief | A friend's warning says the pickpocket near is the one who got away with yours | Built (`[Scenes] FriendsKnowYourThief`) |
+| Seen home from the drink | Walk a man in drink home and, when the drink is his trouble, his worry ends well | Built (`[Scenes] WalkHomeMends`) |
+| A quarrel stopped is known | Step between two about to quarrel and both let it be: the town hears of it | Built (`[Scenes] StepBetweenKnown`) |
+| Someone you save is known | A bully pulled off, a beater put down, the hogtied cut loose: a good deed told about, maybe in the paper | Built (`[Scenes] SavedKnown`) |
 | Who did what, in memory | A street help, a beggar's ask, a brush-off, a cards loan, a snub: each remembered from the right side | Fixed (Scene.MindDoer, Minds.MemorySwap; a cards loan its own words) |
 | The thoughts after a bet, old soldiers' talk, alms watched | Their own words at last, where courting lines had stood in | Fixed (three bug fixes; a sweep test guards every warm kind) |
 | Kin of the saved | One time in two, a kinsman of someone you saved finds you days on and thanks you, as kin come over a wrong | Built (`[Scenes] KinThanks`) |
