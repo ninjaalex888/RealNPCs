@@ -542,7 +542,7 @@ streets with more between people. "14h N" is the fourteen-hour plan's item (R: i
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
 | **Friends walk together** | Two friends walk to the saloon side by side after work, talking; a courting couple walks out on a Sunday; a man walks his drunk friend home. | the ring's walking (14h 15) | M | Built (14h item 15) |
-| **The newcomer tested** | Two regulars rib the greenhorn off the train. He laughs, fights or gets help, and is one of the town after. | NewFaces, StandUp (14h 16) | M | Built (14h item 16) |
+| **The newcomer tested** | Two regulars rib the greenhorn off the train. He laughs, fights or gets help, and is one of the town after. | NewFaces, StandUp (14h 16) | M | Built (14h item 16; depth reserve R5: two old hands talk him over where he can hear, and he answers dry, bristles or goes) |
 | **The old soldiers** | Two old men from opposite sides argue the war over a bottle: a toast to the dead, or blows, and the young men take sides. | OldDays, Times (14h 17) | S | Built (14h item 17) |
 | **The well-off and the working man** | A well-dressed couple brushes off a working man; he answers back; the husband's pride, the wife's word. | the brush-off, Opinions, AlmanacSides (14h 18) | S | Built (14h item 18) |
 | **Rivals for one woman** | Two men courting the same woman meet at her gate; their friends join the fight; she may pick the one who walked away. | the courting links, jealous (14h 19) | M | Built (14h item 19) |

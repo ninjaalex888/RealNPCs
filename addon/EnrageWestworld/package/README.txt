@@ -84,6 +84,8 @@ New in the towns and on the roads:
   SpreadRumour); it grows as it goes round, and he hears of it.
 - After a theft from someone you know, J at the jail door puts up five dollars for the thief
   ([Scenes] PostReward); the town brings him in, makes a false claim, or lets it lapse.
+- Two old hands talk over a newcomer off the train where he can hear ([Scenes] Grumble); he
+  answers them, bristles, or goes.
 - Three whistles at Annesburg, the shape-up on the Saint Denis docks, sale day at Valentine, fence cutters.
 - Witnesses who choose what to do, Pinkertons asking after you, a posse that rides out.
 - Drummers, the slate at the store, a sheriff's sale, camp meetings, river baptisms, box socials,

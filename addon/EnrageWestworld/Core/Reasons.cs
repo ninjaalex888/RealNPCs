@@ -442,6 +442,9 @@ namespace EnrageWestworld.Core
             Reason green = Greenhorn.For(x, y, gameDay, where.Saloon, where.Night);   // a regular ribs the greenhorn (FOURTEENHOUR item 16)
             if (green != null)
                 all.Add(green);
+            Reason grumble = Grumble.For(x, y, gameDay);   // an old hand grumbles about the greenhorn to a friend, where he can hear (DEPTH reserve R5)
+            if (grumble != null)
+                all.Add(grumble);
             Reason limp = LimpTale.For(x, y, null, gameDay, where.Saloon);   // (strangers: Own is only asked with no tie between them) the man you beat tells a stranger how he came by it (DEPTH item 13)
             if (limp != null)
                 all.Add(limp);

@@ -202,6 +202,7 @@ namespace EnrageWestworld.Core
                 case "shake": return Rematch.ShakeScene(c, seed);     // his hand offered, taken or refused
                 case "temperance": return Temperance.Make(c, seed);   // the pledge put to a drinker (Core/Temperance.cs)
                 case FeudArcs.Kind: { bool taken; return FeudArcs.Make(c, c.Tempers != null ? c.Tempers[1] : null, seed, out taken); }   // his hand before the street (Core/FeudArcs.cs; DEPTH item 18)
+                case Grumble.Kind: return Grumble.Make(c, seed);   // old hands grumble at the newcomer (Core/Grumble.cs; DEPTH reserve R5)
                 case LimpTale.Kind: return LimpTale.Make(c, c.MarkedDays, seed);   // how he got the limp (Core/LimpTale.cs; DEPTH item 13)
                 case FeverKin.AvoidKind: return FeverKin.Avoid(c, seed);   // the house of the sick kept clear of (Core/FeverKin.cs; DEPTH item 12)
                 case FeverKin.AskKind: return FeverKin.AskAfter(c, seed);   // ...or asked after

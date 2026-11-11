@@ -492,6 +492,11 @@ namespace EnrageWestworld.InGame
                 lady = LimpFriendNear(pr.Why.BFirst ? pr.B.Who : pr.A.Who, first, second, now);   // a friend of his beside him, to set it straight or back him (DEPTH item 13)
                 limpFriend = lady != null;
             }
+            if (pr.Why.Kind == Grumble.Kind)
+            {
+                lady = LimpFriendNear(pr.Why.BFirst ? pr.B.Who : pr.A.Who, first, second, now);   // the old hand's friend beside him, to talk it over with (DEPTH reserve R5)
+                if (lady != null) _grumbleCast++; else _grumbleNoFriend++;
+            }
             if (pr.Why.Kind == "temperance" && Temperance.DoorOn)
             {
                 // the temperance door (FOURTEENHOUR item 25): her kin near to answer a hothead's insult (he's A, the drinker B, she the
@@ -535,6 +540,8 @@ namespace EnrageWestworld.InGame
                 cast.KinId = kinId;
             }
             string kind = pr.Why.Kind;
+            if (kind == Grumble.Kind && lady == null)
+                kind = "greenhorn";   // no friend of his by: he says it to the greenhorn's face, the ribbing (DEPTH reserve R5)
             if (kind == Rowdy.Kind && lady == null)
                 kind = "drunk";   // alone in the street: the saloon's drunk, who calls the man out and falls on his face (reserve R5)
             Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;

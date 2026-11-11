@@ -26,6 +26,7 @@ namespace EnrageWestworld.InGame
         private readonly List<PostedReward> _rewardsPosted = new List<PostedReward>();
         private readonly HashSet<string> _rewardOffered = new HashSet<string>();
         private Action _aYourReward;
+        private int _grumbleCast, _grumbleNoFriend;   // old hands grumble (DEPTH reserve R5; WestworldScript.Reasons.cs)
         private int _yrNextLook, _yrPosted, _yrBrought, _yrFalse, _yrLapsed;
         private string _yrLast, _yrVictimId, _yrVictimName, _yrThiefId, _yrThiefName;
 
