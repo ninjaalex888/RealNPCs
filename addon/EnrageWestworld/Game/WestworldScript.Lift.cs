@@ -86,11 +86,14 @@ namespace EnrageWestworld.InGame
             if (!test && LiftNerve.On && _placeTown != null)
             {
                 // the thieves weigh the mark (Core/LiftNerve.cs): a town that knows your killings has fewer who'll try you
-                int kills, kindnesses;
+                int kills, kindnesses, caught = 0;
                 _engine.StandingOf(_placeTown, g, out kills, out kindnesses);
-                int share = LiftNerve.TriesPercent(kills);
+                foreach (Deed d in _store.Deeds)
+                    if (d != null && d.Kind == "thiefcaught" && d.Town == _placeTown && g - d.At >= 0 && g - d.At < LiftNerve.CaughtDays * 1440)
+                        caught++;   // the thieves you've run down here this week (DEEPEN item 5)
+                int share = LiftNerve.TriesPercent(kills, caught);
                 if (_rng.Next(100) >= share)
-                    return why = "the thieves here think twice (" + kills + " killings of yours known in " + _placeTown + ": " + share + "% try it)";
+                    return why = "the thieves here think twice (" + kills + " killings of yours known, " + caught + " thieves you caught here this week, in " + _placeTown + ": " + share + "% try it)";
             }
             // never the Testing page's cast (Lex, 2026-10-30: the old man of the cast was sent, and shot); a known pickpocket near
             // is the one who goes, before any other man (he keeps to his trade)

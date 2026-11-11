@@ -31,11 +31,23 @@ namespace EnrageWestworld.Core
         /// Of the thieves who would try it, the share who still do (percent), given the killings of yours this town knows.
         public static int TriesPercent(int killsKnown)
         {
-            if (!On || killsKnown <= 0)
-                return 100;
-            if (killsKnown == 1)
-                return 60;
-            return killsKnown <= 3 ? 35 : 15;
+            return TriesPercent(killsKnown, 0);
         }
+
+        /// The same, and the thieves you've run down in this town lately (the "thiefcaught" deed, a week): a man known to run
+        /// pickpockets down is a bad mark too, and it's the thieves' own talk that spreads it (DEEPEN item 5).
+        public static int TriesPercent(int killsKnown, int caughtHere)
+        {
+            if (!On)
+                return 100;
+            int p = killsKnown <= 0 ? 100 : killsKnown == 1 ? 60 : killsKnown <= 3 ? 35 : 15;
+            if (caughtHere >= 2)
+                p = p * 35 / 100;
+            else if (caughtHere == 1)
+                p = p * 60 / 100;
+            return p;
+        }
+
+        public const long CaughtDays = 7;   // a catch of yours is remembered by the town's thieves this many game days
     }
 }
