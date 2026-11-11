@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Fix: the thoughts after a bet on a fight.** Paying, owing or welshing on a bet left a memory, but its own words were filed where they were never looked for, so people thought of it in a quarrel's plain words. Now they say it their own way ("Won fair and square and he won't pay").
 - **The man you stood with remembers it** (`[Encounters] StoodRemembered`, on; settings version 436). Standing with a man losing a fight made him owe you, but his own mind kept nothing of it. Now his thoughts come back to it ("stepped in for me"), and some days on he comes over to thank you for it in his own words.
 - **The man whose fine you paid owes you** (`[Encounters] FineOwes`, on; settings version 435). Paying a man's fine at the jail door used to change nothing between you. Now he owes you for a month of game days, as someone you saved does: he comes to your aid, his thoughts come back to it, and some days on he comes over to thank you. Those who saw it count it a kindness, and so does the town's regard. Standing surety for him is a kindness too, but no debt: he may yet break his word.
 - **"Owes you" on the name card** (`[Display] NameCardsOwes`, on; settings version 434). Someone you saved, or stood with when he was losing a fight, shows "Owes you" under his name for the month he owes you, so you can see who will come to your aid whatever the odds.
