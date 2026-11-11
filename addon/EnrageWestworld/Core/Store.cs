@@ -423,7 +423,7 @@ namespace EnrageWestworld.Core
                     {
                         PersonState vst;
                         if (People.TryGetValue(k.VictimId, out vst) && vst != null && vst.Told != null)
-                            vst.Told.Remove(k.Wrong == "tryst" ? "husband" : EnrageWestworld.Core.KinGrudges.Mark);   // the wrong undone: the once-only mark goes with the grudge (a husband's is "husband", Engine.Trysts; the review of items 15-19)
+                            vst.Told.Remove(k.Wrong == "tryst" ? "husband" : k.Wrong == EnrageWestworld.Core.KinGrudges.Thanked ? EnrageWestworld.Core.KinGrudges.Thanked : EnrageWestworld.Core.KinGrudges.Mark);   // (a thanks' own mark: SEAMS item 7)   // the wrong undone: the once-only mark goes with the grudge (a husband's is "husband", Engine.Trysts; the review of items 15-19)
                     }
                 n += KinGrudges.RemoveAll(k => k != null && k.At > cut);   // a wrong undone: nobody comes about it
                 foreach (KinGrudge k in KinGrudges)

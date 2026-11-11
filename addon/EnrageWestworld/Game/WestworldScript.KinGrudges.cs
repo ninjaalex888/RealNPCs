@@ -165,7 +165,7 @@ namespace EnrageWestworld.InGame
             TASK.CLEAR_PED_TASKS(handle, true, false);
             TASK.TASK_GO_TO_ENTITY(handle, me.Handle, KinGrudgeWalkMs, 2.0f, 1.6f, 0f, 0);
             TASK.TASK_LOOK_AT_ENTITY(handle, me.Handle, KinGrudgeWalkMs, 0, 51, 0);
-            _grudgeWalk = new GrudgeWalk { Ped = body, Name = k.Name, Line = line, Voice = KinGrudges.VoiceFor(k.Temper), Until = now + KinGrudgeWalkMs, Id = null, DeadId = null, Kin = k };
+            _grudgeWalk = new GrudgeWalk { Ped = body, Name = k.Name, Line = line, Voice = KinGrudges.VoiceOf(k), Until = now + KinGrudgeWalkMs, Id = null, DeadId = null, Kin = k };
             _kinGrudgeCasts++;
             _kinGrudgeLast = k.Name + " (" + Person.FirstOf(k.VictimName ?? "?") + "'s " + k.Relation + ") in " + _placeTown;
             Log.Write("KIN GRUDGE: " + k.Name + " (" + Person.FirstOf(k.VictimName ?? "?") + "'s " + k.Relation + ", " + (k.Temper ?? "plain") + ") comes up to you in " + _placeTown + " on " + Person.FirstOf(k.VictimName ?? "?") + "'s account (you " + k.WrongWord + "), " +
@@ -187,7 +187,8 @@ namespace EnrageWestworld.InGame
             int h = w.Ped != null ? w.Ped.Handle : 0;
             if (kinId != null)
                 _youNodAt[kinId] = now;
-            RecordEvent("scene:kin", kinId, k.Name, "player", "you", me.Position, h, h, me.Handle, k.WrongWord);
+            if (!KinGrudges.IsThanks(k))
+                RecordEvent("scene:kin", kinId, k.Name, "player", "you", me.Position, h, h, me.Handle, k.WrongWord);   // (a thanks faces nobody down: SEAMS item 7)
             Feed.Notice("Kin", KinGrudges.Notice(k, _placeTown));
             if (h != 0)
                 _ticker.Push(k.Name + ", thinking", KinGrudges.Thought(k, k.Id + "|after"), "near", h);

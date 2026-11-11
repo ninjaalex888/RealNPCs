@@ -88,6 +88,43 @@ namespace EnrageWestworld.Core
             return null;
         }
 
+        // ---- the kin of one you saved (SEAMS item 7; [Scenes] KinThanks) -------------------------------------------------------
+        // The kin's walk-up was only ever for a wrong: shoot a man's brother's friend, rob his cousin, and a kinsman comes
+        // to say it to your face. Save that cousin and nobody of his came. Now, one time in two, a kinsman of someone you
+        // saved comes the same way, a few days on, to thank you for him. Gratitude carried by kin is the oldest kind of standing a
+        // stranger gets in a town: he is now owed by a family, not a man.
+        public const string Thanked = "kinthanks";   // the KinGrudge's Wrong for a thanks; also the once-a-person mark
+        public static bool ThanksOn = true;          // from the settings
+        public const int ThanksChance = 50;          // percent: a family hears and sends a man to thank you
+
+        /// Whether this one comes to thank you, not about a wrong.
+        public static bool IsThanks(KinGrudge k) { return k != null && k.Wrong == Thanked; }
+
+        /// What he says, walked up to your face: who he is, what you did for his kin, and a close by his nature.
+        public static string ThanksOpening(KinGrudge k, string you, string seed)
+        {
+            string first = Person.FirstOf(k.VictimName ?? "my kin");
+            string open = you != null ? Voice.Pick(seed + "|to", "You'd be " + you + ". I hoped I'd find you.", "Mr. " + you + "? I've been looking for you since Tuesday.")
+                                      : Voice.Pick(seed + "|to", "You're the one. I was told the look of you.", "Hold up, mister. I think you're who I'm after.");
+            string who = "I'm " + first + "'s " + (k.Relation ?? "kin") + ".";
+            string did = Voice.Pick(seed + "|td", "You got " + first + " out of a bad spot the other week.", "You stood up for " + first + " when nobody else would.");
+            string close;
+            switch (k.Temper)
+            {
+                case "Hothead": close = Voice.Pick(seed + "|tc", "Anybody gives you trouble here, you send for me.", "You ever need a hand in a fight, you've got mine."); break;
+                case "Proud": close = Voice.Pick(seed + "|tc", "My family pays what it owes. I'll not forget it.", "We're not people who take a thing like that and say nothing."); break;
+                case "Cold": close = Voice.Pick(seed + "|tc", "I'm not one for speeches. I came to shake your hand.", "That's all. I wanted you to know we know."); break;
+                default: close = Voice.Pick(seed + "|tc", "The whole family's grateful. I came to say it for them.", "Our door's open to you, any time you're by."); break;
+            }
+            return open + " " + who + " " + did + " " + close;
+        }
+
+        /// The voiced set for the walk-up: thanks for a thanks, else the wrong's (the hot threaten, the rest are angry).
+        public static string VoiceOf(KinGrudge k)
+        {
+            return IsThanks(k) ? "thanks" : VoiceFor(k != null ? k.Temper : null);
+        }
+
         public static long Due(long at, string seed)
         {
             return at + (DueLeastDays + Voice.Hash(seed + "|kindue") % (DueMostDays - DueLeastDays + 1)) * 1440L;
@@ -126,6 +163,8 @@ namespace EnrageWestworld.Core
         /// when the one wronged knew it (the kin had it from them), else nothing.
         public static string Opening(KinGrudge k, string you, string seed)
         {
+            if (IsThanks(k))
+                return ThanksOpening(k, you, seed);
             string first = Person.FirstOf(k.VictimName ?? "my kin");
             string open = you != null ? Voice.Pick(seed + "|o", "You'd be " + you + ".", "Mr. " + you + ". I've been hunting the town for you.", "They said you'd be " + you + ". You are.")
                                       : Voice.Pick(seed + "|o", "You're the one.", "I've had you pointed out to me.", "It's you. I was told the look of you.");
@@ -164,12 +203,16 @@ namespace EnrageWestworld.Core
             string first = Person.FirstOf(k.VictimName ?? "him");
             if (k.Wrong == SecondActs.Watched)
                 return SecondActs.WatchedThought(first, seed);   // (reserve R3)
+            if (IsThanks(k))
+                return Voice.Pick(seed + "|tt", "Said it. " + first + " will want to hear how he took it.", "Quiet sort. Shook my hand like he meant it.", "Didn't know what to say back. Men like that never do.");
             return Voice.Pick(seed + "|t", "Said it. Said it to his face. Now I can go home to " + first + ".", "That's the man. Smaller than I'd pictured. They always are.", "He looked at me like I was weather. Well. He heard it.", "Came a long way for one sentence. It was the right sentence.");
         }
 
         /// The notice to the player after the words.
         public static string Notice(KinGrudge k, string town)
         {
+            if (IsThanks(k))
+                return k.Name + ", " + Person.FirstOf(k.VictimName ?? "someone") + "'s " + (k.Relation ?? "kin") + ", found you in " + (town ?? "town") + " to thank you for what you did for him.";
             return k.Name + ", " + Person.FirstOf(k.VictimName ?? "someone") + "'s " + (k.Relation ?? "kin") + ", found you in " + (town ?? "town") + " on his account.";
         }
 

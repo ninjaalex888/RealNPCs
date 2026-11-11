@@ -30,8 +30,54 @@ namespace EnrageWestworld.Core
         }
 
         /// A wrong of the player's on someone the add-on knows: a man of their family will come about it (once for each person).
+        /// Someone you saved (a "defend" with you the doer, SavedByYou's): one time in two a kinsman comes to thank you,
+        /// by the kin's own walk-up, five to nine days on (SEAMS item 7; [Scenes] KinThanks, with KinGrudges). Once for each person
+        /// saved, whether or not one comes; never a test's. Returns whether the happening was a saving (handled here either way).
+        private bool KinThanksNote(Happening e)
+        {
+            if (e == null || e.Kind != "defend" || e.DoerId != "player" || e.TargetId == null || e.TargetId == "player")
+                return false;
+            if (Cfg == null || !Cfg.KinGrudges || !KinGrudges.ThanksOn || e.Test)
+                return true;
+            Person p = KinPerson(e.TargetId);
+            if (p == null || !p.IsAlive)
+                return true;
+            PersonState st = Store.Get(p);
+            if (st == null || st.Has(KinGrudges.Thanked))
+                return true;
+            st.Mark(KinGrudges.Thanked);
+            if (Voice.Hash(p.Id + "|kinthanks") % 100 >= KinGrudges.ThanksChance)
+            {
+                Log("KIN THANKS: " + p.Name + "'s family keeps it among themselves (the roll)");
+                return true;
+            }
+            if (st.Family == null)
+                st.Family = Family.For(p);
+            Relative rel = KinGrudges.Takes(st.Family);
+            string town = e.Town ?? p.Home;
+            if (rel == null || town == null)
+            {
+                Log("KIN THANKS: nobody among " + p.Name + "'s kin to come and thank you");
+                return true;
+            }
+            long now = e.At;
+            KinGrudge k = new KinGrudge
+            {
+                Id = Ids.New(), VictimId = p.Id, VictimName = p.Name, VictimTown = town, Wrong = KinGrudges.Thanked, WrongWord = "stood up for him", At = now,
+                DueAt = KinGrudges.Due(now, p.Id + "|t|" + rel.Name), Name = rel.Name, Relation = rel.Relation, Town = rel.Town, Temper = KinGrudges.TemperOf(rel.Name)
+            };
+            if (Store.KinGrudges == null)
+                Store.KinGrudges = new List<KinGrudge>();
+            Store.KinGrudges.Add(k);
+            _kinMade++;
+            Log("KIN THANKS: " + rel.Name + " (" + Person.FirstOf(p.Name) + "'s " + rel.Relation + ", of " + (rel.Town ?? "no town") + ") will come to " + town + " in " + (k.DueAt - now) / 1440 + " days to thank you");
+            return true;
+        }
+
         private void KinGrudgeNote(Happening e)
         {
+            if (KinThanksNote(e))
+                return;   // a saving, not a wrong (SEAMS item 7)
             if (Cfg == null || !Cfg.KinGrudges || e == null || e.Test || e.DoerId != "player" || e.TargetId == null || e.TargetId == "player" || !KinGrudges.Counts(e.Kind))
                 return;
             Person p = KinPerson(e.TargetId);
