@@ -114,7 +114,7 @@ namespace EnrageWestworld.InGame
                 MindWho wa = _mindWho[first.Handle], wb = _mindWho[second.Handle];
                 q.Over = _cfg.QuarrelSlights ? Scenes.OverFor(matter, over, saloon, tie != null ? tie.Warmth : 0, tie != null ? tie.Kind : null,
                                                               cast.Knows != null && (!cast.Knows[0] || !cast.Knows[1]), seed,
-                                                              TradeGroupOf(wa), ta.Z[Traits.Piety] > 1f, TradeGroupOf(wb), tb.Z[Traits.Piety] > 1f,
+                                                              PoliticsGroupOf(wa), ta.Z[Traits.Piety] > 1f, PoliticsGroupOf(wb), tb.Z[Traits.Piety] > 1f,
                                                               q.DrunkA || q.DrunkB, InnerLife.ClockYear) : null;   // 1899's quarrels between two in drink (item 9)
                 // a friend of either within 10 m who could step in (as the stand-up finds one): the warmer side's
                 Candidate friend = LadderFriend(people, cast, mid, aId, bId, now, out int side);

@@ -15,6 +15,9 @@ namespace EnrageWestworld.Core
     public static class QuarrelPolitics
     {
         public static bool On = true;   // [Mind] QuarrelPolitics, set by the game side
+        // the railroad's right of way and the land office's claims (DEPTH item 9): two more of 1899's quarrels; a measure's
+        // switch, not a setting (they ride QuarrelPolitics): off, the topics as FOURTEENHOUR item 9 had them
+        public static bool LandAndRail = true;
         public const int Percent = 85;  // of two in drink on opposite sides: tuned for about one saloon brawl in six (mindtest QuarrelPoliticsTest)
 
         sealed class Topic
@@ -22,6 +25,7 @@ namespace EnrageWestworld.Core
             public string Key, Words, Summary;
             public string[] SideA, SideB;   // trade groups on each side ("pious" for the church-minded)
             public int From = 1890, To = 1910;
+            public bool LandAndRail;        // DEPTH item 9's: only with LandAndRail
             public string[][] Openers;
         }
 
@@ -43,9 +47,27 @@ namespace EnrageWestworld.Core
                 Openers = new[] {
                     new[] { "Vote this town dry and I'll drink in the next one.", "Drink's ruined half the families on this street.", "Not mine, it hasn't.", "angry" },
                     new[] { "Temperance man, are you? In a saloon?", "I came to fetch my brother home.", "Then fetch him and get out.", "threat" } } },
+            // DEPTH item 9: the railroad took its right of way through farms and grazing at the price the town's men of business
+            // set, and the land office's claims put homesteaders' wire across the cattlemen's open range: in 1899 men fought over
+            // both in the saloons long before the courts settled them. "cattle" is the ranch trades' side (GroupOf below).
+            new Topic { Key = "railroad", Words = "the railroad's right of way", Summary = "over the railroad", SideA = new[] { "farm", "cattle" }, SideB = new[] { "gentry", "town" }, LandAndRail = true,
+                Openers = new[] {
+                    new[] { "The railroad took a strip of my place and paid me in promises.", "That line's the making of this town.", "The making of your pockets.", "angry" },
+                    new[] { "You sold them the right of way through my grazing. I know you did.", "The company paid a fair price for it.", "Fair to who?", "threat" } } },
+            new Topic { Key = "land", Words = "the land office's claims", Summary = "over the land office", SideA = new[] { "farm" }, SideB = new[] { "cattle" }, LandAndRail = true,
+                Openers = new[] {
+                    new[] { "I filed on that quarter at the land office. It's mine, wire and all.", "That grass was open range before you ever came.", "Not any more, it isn't.", "angry" },
+                    new[] { "Your cows on my claim again this morning.", "Your claim's on my water.", "The land office says otherwise.", "threat" } } },
         };
 
         static Topic Of(string key) { return Topics.FirstOrDefault(t => t.Key == key); }
+
+        /// A man's side group for these quarrels: "cattle" for the ranch trades (no trade group of their own), else his trade
+        /// group (InnerLife.TradeGroup).
+        public static string GroupOf(string trade)
+        {
+            return Brands.Ranch(trade) ? "cattle" : InnerLife.TradeGroup(trade);
+        }
 
         /// Which side of a quarrel someone is on: 1 or 2, else 0 (no side). "pious" sides with the church-minded.
         public static int Stance(string key, string group, bool pious)
@@ -72,7 +94,7 @@ namespace EnrageWestworld.Core
             for (int i = 0; i < Topics.Length; i++)
             {
                 Topic t = Topics[(start + i) % Topics.Length];
-                if (year < t.From || year > t.To)
+                if (year < t.From || year > t.To || (t.LandAndRail && !LandAndRail))
                     continue;
                 int a = Stance(t.Key, groupA, piousA), b = Stance(t.Key, groupB, piousB);
                 if (a != 0 && b != 0 && a != b)

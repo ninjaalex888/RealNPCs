@@ -371,6 +371,12 @@ namespace EnrageWestworld.InGame
             return w.TradeGroup ?? (w.TradeGroup = InnerLife.TradeGroup(w.P != null ? w.P.Trade : null));
         }
 
+        /// His side in 1899's quarrels: "cattle" for the ranch trades, else his trade group (Core/QuarrelPolitics.cs GroupOf; DEPTH item 9).
+        private static string PoliticsGroupOf(MindWho w)
+        {
+            return w.P != null && Brands.Ranch(w.P.Trade) ? "cattle" : TradeGroupOf(w);
+        }
+
         private SideTie SideTieOf(string on, string fighter, string other)
         {
             SidePerson o, f, x = null;
