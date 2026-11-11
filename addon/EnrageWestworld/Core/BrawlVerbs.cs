@@ -21,12 +21,12 @@ namespace EnrageWestworld.Core
             return regard == "afraid" ? 0.20f : regard == "fond" ? 0.15f : regard == "hostile" ? -0.15f : 0f;
         }
 
-        public static List<InteractOption> Rows(string loser, string backer, string backedName, string otherName, int cashCents)
+        public static List<InteractOption> Rows(string loser, string backer, string backedName, string otherName, int cashCents, string between = null)
         {
             var rows = new List<InteractOption>
             {
                 new InteractOption { Id = "brawl:breakup", Label = "\"That's enough! Break it up!\"" },
-                new InteractOption { Id = "brawl:stand", Label = "Stand with " + (loser ?? "the man losing") + "." }
+                new InteractOption { Id = "brawl:stand", Label = "Stand with " + (loser ?? "the man losing") + (between != null ? " (" + between + ")" : "") + "." }
             };
             if (backer != null)
                 rows.Add(new InteractOption { Id = "brawl:bet", Label = "Take " + backer + "'s bet: " + Money(StakeCents) + " on " + (otherName ?? "the other man") + " against his " + (backedName ?? "man") + ".",
@@ -63,6 +63,20 @@ namespace EnrageWestworld.Core
         // money, and the one who'd have offered says why. The psychology: a broken promise travels fastest among the people it
         // could happen to next (reputation as the gossip of those with a stake in it), and being refused in public is the cost.
         public static bool Shunning = true;    // from the settings
+
+        // ---- the debt in the menu (SEAMS item 13; [Scenes] StandReminds) ----------------------------------------------------------
+        // The man losing the fight is one who stood by you this week, or one who owes you: the J row says so ("Stand with Abe (he
+        // stood by you)"). The card says it (NameCardsStood/Owes), but a card isn't read in a fistfight; the moment a debt can
+        // be repaid is the moment it should be in front of you. Reciprocity is a choice only when you can see it.
+        public static bool Reminds = true;     // from the settings
+
+        /// The words in brackets after his name, or null: he stood by you outranks he owes you (yours to repay comes first).
+        public static string Between(bool stoodByYou, bool owesYou)
+        {
+            if (!Reminds)
+                return null;
+            return stoodByYou ? "he stood by you" : owesYou ? "he owes you" : null;
+        }
         public const long ShunDays = 7;        // how long the town's betting men remember a welsh of yours
 
         /// Whether you've welshed on a bet in this town within the week (the "welshed" happening, you the doer; a test's never).

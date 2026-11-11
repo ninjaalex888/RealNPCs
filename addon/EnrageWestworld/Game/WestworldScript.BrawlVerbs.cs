@@ -90,7 +90,18 @@ namespace EnrageWestworld.InGame
                 backed = NameOfFighter(_bvBacker.Side == 0 ? a[0] : b[0]);
                 other = NameOfFighter(_bvBacker.Side == 0 ? b[0] : a[0]);
             }
-            return BrawlVerbs.Rows(NameOfFighter(_bvLoser), _bvBacker != null ? Person.FirstOf(_bvBacker.Name) : null, backed, other, MONEY._MONEY_GET_CASH_BALANCE());
+            string between = null;
+            if (BrawlVerbs.Reminds && _store != null && ENTITY.DOES_ENTITY_EXIST(_bvLoser))
+            {
+                MindWho lw = MindKnown(_bvLoser, Game.GameTime);
+                if (lw != null && lw.Id != null)
+                {
+                    var stood = new HashSet<string>();
+                    Interact.StoodByYou(_store.WorldLog, _store.LastGameMin, stood);   // once, at the menu: never per frame
+                    between = BrawlVerbs.Between(stood.Contains(lw.Id), Interact.SavedLately(_store.WorldLog, lw.Id, _store.LastGameMin));
+                }
+            }
+            return BrawlVerbs.Rows(NameOfFighter(_bvLoser), _bvBacker != null ? Person.FirstOf(_bvBacker.Name) : null, backed, other, MONEY._MONEY_GET_CASH_BALANCE(), between);
         }
 
         private void BrawlVerbChoose(string id)

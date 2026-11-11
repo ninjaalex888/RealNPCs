@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 445;
+        public const int CurrentVersion = 446;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -452,6 +452,7 @@ namespace EnrageWestworld.Core
         public bool ChanceFirst = true;   // [Scenes] the chance meeting (songs, tales, haggling, standoffs) goes first when no reason is strong, the argument's share stops growing past weight 1.5, main scenes start nearer you, and two held in chairs far apart aren't cast (NIGHT4 fix 7; settings version 166)
         public bool HorseThieves = true;   // [Scenes] with MindLive: a man whose mind leans to it takes a horse with nobody on it and rides off; its owner shouts after him (the NPC-life run, step 5; settings version 137)
         public bool FightCrowds = false;   // off as it comes from settings version 182 (Lex, 2026-11-01: onlookers froze; "remove the feature that tells the NPCs to gather as a crowd") [Scenes] with MindLive: a crowd rings a street fight and cheers it on (the fearful keep away) (the NPC-life run, step 5; settings version 136)
+        public bool StandReminds = true;      // [Scenes] with BrawlVerbs: the J row "Stand with ..." says when the man losing stood by you this week, or owes you (SEAMS item 13; settings version 446)
         public bool BreakUpKnown = true;      // [Scenes] with Deeds: a fight you break up on J is a peace deed, as a word in a scene is: the witnesses keep it, it goes round as gossip, a newspaper might carry it (SEAMS item 6; settings version 440)
         public bool WelshersShunned = true;   // [Scenes] with BrawlVerbs: welsh on a bet in a town and its betting men won't take your money for a week; the one who'd have offered says why (SEAMS item 4; settings version 438)
         public bool WelshRemembered = true;   // [Scenes] with Minds: the man you welshed on, and those who saw it, keep it in mind in the bet's own words (SEAMS item 3; settings version 437)
@@ -1089,6 +1090,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 446)
+                    log?.Invoke("Settings: new in this version: [Scenes] StandReminds (on): the J row says when the man losing a fight stood by you, or owes you.");
                 if (s.SettingsVersion < 445)
                     log?.Invoke("Settings: new in this version: [Display] NameCardsMourns (on): \"Mourns one you killed\" on the card of someone grieving a friend you killed.");
                 if (s.SettingsVersion < 444)
@@ -2395,6 +2398,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("ChanceFirst = " + B(ChanceFirst) + "   ; chance meetings (a song, a tall tale, haggling, a standoff, a card cheat) get their turn when nobody has a strong reason, nearer you; a high TroubleWeight brings more fights, not more arguments; two people sat far apart are not picked for a scene they would never walk to");
             b.AppendLine("HorseThieves = " + B(HorseThieves) + "   ; with MindLive on, in town: a man honest with nobody and short of money (or a known thief) gets up on a horse that isn't his and rides off, a red dot and fair game; its owner shouts after him. At most once a town in two game hours");
             b.AppendLine("FightCrowds = " + B(FightCrowds) + "   ; with MindLive on: while people trade blows, those within [Mind] BrawlCrowdMetres who aren't of a fearful nature walk over, stand round in a ring and cheer it on (up to 6 round two men, 16 round a brawl, in two rings); they go when it's over");
+            b.AppendLine("StandReminds = " + B(StandReminds) + "   ; in a fistfight, the J row \"Stand with ...\" says \"(he stood by you)\" when the man losing fought for you this week, or \"(he owes you)\" when he's one you saved; false: just his name");
             b.AppendLine("BreakUpKnown = " + B(BreakUpKnown) + "   ; with Deeds on: a fistfight you end with your shout (J, \"Break it up\") is a good deed the town knows of, as stepping into any scene is: those who saw it remember, it's talked of, it may be in the paper; false: only the fighters know");
             b.AppendLine("WelshersShunned = " + B(WelshersShunned) + "   ; welsh on a bet in a town (J at a fistfight, lost and not paid) and for a week its betting men won't take your money: the one who'd have offered you a bet tells you why, and there's no bet on J; false: they offer as before");
             b.AppendLine("WelshRemembered = " + B(WelshRemembered) + "   ; with Minds on: when you don't pay a bet you lost on a fistfight, the man you owed and those who saw it keep it in mind, as they do when one of the street welshes on another: his thoughts come back to it, and the onlookers may pass it on; false: only his liking for you drops");

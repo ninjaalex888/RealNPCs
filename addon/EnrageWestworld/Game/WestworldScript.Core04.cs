@@ -262,6 +262,7 @@ namespace EnrageWestworld.InGame
             Interact.SuretyKeptOwes = _cfg.SuretyKeptOwes;   // [Encounters] SuretyKeptOwes: a week kept on your word owes you (SEAMS item 10)
             KinGrudges.ThanksOn = _cfg.KinThanks;           // [Scenes] KinThanks: a kinsman of someone you saved comes to thank you (SEAMS item 7)
             Appraisal.GratitudeFelt = _cfg.GratitudeFelt;   // [Encounters] GratitudeFelt: the mind feels a stand, a fine, a surety as a kindness (SEAMS item 11)
+            BrawlVerbs.Reminds = _cfg.StandReminds;         // [Scenes] StandReminds: the J row says he stood by you, or owes you (SEAMS item 13)
             BrawlVerbs.Shunning = _cfg.WelshersShunned;     // [Scenes] WelshersShunned: no bets for a welsher this week (SEAMS item 4)
             SecondActs.StoodThanks = _cfg.StoodRemembered;   // [Encounters] StoodRemembered: the stand's memory brings its late thanks (SEAMS item 2)
             FriendCalls.ThiefWarnOn = _cfg.FriendsWarnThief;   // [Scenes] FriendsWarnThief: a friend warns you of a known pickpocket near (DEEPEN item 3)
