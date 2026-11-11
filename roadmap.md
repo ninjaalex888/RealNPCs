@@ -584,6 +584,19 @@ These make one session prove much more, and keep it smooth.
 | **Sitting up with the grave** | The night after a burial, one of the dead one's own keeps the new grave company, and speaks of them if you come near. | Mourning's grave walk, the wake | S | Built (depth reserve R1; no lantern: the prop isn't proven) |
 | **They meet after the word** | After you carried a word between two who fell out, the next time they're near each other they meet: a hand, or a cold word. | Talk's errand, the Director | S | Built (depth reserve R2) |
 
+## Thieves, friends and debts (DEEPEN, 2026-11-11: deepening what works, from players' reports)
+
+Built on runners seen in game (the lift, the chase and tackle orders, the allies, FriendCalls' walk-up, J in a brawl, name cards).
+
+| Idea | What the player sees | Your call |
+|---|---|---|
+| Thieves pick their marks | The bump-and-lift about once an hour of play, not every visit; fewer try a man the town knows has killed, or has run thieves down this week | Built (`[Scenes] LiftsWary`) |
+| A friend runs down your thief | A friend near shouts, tackles the man who robbed you and brings your money; he warms to you for the good turn | Built (`[Scenes] FriendsChase`) |
+| A friend warns of a pickpocket | A friend walks over: "Keep a hand on your purse, that's Jed yonder"; on your guard, no lift for twenty minutes | Built (`[Scenes] FriendsWarnThief`) |
+| The man you stood with owes you | Stand with a man losing a fight and he owes you a month, as one you saved; the street counts it a kindness | Built (`[Encounters] StoodByOwes`) |
+| Owes you, on the card | "Owes you" under the name of one who does | Built (`[Display] NameCardsOwes`) |
+| The tackled thief's grudge | The man brought down in the street holds it against his tackler; they keep clear or have it out another day | Built (with FriendsChase and PurseSnatch) |
+
 ## How to build them
 
 Three building blocks carry most of the idea bank: a saved outcome for worries so the player can change them, one town-events framework grown from the wedding code, and a small interaction menu. Below are those three and eleven more. The last, who steers whom, sits under all of them.
