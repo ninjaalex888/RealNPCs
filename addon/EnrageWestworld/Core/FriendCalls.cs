@@ -164,6 +164,20 @@ namespace EnrageWestworld.Core
             "Mind {who} there. He'd have the buttons off your coat and you'd thank him for the brush.",
             "{you}, a word. {who} works this street, and not for wages. Keep him in front of you.",
         };
+        // the thief near is the one who got away with yours (SEAMS item 14; [Scenes] FriendsKnowYourThief): the friend heard you'd
+        // been robbed and knows the man, and says that much more. A warning that names your own loss is one you act on.
+        public const string ThiefYours = "thiefyours";
+        public static bool YoursOn;   // off in Core so the harness goldens stand
+        private static readonly string[] WarnYoursNamed =
+        {
+            "That's {who} yonder, {you}. Same one who had your purse off you, unless I'm much mistaken.",
+            "{who}'s about again. The very one who robbed you. I'd keep my coat buttoned.",
+        };
+        private static readonly string[] WarnYoursNameless =
+        {
+            "See the fella by the rail, {you}? I'd swear he's the one who got your money.",
+            "The man who lifted your purse is in {town} again. Hand on your pocket.",
+        };
         private static readonly string[] WarnThiefNameless =
         {
             "Keep your money close, {you}. There's a man about who lives off other folks' pockets.",
@@ -265,7 +279,8 @@ namespace EnrageWestworld.Core
             switch (kind)
             {
                 case Warn:
-                    pool = detail == "law" ? WarnLaw : detail == "thief" ? (danger != null ? WarnThiefNamed : WarnThiefNameless) : danger != null ? WarnNamed : WarnNameless;
+                    pool = detail == "law" ? WarnLaw : detail == "thief" ? (danger != null ? WarnThiefNamed : WarnThiefNameless) : detail == ThiefYours ? (danger != null ? WarnYoursNamed : WarnYoursNameless)
+                         : danger != null ? WarnNamed : WarnNameless;
                     break;
                 case News:
                     pool = NewsOpen;

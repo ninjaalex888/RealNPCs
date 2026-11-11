@@ -121,7 +121,7 @@ namespace EnrageWestworld.InGame
                 string kind = FriendCalls.Which(warnKind != null, news != null, favour, _cfg.FriendGifts, seed, foughtMem != null, savedMem != null);
                 if (kind == null)
                     continue;
-                string detail = kind == FriendCalls.Warn ? (warnKind == "law" ? "law" : warnKind == "pinkerton" ? "pinkerton" : warnKind == "thief" ? "thief" : danger != null ? "named" : "nameless")
+                string detail = kind == FriendCalls.Warn ? (warnKind == "law" ? "law" : warnKind == "pinkerton" ? "pinkerton" : warnKind == "thief" ? "thief" : warnKind == FriendCalls.ThiefYours ? FriendCalls.ThiefYours : danger != null ? "named" : "nameless")
                               : kind == FriendCalls.Gift ? FriendCalls.GiftOf(group, woman, seed)
                               : kind == SecondActs.Saved ? (_cfg.FriendGifts ? favour ?? FriendCalls.GiftOf(group, woman, seed) : null)   // the token: a favour of their trade, else a gift
                               : kind == FriendCalls.Trade ? favour
@@ -210,7 +210,7 @@ namespace EnrageWestworld.InGame
                     if (ps == null || !ps.Has(PickpocketMark) || ENTITY.GET_ENTITY_COORDS(oh, true, true).DistanceTo(me.Position) > 40f)
                         continue;
                     danger = WarnKnowsOf(friend, o) ? o.Name : null;
-                    return "thief";
+                    return FriendCalls.YoursOn && _cfg.NameCardsRobbed && ps.Has(RobbedYouMark) ? FriendCalls.ThiefYours : "thief";   // the one who robbed you (SEAMS item 14)
                 }
             }
             if (_placeTown != null)
@@ -292,7 +292,7 @@ namespace EnrageWestworld.InGame
                     _friendCalls++;
                     if (w.Kind == SecondActs.Saved)
                         SecondActThanked(w.Name, w.Line);   // (FOURTEENHOUR reserve R3)
-                    if (w.Kind == FriendCalls.Warn && w.Detail == "thief" && !w.Test)
+                    if (w.Kind == FriendCalls.Warn && (w.Detail == "thief" || w.Detail == FriendCalls.ThiefYours) && !w.Test)
                     {
                         _liftGuardUntil = now + FriendCalls.GuardMs;   // forewarned: on your guard a while, and the thieves can tell (DEEPEN item 3)
                         Log.Write("FRIEND warned you of a pickpocket: on your guard for " + FriendCalls.GuardMs / 60000 + " min (no lift tried)");
