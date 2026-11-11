@@ -40,7 +40,14 @@ namespace EnrageWestworld.InGame
         private const int AlliesTickMs = 1500, AlliesOverMs = 6000, AlliesRoadGapMs = 300000, AlliesAskGapMs = 20000, AlliesBodyWaitMs = 15000, AlliesHorseWaitMs = 6000;   // the horse's body waited for this long past the rider's, then on foot (the review)
         private readonly List<Ally> _allies = new List<Ally>();
         private readonly List<int> _alliesFoes = new List<int>();
-        private bool _alliesFoesLaw;   // one of the foes is the law: no lawman comes against his own (Lex, 2026-11-04: lawmen may be friends)
+        private bool _alliesFoesLaw;   // one of the foes is the law: no lawman comes against his own (Lex, 2026-11-04: lawmen may be friends); also while the law fighting you is spared
+        private bool _alliesMixed;     // this fight has had someone other than the law against you: the law is spared (Allies.LawIsFoe, MixedNow)
+        private int _alliesAnyFoeAt;   // the last check anyone at all, the law too, was fighting you
+        private readonly List<int> _alliesCands = new List<int>();   // this check's: everyone in combat with you near (the law among them), before the law is spared
+        // what the log needs to tell the two ways a friend comes to shoot a lawman apart (a player on Nexus, 2026-11-10):
+        // the law was fighting you (spared now, with AlliesSpareLaw), or the law went for your friends, who fought back on the game's own AI
+        private readonly HashSet<int> _alliesLawSpared = new HashSet<int>(), _alliesLawOnAlly = new HashSet<int>(), _alliesLawDeadSeen = new HashSet<int>();
+        private int _alliesLawKilled, _alliesLawSparedAll;
         private readonly Dictionary<int, int> _alliesAskedAt = new Dictionary<int, int>();
         private int _alliesNextAt, _alliesFightSince, _alliesFoeAt, _alliesRoadAt, _alliesRoadTriedFor, _alliesCame, _alliesRoadCame, _alliesFights, _alliesFell, _alliesTestFriend, _alliesTestMan, _alliesRode, _alliesGrieved;
         private const ulong SetPedOntoMount = 0x028F76B6E78246EB, TaskDismountAnimal = 0x48E92D3DDE23C23A;   // by hash: the API's wrappers differ between builds (the 0.7.7 lesson)
@@ -105,24 +112,49 @@ namespace EnrageWestworld.InGame
             // the foes: whoever is in combat with you within reach, the law and the townsfolk answering your crime among them
             // (Lex, 2026-11-03: friends protect you "if fought by the law or anyone else"); none during a mission
             _alliesFoes.Clear();
+            _alliesCands.Clear();
             _alliesFoesLaw = false;
-            bool armedFoe = false;
+            bool armedFoe = false, otherFoe = false;
             if (!MISC.GET_MISSION_FLAG())
                 foreach (Ped p in Peds.All())
                 {
                     if (p == null)
                         continue;
                     int h = p.Handle;
-                    if (h == me.Handle || !p.Exists() || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(me.Position) > Math.Max(_cfg.AlliesMetres, Allies.FoeMetres))
+                    if (h == me.Handle || !p.Exists() || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(me.Position) > Math.Max(_cfg.AlliesMetres, Allies.FoeMetres))
                         continue;   // (farther than a friend will come from: gunmen open up at range, and a fight not seen has nobody to help in it)
+                    if (_allies.Count > 0 && Natives.IsLaw(p))
+                        AlliesWatchLaw(h, me.Handle);   // only the log: did the law go for a friend, did a friend kill a lawman
+                    if (ENTITY.IS_ENTITY_DEAD(h))
+                        continue;
                     if (!PED.IS_PED_IN_COMBAT(h, me.Handle) || _allies.Any(a => a.Handle == h))
                         continue;
-                    _alliesFoes.Add(h);
-                    if (Natives.IsLaw(p))
-                        _alliesFoesLaw = true;
-                    if (WEAPON.IS_PED_ARMED(h, 4))
-                        armedFoe = true;
+                    _alliesCands.Add(h);
+                    if (!Natives.IsLaw(p))
+                        otherFoe = true;
                 }
+            // the law spared in a fight that's had others against you (Allies.LawIsFoe); the latch outlasts the last bandit
+            _alliesMixed = Allies.MixedNow(_alliesMixed, otherFoe, _alliesCands.Count > 0, _alliesAnyFoeAt, now, AlliesOverMs);
+            if (_alliesCands.Count > 0)
+                _alliesAnyFoeAt = now;
+            bool spare = !Allies.LawIsFoe(_cfg.AlliesSpareLaw, _alliesMixed);
+            foreach (int h in _alliesCands)
+            {
+                Ped p = new Ped(h);
+                if (Natives.IsLaw(p))
+                {
+                    _alliesFoesLaw = true;   // a lawman fighting you, spared or not: no lawman of the street comes as your friend against his own
+                    if (spare)
+                    {
+                        if (_alliesLawSpared.Add(h))
+                            _alliesLawSparedAll++;
+                        continue;
+                    }
+                }
+                _alliesFoes.Add(h);
+                if (WEAPON.IS_PED_ARMED(h, 4))
+                    armedFoe = true;
+            }
             foreach (int f in _alliesSeenFoes)
                 if (ENTITY.DOES_ENTITY_EXIST(f) && ENTITY.IS_ENTITY_DEAD(f))
                     _alliesFoesFell = true;   // one of them fell this fight: the word after says won, not ran
@@ -650,6 +682,36 @@ namespace EnrageWestworld.InGame
         private int _alliesFoeLaw, _alliesFoeRecords, _alliesFoeFolk;
         private string _alliesFoeFolkNames;
 
+        /// The log's eyes on the law while friends are with you (a player on Nexus, 2026-11-10: friends killed the sheriffs in
+        /// a fight with bandits). Nothing is done to them here: it says once a lawman whether he went for a friend of yours
+        /// rather than you, and whether a friend of yours killed him.
+        private void AlliesWatchLaw(int h, int me)
+        {
+            if (ENTITY.IS_ENTITY_DEAD(h))
+            {
+                if (_alliesLawDeadSeen.Count > 200)
+                    _alliesLawDeadSeen.Clear();
+                if (!_alliesLawDeadSeen.Add(h))
+                    return;
+                int by = PED.GET_PED_SOURCE_OF_DEATH(h);
+                Ally killer = by != 0 ? _allies.FirstOrDefault(a => a.Handle == by) : null;
+                if (killer != null)
+                {
+                    _alliesLawKilled++;
+                    Log.Write("ALLIES " + killer.Name + " killed a lawman (he was " + (_alliesLawSpared.Contains(h) ? "spared: at you, with others at you too" : _alliesLawOnAlly.Contains(h) ? "fighting " + killer.Name + ", not you" : "a foe: the law alone was fighting you") + ")");
+                }
+                return;
+            }
+            if (_alliesLawOnAlly.Contains(h) || PED.IS_PED_IN_COMBAT(h, me))
+                return;
+            Ally on = _allies.FirstOrDefault(a => ENTITY.DOES_ENTITY_EXIST(a.Handle) && PED.IS_PED_IN_COMBAT(h, a.Handle));
+            if (on != null)
+            {
+                _alliesLawOnAlly.Add(h);
+                Log.Write("ALLIES the law went for " + on.Name + ", not you (" + (_alliesMixed ? "others at you too" : "the law's own fight") + ")");
+            }
+        }
+
         private void AlliesNoteFoe(int h)
         {
             Ped p = new Ped(h);
@@ -672,8 +734,12 @@ namespace EnrageWestworld.InGame
         /// A friend from the road is handed back to the game; the Testing row's man too.
         private void AlliesEnd(Ped me, int now)
         {
-            Log.Write("ALLIES the fight is over: at you were " + _alliesFoeLaw + " of the law, " + _alliesFoeRecords + " of enRAGE's people, " + _alliesFoeFolk + " others" + (_alliesFoeFolkNames != null ? " (" + _alliesFoeFolkNames + ")" : "") + "; " + _allies.Count + " stood with you");
+            Log.Write("ALLIES the fight is over: at you were " + _alliesFoeLaw + " of the law, " + _alliesFoeRecords + " of enRAGE's people, " + _alliesFoeFolk + " others" + (_alliesFoeFolkNames != null ? " (" + _alliesFoeFolkNames + ")" : "") + "; " + _allies.Count + " stood with you" +
+                      "; the law: " + _alliesLawSpared.Count + " at you and spared (others at you too), " + _alliesLawOnAlly.Count + " went for your friends instead, " + _alliesLawKilled + " killed by them");
             _alliesFoeLaw = _alliesFoeRecords = _alliesFoeFolk = 0;
+            _alliesLawSpared.Clear();
+            _alliesLawOnAlly.Clear();
+            _alliesLawKilled = 0;
             _alliesFoeFolkNames = null;
             int fell = 0;
             bool ran = !_alliesFoesFell;
@@ -813,7 +879,7 @@ namespace EnrageWestworld.InGame
 
         private string AlliesStatus()
         {
-            return (_cfg.AlliesHelp ? "on" : "off ([Encounters] AlliesHelp)") + "; " + _alliesFights + " fights of yours seen, " + _alliesCame + " came to your aid (" + _alliesRoadCame + " from the road, " + _alliesRode + " on horseback, " + _alliesTurned + " turned back from running; " + _alliesKeptIn + " times one was put back in the fight), " + _alliesFell + " fell (" + _alliesGrieved + " grieved at a cost to you)" + (_alliesRide != null ? ", one riding in now" : "") +
+            return (_cfg.AlliesHelp ? "on" : "off ([Encounters] AlliesHelp)") + "; the law " + (_cfg.AlliesSpareLaw ? "spared while others are at you too (" + _alliesLawSparedAll + " lawmen this session)" : "a foe whenever it fights you ([Encounters] AlliesSpareLaw off)") + (_alliesMixed ? ", others at you now" : "") + "; " + _alliesFights + " fights of yours seen, " + _alliesCame + " came to your aid (" + _alliesRoadCame + " from the road, " + _alliesRode + " on horseback, " + _alliesTurned + " turned back from running; " + _alliesKeptIn + " times one was put back in the fight), " + _alliesFell + " fell (" + _alliesGrieved + " grieved at a cost to you)" + (_alliesRide != null ? ", one riding in now" : "") +
                    (_allies.Count > 0 ? "; " + _allies.Count + " with you now" : "") + (_alliesPendKind != null ? "; " + (_alliesPendKind == "test" ? "the test's man" : "a friend from the road") + " on the way" : "") +
                    (_alliesLast != null ? "; last: " + _alliesLast : "") + (_alliesWhyNot != null ? "; held back lately: " + _alliesWhyNot : "");
         }

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 428;
+        public const int CurrentVersion = 429;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -360,6 +360,7 @@ namespace EnrageWestworld.Core
         public bool Wayside = true;          // [Encounters] things to come across on the road: fights, prisoners, trouble, camps, what's left after (Core/Wayside*.cs; settings version 324)
         public int WaysideChance = 25;       // ... percent a roll, among the other encounters
         public bool AlliesHelp = true;       // [Encounters] attacked within sight of people who think well of you, some of them come to your aid (Core/Allies.cs; a player's request, 2026-11-03; settings version 197)
+        public bool AlliesSpareLaw = true;   // [Encounters] ... in a fight that has had anyone but the law against you, friends leave the law alone; the law alone at you, they still stand with you (a player on Nexus, 2026-11-10: friends killed the sheriffs while fighting bandits; Core/Allies.cs LawIsFoe; settings version 429)
         public int AlliesMetres = 40;        // ... from within this many metres
         public int AlliesMost = 3;           // ... at most this many at once
         public int AlliesLiking = 90;        // ... enRAGE's fondness for you (0-100) from which someone counts as a friend (Lex, 2026-11-03: "a friend when the fondness bar is 90% or higher"; 40 until settings version 202); a kindness of yours they remember, a trouble you mended, talks and your name known count on their own
@@ -1072,6 +1073,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 429)
+                    log?.Invoke("Settings: new in this version: [Encounters] AlliesSpareLaw (on): with bandits or anyone else at you too, friends who come to your aid leave the law alone; the law alone at you, they still stand with you.");
                 if (s.SettingsVersion < 428)
                     log?.Invoke("Settings: [Scenes] Pickpockets off now also stops the thief who bumps into you and lifts your money ([Scenes] Lifts): either one off stops it.");
                 if (s.SettingsVersion < 427)
@@ -2156,6 +2159,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Wayside = " + B(Wayside) + "   ; things to come across out of the towns: men fighting by the road, and more: their own people, staged out of your sight, and you can step in or ride on");
             b.AppendLine("WaysideChance = " + WaysideChance + "   ; percent a roll, among the other encounters (0 to 100)");
             b.AppendLine("AlliesHelp = " + B(AlliesHelp) + "   ; attacked by anyone, the law too, within sight of people who think well of you, some of them come to your aid: someone who owes you (the bar at AlliesLiking or more, someone you saved) whatever the odds, and of the rest the brave and the hot first, cowards never, a woman only against fists, and against a gun only those who carry one (they're given a revolver for it and keep it after). They shout as they come, and have a word with you after; they remember it, and think better of you for it");
+            b.AppendLine("AlliesSpareLaw = " + B(AlliesSpareLaw) + "   ; in a fight that has had anyone but the law against you (bandits, say), friends leave the law alone, until nobody has fought you for six seconds; when the law alone comes for you they still stand with you; false: the law is a foe whenever it fights you");
             b.AppendLine("AlliesMetres = " + AlliesMetres + "   ; from within this many metres of you (10 to 80)");
             b.AppendLine("AlliesMost = " + AlliesMost + "   ; at most this many with you at once (1 to 6)");
             b.AppendLine("AlliesLiking = " + AlliesLiking + "   ; enRAGE's fondness for you (0 to 100: the bar under people with FeelingBars) from which someone counts as a friend of yours (90: three greetings, or saving them); a kindness of yours they remember, a trouble of theirs you mended, talks and your name known count on their own; 0: enRAGE's fondness doesn't count");

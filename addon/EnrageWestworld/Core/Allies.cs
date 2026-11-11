@@ -138,6 +138,27 @@ namespace EnrageWestworld.Core
         /// fight the mod can't see has nobody to help in it.
         public const float FoeMetres = 80f;
 
+        /// Whether the law fighting you counts as a foe your friends go for. Lex (2026-11-03): friends stand with you "if
+        /// fought by the law or anyone else", and they still do when the law alone comes for you. But a player on Nexus
+        /// (2026-11-10) rode into Rhodes chased by bandits; friends came, and killed the sheriffs too, who were there for the
+        /// bandits. So in a fight that has had anyone but the law against you ("mixed"), the law isn't one of your friends'
+        /// foes. spare: [Encounters] AlliesSpareLaw; off, the law is a foe whenever it fights you, as before.
+        public static bool LawIsFoe(bool spare, bool mixed)
+        {
+            return !spare || !mixed;
+        }
+
+        /// The "mixed" latch, once a check: set by any foe not of the law; kept while anyone, the law too, still fights you
+        /// (else the friends would turn on the sheriffs the moment the last bandit fell); gone once nobody has for quietMs.
+        public static bool MixedNow(bool was, bool otherFoeNow, bool anyFoeNow, int lastAnyAt, int now, int quietMs)
+        {
+            if (otherFoeNow)
+                return true;
+            if (anyFoeNow)
+                return was;
+            return was && now - lastAnyAt <= quietMs;
+        }
+
         private static string Describe(float nerve)
         {
             return nerve >= 0.9f ? "nerve to spare" : nerve >= 0.6f ? "nerve enough" : nerve >= 0.4f ? "a little nerve" : "not much nerve";
