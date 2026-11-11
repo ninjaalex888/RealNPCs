@@ -3,7 +3,7 @@
 // two game hours between anywhere and a town every four, so with a look a minute at 25% nearly every visit to a town had one.
 // Two changes, both behind the one switch:
 //   - rarer: 24 game hours between anywhere, 48 in the same town (a game hour is two real minutes, so about one an hour
-//     of play at most). "A town once a day" alone did little: a player riding between three towns is back in each a game day
+//     of play; the storyteller may halve the 24 when it wants more going on, Pacing.KindRestNow, never the town's 48). "A town once a day" alone did little: a player riding between three towns is back in each a game day
 //     later anyway (the test's model: 112 lifts a hundred visits as built, 95 with that).
 //   - choosier: a pickpocket weighs the mark before the bump. The psychology is plain risk: a thief goes for the soft-looking
 //     and the distracted, and a man the town knows has killed is a bad risk however full his pockets. So in a town where your
