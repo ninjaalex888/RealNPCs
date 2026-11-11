@@ -77,8 +77,10 @@ namespace EnrageWestworld.Core
         /// The speaker's word on the count.
         public static string Tally(int ayes, int of)
         {
-            return Carried(ayes, of) ? Count(ayes) + " for it, " + Count(of - ayes) + " against. Then that's carried, and we stand together."
-                                     : Count(ayes) + " for it, " + Count(of - ayes) + " against. Then we wait. And God help us.";
+            string n = Count(ayes);
+            n = char.ToUpperInvariant(n[0]) + n.Substring(1);   // it opens the sentence
+            return Carried(ayes, of) ? n + " for it, " + Count(of - ayes) + " against. Then that's carried, and we stand together."
+                                     : n + " for it, " + Count(of - ayes) + " against. Then we wait. And God help us.";
         }
 
         /// The town's news of it.
@@ -89,7 +91,7 @@ namespace EnrageWestworld.Core
                                      : "Miners talked after the shift of standing together, and " + Count(of - ayes) + " of " + Count(of) + " wouldn't put a hand up. The company's men were watching.";
         }
 
-        private static readonly string[] Numbers = { "None", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight" };
+        private static readonly string[] Numbers = { "none", "one", "two", "three", "four", "five", "six", "seven", "eight" };
         private static string Count(int n) { return n >= 0 && n < Numbers.Length ? Numbers[n] : n.ToString(); }
 
         public static IEnumerable<string> AllLines()

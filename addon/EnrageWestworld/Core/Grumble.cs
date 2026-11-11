@@ -4,7 +4,7 @@
 // can hear. He answers by his nature: a dry word back that wins them over a little (a tie a step warmer), a hot one they shrug
 // off, or nothing, and he goes (both colder, the old hand's doing). With no friend by, the game side plays the ribbing instead.
 // Why it reads true: old-timers measure a newcomer among themselves before they ever speak to him, and the talk is meant to be
-// overheard. Men only, as the ribbing. Plain C#; no new game call (the Director's three-man scene, as the limp's tale).
+// overheard. Men only, as the ribbing; only on a day the ribbing would come, so no scene is added where none was. Plain C#; no new game call (the Director's three-man scene, as the limp's tale).
 using System.Collections.Generic;
 
 namespace EnrageWestworld.Core
@@ -13,13 +13,13 @@ namespace EnrageWestworld.Core
     {
         public static bool On = true;   // [Scenes] Grumble, from the settings (the harnesses never mark a greenhorn, so nothing changes there)
         public const string Kind = "grumble";
-        public const int Strength = 47, Percent = 25;   // over the ribbing (46): when the old hands are at it, it's this; with no friend by, the ribbing
+        public const int Strength = 47, Percent = 50;   // over the ribbing (46): on half the ribbing's days the old hands talk it over instead; with no friend by, the ribbing as it would have been
 
         /// x, an old hand, grumbles about y, the greenhorn, to a friend of his: a reason, or null.
         public static Reason For(Someone x, Someone y, long gameDay)
         {
-            if (!On || x == null || y == null || x.Id == y.Id || !y.Greenhorn || x.Greenhorn || x.Woman || y.Woman || x.Temper == "Hothead")
-                return null;
+            if (!On || x == null || x.Temper == "Hothead" || Greenhorn.For(x, y, gameDay, false, false) == null)
+                return null;   // only where the ribbing itself would come today (its gates and its roll): with no friend by it plays as it would have (review)
             string key = string.CompareOrdinal(x.Id, y.Id) < 0 ? x.Id + "|" + y.Id : y.Id + "|" + x.Id;
             if (!Voice.Chance(key + gameDay + "|grumble", Percent))
                 return null;

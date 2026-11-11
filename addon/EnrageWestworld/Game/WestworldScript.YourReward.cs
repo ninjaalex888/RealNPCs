@@ -27,7 +27,7 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<string> _rewardOffered = new HashSet<string>();
         private Action _aYourReward;
         private int _grumbleCast, _grumbleNoFriend;   // old hands grumble (DEPTH reserve R5; WestworldScript.Reasons.cs)
-        private int _yrNextLook, _yrPosted, _yrBrought, _yrFalse, _yrLapsed;
+        private int _yrNextLook, _yrPosted, _yrBrought, _yrFalse, _yrLapsed, _yrForgot;
         private string _yrLast, _yrVictimId, _yrVictimName, _yrThiefId, _yrThiefName;
 
         private void YourRewardStep(int now)
@@ -42,8 +42,16 @@ namespace EnrageWestworld.InGame
         {
             long g = _store.LastGameMin;
             for (int i = _rewardsPosted.Count - 1; i >= 0; i--)
-                if (g >= _rewardsPosted[i].DueAt || g < _rewardsPosted[i].PostedAt)
+            {
+                if (g < _rewardsPosted[i].PostedAt)
+                {
+                    Log.Write("REWARD forgotten: the clock went back past its posting (a reload: the save never spent the money)");
+                    _rewardsPosted.RemoveAt(i);   // nothing paid back, nothing told (review)
+                    _yrForgot++;
+                }
+                else if (g >= _rewardsPosted[i].DueAt)
                     YourRewardSettle(_rewardsPosted[i], g);
+            }
             Vector3 door;
             if (_placeTown == null || !_jailDoor.TryGetValue(_placeTown, out door) || Game.Player.Character.Position.DistanceTo(door) > YourReward.DoorMetres ||
                 _eventMenu != null || (_eventPrompt != null && Game.GameTime <= _eventPromptUntil))
@@ -125,7 +133,7 @@ namespace EnrageWestworld.InGame
 
         private string YourRewardStatus()
         {
-            return !YourReward.On ? "off ([Scenes] PostReward)" : "posted " + _yrPosted + " (open " + _rewardsPosted.Count + "), brought in " + _yrBrought + ", false claims " + _yrFalse + ", lapsed " + _yrLapsed + (_yrLast != null ? "; the last: " + _yrLast : "");
+            return !YourReward.On ? "off ([Scenes] PostReward)" : "posted " + _yrPosted + " (open " + _rewardsPosted.Count + "), brought in " + _yrBrought + ", false claims " + _yrFalse + ", lapsed " + _yrLapsed + ", forgotten on a reload " + _yrForgot + (_yrLast != null ? "; the last: " + _yrLast : "");
         }
     }
 }

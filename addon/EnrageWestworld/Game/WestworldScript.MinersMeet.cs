@@ -97,7 +97,7 @@ namespace EnrageWestworld.InGame
                 foreach (int j in ring) { m.Men.Add(men[j]); m.Names.Add(who[j].Name); m.Tempers.Add(who[j].P.Personality); }
                 m.Speaker = MinersMeet.Speaker(m.Tempers, m.Seed);
                 m.Motion = MinersMeet.Motion(m.Seed);
-                _store.Counts[week] = 1;
+                _store.Counts[week] = (int)(g / 1440);   // the day it was held: the rewind clears it past the cut (Store.Rewind)
                 _miners = m;
                 _mmNextLook = now + 500;
                 Log.Write("MINERS meeting at " + MinersMeet.Town + ": " + m.Men.Count + " men (" + string.Join(", ", m.Names) + "), " + m.Names[m.Speaker] + " speaks; two of the company's men watching; on " + m.Motion);

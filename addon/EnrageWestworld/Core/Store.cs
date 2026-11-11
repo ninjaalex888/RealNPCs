@@ -276,8 +276,8 @@ namespace EnrageWestworld.Core
                     t.PutOffAt = 0;   // a stranger stepped between them after the cut: it hadn't happened yet (DEPTH item 7; review 1)
                     t.PutOffs = 0;
                 }
-            foreach (string k in Counts.Keys.Where(k => k.StartsWith("plate|", System.StringComparison.Ordinal) && Counts[k] > cut / 1440).ToList())
-                Counts.Remove(k);   // the Sunday plate came round after the cut (DEPTH item 11; review 1)
+            foreach (string k in Counts.Keys.Where(k => (k.StartsWith("plate|", System.StringComparison.Ordinal) || k.StartsWith("minersmeet|", System.StringComparison.Ordinal)) && Counts[k] > cut / 1440).ToList())
+                Counts.Remove(k);   // the Sunday plate came round after the cut (DEPTH item 11; review 1), the miners met after it (reserve R7)
             n += Links.RemoveAll(l => l.At > cut);
             n += TownRumours.RemoveAll(r => r.At > cut);
             n += Papers.RemoveAll(p => p.At > cut);
