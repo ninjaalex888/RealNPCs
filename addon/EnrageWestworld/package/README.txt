@@ -88,6 +88,8 @@ New in the towns and on the roads:
   answers them, bristles, or goes.
 - On New Year's Eve of 1899 and 1900 people argue whether the century turns at midnight
   ([World] CenturyTurns).
+- At Annesburg after the shift, miners already standing together talk of the scrip and take a
+  vote while two of the company's men watch ([Scenes] MinersMeet).
 - Three whistles at Annesburg, the shape-up on the Saint Denis docks, sale day at Valentine, fence cutters.
 - Witnesses who choose what to do, Pinkertons asking after you, a posse that rides out.
 - Drummers, the slate at the store, a sheriff's sale, camp meetings, river baptisms, box socials,

@@ -270,7 +270,7 @@ One date to start with: Easter 1899 fell on 2 April, the very Sunday your game's
 | --- | --- | --- | --- | --- |
 | **Payday Saturday** | Saturday afternoon pay fills the saloon and the barber's chair. Debts are called in, and wives wait at the saloon door. | Saturday lines, Links, routines | S |  |
 | **The slate at the store** | The storekeeper keeps a slate for regulars and refuses one who's behind. Pay a stranger's slate and the kindness travels. | Posts, worries (debt), Deeds | M |  |
-| **Company town** | Annesburg miners paid in scrip grumble, then meet outside the mine while company men watch. Side with either and the town remembers. | Regulars, Crowd, Rumours | L |  |
+| **Company town** | Annesburg miners paid in scrip grumble, then meet outside the mine while company men watch. Side with either and the town remembers. | Regulars, Crowd, Rumours | L | Partly built (TENHOUR R2's scrip talk; depth reserve R7: the meeting after the shift among men already standing together, words and a vote, two company men watching, in the news; siding with either not built) |
 | **Roundup season** | In spring and autumn ranch hands talk of the roundup, ride into town with wages after, and one comes back hurt. | Trade groups, clock month | M |  |
 | **Drummers on the train** | Travelling salesmen with sample cases work the store and saloon. Someone buys what they can't afford, and a new worry starts. | Arrivals, pitch scene, worries | M |  |
 | **The catalogue** | Residents dream over the mail-order catalogue; weeks later a parcel waits at the post office, and pride or disappointment follows. | Post office, inner lives | S |  |

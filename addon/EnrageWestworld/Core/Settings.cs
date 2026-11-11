@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 426;
+        public const int CurrentVersion = 427;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -122,6 +122,7 @@ namespace EnrageWestworld.Core
         public bool HoldupShots = false;     // [Scenes] with StoreHoldups: now and then he fires at one who bolts (someone can die on screen; off as shipped)
         public bool RainShelter = true;      // [Scenes] the town keeps a record of the rain: in it the street's errands wait, strangers under one roof get acquainted, and rain days end a farmer's drought (FOURTEENHOUR item 26; settings version 394)
         public bool CenturyTurns = true;   // [World] New Year's Eve of 1899 and 1900: two who stop together argue whether the century turns at midnight; the turn of the year on the ticker (Core/CenturyTurns.cs; DEPTH reserve R6; settings version 426)
+        public bool MinersMeet = true;   // [Scenes] at Annesburg after the shift, the working men already standing together talk of the scrip and the weights and take a vote, two of the company's men watching; captions only (Core/MinersMeet.cs; DEPTH reserve R7; settings version 427)
         public bool Grumble = true;   // [Scenes] an old hand and a friend of his talk over the greenhorn off the train where he can hear; he answers dry, bristles, or goes (Core/Grumble.cs; DEPTH reserve R5; settings version 425)
         public bool PostReward = true;   // [Scenes] at the jail door, J to put five dollars with the sheriff for whoever robbed someone you know; a regular brings the thief in, or claims it falsely, or nobody does (Core/YourReward.cs; DEPTH reserve R4; settings version 424)
         public bool SpreadRumour = true;   // [Scenes] in a saloon, J at a man who likes to talk: a word in his ear about a townsman you know; the town's tales carry it and it grows, and he hears of it (Core/Slander.cs; DEPTH reserve R3; settings version 423)
@@ -1071,6 +1072,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 427)
+                    log?.Invoke("Settings: new in this version: [Scenes] MinersMeet (on): the miners' meeting at Annesburg after the shift.");
                 if (s.SettingsVersion < 426)
                     log?.Invoke("Settings: new in this version: [World] CenturyTurns (on): New Year's Eve argues whether the century turns.");
                 if (s.SettingsVersion < 425)
@@ -2251,6 +2254,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("HoldupShots = " + B(HoldupShots) + "   ; with StoreHoldups: one in four who bolt are fired after (someone can die on screen); false: he curses and runs");
             b.AppendLine("RainShelter = " + B(RainShelter) + "   ; the town keeps a record of its rain while you're in it: in the rain the street's errands wait (nobody is walked anywhere), strangers under one roof talk and leave acquainted (they nod in passing after), and two days of rain in a farmer's town end his drought well; false: as before");
             b.AppendLine("Grumble = " + B(Grumble) + "   ; an old hand of the town and a friend of his (within 8 m) talk over a greenhorn off the train where he can hear (his boots, his hands, the winter coming); he answers them dry and wins them a little, bristles and they shrug it off, or goes without a word. With no friend by, the ribbing (Greenhorn) instead");
+            b.AppendLine("MinersMeet = " + B(MinersMeet) + "   ; at Annesburg after the shift on a weekday (six to nine), once a game week, when four or more of the town's working men are already standing together near you and two other men stand off watching: the boldest speaks up about the scrip and the weights, one backs him, one doubts, he asks for hands, and it's carried or it isn't; the company's men think it; the Around town box has it. Nobody is walked anywhere: they say it where they stand");
             b.AppendLine("PostReward = " + B(PostReward) + "   ; at a town's jail door (known once you've walked out of the sheriff's office), when someone whose name you know was robbed there in the last three game days: J to put five dollars with the sheriff; within the day a regular brings the thief in (the money is his), or a man claims it falsely (your money back), or nobody does (back after two game days); false: no such J");
             b.AppendLine("SpreadRumour = " + B(SpreadRumour) + "   ; with MemoriesBlur's tales: in a saloon, J beside a man who likes to talk, to put a word in his ear about a townsman whose name you know (he cheats at cards, drinks his wages...); it goes round as the town's tales do and grows, and the man it's said of hears it; false: no such J");
             b.AppendLine("NoteMeet = " + B(NoteMeet) + "   ; after you carried a word between two who fell out (Talk's errand), the next time they're near each other within two game days they meet in the street: taken, a word and a hand; sent back, a cold word and they part; false: the word is all there is");

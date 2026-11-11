@@ -1347,6 +1347,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST spread a rumour: " + SlanderStatus());
 			Log.Write("TEST post a reward: " + YourRewardStatus());
 			Log.Write("TEST the century turns: " + CenturyStatus());
+			Log.Write("TEST miners' meeting: " + MinersMeetStatus());
 			Log.Write("TEST old hands grumble: " + (!Core.Grumble.On ? "off ([Scenes] Grumble)" : _grumbleCast + " with a friend by to talk it over, " + _grumbleNoFriend + " with none (the ribbing instead)"));
 			Log.Write("TEST sleep on it: " + (Core.SleepOnIt.On ? (_engine != null ? _engine.SleepEased : 0) + " quarrels eased overnight this session" : "off ([Mind] SleepOnIt)"));
 			Log.Write("TEST walk together: " + WalkTogetherStatus());

@@ -55,6 +55,7 @@ namespace EnrageWestworld.InGame
             _looks.Add("note meet", 2000, NoteMeetStep);   // DEPTH reserve R2
             _looks.Add("spread a rumour", 2000, SlanderStep);   // DEPTH reserve R3
             _looks.Add("post a reward", 2000, YourRewardStep);   // DEPTH reserve R4   // J to step between two about to quarrel (WestworldScript.StepBetween.cs; DEPTH item 7: a new look registers here)
+            _looks.Add("miners' meeting", 500, MinersMeetStep);   // DEPTH reserve R7 (its own 30 s look; a beat every 3 s while one is under way)
             }
             int ran = _looks.Step(now);
             if (ran > _looksMinuteMost)
