@@ -602,6 +602,21 @@ namespace EnrageWestworld.Core
         /// something (a beating taken for him) is the help most strongly repaid. Off in Core so the harness goldens stand.
         public static bool StoodByOwes;
 
+        /// A man whose fine you paid at the jail door owes you as one you saved (SEAMS item 1, 2026-11-11; [Encounters]
+        /// FineOwes). Before, "paidfine" was read by nothing: the man you bought out of the cell didn't owe you, the town's regard
+        /// didn't count it, and he never thanked you. The reciprocity norm again: money laid down for a man's own foolishness, by
+        /// a stranger, is a debt he feels. Standing surety ("surety") is a kindness the street sees, but no debt: he's bound over
+        /// a week on your word, and may yet break it. A test jailing never owes. Off in Core so the harness goldens stand.
+        public static bool FineOwes;
+
+        /// One happening of his that leaves the one it was done to owing him (a rescue, a stand, a fine paid), timing aside.
+        public static bool Owing(Happening e)
+        {
+            if (e == null || e.DoerId != "player" || e.TargetId == null)
+                return false;
+            return e.Kind == "defend" || (StoodByOwes && e.Kind == "stoodby") || (FineOwes && e.Kind == "paidfine" && !e.Test);
+        }
+
         /// Everyone who owes him now (SavedLately's rule, in one pass over the log): for the name cards' "Owes you" (DEEPEN item 7).
         public static void OwedBy(List<Happening> log, long now, HashSet<string> into)
         {
@@ -609,7 +624,7 @@ namespace EnrageWestworld.Core
             if (log == null)
                 return;
             foreach (Happening e in log)
-                if (e != null && e.DoerId == "player" && e.TargetId != null && (e.Kind == "defend" || (StoodByOwes && e.Kind == "stoodby")) && e.At <= now && now - e.At < SavedMinutes)
+                if (Owing(e) && e.At <= now && now - e.At < SavedMinutes)
                     into.Add(e.TargetId);
         }
 
@@ -622,7 +637,7 @@ namespace EnrageWestworld.Core
             for (int i = log.Count - 1; i >= 0; i--)
             {
                 Happening e = log[i];
-                if (e == null || (e.Kind != "defend" && !(StoodByOwes && e.Kind == "stoodby")) || e.DoerId != "player" || e.TargetId != id || e.At > now || now - e.At >= SavedMinutes)
+                if (!Owing(e) || e.TargetId != id || e.At > now || now - e.At >= SavedMinutes)
                     continue;
                 return true;
             }

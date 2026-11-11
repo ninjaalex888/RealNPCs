@@ -258,6 +258,7 @@ namespace EnrageWestworld.InGame
             StreetMore.On = _cfg.StreetMore;     // [Scenes] StreetMore (FOURTEENHOUR item 14)
             LiftNerve.Apply(_cfg.LiftsWary);     // [Scenes] LiftsWary: the lift rarer, and choosier (Core/LiftNerve.cs; a player's report, 2026-11-10)
             Interact.StoodByOwes = _cfg.StoodByOwes;   // [Encounters] StoodByOwes: the man you stood with in a fight owes you (DEEPEN item 4)
+            Interact.FineOwes = _cfg.FineOwes;         // [Encounters] FineOwes: the man whose fine you paid owes you (SEAMS item 1)
             FriendCalls.ThiefWarnOn = _cfg.FriendsWarnThief;   // [Scenes] FriendsWarnThief: a friend warns you of a known pickpocket near (DEEPEN item 3)
             FriendChase.On = _cfg.FriendsChase;  // [Scenes] FriendsChase: a friend runs down the man who robbed you (Core/FriendChase.cs; DEEPEN item 2)
             WalkTogether.On = _cfg.WalkTogether; // [Mind] WalkTogether (FOURTEENHOUR item 15)

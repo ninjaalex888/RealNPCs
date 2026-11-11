@@ -28,6 +28,7 @@ namespace EnrageWestworld.Core
         public const int SavedWeight = 400;        // beside the friend call's others (the fight 180, a warning 45...): the saving first, nearly always
         public const long ThankAfter = 720;        // half a day on at the soonest: the shock first, then the thanks
         public const int ThankWithinDays = 21;
+        public const string FineSub = "fine";      // the memory of a fine you paid (warmth, Sub "fine": its own words, never "stepped in for me"; SEAMS item 1)
         public const int AgainDays = 14, AtLargeNewsLeast = 2, AtLargeNewsMost = 4;
         public const string WatchedMark = "kin:watched";
 
@@ -42,6 +43,8 @@ namespace EnrageWestworld.Core
             if (h.Contains("pulled")) return "pulled";
             if (h.Contains("poster")) return "poster";
             if (h.Contains("road")) return "road";
+            if (h.Contains("his fine")) return "fine";      // "paid his fine" (SEAMS item 1; never "stood surety", which leaves no memory)
+            if (h.Contains("stood with")) return "stood";   // "stood with him in a fight" (SEAMS item 2)
             return "any";
         }
 
@@ -67,7 +70,7 @@ namespace EnrageWestworld.Core
                 return null;
             MindMemory best = null;
             foreach (MindMemory m in mind)
-                if (m != null && m.Key != null && m.Key.StartsWith("saved:", StringComparison.Ordinal) && m.Sub == "defend" && now - m.At >= ThankAfter && now - m.At < ThankWithinDays * 1440L &&
+                if (m != null && m.Key != null && m.Key.StartsWith("saved:", StringComparison.Ordinal) && (m.Sub == "defend" || (Interact.FineOwes && m.Sub == FineSub)) && now - m.At >= ThankAfter && now - m.At < ThankWithinDays * 1440L &&
                     (told == null || !told.Contains(ThankedMark(m))) && (best == null || m.At > best.At))
                     best = m;
             return best;
@@ -87,6 +90,10 @@ namespace EnrageWestworld.Core
                                 "The whole street watched him at me. You were the one who moved. Thank you, {you}." } },
             { "poster", new[] { "You told me my face was on that paper. I kept out of sight, and they rode on through. Thank you.",
                                 "If you'd not warned me about that poster, I'd be in a cell. I owe you that." } },
+            { "fine", new[] { "You paid my fine at the jail, and you didn't know me from Adam. I've come to square it, {you}.",
+                              "A night in that cell was enough. You saw I didn't get a second. I don't forget a thing like that." } },
+            { "stood", new[] { "That fight. I was going down and you waded in beside me. I've wanted to say so since, {you}.",
+                               "You took blows that were meant for me. Not many would. I owe you for it." } },
             { "road", new[] { "You stopped for me on the road when nobody else would. I'm home and whole for it.",
                               "Out there on the road, you were the only one who pulled up. I've told everybody since." } },
             { "any",  new[] { "I never thanked you right for what you did for me. I'm doing it now.",

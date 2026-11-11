@@ -48,7 +48,7 @@ namespace EnrageWestworld.InGame
             if (j.Waiter != null && j.Waiter.Exists())
             {
                 SpeechCaption(Grammar.UpperFirst(j.Waits.Replace("his ", Person.FirstOf(j.Name) + "'s ")), Vouch.ThanksLine(j.Id), j.Waiter.Handle, 4500, true, false);
-                RecordEvent("paidfine", "player", "you", j.Id, j.Name, j.Waiter.Position, me.Handle, me.Handle, j.Waiter.Handle, "stood surety for him");
+                RecordEvent(_cfg.FineOwes ? "surety" : "paidfine", "player", "you", j.Id, j.Name, j.Waiter.Position, me.Handle, me.Handle, j.Waiter.Handle, "stood surety for him");   // its own kind: a kindness, not a debt (SEAMS item 1)
             }
             Hint(Vouch.BoundHint(Person.FirstOf(j.Name)), 6500);
             NewsPush(j.Town, Vouch.StoodNews(j.Name, j.Id), "news");

@@ -43,6 +43,8 @@ namespace EnrageWestworld.Core
                     return true;
                 case "stoodby":
                     return Interact.StoodByOwes;   // standing with a man losing a fight: a kindness the street saw, and the town's regard counts (DEEPEN item 8)
+                case "paidfine": case "surety":
+                    return Interact.FineOwes;      // his fine paid, or his surety stood: the waiting wife saw it, and the town's regard counts (SEAMS item 1)
             }
             return kind.StartsWith("deed:", StringComparison.Ordinal) && Minds.DeedGroup(kind.Substring(5)) == "deed:kindness";
         }
@@ -59,6 +61,8 @@ namespace EnrageWestworld.Core
                 case "apology": return "apologise";
                 case "defend": return "stand up for";
                 case "stoodby": return "stand with";
+                case "paidfine": return "pay the fine for";
+                case "surety": return "speak for";
                 default: return "do right by";
             }
         }

@@ -240,15 +240,53 @@ namespace EnrageWestworld.InGame
             MONEY._MONEY_DECREMENT_CASH_BALANCE(BrawlAfter.FineCents);
             j.Paid = true;
             _finesPaid++;
+            Happening paid = null;
             if (j.Waiter != null && j.Waiter.Exists())
             {
                 SpeechCaption(Grammar.UpperFirst(j.Waits.Replace("his ", Person.FirstOf(j.Name) + "'s ")), BrawlAfter.ThanksLine(j.Id), j.Waiter.Handle, 4500, true, false);
-                RecordEvent("paidfine", "player", "you", j.Id, j.Name, j.Waiter.Position, me.Handle, me.Handle, j.Waiter.Handle, "paid his fine");
+                paid = RecordEvent("paidfine", "player", "you", j.Id, j.Name, j.Waiter.Position, me.Handle, me.Handle, j.Waiter.Handle, "paid his fine");
             }
+            else if (_cfg.FineOwes)
+                paid = RecordEvent("paidfine", "player", "you", j.Id, j.Name, me.Position, me.Handle, me.Handle, me.Handle, "paid his fine");   // the debt never hangs on her being there (the advisor)
+            if (paid != null && j.Test)
+                paid.Test = true;   // a test jailing (the [ key's) leaves no debt
+            if (_cfg.FineOwes && !j.Test)
+                FineRemembered(j);
             j.ReleaseAt = Game.GameTime + 8000;
             j.Coming = true;   // he comes out to her, and she has her words with him (DEPTH item 6)
             NewsPush(j.Town, "A stranger paid " + j.Name + "'s fine at the jail this morning.", "news");
             Log.Write("BRAWL after: you paid " + j.Name + "'s fine (" + BrawlVerbs.Money(BrawlAfter.FineCents) + "); " + j.Waits + " thanks you");
+        }
+
+        /// The man whose fine you paid keeps it (SEAMS item 1; [Encounters] FineOwes): a memory in his own mind (warmth, Sub
+        /// "fine", the saved key with how "fine"), so his thoughts come back to it with their own words and he comes over
+        /// later to thank you (SecondActs' late thanks: "You paid my fine at the jail..."). Only someone who already has a
+        /// saved state, as SavedByYou's; nobody is made for it.
+        private void FineRemembered(Jailed j)
+        {
+            try
+            {
+                PersonState st = j != null && j.Id != null && _store != null ? _store.Find(j.Id) : null;
+                if (st == null)
+                {
+                    Log.Detail("FINE " + (j != null ? j.Name : "?") + " has no saved state: the debt is in the ledger, no memory written");
+                    return;
+                }
+                if (st.Mind == null)
+                    st.Mind = new List<MindMemory>();
+                long g = _store.LastGameMin;
+                string you = _engine.KnowsYourName(j.Id) && YourFullName() != null ? Person.FirstOf(YourFullName()) : "the stranger";
+                Minds.Note(st.Mind, new MindMemory
+                {
+                    Kind = "warmth", Sub = SecondActs.FineSub, Who = new List<string> { "player" }, Names = new List<string> { you }, Town = j.Town, At = g,
+                    How = "did", Role = "done", Feel = 3, Strength = 70, Key = "saved:" + j.Id + ":" + g / 1440 + ":fine"
+                }, g);
+                Log.Write("FINE " + j.Name + " owes you for his fine: the ledger, his memory, and his thanks to come");
+            }
+            catch (Exception ex)
+            {
+                Log.Write("FINE " + (j != null ? j.Name : "?") + "'s memory couldn't be kept: " + ex.Message);
+            }
         }
 
         /// The men who fought on his side in the fight just over (the join looks' sides), by id; null for none.
