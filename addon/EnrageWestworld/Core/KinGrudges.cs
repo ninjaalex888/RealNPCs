@@ -237,6 +237,14 @@ namespace EnrageWestworld.Core
                 yield return "You " + WrongWord(kind) + " the other week.";
             for (int i = 0; i < 4; i++)
                 yield return Opening(new KinGrudge { VictimName = "Edith Teale", Relation = "husband", WrongWord = WrongWord("tryst"), Temper = i == 0 ? "Hothead" : i == 1 ? "Proud" : i == 2 ? "Cold" : null, Name = "Amos Teale" }, "Morgan", "h" + i);
+            foreach (string temper in new[] { "Hothead", "Proud", "Cold", null })
+                for (int i = 0; i < 4; i++)
+                {
+                    var tk = new KinGrudge { VictimName = "Amos Teale", Relation = "brother", Wrong = Thanked, Temper = temper, Name = "Hiram Teale" };   // the thanks (SEAMS item 7)
+                    yield return Opening(tk, i % 2 == 0 ? "Morgan" : null, "th" + i);
+                    yield return Thought(tk, "tt" + i);
+                    yield return Notice(tk, "Valentine");
+                }
         }
     }
 }
