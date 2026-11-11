@@ -148,8 +148,20 @@ namespace EnrageWestworld.InGame
             Ped c = t.Chaser, me = Game.Player.Character;
             string seed = t.Started + "|fheld";
             string chaser = Person.FirstOf(t.ChaserName ?? "A man");
+            if (c == null || !c.Exists() || c.IsDead || PED.IS_PED_IN_COMBAT(c.Handle, me.Handle))
+            {
+                // the friend fell, or turned on you, between the tackle and the hand-back (the DEEPEN review): the money lies by
+                // the thief; yours again, with no friend's credit, memory or walk
+                if (t.Thief.Exists() && !t.Thief.IsDead && !PED.IS_PED_IN_COMBAT(h, me.Handle))
+                {
+                    TASK.CLEAR_PED_TASKS(h, true, false);
+                    TASK.TASK_SMART_FLEE_PED(h, me.Handle, 120f, -1, 0, 3f, 0);
+                }
+                LiftResolved(t, "caught");
+                Log.Write("FRIENDCHASE " + (t.ChaserName ?? "the friend") + " can't hand it over (down, or at you): the money's yours again");
+                return;
+            }
             _friendCatches++;
-            if (c != null && c.Exists())
             {
                 TASK.TASK_GO_TO_ENTITY(c.Handle, me.Handle, 15000, 1.5f, 1.2f, 0f, 0);   // over to you with it
                 SayLater(2500, chaser, FriendChase.Handed(seed), c.Handle, "mild");

@@ -1384,6 +1384,8 @@ namespace EnrageWestworld.InGame
             if (_wedding != null)
                 EndWeddingRun("a mission started");
             _plea = null;
+            if (_theft != null)
+                ChaseLetGo(_theft, now);   // a chaser let go with the theft (the DEEPEN review)
             _theft = null;
             _arrival = null;
             _later.Clear();

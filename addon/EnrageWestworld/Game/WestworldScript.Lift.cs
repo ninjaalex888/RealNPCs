@@ -93,7 +93,10 @@ namespace EnrageWestworld.InGame
                         caught++;   // the thieves you've run down here this week (DEEPEN item 5)
                 int share = LiftNerve.TriesPercent(kills, caught);
                 if (_rng.Next(100) >= share)
+                {
+                    _liftLookAt = now + 20 * 60000;   // the thief who thought twice keeps off a while: fewer, not only later (the DEEPEN review)
                     return why = "the thieves here think twice (" + kills + " killings of yours known, " + caught + " thieves you caught here this week, in " + _placeTown + ": " + share + "% try it)";
+                }
             }
             // never the Testing page's cast (Lex, 2026-10-30: the old man of the cast was sent, and shot); a known pickpocket near
             // is the one who goes, before any other man (he keeps to his trade)
@@ -276,7 +279,7 @@ namespace EnrageWestworld.InGame
                 _liftsBack++;
                 Feed.Notice("Your money back", how == "law" ? "The deputy hands you back your " + Cents(t.Amount) + "." :
                                                how == "friend" ? FriendChase.NoticeWords(Person.FirstOf(t.ChaserName ?? "A friend"), Cents(t.Amount)) : "You take back your " + Cents(t.Amount) + ".");
-                _liftLast = (how == "law" ? "the law caught him" : how == "killed" ? "killed" : "caught") + ", " + Cents(t.Amount) + " back";
+                _liftLast = (how == "law" ? "the law caught him" : how == "friend" ? (t.ChaserName ?? "a friend") + " caught him" : how == "killed" ? "killed" : "caught") + ", " + Cents(t.Amount) + " back";
                 if (how == "caught" && t.Thief != null)
                     ArthurSays("caught", t.Thief.Handle);   // his own words as he takes it back (WestworldScript.ArthurLines.cs)
             }

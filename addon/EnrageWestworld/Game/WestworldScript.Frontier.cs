@@ -326,6 +326,7 @@ namespace EnrageWestworld.InGame
                     _theft = null;
                     _thieves.Remove(h);
                     _lawCatches++;
+                    ChaseLetGo(t, now);   // anyone else after him stops (the DEEPEN review)
                     TASK.CLEAR_PED_TASKS(l.Handle, true, false);
                     WanderLater(l.Handle, now + 20000);
                     _lawChaseLast = "shot" + (t.Town != null ? " in " + t.Town : "");
@@ -377,6 +378,7 @@ namespace EnrageWestworld.InGame
                 _theft = null;
                 _thieves.Remove(h);
                 _lawCatches++;
+                ChaseLetGo(t, now);   // anyone else after him stops (the DEEPEN review)
                 Ped mark = t.Mark;
                 if (mark != null && mark.Exists() && !mark.IsDead && mark.Position.DistanceTo(me.Position) < 90f)
                     SayLater(1200, t.MarkName ?? (t.MarkWoman ? "The woman" : "The man"), LawChase.Thanks(t.MarkWoman, t.Started + "|thx"), mark.Handle, "thanks");
@@ -423,6 +425,7 @@ namespace EnrageWestworld.InGame
 
         private void ResolveTheft(Theft t, string how, int now)
         {
+            ChaseLetGo(t, now);   // a man (or your friend) still running after him is let go (the DEEPEN review: a lift's chaser had no release)
             _theft = null;
             if (t.Blip != null && t.Blip.Exists())
                 t.Blip.Delete();
