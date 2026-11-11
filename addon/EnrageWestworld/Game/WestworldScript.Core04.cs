@@ -1383,6 +1383,7 @@ namespace EnrageWestworld.InGame
             TranslationStep(now);   // the player's translation.txt read, and read again when it changes (WestworldScript.Translation.cs; Run 3, item 8)
             WorldQuietStep(now);   // whether a body's looks may be read now (WestworldScript.WorldQuiet.cs; Run 3, item 5), before a test row reads them
             TestingStep(now);   // a test asked for by its key or the panel (refused in a mission, with why)
+            ProofTourStep(now);   // the proof tour's next row, when one is walking (WestworldScript.ProofTour.cs; DEPTH item 2): before the mission's return, so it sees the mission and pauses
             if (MISC.GET_MISSION_FLAG())
             {
                 Safe("mission pause", _aMission);

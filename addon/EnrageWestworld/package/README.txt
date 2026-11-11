@@ -2094,7 +2094,11 @@ Alt+F     the RealNPCs settings panel (all RealNPCs and enRAGE settings; Setting
           "Bring the test cast here" brings eight people the tests need (a mother,
           two old men, a preacher and a listener, three men for a bully) to stroll about a spot 10 m in
           front of you; they're kept in the save, so the same people come each time, and
-          "Let the test cast go" takes them away. There is also a row that wipes every NPC's memory (Enter twice). With ReplaceEnrageSettings on, Alt+F11 opens it too, but
+          "Let the test cast go" takes them away. "The proof tour" walks every row that can run
+          where you stand, one about every 20 seconds ([Testing] ProofTourGapSeconds), and the log
+          says of each PROOF ran, skipped (why) or failed; rows that take money, can get you hurt,
+          end in a death or probe something unproven are passed over unless ProofTourRisky is on;
+          it pauses for a fight, a mission, a menu or the saddle, and the row again resumes it. There is also a row that wipes every NPC's memory (Enter twice). With ReplaceEnrageSettings on, Alt+F11 opens it too, but
           only on enRAGE 0.9.5.3; on other versions Alt+F11 opens enRAGE's own.
           About 15 seconds after loading, a notice says which key to use.
 RB+D-pad  on a controller: hold RB and press D-pad up for the settings panel, left for F7, right

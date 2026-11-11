@@ -91,7 +91,8 @@ namespace EnrageWestworld.InGame
         }
 
         /// One fire: the rails first (refused, with why), then the feature's own start path, logged with what it skipped.
-        private void TestFire(string id, string how, int now)
+        /// Null when it started, else why not (the proof tour reads it: DEPTH item 2).
+        private string TestFire(string id, string how, int now)
         {
             TestActions.Entry a = TestActions.Find(id);
             string seed = "test|" + id + "|" + now;
@@ -100,7 +101,7 @@ namespace EnrageWestworld.InGame
                 if (_lastFire == null)
                 {
                     TestRefuse(id, "nothing has been fired yet this session");
-                    return;
+                    return "nothing has been fired yet this session";
                 }
                 a = TestActions.Find(_lastFire);
                 how = "replay of " + _lastFireHow;
@@ -109,20 +110,20 @@ namespace EnrageWestworld.InGame
             if (a == null)
             {
                 TestRefuse(id, "no such test");
-                return;
+                return "no such test";
             }
             string rail = TestRail();
             if (rail != null)
             {
                 TestRefuse(a.Id, rail);
-                return;
+                return rail;
             }
             string skipped, said;
             string refused = TestDispatch(a, how, now, seed, out skipped, out said);
             if (refused != null)
             {
                 TestRefuse(a.Id, refused);
-                return;
+                return refused;
             }
             _fires++;
             _lastFire = a.Id;
@@ -132,6 +133,7 @@ namespace EnrageWestworld.InGame
             _lastFireResult = "started";
             Log.Write("TEST fire " + a.Id + ": started (" + how + (skipped != null ? "; skipped: " + skipped : string.Empty) + ")");
             Hint(said ?? "Testing: " + a.Label + (skipped != null ? " (skipping " + skipped + ")" : "") + ".", a.Id == "wakestrange" && said != null ? 60000 : said != null && said.Length > 120 ? 9000 : 5000);   // the strange acts': up until the act ends   // every test says what it's doing (Lex, 2026-10-31)
+            return null;
         }
 
         private void TestRefuse(string id, string why)
@@ -1057,6 +1059,8 @@ namespace EnrageWestworld.InGame
                     _cfg.ShowWakeStages = !_cfg.ShowWakeStages;   // for this session (the panel's row writes it to the ini)
                     said = "Wake stages " + (_cfg.ShowWakeStages ? "on: a tag over each person near you who has begun to wake." : "off.") + (_cfg.WestWorld ? "" : " West World is off, so nobody wakes.");
                     return null;
+                case ProofTour.Id:
+                    return ProofTourRow(now, out said);   // WestworldScript.ProofTour.cs (DEPTH item 2)
                 case "showminds":
                     _cfg.ShowMinds = !_cfg.ShowMinds;   // for this session (the panel's Show minds row writes it to the ini)
                     said = "Show minds " + (_cfg.ShowMinds ? "on: a card over the people near you." : "off.");

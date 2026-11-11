@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 410;
+        public const int CurrentVersion = 411;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -633,6 +633,9 @@ namespace EnrageWestworld.Core
         // [Testing] (overnight 2026-10-27): the Testing page's keys (Core/TestActions.cs). The ones that were settings
         // already (StalkerKey, WakeKey, ExecutionKey...) stay fields; the rest are kept here by their ini name.
         public bool TestKeys = true;
+        public bool ProofTour = true;          // [Testing] the proof tour row walks every Testing row that can run where you stand, each in its turn, each logged as PROOF ran, skipped or failed (Core/ProofTour.cs; DEPTH item 2; settings version 411)
+        public bool ProofTourRisky = false;    // [Testing] ... and the risky rows too: real money, danger to you, a death, a probe (off: passed over, and the log says why)
+        public int ProofTourGapSeconds = 20;   // [Testing] ... a row about every this many seconds (8-120), once the last one is no longer under way
         public bool ShowMinds = false;   // off as it comes (Lex, 2026-10-28; on from settings version 77 to the night of 10-28)
         public bool ShowWakeStages;   // [Testing] a tag over each person who has begun to wake (2026-10-27)
         public bool TestCastReturns = false;  // [Testing] the test cast kept in the save come back by themselves when you come to their town; off as it comes since 2026-10-29 (Lex: they should come only on the row's key; an ini that says true is set false once, version 96) (night 2026-10-28; settings version 90)
@@ -1053,6 +1056,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 411)
+                    log?.Invoke("Settings: new in this version: [Testing] ProofTour (on): the proof tour row walks every Testing row that can run where you stand; ProofTourRisky (off) adds the risky ones.");
                 if (s.SettingsVersion < 410)
                     log?.Invoke("Settings: new in this version: [Scenes] Vouch (on): vouch for a man in the cells.");
                 if (s.SettingsVersion < 409)
@@ -1596,6 +1601,7 @@ namespace EnrageWestworld.Core
         private void Clamp()
         {
             ReturnChance = Math.Max(0, Math.Min(100, ReturnChance));
+            ProofTourGapSeconds = Math.Max(8, Math.Min(120, ProofTourGapSeconds));
             StrangerReturnChance = Math.Max(0, Math.Min(100, StrangerReturnChance));
             RealityChance = Math.Max(0, Math.Min(100, RealityChance));
             AwakeningShare = Math.Max(0f, Math.Min(100f, AwakeningShare));
@@ -2415,6 +2421,9 @@ b.AppendLine("Translate = " + B(Translate) + "   ; a translation of your own: tr
             b.AppendLine();
             b.AppendLine("[Testing]");
             b.AppendLine("TestKeys = " + B(TestKeys) + "   ; master switch for the keys below (the settings panel's Testing page fires them with it off too)");
+            b.AppendLine("ProofTour = " + B(ProofTour) + "   ; the Testing row \"The proof tour\" walks every row that can run where you stand, each in its turn, and the log says of each PROOF ran, skipped (its own why) or failed, then a PROOF summary; it pauses for a fight, a mission, a menu or the saddle (the row again resumes it); false: the row does nothing");
+            b.AppendLine("ProofTourRisky = " + B(ProofTourRisky) + "   ; the proof tour runs the risky rows too (real money, danger to you, someone's death, a probe of something unproven); false: they're passed over and the log says why");
+            b.AppendLine("ProofTourGapSeconds = " + ProofTourGapSeconds + "   ; the proof tour fires a row about every this many seconds (8-120), once the last one is no longer under way");
             b.AppendLine("ShowMinds = " + B(ShowMinds) + "   ; a small card over named people within 11 m: temper, mood, worry, ties and what is on their mind");
             b.AppendLine("ShowWakeStages = " + B(ShowWakeStages) + "   ; a tag over each person within 25 m who has begun to wake: stirring, questioning, unravelling or awake, and what holds them back (riding, a counter, had their chance)");
             b.AppendLine("TestCastReturns = " + B(TestCastReturns) + "   ; the Testing page's test cast, once made and kept in the save, come back by themselves (out of sight) when you come to their town; off as it comes: the cast come only on the Testing row's key");

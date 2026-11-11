@@ -566,6 +566,18 @@ Why these read true, in short: crowds don't join a fight for the fight's sake, b
 once enough others have (Granovetter's thresholds, 1978); the law deters by being certain and near, not by being in town; and a
 street reads as a town when you can see who walks with whom, who won't look at whom, and who comes to the door the morning after.
 
+## Idea bank: proof and pace (DEPTH, 2026-11-10)
+
+Most of what's built has never been seen in a log (13 of 81 systems as of 0.7.24), and the add-on runs over its frame budget.
+These make one session prove much more, and keep it smooth.
+
+| Idea | What the player sees | Builds on | Size | Your call |
+| --- | --- | --- | --- | --- |
+| **The gate measures every commit** | Nothing in game: every commit says how big brawls grow, how often fights start and how many die, before and after. | the brawl simulator, ticktest's brawl tests | S | Built (depth item 1; a tool in the git-excluded daytime folder) |
+| **The proof tour** | One Testing row walks every row that can run where you stand, one at a time, and the log says what ran. | the Testing page | M | Built (depth item 2) |
+| **The log reader** | Nothing in game: a session's log read for what was seen, never seen and errored, and the frame's cost. | daytime/proof.py | S |  |
+| **The frame pass** | Fewer hitches: the looks that come due together are spread over frames. | the main tick's steps | M |  |
+
 ## How to build them
 
 Three building blocks carry most of the idea bank: a saved outcome for worries so the player can change them, one town-events framework grown from the wedding code, and a small interaction menu. Below are those three and eleven more. The last, who steers whom, sits under all of them.
