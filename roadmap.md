@@ -578,6 +578,7 @@ These make one session prove much more, and keep it smooth.
 | **The log reader** | Nothing in game: a session's log read for what was seen, never seen and errored, and the frame's cost. | daytime/proof.py | S | Built (depth item 3; a tool in the git-excluded daytime folder) |
 | **The frame pass** | Fewer hitches: the looks that come due together are spread over frames. | the main tick's steps | M | Built (depth item 4) |
 | **The clock pass** | The arcs you're meant to watch (a vouched man's week, the town's tales, a kin's visit, the judge, a loan, a sweetheart's patience) start and end within a session. | every day-long timer, sorted | M | Built (depth item 16) |
+| **Familiarity** | Two who keep ending up at the same bar or porch become acquainted: a nod in passing, a small lean to each other in a brawl. | Ties, the near scan | S | Built (depth item 17) |
 
 ## How to build them
 

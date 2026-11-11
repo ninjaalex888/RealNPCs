@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Familiarity** (`[Mind] Familiarity`, on; settings version 418). Two people of a town who keep ending up near each other at the same place, three times in a game day an hour or more apart, become acquainted: they nod or speak in passing from then on, and in a brawl one leans a little to the other. F7: `TEST familiarity:`.
+
 - **Arcs that end within a session** (`[World] SessionClock`, on; settings version 417). A game day is 48 real minutes, so the week-long arcs never finished in an evening's play. Now the ones you're meant to see play out within two game days (about an hour and a half): a man you vouched for, the town's tales, the cardsharp's return, the beaten man's plan, kin come about a wrong, the circuit judge, a loan falling due, the claim agent, a sweetheart's patience. What keeps things rare (a fever, the mine whistle, the shows, the prize fights), the calendar and how long people remember keep their lengths. Off: every old length.
 
 - **The revived dead seen by anyone** (`[World] RevivedSeen`, on, with West World; settings version 416). Someone dead on RealNPCs' books who walks again is now known not only by those who saw them die but by anyone who knew them; each thinks it, and the bold walk up and ask what they are, and get told they've had a drink too many.

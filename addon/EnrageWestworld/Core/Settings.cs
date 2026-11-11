@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 417;
+        public const int CurrentVersion = 418;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -121,6 +121,7 @@ namespace EnrageWestworld.Core
         public int HoldupChance = 15;        // [Scenes] with StoreHoldups: percent, the day's roll once a robber and a customer fit
         public bool HoldupShots = false;     // [Scenes] with StoreHoldups: now and then he fires at one who bolts (someone can die on screen; off as shipped)
         public bool RainShelter = true;      // [Scenes] the town keeps a record of the rain: in it the street's errands wait, strangers under one roof get acquainted, and rain days end a farmer's drought (FOURTEENHOUR item 26; settings version 394)
+        public bool Familiarity = true;   // [Mind] two of the town seen about the same place three times a game day, an hour apart, are acquainted: they nod in passing, and in a brawl one leans to the other (Core/Familiarity.cs; DEPTH item 17; settings version 418)
         public bool SessionClock = true;   // [World] the arcs you're meant to watch end within a session: two game days at most (a vouched man's week, the town's tales, a kin's visit, the judge, a loan, a sweetheart's patience...); off: every old length (Core/SessionClock.cs; DEPTH item 16; settings version 417)
         public bool RevivedSeen = true;   // [World] with West World and MindWakes: the revived dead are known by anyone who knew them, not only those who saw them die; each thinks it, and the brave ask them to their face (Core/RevivedSeen.cs; DEPTH item 15; settings version 416)
         public bool CollectionPlate = true;   // [Scenes] on a Sunday after the service, by a town's church, one of its churchmen brings the plate round to you: J a dime, a dollar, or let it pass (Core/CollectionPlate.cs; DEPTH item 11; settings version 415)
@@ -1062,6 +1063,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 418)
+                    log?.Invoke("Settings: new in this version: [Mind] Familiarity (on): those seen about the same place day after day get acquainted.");
                 if (s.SettingsVersion < 417)
                     log?.Invoke("Settings: new in this version: [World] SessionClock (on): the arcs you're meant to see end within a session.");
                 if (s.SettingsVersion < 416)
@@ -2222,6 +2225,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("HoldupChance = " + HoldupChance + "   ; with StoreHoldups: percent, the day's roll once a man who leans to it and a customer on their own are by the store near you (0 to 100; offline, 15 gave a holdup on about 3 town-days in 100 by a store)");
             b.AppendLine("HoldupShots = " + B(HoldupShots) + "   ; with StoreHoldups: one in four who bolt are fired after (someone can die on screen); false: he curses and runs");
             b.AppendLine("RainShelter = " + B(RainShelter) + "   ; the town keeps a record of its rain while you're in it: in the rain the street's errands wait (nobody is walked anywhere), strangers under one roof talk and leave acquainted (they nod in passing after), and two days of rain in a farmer's town end his drought well; false: as before");
+            b.AppendLine("Familiarity = " + B(Familiarity) + "   ; two of the town who end up near each other at the same place three times in a game day, an hour or more apart, become acquainted (a tie of no warmth): a nod or a word in passing, and in a brawl one leans to the other a little; false: only scenes make ties");
             b.AppendLine("SessionClock = " + B(SessionClock) + "   ; the arcs you're meant to watch start and end within two game days (about an hour and a half of play): a man you vouched for, the town's tales, the cardsharp's return, the beaten man's plan, kin come about a wrong, the circuit judge, a loan, the claim agent, a sweetheart's patience; what keeps things rare, the calendar and how long people remember keep their lengths; false: every old length");
             b.AppendLine("RevivedSeen = " + B(RevivedSeen) + "   ; with West World (and MindLive, MindWakes): someone dead on RealNPCs' ledger who walks again is known by anyone with a tie to them, not only those who saw them die; each thinks it over their head, and the bold walk up and ask, and get a denial; false: only those who saw the death, and only their act");
             b.AppendLine("CollectionPlate = " + B(CollectionPlate) + "   ; on a Sunday from eleven till one, within 60 m of a town's church, one churchman (never a crowd) brings the collection plate round to you: J a dime, a dollar, or let it pass; who gave is seen, and a stranger's dollar is the next Sunday's sermon; false: no plate");

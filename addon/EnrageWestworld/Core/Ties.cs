@@ -102,7 +102,7 @@ namespace EnrageWestworld.Core
                     return 1;
                 case "fright":
                     return 1;   // both saw him kill: fear seeks company (Core/SharedFright.cs)   // a fair fight out back, done: respect a step (Core/PrizeFight.cs)   // a quarrel mended counts for more than one more kind word
-                case "smalltalk": case "gossip": case "haggle": case "hosts": case "brushoff": case "avoid": case "mindtalk": case "introduced":   // (introduced: made known to each other by the player, Core/Verbs.cs)
+                case "smalltalk": case "gossip": case "haggle": case "hosts": case "brushoff": case "avoid": case "mindtalk": case "introduced": case "acquainted":   // (acquainted: seen about the same place three times a day, Core/Familiarity.cs; DEPTH item 17)   // (introduced: made known to each other by the player, Core/Verbs.cs)
                     return 0;
                 default:
                     return null;

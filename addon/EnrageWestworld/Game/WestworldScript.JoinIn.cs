@@ -388,6 +388,8 @@ namespace EnrageWestworld.InGame
             Scene sc = _director.CurrentScene;   // (QuarrelTie minds the switches: 1899's quarrels, the old soldiers' war)
             SideTie quarrel = sc != null ? BrawlSides.QuarrelTie(sc.Over, o, f, x) : null;   // a fight over silver: his side of it (item 9)
             SideTie best = own == null ? quarrel : quarrel == null || own.Pull >= quarrel.Pull ? own : quarrel;
+            if (best == null && Core.Familiarity.On && _store != null && _store.Ties.Any(t => t != null && t.Kind == Core.Familiarity.Kind && t.Has(on) && t.Has(fighter)))
+                best = new SideTie { Pull = Core.Familiarity.AcquaintedPull, Why = "for a man he knows by sight" };   // acquainted (DEPTH item 17): a small stake, smaller than a friend's
             if (Opinions.Act && other != null && ViewOfIds(on, other) == "contempt" && (best == null || best.Pull < Opinions.ContemptPull))
             {
                 _opScorn++;
