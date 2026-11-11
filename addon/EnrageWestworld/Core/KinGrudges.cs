@@ -212,7 +212,7 @@ namespace EnrageWestworld.Core
         public static string Notice(KinGrudge k, string town)
         {
             if (IsThanks(k))
-                return k.Name + ", " + Person.FirstOf(k.VictimName ?? "someone") + "'s " + (k.Relation ?? "kin") + ", found you in " + (town ?? "town") + " to thank you for what you did for him.";
+                return k.Name + ", " + Person.FirstOf(k.VictimName ?? "someone") + "'s " + (k.Relation ?? "kin") + ", found you in " + (town ?? "town") + " to thank you for what you did for " + (k.WrongWord != null && k.WrongWord.EndsWith(" her") ? "her" : "him") + ".";
             return k.Name + ", " + Person.FirstOf(k.VictimName ?? "someone") + "'s " + (k.Relation ?? "kin") + ", found you in " + (town ?? "town") + " on his account.";
         }
 

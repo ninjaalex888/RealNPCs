@@ -63,7 +63,7 @@ namespace EnrageWestworld.Core
             long now = e.At;
             KinGrudge k = new KinGrudge
             {
-                Id = Ids.New(), VictimId = p.Id, VictimName = p.Name, VictimTown = town, Wrong = KinGrudges.Thanked, WrongWord = "stood up for him", At = now,
+                Id = Ids.New(), VictimId = p.Id, VictimName = p.Name, VictimTown = town, Wrong = KinGrudges.Thanked, WrongWord = "stood up for " + (p.Woman ? "her" : "him"), At = now,
                 DueAt = KinGrudges.Due(now, p.Id + "|t|" + rel.Name), Name = rel.Name, Relation = rel.Relation, Town = rel.Town, Temper = KinGrudges.TemperOf(rel.Name)
             };
             if (Store.KinGrudges == null)
@@ -172,12 +172,24 @@ namespace EnrageWestworld.Core
                     KinDone(k, "never found you", now);
                     continue;
                 }
+                if (KinGrudges.IsThanks(k) && (Store.DeathOf(k.VictimId) != null || KinWronged(k.VictimId)))
+                {
+                    KinDone(k, "no thanks now: the one you saved is dead, or you wronged him since", now);   // (review 2 of SEAMS)
+                    continue;
+                }
                 if (k.DoerId != null && (doerNear == null || !doerNear(k.DoerId)))
                     continue;   // a townsman's: only when he's about (FIVEDAY item 32b)
                 if (k.VictimTown == town || k.Town == town)
                     return k;
             }
             return null;
+        }
+
+        /// Whether a wrong of yours on this person has since been taken up by kin (the wrongs' once-only mark): no thanks after it.
+        private bool KinWronged(string id)
+        {
+            PersonState st = id != null ? Store.Find(id) : null;
+            return st != null && st.Has(KinGrudges.Mark);
         }
 
         public void KinDone(KinGrudge k, string how, long now)
