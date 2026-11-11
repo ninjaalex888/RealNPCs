@@ -1335,6 +1335,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST hand back: " + HandBackStatus());
 			Log.Write("TEST brawl verbs: " + BrawlVerbsStatus());
 			Log.Write("TEST brawl after: " + BrawlAfterStatus());
+			Log.Write("TEST the brawler's wife: " + JailWordsStatus());
 			Log.Write("TEST walk together: " + WalkTogetherStatus());
 			Log.Write("TEST old soldiers: " + OldSoldiersStatus());
 			Log.Write("TEST snubs: " + SnubStatus());

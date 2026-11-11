@@ -26,7 +26,13 @@ namespace EnrageWestworld.InGame
             public int Tries, ReleaseAt;
             public Person P;      // who he is, for the chance he keeps the peace if you vouch for him (reserve R22)
             public bool Test;     // the Testing row's "vouch": waited for at any hour
+            public List<string> Mates;   // the men who fought on his side (DEPTH item 6: they keep their heads down when she has her say)
+            public bool Coming;          // he's to come out to her now (paid, or noon with you near): the door is tried until he does
+            public int OutTries;
+            public Ped Him;              // his body, made at the door when he comes out
         }
+
+        private int _jailWords, _jailWordsNoScene, _jailMatesAway;
 
         private readonly List<Jailed> _jailed = new List<Jailed>();
         private readonly Dictionary<int, int> _afterSide = new Dictionary<int, int>();
@@ -113,7 +119,7 @@ namespace EnrageWestworld.InGame
             if (w == null || w.Id == null || w.Name == null || _jailed.Any(j => j.Id == w.Id))
                 return;
             bool married = w.P != null && w.P.Family == "married";
-            _jailed.Add(new Jailed { Id = w.Id, Name = w.Name, Town = _placeTown, Day = JailNight(), Waits = married ? "his wife" : "his mother", P = w.P });
+            _jailed.Add(new Jailed { Id = w.Id, Name = w.Name, Town = _placeTown, Day = JailNight(), Waits = married ? "his wife" : "his mother", P = w.P, Mates = AfterMatesOf(t, w.Id) });
             if (_jailed.Count > 6)
                 _jailed.RemoveAt(0);
             Log.Write("BRAWL after: " + w.Name + " is locked up overnight at " + _placeTown + "; " + (married ? "his wife" : "his mother") + " will be at the door in the morning" +
@@ -154,6 +160,27 @@ namespace EnrageWestworld.InGame
             {
                 Jailed j = _jailed[i];
                 bool over = day > j.Day + 1 || (!j.Test && day == j.Day + 1 && hour >= BrawlAfter.ToHour);   // (the Testing row's waits at any hour)
+                if (over && !j.Paid && !j.Coming && j.Waiter != null && j.Waiter.Exists() && _placeTown == j.Town && me.Position.DistanceTo(j.Waiter.Position) <= BrawlAfter.DoorMetres)
+                {
+                    j.Coming = true;   // noon, his fine unpaid, and she's still at the door with you near: he comes out to her (DEPTH item 6)
+                    j.ReleaseAt = now;
+                }
+                if (j.Coming && j.ReleaseAt > 0 && now >= j.ReleaseAt)
+                {
+                    if (!JailComesOut(j, now))
+                        continue;   // the door in view: tried again on the next look
+                    if (over)
+                    {
+                        if (!j.Paid)
+                        {
+                            _jailSour++;
+                            NewsPush(j.Town, j.Name + " " + BrawlAfter.OutSourLine(j.Id), "news");
+                            Log.Write("BRAWL after: " + j.Name + " is out of the cells at noon, his fine unpaid");
+                        }
+                        _jailed.RemoveAt(i);
+                    }
+                    continue;
+                }
                 if (over)
                 {
                     if (!j.Paid)
@@ -167,7 +194,7 @@ namespace EnrageWestworld.InGame
                     _jailed.RemoveAt(i);
                     continue;
                 }
-                if (j.ReleaseAt > 0 && now >= j.ReleaseAt)
+                if (j.ReleaseAt > 0 && now >= j.ReleaseAt && !j.Coming)
                     JailWaiterGo(j, false);
                 Vector3 door;
                 if (day != j.Day + 1 || (!j.Test && hour < BrawlAfter.FromHour) || j.Paid || _placeTown != j.Town || !_jailDoor.TryGetValue(j.Town, out door) || me.Position.DistanceTo(door) > BrawlAfter.DoorMetres)
@@ -219,8 +246,108 @@ namespace EnrageWestworld.InGame
                 RecordEvent("paidfine", "player", "you", j.Id, j.Name, j.Waiter.Position, me.Handle, me.Handle, j.Waiter.Handle, "paid his fine");
             }
             j.ReleaseAt = Game.GameTime + 8000;
+            j.Coming = true;   // he comes out to her, and she has her words with him (DEPTH item 6)
             NewsPush(j.Town, "A stranger paid " + j.Name + "'s fine at the jail this morning.", "news");
             Log.Write("BRAWL after: you paid " + j.Name + "'s fine (" + BrawlVerbs.Money(BrawlAfter.FineCents) + "); " + j.Waits + " thanks you");
+        }
+
+        /// The men who fought on his side in the fight just over (the join looks' sides), by id; null for none.
+        private List<string> AfterMatesOf(int t, string id)
+        {
+            int side;
+            if (!_afterSide.TryGetValue(t, out side))
+                return null;
+            List<string> mates = null;
+            foreach (KeyValuePair<int, int> kv in _afterSide)
+            {
+                MindWho w;
+                if (kv.Key == t || kv.Value != side || !_mindWho.TryGetValue(kv.Key, out w) || w.Id == null || w.Id == id)
+                    continue;
+                (mates ?? (mates = new List<string>())).Add(w.Id);
+            }
+            return mates;
+        }
+
+        /// He comes out of the cells (DEPTH item 6): made at the door while nobody looks at it, and she has her words with him in the
+        /// street (a Director scene, kind jailwords), then they walk off together; the men who fought beside him, near, turn away.
+        /// False: not yet (the door in view, or no room to make him); after 10 tries, or with no one waiting, she goes as before.
+        private bool JailComesOut(Jailed j, int now)
+        {
+            Ped me = Game.Player.Character;
+            Vector3 door;
+            if (j.Waiter == null || !j.Waiter.Exists() || PED.IS_PED_IN_COMBAT(j.Waiter.Handle, 0) || !_jailDoor.TryGetValue(j.Town, out door))
+            {
+                JailWaiterGo(j, false);
+                return true;
+            }
+            if (j.Him == null)
+            {
+                if (j.OutTries++ >= 10)
+                {
+                    JailWaiterGo(j, false);
+                    return true;
+                }
+                if (Natives.Looking(door + new Vector3(0f, 0f, 1f), 50f) || !Spawner.SafeToSpawn())
+                    return false;
+                uint model = Spawner.ModelFor(j.Town, false, Voice.Hash(j.Id + "|out"));
+                j.Him = Spawner.Spawn(model, door + new Vector3(-0.6f, 0.6f, 0f), Voice.Hash(j.Id) % 360);
+                if (j.Him == null)
+                    return false;
+            }
+            Ped her = j.Waiter, him = j.Him;
+            j.Waiter = null;
+            j.Him = null;
+            j.ReleaseAt = 0;
+            string label = Grammar.UpperFirst(j.Waits.Replace("his ", Person.FirstOf(j.Name) + "'s "));
+            string seed = j.Id + "|out|" + _store.LastGameMin / 60;
+            SceneCast cast = BuildCast(her, him, null, false, me, now, seed);
+            cast.Names[0] = label;
+            cast.Names[1] = j.Name;
+            Scene s = BrawlAfter.ComesOut(cast, seed, j.Waits == "his wife", j.Paid, j.P != null ? j.P.Personality : null);
+            Action done = () =>
+            {
+                foreach (Ped p in new[] { her, him })
+                    if (p != null && p.Exists())
+                        Spawner.Release(p, !ENTITY.IS_ENTITY_ON_SCREEN(p.Handle) && !PED.IS_PED_IN_COMBAT(p.Handle, 0));
+            };
+            if (!_director.Start(s, new List<Ped> { her, him }, new[] { label, j.Name }, seed, done, cast))
+            {
+                _jailWordsNoScene++;
+                Log.Write("BRAWL after: " + j.Name + " came out of the cells, but a scene was already playing: " + j.Waits + " and he walk off without a word");
+                foreach (Ped p in new[] { her, him })
+                    if (!PED.IS_PED_IN_COMBAT(p.Handle, 0))
+                        TASK.TASK_WANDER_STANDARD(p.Handle, 10f, 10);
+                done();
+                return true;
+            }
+            _jailWords++;
+            Log.Write("BRAWL after: " + j.Name + " came out of the cells" + (j.Paid ? " (his fine paid)" : " at noon") + ", and " + j.Waits + " has her words with him in the street");
+            int away = 0;
+            if (j.Mates != null)
+                foreach (int h in _mindNear)
+                {
+                    MindWho w;
+                    if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !j.Mates.Contains(w.Id) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                        continue;
+                    Ped m = new Ped(h);
+                    if (m.Position.DistanceTo(door) > BrawlAfter.MatesMetres || PED.IS_PED_USING_ANY_SCENARIO(h) || NotFree(h) || _director.Involves(h) || MayDirectWhyNot(m) != null || PED.IS_PED_IN_COMBAT(h, 0))
+                        continue;
+                    Vector3 awayDir = m.Position - door;
+                    awayDir.Z = 0f;
+                    awayDir = Math.Abs(awayDir.X) + Math.Abs(awayDir.Y) < 0.1f ? new Vector3(1f, 0f, 0f) : awayDir.Normalized;
+                    TASK.TASK_TURN_PED_TO_FACE_COORD(h, m.Position.X + awayDir.X * 3f, m.Position.Y + awayDir.Y * 3f, m.Position.Z, 2500);   // turned away from it, as the street's own step-round does
+                    _ticker.Push(Person.FirstOf(w.Name) + ", thinking", BrawlAfter.MateThought(w.Id + seed), "near", h);
+                    _jailMatesAway++;
+                    away++;
+                    Log.Write("BRAWL after: " + w.Name + ", who fought beside " + Person.FirstOf(j.Name) + ", keeps his head down");
+                }
+            return true;
+        }
+
+        /// F7: the brawler's wife (DEPTH item 6).
+        private string JailWordsStatus()
+        {
+            return BrawlAfterOn ? "words in the street " + _jailWords + " (no room for the scene " + _jailWordsNoScene + "), men who fought beside him turned away " + _jailMatesAway : "off ([Scenes] BrawlAfter)";
         }
 
         /// The one waiting goes on her way, and is handed back (deleted if nobody sees).

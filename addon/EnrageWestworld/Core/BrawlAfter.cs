@@ -59,6 +59,58 @@ namespace EnrageWestworld.Core
         public static string ThanksLine(string seed) { return Voice.Pick(seed + "|thanks", Thanks); }
         public static string OutSourLine(string seed) { return Voice.Pick(seed + "|out", OutSour); }
         public static string DamageLine(string seed) { return Voice.Pick(seed + "|damage", Damages); }
-        public static IEnumerable<string> AllLines() { foreach (string[] a in new[] { Waits, Thanks, OutSour, Damages, Paid }) foreach (string s in a) yield return s; }
+        // ---- the brawler's wife (DEPTH item 6): paid or not, when he comes out of the cells she has her words with him in the street,
+        // where the town can hear, and the men who fought beside him, if they're near, keep their heads down. Why it reads true: public
+        // reproach, not the fine, was what a town used to bring a brawler to heel. A the one who waited (his wife or his mother), B him.
+        public const string OutKind = "jailwords";
+        public const float MatesMetres = 25f;
+
+        private static readonly string[] WifeOpens = { "There he is. The whole town knows where you slept, {b}.", "Look at you. Your good shirt, and the blood on it.",
+                                                       "Do you know what they're saying about us, {b}? Do you?" };
+        private static readonly string[] MotherOpens = { "Your father never once saw the inside of a cell, {b}.", "I didn't raise you for this, {b}. Look at me.",
+                                                         "A night in there. My son. Like some drifter." };
+        private static readonly string[] PaidBy = { "A stranger paid your fine. A stranger, {b}!", "Somebody had to pay for you. It wasn't going to be you." };
+        private static readonly string[] Unpaid = { "Noon, and out in front of everybody. Two dollars we haven't got.", "They kept you till noon so the whole street could see." };
+        private static readonly Dictionary<string, string[]> HeSays = new Dictionary<string, string[]>
+        {
+            { "bold", new[] { "He started it. I'd do it again.", "Not here. Not in the street.", "Leave it, woman. I've had a night of it." } },
+            { "fearful", new[] { "I know. I know. I'm sorry.", "It won't happen again. I swear it.", "Please. Not here, with them all looking." } },
+            { "cold", new[] { "It's done. Let's go.", "Talking won't change it.", "We'll speak of it at home." } },
+            { "plain", new[] { "You're right. I'm a fool.", "I'm sorry. I'll make it right.", "I never meant for it to go so far." } },
+        };
+        private static readonly string[] SheEnds = { "Home. And you'll face the children.", "Walk. Head up or down, I don't care which.", "Come on. People are looking." };
+        private static readonly string[] MatesThink = { "Don't look. She'll start on you next.", "That could have been me in there.", "Keep walking. Nothing to do with me." };
+
+        /// The scene when he comes out: her words, his answer by his nature, her last, and the two walk off together (homewith).
+        public static Scene ComesOut(SceneCast c, string seed, bool wife, bool paid, string temper)
+        {
+            string b = c != null && c.Names != null && c.Names[1] != null ? Person.FirstOf(c.Names[1]) : "you";
+            string group = Minds.TemperGroup(temper);
+            string[] says;
+            if (!HeSays.TryGetValue(group ?? "", out says))
+                says = HeSays["plain"];
+            Scene s = new Scene { Kind = OutKind, Summary = (wife ? "his wife" : "his mother") + " had words with him in the street when he came out of the cells", Doer = 0 };
+            s.Beats.Add(new Beat(0, null, null, "approach", 200) { To = 1 });
+            s.Beats.Add(new Beat(0, Voice.Pick(seed + "|open", wife ? WifeOpens : MotherOpens).Replace("{b}", b), "angry", "face") { To = 1 });
+            s.Beats.Add(new Beat(1, Voice.Pick(seed + "|he", says), group == "bold" ? "angry" : "mild", "face") { To = 0 });
+            s.Beats.Add(new Beat(0, Voice.Pick(seed + "|fine", paid ? PaidBy : Unpaid).Replace("{b}", b), "angry") { To = 1 });
+            s.Beats.Add(new Beat(0, Voice.Pick(seed + "|end", SheEnds), "angry", "homewith") { To = 1 });
+            return s;
+        }
+
+        public static string MateThought(string seed) { return Voice.Pick(seed + "|mate", MatesThink); }
+
+        public static IEnumerable<string> AllLines()
+        {
+            foreach (string[] a in new[] { Waits, Thanks, OutSour, Damages, Paid, PaidBy, Unpaid, SheEnds, MatesThink })
+                foreach (string s in a)
+                    yield return s.Replace("{b}", "Amos");
+            foreach (string[] a in new[] { WifeOpens, MotherOpens })
+                foreach (string s in a)
+                    yield return s.Replace("{b}", "Amos");
+            foreach (string[] a in HeSays.Values)
+                foreach (string s in a)
+                    yield return s;
+        }
     }
 }

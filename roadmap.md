@@ -535,7 +535,7 @@ streets with more between people. "14h N" is the fourteen-hour plan's item (R: i
 | **The fight at the dance** | A jealous word at the Saturday dance; the fiddler plays on while two men take it outside, and their friends follow. | Dances, jealous, the cascade | M |  |
 | **Election day** | The polls in the saloon, as they often were, the parties' men and the whiskey: the year's worst brawl. | Election day (P22), AlmanacSides | M |  |
 | **The fight retold wrong** | Three days on, the town's version has twelve men and a knife in it, and the man who started it is somebody else. | Rumours, memories that blur | S | Built (14h item 24) |
-| **The brawler's wife** | The morning after, she has words for him in the street where everyone can hear, and the men who fought beside him keep their heads down. | Domestic, Exchanges | S | Partly built (14h item 12: she waits at the jail door; no words in the street) |
+| **The brawler's wife** | The morning after, she has words for him in the street where everyone can hear, and the men who fought beside him keep their heads down. | Domestic, Exchanges | S | Built (14h item 12: she waits at the jail door; depth item 6: her words in the street when he comes out, the men who fought beside him turn away) |
 
 ### The town between people
 

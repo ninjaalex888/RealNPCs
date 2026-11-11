@@ -62,6 +62,8 @@ New in the towns and on the roads:
   his friends, while the barkeep sours on the church women), a shivaree, a proper Sunday,
   wakes, mourners at graves.
 - A notice board, and being told what you missed when you come back to a town.
+- A brawler let out of the cells gets his wife's (or his mother's) words in the street, and
+  the men who fought beside him keep their heads down.
 - Three whistles at Annesburg, the shape-up on the Saint Denis docks, sale day at Valentine, fence cutters.
 - Witnesses who choose what to do, Pinkertons asking after you, a posse that rides out.
 - Drummers, the slate at the store, a sheriff's sale, camp meetings, river baptisms, box socials,

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The brawler's wife** (with `[Scenes] BrawlAfter`). When a man the law locked up after a brawl comes out of the cells, his fine paid by you or not at noon, the wife or mother who waited at the jail door has her words with him in the street, and they walk off together. The men who fought beside him, if they're near, turn away and keep their heads down. F7: `TEST the brawler's wife:`.
+
 - **The husband marched home** (with `[Scenes] TemperanceDoor`). When the temperance ladies put the pledge to a man at the saloon door and his own wife (or his sweetheart) is in the street near him, she takes his arm and walks him home past the men he drinks with; he goes meek or grumbling by his nature. The barkeep, watching his custom walk off, thinks less of the church woman for it, says so to the next man at his bar, and from then on holds her in contempt. F7: the door's line counts both.
 
 - **Fewer hitches from the background** (`[Mind] LookScheduler`, on; settings version 412). Twenty-nine of RealNPCs' background looks (the fever's thoughts, the posters, the calendar, the town's rivals and more) each kept its own timer, so after a load all of them ran on the same frame, and two dozen met again once a minute. Now at most two run on a frame, the most overdue first, each still at its own pace. The log gains a `PERF minute` line: the minute's mean and peak frame cost and its costliest parts. F7: `TEST looks:`.
