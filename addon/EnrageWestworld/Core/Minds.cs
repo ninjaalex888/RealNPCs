@@ -123,7 +123,7 @@ namespace EnrageWestworld.Core
                     return "deed:violence";
                 case "robbery": case "theft": case "horsetheft": case "looting": case "graverobbing":
                     return "deed:theft";
-                case "mercy": case "peace": case "thiefcaught": case "spared":
+                case "mercy": case "peace": case "thiefcaught": case "spared": case "saved": case "rescue":   // (the rescues: SEAMS item 17)
                     return "deed:kindness";
                 default:
                     return null;

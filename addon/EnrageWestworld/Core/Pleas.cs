@@ -221,6 +221,8 @@ namespace EnrageWestworld.Core
                 case "peace":
                 case "thiefcaught":
                 case "wedding":
+                case "saved":    // the rescues (SEAMS item 17)
+                case "rescue":
                     return true;
                 default:
                     return false;

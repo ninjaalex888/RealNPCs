@@ -162,6 +162,12 @@ namespace EnrageWestworld.Core
             { "mercy", new Kind { Weight = 20, Mood = "Steady", Rumour = "{who} had a gun on {detail} {place} and let them live",
                 Thoughts = new[] { "{Who} held a gun on {detail} {place}. Then put it away. Strange man.", "They say {detail} begged and {who} listened. Didn't think he had it in him." },
                 Remarks = new[] { "Heard you had a gun on {detail} and let them walk. Mercy's rare out here.", "You let that poor soul live. Folks are talking about it." } } },
+            // someone you saved in the street or on the road (SavedByYou: the bully pulled off, the beater put down, the hogtied cut
+            // loose, the poster's warning, help on the road; SEAMS item 17, [Scenes] SavedKnown). The rope has its own "rescue".
+            { "saved", new Kind { Weight = 24, Mood = "Steady", Rumour = "{who} stood up for {detail} {place} when it counted",
+                Thoughts = new[] { "Heard {who} stood up for {detail} {place}. Didn't know {detail} had a friend like that.", "{Who} took {detail}'s part {place}. Nobody else stirred, they say." },
+                Remarks = new[] { "You're the one who came to {detail}'s aid. That got round.", "Folks say you didn't walk past when {detail} was in trouble." },
+                Paper = "A stranger took the part of {detail} {place}, and rode on before anyone thought to ask his name." } },
             // a man saved from an execution on the road (Executions.cs)
             { "rescue", new Kind { Weight = 35, Mood = "Steady", Rumour = "{who} saved {detail} from two gunmen {place}",
                 Thoughts = new[] { "{Who} shot two men off {detail} {place}. They had him on his knees.", "{detail} would be in the ground if {who} hadn't come along. Funny old world." },

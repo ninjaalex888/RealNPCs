@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using EnrageWestworld.Core;
 using RDR2;
+using RDR2.Math;
 using RDR2.Native;
 
 namespace EnrageWestworld.InGame
@@ -75,6 +76,7 @@ namespace EnrageWestworld.InGame
                         }, _store.LastGameMin);
                     }
                 }
+                SavedKnown(handle, name, how);
                 _savedCount++;
                 _savedLast = (name ?? "someone") + " (" + how + ")";
                 Log.Write("SAVED " + (name ?? "someone") + ": " + how + "; theirs for good (fondness to the top" + (id != null ? "; the ledger and their memory have it" : "; nobody the add-on knows by name") + ")");
@@ -103,6 +105,21 @@ namespace EnrageWestworld.InGame
                 How = "did", Role = "done", Feel = 3, Strength = strength, Key = "saved:" + id + ":" + g / 1440 + ":" + how
             }, g);
             return true;
+        }
+
+        /// The town hears of the saving (SEAMS item 17; [Scenes] SavedKnown): a "saved" deed, as a fight broken up or a thief run down
+        /// is one, so those who saw it remember it, it's told about ("stood up for Abe"), the paper may carry it and the
+        /// town's ledger counts it. Before, only the rope's rescue (Executions) was a deed: the bully pulled off a man, his beater
+        /// put down, the hogtied cut loose were known only to the one saved. Never the rope (its own "rescue"), never a test's.
+        private void SavedKnown(int handle, string name, string how)
+        {
+            if (!_cfg.SavedKnown || !_cfg.Deeds || _engine == null || SecondActs.HowKind(how) == "rope" || TestPerson(handle) || !ENTITY.DOES_ENTITY_EXIST(handle))
+                return;
+            Vector3 pos = ENTITY.GET_ENTITY_COORDS(handle, true, true);
+            long g = Bridge.Now();
+            string who = name != null ? Person.FirstOf(name) : "a stranger";
+            NoteDeedMinds(_engine.OnDeed(Deeds.Make("saved", who, _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, handle, 25f)), WitnessesNear(pos, handle, 25f), g), pos, handle);
+            Log.Write("SAVED " + who + ": a good deed the town will hear of (" + how + ")");
         }
 
         /// enRAGE's fondness to the top, when it has the person; false when it hasn't yet.

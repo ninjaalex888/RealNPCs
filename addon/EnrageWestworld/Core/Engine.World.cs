@@ -599,7 +599,7 @@ namespace EnrageWestworld.Core
                 return d;
             }
             DeedTalk(d, now);
-            if (Cfg.Newspaper && (d.Kind == "wedding" || d.Kind == "spared" || d.Kind == "peace" || d.Kind == "thiefcaught" || d.Kind == "mercy" || d.Kind == "rescue"))
+            if (Cfg.Newspaper && (d.Kind == "wedding" || d.Kind == "spared" || d.Kind == "peace" || d.Kind == "thiefcaught" || d.Kind == "mercy" || d.Kind == "rescue" || d.Kind == "saved"))
                 Requests.Add(new WorldRequest { Kind = "gooddeed", Text = Deeds.Rumour(d, "You"), Town = d.Town });
             return d;
         }
@@ -712,6 +712,8 @@ namespace EnrageWestworld.Core
                 case "peace": return "the stranger who broke up the fight";
                 case "thiefcaught": return "the pickpocket getting caught" + at;
                 case "mercy": return "the stranger who put his gun away";
+                case "saved": return "the stranger who took someone's part" + at;   // (SEAMS item 17)
+                case "rescue": return "the rescue on the road" + at;
                 default: return null;
             }
         }

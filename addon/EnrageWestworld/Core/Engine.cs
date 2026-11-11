@@ -1628,7 +1628,7 @@ namespace EnrageWestworld.Core
 		/// Whether the player greeted them first, set by the game side before a flirt: 1 yes, -1 no, 0 not known.
 		public int GreetedFirst;
 
-		private static readonly HashSet<string> GoodDeeds = new HashSet<string> { "mercy", "spared", "thiefcaught", "peace" };
+		private static readonly HashSet<string> GoodDeeds = new HashSet<string> { "mercy", "spared", "thiefcaught", "peace", "saved", "rescue" };   // (the rescues: SEAMS item 17)
 
 		/// Everything that weighs when the player flirts with someone (Interest.Ask): what they think of him, who they are
 		/// (the profile their thoughts come from), their day as their thoughts show it (a mood, the worry they're living
