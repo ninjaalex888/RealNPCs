@@ -610,6 +610,10 @@ namespace EnrageWestworld.Core
             { "oldtoast|saw|fresh", new[] { "{who} and an old soldier of the other side had words, then raised a glass to the dead.", "Two old soldiers, {who} one of them. The war, again. It ended in a toast." } },
             // the street keeps these scenes with no role (they aren't Minds.OneSided): the role pools below were never read, and the
             // memory fell to the warmth group's courting words; these plain ones read the same from either side (SEAMS audit)
+            // watched: alms given, two made it up. Without these the watcher had the warmth group's courting "saw" words ("{a} and
+            // {b}. Wedding by summer, mark me.") for a coin to a beggar (SEAMS audit; WagersTest sweeps every warm kind)
+            { "charity|saw|fresh", new[] { "Saw {a} put a coin in {b}'s hand. Didn't make a show of it.", "{a} gave {b} something to eat by. Decent of {a}." } },
+            { "makeup|saw|fresh", new[] { "{a} and {b} shook hands on it at last. About time.", "Saw {a} and {b} make it up. The street breathes easier." } },
             { "comrades|did|fresh", new[] { "{who} and I wore the same coat once. We said so, and that was plenty.", "Talked the old war over with {who}. Few enough of us left to." } },
             { "oldtoast|did|fresh", new[] { "Argued the war with {who}, then drank to the dead. Both sides have them.", "{who} fought for the other side. We raised a glass all the same." } },
             { "warheard|did|fresh", new[] { "Sat over the war a while with {who}. Neither of us hurried it.", "{who} and I talked of the fighting. Some things want saying aloud." } },
