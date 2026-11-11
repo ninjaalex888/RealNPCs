@@ -1376,6 +1376,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST moments: " + MomentsStatus());
 			Log.Write("TEST saved: " + SavedStatus());
 			Log.Write("TEST fondness: " + FondnessStatus());
+			Log.Write("TEST letters: " + FindLetterStatus());   // (SEAMS item 18)
 			Log.Write("TEST calendar: " + CalendarStatus());
 			Log.Write("TEST almanac: " + AlmanacStatus());
 			Log.Write("TEST friends: " + FriendDotsStatus());

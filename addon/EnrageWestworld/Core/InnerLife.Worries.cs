@@ -598,6 +598,20 @@ namespace EnrageWestworld.Core
             return dayIn < 2 ? 0 : dayIn < 4 ? 1 : dayIn < 6 ? 2 : 3;
         }
 
+        /// The kin a letter worry waits on, as its own lines name them ("my sister Ruth", "Mother"): the same seeding as Fill's
+        /// "letter" case, for the letter carried by hand (Core/FindLetter.cs; SEAMS item 18).
+        public static string LetterKin(Person p)
+        {
+            p = Self(p);
+            if (p == null || p.Id == null)
+                return null;
+            string rel = Kin[Voice.Hash(p.Id + "|kin") % Kin.Length];
+            if (rel == "Mother")
+                return "Mother";
+            bool woman = rel == "my sister" || (rel == "my cousin" && Voice.Hash(p.Id + "|kw") % 2 == 0);
+            return rel + " " + Residents.FirstName(woman, p.Id + "|kin");
+        }
+
         /// The person at the heart of it, and where: named the same way every time.
         private static string Fill(string line, Person p, WorryKind k, long arc)
         {
