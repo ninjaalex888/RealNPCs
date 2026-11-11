@@ -193,7 +193,13 @@ namespace EnrageWestworld.InGame
             if (ba != null)
                 _bridge.LikeMore(ba.Id, -10);
             if (lw != null && lw.Id != null)
+            {
                 RecordEvent("stoodby", "player", "you", lw.Id, lw.Name, ENTITY.GET_ENTITY_COORDS(loser, true, true), me.Handle, me.Handle, loser, "stood with him in a fight");
+                // he keeps it (SEAMS item 2; [Encounters] StoodRemembered): the rescue's memory ("{who} stepped in for me"), so his
+                // thoughts come back to it and some days on he comes over: "That fight. I was going down and you waded in beside me."
+                if (_cfg.StoodRemembered && !FromTestRow("player", me.Handle, me.Handle, loser) && OwedMemory(lw.Id, _placeTown, "defend", "stood", 65))
+                    Log.Write("BRAWL " + lw.Name + " keeps it, your standing with him: his thoughts, and his thanks to come");
+            }
             _bvStands++;
             _bvLast = "you stood with " + (lw != null ? lw.Name : "a stranger") + " against " + (bw != null ? bw.Name : "a stranger");
             Log.Write("BRAWL you stand with " + (lw != null ? lw.Name : "a stranger") + "; " + (bw != null ? bw.Name : "the man beating him") + " turns on you");

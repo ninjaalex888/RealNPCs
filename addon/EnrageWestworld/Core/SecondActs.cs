@@ -28,6 +28,7 @@ namespace EnrageWestworld.Core
         public const int SavedWeight = 400;        // beside the friend call's others (the fight 180, a warning 45...): the saving first, nearly always
         public const long ThankAfter = 720;        // half a day on at the soonest: the shock first, then the thanks
         public const int ThankWithinDays = 21;
+        public static bool StoodThanks = true;     // [Encounters] StoodRemembered: a stand's memory (how "stood") brings the late thanks (SEAMS item 2)
         public const string FineSub = "fine";      // the memory of a fine you paid (warmth, Sub "fine": its own words, never "stepped in for me"; SEAMS item 1)
         public const int AgainDays = 14, AtLargeNewsLeast = 2, AtLargeNewsMost = 4;
         public const string WatchedMark = "kin:watched";
@@ -70,7 +71,7 @@ namespace EnrageWestworld.Core
                 return null;
             MindMemory best = null;
             foreach (MindMemory m in mind)
-                if (m != null && m.Key != null && m.Key.StartsWith("saved:", StringComparison.Ordinal) && (m.Sub == "defend" || (Interact.FineOwes && m.Sub == FineSub)) && now - m.At >= ThankAfter && now - m.At < ThankWithinDays * 1440L &&
+                if (m != null && m.Key != null && m.Key.StartsWith("saved:", StringComparison.Ordinal) && (m.Sub == "defend" || (Interact.FineOwes && m.Sub == FineSub)) && (StoodThanks || HowOf(m.Key) != "stood") && now - m.At >= ThankAfter && now - m.At < ThankWithinDays * 1440L &&
                     (told == null || !told.Contains(ThankedMark(m))) && (best == null || m.At > best.At))
                     best = m;
             return best;

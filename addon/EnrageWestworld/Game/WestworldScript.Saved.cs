@@ -85,6 +85,26 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// A good turn of yours kept in his own mind as one he owes you for (SEAMS items 1 and 2): warmth with you in it, the
+        /// saved key ("saved:<id>:<day>:<how>") that SecondActs' late thanks looks for, by the how's own thanks words. Only
+        /// someone who already has a saved state (as SavedByYou's); false when there's none, and nobody is made for it.
+        private bool OwedMemory(string id, string town, string sub, string how, int strength)
+        {
+            PersonState st = id != null && _store != null ? _store.Find(id) : null;
+            if (st == null)
+                return false;
+            if (st.Mind == null)
+                st.Mind = new List<MindMemory>();
+            long g = _store.LastGameMin;
+            string you = _engine.KnowsYourName(id) && YourFullName() != null ? Person.FirstOf(YourFullName()) : "the stranger";
+            Minds.Note(st.Mind, new MindMemory
+            {
+                Kind = "warmth", Sub = sub, Who = new List<string> { "player" }, Names = new List<string> { you }, Town = town ?? _placeTown, At = g,
+                How = "did", Role = "done", Feel = 3, Strength = strength, Key = "saved:" + id + ":" + g / 1440 + ":" + how
+            }, g);
+            return true;
+        }
+
         /// enRAGE's fondness to the top, when it has the person; false when it hasn't yet.
         private bool SavedLike(int handle)
         {

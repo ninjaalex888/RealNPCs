@@ -266,21 +266,11 @@ namespace EnrageWestworld.InGame
         {
             try
             {
-                PersonState st = j != null && j.Id != null && _store != null ? _store.Find(j.Id) : null;
-                if (st == null)
+                if (j == null || !OwedMemory(j.Id, j.Town, SecondActs.FineSub, "fine", 70))
                 {
                     Log.Detail("FINE " + (j != null ? j.Name : "?") + " has no saved state: the debt is in the ledger, no memory written");
                     return;
                 }
-                if (st.Mind == null)
-                    st.Mind = new List<MindMemory>();
-                long g = _store.LastGameMin;
-                string you = _engine.KnowsYourName(j.Id) && YourFullName() != null ? Person.FirstOf(YourFullName()) : "the stranger";
-                Minds.Note(st.Mind, new MindMemory
-                {
-                    Kind = "warmth", Sub = SecondActs.FineSub, Who = new List<string> { "player" }, Names = new List<string> { you }, Town = j.Town, At = g,
-                    How = "did", Role = "done", Feel = 3, Strength = 70, Key = "saved:" + j.Id + ":" + g / 1440 + ":fine"
-                }, g);
                 Log.Write("FINE " + j.Name + " owes you for his fine: the ledger, his memory, and his thanks to come");
             }
             catch (Exception ex)
