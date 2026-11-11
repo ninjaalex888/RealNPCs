@@ -376,6 +376,7 @@ namespace EnrageWestworld.Core
                         {
                             s.Add(1, fill(Lend[st]), "mild");
                             s.Kind = "help";
+                            s.MindKind = "loan";   // remembered as the loan it was, not a fall helped up from (SEAMS review 2)
                             s.Doer = 1;   // B helps A out
                         }
                         else
