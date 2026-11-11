@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Send word with him** (with `[Scenes] HorseWatch`). The man down on his luck who offers to watch your horse will carry a word instead, for the same dime, to a friend of yours in the town (J: "Take a word to ... for me instead"). He walks off with it, the friend has it within the hour (fonder of you, and thinking of it when you're next near), and if he's still about he comes back to say it's done and the friend's thanks. F7: `TEST send word:`.
+
 - **The railroad and the land** (with `[Mind] QuarrelPolitics`). Two more of 1899's quarrels men in drink may come to blows over in the saloon: the railroad's right of way (farmers and cattlemen against the town's men of business) and the land office's claims (homesteaders against the cattlemen), each with its own words, and onlookers on either side leaning to their man.
 
 - **Doctored brands** (`[Scenes] Brands`, on; settings version 414). In the ranch towns by day, a ranch man with stock gone and the brands run over blames his neighbour to his face in the street, and there's bad blood between them after. If you came on the rustlers at their branding fire in the last two game days, J while it plays lets you tell him who it was: he takes it back, and the neighbour thanks you. F7: `TEST brands:`.

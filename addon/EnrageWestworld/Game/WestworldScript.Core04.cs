@@ -1489,6 +1489,7 @@ namespace EnrageWestworld.InGame
             if (own) PaydayNightStep(now);   // Saturday night: the town's word that the hands are paid (WestworldScript.BrawlAfter.cs; FOURTEENHOUR item 13)
             JailDoorStep(now);      // the morning after a brawl the law broke up: his wife at the jail door (WestworldScript.BrawlAfter.cs; FOURTEENHOUR item 12)
             VouchStep(now);         // a man you vouched for: his week, and its end told in his town (WestworldScript.Vouch.cs; FOURTEENHOUR reserve R22)
+            if (own) SendWordStep(now);   // a word carried for a dime (WestworldScript.SendWord.cs; DEPTH item 10)
             if (own) BrandsStep(now);   // J to tell a ranch man who really ran his brands (WestworldScript.Brands.cs; DEPTH item 8)
             if (own) StepBetweenStep(now);   // J to step between two about to quarrel (WestworldScript.StepBetween.cs; DEPTH item 7; the scheduler's look with LookScheduler on)
             BrawlVerbsStep(now);    // J in a fight near you: break it up, stand with the man losing, the bet (WestworldScript.BrawlVerbs.cs; FOURTEENHOUR item 11)

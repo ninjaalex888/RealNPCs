@@ -133,6 +133,11 @@ namespace EnrageWestworld.InGame
             w.Chose = true;
             if (_eventPrompt == HorseWatch.Kind)
                 PromptClear();
+            if (id == SendWord.RowId)
+            {
+                SendWordGo(w);   // a word carried instead of the watch (WestworldScript.SendWord.cs; DEPTH item 10)
+                return;
+            }
             Ped me = Game.Player.Character;
             int h = w.Man.Handle;
             if (id == "horsewatch:yes" && MONEY._MONEY_GET_CASH_BALANCE() >= HorseWatch.Cents)
