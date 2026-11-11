@@ -2001,7 +2001,8 @@ in the file. The new ones:
             CasualHookups won't take her kind: then the fade, at once or after 15 s); off: its own
             chances back
 [Output]    PerfMeter (true): times every part of RealNPCs each frame; F7 writes the costliest,
-            and the log says when it goes over budget (PERF)
+            and the log says when it goes over budget (PERF), and once a minute its mean and peak
+            (PERF minute)
 [Mind]      Minds (true): people think about what is most on their minds, from what they lived through;
             false: the old mix of thoughts. RecordMinds (true): enRAGE's own people too, weighed with
             enRAGE's record of them. RecordFates (true): a death RealNPCs caused goes into enRAGE's record.
@@ -2013,6 +2014,9 @@ in the file. The new ones:
             (TEST mind shadow) and the Show minds cards; it changes nothing anyone does or thinks.
             MindLive (true): what that mind decides reaches the screen: moods, and thoughts of what people really feel (about you, a friend, a stranger) and of a pressing want
             MindLevels (false, in testing): the mind's work spread by distance and a budget a frame.
+            LookScheduler (true): the background looks (the fever's thoughts, the posters, the
+            calendar and two dozen more) run at most two a frame, so they never pile onto one frame;
+            false: each on its own timer, as before.
             MindActs (true, under MindLive): people near you do what their minds choose (a stroll, the
             nearest bench, chair, bar or work spot, off home, clear of you or a foe, over to a friend).
             MindActsScenarios (true, under MindActs): people sat or leaning get up for it, the game's own

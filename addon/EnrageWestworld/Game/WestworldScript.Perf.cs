@@ -33,6 +33,8 @@ namespace EnrageWestworld.InGame
         private readonly PerfSlot _perfTotal = new PerfSlot { Name = "total" };
         private readonly PerfSlot _perfOther = new PerfSlot { Name = "step (other)" };
         private int _perfWindowAt, _perfOverSince = -1, _perfOverLogged = -60000, _perfPeakLogged = -60000, _perfFrames;
+        private double _perfMinSum, _perfMinPeak;   // the PERF minute line (DEPTH item 4): this minute's frames, seen ones only
+        private int _perfMinFrames, _perfMinAt;
         private bool _perfUnseen;   // this frame nobody could see (paused, faded out, loading: Step's !InWorld): no peak warning for it, since the saves wait for these
 
         private PerfSlot PerfSlotOf(string feature)
@@ -180,6 +182,7 @@ namespace EnrageWestworld.InGame
                 s.FrameCalls = 0;
                 Roll(s, ms, calls, window);
             }
+            PerfMinute(now, totalMs, unseen);
             if (_perfFrames < 120)
                 return;   // the first two seconds after loading (and after the save loads: LoadStore) settle first
             // over budget on average for 10 s: once a minute at most, with what costs most
@@ -204,6 +207,30 @@ namespace EnrageWestworld.InGame
                           (worst != null ? " (" + worst.Name + " " + worstMs.ToString("0.00") + " ms" + (second != null && secondMs > 0.05 ? ", " + second.Name + " " + secondMs.ToString("0.00") + " ms" : "") +
                                            (third != null && thirdMs > 0.05 ? ", " + third.Name + " " + thirdMs.ToString("0.00") + " ms" : "") + (otherMs > 0.05 ? ", outside any feature " + otherMs.ToString("0.00") + " ms" : "") + ")" : ""));
             }
+        }
+
+        /// Once a minute: the mean and the peak over the minute's seen frames, the costliest parts, and the most background looks
+        /// one frame ran (DEPTH item 4; daytime/proof.py reads it). Nothing allocates but the line itself, once a minute.
+        private void PerfMinute(int now, double totalMs, bool unseen)
+        {
+            if (_perfMinAt == 0)
+                _perfMinAt = now;
+            if (!unseen && _perfFrames > 120)
+            {
+                _perfMinSum += totalMs;
+                _perfMinFrames++;
+                if (totalMs > _perfMinPeak)
+                    _perfMinPeak = totalMs;
+            }
+            if (now - _perfMinAt < 60000)
+                return;
+            _perfMinAt = now;
+            if (_perfMinFrames > 0)
+                Log.Write("PERF minute: mean " + (_perfMinSum / _perfMinFrames).ToString("0.00") + " ms a frame (" + _perfMinFrames + " frames), peak " + _perfMinPeak.ToString("0.00") +
+                          " ms; costliest: " + PerfTop(4) + "; the most background looks on one frame " + (_cfg != null && _cfg.LookScheduler ? _looksMinuteMost.ToString() : "(not counted with LookScheduler off)"));
+            _perfMinSum = _perfMinPeak = 0;
+            _perfMinFrames = 0;
+            _looksMinuteMost = 0;
         }
 
         private static void Roll(PerfSlot s, double ms, int calls, bool window)

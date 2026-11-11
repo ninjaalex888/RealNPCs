@@ -244,6 +244,7 @@ namespace EnrageWestworld.InGame
         /// Forgets how you looked and who reacted (death, a load, a long jump, the memory wipe, shutdown).
         private void SightsReset(string why)
         {
+            LooksRestart();   // a load, a death, a long jump: the background looks' turns spread again (WestworldScript.Looks.cs; DEPTH item 4)
             _skyWatch.Reset();   // the sky somewhere new is no news (a load, a death, a long jump; WestworldScript.Weather.cs)
             QuietFor(LooksAfterLoadMs, why);   // no look read for 10 s after a load, a death or a long jump (enRAGE waits too): WestworldScript.WorldQuiet.cs
             bool any = _sightState != null || _sights.Count > 0 || _hurtAt > -100000;

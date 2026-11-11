@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 411;
+        public const int CurrentVersion = 412;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -95,6 +95,7 @@ namespace EnrageWestworld.Core
         public bool PlacesRemember = true;   // [Mind] memory that behaves like memory (Core/PlaceMemory.cs; roadmap 4; SIXDAY item 24): someone who knew one you killed thinks of it near the spot (a friend's for good, an acquaintance's for a month); people who've seen you on your horse know the horse before the face as you ride up; the same place at the same hour on three different days is a habit the town notices (settings version 240)
         public bool HeldStayInMind = true;   // [Mind] someone the ring is walking stays in mind to the ring's own leash, not dropped at the mind's 25 m edge (Lex, 2026-11-09; settings version 369)
         public bool MindLive = true;      // what the mind decides reaches the screen (Lex, 2026-10-30: on for everyone from 0.7.2; off until settings version 126)
+        public bool LookScheduler = true;   // [Mind] the background looks (fever, posters, the calendar and two dozen more) run at most two a frame, the most overdue first, so they never pile onto one frame (Core/LookScheduler.cs; DEPTH item 4; settings version 412); off: each on its own timer, as before
         public bool MindLevels = false;   // the shadow's scan run from the levels scheduler (night 2026-10-28, item 7; settings version 89): a near ring in view, the town around every 10-30 s, the people away one time a game day, a budget of work a frame; off, the scan as it was
         public bool QuarrelLadder = true;  // with MindLive: an argue or a brawl between two people the mind knows is played from the quarrel ladder (Core/Escalation.cs, Scenes.Ladder.cs; night 2026-10-28, item 16; settings version 92): how far it goes and how it ends from their traits and the surroundings; the shot is never played
         public bool WalkTogether = true;     // [Mind] two friends (or a courting couple) whose talk plays to its end may walk on together, side by side: to the saloon after work, homeward at dusk, a Sunday stroll; two pairs a town at once (FOURTEENHOUR item 15; settings version 383)
@@ -1056,6 +1057,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 412)
+                    log?.Invoke("Settings: new in this version: [Mind] LookScheduler (on): the background looks run at most two a frame, so fewer hitches.");
                 if (s.SettingsVersion < 411)
                     log?.Invoke("Settings: new in this version: [Testing] ProofTour (on): the proof tour row walks every Testing row that can run where you stand; ProofTourRisky (off) adds the risky ones.");
                 if (s.SettingsVersion < 410)
@@ -1856,6 +1859,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("BrawlLawSight = " + B(BrawlLawSight) + "   ; with MindBrawls on: a lawman holds onlookers back from joining a fight by what they can see (in sight within 12 m as before; in sight farther, half as much; out of sight, a little), some lawmen let a fair fight between two run a while and step in when it turns two on one, one deputy alone against six or more holds off and sends for help, and someone cries 'Law!' as he comes, so the law-abiding slip away; false: any lawman within 30 m holds every joiner, as before");
             b.AppendLine("FightHoldStart = " + B(FightHoldStart) + "   ; two people told to fight in a street scene keep the order until the first blow lands (the game's own alarms held off them, as enRAGE does), then the game's fists as before; false: the alarms come back the moment they're told, and a man may run off instead (Valentine, 2026-11-09)");
             b.AppendLine("MindLive = " + B(MindLive) + "   ; what that mind decides reaches the screen (their moods, and thoughts of what they really feel and need, and what they do about it); each part has its own switch below");
+            b.AppendLine("LookScheduler = " + B(LookScheduler) + "   ; the background looks (the fever's thoughts, the posters, the calendar, the town's rivals and two dozen more) run at most two a frame, the most overdue first, so they never pile onto one frame; false: each on its own timer, as before");
             b.AppendLine("MindLevels = " + B(MindLevels) + "   ; (in testing) the mind's work spread by distance and a budget a frame: the people in view every look, the town around every 10-30 s, everyone saved elsewhere one time a game day (counted only); off, exactly as before");
             b.AppendLine("QuarrelLadder = " + B(QuarrelLadder) + "   ; with MindLive on: an argue or a brawl between two people the mind knows climbs or cools by the quarrel ladder (words, a shove, blows, a gun drawn; an apology, a joke, backing down, a friend stepping in, a drink, the law in sight) from their natures and the surroundings; the shot is never fired. Off: the fixed scenes");
             b.AppendLine("ThoughtVariety = " + B(ThoughtVariety) + "   ; no two people near you think the same thought-shape within an hour of play (the names aside; within a game hour until 0.7.16), and a kind of thought that has had the last few turns gives way to the others (the weather, the place, the day), so a town doesn't read as one worried chorus; false: the old choice");
