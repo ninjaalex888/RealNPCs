@@ -96,7 +96,7 @@ namespace EnrageWestworld.Core
                 if (d.Known && d.Town == e.Town && d.At >= since && (d.Kind == "kill" || d.Kind == "murder" || d.Kind == "lawkill"))
                     killsKnown += Math.Max(1, d.Count);
             foreach (Happening h in Store.WorldLog)
-                if (h != null && h.DoerId == "player" && h.Town == e.Town && h.At >= since && Fondness.IsKindness(h.Kind))
+                if (h != null && h.DoerId == "player" && !h.Test && h.Town == e.Town && h.At >= since && Fondness.IsKindness(h.Kind))
                     kindnesses++;
             string standing = Reputation.Standing(killsKnown, kindnesses);
             int va, vb;

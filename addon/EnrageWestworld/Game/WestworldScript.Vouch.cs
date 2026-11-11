@@ -48,7 +48,8 @@ namespace EnrageWestworld.InGame
             if (j.Waiter != null && j.Waiter.Exists())
             {
                 SpeechCaption(Grammar.UpperFirst(j.Waits.Replace("his ", Person.FirstOf(j.Name) + "'s ")), Vouch.ThanksLine(j.Id), j.Waiter.Handle, 4500, true, false);
-                RecordEvent(_cfg.FineOwes ? "surety" : "paidfine", "player", "you", j.Id, j.Name, j.Waiter.Position, me.Handle, me.Handle, j.Waiter.Handle, "stood surety for him");   // its own kind: a kindness, not a debt (SEAMS item 1)
+                if (!j.Test)
+                    RecordEvent("surety", "player", "you", j.Id, j.Name, j.Waiter.Position, me.Handle, me.Handle, j.Waiter.Handle, Interact.SuretyOutcome);   // its own kind: a kindness, not a debt (SEAMS item 1; always, the review: under FineOwes off it was a "paidfine" that later owed)
             }
             Hint(Vouch.BoundHint(Person.FirstOf(j.Name)), 6500);
             NewsPush(j.Town, Vouch.StoodNews(j.Name, j.Id), "news");
@@ -150,8 +151,8 @@ namespace EnrageWestworld.InGame
                     // kept on your word, he owes you (SEAMS item 10; [Encounters] SuretyKeptOwes): the debt the surety held back while
                     // he might yet break it, the ledger's owing (Interact.Owing: a "paidfine" with you the doer) and the saved memory
                     // with how "surety", so he comes to thank you ("You spoke for me at the jail...")
-                    _engine.NoteEvent(new Happening { Kind = "paidfine", DoerId = "player", DoerName = "you", TargetId = v.Id, TargetName = v.Name, Town = v.Town, Outcome = "kept his week on your word" });
-                    if (OwedMemory(v.Id, v.Town, "defend", "surety", 60))
+                    _engine.NoteEvent(new Happening { Kind = Interact.SuretyKept, DoerId = "player", DoerName = "you", TargetId = v.Id, TargetName = v.Name, Town = v.Town, Outcome = "kept his week on your word" });
+                    if (OwedMemory(v.Id, v.Town, SecondActs.SuretySub, "surety", 60))   // its own words, never "stepped in for me" (the review)
                         Log.Write("VOUCH " + v.Name + " owes you now, his week kept on your word: the ledger, his memory, and his thanks to come");
                 }
                 _vouchKept++;

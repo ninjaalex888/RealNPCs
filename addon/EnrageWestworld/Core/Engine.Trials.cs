@@ -101,7 +101,7 @@ namespace EnrageWestworld.Core
                 if (d.Known && d.Town == town && d.At >= since && (d.Kind == "kill" || d.Kind == "murder" || d.Kind == "lawkill"))
                     killsKnown += Math.Max(1, d.Count);
             foreach (Happening h in Store.WorldLog)
-                if (h != null && h.DoerId == "player" && h.Town == town && h.At >= since && Fondness.IsKindness(h.Kind))
+                if (h != null && h.DoerId == "player" && !h.Test && h.Town == town && h.At >= since && Fondness.IsKindness(h.Kind))
                     kindnesses++;
         }
 

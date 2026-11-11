@@ -240,16 +240,15 @@ namespace EnrageWestworld.InGame
             MONEY._MONEY_DECREMENT_CASH_BALANCE(BrawlAfter.FineCents);
             j.Paid = true;
             _finesPaid++;
-            Happening paid = null;
             if (j.Waiter != null && j.Waiter.Exists())
             {
                 SpeechCaption(Grammar.UpperFirst(j.Waits.Replace("his ", Person.FirstOf(j.Name) + "'s ")), BrawlAfter.ThanksLine(j.Id), j.Waiter.Handle, 4500, true, false);
-                paid = RecordEvent("paidfine", "player", "you", j.Id, j.Name, j.Waiter.Position, me.Handle, me.Handle, j.Waiter.Handle, "paid his fine");
+                if (!j.Test)
+                    RecordEvent("paidfine", "player", "you", j.Id, j.Name, j.Waiter.Position, me.Handle, me.Handle, j.Waiter.Handle, "paid his fine");
             }
-            else if (_cfg.FineOwes)
-                paid = RecordEvent("paidfine", "player", "you", j.Id, j.Name, me.Position, me.Handle, me.Handle, me.Handle, "paid his fine");   // the debt never hangs on her being there (the advisor)
-            if (paid != null && j.Test)
-                paid.Test = true;   // a test jailing (the [ key's) leaves no debt
+            else if (_cfg.FineOwes && !j.Test)
+                RecordEvent("paidfine", "player", "you", j.Id, j.Name, me.Position, me.Handle, me.Handle, me.Handle, "paid his fine");   // the debt never hangs on her being there (the advisor; those near you at the door see it)
+            // a test jailing (the [ key's) records nothing: no debt, no kindness seen, no standing (the review)
             if (_cfg.FineOwes && !j.Test)
                 FineRemembered(j);
             j.ReleaseAt = Game.GameTime + 8000;

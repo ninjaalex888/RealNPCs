@@ -137,10 +137,12 @@ namespace EnrageWestworld.InGame
         {
             SpeechCaption("You", BrawlVerbs.Shout(seed), me.Handle, 2500, false, false);
             int stopped = 0, at = 0, all = a.Count + b.Count;
+            bool testFight = false;   // a Testing row's brawl: no deed of it (the review)
             bool saloon = _placeKind == "saloon";
             var said = new List<string>();
             foreach (int h in a.Concat(b).ToList())
             {
+                testFight |= TestPerson(h);
                 if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || AtArthur(h))
                     continue;   // (one already at Arthur is the game's: the review of items 1-13)
                 MindWho w = MindKnown(h, now);
@@ -176,7 +178,8 @@ namespace EnrageWestworld.InGame
             if (_director.FightSides(out a, out b) && (a.Count == 0 || b.Count == 0 || stopped >= all - 1))
             {
                 _director.Abort("Arthur broke it up");
-                BreakUpKnown(me);
+                if (at == 0 && stopped > 0 && !testFight)
+                    BreakUpKnown(me);   // a peace only when nobody turned on you for it, and never a test's (the review)
             }
             _bvLast = "you broke it up: " + string.Join("; ", said);
             Log.Write("BRAWL you shout to break it up: " + string.Join("; ", said));

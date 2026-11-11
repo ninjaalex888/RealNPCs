@@ -609,12 +609,20 @@ namespace EnrageWestworld.Core
         /// a week on your word, and may yet break it. A test jailing never owes. Off in Core so the harness goldens stand.
         public static bool FineOwes;
 
-        /// One happening of his that leaves the one it was done to owing him (a rescue, a stand, a fine paid), timing aside.
+        /// A week kept on your word (SEAMS item 10; [Encounters] SuretyKeptOwes): its own kind, "suretykept", owing under its own
+        /// switch (the review: under "paidfine" it hung on FineOwes, and counted the surety twice in the town's standing).
+        public static bool SuretyKeptOwes;
+        public const string SuretyKept = "suretykept";
+        public const string SuretyOutcome = "stood surety for him";   // an old save's surety, logged "paidfine" before SEAMS: never a debt
+
+        /// One happening of his that leaves the one it was done to owing him (a rescue, a stand, a fine paid, a week kept on his
+        /// word), timing aside. Never a test's (the review: a test rescue or stand owed before).
         public static bool Owing(Happening e)
         {
-            if (e == null || e.DoerId != "player" || e.TargetId == null)
+            if (e == null || e.DoerId != "player" || e.TargetId == null || e.Test)
                 return false;
-            return e.Kind == "defend" || (StoodByOwes && e.Kind == "stoodby") || (FineOwes && e.Kind == "paidfine" && !e.Test);
+            return e.Kind == "defend" || (StoodByOwes && e.Kind == "stoodby") || (FineOwes && e.Kind == "paidfine" && e.Outcome != SuretyOutcome) ||
+                   (SuretyKeptOwes && e.Kind == SuretyKept);
         }
 
         public const long StoodByYouMinutes = 7 * 1440L;   // the card's "Stood by you": a week of game days
