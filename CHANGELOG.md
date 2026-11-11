@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The revived dead seen by anyone** (`[World] RevivedSeen`, on, with West World; settings version 416). Someone dead on RealNPCs' books who walks again is now known not only by those who saw them die but by anyone who knew them; each thinks it, and the bold walk up and ask what they are, and get told they've had a drink too many.
+
 - **The big animals' tales grow** (with `[Scenes] NightTales`). Each time the hoop snake or the white stallion is told after dark in a town, the tale grows: a longer snake, a cousin who swears to it, the whole orchard dead; a week's chase, then a month's, and a dozen riders. A teller who saw it himself keeps to his first telling, and says so. F7: `TEST big animals' tales:`.
 
 - **How he got the limp** (with `[Mind] LastingMarks`). A man you beat, while he still carries the marks, tells a stranger in the saloon how he came by them, and the telling grows by the day: a lucky blow, then two men from behind, then three and a knife, and never his fault. A friend of his beside him sets it straight, or backs him, by his nature.

@@ -482,7 +482,7 @@ The richest seam is already in the code: every resident lives through a week-lon
 | --- | --- | --- | --- | --- |
 | **The voice is the schedule** | Past stage 2, a resident hears their routine as orders ("Seven o'clock. Saloon.") and answers back. Breaking the loop is not going. | Routines (Q6), Awakening | M |  |
 | **They noticed the reload** | Reload after a killing and the victim, alive again, has a sharper déjà vu. The waking talk about the morning that happened twice. | Store.Rewind, Hosts | M |  |
-| **The revived dead are seen** | Anyone who saw a death and later sees that person alive (a revenant, a keeper back from wounds) stares, crosses themselves, and wakes a stage. | Reveries, Posts, Awakening | S |  |
+| **The revived dead are seen** | Anyone who saw a death and later sees that person alive (a revenant, a keeper back from wounds) stares, crosses themselves, and wakes a stage. | Reveries, Posts, Awakening | S | Built (THREEHOUR R3: keepers back stared at; night 10-29 item 4: those who saw the death feel it and act; depth item 15: anyone who knew them, a thought each, and the bold ask to their face) |
 | **A line that wakes** | An awake resident passes on a public-domain line; whoever hears it the right way starts stirring. | Awakening spread, Crowd | M |  |
 | **Hosts compare notes** | Two waking people test the world together: walk to the town's edge, count the same faces, compare dreams. | Hosts scene, wake acts | M |  |
 | **The reset** | Someone fully awake turns up days later at stage 0, cheerful and blank. Those who knew them notice. | Awakening phases | S |  |

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 415;
+        public const int CurrentVersion = 416;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -121,6 +121,7 @@ namespace EnrageWestworld.Core
         public int HoldupChance = 15;        // [Scenes] with StoreHoldups: percent, the day's roll once a robber and a customer fit
         public bool HoldupShots = false;     // [Scenes] with StoreHoldups: now and then he fires at one who bolts (someone can die on screen; off as shipped)
         public bool RainShelter = true;      // [Scenes] the town keeps a record of the rain: in it the street's errands wait, strangers under one roof get acquainted, and rain days end a farmer's drought (FOURTEENHOUR item 26; settings version 394)
+        public bool RevivedSeen = true;   // [World] with West World and MindWakes: the revived dead are known by anyone who knew them, not only those who saw them die; each thinks it, and the brave ask them to their face (Core/RevivedSeen.cs; DEPTH item 15; settings version 416)
         public bool CollectionPlate = true;   // [Scenes] on a Sunday after the service, by a town's church, one of its churchmen brings the plate round to you: J a dime, a dollar, or let it pass (Core/CollectionPlate.cs; DEPTH item 11; settings version 415)
         public bool Brands = true;   // [Scenes] a ranch man of a ranch town, stock gone with the brands run over, blames his neighbour in the street; if you came on the rustlers' fire lately, J to tell him who it was (Core/Brands.cs; DEPTH item 8; settings version 414)
         public bool StepBetween = true;   // [Scenes] J when two men with a quarrel between them are about to have it out near you: step between them; heeded by both, it's put off six game hours, and the second time they make it up (Core/StepBetween.cs; DEPTH item 7; settings version 413)
@@ -1060,6 +1061,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 416)
+                    log?.Invoke("Settings: new in this version: [World] RevivedSeen (on): the revived dead known by anyone who knew them, and asked to their face.");
                 if (s.SettingsVersion < 415)
                     log?.Invoke("Settings: new in this version: [Scenes] CollectionPlate (on): the plate comes round after the Sunday service.");
                 if (s.SettingsVersion < 414)
@@ -2216,6 +2219,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("HoldupChance = " + HoldupChance + "   ; with StoreHoldups: percent, the day's roll once a man who leans to it and a customer on their own are by the store near you (0 to 100; offline, 15 gave a holdup on about 3 town-days in 100 by a store)");
             b.AppendLine("HoldupShots = " + B(HoldupShots) + "   ; with StoreHoldups: one in four who bolt are fired after (someone can die on screen); false: he curses and runs");
             b.AppendLine("RainShelter = " + B(RainShelter) + "   ; the town keeps a record of its rain while you're in it: in the rain the street's errands wait (nobody is walked anywhere), strangers under one roof talk and leave acquainted (they nod in passing after), and two days of rain in a farmer's town end his drought well; false: as before");
+            b.AppendLine("RevivedSeen = " + B(RevivedSeen) + "   ; with West World (and MindLive, MindWakes): someone dead on RealNPCs' ledger who walks again is known by anyone with a tie to them, not only those who saw them die; each thinks it over their head, and the bold walk up and ask, and get a denial; false: only those who saw the death, and only their act");
             b.AppendLine("CollectionPlate = " + B(CollectionPlate) + "   ; on a Sunday from eleven till one, within 60 m of a town's church, one churchman (never a crowd) brings the collection plate round to you: J a dime, a dollar, or let it pass; who gave is seen, and a stranger's dollar is the next Sunday's sermon; false: no plate");
             b.AppendLine("Brands = " + B(Brands) + "   ; in a ranch town by day a ranch man, stock gone with the brands run over, blames his neighbour to his face in the street (a hostile tie between them); if you came on the rustlers at their branding fire in the last two game days, J while it plays to tell him who it was, and they make it right; false: no such scene");
             b.AppendLine("StepBetween = " + B(StepBetween) + "   ; two men with a quarrel between them about to have it out near you (words, before any blow): J to step between them; each heeds you by his nature and what he thinks of you; both heed and it's put off six game hours; one won't and he shoves past; the second time both heed, they make it up; false: no such J");

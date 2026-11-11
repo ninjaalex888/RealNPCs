@@ -9,6 +9,7 @@
 // was. Log AWAKENING from doubt, MIND revived; F7 TEST awakening from doubt:.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using EnrageWestworld.Core;
 using RDR2;
 using RDR2.Native;
@@ -125,7 +126,14 @@ namespace EnrageWestworld.InGame
                         if (wh == rh || !_mindWho.TryGetValue(wh, out w) || w.Id == null || w.Traits == null || w.P == null || w.Id == r.Id)
                             continue;
                         string key = w.Id + "|" + r.Id;
-                        if (_revivedNoticed.Contains(key) || !Engine.SawThemDie(_store.Find(w.Id), r.Id))
+                        if (_revivedNoticed.Contains(key))
+                            continue;
+                        // who knows him: whoever saw him die, and since DEPTH item 15 ([World] RevivedSeen) anyone with a tie to him (word of
+                        // a death travels along the ties first)
+                        bool sawDie = Engine.SawThemDie(_store.Find(w.Id), r.Id);
+                        bool knewHim = !sawDie && RevivedSeen.On && _store.Ties.Any(t => t != null && t.Has(w.Id) && t.Has(r.Id));
+                        string how = RevivedSeen.How(sawDie, knewHim, true);
+                        if (how == null)
                             continue;
                         if (!ENTITY.DOES_ENTITY_EXIST(wh) || ENTITY.IS_ENTITY_DEAD(wh) || w.Model != ENTITY.GET_ENTITY_MODEL(wh))
                             continue;   // the natives after the pure tests (the cost audit)
@@ -143,6 +151,8 @@ namespace EnrageWestworld.InGame
                         _revivedLast = w.Name + " saw " + r.Name + " walking";
                         MindLog(now, "MIND revived: " + w.Name + " sees " + r.Name + ", whom they saw die " + (days <= 0 ? "today" : days == 1 ? "yesterday" : days + " days ago") + ": " + f.Kind + " (" + f.Strength + "), urge " + f.Urge + ", shows " + f.Shows);
                         MindBelieve(w, w.Id, f, ae, now);   // the belief breaks on its own (Beliefs.Move: the revived), so they stir (DoubtGaveWay)
+                        if (RevivedSeen.On && RevivedSeenSay(w, wh, r, rh, how, key, now))
+                            continue;   // the brave one walks up and asks him (a scene of its own): no onlooker's act on top
                         string act = _cfg.MindOnlookers ? Onlooking.ActFor(f, f.Shows, "onlooker", PED.IS_PED_USING_ANY_SCENARIO(wh), ae.Place, w.Traits, _cfg.Bravery) : null;
                         if (act != null && _onlookQueue.Count < OnlookQueueMost)
                             _onlookQueue.Add(new OnlookerAct { Handle = wh, Model = ENTITY.GET_ENTITY_MODEL(wh), From = rh, QueuedAt = now - OnlookDelayMs, Id = w.Id, Name = w.Name, Woman = w.P.Woman, Act = act, Felt = f,
@@ -157,8 +167,40 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        private readonly HashSet<string> _revivedAsked = new HashSet<string>();
+        private int _revivedThoughts, _revivedAsks, _revivedKnew;
+
+        /// DEPTH item 15: the one who knows him thinks it over their head; the brave, within 9 m and free, walk up and ask him, and he
+        /// denies it (a Director scene, kind askback; once a revived man a session). True when the ask scene started.
+        private bool RevivedSeenSay(MindWho w, int wh, MindWho r, int rh, string how, string key, int now)
+        {
+            bool woman = r.P != null && r.P.Woman;
+            _ticker.Push(Person.FirstOf(w.Name) + ", thinking", RevivedSeen.Thought(how, Person.FirstOf(r.Name), woman, key), "near", wh);
+            _revivedThoughts++;
+            if (how == "knew")
+                _revivedKnew++;
+            if (_revivedAsked.Contains(r.Id) || _director.Busy || !RevivedSeen.Asks(w.Traits, key))
+                return false;
+            Ped wp = new Ped(wh), rp = new Ped(rh), me = Game.Player.Character;
+            if (wp.Position.DistanceTo(rp.Position) > RevivedSeen.AskMetres || PED.IS_PED_USING_ANY_SCENARIO(wh) || PED.IS_PED_USING_ANY_SCENARIO(rh) || NotFree(wh) || NotFree(rh) ||
+                MayDirectWhyNot(wp) != null || MayDirectWhyNot(rp) != null || Natives.StoryModel(wp) || Natives.StoryModel(rp) || !IsGrownUp(wp) || !IsGrownUp(rp))
+                return false;
+            string seed = key + "|ask";
+            SceneCast cast = BuildCast(wp, rp, null, _placeKind == "saloon", me, now, seed);
+            Scene s = RevivedSeen.AskBack(cast, seed);
+            if (!_director.Start(s, new List<Ped> { wp, rp }, cast.Names, seed, () => { }, cast))
+                return false;
+            if (_revivedAsked.Count > 200)
+                _revivedAsked.Clear();
+            _revivedAsked.Add(r.Id);
+            _revivedAsks++;
+            Log.Write("REVIVED " + w.Name + " walks up to " + r.Name + " and asks him what he is; he doesn't know what they mean");
+            return true;
+        }
+
         private void DoubtForget()
         {
+            _revivedAsked.Clear();
             _revivedNoticed.Clear();
             _doubtStirred.Clear();
         }
@@ -169,7 +211,8 @@ namespace EnrageWestworld.InGame
             if (!DoubtActsOn)
                 return "off ([Mind] MindLive, MindWakes and [West World] WestWorld all needed): the Awakening by its own roll";
             return _doubtStirs + " stirred from doubt this session" + (_doubtLast != null ? " (last: " + _doubtLast + ")" : "") + ", " + _doubtHeld + " whose doubt moved nothing (no state kept, moved today, awake); " +
-                   _revivedSeen + " times the revived dead were seen by someone who saw them die" + (_revivedLast != null ? " (last: " + _revivedLast + ")" : "");
+                   _revivedSeen + " times the revived dead were seen by someone who saw them die" + (_revivedLast != null ? " (last: " + _revivedLast + ")" : "") +
+                   (RevivedSeen.On ? "; seen by anyone (DEPTH item 15): " + _revivedKnew + " who knew them, " + _revivedThoughts + " thoughts, " + _revivedAsks + " asked him to his face" : "; [World] RevivedSeen off");
         }
     }
 }
