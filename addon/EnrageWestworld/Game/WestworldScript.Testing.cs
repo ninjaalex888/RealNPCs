@@ -740,6 +740,16 @@ namespace EnrageWestworld.InGame
                 case "collection":
                     skipped = "the death, the hour and the look's wait (as if a townsman had died; nothing kept)";
                     return CollectionFire(now, out said);   // WestworldScript.WidowCollection.cs (FOURTEENHOUR reserve R20)
+                case "plate":
+                    skipped = "the Sunday, the hour and once a town a Sunday (nothing kept)";
+                    if (!CollectionPlate.On)
+                        return "off ([Scenes] CollectionPlate)";
+                    if (_collection != null)
+                        return "a collection is coming round already";
+                    string plateWhy = PlateBegin(now, true);   // WestworldScript.WidowCollection.cs (DEPTH item 11)
+                    if (plateWhy == null)
+                        said = _collection.Name + " brings the collection plate round (a test: nothing kept)";
+                    return plateWhy;
                 case "elope":
                     skipped = "the hour, the day's roll (the men 15 s behind for the test)";
                     return ElopeFire(now, out said);   // WestworldScript.Elopers.cs (FOURTEENHOUR reserve R18)

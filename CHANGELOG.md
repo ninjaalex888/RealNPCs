@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The collection plate** (`[Scenes] CollectionPlate`, on; settings version 415). On a Sunday after the morning service, near a town's church, a man of the church brings the plate round to you: J a dime, a dollar, or let it pass. Who gave is seen and remembered, the churchgoers notice when it passes you by, and a stranger's dollar is the preacher's word the next Sunday. A Testing row, "The collection plate after the Sunday service (now)". F7: `TEST the plate:`.
+
 - **Send word with him** (with `[Scenes] HorseWatch`). The man down on his luck who offers to watch your horse will carry a word instead, for the same dime, to a friend of yours in the town (J: "Take a word to ... for me instead"). He walks off with it, the friend has it within the hour (fonder of you, and thinking of it when you're next near), and if he's still about he comes back to say it's done and the friend's thanks. F7: `TEST send word:`.
 
 - **The railroad and the land** (with `[Mind] QuarrelPolitics`). Two more of 1899's quarrels men in drink may come to blows over in the saloon: the railroad's right of way (farmers and cattlemen against the town's men of business) and the land office's claims (homesteaders against the cattlemen), each with its own words, and onlookers on either side leaning to their man.

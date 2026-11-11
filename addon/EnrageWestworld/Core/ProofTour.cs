@@ -36,7 +36,7 @@ namespace EnrageWestworld.Core
         static readonly Dictionary<string, string> Risky = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             // real money
-            { "vouch", "takes real money" }, { "horsewatch", "takes real money" }, { "collection", "takes real money" },
+            { "vouch", "takes real money" }, { "horsewatch", "takes real money" }, { "collection", "takes real money" }, { "plate", "takes real money" },
             { "lift", "takes real money" }, { "alley", "takes real money and can get you shot" },
             // can get Arthur shot or hurt
             { "holdup", "can get you shot" }, { "allies", "an armed man comes at you" }, { "revenant", "comes to kill you" },

@@ -816,7 +816,7 @@ Each of the 13 worry kinds gets one fix and one dark mirror. The ending is writt
 | **Post a reward** | Put up your own reward for a horse thief or a man who hurt someone you know. Men go after him; the paper reports it. | Posts (sheriff), papers | L |  |
 | **Testify** | At the circuit judge's trial, say what you saw, true or not, and the verdict follows. | Circuit judge, Deeds | M |  |
 | **Teach a young man to shoot** | He worships you after. In 1907 he's a lawman or an outlaw, and he tells John who taught him. | Regulars, 1907 continuity | M |  |
-| **The collection plate** | Give on Sunday and the preacher thanks a generous stranger from the pulpit; the town warms a little. | Sunday service, Deeds | S | Partly built (14h R20: the widow's collection, thanked from the pulpit) |
+| **The collection plate** | Give on Sunday and the preacher thanks a generous stranger from the pulpit; the town warms a little. | Sunday service, Deeds | S | Built (14h R20: the widow's collection, thanked from the pulpit; depth item 11: the Sunday plate at the church, a stranger's dollar the next sermon) |
 | **A wager in the saloon** | Bet a regular on a horse race or a bottle at twenty paces; win money and a reputation, or lose both. | Saloon, Deeds, Regard | M |  |
 | **Walk someone home** | After dark, an old man or a woman afraid of the road asks to be walked home. Some nights, something waits on it. | Night encounters, escort | M |  |
 | **Stand the wake** | Pay for the drinks after a funeral; the mourners remember who did. | enRAGE funerals, Deeds | S | Built (14h R19) |

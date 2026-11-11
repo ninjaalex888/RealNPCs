@@ -162,6 +162,7 @@ namespace EnrageWestworld.Core
             new Entry("vouch", "People", "A wife at the jail door: pay his fine, or vouch for him", "TestVouchKey", needs: "in a town whose jail door is known (walk out of the sheriff's office once); press again to end his week now"),
             new Entry("horsewatch", "People", "A man offers to watch your horse for a dime", "TestHorseWatchKey", needs: "down off your horse, a man the mind knows within 15 m in view (any hour, any man for the test)"),
             new Entry("collection", "People", "A collection for a widow comes round", "TestCollectionKey", needs: "in a town, a woman the mind knows within 25 m in view (as if a townsman had died; nothing kept)"),
+            new Entry("plate", "People", "The collection plate after the Sunday service (now)", "TestPlateKey", needs: "[Scenes] CollectionPlate; within 60 m of a town's church, a man the mind knows within 25 m in view (any day and hour for the test; nothing kept)"),
             new Entry("elope", "Encounters", "A couple running off, her father's men behind", "TestElopeKey", needs: "in a town, on foot, out of doors (any hour for the test; the men come 15 s behind)"),
             new Entry("alley", "Encounters", "A voice from the dark in Saint Denis", "TestAlleyKey", needs: "in Saint Denis, on foot, out of doors (any hour for the test; real, then bait, by turns)"),
             new Entry("nomap", "Encounters", "A rider asks the way to a town on no map", "TestNoMapKey", needs: "out of town, any hour (a test: no news after)"),

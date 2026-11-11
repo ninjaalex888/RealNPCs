@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
 using RDR2;
+using RDR2.Math;
 using RDR2.Native;
 
 namespace EnrageWestworld.InGame
@@ -20,7 +21,10 @@ namespace EnrageWestworld.InGame
             public string Id, Name, DeadId, Dead, Widow, Seed;
             public int Until, SaidAt;
             public bool Chose, Test;
+            public bool Plate;   // the Sunday plate, not a widow's collection (DEPTH item 11)
         }
+
+        private int _plates, _plateGiven, _plateCents, _platePassed;
 
         private CollectionWalk _collection;
         private int _collectionLookAt, _collections, _collectionGiven, _collectionCents;
@@ -38,6 +42,8 @@ namespace EnrageWestworld.InGame
                 return;
             _collectionLookAt = now + WidowCollection.LookMs;
             int clock = CLOCK.GET_CLOCK_HOURS();
+            if (CollectionPlate.On && CollectionPlate.Hour(InnerLife.Weekday, clock) && !MISC.GET_MISSION_FLAG() && !WalkUpGoing() && !_director.Busy && PlateBegin(now, false) == null)
+                return;   // the Sunday plate after the service (DEPTH item 11)
             if (clock < WidowCollection.FromHour || clock >= WidowCollection.ToHour || MISC.GET_MISSION_FLAG() || WalkUpGoing() || _director.Busy || _store.Deaths == null)
                 return;
             long g = _store.LastGameMin;
@@ -78,6 +84,37 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
+        /// The Sunday plate (DEPTH item 11): by the town's church within 60 m, once a town a Sunday, a churchman within 25 m
+        /// of you, in view and free (the devout and the churchgoers first), walks up with it. Null when he comes, else why not.
+        private string PlateBegin(int now, bool test)
+        {
+            Ped me = Game.Player.Character;
+            Vector3 church;
+            if (_placeTown == null || !Churches.TryGetValue(_placeTown, out church))
+                return "a town whose church is known";
+            if (me.Position.DistanceTo(church) > CollectionPlate.ChurchMetres)
+                return "within " + (int)CollectionPlate.ChurchMetres + " m of the church";
+            string key = "plate|" + _placeTown + "|" + _store.LastGameMin / 1440;
+            if (!test && _store.Counts.ContainsKey(key))
+                return "the plate has come round already today";
+            Candidate pick = ReasonCandidates(me, now, test).Where(c => !c.Who.Woman && c.Ped.Position.DistanceTo(me.Position) < 25f && !PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) && !NotFree(c.Ped.Handle) && NodInView(me, c.Ped))
+                                                         .OrderBy(c => c.Who.P != null && (c.Who.P.Devotion == "Devout" || c.Who.P.Devotion == "Churchgoer") ? 0 : 1).ThenBy(c => c.Ped.Position.DistanceTo(me.Position)).FirstOrDefault();
+            if (pick == null)
+                return "a man the mind knows within 25 m, in view and free";
+            if (!test)
+                _store.Counts[key] = (int)(_store.LastGameMin / 1440);   // once a town a Sunday
+            int h = pick.Ped.Handle;
+            float metres = pick.Ped.Position.DistanceTo(me.Position);
+            int walkMs = Math.Min(25000, 4000 + (int)(900 * metres));   // the friend calls' walk, as the widow's collector
+            PED.SET_PED_KEEP_TASK(h, true);
+            TASK.TASK_GO_TO_ENTITY(h, me.Handle, walkMs, 2.0f, 1.0f, 0f, 0);
+            TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, walkMs, 0, 51, 0);
+            _collection = new CollectionWalk { Ped = pick.Ped, Id = pick.Who.Id, Name = pick.Who.Name, Seed = key, Until = now + walkMs, Test = test, Plate = true };
+            _plates++;
+            Log.Write("PLATE " + pick.Who.Name + " brings the collection plate round after the service (" + (int)metres + " m)" + (test ? " (a test)" : ""));
+            return null;
+        }
+
         private void CollectionWalkStep(CollectionWalk w, int now)
         {
             Ped me = Game.Player.Character;
@@ -92,20 +129,21 @@ namespace EnrageWestworld.InGame
                 if (w.Ped.Position.DistanceTo(me.Position) < 2.6f)
                 {
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 6000, 0f, 0f, 0f);
-                    string line = WidowCollection.Asks(w.Dead, w.Widow, w.Seed);
+                    string line = w.Plate ? CollectionPlate.Asks(w.Seed) : WidowCollection.Asks(w.Dead, w.Widow, w.Seed);
                     Feed.Say(Person.FirstOf(w.Name), line, Speech.When(h, "chat", me.Handle), h, toYou: true);
                     w.SaidAt = now;
+                    string kind = w.Plate ? CollectionPlate.Kind : WidowCollection.Kind;
                     if (_eventMenu == null && (_eventPrompt == null || Game.GameTime > _eventPromptUntil))
-                        PromptSet(WidowCollection.Kind, new TownEvent { Kind = WidowCollection.Kind, Town = _placeTown, AName = w.Name }, WidowCollection.PromptMs);
+                        PromptSet(kind, new TownEvent { Kind = kind, Town = _placeTown, AName = w.Name }, WidowCollection.PromptMs);
                 }
                 else if (now > w.Until)
                     CollectionEnd("she never reached you");
                 return;
             }
-            if (w.Chose || (now - w.SaidAt > WidowCollection.PromptMs + 2000 && !(_eventMenu != null && _eventMenu.Mode == WidowCollection.Kind)))
+            if (w.Chose || (now - w.SaidAt > WidowCollection.PromptMs + 2000 && !(_eventMenu != null && _eventMenu.Mode == (w.Plate ? CollectionPlate.Kind : WidowCollection.Kind))))
             {
                 if (!w.Chose)
-                    CollectionChoose("collection:0");
+                    CollectionChoose(w.Plate ? "plate:0" : "collection:0");
                 CollectionEnd(_collectionLast ?? "done");
             }
         }
@@ -117,8 +155,13 @@ namespace EnrageWestworld.InGame
             if (w == null || w.Chose || w.SaidAt == 0)
                 return;
             w.Chose = true;
-            if (_eventPrompt == WidowCollection.Kind)
+            if (_eventPrompt == WidowCollection.Kind || _eventPrompt == CollectionPlate.Kind)
                 PromptClear();
+            if (w.Plate)
+            {
+                PlateChoose(w, id);   // the Sunday plate (DEPTH item 11)
+                return;
+            }
             int cents = id == "collection:5" ? 500 : id == "collection:1" ? 100 : 0;
             if (cents > 0 && MONEY._MONEY_GET_CASH_BALANCE() < cents)
                 cents = 0;
@@ -145,11 +188,61 @@ namespace EnrageWestworld.InGame
             Log.Write("COLLECTION " + _collectionLast);
         }
 
+        /// J at the plate: a dime, a dollar, or it passes. Given: his thanks, the world log's charity (seen; the late thanks reads it),
+        /// and a stranger's dollar the next Sunday's sermon. Passed: one of the church near you thinks it.
+        private void PlateChoose(CollectionWalk w, string id)
+        {
+            int cents = id == "plate:100" ? CollectionPlate.DollarCents : id == "plate:10" ? CollectionPlate.DimeCents : 0;
+            if (cents > 0 && MONEY._MONEY_GET_CASH_BALANCE() < cents)
+                cents = 0;
+            Ped me = Game.Player.Character;
+            int h = w.Ped.Handle;
+            Feed.Say(Person.FirstOf(w.Name), CollectionPlate.Thanks(cents, w.Seed), Speech.When(h, cents > 0 ? "thanks" : "chat", me.Handle), h, toYou: true);
+            if (cents > 0)
+            {
+                MONEY._MONEY_DECREMENT_CASH_BALANCE(cents);
+                _plateGiven++;
+                _plateCents += cents;
+                if (!w.Test)
+                {
+                    RecordEvent("charity", "player", "you", w.Id, w.Name, w.Ped.Position, me.Handle, me.Handle, h, "put " + (cents >= 100 ? "a dollar" : "a dime") + " in the plate");   // seen: who gave
+                    if (cents >= CollectionPlate.DollarCents)
+                    {
+                        long g = _store.LastGameMin;
+                        string town = _placeTown;
+                        Safe("collection", () => _engine.NewsAt(CollectionPlate.Sermon(town, w.Seed), town, (g / 1440 + 7) * 1440 + 11 * 60, g));   // the next Sunday's sermon
+                    }
+                }
+                _collectionLast = "you put " + (cents >= 100 ? "a dollar" : "a dime") + " in the plate";
+            }
+            else
+            {
+                _platePassed++;
+                _collectionLast = "you let the plate pass";
+                foreach (int q in _mindNear)
+                {
+                    MindWho mw;
+                    if (q == h || !_mindWho.TryGetValue(q, out mw) || mw.P == null || (mw.P.Devotion != "Devout" && mw.P.Devotion != "Churchgoer") || !ENTITY.DOES_ENTITY_EXIST(q) || !NodInView(me, new Ped(q)))
+                        continue;
+                    _ticker.Push(Person.FirstOf(mw.Name) + ", thinking", CollectionPlate.Passed(w.Seed + q), "near", q);   // seen: who didn't
+                    break;
+                }
+            }
+            Log.Write("PLATE " + _collectionLast);
+        }
+
+        private string PlateStatus()
+        {
+            if (!CollectionPlate.On)
+                return "off ([Scenes] CollectionPlate)";
+            return _plates + " plates came round, you gave to " + _plateGiven + " ($" + (_plateCents / 100.0).ToString("0.00") + "), let it pass " + _platePassed;
+        }
+
         private void CollectionEnd(string why)
         {
             CollectionWalk w = _collection;
             _collection = null;
-            if (_eventPrompt == WidowCollection.Kind)
+            if (_eventPrompt == WidowCollection.Kind || _eventPrompt == CollectionPlate.Kind)
                 PromptClear();
             if (w != null && w.Ped != null && w.Ped.Exists() && !w.Ped.IsDead)
             {
