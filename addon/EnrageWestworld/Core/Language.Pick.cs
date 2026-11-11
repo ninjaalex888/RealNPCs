@@ -55,7 +55,7 @@ namespace EnrageWestworld.Core
                 return ThinkPickBody(model, r);   // the thought and the choice in one answer
             var b = new StringBuilder(1024);
             b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(PickBrief(r))).Append(",\"prompt\":").Append(JsonString(PickPrompt(r)));
-            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append(0.5.ToString("0.00", CultureInfo.InvariantCulture))
+            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":" + Language.NumCtx + ",\"temperature\":").Append(0.5.ToString("0.00", CultureInfo.InvariantCulture))
              .Append(",\"num_predict\":4,\"stop\":[\"\\n\"]}}");
             return b.ToString();
         }
@@ -65,7 +65,7 @@ namespace EnrageWestworld.Core
         {
             var b = new StringBuilder(1024);
             b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(Composed.Brief(r != null ? r.Year : 0))).Append(",\"prompt\":").Append(JsonString(Composed.Prompt(r)));
-            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":1024,\"temperature\":0.60,\"num_predict\":12,\"stop\":[\"\\n\"]}}");
+            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":" + Language.NumCtx + ",\"temperature\":0.60,\"num_predict\":12,\"stop\":[\"\\n\"]}}");
             return b.ToString();
         }
 
@@ -112,7 +112,7 @@ namespace EnrageWestworld.Core
         {
             var b = new StringBuilder(1024);
             b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(ThinkPickBrief(r))).Append(",\"prompt\":").Append(JsonString(ThinkPickPrompt(r)));
-            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append((r != null && r.Varied ? 0.85 : 0.7).ToString("0.00", CultureInfo.InvariantCulture))   // a little more freedom for the varied thought (the choice still reads)
+            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":" + Language.NumCtx + ",\"temperature\":").Append((r != null && r.Varied ? 0.85 : 0.7).ToString("0.00", CultureInfo.InvariantCulture))   // a little more freedom for the varied thought (the choice still reads)
              .Append(",\"num_predict\":48,\"stop\":[\"\\n\\n\\n\"]}}");   // a blank line comes between the two: stopping at one lost the choice (sampled 2026-10-31); 48 since the number comes first (72 before)
             return b.ToString();
         }

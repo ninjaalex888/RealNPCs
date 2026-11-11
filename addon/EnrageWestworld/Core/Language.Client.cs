@@ -252,6 +252,14 @@ namespace EnrageWestworld.Core
         public const string DefaultModel = "llama3.2:3b", OldDefaultModel = "llama3.1:8b";
         public const string KeepAlive = "5m";
 
+        /// The model's context, the same on every request (2026-11-11). Ollama reloads the whole model when a request asks for a
+        /// different num_ctx: measured here, 2.7 s a reload with the card otherwise idle (llama3.2:3b), so the said-aloud pick
+        /// (Core/ThoughtVoice.cs, 1536 before) cost two reloads each time, between the thoughts' 1024s, and never answered in its
+        /// 3 s (all 10 in Lex's 11-09 log: "no answer in 3 s"; two timeouts and a 6.2 s thought followed one). A model loading
+        /// onto the card while the game runs is a stutter. The longest said-aloud prompt made on purpose (every field, ten long
+        /// remarks) is 690 tokens, so 1024 holds every kind.
+        public const int NumCtx = 1024;
+
         /// Whether Ollama's model list (/api/tags) holds this model; a name with no tag matches any tag of it.
         public static bool ModelHeld(string tagsJson, string model)
         {
@@ -300,7 +308,7 @@ namespace EnrageWestworld.Core
         {
             var b = new StringBuilder(1024);
             b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(Brief(r))).Append(",\"prompt\":").Append(JsonString(Prompt(r)));
-            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":1024,\"temperature\":").Append(temperature.ToString("0.00", CultureInfo.InvariantCulture))
+            b.Append(",\"stream\":false,\"keep_alive\":\"" + KeepAlive + "\",\"options\":{\"num_ctx\":" + Language.NumCtx + ",\"temperature\":").Append(temperature.ToString("0.00", CultureInfo.InvariantCulture))
              .Append(",\"num_predict\":").Append(maxTokens).Append(",\"stop\":[\"\\n\\n\"]}}");
             return b.ToString();
         }
