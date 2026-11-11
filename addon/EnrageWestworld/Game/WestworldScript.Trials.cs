@@ -40,7 +40,7 @@ namespace EnrageWestworld.InGame
             _eventPrompt = kind;
             _eventPromptFor = e;
             _eventPromptUntil = Game.GameTime + ms;
-            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == Wayside.Kind ? ": what you do" : kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == BarRound.Kind ? ": buy the house a round" : kind == WalkHome.Kind ? ": offer to see them home" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : kind == BrawlVerbs.Kind ? ": the fight" : kind == PurseSnatch.Kind ? ": the thief you caught" : kind == Holdup.Kind ? ": your word" : kind == DoctorsDoor.Kind ? ": walk with him" : kind == Riders.Kind ? ": your word" : kind == Stories.Kind ? ": his father" : kind == AlleyVoice.Kind ? ": what you do" : kind == Elopers.Kind ? ": your word" : kind == WidowCollection.Kind ? ": give" : kind == HorseWatch.Kind ? ": a dime" : kind == BrawlAfter.JailKind ? (VouchOn ? ": his fine, or your word" : ": his fine") : kind == BrawlVerbs.PayKind ? ": pay the bet you lost" : kind == NeighbourReward.Kind ? ": the reward" : kind == WantedWhich.Kind ? ": the poster" : ": the cell");
+            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == Wayside.Kind ? ": what you do" : kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == BarRound.Kind ? ": buy the house a round" : kind == WalkHome.Kind ? ": offer to see them home" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : kind == BrawlVerbs.Kind ? ": the fight" : kind == StepBetween.Kind ? ": step between them" : kind == PurseSnatch.Kind ? ": the thief you caught" : kind == Holdup.Kind ? ": your word" : kind == DoctorsDoor.Kind ? ": walk with him" : kind == Riders.Kind ? ": your word" : kind == Stories.Kind ? ": his father" : kind == AlleyVoice.Kind ? ": what you do" : kind == Elopers.Kind ? ": your word" : kind == WidowCollection.Kind ? ": give" : kind == HorseWatch.Kind ? ": a dime" : kind == BrawlAfter.JailKind ? (VouchOn ? ": his fine, or your word" : ": his fine") : kind == BrawlVerbs.PayKind ? ": pay the bet you lost" : kind == NeighbourReward.Kind ? ": the reward" : kind == WantedWhich.Kind ? ": the poster" : ": the cell");
         }
 
         private void PromptClear()
@@ -622,6 +622,7 @@ namespace EnrageWestworld.InGame
                 case Slate.Kind: menu.Rows = Slate.Rows(_eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "At the counter:"; break;   // (FIVEDAY R2)
                 case WantedWhich.Kind: menu.Rows = WantedWhich.Rows(_eventPromptFor.AName, _eventPromptFor.AId, MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "You know " + Person.FirstOf(_eventPromptFor.AName) + "'s face:"; break;   // (FIVEDAY R31)
                 case BrawlVerbs.Kind: menu.Rows = BrawlVerbsRows(); menu.Title = "The fight here:"; break;   // (FOURTEENHOUR item 11)
+                case StepBetween.Kind: menu.Rows = StepBetween.Rows(Person.FirstOf(_eventPromptFor.AName), Person.FirstOf(_eventPromptFor.Extra)); menu.Title = "Two men at odds:"; break;   // (DEPTH item 7)
                 case BrawlAfter.JailKind:   // (FOURTEENHOUR item 12)
                     menu.Rows = BrawlAfter.JailRows(Person.FirstOf(_eventPromptFor.AName), MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "At the jail door:";
                     if (VouchOn)
@@ -679,6 +680,11 @@ namespace EnrageWestworld.InGame
             if (m.Mode == BarRound.Kind && row.Id == "barround:damage")
             {
                 SaloonDamagePay();   // the broken chairs (FOURTEENHOUR item 12)
+                return;
+            }
+            if (m.Mode == StepBetween.Kind)
+            {
+                StepBetweenChoose(row.Id);   // WestworldScript.StepBetween.cs (DEPTH item 7)
                 return;
             }
             if (m.Mode == BrawlVerbs.Kind || m.Mode == BrawlVerbs.PayKind)

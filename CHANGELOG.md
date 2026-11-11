@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Step between them** (`[Scenes] StepBetween`, on; settings version 413). When two men with bad blood are about to have it out near you, words not yet blows, J lets you step between them. Each heeds you by his nature and by what he thinks of you: if both do, they back off and their quarrel waits a good while; if one won't, he shoves past and it goes on. Step between the same two a second time and both heeding, they make it up in front of you. F7: `TEST step between:`.
+
 - **The brawler's wife** (with `[Scenes] BrawlAfter`). When a man the law locked up after a brawl comes out of the cells, his fine paid by you or not at noon, the wife or mother who waited at the jail door has her words with him in the street, and they walk off together. The men who fought beside him, if they're near, turn away and keep their heads down. F7: `TEST the brawler's wife:`.
 
 - **The husband marched home** (with `[Scenes] TemperanceDoor`). When the temperance ladies put the pledge to a man at the saloon door and his own wife (or his sweetheart) is in the street near him, she takes his arm and walks him home past the men he drinks with; he goes meek or grumbling by his nature. The barkeep, watching his custom walk off, thinks less of the church woman for it, says so to the next man at his bar, and from then on holds her in contempt. F7: the door's line counts both.

@@ -64,6 +64,8 @@ New in the towns and on the roads:
 - A notice board, and being told what you missed when you come back to a town.
 - A brawler let out of the cells gets his wife's (or his mother's) words in the street, and
   the men who fought beside him keep their heads down.
+- Two men about to quarrel near you: J to step between them ([Scenes] StepBetween). Both heed
+  you and it's put off; the second time, they make it up.
 - Three whistles at Annesburg, the shape-up on the Saint Denis docks, sale day at Valentine, fence cutters.
 - Witnesses who choose what to do, Pinkertons asking after you, a posse that rides out.
 - Drummers, the slate at the store, a sheriff's sale, camp meetings, river baptisms, box socials,

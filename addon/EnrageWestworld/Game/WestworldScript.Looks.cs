@@ -48,6 +48,7 @@ namespace EnrageWestworld.InGame
             _looks.Add("lasting marks", 3000, MarksStep);
             _looks.Add("survivors", 20000, SurvivorsStep);
             _looks.Add("calendar", 30000, CalendarStep);
+            _looks.Add("step between", 500, StepBetweenStep);   // J to step between two about to quarrel (WestworldScript.StepBetween.cs; DEPTH item 7: a new look registers here)
             }
             int ran = _looks.Step(now);
             if (ran > _looksMinuteMost)

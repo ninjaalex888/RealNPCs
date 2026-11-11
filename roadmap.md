@@ -438,7 +438,7 @@ The richest seam is already in the code: every resident lives through a week-lon
 | --- | --- | --- | --- | --- |
 | **Pay the debt** | Pay Whitlow the eleven dollars for Elwood and the arc ends well; both remember, and the town hears a stranger paid. Or buy the debt and collect it yourself. | Links (debt), worry arcs, Deeds | M |  |
 | **Fetch the doctor** | Ride the doctor out to the feverish child, or pay his two dollars, and the ending you saw coming changes. | Worries (fever), Posts (doctor) | M |  |
-| **Settle the feud** | Stand between the neighbours at the fence: make peace, take a side, or pay for the post. | Links (feud), Exchanges, Ties | M |  |
+| **Settle the feud** | Stand between the neighbours at the fence: make peace, take a side, or pay for the post. | Links (feud), Exchanges, Ties | M | Partly built (depth item 7: J to step between two about to quarrel, put off, and made up the second time; not taking a side or paying for the post) |
 | **Carry the note** | For the nervous courter, carry a note, put in a word, or tell him the truth he doesn't want to hear. | Links (courting), Romance | M |  |
 | **Find the letter** | The letter that never came is sitting in another town's post office. Fetch it and watch them read it. | Worries (letter), Letters | S |  |
 | **One more, or none** | The man at the worst of the drink: buy him one more, or take the bottle and walk him home. | Worries (drink), saloon | S |  |

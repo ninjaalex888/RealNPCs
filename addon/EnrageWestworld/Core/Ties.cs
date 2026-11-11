@@ -27,6 +27,8 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public string Crime;          // the latest theft between them (pickpocket, lift, mugging), kept when a later scene moves Kind on (the criminal class reads it: Core/Criminals.cs; the review of items 15-19)
         [DataMember(EmitDefaultValue = false)] public long CrimeAt;          // when
         [DataMember(EmitDefaultValue = false)] public string CrimeDoer;      // who did it
+        [DataMember(EmitDefaultValue = false)] public long PutOffAt;         // when a stranger last stepped between them and both let it be (DEPTH item 7): their quarrel waits StepBetween.PutOffMinutes
+        [DataMember(EmitDefaultValue = false)] public int PutOffs;           // how often that has happened since they last made up (the second time, they make it up)
         [DataMember(EmitDefaultValue = false)] public bool Sore;             // only sore sides of a big brawl so far (FOURTEENHOUR item 12): a stake in the next fight, no quarrel of its own
 
         /// This one did it to the other (the attacker, the thief, the drunk who called him out).
