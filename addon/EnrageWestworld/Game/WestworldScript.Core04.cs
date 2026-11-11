@@ -256,6 +256,7 @@ namespace EnrageWestworld.InGame
             Almanac.Share = _cfg.AlmanacShare;
             Payday.NightOn = _cfg.PaydayNight;   // [Scenes] PaydayNight (FOURTEENHOUR item 13)
             StreetMore.On = _cfg.StreetMore;     // [Scenes] StreetMore (FOURTEENHOUR item 14)
+            LiftNerve.Apply(_cfg.LiftsWary);     // [Scenes] LiftsWary: the lift rarer, and choosier (Core/LiftNerve.cs; a player's report, 2026-11-10)
             WalkTogether.On = _cfg.WalkTogether; // [Mind] WalkTogether (FOURTEENHOUR item 15)
             Greenhorn.On = _cfg.Greenhorn;       // [Scenes] Greenhorn (FOURTEENHOUR item 16)
             Snub.On = _cfg.Snubs;                // [Scenes] Snubs (FOURTEENHOUR item 18)

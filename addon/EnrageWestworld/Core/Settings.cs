@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 429;
+        public const int CurrentVersion = 430;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -592,6 +592,7 @@ namespace EnrageWestworld.Core
         public bool LawChases = true;   // [Scenes] a lawman near runs down a pickpocket of ours and brings him down (Lex, 2026-10-29)
         public int LawShootsThieves = 50;   // [Scenes] percent: with LawChases, the lawman shoots the one who picked your pocket instead of running him down (Lex, 2026-11-01); settings version 184
         public bool Lifts = true;   // [Scenes] a man bumps into you in town and lifts some of your cash; catch him to get it back (Lex, 2026-10-29); needs Pickpockets on too (settings version 428)
+        public bool LiftsWary = true;   // [Scenes] ... 24 game hours between at least, 48 in one town (not every four game hours), and fewer try it where your killings are known (Core/LiftNerve.cs; a player on Nexus, 2026-11-10: "pickpocketed pretty much every time I visited"; settings version 430)
         public bool EnragePeopleJoinIn = true;
         public bool Standoffs = true;
         public bool Songs = true;
@@ -1073,6 +1074,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 430)
+                    log?.Invoke("Settings: new in this version: [Scenes] LiftsWary (on): the thief who bumps into you comes at most once an hour of play, and fewer try it where your killings are known.");
                 if (s.SettingsVersion < 429)
                     log?.Invoke("Settings: new in this version: [Encounters] AlliesSpareLaw (on): with bandits or anyone else at you too, friends who come to your aid leave the law alone; the law alone at you, they still stand with you.");
                 if (s.SettingsVersion < 428)
@@ -2322,6 +2325,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("ErrandPace = " + F(ErrandPace) + "   ; how fast people walk on their errands here (to a scene, to the doctor, to a talk, to a camp seat, home again): 1 an ordinary walk, 2 brisk, 3 a run");
             b.AppendLine("LawChases = " + B(LawChases) + "   ; when a pickpocket runs and a lawman is near, the lawman gives chase, brings him down and holds him for arrest");
             b.AppendLine("LawShootsThieves = " + LawShootsThieves + "   ; with LawChases: percent of the times a lawman near draws and shoots the one who picked your pocket instead of running him down (0 to 100; 50 as it comes); your money comes back off him either way");
+            b.AppendLine("LiftsWary = " + B(LiftsWary) + "   ; the thief who bumps into you comes at most once an hour of play (24 game hours between, 48 in the same town), and thieves weigh the mark: where the town knows you've killed, fewer try it (one killing known: 60% of them; two or three: 35%; more: 15%); false: as before, a town every four game hours");
             b.AppendLine("Lifts = " + B(Lifts) + "   ; \"Pickpocketed\": a man may bump into you anywhere and lift a little of your cash (a fifth, $1 to $25), then run: catch him, or let a lawman, to get it back; Pickpockets = false stops it too");
             b.AppendLine("Vices = " + B(Vices) + "   ; habits and vices: someone in a saloon whose trouble ended badly today, or who has just heard a friend has died, drinks the night away (and a friend may sit with them); drunk for the rest of the night");
             b.AppendLine("Kindnesses = " + B(Kindnesses) + "   ; small kindnesses between people: someone who trips in the street is helped up by a friend or a kind passer-by, or left lying by the cold and their enemies (and you can give them a hand up yourself); someone may step in on a bully, who backs off, goes on, or shoves the one who stepped in and storms off; remembered either way");

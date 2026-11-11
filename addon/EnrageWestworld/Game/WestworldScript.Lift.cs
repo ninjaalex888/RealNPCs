@@ -5,6 +5,7 @@
 // you get it back; a lawman near may chase and bring him down for you (LawChases), and hands it back; if he gets away
 // it's gone. A look every 60 s while you're on foot, Pacing "lift" (25%, two game hours between, a town
 // every four), never in a mission, never with a scene or a theft already on. The Testing row starts one now.
+// [Scenes] LiftsWary (on): 24 game hours between, 48 in one town, and fewer try it where your killings are known (Core/LiftNerve.cs).
 // Off with [Scenes] Lifts or with [Scenes] Pickpockets (a player on Nexus, 2026-11-10: they turned "pickpocket" off and were
 // still "Pickpocketed" on every visit to town; the notice says the one word, so either switch named for it stops it).
 using System;
@@ -80,6 +81,15 @@ namespace EnrageWestworld.InGame
             string pace = Pacing.WhyNot(_store.Pace, "lift", _placeTown, null, g, _rng.Next(100), test, out skipped);
             if (pace != null)
                 return why = pace;
+            if (!test && LiftNerve.On && _placeTown != null)
+            {
+                // the thieves weigh the mark (Core/LiftNerve.cs): a town that knows your killings has fewer who'll try you
+                int kills, kindnesses;
+                _engine.StandingOf(_placeTown, g, out kills, out kindnesses);
+                int share = LiftNerve.TriesPercent(kills);
+                if (_rng.Next(100) >= share)
+                    return why = "the thieves here think twice (" + kills + " killings of yours known in " + _placeTown + ": " + share + "% try it)";
+            }
             // never the Testing page's cast (Lex, 2026-10-30: the old man of the cast was sent, and shot); a known pickpocket near
             // is the one who goes, before any other man (he keeps to his trade)
             Ped pick = Peds.All().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && !Spawner.IsCast(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) &&
