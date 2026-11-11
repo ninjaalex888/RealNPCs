@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **They meet after the word** (`[Scenes] NoteMeet`, on; settings version 422). After you carry a word between two who fell out, the next time they're near each other within two game days they meet in the street: if the word was taken, a word about it and a hand; if it was sent back, a cold word and they part. F7: `TEST note meet:`.
+
 - **Sitting up with the grave** (`[World] GraveNight`, on, with Mourning; settings version 421). The night after a burial, from eight till midnight, one of those mourning the dead walks out to the grave and kneels there; come close and they speak of the one they've lost.
 
 - **A night's sleep cools it** (`[Mind] SleepOnIt`, on; settings version 420). A quarrel between two that nothing fed the day before eases a step overnight, so a feud left alone fades within a day or two of play, while one kept alive by a rematch or a word keeps its heat.

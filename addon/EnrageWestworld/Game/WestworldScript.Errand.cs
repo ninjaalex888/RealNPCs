@@ -29,6 +29,68 @@ namespace EnrageWestworld.InGame
         }
 
         private Errand _errand;
+
+        // they meet (DEPTH reserve R2): the two a word went between, for two game days after it was taken or sent back; in memory
+        private sealed class NoteMeetFor
+        {
+            public string A, AName, B, BName;
+            public bool Mended;
+            public long Until;
+        }
+        private readonly List<NoteMeetFor> _noteMeets = new List<NoteMeetFor>();
+        private Action _aNoteMeet;
+        private int _noteMeetNextLook, _noteMet;
+        private string _noteMetLast;
+
+        private void NoteMeetStep(int now)
+        {
+            if (!NoteMeet.On || _noteMeets.Count == 0 || now < _noteMeetNextLook)
+                return;
+            _noteMeetNextLook = now + 2000;
+            Safe("note meet", _aNoteMeet ?? (_aNoteMeet = () => NoteMeetLook(_now)));
+        }
+
+        /// The two near each other (within 12 m, both in the near scan, free, nobody's scene) and the Director free: they meet.
+        private void NoteMeetLook(int now)
+        {
+            long g = _store.LastGameMin;
+            _noteMeets.RemoveAll(m => g > m.Until || g < m.Until - NoteMeet.KeepMinutes);   // done with, or a clock gone back
+            if (_noteMeets.Count == 0 || _director.Busy || _placeTown == null)
+                return;
+            foreach (NoteMeetFor m in _noteMeets)
+            {
+                int ha = 0, hb = 0;
+                foreach (int h in _mindNear)
+                {
+                    MindWho w;
+                    if (!_mindWho.TryGetValue(h, out w) || w.Id == null)
+                        continue;
+                    if (w.Id == m.A) ha = h;
+                    else if (w.Id == m.B) hb = h;
+                }
+                if (ha == 0 || hb == 0 || !ENTITY.DOES_ENTITY_EXIST(ha) || !ENTITY.DOES_ENTITY_EXIST(hb))
+                    continue;
+                Ped pa = new Ped(ha), pb = new Ped(hb), me = Game.Player.Character;
+                if (pa.Position.DistanceTo(pb.Position) > NoteMeet.NearMetres || PED.IS_PED_USING_ANY_SCENARIO(ha) || PED.IS_PED_USING_ANY_SCENARIO(hb) || NotFree(ha) || NotFree(hb) ||
+                    MayDirectWhyNot(pa) != null || MayDirectWhyNot(pb) != null || PED.IS_PED_IN_COMBAT(ha, 0) || PED.IS_PED_IN_COMBAT(hb, 0))
+                    continue;
+                string seed = m.A + "|" + m.B + "|meet";
+                SceneCast cast = BuildCast(pa, pb, null, _placeKind == "saloon", me, now, seed);
+                Scene s = NoteMeet.Make(cast, m.Mended, seed);
+                if (!_director.Start(s, new List<Ped> { pa, pb }, cast.Names, seed, () => { }, cast))
+                    return;
+                _noteMeets.Remove(m);
+                _noteMet++;
+                _noteMetLast = m.AName + " and " + m.BName + (m.Mended ? " shook hands" : " parted cold");
+                Log.Write("NOTE meet: " + m.AName + " and " + m.BName + " meet after the word you carried: " + (m.Mended ? "a hand" : "a cold word"));
+                return;
+            }
+        }
+
+        private string NoteMeetStatus()
+        {
+            return !NoteMeet.On ? "off ([Scenes] NoteMeet)" : _noteMeets.Count + " pairs waiting to meet, " + _noteMet + " met" + (_noteMetLast != null ? " (the last: " + _noteMetLast + ")" : "");
+        }
         private int _errands, _errandsDelivered, _errandsLapsed;
         private string _errandLast;
 
@@ -159,6 +221,12 @@ namespace EnrageWestworld.InGame
             string fromAcq = FolkIdOf(e.FromId);
             if (fromAcq != null && _bridge != null)
                 _bridge.LikeMore(fromAcq, madeUp ? Fondness.ErrandLiking : Fondness.ErrandLiking / 2);   // the sender, one of enRAGE's townsfolk, by id (their body may be anywhere)
+            if (NoteMeet.On)
+            {
+                if (_noteMeets.Count > 20)
+                    _noteMeets.RemoveAt(0);
+                _noteMeets.Add(new NoteMeetFor { A = e.FromId, AName = e.FromName, B = e.ToId, BName = e.ToName, Mended = madeUp, Until = g + NoteMeet.KeepMinutes });   // they meet (reserve R2)
+            }
             _errandsDelivered++;
             _errandLast = e.ToName + (madeUp ? " took " : " sent back ") + Person.FirstOf(e.FromName) + "'s word";
             _fondLast = _errandLast;

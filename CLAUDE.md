@@ -83,6 +83,8 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 
 - **Sitting up with the grave** (depth reserve R1; `Core/Mourning.cs` `GraveNight`, `GraveNightDay`, `SitUpWord`; `Game/WestworldScript.Mourning.cs`; `[World] GraveNight`, on, with Mourning): the Sunday grave walk also starts the night after the burial (the ledger's death: the wake that night or the next after six, the burial the day after, 20-24 that night), one mourner a dead man a night (`_mourningDone` "night|"), 150 s; kneeling and you within 6 m, their word (`SpeechCaption`). No lantern (no proven prop). mindtest `GraveNightTest`.
 
+- **They meet after the word** (depth reserve R2; `Core/NoteMeet.cs`; `Game/WestworldScript.Errand.cs` `NoteMeetStep`; `[Scenes] NoteMeet`, on): `ErrandDelivered` keeps the pair and whether the word was taken (in memory, two game days, 20 at most); a 2 s look (the scheduler; Tick04 with it off) plays `NoteMeet.Make` (kind `makeup` or `brushoff`) through the Director when both are in the near scan within 12 m, free and directable, once. The errand itself stays Talk's (frozen); this is the street after it. mindtest `NoteMeetTest`.
+
 ## The two-day run (FIVEDAY2.md, 2026-11-08/09; settings versions 323 to 339; nothing seen in game yet)
 
 Everything below is behind its own switch and was built on what's been seen working. Each section names the file; `FIVEDAY2.md` has the decisions.

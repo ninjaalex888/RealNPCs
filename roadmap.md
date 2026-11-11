@@ -582,6 +582,7 @@ These make one session prove much more, and keep it smooth.
 | **Feuds in a day** | A slight in the morning is words by the afternoon, and by evening blows, or a hand offered before the street. | the feud's stages, the Director | S | Built (depth item 18) |
 | **A night's sleep cools it** | A quarrel nobody feeds fades in a day or two; one kept alive by a rematch or a word hardens. | Ties, the day's turn | S | Built (depth item 19) |
 | **Sitting up with the grave** | The night after a burial, one of the dead one's own keeps the new grave company, and speaks of them if you come near. | Mourning's grave walk, the wake | S | Built (depth reserve R1; no lantern: the prop isn't proven) |
+| **They meet after the word** | After you carried a word between two who fell out, the next time they're near each other they meet: a hand, or a cold word. | Talk's errand, the Director | S | Built (depth reserve R2) |
 
 ## How to build them
 
