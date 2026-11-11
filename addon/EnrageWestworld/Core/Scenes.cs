@@ -37,6 +37,7 @@ namespace EnrageWestworld.Core
         public int Cast = 2;
         public bool Fight;
         public string Summary;   // for gossip afterwards: "two men came to blows"
+        public int MindDoer = -2;  // which of the cast is the memory's doer when it isn't Doer (-2: Doer): an ask for a coin or a loan marks the asker as Doer (the tie's rule), but the memory's doer is the one who answered (SEAMS review 3)
         public string MindKind;  // what the minds remember it as, when that differs from Kind (the cards loan is a "help" to the tie, a "loan" to memory: SEAMS review 2)
         public bool NoteAtCue;   // its tie and memories wait for the scene's own cue (a cb: act), not its start
         public int Doer = -1;    // which of the cast did the one-sided thing when the scene's own shape says (the creditor who called a debt in, the one who brushed the other off); -1: the tie's rule (Ties.Trouble: A) or nobody (item 17)

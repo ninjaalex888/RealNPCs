@@ -336,7 +336,7 @@ namespace EnrageWestworld.Core
             string temper = c.Tempers != null && g < c.Tempers.Length ? c.Tempers[g] : null;
             int yes = 45 + (warmth >= 1 ? 25 : 0) + (temper == "Loyal" ? 25 : 0) - (temper == "Cold" || temper == "Greedy" ? 25 : 0);
             bool given = Voice.Chance(seed + "fy", Math.Max(5, Math.Min(95, yes)));
-            Scene s = new Scene { Kind = given ? "charity" : "scorn", Doer = k, Summary = given ? "one tided the other over with a loan" : "one asked the other for a loan and was turned down" };
+            Scene s = new Scene { Kind = given ? "charity" : "scorn", Doer = k, Summary = given ? "one tided the other over with a loan" : "one asked the other for a loan and was turned down", MindDoer = g };   // the one asked answers: the memory's doer
             string ask;
             switch (worry)
             {

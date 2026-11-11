@@ -172,7 +172,7 @@ namespace EnrageWestworld.Core
                     KinDone(k, "never found you", now);
                     continue;
                 }
-                if (KinGrudges.IsThanks(k) && (Store.DeathOf(k.VictimId) != null || KinWronged(k.VictimId)))
+                if (KinGrudges.IsThanks(k) && (Store.DeathOf(k.VictimId) != null || KinWrongedSince(k)))
                 {
                     KinDone(k, "no thanks now: the one you saved is dead, or you wronged him since", now);   // (review 2 of SEAMS)
                     continue;
@@ -185,11 +185,14 @@ namespace EnrageWestworld.Core
             return null;
         }
 
-        /// Whether a wrong of yours on this person has since been taken up by kin (the wrongs' once-only mark): no thanks after it.
-        private bool KinWronged(string id)
+        /// Whether a wrong of yours on the one you saved came after the saving (a wrong's own kin grudge, dated later): no thanks
+        /// after it. A wrong from before the saving doesn't stop them (the advisor: the once-only mark has no date).
+        private bool KinWrongedSince(KinGrudge thanks)
         {
-            PersonState st = id != null ? Store.Find(id) : null;
-            return st != null && st.Has(KinGrudges.Mark);
+            foreach (KinGrudge w in Store.KinGrudges)
+                if (w != null && w != thanks && !KinGrudges.IsThanks(w) && w.VictimId == thanks.VictimId && w.At >= thanks.At)
+                    return true;
+            return false;
         }
 
         public void KinDone(KinGrudge k, string how, long now)

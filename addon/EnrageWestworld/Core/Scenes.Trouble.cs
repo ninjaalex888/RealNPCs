@@ -141,7 +141,7 @@ namespace EnrageWestworld.Core
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
             bool gives = answer == "kind";
-            Scene s = new Scene { Kind = gives ? "charity" : "scorn", Summary = gives ? "someone gave a stranger money in the street" : "someone asked a stranger for money and was sent off" };
+            Scene s = new Scene { Kind = gives ? "charity" : "scorn", Summary = gives ? "someone gave a stranger money in the street" : "someone asked a stranger for money and was sent off", MindDoer = 1 };   // B answers: the memory's doer
             s.Add(0, null, null, "approach", 200)
              .Add(0, Voice.Pick(seed + "bg", "Beg pardon. Could you spare a coin? I'd not ask if I had another way.", "Sorry to trouble you. A nickel, for bread. I'll pay it back, I swear.",
                                  "Excuse me. I've never asked anybody for anything before today."), "plead", "face");

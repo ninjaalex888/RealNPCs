@@ -40,11 +40,9 @@ namespace EnrageWestworld.InGame
                 a.Name = names[0];
             if (b.Name == null && names != null && names.Length > 1)
                 b.Name = names[1];
-            // charity and scorn mark the asker as the Doer (the tie's rule: the asking is his doing), but their memory's doer is
-            // the one who answered ("Gave {who} what I could"): so the answerer goes first, the asker being the Doer, else the
-            // first of the cast (Scenes.Trouble's beggar, Doer -1). Review 2 of SEAMS: the plain swap turned these round
-            bool askKind = kind == "charity" || kind == "scorn";
-            if (askKind ? (doer >= 0 ? doer : 0) == 0 : doer == 1 && Minds.OneSided(kind))
+            // `doer`: the memory's doer as the scene says it (Scene.MindDoer for an ask answered, else Scene.Doer; Life.cs). Review 3 of
+            // SEAMS: a rule guessed from the kind turned the greenhorn's and the old hands' scorn round (their Doer is the scorner)
+            if (Minds.MemorySwap(kind, doer))
             {
                 // the scene's own word on who did it (Scene.Doer: B helps A out, B calls the debt in, B brushes A off, the gentleman
                 // snubs): RememberScene takes the doer first, as the tie already did (NoteSceneTie). Before, the memory had it the

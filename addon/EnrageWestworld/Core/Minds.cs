@@ -152,6 +152,15 @@ namespace EnrageWestworld.Core
             return g == "deed:violence" ? (kind == "kill" || kind == "assault" ? -2 : -3) : g == "deed:theft" ? -2 : 2;
         }
 
+        /// Whether a scene's two go to RememberScene the other way round (its doer first): the scene's word on who did it, MindDoer
+        /// where the memory's doer isn't the tie's (an ask answered), else Doer; only for a one-sided kind, and only when that's
+        /// the second of the cast (SEAMS: 9ffc5ec, review 2, review 3; MindsDoerTest has the table of every scene that says).
+        public static bool MemorySwap(string kind, int doer, int mindDoer = -2)
+        {
+            int who = mindDoer != -2 ? mindDoer : doer;
+            return who == 1 && OneSided(kind);
+        }
+
         /// Whether one of the two did it to the other (the first in the scene did it), rather than both together.
         public static bool OneSided(string kind)
         {
