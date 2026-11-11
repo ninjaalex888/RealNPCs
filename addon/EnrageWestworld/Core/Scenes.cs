@@ -102,6 +102,7 @@ namespace EnrageWestworld.Core
         public int PledgesThisWeek;                         // pledges signed at this town's saloon door this week, for the preacher (item 25)
         public string[] TalkOf;                             // a talk of someone not there: his name, A's view, B's view or null, "w" for a woman (item 23); null: none
         public string Courted;                              // the woman two rivals both court, her first name (Core/Rivals.cs, FOURTEENHOUR item 19); null: none
+        public string FeverSick;                            // the one sick at B's house, first name (Core/FeverKin.cs; DEPTH item 12); null: none
         public string[] Groups;                             // A's and B's trade group (InnerLife.TradeGroup), for who hears a war story how; null: unknown
         public int MindLead;                                // a chance meeting the minds chose: whose side a cold shoulder or a loan is on (0 A, 1 B; Scenes.Minds.cs)
         public string MindWorry;                            // ... and the asker's money worry (debt, bank, savings, cards)
@@ -196,6 +197,8 @@ namespace EnrageWestworld.Core
                 case "rematch": return Rematch.AgainScene(c, seed);   // the beaten man's plan (Core/Rematch.cs): a brawl of its own words
                 case "shake": return Rematch.ShakeScene(c, seed);     // his hand offered, taken or refused
                 case "temperance": return Temperance.Make(c, seed);   // the pledge put to a drinker (Core/Temperance.cs)
+                case FeverKin.AvoidKind: return FeverKin.Avoid(c, seed);   // the house of the sick kept clear of (Core/FeverKin.cs; DEPTH item 12)
+                case FeverKin.AskKind: return FeverKin.AskAfter(c, seed);   // ...or asked after
                 case Brands.Kind: return Brands.Make(c, seed);   // a ranch man blames his neighbour for doctored brands (Core/Brands.cs; DEPTH item 8)
                 case "suffrage": return Suffrage.Make(c, seed);   // the vote, put to a man in the street at Saint Denis (Core/Suffrage.cs)
                 case "scrip": return ScripTalk.Make(c, seed);   // paid in the company's paper, at Annesburg (Core/ScripTalk.cs)

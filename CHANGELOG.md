@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **The fevered's kin kept clear of** (with `[World] Fever`). While a fever goes through a town, those of a sick house (the husband or wife, a sweetheart, the kin) are kept clear of in the street: they greet a neighbour and get no answer, and he steps away, the timid most of all. The kind and the devout stop to ask after the sick instead. The one passed by thinks of it. F7: `TEST fever kin:`.
+
 - **The collection plate** (`[Scenes] CollectionPlate`, on; settings version 415). On a Sunday after the morning service, near a town's church, a man of the church brings the plate round to you: J a dime, a dollar, or let it pass. Who gave is seen and remembered, the churchgoers notice when it passes you by, and a stranger's dollar is the preacher's word the next Sunday. A Testing row, "The collection plate after the Sunday service (now)". F7: `TEST the plate:`.
 
 - **Send word with him** (with `[Scenes] HorseWatch`). The man down on his luck who offers to watch your horse will carry a word instead, for the same dime, to a friend of yours in the town (J: "Take a word to ... for me instead"). He walks off with it, the friend has it within the hour (fonder of you, and thinking of it when you're next near), and if he's still about he comes back to say it's done and the friend's thanks. F7: `TEST send word:`.

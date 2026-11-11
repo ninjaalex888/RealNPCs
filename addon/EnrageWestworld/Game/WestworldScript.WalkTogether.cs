@@ -33,6 +33,8 @@ namespace EnrageWestworld.InGame
         {
             if (_rivals != null && a != null && b != null)
                 Safe("rivals", () => RivalsOver(0, a.Handle, b.Handle));   // two rivals had it out in words: her choice (FOURTEENHOUR item 19)
+            if (kind == FeverKin.AvoidKind && b != null)
+                Safe("fever kin", () => FeverKinShunned(a, b));   // the kin passed by think of it (WestworldScript.FeverKin.cs; DEPTH item 12)
             if (kind == "marchedhome" && _cfg != null && _cfg.MindLive)
                 Safe("the temperance door", () => BarkeepSour(a, b));   // his wife walked him home: the barkeep's sour face (DEPTH item 5)
             if (kind == "pledge" && _cfg != null && _cfg.MindLive)

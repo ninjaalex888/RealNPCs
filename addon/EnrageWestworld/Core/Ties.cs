@@ -79,7 +79,11 @@ namespace EnrageWestworld.Core
                 case "blamed":
                     return -2;   // doctored brands laid at his door in front of the street (Core/Brands.cs; DEPTH item 8): Doer is the one who blames
                 case "cleared":
-                    return 2;    // ...and taken back when the stranger told him who it was: they stand where they stood before   // his wire cut in the night, and his neighbour's name on it (Core/FenceCutters.cs; FIVEDAY item 31): Doer is the one who blames   // a bet welshed on in front of the street (Core/Wagers.cs): a matter of honour
+                    return 2;
+                case "feveravoid":
+                    return -1;   // kept clear of in the street for the fever in his house (DEPTH item 12): Doer is the one who kept clear
+                case "askafter":
+                    return 1;    // asked after the sick: Doer is the one who asked    // ...and taken back when the stranger told him who it was: they stand where they stood before   // his wire cut in the night, and his neighbour's name on it (Core/FenceCutters.cs; FIVEDAY item 31): Doer is the one who blames   // a bet welshed on in front of the street (Core/Wagers.cs): a matter of honour
                 case "wagerowed":
                     return -1;   // a lost bet owed till payday: a sore point until it's paid
                 case "wagerpaid":
@@ -148,6 +152,7 @@ namespace EnrageWestworld.Core
                    kind == "round" ||                      // A stood B a drink
                    kind == "settled" ||                    // A paid B what was owed, in the street
                    kind == "blamed" ||                     // A blamed B for the doctored brands (DEPTH item 8)
+                   kind == "feveravoid" || kind == "askafter" ||   // A kept clear of B's sick house, or asked after it (DEPTH item 12)
                    kind == "welsh" || kind == "wagerowed" || kind == "wagerpaid"; // A lost a bet to B: wouldn't pay, owes, or paid (Core/Wagers.cs)
         }
 

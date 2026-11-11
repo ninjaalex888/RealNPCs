@@ -164,6 +164,48 @@ namespace EnrageWestworld.Core
         /// Whether this person is sick now (Choosing's lean, their thoughts).
         public bool SickNow(string id) { return id != null && Cfg != null && Cfg.Fever && Store.Counts.ContainsKey(Fever.SickPrefix + id); }
 
+        // the households of the sick (DEPTH item 12): id -> the sick one's first name; rebuilt at most once a game minute
+        private readonly System.Collections.Generic.Dictionary<string, string> _feverHouse = new System.Collections.Generic.Dictionary<string, string>();
+        private long _feverHouseAt = -1;
+
+        /// The first name of the one sick in this person's house (a husband or wife by name, a sweetheart, the kin their story
+        /// names), or null when nobody of theirs has the fever. Their own sickness doesn't count: the sick keep to home.
+        public string FeverHousehold(string id)
+        {
+            if (id == null || Cfg == null || !Cfg.Fever)
+                return null;
+            long min = Store.LastGameMin;
+            if (min != _feverHouseAt)
+            {
+                _feverHouseAt = min;
+                _feverHouse.Clear();
+                foreach (string k in Store.Counts.Keys)
+                {
+                    if (!k.StartsWith(Fever.SickPrefix, System.StringComparison.Ordinal))
+                        continue;
+                    string sick = k.Substring(Fever.SickPrefix.Length);
+                    Person sp = KinPerson(sick);
+                    string first = sp != null ? Person.FirstOf(sp.Name) : null;
+                    if (first == null)
+                        continue;
+                    foreach (SceneTie t in Store.Ties)
+                        if (t != null && t.Has(sick) && t.Warmth > 0 && Ties.Sweethearts(t))
+                            _feverHouse[t.OtherId(sick)] = first;
+                    if (sp.KinId != null)
+                        _feverHouse[sp.KinId] = first;
+                    if (sp.SpouseName != null && !sp.SpouseName.StartsWith("a ", System.StringComparison.Ordinal))
+                        foreach (Resident r in Store.Residents)
+                            if (r != null && r.Id != null && r.Name != null && string.Equals(r.Name, sp.SpouseName, System.StringComparison.OrdinalIgnoreCase))
+                                _feverHouse[r.Id] = first;
+                }
+                foreach (string k in Store.Counts.Keys)
+                    if (k.StartsWith(Fever.SickPrefix, System.StringComparison.Ordinal))
+                        _feverHouse.Remove(k.Substring(Fever.SickPrefix.Length));   // the sick themselves keep to home
+            }
+            string name;
+            return _feverHouse.TryGetValue(id, out name) ? name : null;
+        }
+
         /// Whether a fever is going through this town now.
         public bool FeverIn(string town) { return town != null && Cfg != null && Cfg.Fever && Store.Count(Fever.TownPrefix + town) > 0; }
 

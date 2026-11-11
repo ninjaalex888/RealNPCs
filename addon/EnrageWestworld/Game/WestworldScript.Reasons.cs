@@ -174,6 +174,7 @@ namespace EnrageWestworld.InGame
                 s.Views = ViewsHeldBy(s.Id);   // what they think of others they know, for the talk behind backs (FOURTEENHOUR item 23)
             if (Rivals.On && !s.Woman)
                 s.Courting = CourtingFor(s.Id, out s.CourtingName);   // whom he's courting, for two men after the same woman (FOURTEENHOUR item 19)
+            s.FeverSick = FeverKin.On ? _engine.FeverHousehold(s.Id) : null;   // of a house with the fever (DEPTH item 12)
             bool bent = _cfg.CriminalClass && Criminals.Bent(_store.Ties, s.Id, g);   // the criminal class (item 16): a theft this month, and they keep to it
             s.Bent = bent;
             s.Known = bent || _store.Ties.Any(t => t.Doer == s.Id && (t.Kind == "rough" || t.Kind == "pickpocket") && g - t.At >= 0 && g - t.At < 3 * 1440);
@@ -520,6 +521,8 @@ namespace EnrageWestworld.InGame
             Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
             if (kind == "talkof")
                 cast.TalkOf = TalkOfCast(doer, done);   // whom he talks of, and what each thinks of him (FOURTEENHOUR item 23)
+            if (kind == FeverKin.AskKind || kind == FeverKin.AvoidKind)
+                cast.FeverSick = done.FeverSick ?? doer.FeverSick;   // the sick one at the house, for the words (DEPTH item 12)
             if (kind == "rivals")
                 cast.Courted = Person.FirstOf(doer.CourtingName ?? done.CourtingName ?? "her");   // her name, for the rivals' words (FOURTEENHOUR item 19)
             // the trouble scenes (Scenes.Trouble.cs): each needs its setting, and the rough move a surface by the victim;
