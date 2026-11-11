@@ -317,7 +317,7 @@ namespace EnrageWestworld.Core
         /// Every line, for the tests.
         public static IEnumerable<string> AllLines()
         {
-            return WarnNamed.Concat(WarnNameless).Concat(WarnLaw).Concat(WarnThiefNamed).Concat(WarnThiefNameless).Concat(NewsOpen).Concat(GiftCoin).Concat(GiftRounds).Concat(GiftMeal)
+            return WarnNamed.Concat(WarnNameless).Concat(WarnLaw).Concat(WarnThiefNamed).Concat(WarnThiefNameless).Concat(WarnYoursNamed).Concat(WarnYoursNameless).Concat(NewsOpen).Concat(GiftCoin).Concat(GiftRounds).Concat(GiftMeal)
                             .Concat(TradePatch).Concat(TradeRounds).Concat(TradeDrink).Concat(TradeMeal).Concat(FoughtWon).Concat(FoughtFell);
         }
     }
