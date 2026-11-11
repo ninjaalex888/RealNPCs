@@ -17,16 +17,16 @@ namespace EnrageWestworld.InGame
         private const int NewMindsPerEvent = 3;
 
         /// What a scene leaves in the minds of the two in it and of those who saw it.
-        private void NoteMinds(string kind, List<Ped> people, string[] names)
+        private void NoteMinds(string kind, List<Ped> people, string[] names, int doer = -1)
         {
             if (!_cfg.Minds || people == null || people.Count < 2)
                 return;
             // its own guard inside the scenes: a fault here costs the memory, never the scene (and after 15, "minds"
             // switches off on its own, logged)
-            Safe("minds", () => NoteMindsImpl(kind, people, names));
+            Safe("minds", () => NoteMindsImpl(kind, people, names, doer));
         }
 
-        private void NoteMindsImpl(string kind, List<Ped> people, string[] names)
+        private void NoteMindsImpl(string kind, List<Ped> people, string[] names, int doer)
         {
             string group = Minds.GroupOf(kind);
             if (group == null)
@@ -40,6 +40,15 @@ namespace EnrageWestworld.InGame
                 a.Name = names[0];
             if (b.Name == null && names != null && names.Length > 1)
                 b.Name = names[1];
+            if (doer == 1 && Minds.OneSided(kind))
+            {
+                // the scene's own word on who did it (Scene.Doer: B helps A out, B calls the debt in, B brushes A off, the gentleman
+                // snubs): RememberScene takes the doer first, as the tie already did (NoteSceneTie). Before, the memory had it the
+                // wrong way round: the one helped remembered helping (SEAMS audit)
+                Minds.Party x = a;
+                a = b;
+                b = x;
+            }
             List<Minds.Party> watchers = MindWatchers(people, SceneWatchMetres, strong);
             _engine.RememberScene(kind, a, b, watchers, _placeTown, _engine.NowIndoors ? _engine.NowPlace : null);
         }

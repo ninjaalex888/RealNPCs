@@ -823,7 +823,7 @@ namespace EnrageWestworld.InGame
                 LastingId(p.People[1], out nb, out nm);
                 _engine.ComparedNotes(na, nb);
             }
-            NoteMinds(kind, p.People, p.Names);   // what they and those watching remember of it (Minds)
+            NoteMinds(kind, p.People, p.Names, p.S != null ? p.S.Doer : -1);   // what they and those watching remember of it (Minds); the scene's doer, as the tie has it
             Safe("plans", () => PlanSettled(p.People, kind));   // a plan between them carried out
             Safe("world events", () => RecordSceneEvent(kind, p.People));   // and the plain record, with its witnesses (WorldEvents.cs)
             if (kind != "lift" && p.People.Count >= 2)
