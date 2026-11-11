@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Post a reward** (`[Scenes] PostReward`, on; settings version 424). Someone whose name you know was robbed in this town in the last three days: at the jail door, J puts five dollars with the sheriff for whoever brings the thief in. Within the day the town settles it: a regular brings him in and takes the money (the one robbed thinks better of you), a man makes a false claim and the sheriff hands your money back, or nobody claims it and it comes back after two game days. Told in the Around town box. F7: `TEST post a reward:`.
 - **Spread a rumour** (`[Scenes] SpreadRumour`, on; settings version 423). In a saloon, J beside a man who likes to talk puts a word in his ear about a man of the town whose name you know (he cheats at cards, drinks his wages away...). The town's tales carry it and it grows by the day, and the man it's said of hears of it. F7: `TEST spread a rumour:`.
 
 - **They meet after the word** (`[Scenes] NoteMeet`, on; settings version 422). After you carry a word between two who fell out, the next time they're near each other within two game days they meet in the street: if the word was taken, a word about it and a hand; if it was sent back, a cold word and they part. F7: `TEST note meet:`.

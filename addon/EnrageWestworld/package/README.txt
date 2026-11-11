@@ -82,6 +82,8 @@ New in the towns and on the roads:
   Familiarity).
 - In a saloon, J beside a talker puts a word about a man of the town in his ear ([Scenes]
   SpreadRumour); it grows as it goes round, and he hears of it.
+- After a theft from someone you know, J at the jail door puts up five dollars for the thief
+  ([Scenes] PostReward); the town brings him in, makes a false claim, or lets it lapse.
 - Three whistles at Annesburg, the shape-up on the Saint Denis docks, sale day at Valentine, fence cutters.
 - Witnesses who choose what to do, Pinkertons asking after you, a posse that rides out.
 - Drummers, the slate at the store, a sheriff's sale, camp meetings, river baptisms, box socials,

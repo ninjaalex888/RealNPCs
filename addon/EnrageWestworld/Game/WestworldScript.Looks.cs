@@ -53,7 +53,8 @@ namespace EnrageWestworld.InGame
             _looks.Add("send word", 1000, SendWordStep);   // DEPTH item 10
             _looks.Add("familiarity", 20000, FamiliarityStep);   // DEPTH item 17
             _looks.Add("note meet", 2000, NoteMeetStep);   // DEPTH reserve R2
-            _looks.Add("spread a rumour", 2000, SlanderStep);   // DEPTH reserve R3   // J to step between two about to quarrel (WestworldScript.StepBetween.cs; DEPTH item 7: a new look registers here)
+            _looks.Add("spread a rumour", 2000, SlanderStep);   // DEPTH reserve R3
+            _looks.Add("post a reward", 2000, YourRewardStep);   // DEPTH reserve R4   // J to step between two about to quarrel (WestworldScript.StepBetween.cs; DEPTH item 7: a new look registers here)
             }
             int ran = _looks.Step(now);
             if (ran > _looksMinuteMost)
