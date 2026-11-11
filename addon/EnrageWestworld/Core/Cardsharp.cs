@@ -12,7 +12,9 @@ namespace EnrageWestworld.Core
     {
         public static bool On = true;   // [Scenes] CardsharpRunOut, from the settings
         public const string Kind = "runout";
-        public const int RunPercent = 60, MostMen = 2, BackLeastDays = 2, BackMostDays = 14, WalkMs = 70000;
+        public const int RunPercent = 60, MostMen = 2, WalkMs = 70000;
+        public static int BackLeastDays { get { return SessionClock.Days(2, 1); } }   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
+        public static int BackMostDays { get { return SessionClock.Days(14, 2); } }
         public const float TableMetres = 5f, EdgePast = 15f, MostWalk = 140f;   // the table's men within this of the man he cheated; the spot to walk him to, past the town's core
 
         /// Whether the table runs him out (men to do it, and the roll); else he's only shown the door, as before.

@@ -31,7 +31,8 @@ namespace EnrageWestworld.Core
     public static class Tales
     {
         public static bool On = true;   // [Mind] MemoriesBlur, from the settings
-        public const int Kept = 24, LastsDays = 7, ThoughtGapMs = 90000;
+        public const int Kept = 24, ThoughtGapMs = 90000;
+        public static int LastsDays { get { return SessionClock.Days(7, 2); } }   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
 
         /// A big brawl's tale.
         public static TownTale Brawl(string town, bool saloon, int fighters, int down, string starter, long at, int hour, List<string> were, List<string> hurt)

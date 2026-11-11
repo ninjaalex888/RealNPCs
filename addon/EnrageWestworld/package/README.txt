@@ -76,6 +76,8 @@ New in the towns and on the roads:
   the sick instead ([World] Fever).
 - A man you beat tells strangers in the saloon how he came by his marks, bigger each day; a
   friend beside him sets it straight, or doesn't.
+- The arcs you're meant to see end within a session ([World] SessionClock): a man you vouched
+  for, the town's tales, kin come about a wrong, the judge, a loan, a sweetheart's patience.
 - Three whistles at Annesburg, the shape-up on the Saint Denis docks, sale day at Valentine, fence cutters.
 - Witnesses who choose what to do, Pinkertons asking after you, a posse that rides out.
 - Drummers, the slate at the store, a sheriff's sale, camp meetings, river baptisms, box socials,

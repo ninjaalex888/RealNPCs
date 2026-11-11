@@ -29,7 +29,7 @@ namespace EnrageWestworld.Core
         public const long RestMinutes = 720;
 
         /// How long the plan keeps (days): past that he's let it go.
-        public const int Days = 4;
+        public static int Days { get { return SessionClock.Days(4, 2); } }   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
 
         /// How the beaten man takes it, by his nature: a rematch for the hot and the proud (never a woman against a man, and
         /// only one who fights: the brawl's own rule, WomenInFights, is the game side's); shunning for the anxious and the

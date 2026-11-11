@@ -263,6 +263,7 @@ namespace EnrageWestworld.InGame
             Brands.On = _cfg.Brands;             // [Scenes] Brands (DEPTH item 8)
             CollectionPlate.On = _cfg.CollectionPlate;   // [Scenes] CollectionPlate (DEPTH item 11)
             RevivedSeen.On = _cfg.RevivedSeen;           // [World] RevivedSeen (DEPTH item 15)
+            Core.SessionClock.On = _cfg.SessionClock;     // [World] SessionClock (DEPTH item 16)
             Temperance.DoorOn = _cfg.TemperanceDoor && _cfg.Temperance;   // [Scenes] TemperanceDoor (FOURTEENHOUR item 25)
             RainShelter.On = _cfg.RainShelter;   // [Scenes] RainShelter (FOURTEENHOUR item 26)
             Holdup.On = _cfg.StoreHoldups;   // [Scenes] StoreHoldups (FOURTEENHOUR reserve R1)

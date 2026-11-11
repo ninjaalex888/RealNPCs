@@ -35,7 +35,9 @@ namespace EnrageWestworld.Core
     {
         public static bool On = true;   // [Scenes] Vouch, from the settings
         public const string RowId = "jaildoor:vouch";
-        public const int SuretyCents = 500, KeepDays = 7, NoWordDays = 30, KeptFondness = 10, LookMs = 5000, MostKept = 12;
+        public const int SuretyCents = 500, KeptFondness = 10, LookMs = 5000, MostKept = 12;
+        public static int KeepDays { get { return SessionClock.Days(7, 2); } }   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
+        public static int NoWordDays { get { return SessionClock.Days(30, 2); } }
 
         /// The chance he breaks the peace in his week somewhere you aren't: one in five for most men; a hothead or a drinker
         /// likelier, a proud man or a braggart a little; a loyal man, an honest one, a family man or a married man less (two

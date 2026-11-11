@@ -34,8 +34,9 @@ namespace EnrageWestworld.Core
     {
         /// The men of a family who take a wrong up (Family.PickRelation's men; a nephew isn't among them).
         public static readonly string[] Takers = { "brother", "father", "son", "cousin", "uncle" };
-        public const int DueLeastDays = 5, DueMostDays = 9;   // "a week later"
-        public const int WaitsDays = 7;                        // after the due day, a week to find you in one of the two towns
+        public static int DueLeastDays { get { return SessionClock.Days(5, 1); } }   // "a week later" (as built)   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
+        public static int DueMostDays { get { return SessionClock.Days(9, 2); } }
+        public static int WaitsDays { get { return SessionClock.Days(7, 2); } }   // after the due day, a week (as built) to find you in one of the two towns   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
         public const string Mark = "kin";                      // once for each person wronged (PersonState.Mark)
         public const string TownMark = "kintown";              // once for each person wronged by a townsman (FIVEDAY item 32b)
         public const int TownChance = 40;                      // percent: a family hears and sends a man (friends near take most of these up)

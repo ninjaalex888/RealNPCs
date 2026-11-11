@@ -14,7 +14,7 @@ namespace EnrageWestworld.Core
 {
     public static class ClaimAgent
     {
-        public const int AfterDays = 3;
+        public static int AfterDays { get { return SessionClock.Days(3, 1); } }   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
         public const string Prefix = "claim:";
 
         /// Whether a death brings a claim agent: the mine's (the company), or a killing in Saint Denis (the insurance man).

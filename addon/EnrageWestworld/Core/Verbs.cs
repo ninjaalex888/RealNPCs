@@ -17,7 +17,7 @@ namespace EnrageWestworld.Core
     public static class Verbs
     {
         public const int LendCents = 1000;
-        public const int LoanDays = 3;              // game days before the loan is due
+        public static int LoanDays { get { return SessionClock.Days(3, 1); } }   // game days before the loan is due   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
         public const int AskDays = 14;              // a tie this fresh can be asked about
         public const int KnownForDays = 7;          // what the log knows X for, this fresh
         public const int MostAbout = 2;             // rows of "What do you know of..."

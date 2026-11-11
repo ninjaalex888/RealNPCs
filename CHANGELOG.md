@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Arcs that end within a session** (`[World] SessionClock`, on; settings version 417). A game day is 48 real minutes, so the week-long arcs never finished in an evening's play. Now the ones you're meant to see play out within two game days (about an hour and a half): a man you vouched for, the town's tales, the cardsharp's return, the beaten man's plan, kin come about a wrong, the circuit judge, a loan falling due, the claim agent, a sweetheart's patience. What keeps things rare (a fever, the mine whistle, the shows, the prize fights), the calendar and how long people remember keep their lengths. Off: every old length.
+
 - **The revived dead seen by anyone** (`[World] RevivedSeen`, on, with West World; settings version 416). Someone dead on RealNPCs' books who walks again is now known not only by those who saw them die but by anyone who knew them; each thinks it, and the bold walk up and ask what they are, and get told they've had a drink too many.
 
 - **The big animals' tales grow** (with `[Scenes] NightTales`). Each time the hoop snake or the white stallion is told after dark in a town, the tale grows: a longer snake, a cousin who swears to it, the whole orchard dead; a week's chase, then a month's, and a dozen riders. A teller who saw it himself keeps to his first telling, and says so. F7: `TEST big animals' tales:`.

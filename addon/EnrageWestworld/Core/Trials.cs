@@ -16,7 +16,8 @@ namespace EnrageWestworld.Core
 {
     public static class Trials
     {
-        public const int JudgeDaysLeast = 3, JudgeDaysMost = 7;    // the judge's coming, after the arrest
+        public static int JudgeDaysLeast { get { return SessionClock.Days(3, 1); } }   // the judge's coming, after the arrest   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
+        public static int JudgeDaysMost { get { return SessionClock.Days(7, 2); } }
         public const int TrialFrom = 10, TrialTo = 14;              // the trial's hours
         public const int GallowsDaysAhead = 2, GallowsFrom = 11, GallowsTo = 12;
         public const int BreakoutFrom = 22, BreakoutTo = 5;         // the jail's quiet hours
