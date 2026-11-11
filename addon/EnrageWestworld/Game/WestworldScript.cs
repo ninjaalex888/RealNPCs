@@ -1341,6 +1341,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST send word: " + SendWordStatus());
 			Log.Write("TEST the plate: " + PlateStatus());
 			Log.Write("TEST fever kin: " + FeverKinStatus());
+			Log.Write("TEST big animals' tales: " + FolkStatus());
 			Log.Write("TEST walk together: " + WalkTogetherStatus());
 			Log.Write("TEST old soldiers: " + OldSoldiersStatus());
 			Log.Write("TEST snubs: " + SnubStatus());

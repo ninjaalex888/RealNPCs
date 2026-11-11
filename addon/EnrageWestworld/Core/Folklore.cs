@@ -21,6 +21,7 @@ namespace EnrageWestworld.Core
         public string Key;
         public string[] Lines;   // the teller's, in order: three or four, each said on its own
         public bool Eerie;       // a ghost or a haunting (the listener may shiver), else a tall one or a legend
+        public string[][] Grows; // the big animals' tales (DEPTH item 14): each line's later tellings, bigger each time (Lines is the first)
     }
 
     public static class Folklore
@@ -99,6 +100,46 @@ namespace EnrageWestworld.Core
         };
 
         /// One tale, by the seed (null when the tales are off).
+        // ---- the big animals' tales grow (DEPTH item 14; the roadmap's "Tales of the big animals", told and never grown till now): each
+        // time the hoop snake or the white stallion is told in a town this session it bends a step (a longer snake, a cousin who saw
+        // it, the whole orchard; a week's chase, then a month's, and a dozen riders), two steps at most; a teller who swears he saw it
+        // himself keeps nearest his first telling and says so. Why it reads true: Bartlett, again: each telling bends toward what the
+        // teller expects, and the eyewitness, whose story it is, has least need to improve on it.
+        static readonly Dictionary<string, string[][]> GrowsOf = new Dictionary<string, string[][]>
+        {
+            { "hoopsnake", new[] {
+                new[] { "A hoop snake near eight foot round takes its tail in its mouth and rolls after you like a wagon wheel.", "A hoop snake big as a stage wheel, twelve foot if it's an inch, rolls after you downhill like it's on rails." },
+                new[] { "One came after my cousin downhill, and my cousin swears to it. He jumped behind a tree and the snake struck the trunk.", "Three men saw one go after my cousin, all sober. He got behind a tree, and the snake struck it so hard the bark flew." },
+                new[] { "By morning that tree was dead, and the two beside it. He made a fence of them.", "By morning the whole orchard was dead, root and branch. They had to burn it." } } },
+            { "stallion", new[] {
+                new[] { "Out on the plains there's a white stallion nobody's ever caught. Paces faster than a running horse can gallop.", "Out on the plains there's a white stallion that's outpaced the railroad. Never breaks his stride, not once." },
+                new[] { "Men have chased him with fresh horses a week running. He just paces off over the rise.", "A dozen riders chased him a month, changing horses at every ranch. He paced off over the rise every evening." },
+                new[] { "Some say he's a ghost. My pa saw him once and wouldn't speak of it.", "Some say he's a ghost. A man in Tumbleweed shot at him point blank and the bullet went clean through." } } },
+        };
+
+        /// The lines as told now: the tale's first telling, or (for the big animals') bent a step for each time it's been told in this
+        /// town before, two at most; a teller who saw it himself keeps the first and says so. times below 0: the tale as written.
+        public static string[] Telling(FolkTale tale, int times, bool saw)
+        {
+            string[][] grows;
+            if (tale == null || times < 0 || !GrowsOf.TryGetValue(tale.Key, out grows))
+                return tale != null ? tale.Lines : null;
+            if (saw)
+                return tale.Lines.Concat(new[] { "I saw it myself, and that's the plain truth of it. No more, no less." }).ToArray();
+            int stage = Math.Min(2, times);
+            if (stage == 0)
+                return tale.Lines;
+            var lines = new string[tale.Lines.Length];
+            for (int i = 0; i < lines.Length; i++)
+                lines[i] = i < grows.Length && stage - 1 < grows[i].Length ? grows[i][stage - 1] : tale.Lines[i];
+            return lines;
+        }
+
+        /// Whether this teller swears he saw it himself (one in five, by who he is and the tale).
+        public static bool SawIt(string teller, string key) { return teller != null && Voice.Chance(teller + "|saw|" + key, 20); }
+
+        public static bool Grows(string key) { return key != null && GrowsOf.ContainsKey(key); }
+
         public static FolkTale Pick(string seed)
         {
             return !On ? null : All[Voice.Hash(seed + "|folk") % All.Length];

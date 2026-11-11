@@ -41,6 +41,7 @@ namespace EnrageWestworld.Core
         public int Doer = -1;    // which of the cast did the one-sided thing when the scene's own shape says (the creditor who called a debt in, the one who brushed the other off); -1: the tie's rule (Ties.Trouble: A) or nobody (item 17)
         public List<Escalation.Step> Ladder;   // the quarrel ladder's run this scene was built from (Scenes.Ladder.cs; behind [Mind] MindLive); null for the fixed scenes
         public bool NoLadder;                  // a scene with its own words for a fight (the greenhorn's; FOURTEENHOUR item 16): never rebuilt by the quarrel ladder
+        public string TaleKey;                 // a night tale's key (Core/Folklore.cs), so the game side counts its tellings (DEPTH item 14)
         public string Over;                    // what it was over in words (Scenes.OverFor: a slight, a bad week, the old business, 1899's quarrels; FOURTEENHOUR items 1, 9), else null
         public string LadderNote;              // what the ladder said that the scene doesn't play (the shot), for the log
         public int Amount;                     // dollars at stake, where the scene has a sum (the debt called in): what the player can cover (Core/Fondness.cs)
@@ -102,6 +103,7 @@ namespace EnrageWestworld.Core
         public int PledgesThisWeek;                         // pledges signed at this town's saloon door this week, for the preacher (item 25)
         public string[] TalkOf;                             // a talk of someone not there: his name, A's view, B's view or null, "w" for a woman (item 23); null: none
         public string Courted;                              // the woman two rivals both court, her first name (Core/Rivals.cs, FOURTEENHOUR item 19); null: none
+        public Dictionary<string, int> TaleTold;            // the big animals' tales told in this town this session, by key (DEPTH item 14); null: the tales as written
         public bool FriendThere;                            // the limp's tale: C is a friend of A's who was by (Core/LimpTale.cs; DEPTH item 13)
         public int MarkedDays;                              // ...and the game days since A was beaten
         public string FeverSick;                            // the one sick at B's house, first name (Core/FeverKin.cs; DEPTH item 12); null: none

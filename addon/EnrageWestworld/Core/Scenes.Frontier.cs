@@ -241,11 +241,16 @@ namespace EnrageWestworld.Core
             string temperB = c.Tempers != null && c.Tempers.Length > 1 ? c.Tempers[1] : null;
             string taking = Folklore.Taking(temperB, tale.Eerie, seed);
             string answerVoice = taking == "shiver" ? "scared" : taking == "scoff" ? "mock" : "respond";
-            Scene s = new Scene { Kind = "nighttale", Summary = "an old tale told after dark" };
-            for (int i = 0; i < tale.Lines.Length; i++)
+            Scene s = new Scene { Kind = "nighttale", Summary = "an old tale told after dark", TaleKey = tale.Key };
+            // the big animals' tales grow with each telling in the town (DEPTH item 14); the harnesses pass no counts: the tale as written
+            int times = -1;
+            if (c.TaleTold != null && Folklore.Grows(tale.Key))
+                c.TaleTold.TryGetValue(tale.Key, out times);
+            string[] lines = Folklore.Telling(tale, c.TaleTold != null ? times : -1, c.TaleTold != null && Folklore.SawIt(c.Names != null ? c.Names[0] : null, tale.Key));
+            for (int i = 0; i < lines.Length; i++)
             {
-                s.Add(0, tale.Lines[i], i == 0 ? "chat" : null, i == 0 ? (c.Saloon ? "face" : null) : null, i == 0 ? 400 : 0);
-                if (i < tale.Lines.Length - 1 && (i == 0 || Voice.Chance(seed + "|between" + i, 50)))
+                s.Add(0, lines[i], i == 0 ? "chat" : null, i == 0 ? (c.Saloon ? "face" : null) : null, i == 0 ? 400 : 0);
+                if (i < lines.Length - 1 && (i == 0 || Voice.Chance(seed + "|between" + i, 50)))
                     s.Add(1, Folklore.Between(taking, tale.Eerie, seed + i), answerVoice);
             }
             s.Add(1, Folklore.Close(taking, seed), answerVoice);

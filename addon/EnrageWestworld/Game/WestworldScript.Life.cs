@@ -776,6 +776,8 @@ namespace EnrageWestworld.InGame
                 _director.AbortSecond("made room for a test");   // a test's scene is never kept 20 m off by the second
             if (_director.Start(s, people, names, seed, () => { }, cast))
             {
+                if (s.Kind == "nighttale" && Folklore.Grows(s.TaleKey) && _placeTown != null && !test)
+                    FolkTold(_placeTown, s.TaleKey);   // one telling more here (DEPTH item 14)
                 if (test)
                     MarkTestPeople(people, now);   // what happens to its cast for a while is the test's: never a hush (WestworldScript.TownMood.cs)
                 int gap = (int)(_cfg.DramaGapSeconds * 1000 * (0.75 + _rng.NextDouble() * 0.5) * (_hush && !test ? TownMood.HushGap : 1f));
@@ -1024,6 +1026,8 @@ namespace EnrageWestworld.InGame
                 WellOff = new[] { CastWellOff(a), CastWellOff(b) }
             };
             cast.Knows = CastKnows(a, b, crowd);
+            if (Folklore.On && _placeTown != null)
+                cast.TaleTold = FolkToldIn(_placeTown);   // the big animals' tales grow with their tellings here (DEPTH item 14)
             if (Temperance.DoorOn)
                 cast.PledgesThisWeek = PledgesThisWeek();   // the preacher's word on Sunday (FOURTEENHOUR item 25)
             if (OldSoldiers.On)

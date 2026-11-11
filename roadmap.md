@@ -362,7 +362,7 @@ One date to start with: Easter 1899 fell on 2 April, the very Sunday your game's
 | **Cold snap** | Snow in the high country: people huddle by stoves, an old man doesn't wake, the store runs out of coal oil. | Weather, inner lives | M |  |
 | **Planting and harvest** | Talk follows the season: planting in April, haying in summer, harvest in autumn, idle winters at the saloon. | Clock month, day lines | S |  |
 | **Flood** | High water in the bayou: a family on a roof, a drowned mule, a collection at church. | Weather, Scenes | M |  |
-| **Tales of the big animals** | Tall tales about legendary beasts grow with each telling, like the player's own legend. | Tall tales, distortion | S |  |
+| **Tales of the big animals** | Tall tales about legendary beasts grow with each telling, like the player's own legend. | Tall tales, distortion | S | Built (Run 3 item 3: the hoop snake and the white stallion told at night; depth item 14: they grow with each telling in a town, and the one who saw it keeps to his first) |
 
 ### Night folklore (themes only, never the game's lines)
 

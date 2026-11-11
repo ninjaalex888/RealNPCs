@@ -2,6 +2,8 @@
 // keeping clear and the asking after (Core/Reasons.cs; Heart sets Someone.FeverSick from Engine.FeverHousehold); here, when a
 // "feveravoid" scene has played (OnPlayedOut), the one passed by thinks of it, over their head. Runner: the Director's street scenes
 // (seen); the fever (built, not yet seen).
+using System.Collections.Generic;
+using System.Linq;
 using EnrageWestworld.Core;
 using RDR2;
 
@@ -26,6 +28,33 @@ namespace EnrageWestworld.InGame
             _feverShunned++;
             _feverShunnedLast = (wa != null ? wa.Name : "someone") + " kept clear of " + wb.Name + (sick != null ? " (" + sick + " has the fever)" : "");
             Log.Write("FEVER kin: " + _feverShunnedLast);
+        }
+
+        // ---- the big animals' tales grow (DEPTH item 14): tellings by town and tale, this session, in memory
+        private readonly Dictionary<string, Dictionary<string, int>> _folkTold = new Dictionary<string, Dictionary<string, int>>();
+        private int _folkTellings;
+
+        private Dictionary<string, int> FolkToldIn(string town)
+        {
+            Dictionary<string, int> d;
+            if (!_folkTold.TryGetValue(town, out d))
+                _folkTold[town] = d = new Dictionary<string, int>();
+            return d;
+        }
+
+        private void FolkTold(string town, string key)
+        {
+            Dictionary<string, int> d = FolkToldIn(town);
+            int n;
+            d.TryGetValue(key, out n);
+            d[key] = n + 1;
+            _folkTellings++;
+            Log.Write("FOLK the " + key + " told in " + town + ", the " + (n + 1) + (n == 0 ? "st" : n == 1 ? "nd" : n == 2 ? "rd" : "th") + " time this session" + (n >= 1 ? ": bigger in the telling" : ""));
+        }
+
+        private string FolkStatus()
+        {
+            return _folkTellings + " tellings of the big animals' tales" + (_folkTold.Count > 0 ? ": " + string.Join(", ", _folkTold.SelectMany(t => t.Value.Select(v => v.Key + " " + v.Value + " in " + t.Key))) : "");
         }
 
         private string FeverKinStatus()
