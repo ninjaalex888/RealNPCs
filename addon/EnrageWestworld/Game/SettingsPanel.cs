@@ -1713,6 +1713,7 @@ namespace EnrageWestworld.InGame
             if (!Open)
                 return;
             PAD.DISABLE_ALL_CONTROL_ACTIONS(0);
+            Natives.HoldWhistle();   // the d-pad's up whistled for the horse anyway (a player's report, 2026-11-10)
             HUD.HIDE_HUD_AND_RADAR_THIS_FRAME();
             bool pad = !PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
             if (_padCapture != null)

@@ -11,6 +11,18 @@ namespace EnrageWestworld.InGame
 {
     internal static class Natives
     {
+        /// The horse whistle kept off this frame (a player on Nexus, 2026-11-10, on a DualSense: going up and down the
+        /// settings with the d-pad, Arthur whistled for his horse on every press, in ours and in enRAGE's, though both shut
+        /// the game's controls off wholesale each frame: the whistle slips past that, so it's named here one by one, as menu
+        /// mods do). RDR2.eInputType Whistle and WhistleHorseback (the d-pad's up, on foot and in the saddle). Called each
+        /// frame our settings panel or reader is open, and while enRAGE's settings panel is (it reads the pad through
+        /// XInput, not the game's controls, so this takes nothing from it).
+        public static void HoldWhistle()
+        {
+            PAD.DISABLE_CONTROL_ACTION(0, 613911080u, true);    // INPUT_WHISTLE
+            PAD.DISABLE_CONTROL_ACTION(0, 3890975109u, true);   // INPUT_WHISTLE_HORSEBACK
+        }
+
         /// How fast people walk on their errands for RealNPCs (a scene's approach, the doctor, a talk, a camp seat...): the move
         /// blend ratio, 1 a walk, 2 a brisk jog, 3 a run ([Scenes] ErrandPace; Lex, 2026-10-29: "double their current walking pace").
         public static float Brisk = 2.0f;

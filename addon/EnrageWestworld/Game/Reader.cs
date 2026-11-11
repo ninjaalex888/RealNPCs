@@ -155,6 +155,7 @@ namespace EnrageWestworld.InGame
             if (!Open)
                 return;
             PAD.DISABLE_ALL_CONTROL_ACTIONS(0);
+            Natives.HoldWhistle();   // the D-pad turns pages: not a whistle for the horse with each (Natives.HoldWhistle)
             bool pad = !PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
             if (pad)
             {

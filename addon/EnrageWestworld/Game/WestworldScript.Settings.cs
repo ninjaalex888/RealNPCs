@@ -77,6 +77,8 @@ namespace EnrageWestworld.InGame
                 panel.Key(k.KeyCode, k.Shift, k.Control, k.Alt);
             }
             bool theirsOpen = _bridge != null && _bridge.EnrageSettingsOpen();
+            if (theirsOpen)
+                Natives.HoldWhistle();   // enRAGE's panel on a pad: its d-pad moves the rows, not Arthur's whistle (Natives.HoldWhistle)
             if (theirsOpen && !_letEnrageShow && _cfg.ReplaceEnrageSettings && _bridge.CanReplaceSettings)
             {
                 _bridge.ToggleEnrageSettings();   // closed again through enRAGE's own toggle
