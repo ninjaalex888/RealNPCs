@@ -174,7 +174,10 @@ namespace EnrageWestworld.InGame
             }
             _bvBreakups++;
             if (_director.FightSides(out a, out b) && (a.Count == 0 || b.Count == 0 || stopped >= all - 1))
+            {
                 _director.Abort("Arthur broke it up");
+                BreakUpKnown(me);
+            }
             _bvLast = "you broke it up: " + string.Join("; ", said);
             Log.Write("BRAWL you shout to break it up: " + string.Join("; ", said));
         }
@@ -258,6 +261,27 @@ namespace EnrageWestworld.InGame
             _bvWon++;
             WagerSay(me, other, BrawlVerbs.PaysYourBet(bet.Seed), me.Handle);
             Log.Write("BRAWL bet: your man won; " + other.Name + " pays you " + BrawlVerbs.Money(bet.Cents));
+        }
+
+        /// A fight you broke up on J is a "peace" deed, as a word stepping into a scene is (Frontier.cs SceneReaction; SEAMS item
+        /// 6; [Scenes] BreakUpKnown): the witnesses keep it, it goes round as gossip ("broke up a fight"), a newspaper might carry
+        /// it and the town's ledger counts it among your good deeds. Before, the J menu's shout ended the fight and nobody but
+        /// the fighters knew. Only when the fight is over for your shout (the director's Abort), never for a shout that failed.
+        private void BreakUpKnown(Ped me)
+        {
+            if (!_cfg.BreakUpKnown || !_cfg.Deeds || _engine == null)
+                return;
+            try
+            {
+                Vector3 pos = me.Position;
+                long g = Bridge.Now();
+                NoteDeedMinds(_engine.OnDeed(Deeds.Make("peace", "a fight", _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, 0, 25f)), WitnessesNear(pos, 0, 25f), g), pos, 0);
+                Log.Write("BRAWL you broke it up: a peace deed, the town will hear of it");
+            }
+            catch (Exception ex)
+            {
+                Log.Detail("BRAWL the break-up's deed couldn't be kept: " + ex.Message);
+            }
         }
 
         /// The man you welshed on keeps it, and so do those who saw (SEAMS item 3; [Scenes] WelshRemembered): the wagers' own

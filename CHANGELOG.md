@@ -3,6 +3,7 @@
 ## Unreleased
 
 - **Fix: the thoughts after a bet on a fight.** Paying, owing or welshing on a bet left a memory, but its own words were filed where they were never looked for, so people thought of it in a quarrel's plain words. Now they say it their own way ("Won fair and square and he won't pay").
+- **A fight you break up is known** (`[Scenes] BreakUpKnown`, on; settings version 440). Ending a fistfight with your shout (J, "Break it up") is now a good deed the town hears of, as stepping into any other scene is: those who saw remember it, it's talked of, and it may be in the paper.
 - **"Stood by you" on the name card** (`[Display] NameCardsStood`, on; settings version 439). Someone who fought for you this week (an ally who came to your aid, a friend who ran down your thief) shows "Stood by you" under his name, the other side of "Owes you".
 - **A welsher's name** (`[Scenes] WelshersShunned`, on; settings version 438). Welsh on a bet in a town and for a week its betting men won't take your money: the one who'd have offered you a bet at the next fistfight tells you why.
 - **Welsh on a bet and they remember** (`[Scenes] WelshRemembered`, on; settings version 437). Not paying a bet you lost on a fistfight only cost you the man's liking. Now he keeps it in mind, in the bet's own words, and those who saw it may pass it on.
