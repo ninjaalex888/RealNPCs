@@ -47,6 +47,28 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
+        /// A friend of the marked man's within 8 m of him (DEPTH item 13): a warm friend's tie (Ties.Friends), on his feet, free, grown,
+        /// no story model, nobody's scene; null for none. He's the limp's tale's third: he sets it straight, or backs him.
+        private Ped LimpFriendNear(Someone him, Ped hisPed, Ped other, int now)
+        {
+            if (him == null || hisPed == null || !hisPed.Exists() || _store == null)
+                return null;
+            Ped me = Game.Player.Character;
+            foreach (Ped p in Peds.All())
+            {
+                if (p == null || !p.Exists() || p.IsDead || p.Handle == me.Handle || p.Handle == hisPed.Handle || (other != null && p.Handle == other.Handle) || p.Position.DistanceTo(hisPed.Position) > 8f)
+                    continue;
+                MindWho w;
+                if (!_mindWho.TryGetValue(p.Handle, out w) || w.Id == null)
+                    continue;
+                SceneTie t = _store.Ties.FirstOrDefault(x => x != null && x.Has(him.Id) && x.Has(w.Id));
+                if (t == null || !Ties.Friends(t) || Natives.StoryModel(p) || !IsGrownUp(p) || PED.IS_PED_USING_ANY_SCENARIO(p.Handle) || NotFree(p.Handle) || _director.Involves(p.Handle) || MayDirectWhyNot(p) != null)
+                    continue;
+                return p;
+            }
+            return null;
+        }
+
         /// From OnPlayedOut, a "marchedhome" (DEPTH item 5): the town's barkeep, within 30 m of the door, thinks less of the church
         /// woman who emptied his bar (a soured tie, which Opinions reads as contempt), says so to the next man at his bar (a caption
         /// from him: a counter keeper is never given an order), and thinks it. a, b: the scene's first two (the church woman and him).

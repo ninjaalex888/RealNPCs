@@ -175,6 +175,13 @@ namespace EnrageWestworld.InGame
             if (Rivals.On && !s.Woman)
                 s.Courting = CourtingFor(s.Id, out s.CourtingName);   // whom he's courting, for two men after the same woman (FOURTEENHOUR item 19)
             s.FeverSick = FeverKin.On ? _engine.FeverHousehold(s.Id) : null;   // of a house with the fever (DEPTH item 12)
+            s.MarkedDays = -1;
+            if (LimpTale.On && _cfg.LastingMarks && _store.Deeds != null)
+            {
+                Deed wrong = Trust.LastWrong(_store.Deeds, s.Id, g, s.Name);   // still marked from a beating of yours (DEPTH item 13; as the marks' own look)
+                if (wrong != null && LastingMarks.Shows(wrong.Kind, g - wrong.At))
+                    s.MarkedDays = (int)((g - wrong.At) / 1440);
+            }
             bool bent = _cfg.CriminalClass && Criminals.Bent(_store.Ties, s.Id, g);   // the criminal class (item 16): a theft this month, and they keep to it
             s.Bent = bent;
             s.Known = bent || _store.Ties.Any(t => t.Doer == s.Id && (t.Kind == "rough" || t.Kind == "pickpocket") && g - t.At >= 0 && g - t.At < 3 * 1440);
@@ -479,6 +486,12 @@ namespace EnrageWestworld.InGame
             string kinId = null;
             if (pr.Why.Kind == Rowdy.Kind)
                 lady = DrinkingFriendBeside(first, second, now);   // his friend in drink, for the song and the walk home (FOURTEENHOUR reserve R5)
+            bool limpFriend = false;
+            if (pr.Why.Kind == LimpTale.Kind)
+            {
+                lady = LimpFriendNear(pr.Why.BFirst ? pr.B.Who : pr.A.Who, first, second, now);   // a friend of his beside him, to set it straight or back him (DEPTH item 13)
+                limpFriend = lady != null;
+            }
             if (pr.Why.Kind == "temperance" && Temperance.DoorOn)
             {
                 // the temperance door (FOURTEENHOUR item 25): her kin near to answer a hothead's insult (he's A, the drinker B, she the
@@ -510,6 +523,12 @@ namespace EnrageWestworld.InGame
             SceneCast cast = BuildCast(first, second, lady, saloon, me, now, seed);
             cast.SecondChurch = churchSecond;
             cast.WifeHome = wifeHome;
+            if (pr.Why.Kind == LimpTale.Kind)
+            {
+                Someone marked = pr.Why.BFirst ? pr.B.Who : pr.A.Who;
+                cast.FriendThere = limpFriend;
+                cast.MarkedDays = Math.Max(0, marked.MarkedDays);
+            }
             if (kinStands)
             {
                 cast.KinStands = true;

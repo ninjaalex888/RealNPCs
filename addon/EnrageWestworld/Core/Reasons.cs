@@ -36,6 +36,7 @@ namespace EnrageWestworld.Core
         public bool Greenhorn;    // off the train in the last two weeks (a resident's NewAt; FOURTEENHOUR item 16), set by the game side
         public List<Opinions.Held> Views;   // what they think of others they know (Core/Opinions.cs; FOURTEENHOUR item 23), set by the game side; null: none
         public string Courting, CourtingName;   // the woman he's courting, and her name (Core/Rivals.cs; FOURTEENHOUR item 19), set by the game side
+        public int MarkedDays = -1;   // still marked from a beating of yours: the game days since (Core/LimpTale.cs; DEPTH item 13), set by the game side; -1: not marked
         public string FeverSick;  // of a house with the fever: the sick one's first name (Core/FeverKin.cs; DEPTH item 12), set by the game side; null: none
         public string War;        // the war he was in: "blue", "grey", "cuba", "islands" (Core/OldSoldiers.cs; FOURTEENHOUR item 17), set by the game side
         public string Shamed;     // slighted, had words or beaten in the last four hours and not answered it ("slighted", "had words", "beaten"), else null (NIGHT3: displaced aggression)
@@ -431,6 +432,9 @@ namespace EnrageWestworld.Core
             Reason green = Greenhorn.For(x, y, gameDay, where.Saloon, where.Night);   // a regular ribs the greenhorn (FOURTEENHOUR item 16)
             if (green != null)
                 all.Add(green);
+            Reason limp = LimpTale.For(x, y, null, gameDay, where.Saloon);   // (strangers: Own is only asked with no tie between them) the man you beat tells a stranger how he came by it (DEPTH item 13)
+            if (limp != null)
+                all.Add(limp);
             Reason fever = FeverKin.For(x, y, gameDay, where.Saloon, where.Night);   // the house of the sick kept clear of, or asked after (DEPTH item 12)
             if (fever != null)
                 all.Add(fever);

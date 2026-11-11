@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **How he got the limp** (with `[Mind] LastingMarks`). A man you beat, while he still carries the marks, tells a stranger in the saloon how he came by them, and the telling grows by the day: a lucky blow, then two men from behind, then three and a knife, and never his fault. A friend of his beside him sets it straight, or backs him, by his nature.
+
 - **The fevered's kin kept clear of** (with `[World] Fever`). While a fever goes through a town, those of a sick house (the husband or wife, a sweetheart, the kin) are kept clear of in the street: they greet a neighbour and get no answer, and he steps away, the timid most of all. The kind and the devout stop to ask after the sick instead. The one passed by thinks of it. F7: `TEST fever kin:`.
 
 - **The collection plate** (`[Scenes] CollectionPlate`, on; settings version 415). On a Sunday after the morning service, near a town's church, a man of the church brings the plate round to you: J a dime, a dollar, or let it pass. Who gave is seen and remembered, the churchgoers notice when it passes you by, and a stranger's dollar is the preacher's word the next Sunday. A Testing row, "The collection plate after the Sunday service (now)". F7: `TEST the plate:`.

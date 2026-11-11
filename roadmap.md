@@ -299,7 +299,7 @@ One date to start with: Easter 1899 fell on 2 April, the very Sunday your game's
 | **Memorial photographs** | The photographer takes portraits of the dead. The player finds one, a name on the back, in a looted house. | Posts (photographer), Reader | S |  |
 | **The undertaker counts** | His thoughts follow the week's deaths: prosperous and uneasy, measuring the player with his eyes. | Posts (undertaker), Deeds | S |  |
 | **That cough** | Late in Arthur's story, people who see him often hear the cough and know it: pity, fear, a widow who lost her man to consumption. | Ticker, Feelings; needs story progress | M |  |
-| **Limps and scars** | Someone the player shot who lived walks with a limp for weeks and tells strangers how it happened. | Hits, Pleas, Regulars | M |  |
+| **Limps and scars** | Someone the player shot who lived walks with a limp for weeks and tells strangers how it happened. | Hits, Pleas, Regulars | M | Partly built (FIVEDAY item 24: the marks of a beating worn for days; depth item 13: he tells a stranger in the saloon how he came by them, bigger each day, and a friend sets it straight or backs him; not the gunshot limp) |
 | **Graves visited** | On Sunday afternoons kin stand at graves. The player finds flowers on the graves of men he killed, and whoever left them. | Deaths, routines, Family | M |  |
 | **The wake** | The night before a burial the body lies in the parlour and neighbours sit up with it. In West World, the dead man sits up too. | enRAGE funerals, Reveries | M |  |
 
