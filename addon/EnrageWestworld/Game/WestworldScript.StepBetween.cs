@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using EnrageWestworld.Core;
 using RDR2;
+using RDR2.Math;
 using RDR2.Native;
 
 namespace EnrageWestworld.InGame
@@ -120,6 +121,13 @@ namespace EnrageWestworld.InGame
                 }
                 _sbLast = (second ? "made it up: " : "put off: ") + how;
                 Log.Write("STEP BETWEEN " + na + " and " + nb + ": " + _sbLast);
+                if (_cfg.StepBetweenKnown && _cfg.Deeds && _engine != null && !TestPerson(a.Handle) && !TestPerson(b.Handle))
+                {
+                    // a quarrel you stopped is a peace the town hears of, as a fight you broke up is (SEAMS item 16; BreakUpKnown's deed)
+                    Vector3 pos = me.Position;
+                    NoteDeedMinds(_engine.OnDeed(Deeds.Make("peace", "a quarrel", _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, 0, 25f)), WitnessesNear(pos, 0, 25f), g), pos, 0);
+                    Log.Write("STEP BETWEEN: a peace deed, the town will hear of it");
+                }
                 return;
             }
             // one won't: he says so, and the scene goes on as it was

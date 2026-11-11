@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 448;
+        public const int CurrentVersion = 449;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -452,6 +452,7 @@ namespace EnrageWestworld.Core
         public bool ChanceFirst = true;   // [Scenes] the chance meeting (songs, tales, haggling, standoffs) goes first when no reason is strong, the argument's share stops growing past weight 1.5, main scenes start nearer you, and two held in chairs far apart aren't cast (NIGHT4 fix 7; settings version 166)
         public bool HorseThieves = true;   // [Scenes] with MindLive: a man whose mind leans to it takes a horse with nobody on it and rides off; its owner shouts after him (the NPC-life run, step 5; settings version 137)
         public bool FightCrowds = false;   // off as it comes from settings version 182 (Lex, 2026-11-01: onlookers froze; "remove the feature that tells the NPCs to gather as a crowd") [Scenes] with MindLive: a crowd rings a street fight and cheers it on (the fearful keep away) (the NPC-life run, step 5; settings version 136)
+        public bool StepBetweenKnown = true;   // [Scenes] with StepBetween and Deeds: two you stepped between who both let it be: a peace deed the town hears of, as a fight broken up is (SEAMS item 16; settings version 449)
         public bool WalkHomeMends = true;     // [Scenes] with WalkHome: seeing a man in drink home while the drink is his worry mends it, as coffee through Talk does (SEAMS item 15; settings version 448)
         public bool FriendsKnowYourThief = true;   // [Scenes] with FriendsWarnThief and NameCardsRobbed: a friend's warning of a pickpocket near says when he's the one who got away with yours (SEAMS item 14; settings version 447)
         public bool StandReminds = true;      // [Scenes] with BrawlVerbs: the J row "Stand with ..." says when the man losing stood by you this week, or owes you (SEAMS item 13; settings version 446)
@@ -1092,6 +1093,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 449)
+                    log?.Invoke("Settings: new in this version: [Scenes] StepBetweenKnown (on): a quarrel you stepped into and stopped is a good deed the town hears of.");
                 if (s.SettingsVersion < 448)
                     log?.Invoke("Settings: new in this version: [Scenes] WalkHomeMends (on): seeing a man in drink home mends his drinking worry.");
                 if (s.SettingsVersion < 447)
@@ -2404,6 +2407,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("ChanceFirst = " + B(ChanceFirst) + "   ; chance meetings (a song, a tall tale, haggling, a standoff, a card cheat) get their turn when nobody has a strong reason, nearer you; a high TroubleWeight brings more fights, not more arguments; two people sat far apart are not picked for a scene they would never walk to");
             b.AppendLine("HorseThieves = " + B(HorseThieves) + "   ; with MindLive on, in town: a man honest with nobody and short of money (or a known thief) gets up on a horse that isn't his and rides off, a red dot and fair game; its owner shouts after him. At most once a town in two game hours");
             b.AppendLine("FightCrowds = " + B(FightCrowds) + "   ; with MindLive on: while people trade blows, those within [Mind] BrawlCrowdMetres who aren't of a fearful nature walk over, stand round in a ring and cheer it on (up to 6 round two men, 16 round a brawl, in two rings); they go when it's over");
+            b.AppendLine("StepBetweenKnown = " + B(StepBetweenKnown) + "   ; with StepBetween and Deeds on: when you step between two men about to quarrel (J) and both let it be, it's a good deed the town knows of, as a fight you break up is; false: only the two of them know");
             b.AppendLine("WalkHomeMends = " + B(WalkHomeMends) + "   ; with WalkHome on: walking a man in drink home (J at night) while his own trouble is the drink, gone worse or at its worst, turns it: the rest of his worry ends well, as coffee through Talk does; false: the walk is only a kindness");
             b.AppendLine("FriendsKnowYourThief = " + B(FriendsKnowYourThief) + "   ; with FriendsWarnThief and NameCardsRobbed on: when a friend walks over to warn you of a pickpocket near and he's the one who got clean away with your money, the friend says so");
             b.AppendLine("StandReminds = " + B(StandReminds) + "   ; in a fistfight, the J row \"Stand with ...\" says \"(he stood by you)\" when the man losing fought for you this week, or \"(he owes you)\" when he's one you saved; false: just his name");
