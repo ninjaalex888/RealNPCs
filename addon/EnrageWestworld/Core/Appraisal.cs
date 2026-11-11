@@ -111,6 +111,8 @@ namespace EnrageWestworld.Core
         }
 
 
+        public static bool GratitudeFelt = true;   // [Encounters] GratitudeFelt, from the settings (SEAMS item 11)
+
         // scene kinds where one did it to the other (the tie's Doer says which: a scene's cast is by who speaks first,
         // not by who did what); the rest are mutual (a quarrel, a brawl, a standoff: each did it to the other)
         private static readonly string[] OneSided = { "rough", "pickpocket", "scorn", "snub", "charity", "help", "passby", "faced", "defend", "round", "settled", "apology", "comfort", "cheer", "debt", "x:debt", "brushoff", "drunk" };
@@ -195,6 +197,12 @@ namespace EnrageWestworld.Core
                 case "passby": kind = id == target ? "pratfall" : "slight"; break;   // the one who fell feels the fall before the street (after item 14); whoever saw him stepped round, the slight
                 case "scorn": kind = id == target ? "refused" : "slight"; break;
                 case "charity": case "help": case "comfort": case "round": case "settled": case "apology": case "defend": kind = "kindness"; break;
+                case "stoodby": case "paidfine": case "surety":
+                    // a stand in a fight, a fine paid, a word stood at the jail: felt as the kindness it is, by him (gratitude) and by
+                    // whoever saw (SEAMS item 11; [Encounters] GratitudeFelt). Before, the mind's appraisal knew none of the three, so
+                    // the man you stood with felt nothing toward you in his mood (the warnings' "grateful", the passing nods)
+                    kind = GratitudeFelt ? "kindness" : null;
+                    break;
                 case "cheer":
                     // good news shared: the news is A's (the one who speaks first); whoever is glad with him feels it through how much they care for him (after item 14)
                     kind = "goodnews";
