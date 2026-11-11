@@ -436,12 +436,12 @@ The richest seam is already in the code: every resident lives through a week-lon
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **Pay the debt** | Pay Whitlow the eleven dollars for Elwood and the arc ends well; both remember, and the town hears a stranger paid. Or buy the debt and collect it yourself. | Links (debt), worry arcs, Deeds | M |  |
+| **Pay the debt** | Pay Whitlow the eleven dollars for Elwood and the arc ends well; both remember, and the town hears a stranger paid. Or buy the debt and collect it yourself. | Links (debt), worry arcs, Deeds | M | Partly built (Talk's settle row pays a told debt; SIXDAY item 9: Helps; buying the debt not built; Talk frozen) |
 | **Fetch the doctor** | Ride the doctor out to the feverish child, or pay his two dollars, and the ending you saw coming changes. | Worries (fever), Posts (doctor) | M |  |
 | **Settle the feud** | Stand between the neighbours at the fence: make peace, take a side, or pay for the post. | Links (feud), Exchanges, Ties | M | Partly built (depth item 7: J to step between two about to quarrel, put off, and made up the second time; not taking a side or paying for the post) |
 | **Carry the note** | For the nervous courter, carry a note, put in a word, or tell him the truth he doesn't want to hear. | Links (courting), Romance | M |  |
-| **Find the letter** | The letter that never came is sitting in another town's post office. Fetch it and watch them read it. | Worries (letter), Letters | S |  |
-| **One more, or none** | The man at the worst of the drink: buy him one more, or take the bottle and walk him home. | Worries (drink), saloon | S |  |
+| **Find the letter** | The letter that never came is sitting in another town's post office. Fetch it and watch them read it. | Worries (letter), Letters | S | Partly built (Talk's mend: a dollar for the telegraph, its mirror "I'd not wait"; fetching it from another town not built; Talk frozen) |
+| **One more, or none** | The man at the worst of the drink: buy him one more, or take the bottle and walk him home. | Worries (drink), saloon | S | Partly built (Talk's mend: coffee, not whiskey, in a saloon; its mirror another whiskey; walking him home not built; Talk frozen) |
 | **The bad tooth** | Take him to the Saint Denis dentist, or pull it yourself in the street with pliers while a crowd winces. | Worries (tooth), Crowd | S |  |
 | **Make it worse** | Every fix has a dark mirror: collect a debt for a cut, fan a feud, steal savings meant for a ticket west. The rumours and letters follow. | Worries, Deeds, Letters | M |  |
 
@@ -596,6 +596,25 @@ Built on runners seen in game (the lift, the chase and tackle orders, the allies
 | The man you stood with owes you | Stand with a man losing a fight and he owes you a month, as one you saved; the street counts it a kindness | Built (`[Encounters] StoodByOwes`) |
 | Owes you, on the card | "Owes you" under the name of one who does | Built (`[Display] NameCardsOwes`) |
 | The tackled thief's grudge | The man brought down in the street holds it against his tackler; they keep clear or have it out another day | Built (with FriendsChase and PurseSnatch) |
+
+## Seams: what you did, kept where it shows (SEAMS, 2026-11-11)
+
+Joining systems that already ran but never read each other. All on runners seen in game (the jail door J, J in a brawl, name cards, the late thanks, the street's scenes).
+
+| Idea | What the player sees | Your call |
+|---|---|---|
+| The fine you paid | The man whose fine you paid owes you a month, thinks of it, and comes to thank you; standing surety is a kindness | Built (`[Encounters] FineOwes`) |
+| The stand remembered | The man you stood with in a fight thinks of it and comes to thank you for it | Built (`[Encounters] StoodRemembered`) |
+| A welsh remembered | The man you welshed on, and those who saw, keep it in the bet's own words | Built (`[Scenes] WelshRemembered`) |
+| A welsher's name | For a week, that town's betting men won't take your money, and say why | Built (`[Scenes] WelshersShunned`) |
+| Stood by you, on the card | "Stood by you" under the name of one who fought for you this week | Built (`[Display] NameCardsStood`) |
+| A fight broken up is known | Ending a fistfight with your shout is a good deed the town talks of | Built (`[Scenes] BreakUpKnown`) |
+| Robbed you, on the card | "Robbed you" under the name of the pickpocket who got away with yours | Built (`[Display] NameCardsRobbed`) |
+| A week kept on your word | The man you stood surety for who keeps the peace owes you, and comes to say so | Built (`[Encounters] SuretyKeptOwes`) |
+| Gratitude felt | A stand, a fine, a word at the jail felt in his mood as kindness | Built (`[Encounters] GratitudeFelt`) |
+| The thoughts after a bet, old soldiers' talk, alms watched | Their own words at last, where courting lines had stood in | Fixed (three bug fixes; a sweep test guards every warm kind) |
+| Kin of the saved | One time in two, a kinsman of someone you saved finds you days on and thanks you, as kin come over a wrong | Built (`[Scenes] KinThanks`) |
+| A mend that owes | Paying a told debt or a marker through Talk makes him owe you, as a fine does | Your call: Talk is frozen; this changes only what follows a Talk act |
 
 ## How to build them
 
