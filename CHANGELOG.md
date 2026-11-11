@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Feuds in a day** (`[Mind] FeudArcs`, on; settings version 419). A quarrel already picks up again within hours; now, where it would come to blows, the one who began it may offer his hand where the street can see, if his nature allows (the kind and the loyal, never the proud or a hothead before others). The other takes it, and they make it up, or refuses it, and it's blows.
+
 - **Familiarity** (`[Mind] Familiarity`, on; settings version 418). Two people of a town who keep ending up near each other at the same place, three times in a game day an hour or more apart, become acquainted: they nod or speak in passing from then on, and in a brawl one leans a little to the other. F7: `TEST familiarity:`.
 
 - **Arcs that end within a session** (`[World] SessionClock`, on; settings version 417). A game day is 48 real minutes, so the week-long arcs never finished in an evening's play. Now the ones you're meant to see play out within two game days (about an hour and a half): a man you vouched for, the town's tales, the cardsharp's return, the beaten man's plan, kin come about a wrong, the circuit judge, a loan falling due, the claim agent, a sweetheart's patience. What keeps things rare (a fever, the mine whistle, the shows, the prize fights), the calendar and how long people remember keep their lengths. Off: every old length.

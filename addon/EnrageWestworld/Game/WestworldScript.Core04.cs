@@ -265,6 +265,7 @@ namespace EnrageWestworld.InGame
             RevivedSeen.On = _cfg.RevivedSeen;           // [World] RevivedSeen (DEPTH item 15)
             Core.SessionClock.On = _cfg.SessionClock;     // [World] SessionClock (DEPTH item 16)
             Core.Familiarity.On = _cfg.Familiarity;       // [Mind] Familiarity (DEPTH item 17)
+            Core.FeudArcs.On = _cfg.FeudArcs;             // [Mind] FeudArcs (DEPTH item 18)
             Temperance.DoorOn = _cfg.TemperanceDoor && _cfg.Temperance;   // [Scenes] TemperanceDoor (FOURTEENHOUR item 25)
             RainShelter.On = _cfg.RainShelter;   // [Scenes] RainShelter (FOURTEENHOUR item 26)
             Holdup.On = _cfg.StoreHoldups;   // [Scenes] StoreHoldups (FOURTEENHOUR reserve R1)

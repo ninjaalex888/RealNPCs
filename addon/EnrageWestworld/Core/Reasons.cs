@@ -168,6 +168,15 @@ namespace EnrageWestworld.Core
                     bool hot = Hot(a) || Hot(b);
                     // the first quarrel can come to blows too, between two hot men or with drink in one of them
                     bool blows = MayFight(a, b, where, "feud" + tie.Count) && ((tie.Stage >= 1 && (hot || tie.Warmth <= -3 || tie.Stage >= 2)) || (Hot(a) && Hot(b)) || (hot && (a.Drunk || b.Drunk)));
+                    // feuds in a day (DEPTH item 18): where blows would come, the one who did it (or, when nobody did, the one whose
+                    // nature allows) offers his hand before the street; the scene is the making-up or, refused, the blows
+                    if (blows && FeudArcs.On)
+                    {
+                        Someone off = tie.Doer == a.Id ? a : tie.Doer == b.Id ? b : (FeudArcs.Offers(a.Temper, true, PairKey(a, b) + tie.Count + "|a") ? a : b);
+                        if (FeudArcs.Offers(off.Temper, true, PairKey(a, b) + tie.Count + "|hand"))
+                            return new Reason { Kind = FeudArcs.Kind, Strength = FeudArcs.Strength, BFirst = off == b,
+                                                Why = off.Name + " offers " + (off == a ? b.Name : a.Name) + " his hand before the street, where it would have come to blows" };
+                    }
                     // blows between a hothead (or a proud or a cold man) and the man he hates: sometimes he grabs him and
                     // smashes his face into whatever is at hand instead of trading punches
                     if (blows && twoMen && (Rough(a.Temper) || Rough(b.Temper)) && Voice.Hash(a.Id + b.Id + tie.Count + "rough") % 100 < RoughChance)
