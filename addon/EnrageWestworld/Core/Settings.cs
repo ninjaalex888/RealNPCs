@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 427;
+        public const int CurrentVersion = 428;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -590,7 +590,7 @@ namespace EnrageWestworld.Core
         public float ErrandPace = 2.0f;   // [Scenes] how fast people walk on errands for RealNPCs: 1 a walk, 2 brisk (was about 1-1.4), 3 a run (Lex, 2026-10-29)
         public bool LawChases = true;   // [Scenes] a lawman near runs down a pickpocket of ours and brings him down (Lex, 2026-10-29)
         public int LawShootsThieves = 50;   // [Scenes] percent: with LawChases, the lawman shoots the one who picked your pocket instead of running him down (Lex, 2026-11-01); settings version 184
-        public bool Lifts = true;   // [Scenes] a man bumps into you in town and lifts some of your cash; catch him to get it back (Lex, 2026-10-29)
+        public bool Lifts = true;   // [Scenes] a man bumps into you in town and lifts some of your cash; catch him to get it back (Lex, 2026-10-29); needs Pickpockets on too (settings version 428)
         public bool EnragePeopleJoinIn = true;
         public bool Standoffs = true;
         public bool Songs = true;
@@ -600,7 +600,7 @@ namespace EnrageWestworld.Core
         public bool Haggling = true;
         public bool SnakeOil = true;
         public bool SmallTalk = true;
-        public bool Pickpockets = true;
+        public bool Pickpockets = true;   // [Scenes] a pickpocket strikes near you; off also stops the lift on you, Lifts (a player on Nexus, 2026-11-10; settings version 428)
         public bool PosseTalk = true;
         public bool Mourners = true;
         public bool Pleading = true;
@@ -1072,6 +1072,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 428)
+                    log?.Invoke("Settings: [Scenes] Pickpockets off now also stops the thief who bumps into you and lifts your money ([Scenes] Lifts): either one off stops it.");
                 if (s.SettingsVersion < 427)
                     log?.Invoke("Settings: new in this version: [Scenes] MinersMeet (on): the miners' meeting at Annesburg after the shift.");
                 if (s.SettingsVersion < 426)
@@ -2316,7 +2318,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("ErrandPace = " + F(ErrandPace) + "   ; how fast people walk on their errands here (to a scene, to the doctor, to a talk, to a camp seat, home again): 1 an ordinary walk, 2 brisk, 3 a run");
             b.AppendLine("LawChases = " + B(LawChases) + "   ; when a pickpocket runs and a lawman is near, the lawman gives chase, brings him down and holds him for arrest");
             b.AppendLine("LawShootsThieves = " + LawShootsThieves + "   ; with LawChases: percent of the times a lawman near draws and shoots the one who picked your pocket instead of running him down (0 to 100; 50 as it comes); your money comes back off him either way");
-            b.AppendLine("Lifts = " + B(Lifts) + "   ; a man may bump into you anywhere and lift a little of your cash (a fifth, $1 to $25), then run: catch him, or let a lawman, to get it back");
+            b.AppendLine("Lifts = " + B(Lifts) + "   ; \"Pickpocketed\": a man may bump into you anywhere and lift a little of your cash (a fifth, $1 to $25), then run: catch him, or let a lawman, to get it back; Pickpockets = false stops it too");
             b.AppendLine("Vices = " + B(Vices) + "   ; habits and vices: someone in a saloon whose trouble ended badly today, or who has just heard a friend has died, drinks the night away (and a friend may sit with them); drunk for the rest of the night");
             b.AppendLine("Kindnesses = " + B(Kindnesses) + "   ; small kindnesses between people: someone who trips in the street is helped up by a friend or a kind passer-by, or left lying by the cold and their enemies (and you can give them a hand up yourself); someone may step in on a bully, who backs off, goes on, or shoves the one who stepped in and storms off; remembered either way");
             b.AppendLine("SightReactions = " + B(SightReactions) + "   ; people near you notice how you look (bloodied, drunk, filthy, soaked) and take it by their nature: the timid afraid, the hard sizing you up, the kind concerned; and a man walking off bloodied from a street fight gets looked at");
@@ -2419,7 +2421,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("GangShootouts = " + B(GangShootouts) + "   ; men of two rival gangs who meet within 90 m of you may fight it out (more often where enRAGE reports a war between them): words, a standoff, then a shootout until a side is beaten or gone; at most one in five minutes");
             b.AppendLine("WomenInFights = " + B(WomenInFights) + "   ; women may come to blows in a quarrel too (with a man or another woman), half as often as two men for each woman in it; false: only two men ever fight");
             b.AppendLine("RoughHandling = " + B(RoughHandling) + "   ; street scenes: a man with a grudge (or a hothead with drink in him) grabs another and smashes his face into the nearest table, bar or wall, with the game's own move; with nothing to hand it stays a fistfight");
-            b.AppendLine("NpcThieves = " + B(NpcThieves) + "   ; street scenes: someone short of money or light-fingered picks a well-off or drunk mark's pocket; mostly the mark never knows who");
+            b.AppendLine("NpcThieves = " + B(NpcThieves) + "   ; street scenes: someone short of money or light-fingered picks a well-off or drunk mark's pocket; mostly the mark never knows who (townsfolk's pockets only: yours is Lifts)");
             b.AppendLine("CriminalClass = " + B(CriminalClass) + "   ; people who take to crime keep to it: anyone with a pocket picked, a lift or a mugging to their name in the last thirty days is likelier to go for a pocket again whatever their nature or their money, wears the thief's name over their head the whole month, rolls a drunk with words of its own, and after thirty clean days has gone straight and thinks of it once; false: a thief is forgotten in a week, as before");
             b.AppendLine("DrunkChallenges = " + B(DrunkChallenges) + "   ; street scenes: a drunk in a saloon at night calls a man out and falls on his face before a punch is thrown");
             b.AppendLine("BarkeepSteps = " + B(BarkeepSteps) + "   ; the barkeep steps in on a saloon brawl or rough as they square up: the hot and the drunk heed him three times in ten, the proud half the time, the rest three in four, and take it outside with no blows; the rest shove him off, he swears to fetch the sheriff, and the fight goes on; false: he only has his say after");
@@ -2434,7 +2436,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("Haggling = " + B(Haggling) + "   ; horse trading and haggling in the street");
             b.AppendLine("SnakeOil = " + B(SnakeOil) + "   ; a snake-oil man works the crowd");
             b.AppendLine("SmallTalk = " + B(SmallTalk) + "   ; neighbours pass the time of day");
-            b.AppendLine("Pickpockets = " + B(Pickpockets) + "   ; a pickpocket strikes near you: run him down and the town hears of it");
+            b.AppendLine("Pickpockets = " + B(Pickpockets) + "   ; a pickpocket strikes near you: run him down and the town hears of it; false also stops the one who bumps into you and lifts your money (Lifts)");
             b.AppendLine("PosseTalk = " + B(PosseTalk) + "   ; after a bad crime in town, men talk about getting up a posse");
             b.AppendLine("Mourners = " + B(Mourners) + "   ; the widow (or brother) of a stranger you killed grieves in town");
             b.AppendLine("Pleading = " + B(Pleading) + "   ; hold a gun on a stranger and they beg; lower it or don't");

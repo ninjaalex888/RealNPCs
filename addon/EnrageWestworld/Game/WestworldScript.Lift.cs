@@ -5,6 +5,8 @@
 // you get it back; a lawman near may chase and bring him down for you (LawChases), and hands it back; if he gets away
 // it's gone. A look every 60 s while you're on foot, Pacing "lift" (25%, two game hours between, a town
 // every four), never in a mission, never with a scene or a theft already on. The Testing row starts one now.
+// Off with [Scenes] Lifts or with [Scenes] Pickpockets (a player on Nexus, 2026-11-10: they turned "pickpocket" off and were
+// still "Pickpocketed" on every visit to town; the notice says the one word, so either switch named for it stops it).
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +50,7 @@ namespace EnrageWestworld.InGame
                 LiftApproach(now);
                 return;
             }
-            if (!_cfg.Lifts || _theft != null || now < _liftLookAt)
+            if (!LiftsOn() || _theft != null || now < _liftLookAt)
                 return;
             _liftLookAt = now + (int)(60000 * Story.WalkLook);   // (x the storyteller's)
             string why;
@@ -60,8 +62,8 @@ namespace EnrageWestworld.InGame
         {
             why = null;
             Ped me = Game.Player.Character;
-            if (!test && !_cfg.Lifts)
-                return why = "off ([Scenes] Lifts)";
+            if (!test && !LiftsOn())
+                return why = LiftsOffWhy();   // the Testing row still starts one with either switch off
             if (_lifter != null || _theft != null)
                 return why = "a thief is at work already";
             if (!test && (WalkUpGoing() || _director.Busy || HushedNow(now)))   // the hush asked now: the drama tick's _hush can stand a minute or more (the review, 2026-10-31)
@@ -318,9 +320,20 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// The lift on you runs only with both its own switch and Pickpockets on (see the header).
+        private bool LiftsOn()
+        {
+            return _cfg.Lifts && _cfg.Pickpockets;
+        }
+
+        private string LiftsOffWhy()
+        {
+            return !_cfg.Lifts ? "off ([Scenes] Lifts)" : "off ([Scenes] Pickpockets)";
+        }
+
         private string LiftStatus()
         {
-            return (_cfg.Lifts ? "on" : "off ([Scenes] Lifts)") + "; " + _lifts + " lifts this session, " + _liftsBack + " got back" + (_lifter != null ? "; a man walking into you now" : "") + (_liftLast != null ? "; last: " + _liftLast : "");
+            return (LiftsOn() ? "on" : LiftsOffWhy()) + "; " + _lifts + " lifts this session, " + _liftsBack + " got back" + (_lifter != null ? "; a man walking into you now" : "") + (_liftLast != null ? "; last: " + _liftLast : "");
         }
     }
 }
