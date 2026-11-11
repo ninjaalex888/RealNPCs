@@ -41,6 +41,8 @@ namespace EnrageWestworld.Core
             {
                 case "round": case "charity": case "help": case "comfort": case "apology": case "defend":
                     return true;
+                case "stoodby":
+                    return Interact.StoodByOwes;   // standing with a man losing a fight: a kindness the street saw, and the town's regard counts (DEEPEN item 8)
             }
             return kind.StartsWith("deed:", StringComparison.Ordinal) && Minds.DeedGroup(kind.Substring(5)) == "deed:kindness";
         }
@@ -56,6 +58,7 @@ namespace EnrageWestworld.Core
                 case "comfort": return "comfort";
                 case "apology": return "apologise";
                 case "defend": return "stand up for";
+                case "stoodby": return "stand with";
                 default: return "do right by";
             }
         }
