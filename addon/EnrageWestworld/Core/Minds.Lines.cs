@@ -608,6 +608,12 @@ namespace EnrageWestworld.Core
             { "oldtoast|did:doer|fresh", new[] { "Had it out with {who} about the war. Then we drank to the dead. Strange night.", "{who} wore the other coat. We drank together all the same.", "Thirty years on, and {who} still yields nothing. Nor do I." } },
             { "oldtoast|did:done|fresh", new[] { "{who} and me fought the war again over a glass. Called it a draw.", "{who} was on the other side. Good man, for one of them.", "Drank to the dead with {who}. Both sides of them." } },
             { "oldtoast|saw|fresh", new[] { "{who} and an old soldier of the other side had words, then raised a glass to the dead.", "Two old soldiers, {who} one of them. The war, again. It ended in a toast." } },
+            // the street keeps these scenes with no role (they aren't Minds.OneSided): the role pools below were never read, and the
+            // memory fell to the warmth group's courting words; these plain ones read the same from either side (SEAMS audit)
+            { "comrades|did|fresh", new[] { "{who} and I wore the same coat once. We said so, and that was plenty.", "Talked the old war over with {who}. Few enough of us left to." } },
+            { "oldtoast|did|fresh", new[] { "Argued the war with {who}, then drank to the dead. Both sides have them.", "{who} fought for the other side. We raised a glass all the same." } },
+            { "warheard|did|fresh", new[] { "Sat over the war a while with {who}. Neither of us hurried it.", "{who} and I talked of the fighting. Some things want saying aloud." } },
+            { "welcomed|did|fresh", new[] { "Traded some ribbing with {who}. That's how it starts in this town.", "{who} and I had our sport. No harm in it. Might be friends yet." } },
             { "comrades|did:doer|fresh", new[] { "{who} wore the same coat I did. We remembered it together.", "Found an old soldier of my side in {who}. Not many of us left." } },
             { "comrades|did:done|fresh", new[] { "{who} was in it too, on our side. We drank to the boys.", "{who} knew the same war I did. Didn't have to explain a thing." } },
             { "comrades|saw|fresh", new[] { "{who} and another old soldier talking over the war, quiet, like men at church." } },
