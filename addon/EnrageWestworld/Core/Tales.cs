@@ -25,6 +25,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<string> Hurt;                // ...and of those laid out in it
         [DataMember(EmitDefaultValue = false)] public string Held, How;                 // a holdup's (reserve R1): the one held up, and how it ended
         [DataMember(EmitDefaultValue = false)] public List<string> Saw;                 // the onlookers near (not in it): they tell it nearer the truth (the review of items 22-26)
+        [DataMember(EmitDefaultValue = false)] public string About;                     // a slander's (DEPTH reserve R3): the id of the man it's said of
         [DataMember(EmitDefaultValue = false)] public long ToldDay;                     // the game day it was last passed on: it grows a telling a day at most (the review of items 22-26)
     }
 
@@ -65,6 +66,8 @@ namespace EnrageWestworld.Core
             string when = When(t, now, far);
             if (t.Kind == "pledge")
                 return (t.Starter ?? "a man") + " signed the pledge at the saloon door " + When(t, now, false);
+            if (t.Kind == Slander.Kind)
+                return Slander.Telling(t, days, t.Id ?? "slander").TrimEnd('.');   // (DEPTH reserve R3)
             if (t.Kind == "holdup")
             {
                 int r = CountNow(t, now, false, false);
@@ -153,6 +156,8 @@ namespace EnrageWestworld.Core
             }
             if (t.Kind == "holdup")
                 return HoldupTelling(t, now, was, blamed, seed, saw);
+            if (t.Kind == Slander.Kind)
+                return Slander.Telling(t, days, seed);   // a word you put in a talker's ear (DEPTH reserve R3)
             int n = CountNow(t, now, was, hurt);
             bool far = !was && (days >= 2 || t.Told >= 3);
             bool knife = far && Voice.Chance(seed + "|knife", 45);

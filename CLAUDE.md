@@ -85,6 +85,8 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 
 - **They meet after the word** (depth reserve R2; `Core/NoteMeet.cs`; `Game/WestworldScript.Errand.cs` `NoteMeetStep`; `[Scenes] NoteMeet`, on): `ErrandDelivered` keeps the pair and whether the word was taken (in memory, two game days, 20 at most); a 2 s look (the scheduler; Tick04 with it off) plays `NoteMeet.Make` (kind `makeup` or `brushoff`) through the Director when both are in the near scan within 12 m, free and directable, once. The errand itself stays Talk's (frozen); this is the street after it. mindtest `NoteMeetTest`.
 
+- **Spread a rumour** (depth reserve R3; `Core/Slander.cs`, `Game/WestworldScript.Slander.cs`; `[Scenes] SpreadRumour`, on, with the tales): a 2 s look (the scheduler; Tick04 with it off) in a saloon offers J by a sociable man the mind knows within 4 m (once a talker a day); rows: up to three men of this town whose names you know; chosen: a `TownTale` kind `slander` (`Starter` his first name, `How` the charge, `About` his id: a new optional saved field) that `Tales.Telling`/`Rumour` hand to `Slander.Telling` (bigger by the days and tellings), and `TaleLook` gives the man it's about `Slander.HeardOfIt` instead. mindtest `SlanderTest`.
+
 ## The two-day run (FIVEDAY2.md, 2026-11-08/09; settings versions 323 to 339; nothing seen in game yet)
 
 Everything below is behind its own switch and was built on what's been seen working. Each section names the file; `FIVEDAY2.md` has the decisions.

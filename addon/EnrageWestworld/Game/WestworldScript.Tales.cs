@@ -86,7 +86,8 @@ namespace EnrageWestworld.InGame
                 bool was = t.Were != null && t.Were.Contains(w.Id), hurt = t.Hurt != null && t.Hurt.Contains(w.Id), saw = !was && t.Saw != null && t.Saw.Contains(w.Id);
                 List<Opinions.Held> views = Opinions.Act ? ViewsHeldBy(w.Id) : null;
                 Opinions.Held scorned = views != null ? views.FirstOrDefault(v => v.View == "contempt") : null;
-                string text = Tales.Telling(t, g, was, hurt, scorned != null ? Person.FirstOf(scorned.Name) : null, t.Id + "|" + w.Id, saw);
+                string text = t.Kind == Slander.Kind && w.Id == t.About ? Slander.HeardOfIt(t.How, t.Id + "|" + w.Id)   // the man it's said of, who's heard it (DEPTH reserve R3)
+                            : Tales.Telling(t, g, was, hurt, scorned != null ? Person.FirstOf(scorned.Name) : null, t.Id + "|" + w.Id, saw);
                 if (text == null || !_ticker.Aside(Person.FirstOf(w.Name) + ", thinking", text, "tale|" + w.Id, p.Handle, 8000, now))
                     continue;
                 _taleTold.Add(w.Id + "|" + t.Id);   // told: only once shown (with the thoughts over heads off, nobody was marked for nothing) (the review of items 22-26)

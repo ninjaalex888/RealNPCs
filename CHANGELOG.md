@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Spread a rumour** (`[Scenes] SpreadRumour`, on; settings version 423). In a saloon, J beside a man who likes to talk puts a word in his ear about a man of the town whose name you know (he cheats at cards, drinks his wages away...). The town's tales carry it and it grows by the day, and the man it's said of hears of it. F7: `TEST spread a rumour:`.
+
 - **They meet after the word** (`[Scenes] NoteMeet`, on; settings version 422). After you carry a word between two who fell out, the next time they're near each other within two game days they meet in the street: if the word was taken, a word about it and a hand; if it was sent back, a cold word and they part. F7: `TEST note meet:`.
 
 - **Sitting up with the grave** (`[World] GraveNight`, on, with Mourning; settings version 421). The night after a burial, from eight till midnight, one of those mourning the dead walks out to the grave and kneels there; come close and they speak of the one they've lost.

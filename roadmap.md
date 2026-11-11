@@ -815,7 +815,7 @@ Each of the 13 worry kinds gets one fix and one dark mirror. The ending is writt
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
 | **Write a letter yourself** | At any post office, write to someone you've met: a warning, an apology, a love note, a threat, money. It lands a few days later and changes them like a spoken word. | Answering letters | M |  |
-| **Spread a rumour** | Tell a regular something untrue about another person, or about yourself ("I hear Morgan's dead"). It travels and bends like your deeds do. | Rumours, the menu | M |  |
+| **Spread a rumour** | Tell a regular something untrue about another person, or about yourself ("I hear Morgan's dead"). It travels and bends like your deeds do. | Rumours, the menu | M | Partly built (depth reserve R3: J in a saloon, a word about a man you know in a talker's ear, told and bent as the town's tales, and he hears of it; not one about yourself) |
 | **Make an introduction** | Introduce two people you know. A tie starts; between a fitting pair, a courtship might. | Ties, Links | S |  |
 | **Hire a regular** | Pay a down-on-his-luck regular to watch your horse, carry a message or keep lookout. He talks about working for you. | Regard, Links | M | Partly built (14h R21: a man to watch your horse; depth item 10: he carries a word to a friend of yours for the dime; not the lookout, nor his talk of working for you) |
 | **Vouch for a prisoner** | Vouch for a jailed regular and he's let go into your keeping. If he does it again, your name suffers. | Bail and the cells, Deeds | M | Built (14h R22) |
