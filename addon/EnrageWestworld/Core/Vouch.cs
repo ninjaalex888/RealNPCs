@@ -36,7 +36,8 @@ namespace EnrageWestworld.Core
         public static bool On = true;   // [Scenes] Vouch, from the settings
         public const string RowId = "jaildoor:vouch";
         public const int SuretyCents = 500, KeptFondness = 10, LookMs = 5000, MostKept = 12;
-        public static int KeepDays { get { return SessionClock.Days(7, 2); } }   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
+        public static int KeepDays { get { return SessionClock.Days(7, 2); } }
+        static string Span { get { return SessionClock.On ? "two days" : "a week"; } }   // what the lines call his time (review 2: they said a week for two days)   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
         public static int NoWordDays { get { return SessionClock.Days(30, 2); } }
 
         /// The chance he breaks the peace in his week somewhere you aren't: one in five for most men; a hothead or a drinker
@@ -137,26 +138,26 @@ namespace EnrageWestworld.Core
 
         public static InteractOption Row(string first, string why)
         {
-            return new InteractOption { Id = RowId, Label = "Vouch for " + first + " (" + BrawlVerbs.Money(SuretyCents) + " if he fights this week).", Why = why };
+            return new InteractOption { Id = RowId, Label = "Vouch for " + first + " (" + BrawlVerbs.Money(SuretyCents) + " if he fights " + (SessionClock.On ? "these two days" : "this week") + ").", Why = why };
         }
 
         // ---- the words ----
 
         private static readonly string[] Thanks = { "You'd put your name to him? He'll not shame you, mister. I'll see he doesn't.",
-                                                    "A week. He can keep his hands to himself a week, God help him.",
+                                                    SessionClock.On ? "Two days. He can keep his hands to himself two days, God help him." : "A week. He can keep his hands to himself a week, God help him.",
                                                     "Bless you. Nobody ever stood up for him before." };
 
         public static string ThanksLine(string seed) { return Voice.Pick(seed + "|vthanks", Thanks); }
 
         public static string BoundHint(string first)
         {
-            return "The deputy writes your name beside " + first + "'s in the book: bound over to keep the peace a week, and you his surety.";
+            return "The deputy writes your name beside " + first + "'s in the book: bound over to keep the peace " + Span + ", and you his surety.";
         }
 
         public static string StoodNews(string name, string seed)
         {
-            return Voice.Pick(seed + "|vstood", "A stranger stood surety for " + name + " at the jail this morning. He's bound over to keep the peace a week.",
-                                                name + " is out of the cells on a stranger's word, bound over a week.");
+            return Voice.Pick(seed + "|vstood", "A stranger stood surety for " + name + " at the jail this morning. He's bound over to keep the peace " + Span + ".",
+                                                name + " is out of the cells on a stranger's word, bound over " + Span + ".");
         }
 
         /// How he broke it, for the hint and the news.
@@ -192,7 +193,7 @@ namespace EnrageWestworld.Core
         public static string KeptNews(string name, string seed)
         {
             return Voice.Pick(seed + "|vkept", name + " kept the peace his week out, on a stranger's word.",
-                                                "A week bound over and not a fist raised: " + name + ". The stranger who stood for him was right.");
+                                                Grammar.UpperFirst(Span) + " bound over and not a fist raised: " + name + ". The stranger who stood for him was right.");
         }
 
         /// Every line through the period words (mindtest vouch).

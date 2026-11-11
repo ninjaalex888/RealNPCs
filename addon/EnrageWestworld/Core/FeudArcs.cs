@@ -44,7 +44,7 @@ namespace EnrageWestworld.Core
         {
             string b = Scenes.N(c, 1, seed);
             taken = Takes(bTemper, seed);
-            var s = new Scene { Kind = taken ? "apology" : "brawl", Doer = 0, Fight = !taken, NoLadder = true,
+            var s = new Scene { Kind = taken ? "apology" : "brawl", Doer = taken ? 0 : 1, Fight = !taken, NoLadder = true,   // refused: the blows are the one who shoved (review 2)
                                 Summary = taken ? "the man who began a quarrel that morning offered his hand before the street, and it was taken" : "the man who began a quarrel offered his hand before the street, and it was refused: blows" };
             s.Add(0, null, null, "approach", 200)
              .Add(0, Pick(Offer, seed + "|of").Replace("{b}", b), "sorry", "face");

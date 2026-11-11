@@ -41,7 +41,7 @@ namespace EnrageWestworld.Core
             new Row { Name = "a loan of yours falls due", Kind = "watch", AsBuilt = 3, Session = 1, Where = "Verbs.LoanDays" },
             new Row { Name = "the claim agent calls on a widow", Kind = "watch", AsBuilt = 3, Session = 1, Where = "ClaimAgent.AfterDays" },
             new Row { Name = "a sweetheart expects you back", Kind = "watch", AsBuilt = 3, Session = 1, Where = "Trysts.ExpectsFromDays" },
-            new Row { Name = "...and cools if you don't come", Kind = "watch", AsBuilt = 14, Session = 2, Where = "Trysts.CoolsAfterDays" },
+
             // background: a gap that keeps something rare (kept)
             new Row { Name = "the prize fight's gap in a town (shortened it would triple the town's prize fights: a fight-start rule for Lex)", Kind = "background", AsBuilt = 6, Session = 6, Where = "PrizeFight.GapDays" },
             new Row { Name = "a fever's gap", Kind = "background", AsBuilt = 90, Session = 90, Where = "Fever.GapDays" },
@@ -62,6 +62,7 @@ namespace EnrageWestworld.Core
             new Row { Name = "the nemesis holds it", Kind = "memory", AsBuilt = 30, Session = 30, Where = "Nemesis.HeldDays" },
             new Row { Name = "condolences fresh", Kind = "memory", AsBuilt = 14, Session = 14, Where = "Fondness.CondoleDays" },
             new Row { Name = "a newcomer fresh off the train", Kind = "memory", AsBuilt = 14, Session = 14, Where = "NewFaces.FreshDays" },
+            new Row { Name = "a sweetheart cools if you don't come (kept: a cost, not an arc; review 2)", Kind = "memory", AsBuilt = 14, Session = 14, Where = "Trysts.CoolsAfterDays" },
         };
 
         public static IEnumerable<Row> Watch() { foreach (Row r in Table) if (r.Kind == "watch") yield return r; }

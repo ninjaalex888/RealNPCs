@@ -25,6 +25,11 @@ namespace EnrageWestworld.Core
             {
                 if (t == null || t.Warmth >= 0 || t.At >= dayBegan || t.At > now)
                     continue;   // not hostile, or fed that day (or after: a clock gone back)
+                if (t.Sore && t.Count <= 1)
+                    continue;   // a big brawl's sore sides keep their week (FOURTEENHOUR item 12; review 2)
+                if (t.EasedDay >= now / 1440)
+                    continue;   // eased already this day (a reload across midnight: review 2)
+                t.EasedDay = now / 1440;
                 t.Warmth++;
                 eased++;
             }

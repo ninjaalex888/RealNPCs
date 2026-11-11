@@ -268,6 +268,9 @@ namespace EnrageWestworld.Core
                     kept.Add(EnrageWestworld.Core.Ghosts.OfLink(l, now));
             n += Ties.RemoveAll(t => t.At > cut);
             foreach (SceneTie t in Ties)
+                if (t != null && t.EasedDay > cut / 1440)
+                    t.EasedDay = 0;   // (DEPTH item 19; review 2: the night's easing after the cut is not undone, but it can't come twice)
+            foreach (SceneTie t in Ties)
                 if (t != null && t.PutOffAt > cut)
                 {
                     t.PutOffAt = 0;   // a stranger stepped between them after the cut: it hadn't happened yet (DEPTH item 7; review 1)

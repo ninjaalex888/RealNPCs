@@ -126,7 +126,7 @@ namespace EnrageWestworld.Core
                 st.Heart = Math.Min(3, Romance.HeartFor(st.Affection, st.Flirts));
             }
             _trystCooledCount++;
-            Log("TRYST " + (r.Name ?? id) + " gave up waiting for you (a fortnight); affection down " + Trysts.CoolsBy);
+            Log("TRYST " + (r.Name ?? id) + " gave up waiting for you (" + Trysts.CoolsAfterDays + " game days); affection down " + Trysts.CoolsBy);
             return Trysts.Cooled(id + "|" + r.LastAt);
         }
 

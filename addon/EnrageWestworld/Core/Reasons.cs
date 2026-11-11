@@ -172,9 +172,10 @@ namespace EnrageWestworld.Core
                     // nature allows) offers his hand before the street; the scene is the making-up or, refused, the blows
                     if (blows && FeudArcs.On)
                     {
-                        Someone off = tie.Doer == a.Id ? a : tie.Doer == b.Id ? b : (FeudArcs.Offers(a.Temper, true, PairKey(a, b) + tie.Count + "|a") ? a : b);
-                        if (FeudArcs.Offers(off.Temper, true, PairKey(a, b) + tie.Count + "|hand"))
-                            return new Reason { Kind = FeudArcs.Kind, Strength = FeudArcs.Strength, BFirst = off == b,
+                        string hk = PairKey(a, b) + tie.Count + "|hand";
+                        Someone off = tie.Doer == a.Id ? a : tie.Doer == b.Id ? b : (Voice.Chance(hk + "|who", 50) ? a : b);   // nobody did it: either may (one roll for his hand, not two: review 2)
+                        if (FeudArcs.Offers(off.Temper, true, hk))
+                            return new Reason { Kind = FeudArcs.Kind, Fallback = "argue", Strength = FeudArcs.Strength, BFirst = off == b,   // (a seated man: words, as the brawl's own fallback; review 2)
                                                 Why = off.Name + " offers " + (off == a ? b.Name : a.Name) + " his hand before the street, where it would have come to blows" };
                     }
                     // blows between a hothead (or a proud or a cold man) and the man he hates: sometimes he grabs him and

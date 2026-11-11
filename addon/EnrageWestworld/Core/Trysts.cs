@@ -32,7 +32,7 @@ namespace EnrageWestworld.Core
         public const int Keep = 60;          // records kept (the oldest goes)
         public const int CoolsBy = 20;   // what her cooling costs him
         public static int ExpectsFromDays { get { return SessionClock.Days(3, 1); } }   // a sweetheart's patience   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
-        public static int CoolsAfterDays { get { return SessionClock.Days(14, 2); } }
+        public const int CoolsAfterDays = 14;   // kept: her cooling is a cost, not an arc to watch (review 2: at two days, every sweetheart not visited within an hour and a half of play lost affection)
         public static readonly string[] HotelTowns = { "Valentine", "Rhodes", "Saint Denis", "Blackwater", "Strawberry", "Tumbleweed", "Annesburg", "Armadillo" };
 
         /// "saloon", "taken" or "single".

@@ -17,7 +17,8 @@ namespace EnrageWestworld.Core
     public static class Verbs
     {
         public const int LendCents = 1000;
-        public static int LoanDays { get { return SessionClock.Days(3, 1); } }   // game days before the loan is due   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
+        public static int LoanDays { get { return SessionClock.Days(3, 1); } }
+        static string LoanSpan(bool upper) { return SessionClock.On ? (upper ? "A day" : "a day") : (upper ? "Three days" : "three days"); }   // what the lines call it (review 2)   // game days before the loan is due   // the session clock (DEPTH item 16): SessionClock.Days(as built, a session's)
         public const int AskDays = 14;              // a tie this fresh can be asked about
         public const int KnownForDays = 7;          // what the log knows X for, this fresh
         public const int MostAbout = 2;             // rows of "What do you know of..."
@@ -220,12 +221,12 @@ namespace EnrageWestworld.Core
             }
             else if (moneyWorry)
             {
-                a.Line = Pick(seed + "|lw", "I'll not pretend I don't need it. Three days, and it's back in your hand, every cent.", "You don't know what this is to me. Three days. You have my word.");
+                a.Line = Pick(seed + "|lw", "I'll not pretend I don't need it. " + LoanSpan(true) + ", and it's back in your hand, every cent.", "You don't know what this is to me. " + LoanSpan(true) + ". On my honour.");
                 a.Thought = "Ten dollars. Room to breathe. I'll pay it. I will.";
             }
             else
             {
-                a.Line = Pick(seed + "|l", "Could use it, truth be told. Three days, and you'll have it back.", "That's good of you. I'll not forget it, nor the paying back.", "Ten dollars. All right. Three days, and I'll find you.");
+                a.Line = Pick(seed + "|l", "Could use it, truth be told. " + LoanSpan(true) + ", and you'll have it back.", "That's good of you. I'll not forget it, nor the paying back.", "Ten dollars. All right. " + LoanSpan(true) + ", and I'll find you.");
                 a.Thought = "A stranger's ten dollars in my pocket. Pay it back first thing.";
             }
             return a;
@@ -293,7 +294,7 @@ namespace EnrageWestworld.Core
             {
                 a.Message = "early";
                 a.LikeDelta = EarlyLiking;
-                a.Line = Pick(seed + "|ce", "It's not been three days, mister.", "You'll have it when I said. Not before.", "Give a body time. I said three days.");
+                a.Line = Pick(seed + "|ce", "It's not been " + LoanSpan(false) + ", mister.", "You'll have it when I said. Not before.", "Give a body time. I said " + LoanSpan(false) + ".");
                 a.Thought = "Already asking after it. As if I'd run.";
                 return a;
             }
@@ -311,7 +312,7 @@ namespace EnrageWestworld.Core
             if (!canPay && regard != "afraid")
             {
                 a.Message = "putoff";
-                a.Line = Pick(seed + "|cp", "Haven't got it. Give me till Sunday, I swear.", "It's coming. I've had a bad week. Three days more.", "I know, I know. I've not forgotten. Soon.");
+                a.Line = Pick(seed + "|cp", "Haven't got it. Give me till Sunday, I swear.", "It's coming. I've had a bad week. " + LoanSpan(true) + " more.", "I know, I know. I've not forgotten. Soon.");
                 a.Thought = "His ten dollars. Where am I to find it?";
                 return a;
             }
