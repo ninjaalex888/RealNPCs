@@ -176,9 +176,32 @@ namespace EnrageWestworld.InGame
                 TASK.CLEAR_PED_TASKS(h, true, false);
                 TASK.TASK_SMART_FLEE_PED(h, c != null && c.Exists() ? c.Handle : me.Handle, 120f, -1, 0, 3f, 0);   // up and off, empty-handed
             }
+            ThiefSore(t, now);
             LiftResolved(t, "friend");
             NewsPush(t.Town ?? "Around here", FriendChase.News(chaser, seed), "news");
             Log.Write("FRIENDCHASE " + t.ChaserName + " ran the thief down and brought your " + Cents(t.Amount) + " back; they remember it");
+        }
+
+        /// The thief brought down in the street holds it against the man who did it (DEEPEN item 6): a "rough" tie, the one a
+        /// face pushed into the bar leaves (Ties.Effect -2, the tackler the doer), so the two are at odds from now on, and the
+        /// street's quarrel picks (the Director's, seen in game) have a reason between them. The psychology: being shamed in
+        /// front of the town is what breeds the long grudge, more than the loss; the tackler, not the mark, is who shamed him.
+        private void ThiefSore(Theft t, int now)
+        {
+            try
+            {
+                if (_store == null || t.ChaserId == null || t.Thief == null || !t.Thief.Exists())
+                    return;
+                MindWho tw = MindKnown(t.Thief.Handle, now);
+                if (tw == null || tw.Id == null || tw.Id == t.ChaserId)
+                    return;
+                Ties.Note(_store.Ties, t.ChaserId, t.ChaserName, tw.Id, tw.Name, t.Town, "rough", Bridge.Now());
+                Log.Write("GRUDGE " + (tw.Name ?? "the thief") + " won't forget " + (t.ChaserName ?? "the man") + " bringing him down in the street");
+            }
+            catch (Exception ex)
+            {
+                Log.Detail("GRUDGE the thief's grudge couldn't be kept: " + ex.Message);
+            }
         }
 
         /// The man who ran him down hands her purse back; the thief, on his feet again, is off with nothing.
@@ -212,6 +235,7 @@ namespace EnrageWestworld.InGame
             MindWho mw = markHere ? MindKnown(mark.Handle, now) : null;
             if (_store != null && t.ChaserId != null && mw != null && mw.Id != null)
                 Ties.Note(_store.Ties, t.ChaserId, t.ChaserName, mw.Id, mw.Name, t.Town, "help", Bridge.Now());   // he did her a good turn (a warmer tie)
+            ThiefSore(t, now);
             if (t.Lawman != null && t.Lawman.Exists() && !PED.IS_PED_IN_COMBAT(t.Lawman.Handle, me.Handle))
             {
                 TASK.CLEAR_PED_TASKS(t.Lawman.Handle, true, false);   // the lawman who was after him too: back to his rounds
