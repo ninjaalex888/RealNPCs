@@ -254,6 +254,39 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        public const string RobbedYouMark = "robbedyou";
+
+        /// The pickpocket who got away with your money is known to you as the one who did (SEAMS item 9; [Display]
+        /// NameCardsRobbed): his card says "Robbed you" until you have your money back from him. Before, the card said
+        /// "Pickpocket" for any thief, the one who lifted your own purse and got clean away no different from the rest. A face
+        /// you can put to a loss is what makes a grudge the player can act on (you may yet run him down).
+        private void RobbedYou(Ped thief, bool got)
+        {
+            try
+            {
+                string id, name;
+                if (_cfg == null || !_cfg.NameCardsRobbed || thief == null || !thief.Exists() || !LastingId(thief, out id, out name))
+                    return;
+                PersonState st = _store.Find(id);
+                if (st == null)
+                    return;
+                if (got)
+                {
+                    st.Mark(RobbedYouMark);
+                    Log.Write("LIFT " + (name ?? "the thief") + " got away with it: \"Robbed you\" on his card till you have it back");
+                }
+                else if (st.Has(RobbedYouMark))
+                {
+                    st.Told.Remove(RobbedYouMark);
+                    Log.Write("LIFT " + (name ?? "the thief") + ": squared, your money back from him");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Detail("LIFT the robbed-you mark failed: " + ex.Message);
+            }
+        }
+
         private bool KnownPickpocket(Ped p)
         {
             string id, name;
@@ -272,6 +305,7 @@ namespace EnrageWestworld.InGame
             {
                 Feed.Notice("Pickpocketed", "He got away with your " + Cents(t.Amount) + ".");
                 _liftLast = "got away with " + Cents(t.Amount);
+                RobbedYou(t.Thief, true);
             }
             else
             {
@@ -282,6 +316,7 @@ namespace EnrageWestworld.InGame
                 _liftLast = (how == "law" ? "the law caught him" : how == "friend" ? (t.ChaserName ?? "a friend") + " caught him" : how == "killed" ? "killed" : "caught") + ", " + Cents(t.Amount) + " back";
                 if (how == "caught" && t.Thief != null)
                     ArthurSays("caught", t.Thief.Handle);   // his own words as he takes it back (WestworldScript.ArthurLines.cs)
+                RobbedYou(t.Thief, false);   // your money back from him: squared, whatever he took before
             }
             Log.Write("LIFT " + _liftLast);
         }

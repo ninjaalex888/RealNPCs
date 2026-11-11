@@ -714,6 +714,8 @@ namespace EnrageWestworld.InGame
                 NoteOurName(h, b.R.Name, Game.GameTime);   // shown (or meant) as ours while enRAGE has no one in this body
                 if (st != null && st.Has(PickpocketMark))
                     line2 = "Pickpocket" + (temper != null ? " - " + temper : "");   // the trade he keeps to (Lex, 2026-10-30)
+                if (st != null && _cfg.NameCardsRobbed && st.Has(RobbedYouMark))
+                    line2 = "Robbed you" + (line2.Length > 0 ? " - " + line2 : "");   // the one who got away with yours (SEAMS item 9)
                 if (met)
                     Set(c, b.R.Name, line2, ColourTitle, ColourDim, true);
                 else if (_cfg.NameCardsStrangerNames)

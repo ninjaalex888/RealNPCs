@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 440;
+        public const int CurrentVersion = 441;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -229,6 +229,7 @@ namespace EnrageWestworld.Core
         public bool FeelingBars = true;
         public float FeelingBarsMetres = 15f;
         public bool FeelingBarsShowEmpty;
+        public bool NameCardsRobbed = true;          // [Display] "Robbed you" on the card of the pickpocket who got away with your money, till you have it back from him (SEAMS item 9; settings version 441)
         public bool NameCardsStood = true;           // [Display] "Stood by you" on the card of someone who fought for you this week (an ally in a fight, a friend who ran down your thief) (SEAMS item 5; settings version 439)
         public bool NameCardsOwes = true;            // [Display] "Owes you" on the card of someone you saved or stood with in a fight, for the month they owe you (DEEPEN item 7; settings version 434)
         public string NameCards = "known";        // off | known | everyone: names over heads, enRAGE's way (2026-10-29)
@@ -1084,6 +1085,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 441)
+                    log?.Invoke("Settings: new in this version: [Display] NameCardsRobbed (on): \"Robbed you\" on the card of the pickpocket who got away with your money.");
                 if (s.SettingsVersion < 440)
                     log?.Invoke("Settings: new in this version: [Scenes] BreakUpKnown (on): a fight you break up on J is a good deed the town hears of.");
                 if (s.SettingsVersion < 439)
@@ -2074,6 +2077,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, fondness and anger, as enRAGE keeps them");
             b.AppendLine("FeelingBarsMetres = " + F(FeelingBarsMetres) + "   ; how close they must be (the nearest three in plain view get bars)");
             b.AppendLine("FeelingBarsShowEmpty = " + B(FeelingBarsShowEmpty) + "   ; also show the empty part of each bar, so a low value reads as a little out of a whole bar");
+            b.AppendLine("NameCardsRobbed = " + B(NameCardsRobbed) + "   ; \"Robbed you\" on the name card of the pickpocket who got clean away with your money, until you catch him at it and have yours back");
             b.AppendLine("NameCardsStood = " + B(NameCardsStood) + "   ; \"Stood by you\" on the name card of someone who fought for you this week: an ally who came to your aid, a friend who ran down your thief");
             b.AppendLine("NameCardsOwes = " + B(NameCardsOwes) + "   ; \"Owes you\" on the name card of someone who owes you (you saved them, or stood with them in a fight), for the month they owe you: they'll come to your aid whatever the odds");
             b.AppendLine("NameCards = " + NameCards + "   ; names over heads in the game's title type, the way enRAGE drew them: off, targeted (only the person you're locked on to or aiming at), known (people RealNPCs knows: enRAGE's records and townsfolk, regulars, anyone who thought or spoke or took part in a scene), everyone (the rest get what they look like, \"A townsman\", in grey). While enRAGE runs with its own cards on, ours stay off unless NameCardsBesideEnrage; off on the settings panel turns enRAGE's own cards off too");
