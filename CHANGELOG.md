@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Doctored brands** (`[Scenes] Brands`, on; settings version 414). In the ranch towns by day, a ranch man with stock gone and the brands run over blames his neighbour to his face in the street, and there's bad blood between them after. If you came on the rustlers at their branding fire in the last two game days, J while it plays lets you tell him who it was: he takes it back, and the neighbour thanks you. F7: `TEST brands:`.
+
 - **Step between them** (`[Scenes] StepBetween`, on; settings version 413). When two men with bad blood are about to have it out near you, words not yet blows, J lets you step between them. Each heeds you by his nature and by what he thinks of you: if both do, they back off and their quarrel waits a good while; if one won't, he shoves past and it goes on. Step between the same two a second time and both heeding, they make it up in front of you. F7: `TEST step between:`.
 
 - **The brawler's wife** (with `[Scenes] BrawlAfter`). When a man the law locked up after a brawl comes out of the cells, his fine paid by you or not at noon, the wife or mother who waited at the jail door has her words with him in the street, and they walk off together. The men who fought beside him, if they're near, turn away and keep their heads down. F7: `TEST the brawler's wife:`.

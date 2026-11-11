@@ -66,6 +66,8 @@ New in the towns and on the roads:
   the men who fought beside him keep their heads down.
 - Two men about to quarrel near you: J to step between them ([Scenes] StepBetween). Both heed
   you and it's put off; the second time, they make it up.
+- In the ranch towns a man missing stock blames his neighbour for doctored brands ([Scenes]
+  Brands); if you came on the rustlers' fire lately, J to tell him who it really was.
 - Three whistles at Annesburg, the shape-up on the Saint Denis docks, sale day at Valentine, fence cutters.
 - Witnesses who choose what to do, Pinkertons asking after you, a posse that rides out.
 - Drummers, the slate at the store, a sheriff's sale, camp meetings, river baptisms, box socials,

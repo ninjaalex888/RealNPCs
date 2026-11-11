@@ -402,7 +402,7 @@ One date to start with: Easter 1899 fell on 2 April, the very Sunday your game's
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **Doctored brands** | A rancher finds his calves under an altered brand and blames a neighbour. The real rustlers' camp, running iron and all, is up in the hills. | Worries (feud), Encounters | M |  |
+| **Doctored brands** | A rancher finds his calves under an altered brand and blames a neighbour. The real rustlers' camp, running iron and all, is up in the hills. | Worries (feud), Encounters | M | Built (FIVEDAY2: the rustlers at their branding fire; depth item 8: the accusation in the street, and J to tell him who it was) |
 | **Sale day** | Auction at the Valentine stockyards: railroad buyers call prices, a rancher is ruined by a bad one, drovers drink their pay. | Town events, payday | M |  |
 | **Fence cutters** | Night riders cut a homesteader's wire. The cattleman denies it, but the player saw the riders. | Links (feud), Deeds | M |  |
 | **Sheep in cattle country** | A sheepherder in the hills is run off by cowboys who hate sheep on the range. | Scenes, Ties | M |  |

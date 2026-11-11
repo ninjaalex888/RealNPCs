@@ -430,6 +430,9 @@ namespace EnrageWestworld.Core
             Reason green = Greenhorn.For(x, y, gameDay, where.Saloon, where.Night);   // a regular ribs the greenhorn (FOURTEENHOUR item 16)
             if (green != null)
                 all.Add(green);
+            Reason brands = Brands.For(x, y, gameDay, where.Saloon, where.Night);   // a ranch man blames his neighbour for doctored brands (DEPTH item 8)
+            if (brands != null)
+                all.Add(brands);
             Reason soldiers = OldSoldiers.For(x, y, gameDay, where.Saloon, where.Night);   // old soldiers of either side, or a young man home from the war (item 17)
             if (soldiers != null)
                 all.Add(soldiers);

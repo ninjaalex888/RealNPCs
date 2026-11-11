@@ -243,6 +243,8 @@ namespace EnrageWestworld.InGame
                     w.NoticedAt = now;
                     w.Phase = "play";
                     Log.Write("WAYSIDE " + w.K.Id + ": you've come upon it, " + (int)d + " m off");
+                    if (w.K.Id == "rustlers")
+                        BrandsSawRustlers(w.Town);   // what you can tell a ranch man who blames his neighbour (WestworldScript.Brands.cs; DEPTH item 8)
                 }
                 else if (now - w.StartedAt > (w.Test ? 2 * Wayside.UnseenMs : Wayside.UnseenMs))
                 {
