@@ -201,6 +201,7 @@ namespace EnrageWestworld.InGame
             {
                 // a known pickpocket near you (DEEPEN item 3): the friend has seen him at it, or heard (his name only if they know him)
                 Ped me = Game.Player.Character;
+                string plain = null, plainName = null;   // a known pickpocket near; the one who robbed you is preferred (review 3)
                 foreach (int oh in _mindNear)
                 {
                     MindWho o;
@@ -209,8 +210,22 @@ namespace EnrageWestworld.InGame
                     PersonState ps = _store.Find(o.Id);
                     if (ps == null || !ps.Has(PickpocketMark) || ENTITY.GET_ENTITY_COORDS(oh, true, true).DistanceTo(me.Position) > 40f)
                         continue;
-                    danger = WarnKnowsOf(friend, o) ? o.Name : null;
-                    return FriendCalls.YoursOn && _cfg.NameCardsRobbed && ps.Has(RobbedYouMark) ? FriendCalls.ThiefYours : "thief";   // the one who robbed you (SEAMS item 14)
+                    string named = WarnKnowsOf(friend, o) ? o.Name : null;
+                    if (FriendCalls.YoursOn && _cfg.NameCardsRobbed && ps.Has(RobbedYouMark))
+                    {
+                        danger = named;
+                        return FriendCalls.ThiefYours;   // the one who robbed you (SEAMS item 14)
+                    }
+                    if (plain == null)
+                    {
+                        plain = "thief";
+                        plainName = named;
+                    }
+                }
+                if (plain != null)
+                {
+                    danger = plainName;
+                    return plain;
                 }
             }
             if (_placeTown != null)

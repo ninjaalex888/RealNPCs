@@ -103,7 +103,7 @@ namespace EnrageWestworld.Core
                     return "theft";
                 case "drunk": case "rowdy":
                     return "drunk";
-                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "makeup": case "help": case "loan": case "defend": case "round": case "apology": case "settled":
+                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "makeup": case "help": case "cardsloan": case "defend": case "round": case "apology": case "settled":
                 case "toothpull": case "wayshown": case "welcomed": case "oldtoast": case "comrades": case "warheard": case "pledge":
                     return "warmth";
                 case "smalltalk": case "gossip": case "haggle": case "hosts":
@@ -168,7 +168,7 @@ namespace EnrageWestworld.Core
                    kind == "help" || kind == "passby" || kind == "defend" || kind == "faced" || kind == "round" || kind == "settled" ||
                    kind == "welsh" || kind == "wagerowed" || kind == "wagerpaid" ||   // a bet on a fight: the one who lost it first (Core/Wagers.cs)
                    kind == "horsedeal" || kind == "toothpull" || kind == "wayshown" ||   // the street's own (FOURTEENHOUR item 14)
-                   kind == "snub" || kind == "loan" ||   // the snub: the gentleman's; the cards loan: the lender's (SEAMS review 2)
+                   kind == "snub" || kind == "cardsloan" ||   // the snub: the gentleman's; the cards loan: the lender's (SEAMS review 2)
                    // the snub (Scene.Doer 1, swapped first by the game side): its role lines were never read (SEAMS audit)
                    kind == "pledge";   // she put it, he signed (item 25): its memory lines had no role and were never read (the review of items 22-26)
         }

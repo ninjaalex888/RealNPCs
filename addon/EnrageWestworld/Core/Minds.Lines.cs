@@ -618,11 +618,11 @@ namespace EnrageWestworld.Core
             // {b}. Wedding by summer, mark me.") for a coin to a beggar (SEAMS audit; WagersTest sweeps every warm kind)
             { "charity|saw|fresh", new[] { "Saw {a} put a coin in {b}'s hand. Didn't make a show of it.", "{a} gave {b} something to eat by. Decent of {a}." } },
             { "makeup|saw|fresh", new[] { "{a} and {b} shook hands on it at last. About time.", "Saw {a} and {b} make it up. The street breathes easier." } },
-            // the cards loan (Exchanges' "cards", lent kindly; Scene.MindKind): the lender the doer. Before, it was thought in the help
+            // the cards loan (Exchanges' "cards", lent kindly; Scene.MindKind "cardsloan", never "loan": that Sub is the player's own loan's, review 3): the lender the doer. Before, it was thought in the help
             // words, a fall helped up from that never happened (SEAMS review 2)
-            { "loan|did:doer|fresh", new[] { "Lent {who} money for the cards. I'll see it Saturday, or I won't.", "Ten dollars to {who}. Told him to stay off the faro." } },
-            { "loan|did:done|fresh", new[] { "{who} stood me the money. Saturday, he said. Saturday it is.", "Borrowed off {who} again. Can't keep doing that." } },
-            { "loan|saw|fresh", new[] { "Saw {a} hand {b} money for the cards. More fool {a}.", "{b} touched {a} for a loan. Got it, too." } },
+            { "cardsloan|did:doer|fresh", new[] { "Lent {who} money for the cards. I'll see it Saturday, or I won't.", "Ten dollars to {who}. Told him to stay off the faro." } },
+            { "cardsloan|did:done|fresh", new[] { "{who} stood me the money. Saturday, he said. Saturday it is.", "Borrowed off {who} again. Can't keep doing that." } },
+            { "cardsloan|saw|fresh", new[] { "Saw {a} hand {b} money for the cards. More fool {a}.", "{b} touched {a} for a loan. Got it, too." } },
             { "comrades|did|fresh", new[] { "{who} and I wore the same coat once. We said so, and that was plenty.", "Talked the old war over with {who}. Few enough of us left to." } },
             { "oldtoast|did|fresh", new[] { "Argued the war with {who}, then drank to the dead. Both sides have them.", "{who} fought for the other side. We raised a glass all the same." } },
             { "warheard|did|fresh", new[] { "Sat over the war a while with {who}. Neither of us hurried it.", "{who} and I talked of the fighting. Some things want saying aloud." } },

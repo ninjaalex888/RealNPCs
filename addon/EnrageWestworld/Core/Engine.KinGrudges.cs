@@ -190,7 +190,7 @@ namespace EnrageWestworld.Core
         private bool KinWrongedSince(KinGrudge thanks)
         {
             foreach (KinGrudge w in Store.KinGrudges)
-                if (w != null && w != thanks && !KinGrudges.IsThanks(w) && w.VictimId == thanks.VictimId && w.At >= thanks.At)
+                if (w != null && w != thanks && !KinGrudges.IsThanks(w) && w.DoerId == null && w.VictimId == thanks.VictimId && w.At >= thanks.At)   // yours only: a townsman's wrong on him is no reason (review 3)
                     return true;
             return false;
         }
