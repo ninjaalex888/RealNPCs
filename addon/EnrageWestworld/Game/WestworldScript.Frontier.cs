@@ -229,8 +229,8 @@ namespace EnrageWestworld.InGame
                 ResolveTheft(t, dead ? "killed" : "caught", now);
                 return;
             }
-            if (PurseSnatch.On && !t.PlayerMark && ChaseStep(t, me, now))
-                return;   // a man near gives chase (FOURTEENHOUR item 20)
+            if (((PurseSnatch.On && !t.PlayerMark) || (FriendChase.On && t.PlayerMark)) && ChaseStep(t, me, now))
+                return;   // a man near gives chase (FOURTEENHOUR item 20); your own pocket: a friend of yours (Core/FriendChase.cs)
             if (LawChaseStep(t, me, now))
                 return;
             StillRunning(t, me, now);

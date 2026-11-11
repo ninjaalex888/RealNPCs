@@ -269,7 +269,8 @@ namespace EnrageWestworld.InGame
             {
                 MONEY._MONEY_INCREMENT_CASH_BALANCE(t.Amount, 0);
                 _liftsBack++;
-                Feed.Notice("Your money back", how == "law" ? "The deputy hands you back your " + Cents(t.Amount) + "." : "You take back your " + Cents(t.Amount) + ".");
+                Feed.Notice("Your money back", how == "law" ? "The deputy hands you back your " + Cents(t.Amount) + "." :
+                                               how == "friend" ? FriendChase.NoticeWords(Person.FirstOf(t.ChaserName ?? "A friend"), Cents(t.Amount)) : "You take back your " + Cents(t.Amount) + ".");
                 _liftLast = (how == "law" ? "the law caught him" : how == "killed" ? "killed" : "caught") + ", " + Cents(t.Amount) + " back";
                 if (how == "caught" && t.Thief != null)
                     ArthurSays("caught", t.Thief.Handle);   // his own words as he takes it back (WestworldScript.ArthurLines.cs)
@@ -343,7 +344,8 @@ namespace EnrageWestworld.InGame
 
         private string LiftStatus()
         {
-            return (LiftsOn() ? "on" : LiftsOffWhy()) + "; " + _lifts + " lifts this session, " + _liftsBack + " got back" + (_lifter != null ? "; a man walking into you now" : "") + (_liftLast != null ? "; last: " + _liftLast : "");
+            return (LiftsOn() ? "on" : LiftsOffWhy()) + "; " + _lifts + " lifts this session, " + _liftsBack + " got back" +
+                   (FriendChase.On ? " (a friend ran " + _friendChases + ", caught " + _friendCatches + ")" : " (friends' chase off: [Scenes] FriendsChase)") + (_lifter != null ? "; a man walking into you now" : "") + (_liftLast != null ? "; last: " + _liftLast : "");
         }
     }
 }

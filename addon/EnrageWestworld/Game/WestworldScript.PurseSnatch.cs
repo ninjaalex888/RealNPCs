@@ -29,6 +29,8 @@ namespace EnrageWestworld.InGame
                 if (t.ChaseLooked || now - t.Started < 1500)
                     return false;
                 t.ChaseLooked = true;   // one look, at her cry
+                if (t.PlayerMark)
+                    return FriendChaseLook(t, me, now);   // your own pocket: only a friend of yours runs (Core/FriendChase.cs)
                 Ped mark = t.Mark;
                 RDR2.Math.Vector3 at = mark != null && mark.Exists() ? mark.Position : t.Thief.Position;
                 bool sure = now < _snatchSureUntil;   // the Testing row's: the first man near goes
@@ -98,11 +100,97 @@ namespace EnrageWestworld.InGame
             return false;
         }
 
+        /// Your pocket picked: one look at your friends near you (within FriendChase.FromMetres of you, free, the mind's people,
+        /// the law left to LawChases), the first whose warmth to you and nature make it his gives chase, the bystander's way.
+        private bool FriendChaseLook(Theft t, Ped me, int now)
+        {
+            int h = t.Thief.Handle;
+            bool sure = now < _snatchSureUntil;   // the Testing row's: the first friend near goes
+            foreach (Ped p in Peds.All().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Handle != h &&
+                                                     PED.IS_PED_HUMAN(p.Handle) && !Natives.IsLaw(p) && !Natives.IsChild(p) && p.Position.DistanceTo(me.Position) < FriendChase.FromMetres &&
+                                                     !PED.IS_PED_ON_MOUNT(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_IN_COMBAT(p.Handle, 0) && !NotFree(p.Handle) &&
+                                                     !Spawner.IsOurs(p.Handle) && MayDirectWhyNot(p) == null)
+                                          .OrderBy(p => p.Position.DistanceTo(me.Position)).Take(6).ToList())
+            {
+                MindWho w = MindKnown(p.Handle, now);
+                if (w == null || w.Id == null || w.Src == null)
+                    continue;
+                int warmth = AllyWarmth(p, w);   // the allies' own measure of a friend (WestworldScript.Allies.cs)
+                Traits tr = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
+                if (warmth < 2 || (!sure && !FriendChase.Chases(tr, warmth, t.Started + "|fchase|" + w.Id)))
+                    continue;
+                string yourName = _engine.KnowsYourName(w.Id) && YourFullName() != null ? Person.FirstOf(YourFullName()) : "the stranger";
+                t.Chaser = p;
+                t.ChaserName = w.Name;
+                t.ChaserId = w.Id;
+                t.ChaseSince = now;
+                t.ChaseLookAt = now + 2000;
+                ScenarioExit.SoftUp(p.Handle, x => TASK.TASK_GO_TO_ENTITY(x, h, -1, 1.5f, 3f, 0f, 0));   // up the game's way if sat, then at a sprint (the lawman's chase order)
+                LawSay(p, Person.FirstOf(w.Name), FriendChase.Shout(yourName, t.Started + "|fshout"), "SHOUT_STOP");
+                _friendChases++;
+                Log.Write("FRIENDCHASE " + w.Name + " (warmth " + warmth + ") gives chase to the man who robbed you" + (sure ? " (a test)" : ""));
+                return false;
+            }
+            return false;
+        }
+
+        private int _friendChases, _friendCatches;
+
+        /// Your friend ran him down: he brings your money to you, thinks the better of you for the good turn (the Ben Franklin
+        /// effect), keeps it as standing up for you, and the town has it; the thief, on his feet again, is off with nothing.
+        private void FriendHeldStep(Theft t, int now)
+        {
+            _theft = null;
+            int h = t.Thief.Handle;
+            _thieves.Remove(h);
+            if (t.Blip != null && t.Blip.Exists())
+                t.Blip.Delete();
+            Ped c = t.Chaser, me = Game.Player.Character;
+            string seed = t.Started + "|fheld";
+            string chaser = Person.FirstOf(t.ChaserName ?? "A man");
+            _friendCatches++;
+            if (c != null && c.Exists())
+            {
+                TASK.TASK_GO_TO_ENTITY(c.Handle, me.Handle, 15000, 1.5f, 1.2f, 0f, 0);   // over to you with it
+                SayLater(2500, chaser, FriendChase.Handed(seed), c.Handle, "mild");
+                WanderLater(c.Handle, now + 18000);
+                try
+                {
+                    FolkRef ac = _bridge.AcquaintanceAt(c.Handle);
+                    if (ac != null && ac.Id != null)
+                        _bridge.LikeMore(ac.Id, FriendChase.LikeMore);   // the good turn done warms the doer (the Ben Franklin effect)
+                    RecordEvent("defend", t.ChaserId, t.ChaserName, "player", "you", ENTITY.GET_ENTITY_COORDS(c.Handle, true, true), c.Handle, c.Handle, me.Handle, Allies.MemoryWords(YourFullName()));
+                }
+                catch (Exception ex)
+                {
+                    Log.Detail("FRIENDCHASE the memory couldn't be kept: " + ex.Message);
+                }
+            }
+            if (t.Lawman != null && t.Lawman.Exists() && !PED.IS_PED_IN_COMBAT(t.Lawman.Handle, me.Handle))
+            {
+                TASK.CLEAR_PED_TASKS(t.Lawman.Handle, true, false);   // the lawman who was after him too: back to his rounds
+                WanderLater(t.Lawman.Handle, now + 3000);
+            }
+            if (t.Thief.Exists() && !t.Thief.IsDead && !PED.IS_PED_IN_COMBAT(h, me.Handle))
+            {
+                TASK.CLEAR_PED_TASKS(h, true, false);
+                TASK.TASK_SMART_FLEE_PED(h, c != null && c.Exists() ? c.Handle : me.Handle, 120f, -1, 0, 3f, 0);   // up and off, empty-handed
+            }
+            LiftResolved(t, "friend");
+            NewsPush(t.Town ?? "Around here", FriendChase.News(chaser, seed), "news");
+            Log.Write("FRIENDCHASE " + t.ChaserName + " ran the thief down and brought your " + Cents(t.Amount) + " back; they remember it");
+        }
+
         /// The man who ran him down hands her purse back; the thief, on his feet again, is off with nothing.
         private void ChaseHeldStep(Theft t, int now)
         {
             if (now - t.ChaseHeldAt < 2500)
                 return;
+            if (t.PlayerMark)
+            {
+                FriendHeldStep(t, now);   // your own pocket: your friend brings it to you
+                return;
+            }
             _theft = null;
             int h = t.Thief.Handle;
             _thieves.Remove(h);
