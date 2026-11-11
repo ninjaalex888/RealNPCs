@@ -397,26 +397,42 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<string> _owesYou = new HashSet<string>();
         private int _owesYouAt = -100000;
 
-        private bool OwesYou(Ped p)
+        private readonly HashSet<string> _stoodByYou = new HashSet<string>();   // who stood by you in a fight this week (SEAMS item 5)
+
+        /// The card's word for what's between you: "Owes you" (you saved him, stood with him, paid his fine), "Stood by you"
+        /// (he fought for you this week; [Display] NameCardsStood), or null. Both sets refilled every 5 s, never per card.
+        private string OwesYou(Ped p)
         {
-            if (_cfg == null || !_cfg.NameCardsOwes || _store == null)
-                return false;
+            if (_cfg == null || (!_cfg.NameCardsOwes && !_cfg.NameCardsStood) || _store == null)
+                return null;
             int now = Game.GameTime;
             if (now - _owesYouAt >= 5000 || now < _owesYouAt)
             {
                 _owesYouAt = now;
-                Interact.OwedBy(_store.WorldLog, _store.LastGameMin, _owesYou);
+                if (_cfg.NameCardsOwes)
+                    Interact.OwedBy(_store.WorldLog, _store.LastGameMin, _owesYou);
+                else
+                    _owesYou.Clear();
+                if (_cfg.NameCardsStood)
+                    Interact.StoodByYou(_store.WorldLog, _store.LastGameMin, _stoodByYou);
+                else
+                    _stoodByYou.Clear();
             }
+            if (_owesYou.Count == 0 && _stoodByYou.Count == 0)
+                return null;
             string id, name;
-            return _owesYou.Count > 0 && LastingId(p, out id, out name) && id != null && _owesYou.Contains(id);
+            if (!LastingId(p, out id, out name) || id == null)
+                return null;
+            return _owesYou.Contains(id) ? "Owes you" : _stoodByYou.Contains(id) ? "Stood by you" : null;
         }
 
         private bool NameCardFill(Ped p, NameCard c, bool everyone)
         {
             string gang = Factions.MemberOf(c.Model, PED.GET_PED_RELATIONSHIP_GROUP_HASH(p.Handle));
             bool got = NameCardFillInner(p, c, everyone && gang == null);
-            if (got && c.Name != null && OwesYou(p) && (c.Line2 == null || c.Line2.IndexOf("Owes you", StringComparison.Ordinal) < 0))
-                c.Line2 = string.IsNullOrEmpty(c.Line2) || c.Line2 == "Stranger" ? "Owes you" : c.Line2 + " - Owes you";
+            string between = got && c.Name != null ? OwesYou(p) : null;
+            if (between != null && (c.Line2 == null || c.Line2.IndexOf(between, StringComparison.Ordinal) < 0))
+                c.Line2 = string.IsNullOrEmpty(c.Line2) || c.Line2 == "Stranger" ? between : c.Line2 + " - " + between;
             // what they are, before the rest of the line: "Lawman - Proud", "Barkeep" (Lex, 2026-10-30: enRAGE showed a
             // lawman's and a shopkeeper's trade on the card); a stranger's "Stranger" gives way to it, the badge or the apron
             // being plain to see

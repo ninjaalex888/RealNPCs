@@ -617,6 +617,21 @@ namespace EnrageWestworld.Core
             return e.Kind == "defend" || (StoodByOwes && e.Kind == "stoodby") || (FineOwes && e.Kind == "paidfine" && !e.Test);
         }
 
+        public const long StoodByYouMinutes = 7 * 1440L;   // the card's "Stood by you": a week of game days
+
+        /// Everyone who stood by him in a fight this week (the allies' "defend" with him the one it was done for, Allies.cs; a
+        /// friend who ran down his thief, PurseSnatch.cs), in one pass: for the name cards' "Stood by you" (SEAMS item 5). The
+        /// other side of "Owes you": a debt of yours you can see is one you can choose to repay.
+        public static void StoodByYou(List<Happening> log, long now, HashSet<string> into)
+        {
+            into.Clear();
+            if (log == null)
+                return;
+            foreach (Happening e in log)
+                if (e != null && e.Kind == "defend" && e.TargetId == "player" && e.DoerId != null && e.DoerId != "player" && !e.Test && e.At <= now && now - e.At < StoodByYouMinutes)
+                    into.Add(e.DoerId);
+        }
+
         /// Everyone who owes him now (SavedLately's rule, in one pass over the log): for the name cards' "Owes you" (DEEPEN item 7).
         public static void OwedBy(List<Happening> log, long now, HashSet<string> into)
         {
