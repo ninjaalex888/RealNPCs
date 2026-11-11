@@ -56,7 +56,33 @@ namespace EnrageWestworld.Core
         public static string PaysYourBet(string seed) { return Pick(PaysYou, seed + "|pays"); }
         public static string WantsHisDollar(string seed) { return Pick(WantsIt, seed + "|wants"); }
         public static string WelshedOn(string seed) { return Pick(Welshed, seed + "|welshed"); }
-        public static IEnumerable<string> AllLines() { foreach (string[] a in new[] { Shouts, TakesYou, PaysYou, WantsIt, Welshed }) foreach (string s in a) yield return s; }
+
+        // ---- a welsher's name (SEAMS item 4; [Scenes] WelshersShunned) ------------------------------------------------------
+        // The man you welshed on said the whole town would hear it, and nothing heard it: the next backer at the next fight held
+        // out his dollar as if nothing had happened. Now the betting men of a town where you welshed this week won't take your
+        // money, and the one who'd have offered says why. The psychology: a broken promise travels fastest among the people it
+        // could happen to next (reputation as the gossip of those with a stake in it), and being refused in public is the cost.
+        public static bool Shunning = true;    // from the settings
+        public const long ShunDays = 7;        // how long the town's betting men remember a welsh of yours
+
+        /// Whether you've welshed on a bet in this town within the week (the "welshed" happening, you the doer; a test's never).
+        public static bool WelshedHere(List<Happening> log, string town, long now)
+        {
+            if (!Shunning || log == null || town == null)
+                return false;
+            for (int i = log.Count - 1; i >= 0; i--)
+            {
+                Happening e = log[i];
+                if (e != null && e.Kind == "welshed" && e.DoerId == "player" && !e.Test && e.Town == town && e.At <= now && now - e.At < ShunDays * 1440)
+                    return true;
+            }
+            return false;
+        }
+
+        private static readonly string[] Refuses = { "Not with you, mister. Word's gone round about your bets.", "I'd sooner bet with the horse. You don't pay.",
+                                                     "Keep your dollar. Heard what happened last time." };
+        public static string WontBetWithYou(string seed) { return Pick(Refuses, seed + "|refuse"); }
+        public static IEnumerable<string> AllLines() { foreach (string[] a in new[] { Shouts, TakesYou, PaysYou, WantsIt, Welshed, Refuses }) foreach (string s in a) yield return s; }
 
         private static string Pick(string[] a, string seed) { return a[(Voice.Hash(seed) & 0x7fffffff) % a.Length]; }
     }

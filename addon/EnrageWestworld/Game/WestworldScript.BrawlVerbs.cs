@@ -56,10 +56,19 @@ namespace EnrageWestworld.InGame
             _bvOfferedFor = _director.FightId;
             _bvAgainAt = now + BrawlVerbs.AgainMs;
             _bvBacker = WagersOn ? _wagerOpen.FirstOrDefault(o => !o.Matched && ENTITY.DOES_ENTITY_EXIST(o.H) && !ENTITY.IS_ENTITY_DEAD(o.H) && o.H != me.Handle) : null;
+            if (_bvBacker != null && _store != null && BrawlVerbs.WelshedHere(_store.WorldLog, _placeTown, _store.LastGameMin))
+            {
+                // a welsher's name (SEAMS item 4): the backer who'd have held out his dollar says why he won't, and there's no bet row
+                WagerSay(me, _bvBacker, BrawlVerbs.WontBetWithYou(_bvBacker.Id + "|" + _director.FightId), me.Handle);
+                _bvShunned++;
+                Log.Write("BRAWL bet: " + _bvBacker.Name + " won't take your money (you welshed in " + _placeTown + " this week)");
+                _bvBacker = null;
+            }
             PromptSet(BrawlVerbs.Kind, new TownEvent { Kind = BrawlVerbs.Kind, Town = _placeTown, AName = NameOfFighter(_bvLoser) }, BrawlVerbs.PromptMs);
         }
 
         private bool _bvPayShown;
+        private int _bvShunned;   // backers who wouldn't take your money, a welsher's (SEAMS item 4)
 
         /// The lost bet's prompt on J, once J is free; its 30 s count from then.
         private void BrawlVerbsPayPrompt(int now)
@@ -304,7 +313,7 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.BrawlVerbs)
                 return "off ([Scenes] BrawlVerbs)";
-            return "broke up " + _bvBreakups + ", stood with " + _bvStands + ", bets " + _bvBets + " (won " + _bvWon + ", paid " + _bvPaid + ", welshed " + _bvWelshed + ")" +
+            return "broke up " + _bvBreakups + ", stood with " + _bvStands + ", bets " + _bvBets + " (won " + _bvWon + ", paid " + _bvPaid + ", welshed " + _bvWelshed + (_bvShunned > 0 ? ", refused you " + _bvShunned : "") + ")" +
                    (_bvOwedTo != null ? "; you owe " + _bvOwedTo.Name + " " + BrawlVerbs.Money(_bvOwedCents) : "") + (_bvLast != null ? "; last: " + _bvLast : "");
         }
     }
