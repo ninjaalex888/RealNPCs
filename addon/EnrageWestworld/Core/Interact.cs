@@ -596,6 +596,12 @@ namespace EnrageWestworld.Core
 
         public const long SavedMinutes = 30 * 1440L;   // someone he saved owes him for a month of game days
 
+        /// Standing with a man losing a fight (BrawlVerbs' "stand with him", logged "stoodby") counts as saving him (DEEPEN item 4,
+        /// 2026-11-11; [Encounters] StoodByOwes). Before, only a "defend" did, so the man you took blows for didn't owe you: not
+        /// for the allies, a friend's call, or a friend's chase after the thief. The reciprocity norm: help that cost the helper
+        /// something (a beating taken for him) is the help most strongly repaid. Off in Core so the harness goldens stand.
+        public static bool StoodByOwes;
+
         /// Whether he saved them lately (a bully pulled off them, their beater put down, the rope, the hogtied cut loose: a
         /// "defend" of his in the log within SavedMinutes): someone who owes him (Allies.Warmth 3; Lex, 2026-11-03).
         public static bool SavedLately(List<Happening> log, string id, long now)
@@ -605,7 +611,7 @@ namespace EnrageWestworld.Core
             for (int i = log.Count - 1; i >= 0; i--)
             {
                 Happening e = log[i];
-                if (e == null || e.Kind != "defend" || e.DoerId != "player" || e.TargetId != id || e.At > now || now - e.At >= SavedMinutes)
+                if (e == null || (e.Kind != "defend" && !(StoodByOwes && e.Kind == "stoodby")) || e.DoerId != "player" || e.TargetId != id || e.At > now || now - e.At >= SavedMinutes)
                     continue;
                 return true;
             }

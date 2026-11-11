@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 432;
+        public const int CurrentVersion = 433;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -360,6 +360,7 @@ namespace EnrageWestworld.Core
         public bool Wayside = true;          // [Encounters] things to come across on the road: fights, prisoners, trouble, camps, what's left after (Core/Wayside*.cs; settings version 324)
         public int WaysideChance = 25;       // ... percent a roll, among the other encounters
         public bool AlliesHelp = true;       // [Encounters] attacked within sight of people who think well of you, some of them come to your aid (Core/Allies.cs; a player's request, 2026-11-03; settings version 197)
+        public bool StoodByOwes = true;      // [Encounters] ... a man you stood with in a fight (J, "Stand with him") owes you for a month, as one you saved: readier to come to your aid, to call on you, to run down your thief (DEEPEN item 4; settings version 433)
         public bool AlliesSpareLaw = true;   // [Encounters] ... in a fight that has had anyone but the law against you, friends leave the law alone; the law alone at you, they still stand with you (a player on Nexus, 2026-11-10: friends killed the sheriffs while fighting bandits; Core/Allies.cs LawIsFoe; settings version 429)
         public int AlliesMetres = 40;        // ... from within this many metres
         public int AlliesMost = 3;           // ... at most this many at once
@@ -1076,6 +1077,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 433)
+                    log?.Invoke("Settings: new in this version: [Encounters] StoodByOwes (on): a man you stood with in a fight owes you, as one you saved.");
                 if (s.SettingsVersion < 432)
                     log?.Invoke("Settings: new in this version: [Scenes] FriendsWarnThief (on): a friend may warn you of a known pickpocket near, and you're on your guard a while.");
                 if (s.SettingsVersion < 431)
@@ -2168,6 +2171,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Wayside = " + B(Wayside) + "   ; things to come across out of the towns: men fighting by the road, and more: their own people, staged out of your sight, and you can step in or ride on");
             b.AppendLine("WaysideChance = " + WaysideChance + "   ; percent a roll, among the other encounters (0 to 100)");
             b.AppendLine("AlliesHelp = " + B(AlliesHelp) + "   ; attacked by anyone, the law too, within sight of people who think well of you, some of them come to your aid: someone who owes you (the bar at AlliesLiking or more, someone you saved) whatever the odds, and of the rest the brave and the hot first, cowards never, a woman only against fists, and against a gun only those who carry one (they're given a revolver for it and keep it after). They shout as they come, and have a word with you after; they remember it, and think better of you for it");
+            b.AppendLine("StoodByOwes = " + B(StoodByOwes) + "   ; a man you stood with when he was losing a fight (J, \"Stand with him\") owes you for a month of game days, as someone you saved does: he comes to your aid whatever the odds, and calls on you as a friend; false: only a rescue counts");
             b.AppendLine("AlliesSpareLaw = " + B(AlliesSpareLaw) + "   ; in a fight that has had anyone but the law against you (bandits, say), friends leave the law alone, until nobody has fought you for six seconds; when the law alone comes for you they still stand with you; false: the law is a foe whenever it fights you");
             b.AppendLine("AlliesMetres = " + AlliesMetres + "   ; from within this many metres of you (10 to 80)");
             b.AppendLine("AlliesMost = " + AlliesMost + "   ; at most this many with you at once (1 to 6)");
