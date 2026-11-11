@@ -145,6 +145,15 @@ namespace EnrageWestworld.InGame
                 PersonState st = !v.Test ? _store.Find(v.Id) : null;
                 if (st != null)
                     st.Affection = Romance.Clamp(st.Affection + Vouch.KeptFondness, -100, 100);   // the stranger who stood for him
+                if (_cfg.SuretyKeptOwes && !v.Test && _engine != null)
+                {
+                    // kept on your word, he owes you (SEAMS item 10; [Encounters] SuretyKeptOwes): the debt the surety held back while
+                    // he might yet break it, the ledger's owing (Interact.Owing: a "paidfine" with you the doer) and the saved memory
+                    // with how "surety", so he comes to thank you ("You spoke for me at the jail...")
+                    _engine.NoteEvent(new Happening { Kind = "paidfine", DoerId = "player", DoerName = "you", TargetId = v.Id, TargetName = v.Name, Town = v.Town, Outcome = "kept his week on your word" });
+                    if (OwedMemory(v.Id, v.Town, "defend", "surety", 60))
+                        Log.Write("VOUCH " + v.Name + " owes you now, his week kept on your word: the ledger, his memory, and his thanks to come");
+                }
                 _vouchKept++;
                 _vouchLast = v.Name + " kept the peace his week out";
             }

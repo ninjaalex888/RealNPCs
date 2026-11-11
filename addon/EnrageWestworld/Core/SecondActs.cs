@@ -91,6 +91,8 @@ namespace EnrageWestworld.Core
                                 "The whole street watched him at me. You were the one who moved. Thank you, {you}." } },
             { "poster", new[] { "You told me my face was on that paper. I kept out of sight, and they rode on through. Thank you.",
                                 "If you'd not warned me about that poster, I'd be in a cell. I owe you that." } },
+            { "surety", new[] { "You spoke for me at the jail, and I kept the peace the week out. I wanted you to hear it from me, {you}.",
+                                "A stranger's word got me out, and I didn't make a liar of you. I'm grateful, and I mean it." } },
             { "fine", new[] { "You paid my fine at the jail, and you didn't know me from Adam. I've come to square it, {you}.",
                               "A night in that cell was enough. You saw I didn't get a second. I don't forget a thing like that." } },
             { "stood", new[] { "That fight. I was going down and you waded in beside me. I've wanted to say so since, {you}.",

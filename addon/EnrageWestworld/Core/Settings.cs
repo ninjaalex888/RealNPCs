@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 441;
+        public const int CurrentVersion = 442;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -363,6 +363,7 @@ namespace EnrageWestworld.Core
         public bool Wayside = true;          // [Encounters] things to come across on the road: fights, prisoners, trouble, camps, what's left after (Core/Wayside*.cs; settings version 324)
         public int WaysideChance = 25;       // ... percent a roll, among the other encounters
         public bool AlliesHelp = true;       // [Encounters] attacked within sight of people who think well of you, some of them come to your aid (Core/Allies.cs; a player's request, 2026-11-03; settings version 197)
+        public bool SuretyKeptOwes = true;   // [Encounters] ... a man you stood surety for who keeps the peace his week out owes you then, as one you saved; he remembers it and comes to thank you (SEAMS item 10; settings version 442)
         public bool FineOwes = true;         // [Encounters] ... a man whose fine you paid at the jail door owes you for a month, as one you saved; he remembers it and comes to thank you; standing surety is a kindness, no debt (SEAMS item 1; settings version 435)
         public bool StoodRemembered = true;  // [Encounters] ... the man you stood with in a fight keeps it in his own mind: his thoughts come back to it, and days on he comes over to thank you (SEAMS item 2; settings version 436)
         public bool StoodByOwes = true;      // [Encounters] ... a man you stood with in a fight (J, "Stand with him") owes you for a month, as one you saved: readier to come to your aid, to call on you, to run down your thief (DEEPEN item 4; settings version 433)
@@ -1085,6 +1086,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 442)
+                    log?.Invoke("Settings: new in this version: [Encounters] SuretyKeptOwes (on): a man you stood surety for who keeps his week owes you, and comes to thank you.");
                 if (s.SettingsVersion < 441)
                     log?.Invoke("Settings: new in this version: [Display] NameCardsRobbed (on): \"Robbed you\" on the card of the pickpocket who got away with your money.");
                 if (s.SettingsVersion < 440)
@@ -2198,6 +2201,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Wayside = " + B(Wayside) + "   ; things to come across out of the towns: men fighting by the road, and more: their own people, staged out of your sight, and you can step in or ride on");
             b.AppendLine("WaysideChance = " + WaysideChance + "   ; percent a roll, among the other encounters (0 to 100)");
             b.AppendLine("AlliesHelp = " + B(AlliesHelp) + "   ; attacked by anyone, the law too, within sight of people who think well of you, some of them come to your aid: someone who owes you (the bar at AlliesLiking or more, someone you saved) whatever the odds, and of the rest the brave and the hot first, cowards never, a woman only against fists, and against a gun only those who carry one (they're given a revolver for it and keep it after). They shout as they come, and have a word with you after; they remember it, and think better of you for it");
+            b.AppendLine("SuretyKeptOwes = " + B(SuretyKeptOwes) + "   ; a man you stood surety for at the jail who keeps the peace his week out owes you from then on, for a month of game days, as someone you saved does, and comes over later to say so; false: his kept week only warms him to you");
             b.AppendLine("FineOwes = " + B(FineOwes) + "   ; a man whose fine you paid at the jail door owes you for a month of game days, as someone you saved does: he comes to your aid, remembers it in his thoughts, and comes over later to thank you; standing surety for him is a kindness the town sees, but no debt (he may yet break his word); false: paying a fine changes nothing between you");
             b.AppendLine("StoodRemembered = " + B(StoodRemembered) + "   ; the man you stood with when he was losing a fight keeps it in his own mind, as someone you saved does: his thoughts come back to it (\"stepped in for me\"), and some days on he comes over to say how much it meant; false: only the ledger has it");
             b.AppendLine("StoodByOwes = " + B(StoodByOwes) + "   ; a man you stood with when he was losing a fight (J, \"Stand with him\") owes you for a month of game days, as someone you saved does: he comes to your aid whatever the odds, and calls on you as a friend; and those who saw it count it a kindness, as the town's regard does; false: only a rescue counts");
