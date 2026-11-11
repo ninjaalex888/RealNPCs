@@ -76,6 +76,7 @@ namespace EnrageWestworld.Core
             public bool Variety = true;   // [Scenes] ReasonVariety: x:snap starts at 42, not 45, so gossip, a lift, a drunk and courting win turns (NIGHT4 fix 5; the old harnesses: on, as the game comes)
             public bool TimesTalk;       // [Mind] TimesTalk (with MindTalks and HistoricalAccuracy): any two may talk over the times (Run 3, item 2)
             public int TimesShare = 100; // [Mind] TimesTalkShare: its chance, percent of as built
+            public int CenturyEve;       // New Year's Eve of 1899 or 1900 from five o'clock: that year (Core/CenturyTurns.cs; DEPTH reserve R6); 0 (and in the old harnesses) none
             public bool MindTalks;       // [Mind] MindTalks: people talk to each other from what's on their minds (MindTalk.cs); the reason of last resort among people who know each other, ahead of small talk
         }
 
@@ -507,6 +508,9 @@ namespace EnrageWestworld.Core
         /// Two who may talk over the times today (a roll a pair and a day; by night in the street, less), or null.
         private static Reason TimesReason(Someone x, Someone y, long gameDay, Place where)
         {
+            Reason eve = CenturyTurns.For(x, y, gameDay, where.CenturyEve);   // New Year's Eve: the century's argument first (DEPTH reserve R6)
+            if (eve != null)
+                return eve;
             if (!where.TimesTalk || where.TimesShare <= 0 || x == null || y == null || x.Id == y.Id)
                 return null;
             int pct = (where.Night && !where.Saloon ? TimesNightChance : TimesChance) * where.TimesShare / 100;

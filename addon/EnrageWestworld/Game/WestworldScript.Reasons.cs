@@ -262,6 +262,7 @@ namespace EnrageWestworld.InGame
                 MindTalks = _cfg.MindTalks,   // people talk of what's on their minds (WestworldScript.MindTalk.cs)
                 TimesTalk = _cfg.MindTalks && _cfg.TimesTalk && InnerLife.Historical,   // and talk over the times (Run 3, item 2); never with HistoricalAccuracy off
                 TimesShare = _cfg.TimesTalkShare,
+                CenturyEve = CenturyEveNow(),   // New Year's Eve of 1899 or 1900 (DEPTH reserve R6)
                 Rumours = (!saloon || _cfg.SaloonGossip) && _engine.RumourPool(_placeTown, 1).Count > 0,
                 DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0
             };
@@ -528,6 +529,8 @@ namespace EnrageWestworld.InGame
             SceneCast cast = BuildCast(first, second, lady, saloon, me, now, seed);
             cast.SecondChurch = churchSecond;
             cast.WifeHome = wifeHome;
+            if (pr.Why.Kind == CenturyTurns.Kind)
+                cast.CenturyEve = CenturyEveNow();
             if (pr.Why.Kind == LimpTale.Kind)
             {
                 Someone marked = pr.Why.BFirst ? pr.B.Who : pr.A.Who;

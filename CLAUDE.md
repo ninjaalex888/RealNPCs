@@ -91,6 +91,8 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 
 - **Old hands grumble at the newcomer** (depth reserve R5; `Core/Grumble.cs`; `[Scenes] Grumble`, on): `Grumble.For` in `Reasons.Between` beside the greenhorn's ribbing (a regular man, not a hothead, about a greenhorn man; 25% a pair a day; Strength 47, over the ribbing's 46); the game side casts a friend of the old hand within 8 m (`LimpFriendNear`) as the third, and with none plays `greenhorn` (the ribbing) instead; `Grumble.Make`: A and C (index 2) talk between themselves (`Beat.To`), then B by temper (`Answer`): dry (`welcomed`), hot (`scorn`, he walks off) or none (`scorn`, Doer 0). The harnesses never mark a greenhorn, so the goldens stand. mindtest `GrumbleTest`.
 
+- **The century turns** (depth reserve R6; `Core/CenturyTurns.cs`; `[World] CenturyTurns`, on, with HistoricalAccuracy): `EveOf` (31 December 1899 or 1900 by the calendar year, from 17:00, never the 1907 era) sets `Reasons.Place.CenturyEve` (the harnesses leave it 0) and `SceneCast.CenturyEve`; `TimesReason` asks `CenturyTurns.For` first (60% a pair a day, Strength 45); kind `century` (`Make`: 1899 tonight against a year on, the stubborn hold; 1900 the one who said next year is owed his due) leaves no tie (`Ties.Effect` null). `CenturyMidnight` in the calendar's 30 s look puts the turn on the ticker in the first half hour of 1900 or 1901, once (`_store.Counts`). No gunfire (For Lex). mindtest `CenturyTest` (FREQ 0 -> 590 of 1000 pairs on the eve).
+
 ## The two-day run (FIVEDAY2.md, 2026-11-08/09; settings versions 323 to 339; nothing seen in game yet)
 
 Everything below is behind its own switch and was built on what's been seen working. Each section names the file; `FIVEDAY2.md` has the decisions.

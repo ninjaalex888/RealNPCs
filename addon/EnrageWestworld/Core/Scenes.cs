@@ -104,6 +104,7 @@ namespace EnrageWestworld.Core
         public string[] TalkOf;                             // a talk of someone not there: his name, A's view, B's view or null, "w" for a woman (item 23); null: none
         public string Courted;                              // the woman two rivals both court, her first name (Core/Rivals.cs, FOURTEENHOUR item 19); null: none
         public Dictionary<string, int> TaleTold;            // the big animals' tales told in this town this session, by key (DEPTH item 14); null: the tales as written
+        public int CenturyEve;                              // the century's argument: the eve's year, 1899 or 1900 (Core/CenturyTurns.cs; DEPTH reserve R6)
         public bool FriendThere;                            // the limp's tale: C is a friend of A's who was by (Core/LimpTale.cs; DEPTH item 13)
         public int MarkedDays;                              // ...and the game days since A was beaten
         public string FeverSick;                            // the one sick at B's house, first name (Core/FeverKin.cs; DEPTH item 12); null: none
@@ -202,6 +203,7 @@ namespace EnrageWestworld.Core
                 case "shake": return Rematch.ShakeScene(c, seed);     // his hand offered, taken or refused
                 case "temperance": return Temperance.Make(c, seed);   // the pledge put to a drinker (Core/Temperance.cs)
                 case FeudArcs.Kind: { bool taken; return FeudArcs.Make(c, c.Tempers != null ? c.Tempers[1] : null, seed, out taken); }   // his hand before the street (Core/FeudArcs.cs; DEPTH item 18)
+                case CenturyTurns.Kind: return CenturyTurns.Make(c, c.CenturyEve, seed);   // the century turns (Core/CenturyTurns.cs; DEPTH reserve R6)
                 case Grumble.Kind: return Grumble.Make(c, seed);   // old hands grumble at the newcomer (Core/Grumble.cs; DEPTH reserve R5)
                 case LimpTale.Kind: return LimpTale.Make(c, c.MarkedDays, seed);   // how he got the limp (Core/LimpTale.cs; DEPTH item 13)
                 case FeverKin.AvoidKind: return FeverKin.Avoid(c, seed);   // the house of the sick kept clear of (Core/FeverKin.cs; DEPTH item 12)

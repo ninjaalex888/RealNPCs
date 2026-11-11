@@ -270,6 +270,7 @@ namespace EnrageWestworld.InGame
             Mourning.GraveNightOn = _cfg.GraveNight;      // [World] GraveNight (DEPTH reserve R1)
             Core.NoteMeet.On = _cfg.NoteMeet;             // [Scenes] NoteMeet (DEPTH reserve R2)
             Slander.On = _cfg.SpreadRumour;               // [Scenes] SpreadRumour (DEPTH reserve R3)
+            Core.CenturyTurns.On = _cfg.CenturyTurns;    // [World] CenturyTurns (DEPTH reserve R6)
             Core.Grumble.On = _cfg.Grumble;              // [Scenes] Grumble (DEPTH reserve R5)
             YourReward.On = _cfg.PostReward;              // [Scenes] PostReward (DEPTH reserve R4)
             Temperance.DoorOn = _cfg.TemperanceDoor && _cfg.Temperance;   // [Scenes] TemperanceDoor (FOURTEENHOUR item 25)

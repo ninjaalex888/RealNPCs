@@ -11,7 +11,7 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private int _calendarNextAt, _calendarToasts, _almanacWords;
+        private int _calendarNextAt, _calendarToasts, _almanacWords, _centuryMidnights;
         private string _calendarLast, _almanacLast;
 
         /// Tick04, every 30 s: the holiday's word of the day in the morning, once.
@@ -27,6 +27,7 @@ namespace EnrageWestworld.InGame
                 int hourNow = CLOCK.GET_CLOCK_HOURS();
                 if (_cfg.Almanac && hourNow >= 6 && hourNow < 22)
                     AlmanacWord(false);
+                CenturyMidnight(hourNow);   // the turn of the year 1900 or 1901, in words (DEPTH reserve R6)
                 if (hourNow < 6 || hourNow >= 11)
                     return;
                 string region = Calendar.Region(_placeTown ?? _town);
@@ -72,6 +73,32 @@ namespace EnrageWestworld.InGame
             _almanacLast = pick.Key;
             Log.Write("ALMANAC on the ticker: " + pick.Head + " (" + day + "/" + month + "/" + year + ")");
             return true;
+        }
+
+        /// New Year's Eve of 1899 or 1900 from five o'clock: that year, else 0 (Core/CenturyTurns.cs; DEPTH reserve R6).
+        private int CenturyEveNow()
+        {
+            return CenturyTurns.EveOf(InnerLife.CalendarYear, InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay, CLOCK.GET_CLOCK_HOURS(), InnerLife.Historical);
+        }
+
+        /// The first half hour of 1900 or 1901 (the calendar's own 30 s look): the turn on the ticker, once a year per player.
+        private void CenturyMidnight(int hourNow)
+        {
+            int y = InnerLife.CalendarYear;
+            if (!CenturyTurns.On || !InnerLife.Historical || hourNow != 0 || CLOCK.GET_CLOCK_MINUTES() >= 30 || InnerLife.ClockMonth != 1 || InnerLife.ClockDay != 1 || InnerLife.ClockYear >= 1907)
+                return;
+            string line = CenturyTurns.Midnight(y), key = "century:midnight:" + y;
+            if (line == null || _store.Count(key) > 0)
+                return;
+            _store.Counts[key] = 1;
+            _ticker.Push("Midnight", line, "news");
+            _centuryMidnights++;
+            Log.Write("CENTURY the turn of the year " + y + ": " + line);
+        }
+
+        private string CenturyStatus()
+        {
+            return !CenturyTurns.On ? "off ([World] CenturyTurns)" : "on; " + (CenturyEveNow() != 0 ? "the eve of " + (CenturyEveNow() + 1) + " now; " : "") + CenturyTurns.Argued + " arguments this session, " + _centuryMidnights + " midnight words";
         }
 
         private string AlmanacStatus()

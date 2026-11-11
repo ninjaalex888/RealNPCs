@@ -86,6 +86,8 @@ New in the towns and on the roads:
   ([Scenes] PostReward); the town brings him in, makes a false claim, or lets it lapse.
 - Two old hands talk over a newcomer off the train where he can hear ([Scenes] Grumble); he
   answers them, bristles, or goes.
+- On New Year's Eve of 1899 and 1900 people argue whether the century turns at midnight
+  ([World] CenturyTurns).
 - Three whistles at Annesburg, the shape-up on the Saint Denis docks, sale day at Valentine, fence cutters.
 - Witnesses who choose what to do, Pinkertons asking after you, a posse that rides out.
 - Drummers, the slate at the store, a sheriff's sale, camp meetings, river baptisms, box socials,

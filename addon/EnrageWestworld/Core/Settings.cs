@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 425;
+        public const int CurrentVersion = 426;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -121,6 +121,7 @@ namespace EnrageWestworld.Core
         public int HoldupChance = 15;        // [Scenes] with StoreHoldups: percent, the day's roll once a robber and a customer fit
         public bool HoldupShots = false;     // [Scenes] with StoreHoldups: now and then he fires at one who bolts (someone can die on screen; off as shipped)
         public bool RainShelter = true;      // [Scenes] the town keeps a record of the rain: in it the street's errands wait, strangers under one roof get acquainted, and rain days end a farmer's drought (FOURTEENHOUR item 26; settings version 394)
+        public bool CenturyTurns = true;   // [World] New Year's Eve of 1899 and 1900: two who stop together argue whether the century turns at midnight; the turn of the year on the ticker (Core/CenturyTurns.cs; DEPTH reserve R6; settings version 426)
         public bool Grumble = true;   // [Scenes] an old hand and a friend of his talk over the greenhorn off the train where he can hear; he answers dry, bristles, or goes (Core/Grumble.cs; DEPTH reserve R5; settings version 425)
         public bool PostReward = true;   // [Scenes] at the jail door, J to put five dollars with the sheriff for whoever robbed someone you know; a regular brings the thief in, or claims it falsely, or nobody does (Core/YourReward.cs; DEPTH reserve R4; settings version 424)
         public bool SpreadRumour = true;   // [Scenes] in a saloon, J at a man who likes to talk: a word in his ear about a townsman you know; the town's tales carry it and it grows, and he hears of it (Core/Slander.cs; DEPTH reserve R3; settings version 423)
@@ -1070,6 +1071,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 426)
+                    log?.Invoke("Settings: new in this version: [World] CenturyTurns (on): New Year's Eve argues whether the century turns.");
                 if (s.SettingsVersion < 425)
                     log?.Invoke("Settings: new in this version: [Scenes] Grumble (on): old hands talk over a newcomer where he can hear.");
                 if (s.SettingsVersion < 424)
@@ -2179,6 +2182,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Storyteller = " + Storyteller + "   ; how lively the world is around you: the storyteller notices how long it has been since something worth stopping for happened near you (a fight, a theft, a standoff, a song, someone coming up to you, an encounter on the road) and, when it has been quiet too long, shortens the waits before the next scene, chance meeting, walk-up and encounter roll; after something big it waits a little longer for half a minute or so. It never starts anything itself and never stops anything. calm (a quieter world than before), lively, wild; off: as before. In a mission, wanted, in a fight or indoors it holds everything as built");
             b.AppendLine("HistoricalAccuracy = " + B(HistoricalAccuracy) + "   ; the real history in people's heads and mouths: what was in the papers of 1899 and 1907 (the election, the Philippines, the reservations, the trusts, the new machines; in 1907 Roosevelt, the Panic, Oklahoma), the lines about the year they live in, the real calendar (Easter on 2 April 1899, the Fourth, Election Day, Thanksgiving, Christmas, and in Lemoyne Mardi Gras and All Saints', each with its eve and its morning after, and a word of the day on the ticker), the year's work by region (calving and roundup, cane and cotton, the trapping lines), the snake-oil man's Food and Drugs Act in 1907 and the Panic in the paper. false: none of it, and the timeless texture of the days (bath night, Sunday collars, wash day) stays as it was");
             b.AppendLine("AlmanacSides = " + B(AlmanacSides) + "   ; with Almanac: on the stories the country argued over in 1899, people think their own side of it, by their trade (and for the vote and the drink, being a woman); false: the same lines for everyone");
+            b.AppendLine("CenturyTurns = " + B(CenturyTurns) + "   ; with HistoricalAccuracy: on New Year's Eve of 1899 and of 1900, from five in the afternoon, two who stop together may argue whether the twentieth century begins at midnight or a year on (the almanacs said 1901; the crowds held it on 1 January 1900), and the turn of the year is on the ticker at midnight. No gunfire is played");
             b.AppendLine("Almanac = " + B(Almanac) + "   ; with HistoricalAccuracy: the almanac, a few hundred dated things of 1899 (and of 1907 in the epilogue) known from the day they were in the papers (the war at Manila, the great cold of February, the train robbed at Wilcox, Jeffries, Dewey's homecoming, the Boers, Hobart's death, Lawton, Moody; in 1907 the Thaw trial, the midnight forests, Haywood, the Panic, Oklahoma, Monongah, the fleet) and the year's everyday talk (the catalogue, the wheel, the phonograph, the new rag, the medicines, the trusts, where the old names of the West got to): in people's thoughts, in Talk's What's the news and the typed question, in the talks between two people, read aloud from the paper on the street, the week's paper in the reader, and a word on the ticker the day a big thing breaks");
             b.AppendLine("AlmanacShare = " + AlmanacShare + "   ; percent: how much of the almanac gets through: the pull of its thoughts and its share of the news answers and the talks (0 none, 100 as written, 200 twice)");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");

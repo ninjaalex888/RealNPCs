@@ -325,7 +325,7 @@ One date to start with: Easter 1899 fell on 2 April, the very Sunday your game's
 | **Suffrage meeting** | Women in Saint Denis campaign for the vote, already won in Wyoming, Colorado, Utah and Idaho. A husband forbids his wife to go. | Crowd, Scenes, Ties | M |  |
 | **Saloon or no saloon** | A local-option vote to close the saloon. Barkeep, drinkers and temperance ladies take sides; if it passes, the saloon goes quiet for a week. | Town events, worries (drink) | L |  |
 | **Railroad men and the land** | Surveyors pegging a line across farms, furious farmers, the company lawyer at the hotel; feuds that are really about the railroad. | Worries (feud, bank), arrivals | M | Partly built (FIVEDAY2: the surveyors on the road; depth item 9: saloon fights over the railroad's right of way and the land office's claims; not the company lawyer) |
-| **The century turns** | Everyone argues whether the new century starts in 1900 or 1901. On New Year's Eve, guns go off into the air and the waking whisper about the date. | Clock, era lines, Awakening | S |  |
+| **The century turns** | Everyone argues whether the new century starts in 1900 or 1901. On New Year's Eve, guns go off into the air and the waking whisper about the date. | Clock, era lines, Awakening | S | Partly built (depth reserve R6: the argument between two who stop together on the eves of 1900 and 1901, and the turn on the ticker at midnight; no gunfire, no waking whispers) |
 
 ### New things in 1899
 
