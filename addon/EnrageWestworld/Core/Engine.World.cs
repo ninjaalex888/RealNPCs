@@ -930,8 +930,16 @@ namespace EnrageWestworld.Core
 
         // ---- once a day -----------------------------------------------------------------------------
 
+        public int SleepEased { get; private set; }   // DEPTH item 19: hostile ties a night's sleep eased this session
+
         private void DailyTick(long now)
         {
+            int eased = SleepOnIt.Night(Store.Ties, now);   // a night's sleep cools a quarrel nothing fed yesterday (Core/SleepOnIt.cs; DEPTH item 19)
+            if (eased > 0)
+            {
+                SleepEased += eased;
+                Detail?.Invoke("SLEEP on it: " + eased + " quarrels nothing fed yesterday eased a step overnight");
+            }
             CalendarDaily(now);   // the dated things: the Panic of 1907 in the paper (Engine.Calendar.cs)
             AwarenessTick(now);
             AwakeningTick(now);

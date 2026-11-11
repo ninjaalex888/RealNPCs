@@ -580,6 +580,7 @@ These make one session prove much more, and keep it smooth.
 | **The clock pass** | The arcs you're meant to watch (a vouched man's week, the town's tales, a kin's visit, the judge, a loan, a sweetheart's patience) start and end within a session. | every day-long timer, sorted | M | Built (depth item 16) |
 | **Familiarity** | Two who keep ending up at the same bar or porch become acquainted: a nod in passing, a small lean to each other in a brawl. | Ties, the near scan | S | Built (depth item 17) |
 | **Feuds in a day** | A slight in the morning is words by the afternoon, and by evening blows, or a hand offered before the street. | the feud's stages, the Director | S | Built (depth item 18) |
+| **A night's sleep cools it** | A quarrel nobody feeds fades in a day or two; one kept alive by a rematch or a word hardens. | Ties, the day's turn | S | Built (depth item 19) |
 
 ## How to build them
 

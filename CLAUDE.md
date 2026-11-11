@@ -77,6 +77,8 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 
 - **Feuds in a day** (depth item 18; `Core/FeudArcs.cs`; `[Mind] FeudArcs`, on; **`FeudArcs.On` is false in Core** so the goldens stand, set by ApplySettings and the gate's measure): in `Reasons.Between`'s hostile branch, where `blows` is true (before the rough and the brawl), the tie's `Doer` (else the one whose nature offers) may give reason `handoffer` (Strength 76); `Scenes.Make` plays `FeudArcs.Make`: kind `apology` when the other `Takes` it by temper (a step warmer), else `brawl` with `Fight` and `NoLadder` (his refusal, a shove, blows). The stages are the tie's own (HostileRest 45 game minutes). mindtest `FeudArcsTest` (FREQ: a feuding pair's fights 330 -> 312, hands taken 28%).
 
+- **A night's sleep cools it** (depth item 19; `Core/SleepOnIt.cs`; `[Mind] SleepOnIt`, on; **`SleepOnIt.On` is false in Core**, set by ApplySettings and the gate's measure): `Engine.DailyTick` runs `SleepOnIt.Night(Store.Ties, now)` first at each day's turn: every tie with warmth below 0 last noted before the start of the day just ended goes up one (Kind, Doer and Crime kept). `Engine.SleepEased` for F7. mindtest `SleepOnItTest` (FREQ: one quiet day on, 78 -> 78 fights; two, 78 -> 0).
+
 ## The two-day run (FIVEDAY2.md, 2026-11-08/09; settings versions 323 to 339; nothing seen in game yet)
 
 Everything below is behind its own switch and was built on what's been seen working. Each section names the file; `FIVEDAY2.md` has the decisions.

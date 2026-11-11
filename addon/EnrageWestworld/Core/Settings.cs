@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 419;
+        public const int CurrentVersion = 420;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -121,6 +121,7 @@ namespace EnrageWestworld.Core
         public int HoldupChance = 15;        // [Scenes] with StoreHoldups: percent, the day's roll once a robber and a customer fit
         public bool HoldupShots = false;     // [Scenes] with StoreHoldups: now and then he fires at one who bolts (someone can die on screen; off as shipped)
         public bool RainShelter = true;      // [Scenes] the town keeps a record of the rain: in it the street's errands wait, strangers under one roof get acquainted, and rain days end a farmer's drought (FOURTEENHOUR item 26; settings version 394)
+        public bool SleepOnIt = true;   // [Mind] overnight, a quarrel nothing fed the day before eases a step: sore to cool, cool to nothing; one kept alive by a rematch or a word doesn't (Core/SleepOnIt.cs; DEPTH item 19; settings version 420)
         public bool FeudArcs = true;   // [Mind] where a feud would come to blows, the one who began it may offer his hand before the street: taken, they make it up; refused, blows (Core/FeudArcs.cs; DEPTH item 18; settings version 419)
         public bool Familiarity = true;   // [Mind] two of the town seen about the same place three times a game day, an hour apart, are acquainted: they nod in passing, and in a brawl one leans to the other (Core/Familiarity.cs; DEPTH item 17; settings version 418)
         public bool SessionClock = true;   // [World] the arcs you're meant to watch end within a session: two game days at most (a vouched man's week, the town's tales, a kin's visit, the judge, a loan, a sweetheart's patience...); off: every old length (Core/SessionClock.cs; DEPTH item 16; settings version 417)
@@ -1064,6 +1065,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 420)
+                    log?.Invoke("Settings: new in this version: [Mind] SleepOnIt (on): a night's sleep cools a quarrel nothing fed.");
                 if (s.SettingsVersion < 419)
                     log?.Invoke("Settings: new in this version: [Mind] FeudArcs (on): a feud may be made up before the street, where it would have come to blows.");
                 if (s.SettingsVersion < 418)
@@ -2228,6 +2231,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("HoldupChance = " + HoldupChance + "   ; with StoreHoldups: percent, the day's roll once a man who leans to it and a customer on their own are by the store near you (0 to 100; offline, 15 gave a holdup on about 3 town-days in 100 by a store)");
             b.AppendLine("HoldupShots = " + B(HoldupShots) + "   ; with StoreHoldups: one in four who bolt are fired after (someone can die on screen); false: he curses and runs");
             b.AppendLine("RainShelter = " + B(RainShelter) + "   ; the town keeps a record of its rain while you're in it: in the rain the street's errands wait (nobody is walked anywhere), strangers under one roof talk and leave acquainted (they nod in passing after), and two days of rain in a farmer's town end his drought well; false: as before");
+            b.AppendLine("SleepOnIt = " + B(SleepOnIt) + "   ; at each day's turn, a quarrel between two that nothing fed the day before (no scene between them) eases a step, sore to cool and cool to nothing, so a feud left alone fades in a day or two; one fed that day doesn't; false: quarrels keep their heat until a scene changes it");
             b.AppendLine("FeudArcs = " + B(FeudArcs) + "   ; a feud picks up again within hours; where it would come to blows, the one who began it, if his nature allows (the kind and the loyal, never the proud or a hothead before others), offers his hand where the street can see; the other takes it by his own nature (a making-up) or refuses it (blows); false: the blows as before");
             b.AppendLine("Familiarity = " + B(Familiarity) + "   ; two of the town who end up near each other at the same place three times in a game day, an hour or more apart, become acquainted (a tie of no warmth): a nod or a word in passing, and in a brawl one leans to the other a little; false: only scenes make ties");
             b.AppendLine("SessionClock = " + B(SessionClock) + "   ; the arcs you're meant to watch start and end within two game days (about an hour and a half of play): a man you vouched for, the town's tales, the cardsharp's return, the beaten man's plan, kin come about a wrong, the circuit judge, a loan, the claim agent, a sweetheart's patience; what keeps things rare, the calendar and how long people remember keep their lengths; false: every old length");

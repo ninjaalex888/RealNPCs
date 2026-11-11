@@ -1343,6 +1343,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST fever kin: " + FeverKinStatus());
 			Log.Write("TEST big animals' tales: " + FolkStatus());
 			Log.Write("TEST familiarity: " + FamiliarityStatus());
+			Log.Write("TEST sleep on it: " + (Core.SleepOnIt.On ? (_engine != null ? _engine.SleepEased : 0) + " quarrels eased overnight this session" : "off ([Mind] SleepOnIt)"));
 			Log.Write("TEST walk together: " + WalkTogetherStatus());
 			Log.Write("TEST old soldiers: " + OldSoldiersStatus());
 			Log.Write("TEST snubs: " + SnubStatus());

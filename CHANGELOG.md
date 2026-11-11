@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **A night's sleep cools it** (`[Mind] SleepOnIt`, on; settings version 420). A quarrel between two that nothing fed the day before eases a step overnight, so a feud left alone fades within a day or two of play, while one kept alive by a rematch or a word keeps its heat.
+
 - **Feuds in a day** (`[Mind] FeudArcs`, on; settings version 419). A quarrel already picks up again within hours; now, where it would come to blows, the one who began it may offer his hand where the street can see, if his nature allows (the kind and the loyal, never the proud or a hothead before others). The other takes it, and they make it up, or refuses it, and it's blows.
 
 - **Familiarity** (`[Mind] Familiarity`, on; settings version 418). Two people of a town who keep ending up near each other at the same place, three times in a game day an hour or more apart, become acquainted: they nod or speak in passing from then on, and in a brawl one leans a little to the other. F7: `TEST familiarity:`.
