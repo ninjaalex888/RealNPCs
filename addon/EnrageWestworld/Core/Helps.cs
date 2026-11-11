@@ -48,6 +48,20 @@ namespace EnrageWestworld.Core
             }
         }
 
+        // ---- seen home from the drink (SEAMS item 15; [Scenes] WalkHomeMends; roadmap "One more, or none") ----------------------
+        // The man at his drink worry could be mended through Talk (coffee, not whiskey) and walked home from J (WalkHome, Talk's
+        // own escort), but the walk never touched the worry: seen to his door in drink, he went on drinking it to its end as if no
+        // one had cared. Now seeing him home while the drink has him (his worry "drink", worse or at its crisis) settles it, as
+        // the coffee does: the rest of its run reads as ended well. The psychology: a man is turned from the bottle by being
+        // cared for more than by being told, and the walk home is the caring done.
+        public static bool WalkHomeMendsOn = true;   // from the settings
+
+        /// Whether seeing this one home mends their worry: in drink, the worry the drink, worse or at its crisis (not begun, not ended).
+        public static bool WalkHomeMends(bool drunk, string worry, int stage)
+        {
+            return WalkHomeMendsOn && drunk && worry == "drink" && stage >= 1 && stage <= 2;
+        }
+
         /// The dark mirror: a word that turns the trouble the wrong way. One for every worry.
         public static Help Mirror(string worry)
         {

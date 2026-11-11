@@ -191,6 +191,19 @@ namespace EnrageWestworld.InGame
                 if (ac != null)
                     _bridge.LikeMore(ac.Id, Fondness.EscortLiking);   // enRAGE's own method for its own townsfolk
                 _engine.Escorted(e.Id, e.Name, g, true);
+                if (Helps.WalkHomeMendsOn && e.Drunk)
+                {
+                    // seen home from the drink while the drink is his worry: mended, as the coffee is (SEAMS item 15)
+                    Person wp = _engine.KinPerson(e.Id);
+                    string wk;
+                    int stage;
+                    bool good;
+                    if (wp != null && InnerLife.WorryNow(wp, g / 1440, out wk, out stage, out good) && Helps.WalkHomeMends(e.Drunk, wk, stage))
+                    {
+                        _engine.SettleWorry(e.Id);
+                        Log.Write("FOND escort: " + e.Name + " seen home from the drink: his drinking worry mended (the rest of its run ends well)");
+                    }
+                }
             }
             if (!door)
                 _ticker.Push(Person.FirstOf(e.Name) + ", thinking", Fondness.EscortThought(e.Woman, e.Drunk, seed), "near", h);
