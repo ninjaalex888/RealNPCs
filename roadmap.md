@@ -287,7 +287,7 @@ One date to start with: Easter 1899 fell on 2 April, the very Sunday your game's
 | **Box social** | Young women's supper boxes are auctioned to the men, and the winner eats with the maker. Courting and jealousy follow. | Romance, Ties, jealous scene | M |  |
 | **Barn raising** | Neighbours raise a barn in a day. A man and his feud neighbour have to hold the same beam; help, and the family remembers. | Links (feud), Ties | L |  |
 | **Quilting bee** | Women at a quilting frame talk over the town's rumours, overheard through the window. | Rumours, gossip scene | S |  |
-| **Temperance ladies** | Women pray and sing outside the saloon. Drinkers jeer or slink off; one husband is marched home; the barkeep sours. | Worries (drink), Posts, Crowd | M | Partly built (14h item 25: the saloon door, the pledge, kin taking sides) |
+| **Temperance ladies** | Women pray and sing outside the saloon. Drinkers jeer or slink off; one husband is marched home; the barkeep sours. | Worries (drink), Posts, Crowd | M | Built (14h item 25: the saloon door, the pledge, kin taking sides; depth item 5: the husband marched home by his wife, the barkeep sours) |
 | **The shivaree** | The night after a wedding, friends bang pots and pans under the couple's window until the groom stands drinks. | Weddings, Crowd | S |  |
 
 ### Sickness, death and mourning

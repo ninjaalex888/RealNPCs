@@ -82,10 +82,76 @@ namespace EnrageWestworld.Core
             return s;
         }
 
+        // ---- the husband marched home (DEPTH item 5; with [Scenes] TemperanceDoor). The pledge put at the door, and his own wife
+        // near (already in the street: the cast's third, never fetched): she takes his arm and walks him home past the men he
+        // drinks with, and he goes, grumbling or meek by his nature. The barkeep watching his door empty thinks less of the church
+        // women for it, and says so to the next man at the bar (the game side: a soured tie, a caption and a thought; the barkeep is
+        // a counter keeper and is never given an order). Why it reads true: the wives were the temperance movement's front line,
+        // and a husband walked home past his friends was the shame it counted on.
+
+        private static readonly string[] WifeTakes =
+        {
+            "{b}. Your supper's been cold an hour. Come home.", "Not tonight, {b}. Take my arm.", "I'll not stand here while you shame us both. Home.",
+            "The children asked where their father was, {b}. Come along.", "That's the rent money in your pocket, {b}. Home. Now.",
+        };
+        private static readonly Dictionary<string, string[]> HeGoes = new Dictionary<string, string[]>
+        {
+            { "fearful", new[] { "Yes, dear. Yes, I'm coming.", "All right. All right, don't take on so.", "I was only going to look in." } },
+            { "bold", new[] { "A man can't have one glass in peace.", "In front of the whole street, woman?", "Fine. Fine! I'm coming, ain't I?", "I'll walk on my own, thank you.", "Let go my arm. I said I'm coming." } },
+            { "cold", new[] { "As you like.", "Very well.", "No need for a scene." } },
+            { "plain", new[] { "You're right. You always are.", "I'm sorry, love. Let's go home.", "Lead on, then." } },
+        };
+        private static readonly string[] ChurchAfter = { "Go with God, the both of you.", "There's one home safe tonight.", "See he's in church on Sunday, ma'am.", "Bless you for it, ma'am." };
+
+        /// The pledge put, and his wife there (c.WifeHome: A or B the churchwoman by sex, the other the drinker, C his wife): she walks
+        /// him home. Kind "marchedhome"; the Director's walk home (homewith) takes them both off together.
+        public static Scene MarchedHome(SceneCast c, string seed)
+        {
+            int her = c.AWoman ? 0 : 1, him = 1 - her;
+            string b = c.Names != null && c.Names[him] != null ? Person.FirstOf(c.Names[him]) : Scenes.N(c, him, seed);   // his wife knows his name whoever else doesn't
+            string group = Minds.TemperGroup(c.Tempers != null ? c.Tempers[him] : null);
+            string[] goes;
+            if (!HeGoes.TryGetValue(group ?? "", out goes))
+                goes = HeGoes["fearful"];
+            Scene s = new Scene { Kind = "marchedhome", Summary = "a man's wife walked him home from the saloon door, past the men he drinks with" };
+            s.Add(her, null, null, "approach", 200)
+             .Add(her, Pick(Plea, seed + "|plea").Replace("{b}", Scenes.N(c, him, seed)), "mild", "face");
+            s.Beats.Add(new Beat(2, Pick(WifeTakes, seed + "|wife").Replace("{b}", b), "angry", "approach") { To = him });
+            s.Add(him, Pick(goes, seed + "|goes"), group == "bold" ? "angry" : "mild", "face");
+            s.Beats.Add(new Beat(2, null, null, "homewith") { To = him });   // she and he, side by side, away from the door (the walk-home runner)
+            s.Add(her, Pick(ChurchAfter, seed + "|after"), "thanks");
+            s.Cast = 3;
+            s.Doer = 2;   // his wife's doing (the memories' roles)
+            return s;
+        }
+
+        // the barkeep, as his door empties (the game side: a caption from him to the next man at his bar, and a thought; never an order)
+        private static readonly string[] BarkeepSays =
+        {
+            "That's another one walked off my door on his wife's arm.", "Those church women will have me pouring lemonade.",
+            "A man's money walks out that door on his wife's arm.", "If they had their way I'd be selling sarsaparilla.",
+        };
+        private static readonly string[] BarkeepThinks =
+        {
+            "Hymns at the door. Empty glasses at the bar.", "Every woman of that church costs me a dollar a night.", "{who} again. She'll have the whole town dry.",
+        };
+
+        public static string BarkeepLine(string seed)
+        {
+            return Pick(BarkeepSays, seed + "|bks");
+        }
+
+        public static string BarkeepThought(string churchwomanFirst, string seed)
+        {
+            return Pick(BarkeepThinks, seed + "|bkt").Replace("{who}", churchwomanFirst ?? "Her");
+        }
+
         public static Scene Make(SceneCast c, string seed)
         {
             if (c != null && c.KinStands)
                 return WithKin(c, seed);   // her kin near, a hothead's insult (item 25)
+            if (c != null && c.WifeHome && c.AWoman != c.BWoman && c.CWoman)
+                return MarchedHome(c, seed);   // his own wife near: she walks him home (DEPTH item 5)
             if (c == null || c.AWoman == c.BWoman)
                 return null;
             int her = c.AWoman ? 0 : 1, him = 1 - her;
@@ -130,6 +196,16 @@ namespace EnrageWestworld.Core
             foreach (string[] pool in new[] { Jeer, Slink, Swear, Home, HerAfter, HerRebuffed, Insult, KinRises, KinLast })
                 foreach (string l in pool)
                     yield return l;
+            foreach (string l in WifeTakes)
+                yield return l.Replace("{b}", "Amos");   // DEPTH item 5
+            foreach (string[] pool in HeGoes.Values)
+                foreach (string l in pool)
+                    yield return l;
+            foreach (string[] pool in new[] { ChurchAfter, BarkeepSays })
+                foreach (string l in pool)
+                    yield return l;
+            foreach (string l in BarkeepThinks)
+                yield return l.Replace("{who}", "Martha");
         }
     }
 }

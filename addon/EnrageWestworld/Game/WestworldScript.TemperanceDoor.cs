@@ -14,7 +14,94 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private int _doorKin, _doorSecond, _doorPledges;
+        private int _doorKin, _doorSecond, _doorPledges, _doorWives, _doorBarkeeps;
+        private string _doorBarkeepLast;
+
+        /// His own wife near the door (DEPTH item 5): within 25 m of him, already in the street (never fetched), on her feet, free,
+        /// grown and nobody's scene; his wife by the name his story gives her, or a warm sweetheart tie between them. Null for none.
+        private Ped DoorWifeNear(Someone him, Ped hisPed, Ped herPed, int now)
+        {
+            if (him == null || hisPed == null || !hisPed.Exists() || _store == null)
+                return null;
+            Ped me = Game.Player.Character;
+            string spouse = him.P != null && him.P.SpouseName != null && !him.P.SpouseName.StartsWith("a ", System.StringComparison.Ordinal) ? him.P.SpouseName : null;
+            foreach (Ped p in Peds.All())
+            {
+                if (p == null || !p.Exists() || p.IsDead || p.Handle == me.Handle || p.Handle == hisPed.Handle || (herPed != null && p.Handle == herPed.Handle) || PED.IS_PED_MALE(p.Handle) ||
+                    p.Position.DistanceTo(hisPed.Position) > 25f)
+                    continue;
+                MindWho w;
+                if (!_mindWho.TryGetValue(p.Handle, out w) || w.Id == null || w.Name == null)
+                    continue;
+                bool his = spouse != null && string.Equals(spouse, w.Name, System.StringComparison.OrdinalIgnoreCase);
+                for (int j = 0; j < _store.Ties.Count && !his; j++)
+                {
+                    SceneTie t = _store.Ties[j];
+                    his = t != null && t.Warmth > 0 && Ties.Sweethearts(t) && t.Has(him.Id) && t.Has(w.Id);
+                }
+                if (!his || Natives.StoryModel(p) || !IsGrownUp(p) || PED.IS_PED_USING_ANY_SCENARIO(p.Handle) || NotFree(p.Handle) || _director.Involves(p.Handle) || MayDirectWhyNot(p) != null)
+                    continue;
+                _doorWives++;
+                return p;
+            }
+            return null;
+        }
+
+        /// From OnPlayedOut, a "marchedhome" (DEPTH item 5): the town's barkeep, within 30 m of the door, thinks less of the church
+        /// woman who emptied his bar (a soured tie, which Opinions reads as contempt), says so to the next man at his bar (a caption
+        /// from him: a counter keeper is never given an order), and thinks it. a, b: the scene's first two (the church woman and him).
+        private void BarkeepSour(Ped a, Ped b)
+        {
+            if (!Temperance.DoorOn || _store == null || a == null || !a.Exists())
+                return;
+            Ped churchwoman = PED.IS_PED_MALE(a.Handle) ? b : a;
+            if (churchwoman == null || !churchwoman.Exists())
+                return;
+            Ped me = Game.Player.Character;
+            Ped keep = null;
+            foreach (Ped p in Peds.All())
+                if (p != null && p.Exists() && !p.IsDead && p.Position.DistanceTo(churchwoman.Position) < 30f && PostKindOf(p) != null && PostKindOf(p).Role == "the barkeep")
+                {
+                    keep = p;
+                    break;
+                }
+            if (keep == null)
+            {
+                Log.Detail("TEMPERANCE no barkeep within 30 m of the door to see it");
+                return;
+            }
+            Resident h = HolderAt(keep, PostKindOf(keep));
+            MindWho cw = MindKnown(churchwoman.Handle, Game.GameTime);
+            if (h == null || cw == null || cw.Id == null)
+                return;
+            long g = Bridge.Now();
+            Ties.Note(_store.Ties, h.Id, h.Name, cw.Id, cw.Name, _placeTown, "soured", g, cw.Id);   // her doing, his view (Opinions: contempt)
+            string seed = h.Id + "|" + cw.Id + "|" + g / 60;
+            Ped next = null;
+            float best = 4f;
+            foreach (Ped p in Peds.All())
+            {
+                if (p == null || !p.Exists() || p.IsDead || p.Handle == keep.Handle || p.Handle == me.Handle || p.Handle == churchwoman.Handle || (b != null && p.Handle == b.Handle) || !PED.IS_PED_MALE(p.Handle))
+                    continue;
+                float d = p.Position.DistanceTo(keep.Position);
+                if (d < best)
+                {
+                    best = d;
+                    next = p;
+                }
+            }
+            string first = Person.FirstOf(h.Name), said = null;
+            if (next != null)
+            {
+                said = Temperance.BarkeepLine(seed);
+                SpeechCaption(first ?? "The barkeep", said, keep.Handle, 4000);   // to the next man at his bar
+            }
+            string thought = Temperance.BarkeepThought(Person.FirstOf(cw.Name), seed);
+            _ticker.Push((first ?? "The barkeep") + ", thinking", thought, "near", keep.Handle);   // over his head (as the keepers' own thoughts)
+            _doorBarkeeps++;
+            _doorBarkeepLast = (first ?? "the barkeep") + " soured on " + cw.Name + (said != null ? " and said so" : "");
+            Log.Write("TEMPERANCE barkeep " + (h.Name ?? "?") + " thinks less of " + cw.Name + " for walking his custom home" + (said != null ? "; to the next man at the bar: \"" + said + "\"" : "; nobody at the bar to tell"));
+        }
 
         /// Her kin within 25 m: the man her Person names as kin, on his feet, free, nobody's scene; null for none.
         private Ped DoorKinNear(Someone her, Ped herPed, Ped hisPed, int now, out string kinId)
@@ -93,7 +180,8 @@ namespace EnrageWestworld.InGame
         {
             if (!Temperance.DoorOn)
                 return "off ([Scenes] TemperanceDoor, or [Scenes] Temperance)";
-            return "a second woman beside her " + _doorSecond + ", her kin stood up " + _doorKin + ", pledges signed " + _doorPledges + "; this week here " + PledgesThisWeek();
+            return "a second woman beside her " + _doorSecond + ", her kin stood up " + _doorKin + ", pledges signed " + _doorPledges + "; this week here " + PledgesThisWeek() +
+                   "; his wife near to walk him home " + _doorWives + ", the barkeep soured " + _doorBarkeeps + (_doorBarkeepLast != null ? " (the last: " + _doorBarkeepLast + ")" : "");
         }
     }
 }

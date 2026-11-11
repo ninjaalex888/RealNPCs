@@ -58,7 +58,9 @@ New in people's heads:
 - About 3,500 more written lines, more kinds of quarrel, debt and gossip, and talk of the times.
 
 New in the towns and on the roads:
-- Payday Saturday, temperance ladies, a shivaree, a proper Sunday, wakes, mourners at graves.
+- Payday Saturday, temperance ladies (and a wife near the door walks her husband home past
+  his friends, while the barkeep sours on the church women), a shivaree, a proper Sunday,
+  wakes, mourners at graves.
 - A notice board, and being told what you missed when you come back to a town.
 - Three whistles at Annesburg, the shape-up on the Saint Denis docks, sale day at Valentine, fence cutters.
 - Witnesses who choose what to do, Pinkertons asking after you, a posse that rides out.

@@ -24,6 +24,8 @@ namespace EnrageWestworld.Core
             string group = Minds.TemperGroup(temper);
             bool hurtMe = t.Doer != null && t.Doer == other && t.Warmth < 0;   // the tie keeps who did it to whom (a beating, a theft, a drunk who went for them); a kindness done isn't a hurt (the review of items 22-26)
             bool robbedSomeone = t.CrimeDoer != null && t.CrimeDoer == other;
+            if (t.Kind == "soured" && t.Doer == other && t.Warmth <= -1)
+                return "contempt";   // the barkeep for the church woman who walked his custom home (DEPTH item 5): not fear, whatever his nature
             if (hurtMe && (group == "fearful" || t.Warmth <= -2))
                 return "fear";
             if (t.Warmth <= -1 && (otherDrunk || robbedSomeone || (iGentry && !otherGentry)))

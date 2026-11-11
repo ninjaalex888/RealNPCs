@@ -474,7 +474,7 @@ namespace EnrageWestworld.InGame
             Ped lady = pr.Why.Kind == "snub" ? LadyBeside(second, first) : null;   // a lady with the gentleman: her word in it (FOURTEENHOUR item 18)
             if (pr.Why.Kind == "snub")
                 SnubCount(lady);
-            bool kinStands = false, churchSecond = false;
+            bool kinStands = false, churchSecond = false, wifeHome = false;
             string kinId = null;
             if (pr.Why.Kind == Rowdy.Kind)
                 lady = DrinkingFriendBeside(first, second, now);   // his friend in drink, for the song and the walk home (FOURTEENHOUR reserve R5)
@@ -487,12 +487,18 @@ namespace EnrageWestworld.InGame
                 Ped herPed = firstHer ? first : second, hisPed = firstHer ? second : first;
                 Someone her = firstHer ? d0 : d1, him = firstHer ? d1 : d0;
                 Ped kin = him.Temper == "Hothead" || him.Temper == "Proud" ? DoorKinNear(her, herPed, hisPed, now, out kinId) : null;
+                Ped wife = kin == null ? DoorWifeNear(him, hisPed, herPed, now) : null;   // his own wife near: she walks him home (DEPTH item 5)
                 if (kin != null)
                 {
                     kinStands = true;
                     lady = herPed;
                     first = kin;
                     second = hisPed;
+                }
+                else if (wife != null)
+                {
+                    lady = wife;
+                    wifeHome = true;
                 }
                 else
                 {
@@ -502,6 +508,7 @@ namespace EnrageWestworld.InGame
             }
             SceneCast cast = BuildCast(first, second, lady, saloon, me, now, seed);
             cast.SecondChurch = churchSecond;
+            cast.WifeHome = wifeHome;
             if (kinStands)
             {
                 cast.KinStands = true;

@@ -97,6 +97,7 @@ namespace EnrageWestworld.Core
         public string[] Wars;                               // A's and B's war ("blue", "grey", "cuba", "islands"; Core/OldSoldiers.cs, FOURTEENHOUR item 17); null: unknown
         public bool KinStands;                              // the temperance door: A is her kin, B the drinker, C the churchwoman (item 25)
         public bool SecondChurch;                           // the temperance door: the cast's third is a second woman of the church, not any woman near (the review of items 22-26)
+        public bool WifeHome;                               // the temperance door: the cast's third is the drinker's own wife (or his sweetheart), near, who walks him home (DEPTH item 5)
         public string KinId;                                // ...and her kin's id, for the sides
         public int PledgesThisWeek;                         // pledges signed at this town's saloon door this week, for the preacher (item 25)
         public string[] TalkOf;                             // a talk of someone not there: his name, A's view, B's view or null, "w" for a woman (item 23); null: none
