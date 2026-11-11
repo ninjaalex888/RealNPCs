@@ -43,6 +43,9 @@ namespace EnrageWestworld.InGame
         private bool _alliesFoesLaw;   // one of the foes is the law: no lawman comes against his own (Lex, 2026-11-04: lawmen may be friends); also while the law fighting you is spared
         private bool _alliesMixed;     // this fight has had someone other than the law against you: the law is spared (Allies.LawIsFoe, MixedNow)
         private int _alliesAnyFoeAt;   // the last check anyone at all, the law too, was fighting you
+        private bool _alliesLawFought; // the friends were set at the law this fight (it came for you alone): a townsman after doesn't make them drop it
+        private readonly List<Ally> _alliesLately = new List<Ally>();   // those who stood with you, watched a minute past the fight's end for the log (a friend may still shoot a lawman)
+        private int _alliesLatelyUntil;
         private readonly List<int> _alliesCands = new List<int>();   // this check's: everyone in combat with you near (the law among them), before the law is spared
         // what the log needs to tell the two ways a friend comes to shoot a lawman apart (a player on Nexus, 2026-11-10):
         // the law was fighting you (spared now, with AlliesSpareLaw), or the law went for your friends, who fought back on the game's own AI
@@ -123,7 +126,7 @@ namespace EnrageWestworld.InGame
                     int h = p.Handle;
                     if (h == me.Handle || !p.Exists() || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(me.Position) > Math.Max(_cfg.AlliesMetres, Allies.FoeMetres))
                         continue;   // (farther than a friend will come from: gunmen open up at range, and a fight not seen has nobody to help in it)
-                    if (_allies.Count > 0 && Natives.IsLaw(p))
+                    if ((_allies.Count > 0 || (_alliesLately.Count > 0 && now < _alliesLatelyUntil)) && Natives.IsLaw(p))
                         AlliesWatchLaw(h, me.Handle);   // only the log: did the law go for a friend, did a friend kill a lawman
                     if (ENTITY.IS_ENTITY_DEAD(h))
                         continue;
@@ -134,7 +137,9 @@ namespace EnrageWestworld.InGame
                         otherFoe = true;
                 }
             // the law spared in a fight that's had others against you (Allies.LawIsFoe); the latch outlasts the last bandit
-            _alliesMixed = Allies.MixedNow(_alliesMixed, otherFoe, _alliesCands.Count > 0, _alliesAnyFoeAt, now, AlliesOverMs);
+            if (Allies.QuietOver(_alliesCands.Count > 0, _alliesAnyFoeAt, now, AlliesOverMs))
+                _alliesLawFought = false;
+            _alliesMixed = Allies.MixedNow(_alliesMixed, otherFoe, _alliesCands.Count > 0, _alliesAnyFoeAt, now, AlliesOverMs, _alliesLawFought);
             if (_alliesCands.Count > 0)
                 _alliesAnyFoeAt = now;
             bool spare = !Allies.LawIsFoe(_cfg.AlliesSpareLaw, _alliesMixed);
@@ -150,6 +155,7 @@ namespace EnrageWestworld.InGame
                             _alliesLawSparedAll++;
                         continue;
                     }
+                    _alliesLawFought = true;
                 }
                 _alliesFoes.Add(h);
                 if (WEAPON.IS_PED_ARMED(h, 4))
@@ -694,7 +700,7 @@ namespace EnrageWestworld.InGame
                 if (!_alliesLawDeadSeen.Add(h))
                     return;
                 int by = PED.GET_PED_SOURCE_OF_DEATH(h);
-                Ally killer = by != 0 ? _allies.FirstOrDefault(a => a.Handle == by) : null;
+                Ally killer = by != 0 ? _allies.Concat(_alliesLately).FirstOrDefault(a => a.Handle == by) : null;
                 if (killer != null)
                 {
                     _alliesLawKilled++;
@@ -794,6 +800,9 @@ namespace EnrageWestworld.InGame
                     AlliesLetGo(h);
                 Log.Write("ALLIES " + a.Name + " stood with you to the end" + (hurt ? ", hurt" : "") + (a.GivenGun ? ", and keeps the revolver" : "") + "; they remember it");
             }
+            _alliesLately.Clear();
+            _alliesLately.AddRange(_allies.Where(a => ENTITY.DOES_ENTITY_EXIST(a.Handle) && !ENTITY.IS_ENTITY_DEAD(a.Handle)));
+            _alliesLatelyUntil = now + 60000;   // the law watched a minute more for the log: the law may still be firing
             _allies.Clear();
             _alliesSeenFoes.Clear();
             _alliesFightSince = 0;

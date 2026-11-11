@@ -148,15 +148,23 @@ namespace EnrageWestworld.Core
             return !spare || !mixed;
         }
 
-        /// The "mixed" latch, once a check: set by any foe not of the law; kept while anyone, the law too, still fights you
-        /// (else the friends would turn on the sheriffs the moment the last bandit fell); gone once nobody has for quietMs.
-        public static bool MixedNow(bool was, bool otherFoeNow, bool anyFoeNow, int lastAnyAt, int now, int quietMs)
+        /// The "mixed" latch, once a check: set by a foe not of the law, unless the friends are already at the law this fight
+        /// (lawFought: the law came for you alone and they stood with you; a townsman drawing on you after mustn't make
+        /// them drop it, Lex's own case); kept while anyone, the law too, still fights you (else the friends would turn on the
+        /// sheriffs the moment the last bandit fell); gone once nobody has for quietMs.
+        public static bool MixedNow(bool was, bool otherFoeNow, bool anyFoeNow, int lastAnyAt, int now, int quietMs, bool lawFought = false)
         {
-            if (otherFoeNow)
+            if (otherFoeNow && (was || !lawFought))
                 return true;
             if (anyFoeNow)
                 return was;
             return was && now - lastAnyAt <= quietMs;
+        }
+
+        /// Nobody has fought you for quietMs: the fight is over as the latch counts it (the law fought is forgotten too).
+        public static bool QuietOver(bool anyFoeNow, int lastAnyAt, int now, int quietMs)
+        {
+            return !anyFoeNow && now - lastAnyAt > quietMs;
         }
 
         private static string Describe(float nerve)
