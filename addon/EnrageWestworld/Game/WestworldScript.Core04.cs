@@ -267,6 +267,7 @@ namespace EnrageWestworld.InGame
             Core.Familiarity.On = _cfg.Familiarity;       // [Mind] Familiarity (DEPTH item 17)
             Core.FeudArcs.On = _cfg.FeudArcs;             // [Mind] FeudArcs (DEPTH item 18)
             Core.SleepOnIt.On = _cfg.SleepOnIt;           // [Mind] SleepOnIt (DEPTH item 19)
+            Mourning.GraveNightOn = _cfg.GraveNight;      // [World] GraveNight (DEPTH reserve R1)
             Temperance.DoorOn = _cfg.TemperanceDoor && _cfg.Temperance;   // [Scenes] TemperanceDoor (FOURTEENHOUR item 25)
             RainShelter.On = _cfg.RainShelter;   // [Scenes] RainShelter (FOURTEENHOUR item 26)
             Holdup.On = _cfg.StoreHoldups;   // [Scenes] StoreHoldups (FOURTEENHOUR reserve R1)

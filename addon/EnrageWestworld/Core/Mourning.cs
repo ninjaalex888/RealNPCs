@@ -52,6 +52,43 @@ namespace EnrageWestworld.Core
 
         public static bool GraveHour(int weekday, int hour) { return weekday == 0 && hour >= GraveFrom && hour < GraveTo; }
 
+        // ---- sitting up with the grave (DEPTH reserve R1; [World] GraveNight, with Mourning): the night after the burial, one of
+        // the dead one's own (in mourning for them) goes out to the grave from eight till midnight, and whoever comes near hears
+        // them speak of the dead. The wake (WakeNight) is the night they died, or the next when they died after six; the burial the
+        // day after that; this, the night of the burial day. Why it reads true: in 1899 the first night in the ground was the
+        // hardest, and a widow or a brother sat by a new grave with a lantern rather than leave them alone in the dark.
+        public static bool GraveNightOn = true;   // [World] GraveNight, from the settings
+        public const int NightFrom = 20, NightTo = 24;
+
+        /// The game day of the night after the burial, from the game minute of the death.
+        public static long GraveNightDay(long diedAt)
+        {
+            long day = diedAt / 1440;
+            int hour = (int)(diedAt / 60 % 24);
+            return day + (hour >= 18 ? 2 : 1);   // wake that night (or the next), burial the day after, and that night by the grave
+        }
+
+        public static bool GraveNight(long now, long diedAt)
+        {
+            int hour = (int)(now / 60 % 24);
+            return GraveNightOn && diedAt > 0 && now / 1440 == GraveNightDay(diedAt) && hour >= NightFrom && hour < NightTo;
+        }
+
+        private static readonly string[] SitsUp =
+        {
+            "I couldn't leave {d} out here alone the first night. Not in the dark.", "{D} never liked the dark. So I'll sit a while.",
+            "They say it's foolish, sitting out here. Let them say it. {D} sat up with my mother, once.",
+            "First night in the ground. Somebody ought to keep {d} company.", "I keep thinking {d} will call out, and I won't be here to hear it.",
+        };
+
+        /// What the one sitting up says when you come near.
+        public static string SitUpWord(string dead, string seed)
+        {
+            string d = dead ?? "them";
+            string l = Voice.Pick(seed + "|su", SitsUp);
+            return l.Replace("{D}", Grammar.UpperFirst(d)).Replace("{d}", d);
+        }
+
         /// All Saints' Day in the south (TENHOUR R8; roadmap.md's idea bank): families at the tombs from morning to evening, the first of November.
         public static bool AllSaints(int month, int day, string town, int hour) { return month == 11 && day == 1 && town != null && Calendar.Region(town) == "south" && hour >= 8 && hour < 18; }
 

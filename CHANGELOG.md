@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Sitting up with the grave** (`[World] GraveNight`, on, with Mourning; settings version 421). The night after a burial, from eight till midnight, one of those mourning the dead walks out to the grave and kneels there; come close and they speak of the one they've lost.
+
 - **A night's sleep cools it** (`[Mind] SleepOnIt`, on; settings version 420). A quarrel between two that nothing fed the day before eases a step overnight, so a feud left alone fades within a day or two of play, while one kept alive by a rematch or a word keeps its heat.
 
 - **Feuds in a day** (`[Mind] FeudArcs`, on; settings version 419). A quarrel already picks up again within hours; now, where it would come to blows, the one who began it may offer his hand where the street can see, if his nature allows (the kind and the loyal, never the proud or a hothead before others). The other takes it, and they make it up, or refuses it, and it's blows.

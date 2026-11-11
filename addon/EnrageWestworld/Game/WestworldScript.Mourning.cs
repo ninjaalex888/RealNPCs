@@ -20,12 +20,13 @@ namespace EnrageWestworld.InGame
             public Ped P;
             public string Id, Name, Dead;
             public bool ByYou, Kneeling, SawYou;
+            public bool Night, Spoke;   // sitting up with the grave the night after the burial (DEPTH reserve R1), and whether they've spoken to you
             public Vector3 At;
             public int Until, KneelAt;
         }
 
         private GraveWalk _graveWalk;
-        private int _mourningNextLook, _mourningThoughts, _graveVisits;
+        private int _mourningNextLook, _mourningThoughts, _graveVisits, _graveNights;
         private readonly HashSet<string> _mourningDone = new HashSet<string>();
 
         private bool Mourns(MindWho w, long g, out string dead, out string deadId)
@@ -71,8 +72,10 @@ namespace EnrageWestworld.InGame
                     Ped p = new Ped(h);
                     float metres = p.Position.DistanceTo(me.Position);
                     string first = Person.FirstOf(dead);
-                    // a Sunday afternoon: to the grave
-                    if ((Mourning.GraveHour(InnerLife.Weekday, hour) || saints) && metres < 40f && _mourningDone.Add("grave|" + w.Id + "|" + day) &&
+                    // a Sunday afternoon: to the grave; and the night after the burial, one of theirs sits up with it (reserve R1)
+                    DeathEntry died = deadId != null ? _store.DeathOf(deadId) : null;
+                    bool night = _cfg.GraveNight && died != null && Mourning.GraveNight(g, died.At) && !_mourningDone.Contains("night|" + deadId + "|" + day);
+                    if ((Mourning.GraveHour(InnerLife.Weekday, hour) || saints || night) && metres < 40f && _mourningDone.Add("grave|" + w.Id + "|" + day) &&
                         MayDirectWhyNot(p) == null && !NotFree(h) && !_director.Involves(h) && !PED.IS_PED_USING_ANY_SCENARIO(h) && !_staged.Contains(h))
                     {
                         Spot spot = Spots.Nearest(_spots, _placeTown, "cemetery", p.Position.X, p.Position.Y);
@@ -85,7 +88,9 @@ namespace EnrageWestworld.InGame
                         else
                             continue;
                         bool byYou = saintsYours || _engine.MournsYourKill(w.Id, Mourning.Days);
-                        _graveWalk = new GraveWalk { P = p, Id = w.Id, Name = w.Name, Dead = first, ByYou = byYou, At = at, Until = now + 90000 };
+                        _graveWalk = new GraveWalk { P = p, Id = w.Id, Name = w.Name, Dead = first, ByYou = byYou, At = at, Until = now + (night ? 150000 : 90000), Night = night };
+                        if (night)
+                            _mourningDone.Add("night|" + deadId + "|" + day);   // one of theirs a night, never a crowd at the grave
                         StagedHold(p);
                         TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, at.X, at.Y, at.Z, 1.0f, 60000, 1.5f, 0, 0f);
                         _graveVisits++;
@@ -142,6 +147,13 @@ namespace EnrageWestworld.InGame
                 Log.Write("MOURNING " + gw.Name + " kneels at " + (gw.Dead ?? "the") + "'s grave");
                 return;
             }
+            if (gw.Night && gw.Kneeling && !gw.Spoke && me.Position.DistanceTo(gw.P.Position) < 6f)
+            {
+                gw.Spoke = true;   // sitting up with the grave: whoever comes near hears them speak of the dead (reserve R1)
+                SpeechCaption(Person.FirstOf(gw.Name) ?? "Someone", Mourning.SitUpWord(gw.Dead, gw.Id + "|night"), h, 5000);
+                _graveNights++;
+                Log.Write("MOURNING " + gw.Name + " sits up with " + (gw.Dead ?? "the") + "'s grave the night after the burial, and speaks of them to you");
+            }
             if (gw.ByYou && !gw.SawYou && me.Position.DistanceTo(gw.P.Position) < 10f)
             {
                 gw.SawYou = true;
@@ -162,7 +174,7 @@ namespace EnrageWestworld.InGame
         {
             if (_cfg == null || !_cfg.Mourning)
                 return "off ([World] Mourning)";
-            return _mourningThoughts + " mourning thoughts, " + _graveVisits + " walks to a grave this session" + (_graveWalk != null ? "; " + _graveWalk.Name + " at a grave now" : "");
+            return _mourningThoughts + " mourning thoughts, " + _graveVisits + " walks to a grave this session, " + _graveNights + " sat up with a grave the night after the burial and spoke to you (reserve R1)" + (_graveWalk != null ? "; " + _graveWalk.Name + " at a grave now" : "");
         }
     }
 }

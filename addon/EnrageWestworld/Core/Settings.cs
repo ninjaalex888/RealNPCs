@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 420;
+        public const int CurrentVersion = 421;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -121,6 +121,7 @@ namespace EnrageWestworld.Core
         public int HoldupChance = 15;        // [Scenes] with StoreHoldups: percent, the day's roll once a robber and a customer fit
         public bool HoldupShots = false;     // [Scenes] with StoreHoldups: now and then he fires at one who bolts (someone can die on screen; off as shipped)
         public bool RainShelter = true;      // [Scenes] the town keeps a record of the rain: in it the street's errands wait, strangers under one roof get acquainted, and rain days end a farmer's drought (FOURTEENHOUR item 26; settings version 394)
+        public bool GraveNight = true;   // [World] with Mourning: the night after a burial one of the dead one's own sits up with the grave, and speaks of them if you come near (Core/Mourning.cs; DEPTH reserve R1; settings version 421)
         public bool SleepOnIt = true;   // [Mind] overnight, a quarrel nothing fed the day before eases a step: sore to cool, cool to nothing; one kept alive by a rematch or a word doesn't (Core/SleepOnIt.cs; DEPTH item 19; settings version 420)
         public bool FeudArcs = true;   // [Mind] where a feud would come to blows, the one who began it may offer his hand before the street: taken, they make it up; refused, blows (Core/FeudArcs.cs; DEPTH item 18; settings version 419)
         public bool Familiarity = true;   // [Mind] two of the town seen about the same place three times a game day, an hour apart, are acquainted: they nod in passing, and in a brawl one leans to the other (Core/Familiarity.cs; DEPTH item 17; settings version 418)
@@ -1065,6 +1066,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 421)
+                    log?.Invoke("Settings: new in this version: [World] GraveNight (on): the night after a burial, one of theirs sits up with the grave.");
                 if (s.SettingsVersion < 420)
                     log?.Invoke("Settings: new in this version: [Mind] SleepOnIt (on): a night's sleep cools a quarrel nothing fed.");
                 if (s.SettingsVersion < 419)
@@ -2231,6 +2234,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("HoldupChance = " + HoldupChance + "   ; with StoreHoldups: percent, the day's roll once a man who leans to it and a customer on their own are by the store near you (0 to 100; offline, 15 gave a holdup on about 3 town-days in 100 by a store)");
             b.AppendLine("HoldupShots = " + B(HoldupShots) + "   ; with StoreHoldups: one in four who bolt are fired after (someone can die on screen); false: he curses and runs");
             b.AppendLine("RainShelter = " + B(RainShelter) + "   ; the town keeps a record of its rain while you're in it: in the rain the street's errands wait (nobody is walked anywhere), strangers under one roof talk and leave acquainted (they nod in passing after), and two days of rain in a farmer's town end his drought well; false: as before");
+            b.AppendLine("GraveNight = " + B(GraveNight) + "   ; with Mourning on: the night after a burial, eight till midnight, one of those mourning the dead walks out to the grave (the town's cemetery spot, else by the church) and kneels there; come within a few steps and they speak of the dead; false: only the Sunday visits");
             b.AppendLine("SleepOnIt = " + B(SleepOnIt) + "   ; at each day's turn, a quarrel between two that nothing fed the day before (no scene between them) eases a step, sore to cool and cool to nothing, so a feud left alone fades in a day or two; one fed that day doesn't; false: quarrels keep their heat until a scene changes it");
             b.AppendLine("FeudArcs = " + B(FeudArcs) + "   ; a feud picks up again within hours; where it would come to blows, the one who began it, if his nature allows (the kind and the loyal, never the proud or a hothead before others), offers his hand where the street can see; the other takes it by his own nature (a making-up) or refuses it (blows); false: the blows as before");
             b.AppendLine("Familiarity = " + B(Familiarity) + "   ; two of the town who end up near each other at the same place three times in a game day, an hour or more apart, become acquainted (a tie of no warmth): a nod or a word in passing, and in a brawl one leans to the other a little; false: only scenes make ties");

@@ -81,6 +81,8 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 
 - **Review 2 of the depth run** (items 16-19, a subagent): familiarity kept off the tie store (above); a night eases a tie once a game day (`SceneTie.EasedDay`, cleared by the rewind past the cut) and never item 12's sore sides; the hand offered has the brawl's fallback to words and one roll; a refused hand's blows are the shover's doing; the vouch's and the loan's lines say the clock's span; a sweetheart's cooling kept at 14 days (memory, not watch).
 
+- **Sitting up with the grave** (depth reserve R1; `Core/Mourning.cs` `GraveNight`, `GraveNightDay`, `SitUpWord`; `Game/WestworldScript.Mourning.cs`; `[World] GraveNight`, on, with Mourning): the Sunday grave walk also starts the night after the burial (the ledger's death: the wake that night or the next after six, the burial the day after, 20-24 that night), one mourner a dead man a night (`_mourningDone` "night|"), 150 s; kneeling and you within 6 m, their word (`SpeechCaption`). No lantern (no proven prop). mindtest `GraveNightTest`.
+
 ## The two-day run (FIVEDAY2.md, 2026-11-08/09; settings versions 323 to 339; nothing seen in game yet)
 
 Everything below is behind its own switch and was built on what's been seen working. Each section names the file; `FIVEDAY2.md` has the decisions.
