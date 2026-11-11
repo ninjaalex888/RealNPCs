@@ -602,6 +602,17 @@ namespace EnrageWestworld.Core
         /// something (a beating taken for him) is the help most strongly repaid. Off in Core so the harness goldens stand.
         public static bool StoodByOwes;
 
+        /// Everyone who owes him now (SavedLately's rule, in one pass over the log): for the name cards' "Owes you" (DEEPEN item 7).
+        public static void OwedBy(List<Happening> log, long now, HashSet<string> into)
+        {
+            into.Clear();
+            if (log == null)
+                return;
+            foreach (Happening e in log)
+                if (e != null && e.DoerId == "player" && e.TargetId != null && (e.Kind == "defend" || (StoodByOwes && e.Kind == "stoodby")) && e.At <= now && now - e.At < SavedMinutes)
+                    into.Add(e.TargetId);
+        }
+
         /// Whether he saved them lately (a bully pulled off them, their beater put down, the rope, the hogtied cut loose: a
         /// "defend" of his in the log within SavedMinutes): someone who owes him (Allies.Warmth 3; Lex, 2026-11-03).
         public static bool SavedLately(List<Happening> log, string id, long now)

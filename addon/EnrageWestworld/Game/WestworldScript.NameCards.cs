@@ -391,10 +391,32 @@ namespace EnrageWestworld.InGame
         /// What the card says for this body: false when there's nothing of ours to say (and the mode doesn't show everyone).
         /// The card, with the gang a member belongs to before the rest of the second line ("Lemoyne Raider - Hothead"), and
         /// an unnamed gang member carded by his gang ("A Lemoyne Raider"), as enRAGE showed them (Lex, 2026-10-29).
+        // who owes you, for the card's "Owes you" (DEEPEN item 7; [Display] NameCardsOwes): one pass over the log every 5 s, so
+        // a card asks a set, never the log (the cards refill every 250 ms). A debt you can't see is a debt you can't play with:
+        // the man you stood with, or saved, says so under his name.
+        private readonly HashSet<string> _owesYou = new HashSet<string>();
+        private int _owesYouAt = -100000;
+
+        private bool OwesYou(Ped p)
+        {
+            if (_cfg == null || !_cfg.NameCardsOwes || _store == null)
+                return false;
+            int now = Game.GameTime;
+            if (now - _owesYouAt >= 5000 || now < _owesYouAt)
+            {
+                _owesYouAt = now;
+                Interact.OwedBy(_store.WorldLog, _store.LastGameMin, _owesYou);
+            }
+            string id, name;
+            return _owesYou.Count > 0 && LastingId(p, out id, out name) && id != null && _owesYou.Contains(id);
+        }
+
         private bool NameCardFill(Ped p, NameCard c, bool everyone)
         {
             string gang = Factions.MemberOf(c.Model, PED.GET_PED_RELATIONSHIP_GROUP_HASH(p.Handle));
             bool got = NameCardFillInner(p, c, everyone && gang == null);
+            if (got && c.Name != null && OwesYou(p) && (c.Line2 == null || c.Line2.IndexOf("Owes you", StringComparison.Ordinal) < 0))
+                c.Line2 = string.IsNullOrEmpty(c.Line2) || c.Line2 == "Stranger" ? "Owes you" : c.Line2 + " - Owes you";
             // what they are, before the rest of the line: "Lawman - Proud", "Barkeep" (Lex, 2026-10-30: enRAGE showed a
             // lawman's and a shopkeeper's trade on the card); a stranger's "Stranger" gives way to it, the badge or the apron
             // being plain to see
