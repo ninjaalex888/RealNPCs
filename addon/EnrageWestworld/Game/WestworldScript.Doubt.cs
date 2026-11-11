@@ -149,7 +149,7 @@ namespace EnrageWestworld.InGame
                         _revivedSeen++;
                         long days = (g - d.At) / 1440;
                         _revivedLast = w.Name + " saw " + r.Name + " walking";
-                        MindLog(now, "MIND revived: " + w.Name + " sees " + r.Name + ", whom they saw die " + (days <= 0 ? "today" : days == 1 ? "yesterday" : days + " days ago") + ": " + f.Kind + " (" + f.Strength + "), urge " + f.Urge + ", shows " + f.Shows);
+                        MindLog(now, "MIND revived: " + w.Name + " sees " + r.Name + (how == "knew" ? ", whom they knew dead " : ", whom they saw die ") + (days <= 0 ? "today" : days == 1 ? "yesterday" : days + " days ago") + ": " + f.Kind + " (" + f.Strength + "), urge " + f.Urge + ", shows " + f.Shows);
                         MindBelieve(w, w.Id, f, ae, now);   // the belief breaks on its own (Beliefs.Move: the revived), so they stir (DoubtGaveWay)
                         if (RevivedSeen.On && RevivedSeenSay(w, wh, r, rh, how, key, now))
                             continue;   // the brave one walks up and asks him (a scene of its own): no onlooker's act on top

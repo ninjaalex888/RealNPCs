@@ -90,11 +90,12 @@ namespace EnrageWestworld.Core
         {
             if (!On)
                 return null;
-            int start = (Voice.Hash(seed + "|politics") & 0x7fffffff) % Topics.Length;
-            for (int i = 0; i < Topics.Length; i++)
+            Topic[] topics = LandAndRail ? Topics : Topics.Where(x => !x.LandAndRail).ToArray();   // off: the old four, chosen as they were (review 1)
+            int start = (Voice.Hash(seed + "|politics") & 0x7fffffff) % topics.Length;
+            for (int i = 0; i < topics.Length; i++)
             {
-                Topic t = Topics[(start + i) % Topics.Length];
-                if (year < t.From || year > t.To || (t.LandAndRail && !LandAndRail))
+                Topic t = topics[(start + i) % topics.Length];
+                if (year < t.From || year > t.To)
                     continue;
                 int a = Stance(t.Key, groupA, piousA), b = Stance(t.Key, groupB, piousB);
                 if (a != 0 && b != 0 && a != b)

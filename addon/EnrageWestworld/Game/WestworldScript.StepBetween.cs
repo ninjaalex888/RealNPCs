@@ -18,6 +18,7 @@ namespace EnrageWestworld.InGame
     {
         private string _sbOfferedFor, _sbLast;
         private Ped _sbA, _sbB;
+        private Action _aStepBetween;
         private int _sbOffered, _sbPutOff, _sbMadeUp, _sbShoved, _sbNextLook;
 
         /// Every 500 ms (the scheduler's look with LookScheduler on; Tick04's own call with it off), in its own guard.
@@ -26,7 +27,7 @@ namespace EnrageWestworld.InGame
             if (!StepBetween.On || now < _sbNextLook)
                 return;
             _sbNextLook = now + 500;
-            Safe("step between", () => StepBetweenLook(now));
+            Safe("step between", _aStepBetween ?? (_aStepBetween = () => StepBetweenLook(_now)));   // a kept delegate: no closure a frame (review 1)
         }
 
         /// The look: a quarrel about to start near you between two with bad blood.

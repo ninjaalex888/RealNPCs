@@ -20,11 +20,15 @@ namespace EnrageWestworld.Core
             public int Warmth;
         }
 
-        /// The friend to send word to: the warmest of the town's people the player has a friend's footing with (warmth 2 or more,
-        /// Allies.Warmth's rule), the name order breaking ties; null for none.
-        public static Friend Pick(IEnumerable<Friend> town)
+        /// The friend to send word to: a resident of this town the player has a friend's footing with (warmth 2 or more,
+        /// Allies.Warmth's rule), by the seed, never notId; null for none.
+        public static Friend Pick(IEnumerable<Friend> town, string notId = null, string seed = null)
         {
-            return town == null ? null : town.Where(f => f != null && f.Id != null && f.Warmth >= 2).OrderByDescending(f => f.Warmth).ThenBy(f => f.Name).FirstOrDefault();
+            if (town == null)
+                return null;
+            // one of the friends, by the day's seed (not always the warmest: a word carried warms that one, who'd be picked for good;
+            // review 1), never the man who'd carry it
+            return town.Where(f => f != null && f.Id != null && f.Warmth >= 2 && f.Id != notId).OrderBy(f => Voice.Hash((seed ?? "") + "|" + f.Id)).ThenBy(f => f.Name).FirstOrDefault();
         }
 
         /// How long it takes him, in game minutes (20 to 50, by the seed).

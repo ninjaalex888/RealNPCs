@@ -38,12 +38,14 @@ namespace EnrageWestworld.InGame
                 CollectionWalkStep(w, now);
                 return;
             }
-            if (!WidowCollection.On || now < _collectionLookAt || _store == null || _placeTown == null || _interiorType != 0)
+            if ((!WidowCollection.On && !CollectionPlate.On) || now < _collectionLookAt || _store == null || _placeTown == null)
                 return;
             _collectionLookAt = now + WidowCollection.LookMs;
             int clock = CLOCK.GET_CLOCK_HOURS();
             if (CollectionPlate.On && CollectionPlate.Hour(InnerLife.Weekday, clock) && !MISC.GET_MISSION_FLAG() && !WalkUpGoing() && !_director.Busy && PlateBegin(now, false) == null)
-                return;   // the Sunday plate after the service (DEPTH item 11)
+                return;   // the Sunday plate after the service (DEPTH item 11; its own switch, indoors too: review 1)
+            if (!WidowCollection.On || _interiorType != 0)
+                return;
             if (clock < WidowCollection.FromHour || clock >= WidowCollection.ToHour || MISC.GET_MISSION_FLAG() || WalkUpGoing() || _director.Busy || _store.Deaths == null)
                 return;
             long g = _store.LastGameMin;
@@ -102,7 +104,12 @@ namespace EnrageWestworld.InGame
             if (pick == null)
                 return "a man the mind knows within 25 m, in view and free";
             if (!test)
-                _store.Counts[key] = (int)(_store.LastGameMin / 1440);   // once a town a Sunday
+            {
+                long today = _store.LastGameMin / 1440;
+                foreach (string old in _store.Counts.Keys.Where(k => k.StartsWith("plate|", StringComparison.Ordinal) && today - _store.Counts[k] > 7).ToList())
+                    _store.Counts.Remove(old);   // last Sunday's and older: they don't pile up (review 1)
+                _store.Counts[key] = (int)today;   // once a town a Sunday
+            }
             int h = pick.Ped.Handle;
             float metres = pick.Ped.Position.DistanceTo(me.Position);
             int walkMs = Math.Min(25000, 4000 + (int)(900 * metres));   // the friend calls' walk, as the widow's collector

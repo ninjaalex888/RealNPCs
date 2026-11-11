@@ -87,13 +87,18 @@ namespace EnrageWestworld.InGame
                 return "a menu is open";
             if (PED.IS_PED_ON_MOUNT(me.Handle))
                 return "you're in the saddle";
+            bool inHand = PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle);
+            if (!inHand)
+                return "you have no control just now";   // a cutscene: paused, not a row lost to it (review 1)
             return null;
         }
 
         /// Whether anything we fired is still under way: a scene of the Director's, an encounter or one asked for.
         private bool ProofTourBusy()
         {
-            return _director.AnyPlaying || _encounterRequested != null || _execRequested || EncountersLive > 0;
+            return _director.AnyPlaying || _encounterRequested != null || _execRequested || EncountersLive > 0 ||
+                   WalkUpGoing() || _collection != null || _watch != null || _word != null ||   // a walk-up still on its way (review 1)
+                   _eventMenu != null || (_eventPrompt != null && Game.GameTime <= _eventPromptUntil);   // a J prompt or menu still up
         }
 
         /// F7's line: off, none yet, or where the walk is and what came of it so far.
@@ -109,6 +114,8 @@ namespace EnrageWestworld.InGame
 
         private void ProofTourFlush()
         {
+            if (!_tour.HasLines)
+                return;   // nothing new: no list made this frame (review 1)
             foreach (string line in _tour.Take())
                 Log.Write(line);
         }

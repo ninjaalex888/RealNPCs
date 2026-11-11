@@ -23,6 +23,7 @@ namespace EnrageWestworld.Core
     public static class ProofTour
     {
         public const string Id = "prooftour";
+        public const int BookedMs = 150000;   // a row that books its scene "in 2 min here": the next row waits this long more (review 1)
 
         // ---- the verdicts ----------------------------------------------------------------------------------------------
         // Never on the tour: they'd fire the tour itself, the last test again, flip a display for the session, write a file
@@ -43,7 +44,8 @@ namespace EnrageWestworld.Core
             { "callyou", "can come to blows with you" }, { "stalker", "can come at you" }, { "stalkerhorse", "can come at you" },
             { "plea", "needs your gun drawn on someone" }, { "wakestrange", "can lash out at you" }, { "elope", "her father's men come armed" },
             { "gunshot", "shots fired near you; the law may come" }, { "brawltown", "a brawl may come at you" },
-            { "scene:standoff", "guns drawn near you" }, { "visitor", "can frighten people into running at you" },
+            { "scene:standoff", "guns drawn near you" }, { "callout", "a standoff, guns drawn near you" }, { "callout2", "a standoff, guns drawn near you" },
+            { "kintown", "kin come armed for a townsman" }, { "kingrudge", "kin come about a wrong of yours" }, { "grudge:you", "one who grieves a man you killed" }, { "visitor", "can frighten people into running at you" },
             // calls a native, or a clip, nobody has seen work (the probes)
             { "owners", "an unproven native (the owners probe)" }, { "posse:probe", "a probe of unproven natives" },
             { "wagon", "a probe of unproven natives" }, { "events:probe", "a probe" }, { "looks:probe", "a probe of clothes reads" },
@@ -119,6 +121,8 @@ namespace EnrageWestworld.Core
             public bool Over, Stopped;
             public int LastAt = int.MinValue / 2, BusySince = -1;
             public string Waiting;                         // the row in hand, fired and not yet reported
+            public int After;                              // a row that booked something two minutes on: the next waits that long more (review 1)
+            public bool HasLines { get { return Lines.Count > 0; } }
             public readonly List<string> Lines = new List<string>();   // what the log gets, in order (the game side writes them)
 
             public Walk(IEnumerable<TestActions.Entry> all, bool riskyToo, int gapMs, int busyMostMs = 180000)
@@ -159,8 +163,9 @@ namespace EnrageWestworld.Core
                     return null;
                 }
                 BusySince = -1;
-                if (now - LastAt < GapMs)
+                if (now - LastAt < GapMs + After)
                     return null;
+                After = 0;
                 while (At < Rows.Count)
                 {
                     TestActions.Entry e = Rows[At];
@@ -186,7 +191,10 @@ namespace EnrageWestworld.Core
                 if (Waiting == null || !string.Equals(Waiting, id, StringComparison.OrdinalIgnoreCase))
                     return;
                 Waiting = null;
+                TestActions.Entry e = At < Rows.Count ? Rows[At] : null;
                 At++;
+                if (refused == null && e != null && e.Label != null && e.Label.Contains("in 2 min"))
+                    After = BookedMs;   // it comes two minutes on: nothing else fires over it
                 if (refused == null) { Ran++; Lines.Add("PROOF " + id + ": ran"); }
                 else if (refused.StartsWith("failed: ", StringComparison.Ordinal)) { Failed++; Lines.Add("PROOF " + id + ": failed (" + refused.Substring(8) + ")"); }
                 else { Skipped++; Lines.Add("PROOF " + id + ": skipped (" + refused + ")"); }

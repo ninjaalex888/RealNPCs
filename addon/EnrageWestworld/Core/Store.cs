@@ -267,6 +267,14 @@ namespace EnrageWestworld.Core
                 if (l != null && l.At > cut)
                     kept.Add(EnrageWestworld.Core.Ghosts.OfLink(l, now));
             n += Ties.RemoveAll(t => t.At > cut);
+            foreach (SceneTie t in Ties)
+                if (t != null && t.PutOffAt > cut)
+                {
+                    t.PutOffAt = 0;   // a stranger stepped between them after the cut: it hadn't happened yet (DEPTH item 7; review 1)
+                    t.PutOffs = 0;
+                }
+            foreach (string k in Counts.Keys.Where(k => k.StartsWith("plate|", System.StringComparison.Ordinal) && Counts[k] > cut / 1440).ToList())
+                Counts.Remove(k);   // the Sunday plate came round after the cut (DEPTH item 11; review 1)
             n += Links.RemoveAll(l => l.At > cut);
             n += TownRumours.RemoveAll(r => r.At > cut);
             n += Papers.RemoveAll(p => p.At > cut);

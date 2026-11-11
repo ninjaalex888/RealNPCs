@@ -15,6 +15,7 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private long _rustlersSeenAt = -1;
+        private Action _aBrands;
         private string _rustlersTown, _brandsOfferedFor, _brandsLast;
         private int _brandsNextLook, _brandsOffered, _brandsTold, _brandsSeenFires;
 
@@ -37,7 +38,7 @@ namespace EnrageWestworld.InGame
             if (!Brands.On || now < _brandsNextLook)
                 return;
             _brandsNextLook = now + 500;
-            Safe("brands", () => BrandsLook(now));
+            Safe("brands", _aBrands ?? (_aBrands = () => BrandsLook(_now)));   // a kept delegate: no closure a frame (review 1)
         }
 
         private void BrandsLook(int now)

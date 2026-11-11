@@ -21,7 +21,7 @@ namespace EnrageWestworld.Core
         /// The scenes it can be offered in: a quarrel between the two, before any blow (a standoff's guns are not a thing to step into).
         public static bool Quarrel(string kind)
         {
-            return kind == "argue" || kind == "x:feud" || kind == "x:quarrel" || kind == "quarrel" || kind == "snap" || kind == "x:snap" || kind == "brawl" || kind == "drunk";
+            return kind == "argue" || kind == "x:feud" || kind == "x:quarrel" || kind == "quarrel" || kind == "snap" || kind == "x:snap";   // words only: a brawl's scene is booked as a brawl at its start, so a put-off there would be told as blows (review 1)
         }
 
         /// Whether the tie's quarrel is put off just now (the reasons pass over the pair while it is).

@@ -26,12 +26,13 @@ namespace EnrageWestworld.InGame
         }
 
         private WordRun _word;
+        private Action _aSendWord;
         private readonly Dictionary<string, string> _wordThoughts = new Dictionary<string, string>();   // friend id -> their thought of it, when next near
         private int _wordNextLook, _wordsSent, _wordsDelivered, _wordsBack;
         private string _wordLast;
 
         /// The friend in this town you'd send word to, or null.
-        private SendWord.Friend SendWordFriend()
+        private SendWord.Friend SendWordFriend(string notId = null)
         {
             if (_store == null || _placeTown == null || _cfg == null)
                 return null;
@@ -49,7 +50,7 @@ namespace EnrageWestworld.InGame
                 if (warmth >= 2)
                     town.Add(new SendWord.Friend { Id = r.Id, Name = r.Name, Warmth = warmth });
             }
-            return SendWord.Pick(town);
+            return SendWord.Pick(town, notId, _placeTown + "|" + g / 1440);
         }
 
         /// The horse watcher's offer menu gains the word's row while a friend of yours lives here (WestworldScript.Trials.cs).
@@ -57,7 +58,7 @@ namespace EnrageWestworld.InGame
         {
             if (_word != null || rows == null)
                 return;
-            SendWord.Friend f = SendWordFriend();
+            SendWord.Friend f = SendWordFriend(_watch != null ? _watch.Id : null);
             if (f != null)
                 rows.Insert(1, SendWord.Row(Person.FirstOf(f.Name), MONEY._MONEY_GET_CASH_BALANCE()));
         }
@@ -65,9 +66,9 @@ namespace EnrageWestworld.InGame
         /// J's row: the dime, and he goes with the word.
         private void SendWordGo(WatchRun w)
         {
-            SendWord.Friend f = SendWordFriend();
+            SendWord.Friend f = SendWordFriend(w != null ? w.Id : null);
             Ped me = Game.Player.Character;
-            if (w == null || w.Man == null || !w.Man.Exists() || f == null || MONEY._MONEY_GET_CASH_BALANCE() < HorseWatch.Cents)
+            if (w == null || w.Man == null || !w.Man.Exists() || f == null || MONEY._MONEY_GET_CASH_BALANCE() < HorseWatch.Cents || PED.IS_PED_IN_COMBAT(w.Man.Handle, 0))
             {
                 WatchEnd("no word to carry after all", false);
                 return;
@@ -96,7 +97,7 @@ namespace EnrageWestworld.InGame
             if (!HorseWatch.On || now < _wordNextLook || (_word == null && _wordThoughts.Count == 0))
                 return;
             _wordNextLook = now + 1000;
-            Safe("send word", () => SendWordLook(now));
+            Safe("send word", _aSendWord ?? (_aSendWord = () => SendWordLook(_now)));   // a kept delegate: no closure a frame (review 1)
         }
 
         private void SendWordLook(int now)
@@ -106,7 +107,7 @@ namespace EnrageWestworld.InGame
             if (r != null)
             {
                 bool gone = r.Man == null || !r.Man.Exists() || r.Man.IsDead;
-                bool atYou = !gone && PED.IS_PED_IN_COMBAT(r.Man.Handle, me.Handle);
+                bool atYou = !gone && PED.IS_PED_IN_COMBAT(r.Man.Handle, 0);   // fighting anyone: the game's (review 1)
                 if (r.Phase == "going" && _store.LastGameMin >= r.DueMin)
                 {
                     PersonState st = _store.Find(r.FriendId);
