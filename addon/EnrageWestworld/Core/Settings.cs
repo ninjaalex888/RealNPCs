@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 444;
+        public const int CurrentVersion = 445;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -229,6 +229,7 @@ namespace EnrageWestworld.Core
         public bool FeelingBars = true;
         public float FeelingBarsMetres = 15f;
         public bool FeelingBarsShowEmpty;
+        public bool NameCardsMourns = true;          // [Display] "Mourns one you killed" on the card of someone grieving a friend you killed this week (SEAMS item 12; settings version 445)
         public bool NameCardsRobbed = true;          // [Display] "Robbed you" on the card of the pickpocket who got away with your money, till you have it back from him (SEAMS item 9; settings version 441)
         public bool NameCardsStood = true;           // [Display] "Stood by you" on the card of someone who fought for you this week (an ally in a fight, a friend who ran down your thief) (SEAMS item 5; settings version 439)
         public bool NameCardsOwes = true;            // [Display] "Owes you" on the card of someone you saved or stood with in a fight, for the month they owe you (DEEPEN item 7; settings version 434)
@@ -1088,6 +1089,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 445)
+                    log?.Invoke("Settings: new in this version: [Display] NameCardsMourns (on): \"Mourns one you killed\" on the card of someone grieving a friend you killed.");
                 if (s.SettingsVersion < 444)
                     log?.Invoke("Settings: new in this version: [Scenes] KinThanks (on): a kinsman of someone you saved may come to thank you.");
                 if (s.SettingsVersion < 443)
@@ -2086,6 +2089,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, fondness and anger, as enRAGE keeps them");
             b.AppendLine("FeelingBarsMetres = " + F(FeelingBarsMetres) + "   ; how close they must be (the nearest three in plain view get bars)");
             b.AppendLine("FeelingBarsShowEmpty = " + B(FeelingBarsShowEmpty) + "   ; also show the empty part of each bar, so a low value reads as a little out of a whole bar");
+            b.AppendLine("NameCardsMourns = " + B(NameCardsMourns) + "   ; \"Mourns one you killed\" on the name card of someone grieving a friend you killed, for a week from when word reached them (\"Owes you\" and \"Stood by you\" show first)");
             b.AppendLine("NameCardsRobbed = " + B(NameCardsRobbed) + "   ; \"Robbed you\" on the name card of the pickpocket who got clean away with your money, until you catch him at it and have yours back");
             b.AppendLine("NameCardsStood = " + B(NameCardsStood) + "   ; \"Stood by you\" on the name card of someone who fought for you this week: an ally who came to your aid, a friend who ran down your thief");
             b.AppendLine("NameCardsOwes = " + B(NameCardsOwes) + "   ; \"Owes you\" on the name card of someone who owes you (you saved them, or stood with them in a fight), for the month they owe you: they'll come to your aid whatever the odds");

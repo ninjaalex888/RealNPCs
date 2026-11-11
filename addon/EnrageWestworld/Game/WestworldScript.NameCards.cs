@@ -426,11 +426,39 @@ namespace EnrageWestworld.InGame
             return _owesYou.Contains(id) ? "Owes you" : _stoodByYou.Contains(id) ? "Stood by you" : null;
         }
 
+        // who mourns one you killed this week (SEAMS item 12; [Display] NameCardsMourns): the mind's own grief (Engine.MournsYourKill,
+        // the friend's warnings' and the mourning's rule) on the card, cached per person for 5 s so a card never walks a mind each
+        // refill. The grief was there, read by a friend's warning and the mourners' walk; you only saw it if someone told you.
+        // A face you can read is a choice you can make: keep clear, or go and face it.
+        private readonly Dictionary<string, KeyValuePair<int, bool>> _mournsAt = new Dictionary<string, KeyValuePair<int, bool>>();
+
+        private bool MournsYou(Ped p)
+        {
+            if (_cfg == null || !_cfg.NameCardsMourns || _engine == null)
+                return false;
+            string id, name;
+            if (!LastingId(p, out id, out name) || id == null)
+                return false;
+            int now = Game.GameTime;
+            KeyValuePair<int, bool> was;
+            if (_mournsAt.TryGetValue(id, out was) && now - was.Key < 5000 && now >= was.Key)
+                return was.Value;
+            if (_mournsAt.Count > 400)
+                _mournsAt.Clear();
+            bool m = _engine.MournsYourKill(id, NameCardMournDays);
+            _mournsAt[id] = new KeyValuePair<int, bool>(now, m);
+            return m;
+        }
+
+        private const int NameCardMournDays = 7;   // a week, as the friends' warning has it
+
         private bool NameCardFill(Ped p, NameCard c, bool everyone)
         {
             string gang = Factions.MemberOf(c.Model, PED.GET_PED_RELATIONSHIP_GROUP_HASH(p.Handle));
             bool got = NameCardFillInner(p, c, everyone && gang == null);
             string between = got && c.Name != null ? OwesYou(p) : null;
+            if (between == null && got && c.Name != null && MournsYou(p))
+                between = "Mourns one you killed";
             if (between != null && (c.Line2 == null || c.Line2.IndexOf(between, StringComparison.Ordinal) < 0))
                 c.Line2 = string.IsNullOrEmpty(c.Line2) || c.Line2 == "Stranger" ? between : c.Line2 + " - " + between;
             // what they are, before the rest of the line: "Lawman - Proud", "Barkeep" (Lex, 2026-10-30: enRAGE showed a
