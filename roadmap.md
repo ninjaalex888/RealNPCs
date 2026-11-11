@@ -612,6 +612,10 @@ Joining systems that already ran but never read each other. All on runners seen 
 | Robbed you, on the card | "Robbed you" under the name of the pickpocket who got away with yours | Built (`[Display] NameCardsRobbed`) |
 | A week kept on your word | The man you stood surety for who keeps the peace owes you, and comes to say so | Built (`[Encounters] SuretyKeptOwes`) |
 | Gratitude felt | A stand, a fine, a word at the jail felt in his mood as kindness | Built (`[Encounters] GratitudeFelt`) |
+| Mourns one you killed, on the card | "Mourns one you killed" under the name of someone grieving a friend you shot, a week | Built (`[Display] NameCardsMourns`) |
+| The debt in the fight's menu | "Stand with Abe (he stood by you)" / "(he owes you)" on J in a fistfight | Built (`[Scenes] StandReminds`) |
+| A friend knows your thief | A friend's warning says the pickpocket near is the one who got away with yours | Built (`[Scenes] FriendsKnowYourThief`) |
+| Who did what, in memory | A street help, a beggar's ask, a brush-off, a cards loan, a snub: each remembered from the right side | Fixed (Scene.MindDoer, Minds.MemorySwap; a cards loan its own words) |
 | The thoughts after a bet, old soldiers' talk, alms watched | Their own words at last, where courting lines had stood in | Fixed (three bug fixes; a sweep test guards every warm kind) |
 | Kin of the saved | One time in two, a kinsman of someone you saved finds you days on and thanks you, as kin come over a wrong | Built (`[Scenes] KinThanks`) |
 | A mend that owes | Paying a told debt or a marker through Talk makes him owe you, as a fine does | Your call: Talk is frozen; this changes only what follows a Talk act |
