@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 431;
+        public const int CurrentVersion = 432;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -592,6 +592,7 @@ namespace EnrageWestworld.Core
         public bool LawChases = true;   // [Scenes] a lawman near runs down a pickpocket of ours and brings him down (Lex, 2026-10-29)
         public int LawShootsThieves = 50;   // [Scenes] percent: with LawChases, the lawman shoots the one who picked your pocket instead of running him down (Lex, 2026-11-01); settings version 184
         public bool Lifts = true;   // [Scenes] a man bumps into you in town and lifts some of your cash; catch him to get it back (Lex, 2026-10-29); needs Pickpockets on too (settings version 428)
+        public bool FriendsWarnThief = true;   // [Scenes] ... with FriendCalls: a friend who comes over may warn you of a known pickpocket near, and you're on your guard 20 minutes (no lift tried) (DEEPEN item 3; settings version 432)
         public bool FriendsChase = true;   // [Scenes] ... a friend of yours near (as the allies count one) may run down the man who robbed you and bring your money back (Core/FriendChase.cs; DEEPEN item 2; settings version 431)
         public bool LiftsWary = true;   // [Scenes] ... 24 game hours between at least, 48 in one town (not every four game hours), and fewer try it where your killings are known (Core/LiftNerve.cs; a player on Nexus, 2026-11-10: "pickpocketed pretty much every time I visited"; settings version 430)
         public bool EnragePeopleJoinIn = true;
@@ -1075,6 +1076,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 432)
+                    log?.Invoke("Settings: new in this version: [Scenes] FriendsWarnThief (on): a friend may warn you of a known pickpocket near, and you're on your guard a while.");
                 if (s.SettingsVersion < 431)
                     log?.Invoke("Settings: new in this version: [Scenes] FriendsChase (on): when your pocket is picked, a friend of yours near may run the thief down and bring your money back.");
                 if (s.SettingsVersion < 430)
@@ -2328,6 +2331,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("ErrandPace = " + F(ErrandPace) + "   ; how fast people walk on their errands here (to a scene, to the doctor, to a talk, to a camp seat, home again): 1 an ordinary walk, 2 brisk, 3 a run");
             b.AppendLine("LawChases = " + B(LawChases) + "   ; when a pickpocket runs and a lawman is near, the lawman gives chase, brings him down and holds him for arrest");
             b.AppendLine("LawShootsThieves = " + LawShootsThieves + "   ; with LawChases: percent of the times a lawman near draws and shoots the one who picked your pocket instead of running him down (0 to 100; 50 as it comes); your money comes back off him either way");
+            b.AppendLine("FriendsWarnThief = " + B(FriendsWarnThief) + "   ; with FriendCalls: a friend who comes over may warn you of a known pickpocket near (one who has robbed you or been caught at it), by name if they know him; forewarned, you're on your guard 20 real minutes and no thief tries you");
             b.AppendLine("FriendsChase = " + B(FriendsChase) + "   ; when your pocket is picked, a friend of yours within 30 m (someone who'd come to your aid in a fight) may run the thief down, the bold and the kind more readily, and bring your money back; he thinks the better of you for the good turn, and the town hears of it");
             b.AppendLine("LiftsWary = " + B(LiftsWary) + "   ; the thief who bumps into you comes about once an hour of play (24 game hours between, which the storyteller may halve; 48 in the same town), and thieves weigh the mark: where the town knows you've killed, fewer try it (one killing known: 60% of them; two or three: 35%; more: 15%); false: as before, a town every four game hours");
             b.AppendLine("Lifts = " + B(Lifts) + "   ; \"Pickpocketed\": a man may bump into you anywhere and lift a little of your cash (a fifth, $1 to $25), then run: catch him, or let a lawman, to get it back; Pickpockets = false stops it too");

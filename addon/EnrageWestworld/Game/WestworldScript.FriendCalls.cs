@@ -121,7 +121,7 @@ namespace EnrageWestworld.InGame
                 string kind = FriendCalls.Which(warnKind != null, news != null, favour, _cfg.FriendGifts, seed, foughtMem != null, savedMem != null);
                 if (kind == null)
                     continue;
-                string detail = kind == FriendCalls.Warn ? (warnKind == "law" ? "law" : warnKind == "pinkerton" ? "pinkerton" : danger != null ? "named" : "nameless")
+                string detail = kind == FriendCalls.Warn ? (warnKind == "law" ? "law" : warnKind == "pinkerton" ? "pinkerton" : warnKind == "thief" ? "thief" : danger != null ? "named" : "nameless")
                               : kind == FriendCalls.Gift ? FriendCalls.GiftOf(group, woman, seed)
                               : kind == SecondActs.Saved ? (_cfg.FriendGifts ? favour ?? FriendCalls.GiftOf(group, woman, seed) : null)   // the token: a favour of their trade, else a gift
                               : kind == FriendCalls.Trade ? favour
@@ -196,6 +196,22 @@ namespace EnrageWestworld.InGame
                     continue;
                 danger = WarnKnowsOf(friend, o) ? o.Name : null;
                 return "grudge";
+            }
+            if (FriendCalls.ThiefWarnOn && LiftsOn() && Game.GameTime >= _liftGuardUntil)
+            {
+                // a known pickpocket near you (DEEPEN item 3): the friend has seen him at it, or heard (his name only if they know him)
+                Ped me = Game.Player.Character;
+                foreach (int oh in _mindNear)
+                {
+                    MindWho o;
+                    if (!_mindWho.TryGetValue(oh, out o) || o.Id == null || o.Id == friend.Id || !ENTITY.DOES_ENTITY_EXIST(oh) || ENTITY.IS_ENTITY_DEAD(oh))
+                        continue;
+                    PersonState ps = _store.Find(o.Id);
+                    if (ps == null || !ps.Has(PickpocketMark) || ENTITY.GET_ENTITY_COORDS(oh, true, true).DistanceTo(me.Position) > 40f)
+                        continue;
+                    danger = WarnKnowsOf(friend, o) ? o.Name : null;
+                    return "thief";
+                }
             }
             if (_placeTown != null)
                 for (int i = _store.Deeds.Count - 1; i >= 0; i--)
@@ -276,6 +292,11 @@ namespace EnrageWestworld.InGame
                     _friendCalls++;
                     if (w.Kind == SecondActs.Saved)
                         SecondActThanked(w.Name, w.Line);   // (FOURTEENHOUR reserve R3)
+                    if (w.Kind == FriendCalls.Warn && w.Detail == "thief" && !w.Test)
+                    {
+                        _liftGuardUntil = now + FriendCalls.GuardMs;   // forewarned: on your guard a while, and the thieves can tell (DEEPEN item 3)
+                        Log.Write("FRIEND warned you of a pickpocket: on your guard for " + FriendCalls.GuardMs / 60000 + " min (no lift tried)");
+                    }
                     int c;
                     _friendKinds.TryGetValue(w.Kind, out c);
                     _friendKinds[w.Kind] = c + 1;

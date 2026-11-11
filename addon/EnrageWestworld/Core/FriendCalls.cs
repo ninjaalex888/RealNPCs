@@ -157,6 +157,25 @@ namespace EnrageWestworld.Core
             "Keep your hat low a day or two, {you}. The law's taken an interest in what happened here.",
             "A deputy asked me straight out if I knew you. I said I knew a good many people. Mind how you go.",
         };
+        // a known pickpocket near you (DEEPEN item 3; [Scenes] FriendsWarnThief): {who} his name, when the friend knows him
+        private static readonly string[] WarnThiefNamed =
+        {
+            "Keep a hand on your purse, {you}. That's {who} yonder, and he's light-fingered.",
+            "Mind {who} there. He'd have the buttons off your coat and you'd thank him for the brush.",
+            "{you}, a word. {who} works this street, and not for wages. Keep him in front of you.",
+        };
+        private static readonly string[] WarnThiefNameless =
+        {
+            "Keep your money close, {you}. There's a man about who lives off other folks' pockets.",
+            "That fella loafing by the rail, {you}? Don't let him bump you. He's lifted from half of {town}.",
+            "A word. There's a dip working the street today. Coat buttoned, hand on your poke.",
+        };
+
+        /// After a friend's warning of a pickpocket you're on your guard this long: no lift tried on you meanwhile (a thief
+        /// keeps off a mark who's looking about him; the forewarned are watchful).
+        public const int GuardMs = 20 * 60000;
+        public static bool ThiefWarnOn;   // [Scenes] FriendsWarnThief; off in Core so the harness goldens stand
+
         private static readonly string[] NewsOpen =
         {
             "{you}! Have you heard? {news}",
@@ -246,7 +265,7 @@ namespace EnrageWestworld.Core
             switch (kind)
             {
                 case Warn:
-                    pool = detail == "law" ? WarnLaw : danger != null ? WarnNamed : WarnNameless;
+                    pool = detail == "law" ? WarnLaw : detail == "thief" ? (danger != null ? WarnThiefNamed : WarnThiefNameless) : danger != null ? WarnNamed : WarnNameless;
                     break;
                 case News:
                     pool = NewsOpen;
@@ -283,7 +302,7 @@ namespace EnrageWestworld.Core
         /// Every line, for the tests.
         public static IEnumerable<string> AllLines()
         {
-            return WarnNamed.Concat(WarnNameless).Concat(WarnLaw).Concat(NewsOpen).Concat(GiftCoin).Concat(GiftRounds).Concat(GiftMeal)
+            return WarnNamed.Concat(WarnNameless).Concat(WarnLaw).Concat(WarnThiefNamed).Concat(WarnThiefNameless).Concat(NewsOpen).Concat(GiftCoin).Concat(GiftRounds).Concat(GiftMeal)
                             .Concat(TradePatch).Concat(TradeRounds).Concat(TradeDrink).Concat(TradeMeal).Concat(FoughtWon).Concat(FoughtFell);
         }
     }

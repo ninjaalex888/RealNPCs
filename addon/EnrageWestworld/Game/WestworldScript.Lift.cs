@@ -67,6 +67,8 @@ namespace EnrageWestworld.InGame
                 return why = LiftsOffWhy();   // the Testing row still starts one with either switch off
             if (_lifter != null || _theft != null)
                 return why = "a thief is at work already";
+            if (!test && now < _liftGuardUntil)
+                return why = "you're on your guard (a friend warned you of a pickpocket, " + (_liftGuardUntil - now) / 60000 + " min more)";
             if (!test && (WalkUpGoing() || _director.Busy || HushedNow(now)))   // the hush asked now: the drama tick's _hush can stand a minute or more (the review, 2026-10-31)
                 return why = "someone is coming up to you, a scene is on, or the town is hushed";   // (its header always said never with a scene: the cross-cutting review)
             Ped watcher = !test && _cfg.BeingWatched ? LawWatching(me, null) : null;
@@ -332,6 +334,8 @@ namespace EnrageWestworld.InGame
         }
 
         /// The lift on you runs only with both its own switch and Pickpockets on (see the header).
+        private int _liftGuardUntil;   // a friend warned you of a pickpocket near: on your guard till then (WestworldScript.FriendCalls.cs; DEEPEN item 3)
+
         private bool LiftsOn()
         {
             return _cfg.Lifts && _cfg.Pickpockets;
