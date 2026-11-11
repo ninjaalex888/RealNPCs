@@ -251,6 +251,32 @@ namespace EnrageWestworld.InGame
             Log.Write("BRAWL bet: your man won; " + other.Name + " pays you " + BrawlVerbs.Money(bet.Cents));
         }
 
+        /// The man you welshed on keeps it, and so do those who saw (SEAMS item 3; [Scenes] WelshRemembered): the wagers' own
+        /// "welsh" memory, as when one of the street welshes on another (Wagers.cs), with you its doer. Before, a welsh of yours
+        /// cost only enRAGE's -15 and a spoken line: no memory was written, and nobody watching kept a thing. Now he
+        /// thinks it in the bet's own words ("Won fair and square and he won't pay"), and the watchers' "Saw him welsh on..." can
+        /// be told on. Memories only: no tie, no scene, nobody sent after you (the callouts read enRAGE's liking, as before).
+        private void WelshRemembered(Ped me, WagerMan m)
+        {
+            if (!_cfg.WelshRemembered || _engine == null || m == null || m.Id == null || !ENTITY.DOES_ENTITY_EXIST(m.H) || FromTestRow("player", me.Handle, me.Handle, m.H))
+                return;
+            try
+            {
+                Ped him = new Ped(m.H);
+                Minds.Party you = new Minds.Party { Id = "player", Name = _engine.KnowsYourName(m.Id) && YourFullName() != null ? YourFullName() : "the stranger", Label = "the stranger" };
+                Minds.Party his = PartyOf(him, false);
+                if (his == null || his.Id == null)
+                    return;
+                List<Minds.Party> watchers = MindWatchers(new List<Ped> { me, him }, SceneWatchMetres, false);
+                _engine.RememberScene("welsh", you, his, watchers, _placeTown, _engine.NowIndoors ? _engine.NowPlace : null);
+                Log.Write("BRAWL bet: " + m.Name + " won't forget you welshing" + (watchers != null && watchers.Count > 0 ? ", nor will " + watchers.Count + " who saw" : ""));
+            }
+            catch (Exception ex)
+            {
+                Log.Detail("BRAWL bet: the welsh couldn't be remembered: " + ex.Message);
+            }
+        }
+
         /// Arthur didn't pay a lost bet: the one he owed thinks the worse of him, says so, and keeps it.
         private void BrawlVerbsWelsh(string why)
         {
@@ -267,6 +293,7 @@ namespace EnrageWestworld.InGame
             {
                 RecordEvent("welshed", "player", "you", m.Id, m.Name, ENTITY.GET_ENTITY_COORDS(m.H, true, true), me.Handle, me.Handle, m.H, "welshed on a bet");
                 WagerSay(me, m, BrawlVerbs.WelshedOn("w|" + m.Id), me.Handle);
+                WelshRemembered(me, m);
             }
             _bvLast = "you welshed on " + m.Name + " (" + why + ")";
             Log.Write("BRAWL bet: " + _bvLast);
