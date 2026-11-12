@@ -32,6 +32,10 @@ namespace EnrageWestworld.Core
             b.Append('|').Append(r.Need).Append('|').Append(r.Worry).Append('|').Append(r.Place).Append('|').Append(DayPart(r.Hour)).Append('|').Append(WeatherTruth.Words(r.Weather, WeatherTruth.Now)).Append('|').Append(r.Mood).Append('|').Append(r.Year);
             foreach (string h in r.Beliefs)
                 b.Append('|').Append(h);   // a belief flipped is a new situation
+            if (r.Week != null)
+                b.Append("|w:").Append(r.Week);   // the week's worry and where it stands (LIVES item 3a; the halfway review: a kept line outlived the week)
+            foreach (string pp in r.People)
+                b.Append("|p:").Append(pp);   // their people and what's between them now
             if (r.Varied)
                 b.Append("|f:").Append(r.FocusId).Append("|s:").Append(r.Shape != null ? Array.IndexOf(Shapes, r.Shape) : -1).Append(MayDoubt(r) ? "|doubt" : "").Append(r.CarryOn != null ? "|on:" + r.CarryOn : "");   // another focus or shape is another thought to keep (LanguageVariety)
             return b.ToString();

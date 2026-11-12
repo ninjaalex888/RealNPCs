@@ -11,13 +11,14 @@ namespace EnrageWestworld.Core
 {
     public static class ModelReach
     {
-        public const int EveryMs = 4000, AgainMs = 60000;
+        public const int EveryMs = 8000, AgainMs = 60000;   // (8 s since the halfway review: 4 s kept the card too busy beside the game)
         public const float Metres = 20f;
 
-        /// Whether an idle ask may go now: the model ready, nothing waiting, the last idle ask EveryMs ago.
-        public static bool Due(bool on, bool ready, int waiting, int lastIdleAskMs, int nowMs)
+        /// Whether an idle ask may go now: the model ready, idle (nothing waiting of any kind, nothing in flight), the last
+        /// idle ask EveryMs ago.
+        public static bool Due(bool on, bool ready, bool idle, int lastIdleAskMs, int nowMs)
         {
-            return on && ready && waiting == 0 && nowMs - lastIdleAskMs >= EveryMs;
+            return on && ready && idle && nowMs - lastIdleAskMs >= EveryMs;
         }
 
         /// Whether a candidate comes before the best so far: asked longest ago (never asked first), then the nearer. So the

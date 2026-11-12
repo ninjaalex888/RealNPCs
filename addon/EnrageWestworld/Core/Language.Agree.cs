@@ -32,6 +32,8 @@ namespace EnrageWestworld.Core
         {
             if (!AgreeOn || r == null || string.IsNullOrEmpty(answer) || string.IsNullOrEmpty(r.Feeling) || r.Strength == "mild")
                 return null;
+            if (r.Kind == "talk" || r.Kind == "free")
+                return null;   // Talk is frozen: its answers keep their own check (the halfway review)
             if (r.Shows == "masked" && Dark(r.Feeling))
                 return null;   // a brave face may say "glad" aloud; the thought is checked by its words alone, so leave a masked feeling be
             Match m = Dark(r.Feeling) ? Cheerful.Match(answer) : Bright(r.Feeling) ? Bitter.Match(answer) : Match.Empty;

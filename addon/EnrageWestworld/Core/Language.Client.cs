@@ -142,6 +142,12 @@ namespace EnrageWestworld.Core
             get { lock (_lock) return _queue.Count; }
         }
 
+        /// Nothing waiting of any kind (thoughts, picks, Talk) and nothing asked still unanswered: the model is idle (LIVES item 3c).
+        public bool Idle
+        {
+            get { lock (_lock) return _queue.Count == 0 && _picks.Count == 0 && _talks.Count == 0 && _asked.Count == 0; }
+        }
+
         /// What came back (or didn't: null) for an ask, in `elapsedMs`: through Check and Resolve; a line that passes is kept
         /// for its key whether or not it came in time (the key is the situation, and the next time the moment comes the
         /// line is ready). Returns the resolved answer, for the log.

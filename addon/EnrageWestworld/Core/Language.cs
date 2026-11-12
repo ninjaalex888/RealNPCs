@@ -74,8 +74,11 @@ namespace EnrageWestworld.Core
             add(YouAs);
             add(Town);
             add(Worry);
-            add(Week);
-            foreach (string s in People) add(s);   // (LIVES item 3a)
+            if (Kind != "talk" && Kind != "free")
+            {
+                add(Week);
+                foreach (string s in People) add(s);   // (LIVES item 3a; never Talk's: the freeze, the halfway review)
+            }
             foreach (string s in Memories) add(s);
             foreach (string s in Near) add(s);
             foreach (string s in Recent) add(s);   // names in their own thoughts lately were given then

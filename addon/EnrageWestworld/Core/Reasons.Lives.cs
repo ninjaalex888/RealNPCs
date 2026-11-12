@@ -27,21 +27,23 @@ namespace EnrageWestworld.Core
             if (tie != null && (Ties.Sweethearts(tie) || Ties.Cooled(tie)))
                 return null;   // their own business comes first
             bool friendly = (tie == null || tie.Warmth >= 0) && a.Grief == null && b.Grief == null && a.Hurt == null && b.Hurt == null;
+            // (no lambdas or strings per pair: each scene's For in both orders, written out; the halfway review)
             Reason r = null;
             if (friendly)
-                r = Lately(a, b, where, Either(a, b, (x, y) => SchoolFather.For(x, y, tie, gameDay, where)));   // the schoolteacher and the father (LIVES item 2a)
-            if (r == null && MayFight(a, b, where, "election" + gameDay))
-                r = Lately(a, b, where, Either(a, b, (x, y) => ElectionNight.For(x, y, gameDay, where)));   // election night in the saloon (LIVES item 2b)
-            if (r == null && friendly)
-                r = Lately(a, b, where, b.Backslid && !a.Backslid ? Either(a, b, (x, y) => ChurchSteps.For(x, y, gameDay, where)) : Either(b, a, (x, y) => ChurchSteps.For(x, y, gameDay, where), true));   // talk on the church steps, the backslider as B (LIVES item 2c)
-            if (r == null && MayFight(a, b, where, "dance" + gameDay))
-                r = Lately(a, b, where, Either(a, b, (x, y) => DanceFight.For(x, y, tie, gameDay, where)));   // the fight at the dance (LIVES item 2d)
+                r = Lately(a, b, where, SchoolFather.For(a, b, tie, gameDay, where) ?? Flip(SchoolFather.For(b, a, tie, gameDay, where)));   // the schoolteacher and the father (LIVES item 2a)
+            if (r == null && where.Saloon && MayFight(a, b, where, "election" + gameDay))
+                r = Lately(a, b, where, ElectionNight.For(a, b, gameDay, where) ?? Flip(ElectionNight.For(b, a, gameDay, where)));   // election night in the saloon (LIVES item 2b)
+            if (r == null && friendly && where.NearChurch)
+                r = Lately(a, b, where, b.Backslid && !a.Backslid ? ChurchSteps.For(a, b, gameDay, where) ?? Flip(ChurchSteps.For(b, a, gameDay, where))
+                                                                  : Flip(ChurchSteps.For(b, a, gameDay, where)) ?? ChurchSteps.For(a, b, gameDay, where));   // talk on the church steps, the backslider as B (LIVES item 2c)
+            if (r == null && where.DanceOn && MayFight(a, b, where, "dance" + gameDay))
+                r = Lately(a, b, where, DanceFight.For(a, b, tie, gameDay, where) ?? Flip(DanceFight.For(b, a, tie, gameDay, where)));   // the fight at the dance (LIVES item 2d)
             if (r == null && friendly)
                 r = Lately(a, b, where, NewsOverFence.For(a, b, gameDay, where));   // the town's news over the fence (LIVES item 2e)
+            if (r == null && friendly && where.MailIn)
+                r = Lately(a, b, where, MailDay.For(a, b, gameDay, where) ?? Flip(MailDay.For(b, a, gameDay, where)));   // a letter off the train (LIVES item 2f)
             if (r == null && friendly)
-                r = Lately(a, b, where, Either(a, b, (x, y) => MailDay.For(x, y, gameDay, where)));   // a letter off the train (LIVES item 2f)
-            if (r == null && friendly)
-                r = Lately(a, b, where, Either(a, b, (x, y) => TonicAfter.For(x, y, gameDay, now, where)));   // the medicine show's bottle, the days after (LIVES item 2g)
+                r = Lately(a, b, where, TonicAfter.For(a, b, gameDay, now, where) ?? Flip(TonicAfter.For(b, a, gameDay, now, where)));   // the medicine show's bottle, the days after (LIVES item 2g)
             return r;
         }
 
@@ -51,18 +53,10 @@ namespace EnrageWestworld.Core
             return r != null && where.PlayedLately != null && where.PlayedLately(a.Id, b.Id, r.Kind) ? null : r;
         }
 
-        /// f(a, b), else f(b, a) with BFirst. `swapped`: the pair was given as (b, a), so the first order is BFirst.
-        private static Reason Either(Someone a, Someone b, System.Func<Someone, Someone, Reason> f, bool swapped = false)
+        /// The reason for the pair asked as (b, a): b's part comes first.
+        private static Reason Flip(Reason r)
         {
-            Reason r = f(a, b);
             if (r != null)
-            {
-                if (swapped)
-                    r.BFirst = true;
-                return r;
-            }
-            r = f(b, a);
-            if (r != null && !swapped)
                 r.BFirst = true;
             return r;
         }

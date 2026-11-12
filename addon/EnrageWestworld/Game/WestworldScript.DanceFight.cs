@@ -18,8 +18,14 @@ namespace EnrageWestworld.InGame
                 return _danceOn;
             _danceLookAt = t;
             _danceTown = _placeTown;
-            TownEvent e = _cfg.EventDances && _placeTown != null ? _engine.EventNear(_placeTown, gameNow) : null;
-            _danceOn = e != null && e.Kind == "dance" && gameNow >= e.At && gameNow < e.Until;
+            _danceOn = false;
+            if (_cfg.EventDances && _placeTown != null && _store.Events != null)
+                foreach (TownEvent e in _store.Events)
+                    if (e != null && e.Kind == "dance" && e.Town == _placeTown && !e.Done && gameNow >= e.At && gameNow < e.Until)
+                    {
+                        _danceOn = true;   // the dance itself, whatever other event is open in the town (the halfway review)
+                        break;
+                    }
             return _danceOn;
         }
     }

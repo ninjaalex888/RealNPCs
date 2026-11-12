@@ -29,10 +29,12 @@ namespace EnrageWestworld.Core
             long readAt;
             if (Read.TryGetValue(x.Id, out readAt) && gameDay - readAt <= 2)
                 return null;   // one letter, read once, not to everyone by in turn
+            if (!Voice.Chance(x.Id + "|" + gameDay + "|mail", 80))
+                return null;   // rolled before the worry is read (the halfway review: WorryNow per pair is the cost)
             string kind; int stage; bool good;
             bool awaited = InnerLife.WorryNow(x.P, gameDay, out kind, out stage, out good) && kind == "letter" && stage == 3;
-            if (!Voice.Chance(x.Id + "|" + gameDay + "|mail", awaited ? 80 : Percent))
-                return null;
+            if (!awaited && !Voice.Chance(x.Id + "|" + gameDay + "|mail2", Percent * 100 / 80))
+                return null;   // 80% x 25% = the 20% of anyone else
             return new Reason { Kind = Kind, Strength = Strength + (awaited ? 8 : 0), Matter = awaited ? (good ? "awaited:good" : "awaited:bad") : null, Why = x.Name + " opens a letter off the train" + (awaited ? ", the one waited on" : "") };
         }
 

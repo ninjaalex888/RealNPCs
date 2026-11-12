@@ -1,6 +1,6 @@
 // The model's reach while it's idle, game side (LIVES item 3c; [Mind] ModelIdleReach; Core/ModelReach.cs): from the language
-// step (once a second), when the queue is empty and the model ready, the nearest known person within 20 m not asked in the
-// last minute is asked ahead. Counted for F7 and the log.
+// step (once a second), when the model is idle (nothing waiting or in flight) and ready, every 8 s the known person within
+// 20 m asked longest ago is asked ahead. Counted for F7 and the log.
 using System.Collections.Generic;
 using EnrageWestworld.Core;
 using RDR2;
@@ -15,7 +15,9 @@ namespace EnrageWestworld.InGame
 
         private void ModelReachStep(int now)
         {
-            if (!ModelReach.Due(_cfg.ModelIdleReach && _cfg.Language && _cfg.MindLive, _langReady, _engine.LanguageAnswers.Waiting, _reachLastMs, now))
+            if (_engine == null || _cfg == null || !_cfg.ModelIdleReach || !_cfg.Language || !_cfg.MindLive)
+                return;
+            if (!ModelReach.Due(true, _langReady, _engine.LanguageAnswers.Idle, _reachLastMs, now))
                 return;
             _reachLastMs = now;
             Ped me = Game.Player.Character;
