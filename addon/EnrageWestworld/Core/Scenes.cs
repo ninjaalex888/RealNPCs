@@ -107,6 +107,7 @@ namespace EnrageWestworld.Core
         public string Courted;                              // the woman two rivals both court, her first name (Core/Rivals.cs, FOURTEENHOUR item 19); null: none
         public Dictionary<string, int> TaleTold;            // the big animals' tales told in this town this session, by key (DEPTH item 14); null: the tales as written
         public int CenturyEve;                              // the century's argument: the eve's year, 1899 or 1900 (Core/CenturyTurns.cs; DEPTH reserve R6)
+        public string Kin, MailMatter;                      // mail day: whose letter (InnerLife.LetterKin) and the reason's matter (Core/MailDay.cs; LIVES item 2f)
         public string[] News;                               // the news over the fence: two of the town's first names and its kind (Core/NewsOverFence.cs; LIVES item 2e); null: none
         public string Absent;                               // the church steps: a townsman who wasn't in his pew, his name (Core/ChurchSteps.cs; LIVES item 2c); null: none
         public bool Backslid;                               // ...and B went up at the revival and has gone back to old ways
@@ -210,6 +211,7 @@ namespace EnrageWestworld.Core
                 case FeudArcs.Kind: { bool taken; return FeudArcs.Make(c, c.Tempers != null ? c.Tempers[1] : null, seed, out taken); }   // his hand before the street (Core/FeudArcs.cs; DEPTH item 18)
                 case CenturyTurns.Kind: return CenturyTurns.Make(c, c.CenturyEve, seed);   // the century turns (Core/CenturyTurns.cs; DEPTH reserve R6)
                 case Grumble.Kind: return Grumble.Make(c, seed);   // old hands grumble at the newcomer (Core/Grumble.cs; DEPTH reserve R5)
+                case MailDay.Kind: return MailDay.Make(c, c.Kin, c.MailMatter, seed);   // a letter off the train (Core/MailDay.cs; LIVES item 2f)
                 case NewsOverFence.Kind: return NewsOverFence.Make(c, seed);   // the town's news over the fence (Core/NewsOverFence.cs; LIVES item 2e)
                 case ChurchSteps.Kind: return ChurchSteps.Make(c, c.Backslid, seed);   // talk on the church steps (Core/ChurchSteps.cs; LIVES item 2c)
                 case SchoolFather.Kind: return SchoolFather.Make(c, seed);   // the schoolteacher and the father (Core/SchoolFather.cs; LIVES item 2a)
