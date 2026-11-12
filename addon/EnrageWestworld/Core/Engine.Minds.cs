@@ -948,9 +948,16 @@ namespace EnrageWestworld.Core
                         : Cfg.MindLive && m.From != null ? () => Minds.ToldLine(mm, p, seed, deed ? Voice.YouPrivate(p, Talk.RefFor(p, st, Player), true) : null, TellerName(m)) ?? Minds.Line(mm, p, now, day, seed)
                         : deed ? () => Minds.Line(mm, p, now, day, seed, Voice.YouPrivate(p, Talk.RefFor(p, st, Player), true), youNear)
                         : (Func<string>)(() => Minds.Line(mm, p, now, day, seed));
+                    // an old memory of their own, now and then: its details doubted, or too sharp (Core/MemoryBlur.cs; [Mind] MemoryBlur)
+                    string blur = Cfg.MindLive ? MemoryBlur.How(m, now, seed + "|" + m.Key) : null;
+                    if (blur != null)
+                    {
+                        MindMemory bm = m;
+                        make = () => MemoryBlur.Line(bm, blur, seed, told) ?? Minds.Line(bm, p, now, day, seed);
+                    }
                     c.Add(new Minds.Candidate
                     {
-                        Source = "memory:" + m.Sub + "/" + m.How + (m.How == "did" && m.Role != null ? ":" + m.Role : string.Empty),
+                        Source = "memory:" + m.Sub + "/" + m.How + (m.How == "did" && m.Role != null ? ":" + m.Role : string.Empty) + (blur != null ? "+" + blur : string.Empty),
                         Pull = Minds.Pull(m, now, day, p.Personality) + (deed && youNear ? 20 : 0), M = m, Make = make
                     });
                 }
