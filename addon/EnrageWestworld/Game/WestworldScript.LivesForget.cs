@@ -23,7 +23,7 @@ namespace EnrageWestworld.InGame
 
         private bool PromptFree()
         {
-            return _eventMenu == null && (_eventPrompt == null || Game.GameTime > _eventPromptUntil);
+            return _eventMenu == null && _menu == null && (_eventPrompt == null || Game.GameTime > _eventPromptUntil);   // never over Talk's menu (the whole-round review)
         }
     }
 }

@@ -158,8 +158,8 @@ namespace EnrageWestworld.Core
             }
             if (!string.IsNullOrEmpty(r.Need)) b.Append("The body: ").Append(NeedWords(r)).Append(".\n");
             if (!string.IsNullOrEmpty(r.Worry)) b.Append("On their mind: ").Append(r.Worry).Append(".\n");
-            if (!string.IsNullOrEmpty(r.Week) && r.Kind != "talk") b.Append("Their week: ").Append(r.Week).Append(".\n");   // (LIVES item 3a; never Talk's: the freeze)
-            if (r.People.Count > 0 && r.Kind != "talk") b.Append("Their people: ").Append(string.Join("; ", r.People.Take(3))).Append(".\n");
+            if (!string.IsNullOrEmpty(r.Week) && r.Kind != "talk" && r.Kind != "free") b.Append("Their week: ").Append(r.Week).Append(".\n");   // (LIVES item 3a; never Talk's: the freeze)
+            if (r.People.Count > 0 && r.Kind != "talk" && r.Kind != "free") b.Append("Their people: ").Append(string.Join("; ", r.People.Take(3))).Append(".\n");
             foreach (string m in r.Memories.Take(2)) b.Append("Remembers: ").Append(m).Append(".\n");
             if (r.Beliefs.Count > 0) b.Append("Holds: ").Append(string.Join("; ", r.Beliefs.Take(3))).Append(".\n");
             if (!string.IsNullOrEmpty(r.TownMood)) b.Append("The town: ").Append(r.TownMood).Append(".\n");

@@ -29,7 +29,7 @@ namespace EnrageWestworld.InGame
         {
             if (!CourtingNote.On || !_cfg.CourtingNote || _store == null || _engine == null || now < _courtNext || !PromptFree())
                 return;
-            _courtNext = now + CourtingNote.LookMs;
+            _courtNext = now + (_courtNote != null ? 2500 : CourtingNote.LookMs);   // a note in hand: looked for her every 2.5 s (the whole-round review)
             long g = _store.LastGameMin, day = g / 1440;
             Ped me = Game.Player.Character;
             if (me == null || !me.Exists())

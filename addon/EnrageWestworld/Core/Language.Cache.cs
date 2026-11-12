@@ -35,7 +35,7 @@ namespace EnrageWestworld.Core
             if (r.Week != null)
                 b.Append("|w:").Append(r.Week);   // the week's worry and where it stands (LIVES item 3a; the halfway review: a kept line outlived the week)
             foreach (string pp in r.People)
-                b.Append("|p:").Append(pp);   // their people and what's between them now
+                b.Append("|p:").Append(pp.EndsWith(", in sight") ? pp.Substring(0, pp.Length - 10) : pp);   // their people and what's between them now (who's in sight left out: it changes by the second; the whole-round review)
             if (r.Varied)
                 b.Append("|f:").Append(r.FocusId).Append("|s:").Append(r.Shape != null ? Array.IndexOf(Shapes, r.Shape) : -1).Append(MayDoubt(r) ? "|doubt" : "").Append(r.CarryOn != null ? "|on:" + r.CarryOn : "");   // another focus or shape is another thought to keep (LanguageVariety)
             return b.ToString();
