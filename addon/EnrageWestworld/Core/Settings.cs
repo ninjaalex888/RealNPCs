@@ -1711,7 +1711,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 163 && s.Language)
                     s.LanguageChosen = true;   // on before RealNPCs could find the model by itself: the player's own choice, kept (2026-10-31)
                 if (s.SettingsVersion < 165)
-                    log?.Invoke("Settings: the street's hush now follows only the latest killing in a town, for HushHours (" + F(s.HushHours) + ") game hours, Saint Denis HushHoursSaintDenis (" + F(s.HushHoursSaintDenis) + "); HushFear and HushFearSaintDenis are gone (Lex in Saint Denis, 2026-10-31: brawls kept the street hushed).");   // the old keys are skipped on reading and not written again
+                    log?.Invoke("Settings: the street's hush now follows only the latest killing in a town, for HushHours (" + F(s.HushHours) + ") game hours, Saint Denis HushHoursSaintDenis (" + F(s.HushHoursSaintDenis) + "); HushFear and HushFearSaintDenis are gone (brawls kept the street hushed).");   // the old keys are skipped on reading and not written again
                 if (s.SettingsVersion < 166)
                     log?.Invoke("Settings: new in this version: [Mind] MindActsSeatedLooks, MindRetries, [Scenes] ReasonVariety, ChanceFirst (all on; the minds act on more of their choices, the street's reasons and chance meetings take turns).");
                 if (s.SettingsVersion < 167)
@@ -1723,7 +1723,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 170)
                     log?.Invoke("Settings: new in this version: [Mind] MindPassingLasts (on): people near you show what they feel about what you did for hours after, not minutes; [Scenes] FavoursAsked (on): someone in money trouble may come and ask you, and Talk lists the fix; [Scenes] CourtFolkAges (on): enRAGE's townsfolk may court each other on the street; [Scenes] WarnedYou (on): someone who saw what you did may have words with you, and a friend may warn you of a grudge or the law.");
                 if (s.SettingsVersion < 172)
-                    log?.Invoke("Settings: violence against Arthur is on as it comes (Lex): [Encounters] SupperInvitation and HogtiedMenDraw are on; set either false to turn it off");
+                    log?.Invoke("Settings: violence against Arthur is on as it comes: [Encounters] SupperInvitation and HogtiedMenDraw are on; set either false to turn it off");
                 if (s.SettingsVersion < 171)
                     log?.Invoke("Settings: new in this version: [Mind] MindChanceMeetings (on): what passes between two people who meet by chance near you comes from their minds: friends talk and sing, foes quarrel or turn their backs, a money worry asks the other for a loan.");
                 if (s.SettingsVersion < 173)

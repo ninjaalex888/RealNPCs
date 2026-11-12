@@ -72,6 +72,10 @@ The settings:
   said, and so are their rows in the settings panel. Your values are kept: the ini is read by
   name, and rewritten in the new layout on the first load.
 
+The voices:
+- start-voice-server.cmd no longer looks in a developer's folder when the voice server isn't
+  set up beside it: it says to run install-voice.cmd first. Already set up? Nothing changes.
+
 NEW IN 0.7.26
 -------------
 Everything built since 0.7.25, and it's a lot. It has been tested offline, not yet over long

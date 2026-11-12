@@ -1,9 +1,9 @@
-# RealNPCs' local voice server (2026-11-03; Lex: "voiced thoughts and dialogue"). The mod asks it, the way it asks Ollama,
+# RealNPCs' local voice server (2026-11-03: voiced thoughts and dialogue). The mod asks it, the way it asks Ollama,
 # to say a line in a person's own voice: the voice is cloned on this PC with Chatterbox from one of the game's own
 # recordings for that person's model (the player's own OpenIV export of the voice banks; nothing of Rockstar's ships),
 # and played here, mixed, with the volume and pan the mod keeps sending as the speaker moves.
 #
-#   tts-venv\Scripts\python.exe -I voice_server.py --root C:\mods\voice-test [--port 5005] [--min-free-gb 1.0] [--idle-seconds 60] [--half|--full]
+#   tts-venv\Scripts\python.exe -I voice_server.py [--root <folder>] [--port 5005] [--min-free-gb 1.0] [--idle-seconds 60] [--half|--full]
 #
 # --root holds refs.json (pick_refs.py) and the banks\ folder it points into. The card: after --idle-seconds with nobody
 # speaking the model moves to system memory (about 3 GB back to the game) and returns for the next line in under a second
@@ -49,8 +49,7 @@ from urllib.parse import parse_qs, urlparse
 
 import numpy as np
 
-# the card (Lex, 2026-11-03: "the VRAM gets maxed out... lagged frames; help the voices program to not take up so much
-# VRAM"): PyTorch's allocator grows in small pieces rather than holding big ones (set before torch is first imported),
+# the card (2026-11-03: a full card lagged frames, so the voices take as little of it as they can): PyTorch's allocator grows in small pieces rather than holding big ones (set before torch is first imported),
 # the cache is given back after every line (card_tidy), and after --idle-seconds of nobody speaking the whole model moves
 # to system memory (offload: about 3 GB back to the game in half a second) and returns the moment a line is asked
 # (onload: under a second). With --half the Llama backbone runs in half precision, a gigabyte less while it's on the card.
@@ -284,7 +283,7 @@ def load_model():
         except Exception as e:
             log("warm-up failed:", repr(e)[:200])
         if ARGS.idle_seconds is None:
-            # as it comes (Lex, 2026-11-04: "Yes, good suggestion for voice pack"): on a card of 12 GB or more the voices stay
+            # as it comes (2026-11-04): on a card of 12 GB or more the voices stay
             # on it while you play, so a line after a quiet spell never waits for the model to come back (moving 2-3 GB back
             # onto a nearly full card was a hitch of its own); on a smaller card they leave after a quiet minute, as before
             total = card_total_gib()
@@ -522,7 +521,7 @@ def worker():
 def clean_noise(x, sr):
     """The steady sound under a voice (the street, wind, rain, the game's room tone) taken off by spectral subtraction:
     the noise's spectrum is the quiet fifth of the frames, per frequency; what's left of a frame is at least a tenth of
-    it, so there are no holes. Lex, 2026-11-03: the clips the game gave cloned well but carried the street."""
+    it, so there are no holes. 2026-11-03: the clips the game gave cloned well but carried the street."""
     from scipy.signal import stft, istft
     n = 1024 if sr >= 32000 else 512
     _f, _t, Z = stft(x, fs=sr, nperseg=n, noverlap=n * 3 // 4)
@@ -1009,7 +1008,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     global ARGS, LOG_PATH
     ap = argparse.ArgumentParser()
-    ap.add_argument("--root", default=r"C:\mods\voice-test")
+    ap.add_argument("--root", default=os.path.dirname(os.path.abspath(__file__)))   # this folder, where install-voice.cmd puts everything
     ap.add_argument("--port", type=int, default=5005)
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--min-free-gb", type=float, default=0.8, help="say nothing while the card has less free than this")

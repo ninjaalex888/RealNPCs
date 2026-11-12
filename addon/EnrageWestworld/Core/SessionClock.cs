@@ -43,7 +43,7 @@ namespace EnrageWestworld.Core
             new Row { Name = "a sweetheart expects you back", Kind = "watch", AsBuilt = 3, Session = 1, Where = "Trysts.ExpectsFromDays" },
 
             // background: a gap that keeps something rare (kept)
-            new Row { Name = "the prize fight's gap in a town (shortened it would triple the town's prize fights: a fight-start rule for Lex)", Kind = "background", AsBuilt = 6, Session = 6, Where = "PrizeFight.GapDays" },
+            new Row { Name = "the prize fight's gap in a town (shortened it would triple the town's prize fights: a fight-start rule to decide)", Kind = "background", AsBuilt = 6, Session = 6, Where = "PrizeFight.GapDays" },
             new Row { Name = "a fever's gap", Kind = "background", AsBuilt = 90, Session = 90, Where = "Fever.GapDays" },
             new Row { Name = "the mine whistle's gap", Kind = "background", AsBuilt = 21, Session = 21, Where = "MineWhistle.GapDays" },
             new Row { Name = "the Wild West show's gap", Kind = "background", AsBuilt = 30, Session = 30, Where = "Shows.GapDays" },

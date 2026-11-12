@@ -1,8 +1,8 @@
 @echo off
 setlocal
 rem RealNPCs' voice server: start it before the game and leave this window open. It runs on the Python that
-rem install-voice.cmd put beside it (tts-venv, the model in tools\hf), or, on the development PC, the one in
-rem C:\mods\voice-test with its export. The voices stay on a graphics card of 12 GB or more and leave a smaller one after a
+rem install-voice.cmd put beside it (tts-venv, the model in tools\hf), or, if there's none, the one in the folder
+rem REALNPCS_VOICE_ROOT names (a setup kept elsewhere, with its own export). The voices stay on a graphics card of 12 GB or more and leave a smaller one after a
 rem quiet minute. Extra arguments pass through (--idle-seconds 0 to keep the voices on any card, 60 to give it back, --full
 rem for the voice model in full precision, --turbo, --min-free-gb 1.0, --prefer-captured ...).
 rem The device install-voice.cmd chose (device.txt: cuda, or cpu, the experimental mode for AMD and other cards; 2026-11-09)
@@ -14,9 +14,13 @@ if exist "%VOICE_HOME%\tts-venv\Scripts\python.exe" (
   set VOICE_ROOT=%VOICE_HOME%
   set HF_HOME=%VOICE_HOME%\tools\hf
 set HF_HUB_DISABLE_SYMLINKS_WARNING=1
+) else if defined REALNPCS_VOICE_ROOT (
+  set VENV=%REALNPCS_VOICE_ROOT%\tts-venv
+  set VOICE_ROOT=%REALNPCS_VOICE_ROOT%
 ) else (
-  set VENV=C:\mods\voice-test\tts-venv
-  set VOICE_ROOT=C:\mods\voice-test
+  echo The voice server isn't set up in this folder yet: run install-voice.cmd here once ^(about 8 GB, once^), then this.
+  pause
+  exit /b 1
 )
 set DEVICE=cuda
 if exist "%VOICE_HOME%\device.txt" set /p DEVICE=<"%VOICE_HOME%\device.txt"
