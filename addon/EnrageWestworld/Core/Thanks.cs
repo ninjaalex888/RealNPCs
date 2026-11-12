@@ -56,6 +56,7 @@ namespace EnrageWestworld.Core
         }
 
         /// What the kindness was, for the words: drink, money, debt (or the doctor, a tooth, a ticket); null for anything else.
+        /// A letter carried to him (Find the letter) is thanked as a trouble put right, "mend" (SEAMS item 22: it had no kind, so no thanks).
         public static string KindOf(Happening e)
         {
             if (e == null || e.DoerId != "player")
@@ -64,7 +65,7 @@ namespace EnrageWestworld.Core
             {
                 case "round": return "drink";
                 case "charity": return e.Outcome == Fondness.GiftOutcome ? "gift" : e.Outcome == Fondness.TipOutcome ? "tip" : "money";   // a gift, a tip (Core/Fondness.cs): their own kinds
-                case "help": return e.Outcome == DebtOutcome ? "debt" : e.Outcome == DoctorOutcome ? "doctor" : e.Outcome == ToothOutcome ? "tooth" : e.Outcome == FareOutcome ? "ticket" : Helps.IsMendOutcome(e.Outcome) ? "mend" : e.Outcome == Fondness.EscortOutcome ? "escort" : null;
+                case "help": return e.Outcome == DebtOutcome ? "debt" : e.Outcome == DoctorOutcome ? "doctor" : e.Outcome == ToothOutcome ? "tooth" : e.Outcome == FareOutcome ? "ticket" : Helps.IsMendOutcome(e.Outcome) || (FindLetter.On && e.Outcome == FindLetter.Outcome) ? "mend" : e.Outcome == Fondness.EscortOutcome ? "escort" : null;
                 default: return null;
             }
         }
