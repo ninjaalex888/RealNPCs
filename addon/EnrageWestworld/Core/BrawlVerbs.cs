@@ -134,7 +134,7 @@ namespace EnrageWestworld.Core
         {
             return new List<InteractOption>
             {
-                new InteractOption { Id = "welshpay:pay", Label = "Pay " + (to ?? "him") + " the " + Money(StakeCents) + " you owe from the bet.", Why = cashCents < StakeCents ? "you haven't a dollar on you" : null },
+                new InteractOption { Id = "welshpay:pay", Label = "Pay " + (to ?? "them") + " the " + Money(StakeCents) + " you owe from the bet.", Why = cashCents < StakeCents ? "you haven't a dollar on you" : null },
                 new InteractOption { Id = "welshpay:no", Label = "Not now." },
             };
         }

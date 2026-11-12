@@ -70,7 +70,7 @@ namespace EnrageWestworld.InGame
         private bool _bvPayShown;
         private int _wrNextLook, _wrAgainAt, _wrRepaid;
         private Ped _wrTo;
-        private readonly HashSet<string> _wrOffered = new HashSet<string>();   // "id|minute": offered at most once a minute
+        private readonly HashSet<string> _wrOffered = new HashSet<string>();   // ids offered this session
 
         /// J near the man you welshed on, within the month (SEAMS item 24): pay what you owe. Once a second, J free, on foot.
         private void WelshRepayStep(int now)
@@ -90,12 +90,12 @@ namespace EnrageWestworld.InGame
                     if (p == null || p.Handle == me.Handle || !p.Exists() || p.IsDead || p.Position.DistanceTo(me.Position) > 4f)
                         continue;
                     string id, name;
-                    if (!LastingId(p, out id, out name) || id == null || _wrOffered.Contains(id + "|" + now / 60000))
+                    if (!LastingId(p, out id, out name) || id == null || _wrOffered.Contains(id))
                         continue;
                     Happening owed = BrawlVerbs.UnpaidWelsh(_store.WorldLog, id, _store.LastGameMin);
                     if (owed == null || _store.LastGameMin - owed.At < BrawlVerbs.RepayAfterMinutes)
                         continue;   // not straight after: the welsh stands a while first (else it would mean nothing)
-                    _wrOffered.Add(id + "|" + now / 60000);
+                    _wrOffered.Add(id);   // once a session each: "Not now" is an answer (review 7)
                     _wrTo = p;
                     _wrAgainAt = now + 30000;
                     PromptSet(BrawlVerbs.RepayKind, new TownEvent { Kind = BrawlVerbs.RepayKind, Town = _placeTown, AId = id, AName = name }, 8000);
@@ -120,7 +120,7 @@ namespace EnrageWestworld.InGame
             FolkRef ac = _bridge != null ? _bridge.AcquaintanceAt(to.Handle) : null;
             if (ac != null)
                 _bridge.LikeMore(ac.Id, 12);   // back most of the way (the welsh took 15: he remembers he had to wait)
-            RecordEvent(BrawlVerbs.Repaid, "player", "you", e.AId, e.AName, to.Position, me.Handle, me.Handle, to.Handle, "paid the bet he welshed on");
+            RecordEvent(BrawlVerbs.Repaid, "player", "you", e.AId, e.AName, to.Position, me.Handle, me.Handle, to.Handle, "paid the bet welshed on");
             if (_engine != null && !FromTestRow("player", me.Handle, me.Handle, to.Handle))
             {
                 Minds.Party you = new Minds.Party { Id = "player", Name = _engine.KnowsYourName(e.AId) && YourFullName() != null ? YourFullName() : "the stranger", Label = "the stranger" };
