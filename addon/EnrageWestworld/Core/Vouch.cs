@@ -116,6 +116,35 @@ namespace EnrageWestworld.Core
             return null;
         }
 
+        /// The list kept to MostKept: the oldest settled go first, as ever; and only past twice that, the oldest whose end you were
+        /// never told (you never went back to his town): before, those stayed for good, past the cap too (SWEEP item 4's soak). A
+        /// week still running is never dropped.
+        public static void Trim(List<Vouched> vs)
+        {
+            if (vs == null)
+                return;
+            while (vs.Count > MostKept)
+            {
+                int oldest = -1;
+                for (int i = 0; i < vs.Count; i++)
+                    if (vs[i] != null && vs[i].Settled && (oldest < 0 || vs[i].EndedAt < vs[oldest].EndedAt))
+                        oldest = i;
+                if (oldest < 0)
+                    break;   // none settled: the rest stay, unless...
+                vs.RemoveAt(oldest);
+            }
+            while (vs.Count > MostKept * 2)
+            {
+                int oldest = -1;
+                for (int i = 0; i < vs.Count; i++)
+                    if (vs[i] != null && vs[i].Ended != null && (oldest < 0 || vs[i].EndedAt < vs[oldest].EndedAt))
+                        oldest = i;
+                if (oldest < 0)
+                    break;   // all still running: they stay
+                vs.RemoveAt(oldest);
+            }
+        }
+
         /// Done with: told, and a broken word's month is out (a kept one or a dead man's a day after it's told).
         public static bool Gone(Vouched v, long now)
         {

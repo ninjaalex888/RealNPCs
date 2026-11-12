@@ -696,6 +696,13 @@ namespace EnrageWestworld.Core
             Cap(Fallen, 150);
             Cap(Debts, 60);
             Cap(Transfers, 30);
+            if (KinGrudges != null)
+            {
+                // as the load's Fix does: the done ones kept a month, a hundred at most, at the save as well (the soak, SWEEP item 4: the
+                // save and its read-back disagreed, the list growing all session and pruned only by a reload)
+                KinGrudges.RemoveAll(k => k == null || (k.Done && LastGameMin - k.DoneAt > 30 * 1440L));
+                if (KinGrudges.Count > 100) KinGrudges.RemoveRange(0, KinGrudges.Count - 100);
+            }
             // each person's deeds of yours known and seen, the most recently learned DeedsKnownKept (HARDEN item 2: never trimmed, they kept the
             // ids of deeds long gone from Deeds' 250, and every look that asks whether someone knows a deed walks them; the soak of
             // a copy of Lex's save had the tick climbing over 60 game days). Anyone who knew of you still does: a count read as

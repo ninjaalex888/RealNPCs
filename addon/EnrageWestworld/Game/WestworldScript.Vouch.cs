@@ -102,16 +102,7 @@ namespace EnrageWestworld.InGame
                 if (Vouch.Gone(v, g))
                     vs.RemoveAt(i);
             }
-            while (vs.Count > Vouch.MostKept)
-            {
-                int oldest = -1;
-                for (int i = 0; i < vs.Count; i++)
-                    if (vs[i].Settled && (oldest < 0 || vs[i].EndedAt < vs[oldest].EndedAt))
-                        oldest = i;
-                if (oldest < 0)
-                    break;   // all still running: they stay
-                vs.RemoveAt(oldest);
-            }
+            Vouch.Trim(vs);   // the settled oldest first; past twice the cap, the oldest never told (Core/Vouch.cs; SWEEP item 4)
         }
 
         private void VouchBroke(Vouched v, string how, long g)
