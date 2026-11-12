@@ -35,10 +35,10 @@ namespace EnrageWestworld.Core
             if (p.Devout || p.Churchgoer && !p.Drinker)
                 return new GiftFit { Item = "a hymn book", Cents = 50 };
             if (woman)
-                return p.Group == "gentry" ? new GiftFit { Item = "a lace collar", Cents = 75 } : p.Group == "girl" ? new GiftFit { Item = "a bottle of scent", Cents = 60 } : new GiftFit { Item = "a length of ribbon", Cents = 25 };
+                return p.Group == "gentry" || p.Group == "lady" ? new GiftFit { Item = "a lace collar", Cents = 75 } : p.Group == "girl" ? new GiftFit { Item = "a bottle of scent", Cents = 60 } : new GiftFit { Item = "a length of ribbon", Cents = 25 };
             if (p.Drinker)
                 return new GiftFit { Item = "a bottle of rye", Cents = 50 };
-            if (p.Group == "gentry")
+            if (p.Group == "gentry" || p.Group == "gentleman")
                 return new GiftFit { Item = "a box of cigars", Cents = 60 };
             if (p.Group == "farm")
                 return new GiftFit { Item = "a pair of work gloves", Cents = 40 };

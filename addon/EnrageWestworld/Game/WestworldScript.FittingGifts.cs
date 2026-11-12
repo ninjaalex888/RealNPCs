@@ -18,6 +18,7 @@ namespace EnrageWestworld.InGame
         }
 
         private GiftInHand _gift;
+        private bool _giftOffered;   // offered while they're near: not again till you step away
         private List<Resident> _giftFor = new List<Resident>();
         private int _giftNext, _giftsGiven;
         private string _giftStoreVisit;   // the town of this store visit: the offer once a visit
@@ -25,7 +26,7 @@ namespace EnrageWestworld.InGame
 
         private void FittingGiftsStep(int now)
         {
-            if (!FittingGifts.On || !_cfg.FittingGifts || _store == null || _engine == null || now < _giftNext || _eventPrompt != null)
+            if (!FittingGifts.On || !_cfg.FittingGifts || _store == null || _engine == null || now < _giftNext || !PromptFree())
                 return;
             _giftNext = now + 3000;
             long g = _store.LastGameMin;
@@ -39,16 +40,23 @@ namespace EnrageWestworld.InGame
             }
             if (_gift != null)
             {
+                bool near = false;
                 foreach (int h in _mindNear)
                 {
                     MindWho w;
-                    if (!_mindWho.TryGetValue(h, out w) || w.Id != _gift.ToId || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                    if (!_mindWho.TryGetValue(h, out w) || (w.Id != _gift.ToId && _engine.WorryIdOf(w.Id) != _gift.ToId) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                         continue;
                     if (new Ped(h).Position.DistanceTo(me.Position) > FittingGifts.GiveMetres)
                         continue;
+                    near = true;
+                    if (_giftOffered)
+                        return;   // once an approach (the review)
+                    _giftOffered = true;
                     PromptSet(FittingGifts.GiveKind, new TownEvent { Kind = FittingGifts.GiveKind, Town = _placeTown, AId = _gift.ToId, AName = _gift.ToName, Extra = _gift.Item }, FittingGifts.PromptMs);
                     return;
                 }
+                if (!near)
+                    _giftOffered = false;   // stepped away: offered again next time
                 return;
             }
             if (_placeKind != "genstore" || _placeTown == null)
@@ -126,7 +134,7 @@ namespace EnrageWestworld.InGame
             foreach (int x in _mindNear)
             {
                 MindWho w;
-                if (_mindWho.TryGetValue(x, out w) && w.Id == gi.ToId && ENTITY.DOES_ENTITY_EXIST(x))
+                if (_mindWho.TryGetValue(x, out w) && (w.Id == gi.ToId || _engine.WorryIdOf(w.Id) == gi.ToId) && ENTITY.DOES_ENTITY_EXIST(x))
                 {
                     h = x;
                     break;

@@ -483,6 +483,7 @@ namespace EnrageWestworld.InGame
 			EpilogueCarry(flag);   // John's first save takes Arthur's world over, eight years on (WestworldScript.Epilogue.cs)
 			TonicAfter.Clear();   // the round's memory-only marks belong to the save they came from (LIVES; the review)
 			MailDay.Clear();
+			LivesForget();   // the J verbs' notes, gifts and the doctor's day (WestworldScript.LivesForget.cs; the track 4 review)
 			if (_cfg != null && _cfg.PeopleTrim)
 			{
 				// the records of people nothing is kept of but a name, let go once a load, inside the load's long frame (about 60 ms on

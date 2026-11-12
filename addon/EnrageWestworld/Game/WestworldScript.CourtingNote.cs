@@ -23,10 +23,11 @@ namespace EnrageWestworld.InGame
         private TownEvent _courtAsk;
         private int _courtNext, _courtNotesGiven;
         private readonly HashSet<string> _courtAsked = new HashSet<string>();   // a man asked at most once a day
+        private bool _courtGiveOffered;   // offered while she's near: not again till you step away
 
         private void CourtingNoteStep(int now)
         {
-            if (!CourtingNote.On || !_cfg.CourtingNote || _store == null || _engine == null || now < _courtNext || _eventPrompt != null)
+            if (!CourtingNote.On || !_cfg.CourtingNote || _store == null || _engine == null || now < _courtNext || !PromptFree())
                 return;
             _courtNext = now + CourtingNote.LookMs;
             long g = _store.LastGameMin, day = g / 1440;
@@ -38,6 +39,7 @@ namespace EnrageWestworld.InGame
                 Log.Write("COURT note: " + _courtNote.FromName + "'s note for " + _courtNote.ToName + " never given; he'll give it himself, or not");
                 _courtNote = null;
             }
+            bool herNear = false;
             foreach (int h in _mindNear)
             {
                 MindWho w;
@@ -45,10 +47,15 @@ namespace EnrageWestworld.InGame
                     continue;
                 if (new Ped(h).Position.DistanceTo(me.Position) > CourtingNote.Metres)
                     continue;
+                if (_courtNote != null && (w.Id == _courtNote.ToId || _engine.WorryIdOf(w.Id) == _courtNote.ToId))
+                    herNear = true;
                 if (_courtNote != null)
                 {
-                    if (w.Id != _courtNote.ToId)
+                    if (w.Id != _courtNote.ToId && _engine.WorryIdOf(w.Id) != _courtNote.ToId)
                         continue;
+                    if (_courtGiveOffered)
+                        return;   // once an approach (the review): stepped away, it's offered again
+                    _courtGiveOffered = true;
                     _courtAsk = new TownEvent { Kind = CourtingNote.GiveKind, Town = _placeTown, AId = _courtNote.ToId, AName = _courtNote.ToName, BName = _courtNote.FromName };
                     PromptSet(CourtingNote.GiveKind, _courtAsk, CourtingNote.PromptMs);
                     return;
@@ -71,6 +78,8 @@ namespace EnrageWestworld.InGame
                 Log.Write("COURT note: " + w.Name + " has a note for " + link.OtherName + "; J to carry it");
                 return;
             }
+            if (!herNear)
+                _courtGiveOffered = false;   // stepped away from her: offered again next time
         }
 
         /// J, "Carry his note": yours for two game days.
@@ -97,7 +106,7 @@ namespace EnrageWestworld.InGame
             foreach (int x in _mindNear)
             {
                 MindWho w;
-                if (_mindWho.TryGetValue(x, out w) && w.Id == n.ToId && ENTITY.DOES_ENTITY_EXIST(x))
+                if (_mindWho.TryGetValue(x, out w) && (w.Id == n.ToId || _engine.WorryIdOf(w.Id) == n.ToId) && ENTITY.DOES_ENTITY_EXIST(x))
                 {
                     h = x;
                     break;

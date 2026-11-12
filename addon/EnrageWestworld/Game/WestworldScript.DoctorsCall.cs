@@ -16,7 +16,7 @@ namespace EnrageWestworld.InGame
 
         private void DoctorsCallStep(int now)
         {
-            if (!DoctorsCall.On || !_cfg.DoctorsCall || _store == null || _engine == null || _placeTown == null || now < _doctorsCallNext || _eventPrompt != null)
+            if (!DoctorsCall.On || !_cfg.DoctorsCall || _store == null || _engine == null || _placeTown == null || now < _doctorsCallNext || !PromptFree())
                 return;
             _doctorsCallNext = now + DoctorsCall.LookMs;
             long day = _store.LastGameMin / 1440;
@@ -27,19 +27,16 @@ namespace EnrageWestworld.InGame
                 return;
             Ped doctor = null;
             Resident docR = null;
-            foreach (int h in _mindNear)
+            foreach (Ped p in Peds.All())
             {
-                MindWho w;
-                if (!_mindWho.TryGetValue(h, out w) || w.Id == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                if (p.IsDead || p.Position.DistanceTo(me.Position) > DoctorsCall.DoctorMetres)
                     continue;
-                Ped p = new Ped(h);
-                if (p.Position.DistanceTo(me.Position) > DoctorsCall.DoctorMetres)
-                    continue;
-                Resident r = _store.FindResident(w.Id);
-                Post post = r != null ? _engine.PostOf(r) : null;
-                PostKind k = post != null ? Posts.Of(post.Model) : null;
+                PostKind k = PostKindOf(p);   // the post's holder, as the slate finds its keeper (the track 4 review)
                 if (k != null && k.Kind == "doctor")
                 {
+                    Resident r = HolderAt(p, k);
+                    if (r == null)
+                        continue;
                     doctor = p;
                     docR = r;
                     break;
@@ -67,7 +64,7 @@ namespace EnrageWestworld.InGame
             string child = DoctorsCall.Sick(sp, day);
             string surname = sick.Name != null && sick.Name.Contains(" ") ? sick.Name.Substring(sick.Name.LastIndexOf(' ') + 1) : null;
             string seed = sick.Id + "|doc|" + day;
-            SpeechCaption(Person.FirstOf(docR.Name) ?? "The doctor", DoctorsCall.Mention(child, surname != null ? "the " + surname + "s" : null, seed), doctor.Handle, 5500);
+            SpeechCaption(Person.FirstOf(docR.Name) ?? "The doctor", DoctorsCall.Mention(child, surname != null ? "the " + surname + (surname.EndsWith("s") ? "es" : "s") : null, seed), doctor.Handle, 5500);
             _doctorsCallDoctor = doctor;
             PromptSet(DoctorsCall.Kind, new TownEvent { Kind = DoctorsCall.Kind, Town = _placeTown, AId = sick.Id, AName = sick.Name, Extra = child, BName = docR.Name, Count = DoctorsCall.Cents }, DoctorsCall.PromptMs);
             Log.Write("DOCTOR'S CALL: " + docR.Name + " names " + sick.Name + "'s house (" + child + ", fever) they can't pay his call for; J to pay it");
