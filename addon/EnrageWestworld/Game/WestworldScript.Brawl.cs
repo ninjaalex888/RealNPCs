@@ -266,7 +266,7 @@ namespace EnrageWestworld.InGame
                 lh.Phase = 9;   // over before he got there: the aftermath's word does
                 return;
             }
-            var all = a.Concat(b).Where(h => ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !AtArthur(h)).ToList();   // never one fighting Arthur (the review of items 1-13)
+            var all = a.Concat(b).Distinct().Where(h => ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !AtArthur(h)).ToList();   // (once each: SWEEP item 1's review)   // never one fighting Arthur (the review of items 1-13)
             var targets = new Dictionary<int, int>();   // (one on both sides would have thrown in ToDictionary and lost the law's break-up: SWEEP item 1)
             foreach (int h in all)
                 if (!targets.ContainsKey(h))

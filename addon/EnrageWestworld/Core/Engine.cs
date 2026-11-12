@@ -510,6 +510,8 @@ namespace EnrageWestworld.Core
 						Hops = 1,
 						At = now
 					});
+					if (relative.Heard.Count > 12)
+						relative.Heard.RemoveRange(0, relative.Heard.Count - 12);   // the newest twelve, as a person's own (SWEEP item 1's second sweep: never trimmed)
 					PlayerRef you = Talk.RefFor(person, personState, Player);
 					string text = ((r.How == "telegram") ? "a telegram" : "a letter");
 					string text2 = RelationTo(relative, person);

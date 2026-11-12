@@ -48,6 +48,8 @@ namespace EnrageWestworld.InGame
             return false;
         }
 
+        private PerfSlot _psReasonHearts;
+
         /// The people near the player who could be in a scene for a reason: named, free, not busy with anything else.
         private List<Candidate> ReasonCandidates(Ped me, int now, bool test = false)
         {
@@ -66,7 +68,9 @@ namespace EnrageWestworld.InGame
                     continue;
                 if (!test && Resting(h, now))
                     continue;   // a test skips the rests (it logs that it did)
+                PerfSub hs = SubStart();
                 Someone who = SomeoneOf(p);
+                SubEnd(ref _psReasonHearts, "scenes: who's near, their hearts", hs);   // its own line on the meter (SWEEP item 1's second sweep: a Heart a ped walks ties, links, deeds; unmeasured offline)
                 if (who != null)
                     list.Add(new Candidate { Ped = p, Who = who });
             }
@@ -271,6 +275,8 @@ namespace EnrageWestworld.InGame
                 for (int j = i + 1; j < people.Count; j++)
                 {
                     float apart = people[i].Ped.Position.DistanceTo(people[j].Ped.Position);
+                    if (apart > Math.Max(LinkedApart, ReasonApart))
+                        continue;   // too far for either: skipped before the walk of every link (the same pairs as before; SWEEP item 1's second sweep: 435 pairs x 400 links in a crowd)
                     Someone a = people[i].Who, b = people[j].Who;
                     // one is the real person at the other end of the other's worry: they'll cross a street for it
                     string aw = _engine.WorryIdOf(a.Id), bw = _engine.WorryIdOf(b.Id);   // a link is kept under the resident enRAGE took up (Links.IsOf)

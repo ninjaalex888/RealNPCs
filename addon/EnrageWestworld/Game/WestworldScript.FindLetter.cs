@@ -88,11 +88,12 @@ namespace EnrageWestworld.InGame
             if (Array.IndexOf(FindLetter.Towns, _placeTown) < 0)
                 return null;
             long day = _store.LastGameMin / 1440;
+            var seeds = _store.WorrySeedOf != null ? new HashSet<string>(_store.WorrySeedOf.Values.Where(v => v != null)) : null;   // (once, not per resident: SWEEP item 1's second sweep)
             foreach (Resident r in _store.Residents)
             {
                 if (r == null || r.Dead || r.Id == null || r.Town == null || r.Town == _placeTown || r.Name == null || r.Cast != null || _flOffered.Contains(r.Id + "|take"))
                     continue;   // (never a test's cast; one declined this session doesn't hide the next: review 4)
-                if (_store.WorrySeedOf != null && _store.WorrySeedOf.ContainsValue(r.Id))
+                if (seeds != null && seeds.Contains(r.Id))
                     continue;   // taken up by enRAGE: his marks live under another id (review 4)
                 PersonState st = _store.Find(r.Id);
                 if (st == null || st.Has(FindLetter.HeldMark) || st.Has(FindLetter.GivenMark) || !(st.Talks > 0 || st.KnowsName || st.ContactAt > 0))
