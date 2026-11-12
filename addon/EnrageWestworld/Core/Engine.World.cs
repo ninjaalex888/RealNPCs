@@ -388,8 +388,7 @@ namespace EnrageWestworld.Core
                 return;
             Person dead = Find(r.FromId) ?? new Person { Id = r.FromId, Name = r.FromName, Woman = r.FromWoman };
             rel.Heard.Add(new Hearsay { FromId = dead.Id, FromName = dead.Name, FromWoman = dead.Woman, Text = "died", Hops = 1, At = now, Thought = true });
-            if (rel.Heard.Count > 12)
-                rel.Heard.RemoveRange(0, rel.Heard.Count - 12);   // the newest twelve (SWEEP item 1's second sweep)
+            Hearsay.CapRelative(rel.Heard);   // the newest twelve, never a death (SWEEP item 1's second sweep)
             string relTo = RelationTo(rel, dead);
             bool knows = st.KnowsName;
             bool far = rel.Town == null || rel.Town.Contains(",") || new[] { "Philadelphia", "New York", "Boston", "Chicago", "St. Louis", "Kansas City", "San Francisco", "Baltimore", "Chihuahua" }.Contains(rel.Town);

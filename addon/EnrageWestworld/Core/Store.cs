@@ -77,7 +77,7 @@ namespace EnrageWestworld.Core
         // "someone we keep a state for" means what it did before the trim (the review of item 3: a stir, a debt's memory, a thief's
         // mark were gated on a state being there); and a townsman rolled asleep isn't rolled again. Left out of the trim's walk.
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, string> Trimmed;
-        public int PeopleTrimmed;   // this session (F7, the log)
+        public int PeopleTrimmed;   // let go this session (the load's PEOPLE line says the load's own)
 
         public void TrimmedAdd(PersonState st)
         {
@@ -270,6 +270,9 @@ namespace EnrageWestworld.Core
             return s != null && s.Has(FindLetter.HeldMark) && !s.Has(FindLetter.GivenMark);
         }
 
+        /// The state kept for this id, or null. Not a pure read since SWEEP item 3: one the trim let go is made again here (Untrim),
+        /// which adds to People, so never call Find for another's id inside a walk of People itself (a tie's other end, a relative):
+        /// copy the walk first (.ToList()). Every walk today asks only ids already in People (the reviews of 2ab63cc).
         public PersonState Find(string id)
         {
             PersonState st;
