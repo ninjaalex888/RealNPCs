@@ -277,6 +277,7 @@ namespace EnrageWestworld.Core
 				st.Diary.RemoveAt(0);
 			DiaryChanged.Add(p.Id);
 			Log("DREAM " + p.Name + ": " + text);
+			DreamWake.Note(DreamMarks, p.Id, m, m.Text, now);   // carried into the morning (Core/DreamWake.cs; [Mind] DreamsRemembered)
 		}
 
 		private void Spread(Person p, MemoryItem m, long now)

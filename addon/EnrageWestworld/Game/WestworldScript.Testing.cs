@@ -1040,6 +1040,8 @@ namespace EnrageWestworld.InGame
                     _nextTickerUpdate = 0;
                     said = "the next thoughts are coming up beside the main one";
                     return null;
+                case "dreamwake":
+                    return DreamWakeTest(out said);   // WestworldScript.DreamWake.cs (LIVES item 1d)
                 case "blur":
                     return BlurTest(out said);   // WestworldScript.MemoryBlur.cs (LIVES item 1c)
                 case "absent":

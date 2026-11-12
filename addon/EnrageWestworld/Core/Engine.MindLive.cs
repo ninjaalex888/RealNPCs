@@ -264,6 +264,9 @@ namespace EnrageWestworld.Core
         /// Their thoughts lately, by id (the model is told them and the check holds a repeat).
         public readonly RecentThoughts Recent = new RecentThoughts();
 
+        /// Last night's dream by id, in memory only (Core/DreamWake.cs; LIVES item 1d): a reload forgets it, as mornings do.
+        public readonly Dictionary<string, DreamMark> DreamMarks = new Dictionary<string, DreamMark>();
+
         /// How far "things are as they seem" has been chipped in them (above 0 shaken), whatever the switches; 0 for nothing kept.
         private float WorldShaken(string id)
         {

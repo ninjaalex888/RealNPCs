@@ -998,6 +998,15 @@ namespace EnrageWestworld.Core
                         Make = () => Ties.Thought(t, p.Id, seed, dead)
                     });
             }
+            // last night's dream, the morning after (Core/DreamWake.cs; [Mind] DreamsRemembered)
+            DreamMark dm;
+            if (DreamWake.On && DreamMarks.TryGetValue(p.Id, out dm) && DreamWake.Morning(dm, now))
+            {
+                PlayerRef yr = st != null ? Talk.RefFor(p, st, Player) : null;
+                string dyou = yr != null && yr.KnownByName ? yr.FirstName : null;
+                DreamMark dmc = dm;
+                c.Add(new Minds.Candidate { Source = "dream:" + dm.Emotion + (dm.Nights > 1 ? ":again" : ""), Pull = DreamWake.Pull + Minds.Jitter(seed, "dream", 4), Make = () => DreamWake.Line(dmc, dyou, seed, told) });
+            }
             // someone of their ties out of sight (Core/AbsentThoughts.cs; [Mind] AbsentThoughts): the fellow witness of a killing,
             // or the one they fear, scorn, envy or look up to, thought of alone
             string absentKind, absentWho;
