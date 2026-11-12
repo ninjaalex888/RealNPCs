@@ -85,26 +85,6 @@ namespace EnrageWestworld.Core
 
         /// The player's standing in a town from what's known of him here lately: a killer (two killings known, or one with
         /// no kindness beside it), a peacemaker (three kindnesses and no killing), or nothing said.
-        // ---- the good deeds a town knows (SEAMS item 19; [Scenes] GoodDeedsStand) --------------------------------------------
-        // The standing ("peacemaker" at three kindnesses, none of them killings) counted only the kindnesses in the events log
-        // (whiskey bought, money handed over, a rescue); its fights stopped, its thief caught and the outlaw spared, all known,
-        // never made you its peacemaker. Now the deeds it knows of count too. A rescue is left out here: its own
-        // "defend" event already counts it, and one act counted twice would be a thumb on the scale.
-        public static bool GoodDeedsCount = true;   // from the settings
-        private static readonly string[] Counted = { "peace", "mercy", "spared", "thiefcaught" };
-
-        /// The good deeds of yours this town knows of since then (a deed's count at least one).
-        public static int GoodDeedsKnown(IEnumerable<Deed> deeds, string town, long since)
-        {
-            if (!GoodDeedsCount || deeds == null || town == null)
-                return 0;
-            int n = 0;
-            foreach (Deed d in deeds)
-                if (d != null && d.Known && d.Town == town && d.At >= since && System.Array.IndexOf(Counted, d.Kind) >= 0)
-                    n += System.Math.Max(1, d.Count);
-            return n;
-        }
-
         public static string Standing(int killsKnown, int kindnesses)
         {
             if (killsKnown >= 2 || (killsKnown == 1 && kindnesses == 0))

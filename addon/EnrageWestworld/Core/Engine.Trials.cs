@@ -103,7 +103,6 @@ namespace EnrageWestworld.Core
             foreach (Happening h in Store.WorldLog)
                 if (h != null && h.DoerId == "player" && !h.Test && h.Town == town && h.At >= since && Fondness.IsKindness(h.Kind))
                     kindnesses++;
-            kindnesses += Reputation.GoodDeedsKnown(Store.Deeds, town, since);   // the good deeds it knows of (SEAMS item 19)
         }
 
         /// Who saw the killing: the death's witnesses with lasting ids (the WorldLog's "death" record).

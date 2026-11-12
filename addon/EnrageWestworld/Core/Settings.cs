@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 452;
+        public const int CurrentVersion = 451;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -452,7 +452,6 @@ namespace EnrageWestworld.Core
         public bool ChanceFirst = true;   // [Scenes] the chance meeting (songs, tales, haggling, standoffs) goes first when no reason is strong, the argument's share stops growing past weight 1.5, main scenes start nearer you, and two held in chairs far apart aren't cast (NIGHT4 fix 7; settings version 166)
         public bool HorseThieves = true;   // [Scenes] with MindLive: a man whose mind leans to it takes a horse with nobody on it and rides off; its owner shouts after him (the NPC-life run, step 5; settings version 137)
         public bool FightCrowds = false;   // off as it comes from settings version 182 (Lex, 2026-11-01: onlookers froze; "remove the feature that tells the NPCs to gather as a crowd") [Scenes] with MindLive: a crowd rings a street fight and cheers it on (the fearful keep away) (the NPC-life run, step 5; settings version 136)
-        public bool GoodDeedsStand = true;    // [Scenes] the good deeds a town knows of yours (a fight broken up, a thief run down, a man spared) count toward your standing there, as a drink stood or a rescue does (SEAMS item 19; settings version 452)
         public bool FindTheLetter = true;     // [Scenes] the letter a resident waits on sits at another town's depot: a station agent there hands it to you (J), and you carry it to him (J) (SEAMS item 18; settings version 451)
         public bool SavedKnown = true;        // [Scenes] with Deeds: someone you save in the street or on the road (a bully pulled off, a beater put down, the hogtied cut loose) is a good deed the town hears of (SEAMS item 17; settings version 450)
         public bool StepBetweenKnown = true;   // [Scenes] with StepBetween and Deeds: two you stepped between who both let it be: a peace deed the town hears of, as a fight broken up is (SEAMS item 16; settings version 449)
@@ -1096,8 +1095,6 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
-                if (s.SettingsVersion < 452)
-                    log?.Invoke("Settings: new in this version: [Scenes] GoodDeedsStand (on): good deeds a town knows of count toward your standing there.");
                 if (s.SettingsVersion < 451)
                     log?.Invoke("Settings: new in this version: [Scenes] FindTheLetter (on): carry a waiting man's letter from another town's depot.");
                 if (s.SettingsVersion < 450)
@@ -2416,7 +2413,6 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("ChanceFirst = " + B(ChanceFirst) + "   ; chance meetings (a song, a tall tale, haggling, a standoff, a card cheat) get their turn when nobody has a strong reason, nearer you; a high TroubleWeight brings more fights, not more arguments; two people sat far apart are not picked for a scene they would never walk to");
             b.AppendLine("HorseThieves = " + B(HorseThieves) + "   ; with MindLive on, in town: a man honest with nobody and short of money (or a known thief) gets up on a horse that isn't his and rides off, a red dot and fair game; its owner shouts after him. At most once a town in two game hours");
             b.AppendLine("FightCrowds = " + B(FightCrowds) + "   ; with MindLive on: while people trade blows, those within [Mind] BrawlCrowdMetres who aren't of a fearful nature walk over, stand round in a ring and cheer it on (up to 6 round two men, 16 round a brawl, in two rings); they go when it's over");
-            b.AppendLine("GoodDeedsStand = " + B(GoodDeedsStand) + "   ; the good deeds a town knows of yours (a fight broken up, a thief run down, a man you had at gunpoint let go) count toward your standing there, so three of them make you a peacemaker in its eyes; false: only drinks, coins and rescues count");
             b.AppendLine("FindTheLetter = " + B(FindTheLetter) + "   ; one you've met who waits on a letter that never comes: it sits at another town's depot. At that town's station agent J offers it to you; carry it to him and J gives it over: he reads it, and his worry ends well; false: the letter never comes");
             b.AppendLine("SavedKnown = " + B(SavedKnown) + "   ; with Deeds on: pulling a bully off a man, putting down the man beating him, cutting the hogtied loose and the like are good deeds the town knows of (those who saw remember it, it's told about, it may be in the paper), as the rescue at an execution already was; false: only the one saved knows");
             b.AppendLine("StepBetweenKnown = " + B(StepBetweenKnown) + "   ; with StepBetween and Deeds on: when you step between two men about to quarrel (J) and both let it be, it's a good deed the town knows of, as a fight you break up is; false: only the two of them know");

@@ -98,7 +98,6 @@ namespace EnrageWestworld.Core
             foreach (Happening h in Store.WorldLog)
                 if (h != null && h.DoerId == "player" && !h.Test && h.Town == e.Town && h.At >= since && Fondness.IsKindness(h.Kind))
                     kindnesses++;
-            kindnesses += Reputation.GoodDeedsKnown(Store.Deeds, e.Town, since);   // (SEAMS item 19)
             string standing = Reputation.Standing(killsKnown, kindnesses);
             int va, vb;
             Elections.Tally(regulars, a, b, Store.Ties, e.Endorsed, standing, e.WhiskeyFor, e.LeanedOn, e.Id, out va, out vb);
