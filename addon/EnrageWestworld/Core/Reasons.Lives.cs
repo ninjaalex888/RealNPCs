@@ -9,6 +9,8 @@ namespace EnrageWestworld.Core
         private static Reason LivesBetween(Someone a, Someone b, SceneTie tie, long gameDay, Place where)
         {
             Reason r = Either(a, b, (x, y) => SchoolFather.For(x, y, tie, gameDay, where));   // the schoolteacher and the father (LIVES item 2a)
+            if (r == null)
+                r = ElectionNight.For(a, b, gameDay, where);   // election night in the saloon (LIVES item 2b)
             return r;
         }
 

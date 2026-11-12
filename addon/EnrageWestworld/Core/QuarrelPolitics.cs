@@ -60,7 +60,15 @@ namespace EnrageWestworld.Core
                     new[] { "Your cows on my claim again this morning.", "Your claim's on my water.", "The land office says otherwise.", "threat" } } },
         };
 
-        static Topic Of(string key) { return Topics.FirstOrDefault(t => t.Key == key); }
+        // election night's quarrel (Core/ElectionNight.cs; LIVES item 2b): kept out of Topics, so OverFor's choice among the
+        // year's quarrels is as it was; asked for by its key alone (the Stance, the sides and the openers)
+        static readonly Topic Election = new Topic { Key = ElectionNight.Topic, Words = "the vote", Summary = "over the vote", SideA = new[] { "farm", "working", "rough", "trapper", "cattle" }, SideB = new[] { "gentry", "town", "pious" },
+            Openers = new[] {
+                new[] { "Your man's bought every vote in this room with the town's own whiskey.", "And yours couldn't buy a vote if he paid in gold.", "Say that outside.", "angry" },
+                new[] { "Courthouse crowd has had this town in its pocket ten years.", "Better them than your rabble.", "Rabble, is it?", "threat" },
+                new[] { "Ballot box was stuffed. Every man here knows it.", "You lost fair. Take it like a man.", "Fair? I'll show you fair.", "threat" } } };
+
+        static Topic Of(string key) { return key == ElectionNight.Topic ? Election : Topics.FirstOrDefault(t => t.Key == key); }
 
         /// A man's side group for these quarrels: "cattle" for the ranch trades (no trade group of their own), else his trade
         /// group (InnerLife.TradeGroup).
