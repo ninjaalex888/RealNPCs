@@ -397,13 +397,14 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<string> _owesYou = new HashSet<string>();
         private int _owesYouAt = -100000;
 
-        private readonly HashSet<string> _stoodByYou = new HashSet<string>();   // who stood by you in a fight this week (SEAMS item 5)
+        private readonly HashSet<string> _stoodByYou = new HashSet<string>();
+        private readonly HashSet<string> _youOwe = new HashSet<string>();   // the men you welshed on and haven't paid (SEAMS item 25)   // who stood by you in a fight this week (SEAMS item 5)
 
         /// The card's word for what's between you: "Owes you" (you saved him, stood with him, paid his fine), "Stood by you"
         /// (he fought for you this week; [Display] NameCardsStood), or null. Both sets refilled every 5 s, never per card.
         private string OwesYou(string id)
         {
-            if (_cfg == null || (!_cfg.NameCardsOwes && !_cfg.NameCardsStood) || _store == null)
+            if (_cfg == null || (!_cfg.NameCardsOwes && !_cfg.NameCardsStood && !_cfg.NameCardsYouOwe) || _store == null)
                 return null;
             int now = Game.GameTime;
             if (now - _owesYouAt >= 5000 || now < _owesYouAt)
@@ -417,9 +418,15 @@ namespace EnrageWestworld.InGame
                     Interact.StoodByYou(_store.WorldLog, _store.LastGameMin, _stoodByYou);
                 else
                     _stoodByYou.Clear();
+                if (_cfg.NameCardsYouOwe)
+                    BrawlVerbs.OwedByYou(_store.WorldLog, _store.LastGameMin, _youOwe);
+                else
+                    _youOwe.Clear();
             }
-            if (_owesYou.Count == 0 && _stoodByYou.Count == 0 || id == null)
+            if (_owesYou.Count == 0 && _stoodByYou.Count == 0 && _youOwe.Count == 0 || id == null)
                 return null;
+            if (_youOwe.Count > 0 && (_youOwe.Contains(id) || (_engine != null && _youOwe.Contains(_engine.WorryIdOf(id)))))
+                return "You owe them " + BrawlVerbs.Money(BrawlVerbs.StakeCents);   // a debt of yours first: the welsh unpaid (SEAMS item 25)
             string wid = _engine != null ? _engine.WorryIdOf(id) : id;   // one enRAGE took up since: the debt is under his first id (the round's review)
             return _owesYou.Contains(id) || _owesYou.Contains(wid) ? "Owes you" : _stoodByYou.Contains(id) || _stoodByYou.Contains(wid) ? "Stood by you" : null;
         }

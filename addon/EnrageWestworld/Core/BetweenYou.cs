@@ -45,6 +45,12 @@ namespace EnrageWestworld.Core
                     else if (e.Kind == "defend" && e.TargetId == "player" && e.DoerId != null && e.DoerId != "player" && !e.Test && now - e.At < Interact.StoodByYouMinutes)
                         stood[e.DoerId] = e;
                 }
+            var youOwe = new Dictionary<string, Happening>();   // a bet welshed on, not yet paid (SEAMS item 25)
+            if (log != null)
+                foreach (Happening e in log)
+                    if (e != null && e.Kind == "welshed" && e.DoerId == "player" && e.TargetId != null && !e.Test && e.At <= now && now - e.At < BrawlVerbs.RepayDays * 1440 &&
+                        !BrawlVerbs.WelshSettled(log, e) && !(dead != null && dead(e.TargetId)))
+                        youOwe[e.TargetId] = e;
             var robbed = new List<string>();
             var letters = new List<string>();
             if (people != null)
@@ -58,7 +64,7 @@ namespace EnrageWestworld.Core
                     if (st.Has(FindLetter.HeldMark) && !st.Has(FindLetter.GivenMark))
                         letters.Add(st.Name);
                 }
-            if (owes.Count == 0 && stood.Count == 0 && robbed.Count == 0 && letters.Count == 0)
+            if (owes.Count == 0 && stood.Count == 0 && robbed.Count == 0 && letters.Count == 0 && youOwe.Count == 0)
                 return null;
             var b = new StringBuilder();
             b.Append("What's owed, either way, and what you carry:\n");
@@ -73,6 +79,12 @@ namespace EnrageWestworld.Core
                 b.Append("\nThey stood by you\n");
                 foreach (Happening e in stood.Values.OrderByDescending(x => x.At))
                     b.Append("- ").Append(e.DoerName ?? "someone").Append(": fought on your side, ").Append(Ago(now - e.At)).Append('\n');
+            }
+            if (youOwe.Count > 0)
+            {
+                b.Append("\nYou owe them\n");
+                foreach (Happening e in youOwe.Values.OrderByDescending(x => x.At))
+                    b.Append("- ").Append(e.TargetName ?? "someone").Append(": the ").Append(BrawlVerbs.Money(BrawlVerbs.StakeCents)).Append(" of a bet you didn't pay\n");
             }
             if (robbed.Count > 0)
             {

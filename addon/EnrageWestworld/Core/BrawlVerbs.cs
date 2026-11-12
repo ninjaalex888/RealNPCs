@@ -154,6 +154,18 @@ namespace EnrageWestworld.Core
             return false;
         }
 
+        /// Everyone you owe a bet's dollar now (an unpaid welsh within the month), in one pass: for the name cards' "You owe them"
+        /// and the reader's page (SEAMS item 25). The debt of yours you can see is the one you can choose to pay.
+        public static void OwedByYou(List<Happening> log, long now, HashSet<string> into)
+        {
+            into.Clear();
+            if (!RepayOn || log == null)
+                return;
+            foreach (Happening e in log)
+                if (e != null && e.Kind == "welshed" && e.DoerId == "player" && e.TargetId != null && !e.Test && e.At <= now && now - e.At < RepayDays * 1440 && !WelshSettled(log, e))
+                    into.Add(e.TargetId);
+        }
+
         public static List<InteractOption> RepayRows(string to, int cashCents)
         {
             return new List<InteractOption>
