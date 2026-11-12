@@ -8,8 +8,9 @@
 // seed, resident, letter, another's family or memory or marks). Such a record is made again, bare, the next time anyone looks
 // at them, exactly as it was made the first time, with one exception kept by hand: the share of townsfolk who start already
 // waking is rolled once a person (Engine.PersonOfFolk, on the engine's own dice), so a bare record dropped and made again would
-// be rolled again, and over many saves most would wake. Their ids go into RolledAsleep (a short string each, against a record),
-// which the roll reads first. Plain C#; reflection over the saved fields, the field lists found once.
+// be rolled again, and over many saves most would wake. Each id goes into Store.Trimmed with its name and its roll, and
+// Store.Find and Store.Get make the record again from it, exactly as it was, the first time anyone asks (code that asks only
+// whether a state is kept sees what it saw before). Plain C#; reflection over the saved fields, the field lists found once.
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -91,6 +92,8 @@ namespace EnrageWestworld.Core
                                     Walk(pf.GetValue(st), seen, visited, 0);
                     continue;
                 }
+                if (f.Name == "Trimmed")
+                    continue;   // the trim's own list holds only the trimmed: walked, it would keep each of them for good (the review of item 3)
                 Walk(v, seen, visited, 0);
             }
             return seen;
@@ -148,7 +151,7 @@ namespace EnrageWestworld.Core
                     }
         }
 
-        /// The bare records nobody refers to, taken out; their waking roll kept in RolledAsleep. Returns how many went.
+        /// The bare records nobody refers to, taken out; each kept in Store.Trimmed (name and roll) to be made again. Returns how many went.
         public static int Prune(Store s)
         {
             if (!On || s == null || s.People == null || s.People.Count <= KeepAtLeast)
@@ -162,9 +165,7 @@ namespace EnrageWestworld.Core
             {
                 if (refs.Contains(id))
                     continue;
-                PersonState st = s.People[id];
-                if (st.WakeRolled)
-                    s.RolledAsleepAdd(id);   // (bare means WakeStage 0: rolled, and not waking)
+                s.TrimmedAdd(s.People[id]);   // its name and its roll kept: Find and Get make it again as it was (Store.Untrim)
                 s.People.Remove(id);
                 n++;
             }

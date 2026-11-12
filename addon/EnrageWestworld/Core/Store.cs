@@ -72,27 +72,32 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, long> WorryWorsened;   // id -> the game minute the player turned their worry the wrong way (Core/Helps.cs; SIXDAY item 9); null until one
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, string> WorrySeedOf;   // enRAGE's person id -> the resident id whose worry they live on with (Engine.CarryPerson; NIGHT3 For Lex 9a); null until one is taken up
         [DataMember(EmitDefaultValue = false)] public PaceState Pace = new PaceState();                           // when things may happen again (Pacing.cs)
-        // townsfolk whose bare record the trim took out, rolled once and not waking: the roll reads this first (Core/PeopleTrim.cs;
-        // SWEEP item 3), so a record made again isn't rolled again
-        [DataMember(EmitDefaultValue = false)] public List<string> RolledAsleep;
-        private HashSet<string> _rolledAsleep;
+        // the people whose bare record the trim took out (Core/PeopleTrim.cs; SWEEP item 3): id -> "1" or "0" (the waking roll had,
+        // or not) and their name. Find and Get make the record again, exactly as it was, the first time anyone asks for it, so
+        // "someone we keep a state for" means what it did before the trim (the review of item 3: a stir, a debt's memory, a thief's
+        // mark were gated on a state being there); and a townsman rolled asleep isn't rolled again. Left out of the trim's walk.
+        [DataMember(EmitDefaultValue = false)] public Dictionary<string, string> Trimmed;
         public int PeopleTrimmed;   // this session (F7, the log)
 
-        public bool RolledAsleepHas(string id)
+        public void TrimmedAdd(PersonState st)
         {
-            if (id == null || RolledAsleep == null || RolledAsleep.Count == 0)
-                return false;
-            if (_rolledAsleep == null || _rolledAsleep.Count != RolledAsleep.Count)
-                _rolledAsleep = new HashSet<string>(RolledAsleep);
-            return _rolledAsleep.Contains(id);
+            if (st == null || st.Id == null)
+                return;
+            (Trimmed ?? (Trimmed = new Dictionary<string, string>()))[st.Id] = (st.WakeRolled ? "1" : "0") + (st.Name ?? "");
         }
 
-        public void RolledAsleepAdd(string id)
+        public bool TrimmedHas(string id) { return id != null && Trimmed != null && Trimmed.ContainsKey(id); }
+
+        /// The record as the trim found it, back in People; null when it wasn't trimmed.
+        private PersonState Untrim(string id)
         {
-            if (id == null || RolledAsleepHas(id))
-                return;
-            (RolledAsleep ?? (RolledAsleep = new List<string>())).Add(id);
-            _rolledAsleep = null;
+            string was;
+            if (id == null || Trimmed == null || !Trimmed.TryGetValue(id, out was) || was == null || was.Length == 0)
+                return null;
+            Trimmed.Remove(id);
+            var st = new PersonState { Id = id, Name = was.Length > 1 ? was.Substring(1) : null, WakeRolled = was[0] == '1' };
+            People[id] = st;
+            return st;
         }
 
         public List<string> RewoundShares = new List<string>();   // deaths we told enRAGE of that a reload undid; the game side takes them back
@@ -158,7 +163,7 @@ namespace EnrageWestworld.Core
         public PersonState Get(Person p)
         {
             PersonState st;
-            if (!People.TryGetValue(p.Id, out st))
+            if (!People.TryGetValue(p.Id, out st) && (st = Untrim(p.Id)) == null)
             {
                 st = new PersonState { Id = p.Id, Name = p.Name };
                 People[p.Id] = st;
@@ -266,7 +271,9 @@ namespace EnrageWestworld.Core
         public PersonState Find(string id)
         {
             PersonState st;
-            return id != null && People.TryGetValue(id, out st) ? st : null;
+            if (id == null)
+                return null;
+            return People.TryGetValue(id, out st) ? st : Untrim(id);   // (one the trim let go: made again as it was)
         }
 
         public int Count(string what)
