@@ -397,11 +397,11 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<string> _owesYou = new HashSet<string>();
         private int _owesYouAt = -100000;
 
-        private readonly HashSet<string> _stoodByYou = new HashSet<string>();
-        private readonly HashSet<string> _youOwe = new HashSet<string>();   // the men you welshed on and haven't paid (SEAMS item 25)   // who stood by you in a fight this week (SEAMS item 5)
+        private readonly HashSet<string> _stoodByYou = new HashSet<string>();   // who stood by you in a fight this week (SEAMS item 5)
+        private readonly HashSet<string> _youOwe = new HashSet<string>();   // the men you welshed on and haven't paid (SEAMS item 25)
 
         /// The card's word for what's between you: "Owes you" (you saved him, stood with him, paid his fine), "Stood by you"
-        /// (he fought for you this week; [Display] NameCardsStood), or null. Both sets refilled every 5 s, never per card.
+        /// (he fought for you this week; [Display] NameCardsStood), "You owe them $1" first (a welsh unpaid; NameCardsYouOwe), or null. Both sets refilled every 5 s, never per card.
         private string OwesYou(string id)
         {
             if (_cfg == null || (!_cfg.NameCardsOwes && !_cfg.NameCardsStood && !_cfg.NameCardsYouOwe) || _store == null)

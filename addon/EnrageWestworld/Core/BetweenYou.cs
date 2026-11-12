@@ -48,7 +48,7 @@ namespace EnrageWestworld.Core
             var youOwe = new Dictionary<string, Happening>();   // a bet welshed on, not yet paid (SEAMS item 25)
             if (log != null)
                 foreach (Happening e in log)
-                    if (e != null && e.Kind == "welshed" && e.DoerId == "player" && e.TargetId != null && !e.Test && e.At <= now && now - e.At < BrawlVerbs.RepayDays * 1440 &&
+                    if (BrawlVerbs.RepayOn && e != null && e.Kind == "welshed" && e.DoerId == "player" && e.TargetId != null && !e.Test && e.At <= now && now - e.At < BrawlVerbs.RepayDays * 1440 &&
                         !BrawlVerbs.WelshSettled(log, e) && !(dead != null && dead(e.TargetId)))
                         youOwe[e.TargetId] = e;
             var robbed = new List<string>();
