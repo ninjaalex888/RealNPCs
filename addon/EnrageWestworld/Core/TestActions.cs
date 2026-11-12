@@ -237,6 +237,7 @@ namespace EnrageWestworld.Core
             new Entry("scene:school", "Street scenes", "The schoolteacher asks a father after his boy", "TestSchoolKey", needs: "[Scenes] SchoolFather; two named people within 16 m (the nearest two play the teacher and the father for the test)"),
             new Entry("scene:churchsteps", "Street scenes", "Talk on the church steps after the service", "TestChurchStepsKey", needs: "[Scenes] ChurchSteps; two named people within 16 m (the nearest two, any day for the test; the pew's absent man is named only in play)"),
             new Entry("scene:mailday", "Street scenes", "Mail day: a letter opened by the platform", "TestMailDayKey", needs: "[Scenes] MailDay; two named people within 16 m (the nearest two, anywhere, for the test)"),
+            new Entry("scene:tonicafter", "Street scenes", "The medicine show's bottle, the day after", "TestTonicAfterKey", needs: "[Scenes] TonicAfter; two named people within 16 m (the nearest two, as if one had bought a bottle; nothing kept)"),
             // ---- tools ---------------------------------------------------------------------------------------------
             new Entry("showminds", "Tools", "Show minds (a card over people near you)", "TestShowMindsKey", "Ctrl+F2"),   // on and off for the session (Lex, 2026-10-27)
             new Entry("wakestages", "Tools", "Show wake stages (a tag over the waking)", "TestWakeStagesKey"),

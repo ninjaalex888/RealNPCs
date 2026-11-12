@@ -6,7 +6,7 @@ namespace EnrageWestworld.Core
 {
     public static partial class Reasons
     {
-        private static Reason LivesBetween(Someone a, Someone b, SceneTie tie, long gameDay, Place where)
+        private static Reason LivesBetween(Someone a, Someone b, SceneTie tie, long gameDay, long now, Place where)
         {
             Reason r = Either(a, b, (x, y) => SchoolFather.For(x, y, tie, gameDay, where));   // the schoolteacher and the father (LIVES item 2a)
             if (r == null)
@@ -19,6 +19,8 @@ namespace EnrageWestworld.Core
                 r = NewsOverFence.For(a, b, gameDay, where);   // the town's news over the fence (LIVES item 2e)
             if (r == null)
                 r = Either(a, b, (x, y) => MailDay.For(x, y, gameDay, where));   // a letter off the train (LIVES item 2f)
+            if (r == null)
+                r = Either(a, b, (x, y) => TonicAfter.For(x, y, gameDay, now, where));   // the medicine show's bottle, the days after (LIVES item 2g)
             return r;
         }
 

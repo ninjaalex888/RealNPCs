@@ -144,7 +144,7 @@ namespace EnrageWestworld.Core
             Reason rivals = Rivals.For(a, b, gameDay, where.Saloon);
             if (rivals != null)
                 return rivals;
-            Reason lives = LivesBetween(a, b, tie, gameDay, where);   // the lives round's street scenes (Core/Reasons.Lives.cs)
+            Reason lives = LivesBetween(a, b, tie, gameDay, now, where);   // the lives round's street scenes (Core/Reasons.Lives.cs)
             if (lives != null)
                 return lives;
             if (tie != null)

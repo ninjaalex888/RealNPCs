@@ -296,6 +296,7 @@ namespace EnrageWestworld.InGame
             Core.DanceFight.On = _cfg.DanceFight;         // [Scenes] DanceFight (LIVES item 2d)
             Core.NewsOverFence.On = _cfg.NewsOverFence;   // [Scenes] NewsOverFence (LIVES item 2e)
             Core.MailDay.On = _cfg.MailDay;               // [Scenes] MailDay (LIVES item 2f)
+            Core.TonicAfter.On = _cfg.TonicAfter;         // [Scenes] TonicAfter (LIVES item 2g)
             Core.SleepOnIt.On = _cfg.SleepOnIt;           // [Mind] SleepOnIt (DEPTH item 19)
             Mourning.GraveNightOn = _cfg.GraveNight;      // [World] GraveNight (DEPTH reserve R1)
             Core.NoteMeet.On = _cfg.NoteMeet;             // [Scenes] NoteMeet (DEPTH reserve R2)

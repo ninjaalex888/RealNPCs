@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 472;
+        public const int CurrentVersion = 473;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -141,6 +141,7 @@ namespace EnrageWestworld.Core
         public bool DanceFight = true;   // [Scenes] with [World] EventDances: while the Saturday dance is on in the saloon, a man who's spoken for and another man there, no friend of his, may have it out over her, a brawl over a girl at the dance (Core/DanceFight.cs; LIVES item 2d) (settings version 470)
         public bool NewsOverFence = true;   // [Scenes] by day two women of a town who meet in the street may pass on its freshest news between two others by name (who's at odds, walking out, made up, done a good turn) (Core/NewsOverFence.cs; LIVES item 2e) (settings version 471)
         public bool MailDay = true;   // [Scenes] with [World] TrainTime: for ten minutes after a train comes in, by the town's platform, one of the town opens a letter off it and reads it to whoever is by: good news called out, bad taken home; the letter a worry waited on comes as the worry ends (Core/MailDay.cs; LIVES item 2f) (settings version 472)
+        public bool TonicAfter = true;   // [Scenes] the medicine show's sceptic who bought a bottle tells, in the three days after, what it did: sick as a dog, or his horse's turn (Core/TonicAfter.cs; LIVES item 2g) (settings version 473)
         public bool StepBetween = true;   // [Scenes] J when two men with a quarrel between them are about to have it out near you: step between them; heeded by both, it's put off six game hours, and the second time they make it up (Core/StepBetween.cs; DEPTH item 7; settings version 413)
         public bool TemperanceDoor = true;   // [Scenes] at dusk a churchwoman puts the pledge to a drinker at the saloon door, a second woman beside her; a hothead's insult brings her kin; a pledge is the town's talk and the preacher's (FOURTEENHOUR item 25; settings version 393)
         public bool Snubs = true;            // [Scenes] a gentleman snubs a working man in the street; his lady's word ends it or makes it worse; alone, it can come to blows (FOURTEENHOUR item 18; settings version 386)
@@ -1115,6 +1116,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 473)
+                    log?.Invoke("Settings: new in this version: [Scenes] TonicAfter (on): the medicine show's tonic, the days after: the man who bought a bottle tells what it did.");
                 if (s.SettingsVersion < 472)
                     log?.Invoke("Settings: new in this version: [Scenes] MailDay (on): mail day: a letter off the train opened by the platform, good news called out, bad taken home.");
                 if (s.SettingsVersion < 471)
@@ -2488,6 +2491,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("DanceFight = " + B(DanceFight) + "   ; with [World] EventDances on: while the Saturday dance is on in the town's saloon, a man who's spoken for (a sweetheart, someone he courts) and another man there who's no friend of his may have it out over her (\"That's twice you've had her round the floor.\"): a brawl over a girl at the dance, friends joining their man, or hard words where it can't be a fight; false: the dance passes without one");
             b.AppendLine("NewsOverFence = " + B(NewsOverFence) + "   ; by day, away from the saloon, two women of the same town who meet in the street may pass on the town's freshest news between two others, by name (who's at odds, who's walking out together, who's made it up, who did whom a good turn), from the town's ties of the last two days; false: no such talk");
             b.AppendLine("MailDay = " + B(MailDay) + "   ; with [World] TrainTime on: for ten minutes after a train comes in at a town's platform, with you near it, one of the town opens a letter off the train and reads it to whoever is by: good news called out, bad news folded away and taken home; for someone whose worry is a letter that never came, at its end, it's that letter; false: the train brings no mail");
+            b.AppendLine("TonicAfter = " + B(TonicAfter) + "   ; the sceptic at the medicine show who buys a bottle anyway is remembered (until the game is reloaded) and, in the three days after, meeting anyone by day, tells what it did: sick as a dog since, or the horse that won't look at him the same, and the other has his laugh; false: the bottle is never heard of again");
             b.AppendLine("StepBetween = " + B(StepBetween) + "   ; two men with a quarrel between them about to have it out near you (words, before any blow): J to step between them; each heeds you by his nature and what he thinks of you; both heed and it's put off six game hours; one won't and he shoves past; the second time both heed, they make it up; false: no such J");
             b.AppendLine("TemperanceDoor = " + B(TemperanceDoor) + "   ; with Temperance on: at dusk a churchwoman by the saloon door puts the pledge to a man in drink going in, with a second woman of the church beside her if one is near (never a crowd); a hothead's insult brings her kin if he's near, and blows with sides; a man who signs is the town's talk for a week (and back at the bar by Friday, as often as not) and the preacher's word on Sunday; false: the pledge only in chance meetings, as before");
             b.AppendLine("Snubs = " + B(Snubs) + "   ; a working man asks a gentleman something in the street by day and is brushed off; he takes it, sneers or answers back; the gentleman's pride; with a lady beside him, her word ends it or makes it worse and they walk on together; alone, a hot man and a proud one can come to blows, and the working men near lean to their own; false: never");

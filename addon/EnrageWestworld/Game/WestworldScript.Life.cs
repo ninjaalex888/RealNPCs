@@ -816,6 +816,12 @@ namespace EnrageWestworld.InGame
         private void NoteHappened(Pending p, string kind)
         {
             NoteSceneTie(kind, p.People, p.S != null ? p.S.Doer : -1);
+            if (kind == "pitch" && TonicAfter.On && p.S != null && p.S.Beats.Count > 0 && p.S.Beats[p.S.Beats.Count - 1].Voice == "buy" && p.People.Count >= 2)
+            {
+                string bid, bname;
+                if (LastingId(p.People[1], out bid, out bname))
+                    TonicAfter.Note(bid, Bridge.Now());   // the sceptic who bought a bottle: the days after (Core/TonicAfter.cs; LIVES item 2g)
+            }
             if (kind == "hosts" && p.S != null && p.S.Summary == HostNotes.Summary && p.People.Count >= 2)
             {
                 string na, nn, nb, nm;   // two waking compared notes: each wakes faster for a while (Core/HostNotes.cs; FIVEDAY R28)
