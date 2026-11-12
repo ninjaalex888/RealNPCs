@@ -147,10 +147,44 @@ namespace EnrageWestworld.Core
         public const int DeedsKnownKept = 50;   // a person's deeds of yours known, and seen, kept: the most recently learned (Trim; HARDEN item 2)
         public const int MaxResidents = 700;   // room for the town regulars (RegularsPerTown in each town) and the rest
 
+        /// The resident with this id (the first, as FirstOrDefault gave), or null. Through an index (SWEEP item 2): it was a walk of the
+        /// 700 kept residents, called per person in ticks (HasDied, Present: the 140 ms TieGossip tick of HARDEN, the letters' list,
+        /// the fever's ties, the trials' friends). Stale-proof without anyone having to tell it: the list itself, its count and its
+        /// last entry are checked on every look, so an Add (always at the end), a Remove, the cap's drop-and-add, a rewind or a load
+        /// (a new list) rebuilds it; a hit is checked for its id as well. Nothing inserts into the middle or changes a resident's id.
+        /// IndexResidents false: the old walk (the soak compares the two).
         public Resident FindResident(string id)
         {
-            return Residents.FirstOrDefault(r => r.Id == id);
+            if (id == null || Residents == null)
+                return null;
+            if (!IndexResidents)
+                return Residents.FirstOrDefault(r => r != null && r.Id == id);
+            int n = Residents.Count;
+            if (_resIndex == null || !ReferenceEquals(_resIndexOf, Residents) || _resIndexCount != n || !ReferenceEquals(_resIndexLast, n > 0 ? Residents[n - 1] : null))
+            {
+                if (_resIndex == null)
+                    _resIndex = new Dictionary<string, Resident>();
+                else
+                    _resIndex.Clear();
+                foreach (Resident r in Residents)
+                    if (r != null && r.Id != null && !_resIndex.ContainsKey(r.Id))
+                        _resIndex[r.Id] = r;   // the first wins, as FirstOrDefault
+                _resIndexOf = Residents;
+                _resIndexCount = n;
+                _resIndexLast = n > 0 ? Residents[n - 1] : null;
+                _resIndexBuilds++;
+            }
+            Resident found;
+            return _resIndex.TryGetValue(id, out found) && found.Id == id ? found : null;
         }
+
+        public static bool IndexResidents = true;   // SWEEP item 2 (the soak's comparison turns it off)
+        private Dictionary<string, Resident> _resIndex;
+        private List<Resident> _resIndexOf;
+        private int _resIndexCount;
+        private Resident _resIndexLast;
+        public int ResidentIndexBuilds { get { return _resIndexBuilds; } }
+        private int _resIndexBuilds;
 
         /// A kept resident of this town met before in a body that looked exactly like this one (night 2026-10-29, item 5;
         /// [World] OwnLooks, standing alone): the same model, sex and look, living and still in town, never a regular (they
