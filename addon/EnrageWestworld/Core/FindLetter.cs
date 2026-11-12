@@ -54,7 +54,7 @@ namespace EnrageWestworld.Core
         {
             return new List<InteractOption>
             {
-                new InteractOption { Id = "findletter:take", Label = "Take the letter for " + (name ?? "him") + (town != null ? " of " + town : "") + " to carry to him." },
+                new InteractOption { Id = "findletter:take", Label = "Take the letter for " + (name ?? "them") + (town != null ? " of " + town : "") + ", to carry it there." },
                 new InteractOption { Id = "findletter:no", Label = "Leave it be." },
             };
         }
@@ -63,7 +63,7 @@ namespace EnrageWestworld.Core
         {
             return new List<InteractOption>
             {
-                new InteractOption { Id = "giveletter:give", Label = "Give " + (name ?? "him") + " the letter" + (kin != null ? " from " + kin : "") + "." },
+                new InteractOption { Id = "giveletter:give", Label = "Give " + (name ?? "them") + " the letter" + (kin != null ? " from " + kin : "") + "." },
                 new InteractOption { Id = "giveletter:no", Label = "Not now." },
             };
         }
@@ -71,9 +71,9 @@ namespace EnrageWestworld.Core
         /// The agent, handing it over.
         public static string AgentLine(string name, string town, string seed)
         {
-            string first = Person.FirstOf(name ?? "him");
-            return Voice.Pick(seed + "|ag", "There's one here for " + first + " of " + (town ?? "elsewhere") + ". Came on the wrong train, weeks back. You know him?",
-                                            "Letter for a " + first + ", " + (town ?? "not from here") + ". Been in the pigeonhole since spring. You'll see he gets it?",
+            string first = Person.FirstOf(name ?? "someone");
+            return Voice.Pick(seed + "|ag", "There's one here for " + first + " of " + (town ?? "elsewhere") + ". Came on the wrong train, weeks back. You know the name?",
+                                            "Letter for a " + first + ", " + (town ?? "not from here") + ". Been in the pigeonhole since spring. You'll see it gets there?",
                                             "Mail for " + first + " out of " + (town ?? "another town") + ". Misdirected. I'd be obliged if you'd carry it.");
         }
 
@@ -95,10 +95,10 @@ namespace EnrageWestworld.Core
 
         public static string Notice(string name, string town)
         {
-            return "You carry a letter for " + (name ?? "someone") + (town != null ? " of " + town : "") + ". Find him and give it over.";
+            return "You carry a letter for " + (name ?? "someone") + (town != null ? " of " + town : "") + ". Find them and give it over.";
         }
 
-        public const string Outcome = "brought him the letter he waited on";
+        public const string Outcome = "brought the letter they waited on";
 
         public static IEnumerable<string> AllLines()
         {
