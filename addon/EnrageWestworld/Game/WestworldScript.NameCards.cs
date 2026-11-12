@@ -599,7 +599,7 @@ namespace EnrageWestworld.InGame
             // lawman's and a shopkeeper's trade on the card); a stranger's "Stranger" gives way to it, the badge or the apron
             // being plain to see
             string job = got && gang == null ? c.Job : null;
-            c.Says = got && c.Name != null && (between != null || job != null || gang != null);
+            c.Says = got && c.Name != null && (between != null || job != null || gang != null || (c.Line2 != null && c.Line2.StartsWith("Robbed you", StringComparison.Ordinal)));   // ("Robbed you" is written into the line itself, before the trade goes in front: the whole-round review)
             if (job != null && c.Name != null)
             {
                 if (string.IsNullOrEmpty(c.Line2) || c.Line2 == "Stranger")

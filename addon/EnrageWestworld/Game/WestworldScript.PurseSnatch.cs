@@ -194,7 +194,7 @@ namespace EnrageWestworld.InGame
             LiftResolved(t, "friend");
             if (!t.Test)
                 NewsPush(t.Town ?? "Around here", FriendChase.News(chaser, seed), "news");
-            Log.Write("FRIENDCHASE " + t.ChaserName + " ran the thief down and brought your " + Cents(t.Amount) + " back; they remember it");
+            Log.Write("FRIENDCHASE " + t.ChaserName + " ran the thief down and brought your " + Cents(t.Amount) + " back" + (t.Test ? " (a test: nothing kept)" : "; they remember it"));
         }
 
         /// The thief brought down in the street holds it against the man who did it (DEEPEN item 6): a "rough" tie, the one a
