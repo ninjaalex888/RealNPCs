@@ -619,6 +619,11 @@ Joining systems that already ran but never read each other. All on runners seen 
 | A quarrel stopped is known | Step between two about to quarrel and both let it be: the town hears of it | Built (`[Scenes] StepBetweenKnown`) |
 | Someone you save is known | A bully pulled off, a beater put down, the hogtied cut loose: a good deed told about, maybe in the paper | Built (`[Scenes] SavedKnown`) |
 | Between you and them, in the reader | A reader page: who owes you and for what, who stood by you, who robbed you, whose letter you carry | Built (`[Display] BetweenYouPage`) |
+| A broken word remembered | The man who broke his week on your word thinks of letting you down | Built (`[Encounters] SuretyBrokeRemembered`) |
+| Their letter, on the card | "You carry their letter" under the name of one whose letter you have | Built (`[Display] NameCardsLetter`) |
+| The letter thanked later | Days on, the one you brought the letter to thanks you for putting the trouble right | Built (with FindTheLetter) |
+| The kinsman owes you too | The kinsman who thanked you comes to your aid for a month, "Owes you" on his card | Built (`[Scenes] KinThanksOwes`) |
+| A welsh made good | Meet the man you welshed on and pay him the dollar: liked better, a bet paid, the betting men take your money again | Built (`[Scenes] WelshRepay`) |
 | Who did what, in memory | A street help, a beggar's ask, a brush-off, a cards loan, a snub: each remembered from the right side | Fixed (Scene.MindDoer, Minds.MemorySwap; a cards loan its own words) |
 | The thoughts after a bet, old soldiers' talk, alms watched | Their own words at last, where courting lines had stood in | Fixed (three bug fixes; a sweep test guards every warm kind) |
 | Kin of the saved | One time in two, a kinsman of someone you saved finds you days on and thanks you, as kin come over a wrong | Built (`[Scenes] KinThanks`) |
