@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 451;
+        public const int CurrentVersion = 452;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -229,6 +229,7 @@ namespace EnrageWestworld.Core
         public bool FeelingBars = true;
         public float FeelingBarsMetres = 15f;
         public bool FeelingBarsShowEmpty;
+        public bool BetweenYouPage = true;           // [Display] a reader page, "Between you and them": who owes you and for what, who stood by you, who robbed you, whose letter you carry (SEAMS item 19; settings version 452)
         public bool NameCardsMourns = true;          // [Display] "Mourns one you killed" on the card of someone grieving a friend you killed this week (SEAMS item 12; settings version 445)
         public bool NameCardsRobbed = true;          // [Display] "Robbed you" on the card of the pickpocket who got away with your money, till you have it back from him (SEAMS item 9; settings version 441)
         public bool NameCardsStood = true;           // [Display] "Stood by you" on the card of someone who fought for you this week (an ally in a fight, a friend who ran down your thief) (SEAMS item 5; settings version 439)
@@ -1095,6 +1096,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 452)
+                    log?.Invoke("Settings: new in this version: [Display] BetweenYouPage (on): a reader page of who owes you, who stood by you, who robbed you.");
                 if (s.SettingsVersion < 451)
                     log?.Invoke("Settings: new in this version: [Scenes] FindTheLetter (on): carry a waiting man's letter from another town's depot.");
                 if (s.SettingsVersion < 450)
@@ -2107,6 +2110,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, fondness and anger, as enRAGE keeps them");
             b.AppendLine("FeelingBarsMetres = " + F(FeelingBarsMetres) + "   ; how close they must be (the nearest three in plain view get bars)");
             b.AppendLine("FeelingBarsShowEmpty = " + B(FeelingBarsShowEmpty) + "   ; also show the empty part of each bar, so a low value reads as a little out of a whole bar");
+            b.AppendLine("BetweenYouPage = " + B(BetweenYouPage) + "   ; a page in the reader (N), \"Between you and them\": who owes you and for what (and how much longer), who stood by you this week, who got away with your money, and whose letter you carry");
             b.AppendLine("NameCardsMourns = " + B(NameCardsMourns) + "   ; \"Mourns one you killed\" on the name card of someone grieving a friend you killed, for a week from when word reached them (\"Owes you\" and \"Stood by you\" show first)");
             b.AppendLine("NameCardsRobbed = " + B(NameCardsRobbed) + "   ; \"Robbed you\" on the name card of the pickpocket who got clean away with your money, until you catch him at it and have yours back");
             b.AppendLine("NameCardsStood = " + B(NameCardsStood) + "   ; \"Stood by you\" on the name card of someone who fought for you this week: an ally who came to your aid, a friend who ran down your thief");

@@ -262,6 +262,7 @@ namespace EnrageWestworld.InGame
             Interact.SuretyKeptOwes = _cfg.SuretyKeptOwes;   // [Encounters] SuretyKeptOwes: a week kept on your word owes you (SEAMS item 10)
             KinGrudges.ThanksOn = _cfg.KinThanks;           // [Scenes] KinThanks: a kinsman of someone you saved comes to thank you (SEAMS item 7)
             Appraisal.GratitudeFelt = _cfg.GratitudeFelt;   // [Encounters] GratitudeFelt: the mind feels a stand, a fine, a surety as a kindness (SEAMS item 11)
+            BetweenYou.On = _cfg.BetweenYouPage;          // [Display] BetweenYouPage (SEAMS item 19)
             FindLetter.On = _cfg.FindTheLetter;            // [Scenes] FindTheLetter (SEAMS item 18)
             Helps.WalkHomeMendsOn = _cfg.WalkHomeMends;     // [Scenes] WalkHomeMends: seen home from the drink mends a drinking worry (SEAMS item 15)
             FriendCalls.YoursOn = _cfg.FriendsKnowYourThief;   // [Scenes] FriendsKnowYourThief: the warning names the one who robbed you (SEAMS item 14)
@@ -550,6 +551,21 @@ namespace EnrageWestworld.InGame
             Paper overheard = OverheardPaper();   // what went on near you this last day (WestworldScript.Overheard.cs)
             if (overheard != null)
                 papers.Add(overheard);
+            if (_cfg != null && _cfg.BetweenYouPage && _store != null)
+            {
+                // who owes you, who stood by you, who robbed you, whose letter you carry (Core/BetweenYou.cs; SEAMS item 19)
+                string between = null;
+                try
+                {
+                    between = BetweenYou.Body(_store.WorldLog, _store.People, _store.LastGameMin);
+                }
+                catch (Exception ex)
+                {
+                    Log.Write("BETWEEN YOU failed: " + ex.Message);
+                }
+                if (between != null)
+                    papers.Add(new Paper { Kind = "note", Title = "Between you and them", From = "from memory", Body = between, Delivered = true, Read = true });
+            }
             Paper board = NoticeBoardPaper();   // what's posted for the week, before "Who's who" (WestworldScript.NoticeBoard.cs; FIVEDAY item 16)
             if (board != null)
                 papers.Add(board);
