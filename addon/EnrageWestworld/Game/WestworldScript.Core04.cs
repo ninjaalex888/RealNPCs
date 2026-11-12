@@ -557,7 +557,7 @@ namespace EnrageWestworld.InGame
                 string between = null;
                 try
                 {
-                    between = BetweenYou.Body(_store.WorldLog, _store.People, _store.LastGameMin);
+                    between = BetweenYou.Body(_store.WorldLog, _store.People, _store.LastGameMin, x => x != null && x != "player" && _store.DeathOf(x) != null);
                 }
                 catch (Exception ex)
                 {

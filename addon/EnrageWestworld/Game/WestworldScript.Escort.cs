@@ -191,7 +191,7 @@ namespace EnrageWestworld.InGame
                 if (ac != null)
                     _bridge.LikeMore(ac.Id, Fondness.EscortLiking);   // enRAGE's own method for its own townsfolk
                 _engine.Escorted(e.Id, e.Name, g, true);
-                if (Helps.WalkHomeMendsOn)
+                if (Helps.WalkHomeMendsOn && !e.DoorRun)   // (never the doctor's run: review 5)
                 {
                     // seen home while the drink is his worry: mended, as the coffee is (SEAMS item 15). The worry itself is the
                     // test, not e.Drunk: J's walk home never knows a man's in his cups (review 4: InHisCups without his person)
@@ -203,7 +203,7 @@ namespace EnrageWestworld.InGame
                     if (wp != null && InnerLife.WorryNow(wp, g / 1440, out wk, out stage, out good) && Helps.WalkHomeMends(true, wk, stage))
                     {
                         _engine.SettleWorry(e.Id);
-                        Log.Write("FOND escort: " + e.Name + " seen home from the drink: his drinking worry mended (the rest of its run ends well)");
+                        Log.Write("FOND escort: " + e.Name + " seen home at his drinking worry: mended (the rest of its run ends well)");
                     }
                 }
             }

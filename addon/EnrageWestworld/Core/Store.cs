@@ -179,11 +179,12 @@ namespace EnrageWestworld.Core
                 Residents.Add(r);
             while (Residents.Count > MaxResidents)
             {
+                // (one whose letter you carry is kept till it's given: SEAMS item 18, review 5)
                 // someone keeping a post, a hermit living at a camp, or one of the test cast is never dropped; a town
                 // regular goes only after everyone else, and one the player has met only after every regular he hasn't; a
                 // resident enRAGE took up goes last of all, since enRAGE's person lives on with the worry worked out from
                 // their facts (WorrySeedOf; the pre-release review: dropped, the worry changed mid-run)
-                Resident drop = Residents.Where(x => x != r && !((x.PostId != null || x.HasCamp || x.Cast != null) && !x.Dead))
+                Resident drop = Residents.Where(x => x != r && !((x.PostId != null || x.HasCamp || x.Cast != null) && !x.Dead) && !LetterCarriedFor(x))
                     .OrderBy(x => WorrySeedOf != null && WorrySeedOf.ContainsValue(x.Id) ? 2 : x.Regular && !x.Dead ? 1 : 0)
                     .ThenBy(x => { PersonState s = Find(x.Id); return x.Regular && s != null && s.Sightings > 0 ? 1 : 0; })
                     .ThenBy(x => { PersonState s = Find(x.Id); return s != null ? s.WakeStage : 0; }).ThenBy(x => x.TouchedAt).FirstOrDefault();
@@ -192,6 +193,13 @@ namespace EnrageWestworld.Core
                 Residents.Remove(drop);
                 People.Remove(drop.Id);
             }
+        }
+
+        /// One whose letter the player carries, not yet given (Core/FindLetter.cs): never pruned while it is.
+        private bool LetterCarriedFor(Resident x)
+        {
+            PersonState s = x != null && !x.Dead ? Find(x.Id) : null;
+            return s != null && s.Has(FindLetter.HeldMark) && !s.Has(FindLetter.GivenMark);
         }
 
         public PersonState Find(string id)

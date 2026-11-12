@@ -46,6 +46,11 @@ namespace EnrageWestworld.InGame
                 if (LastingId(p, out id, out name) && id != null)
                 {
                     PersonState st = _store.Find(id);
+                    if ((st == null || !st.Has(FindLetter.HeldMark)) && _engine.WorryIdOf(id) != id)
+                    {
+                        id = _engine.WorryIdOf(id);   // enRAGE took him up after you took his letter: its mark is on the resident (review 5)
+                        st = _store.Find(id);
+                    }
                     if (st != null && st.Has(FindLetter.HeldMark) && !st.Has(FindLetter.GivenMark) && !_flOffered.Contains(id + "|give|" + now / 60000))
                     {
                         // the one you carry a letter for: J to give it over

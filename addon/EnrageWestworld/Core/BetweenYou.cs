@@ -28,7 +28,7 @@ namespace EnrageWestworld.Core
         }
 
         /// The page's body, or null when there's nothing between you and anyone. `people`: the saved states (names, marks).
-        public static string Body(List<Happening> log, IDictionary<string, PersonState> people, long now)
+        public static string Body(List<Happening> log, IDictionary<string, PersonState> people, long now, System.Func<string, bool> dead = null)
         {
             if (!On)
                 return null;
@@ -37,8 +37,8 @@ namespace EnrageWestworld.Core
             if (log != null)
                 foreach (Happening e in log)
                 {
-                    if (e == null || e.At > now)
-                        continue;
+                    if (e == null || e.At > now || (dead != null && (dead(e.TargetId) || dead(e.DoerId))))
+                        continue;   // (the dead owe nothing and stand by nobody: review 5)
                     if (Interact.Owing(e) && now - e.At < Interact.SavedMinutes)
                         owes[e.TargetId] = e;   // the latest for each
                     else if (e.Kind == "defend" && e.TargetId == "player" && e.DoerId != null && e.DoerId != "player" && !e.Test && now - e.At < Interact.StoodByYouMinutes)
@@ -50,7 +50,7 @@ namespace EnrageWestworld.Core
                 foreach (KeyValuePair<string, PersonState> kv in people)
                 {
                     PersonState st = kv.Value;
-                    if (st == null || st.Name == null)
+                    if (st == null || st.Name == null || (dead != null && dead(kv.Key)))
                         continue;
                     if (st.Has("robbedyou"))
                         robbed.Add(st.Name);
