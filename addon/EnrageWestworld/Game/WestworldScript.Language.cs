@@ -49,6 +49,7 @@ namespace EnrageWestworld.InGame
                 AiDetectStep();   // the start's question to Ollama, and turning the model on if it answers (WestworldScript.AiDetect.cs)
                 if (_cfg.Language && _langThread == null)
                     LanguageStart();
+                ModelReachStep(now);   // the idle model asked ahead for those near (WestworldScript.ModelReach.cs; LIVES item 3c)
             }
             catch (Exception ex)
             {
