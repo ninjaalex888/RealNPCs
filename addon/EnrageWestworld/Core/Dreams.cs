@@ -50,6 +50,9 @@ namespace EnrageWestworld.Core
                 OfYou.TryGetValue(m.Emotion, out pool);   // when it was you, mostly you in it
             if (pool == null && !Of.TryGetValue(m.Emotion, out pool))
                 return null;
+            string[] more;
+            if (Wider && pool != null && !ReferenceEquals(pool, OfYouPool(m.Emotion)) && More.TryGetValue(m.Emotion, out more))
+                pool = Join(pool, more);   // the wider pools (LIVES reserve R1; [Features] DreamsWider)
             string who = you != null && you.KnownByName ? you.FirstName : "the stranger";
             string line = pool[System.Math.Abs(Voice.Hash(seed + "|dream") % pool.Length)].Replace("{you}", who);
             if (line.StartsWith("the ", System.StringComparison.Ordinal))
@@ -57,9 +60,37 @@ namespace EnrageWestworld.Core
             return date + " - " + line;
         }
 
+        // ---- the wider pools (LIVES reserve R1, 2026-11-12; [Features] DreamsWider, settings version 483) -----------------------
+        // Three dreams a feeling made a diary of a hard month read the same; a dream of the same fright comes back changed each
+        // time (dreams recombine the day's residue with older fears: the "day residue" of the dream research since Freud, and the
+        // continuity studies). Four more a feeling (a diary's entries already written stay as they were written).
+        public static bool Wider;   // set by the game; off here so the goldens stand
+
+        private static readonly Dictionary<string, string[]> More = new Dictionary<string, string[]>
+        {
+            { "Fear", new[] { "Dreamt the house had no doors. I could hear it coming round the outside, looking for one.", "In the dream it happened again, only slower, and I knew every second of it before it came.", "Dreamt I called for help and my own mother crossed the street to be away from me.", "Woke sure someone was standing in the room. Lit the lamp. Nobody. Didn't sleep after." } },
+            { "Anger", new[] { "Dreamt I said it to his face in front of the whole town, and they all cheered. Woke ashamed of how good it felt.", "In the dream I was hitting the wall, and the wall was laughing.", "Dreamt I had him by the collar and he turned into my father. Didn't know what to do with my hands.", "Woke with my jaw aching. Must have been grinding at it all night." } },
+            { "Shame", new[] { "Dreamt I was at church in my nightshirt and the preacher read my name out.", "In the dream the newspaper had it on the front page, with a drawing. A good likeness.", "Dreamt I went to say I was sorry and the door kept moving down the street.", "Dreamt everyone I'd ever known was at the table and nobody would pass me the salt." } },
+            { "Grief", new[] { "Dreamt they were calling me from the yard. Ran out barefoot. Only the wind.", "In the dream I'd only been away a while, and they'd waited, and the kettle was on.", "Dreamt I could smell their pipe. Woke and the room smelled of nothing at all.", "In the dream I knew they were gone, and they knew, and we sat there anyway, not saying." } },
+        };
+
+        private static string[] OfYouPool(string emotion)
+        {
+            string[] p;
+            return OfYou.TryGetValue(emotion, out p) ? p : null;
+        }
+
+        private static string[] Join(string[] a, string[] b)
+        {
+            var all = new string[a.Length + b.Length];
+            a.CopyTo(all, 0);
+            b.CopyTo(all, a.Length);
+            return all;
+        }
+
         public static IEnumerable<string> AllLines()
         {
-            return Of.Values.SelectMany(x => x).Concat(OfYou.Values.SelectMany(x => x));
+            return Of.Values.SelectMany(x => x).Concat(OfYou.Values.SelectMany(x => x)).Concat(More.Values.SelectMany(x => x));
         }
     }
 }

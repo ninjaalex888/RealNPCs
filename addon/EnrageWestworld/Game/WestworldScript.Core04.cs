@@ -303,6 +303,7 @@ namespace EnrageWestworld.InGame
             Core.FittingGifts.On = _cfg.FittingGifts;     // [Scenes] FittingGifts (LIVES item 4c)
             Core.TownShrinks.On = _cfg.TownShrinks;       // [World] TownShrinks (LIVES item 5b)
             Core.HorseTalk.On = _cfg.HorseTalk;           // [World] HorseTalk (LIVES item 6a)
+            Core.Dreams.Wider = _cfg.DreamsWider;          // [Features] DreamsWider (LIVES reserve R1)
             Core.Language.AgreeOn = _cfg.ModelAgrees;       // [Mind] ModelAgrees (LIVES item 3b)
             Core.SleepOnIt.On = _cfg.SleepOnIt;           // [Mind] SleepOnIt (DEPTH item 19)
             Mourning.GraveNightOn = _cfg.GraveNight;      // [World] GraveNight (DEPTH reserve R1)

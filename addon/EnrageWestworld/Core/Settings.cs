@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 482;
+        public const int CurrentVersion = 483;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -22,6 +22,7 @@ namespace EnrageWestworld.Core
         public bool Remarks = true;
         public bool Thoughts = true;
         public bool DiaryDreams = true;   // [Features] with Diaries: a strong hard memory written down comes back a night or two later as a dream in the diary, half the time (the roadmap's idea bank; settings version 364)
+        public bool DreamsWider = true;   // [Features] with DiaryDreams: four more dreams a feeling (fear, anger, shame, grief) for the diaries, so a hard month's dreams don't read the same (Core/Dreams.cs; LIVES reserve R1) (settings version 483)
         public bool Diaries = true;
         public bool WordOfMouth = true;
         // word of a killing to the dead man's kin (Lex, 2026-10-31; settings version 162): game days to the telegram when
@@ -1125,6 +1126,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 483)
+                    log?.Invoke("Settings: new in this version: [Features] DreamsWider (on): more dreams in the diaries: four more a feeling.");
                 if (s.SettingsVersion < 482)
                     log?.Invoke("Settings: new in this version: [World] HorseTalk (on): the town's tale of what you did says the horse you rode; ride in on another and the trail goes cold.");
                 if (s.SettingsVersion < 481)
@@ -2018,6 +2021,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Remarks = " + B(Remarks) + "   ; people who remember you speak up when you pass");
             b.AppendLine("Thoughts = " + B(Thoughts) + "   ; now and then, what someone privately thinks of you");
             b.AppendLine("DiaryDreams = " + B(DiaryDreams) + "   ; with Diaries: a fright, a grief, a shame or an anger they wrote down comes back a night or two later as a dream in their diary, bent out of shape");
+            b.AppendLine("DreamsWider = " + B(DreamsWider) + "   ; with DiaryDreams on: four more dreams for each feeling (fear, anger, shame, grief) in the diaries, so a hard month's dreams don't read the same; false: the three a feeling as before");
             b.AppendLine("Diaries = " + B(Diaries) + "   ; people write down their days (also saved as text files)");
             b.AppendLine("WordOfMouth = " + B(WordOfMouth) + "   ; what you did reaches their kin, friends and family far away");
             b.AppendLine("KinWordDaysMin = " + KinWordDaysMin + "   ; a killing someone saw: the dead man's kin get the telegram at least this many game days on (0-30; a game day is about 48 real minutes)");

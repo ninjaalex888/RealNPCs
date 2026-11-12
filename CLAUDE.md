@@ -72,6 +72,7 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 - **Who's who by town** (`WhosWho.ByTown`/`TownOf` in `Core/WhosWho.cs`; the reader in Core04 picks it with `[Display] WhosWhoByTown`): the same forty, grouped by the resident's Town, else `FirstSeenTown`, else "On the roads and elsewhere"; here first, then by count.
 - **A town that shrinks** (`Core/TownShrinks.cs`; `Context.TownIndex`/`IndexTown` from `ThoughtDay`; a `town:shrinking` candidate for the town's own people, pull 21; the ledger's paper line; `[World] TownShrinks`): ledger index 35 or under.
 - **Known by the horse** (`Core/HorseTalk.cs` `Words(model)`/`With`/`Seen`; `Core/Engine.HorseTalk.cs` `HorseTaleIn`; `Game/WestworldScript.HorseTalk.cs` sets `Engine.PlayerHorse/PlayerHorseAt/PlayerMounted` once a second; `Engine.OnDeed` stamps `Deed.Horse` (saved, EmitDefaultValue false) on a violent or weighty deed within 60 game minutes of riding; `Rumours.Version` wraps Who in `HorseTalk.With` at fidelity 50+; a `horse:tale` candidate (pull 32) for the tale's town's people near you while you ride the same horse; `[World] HorseTalk`).
+- **Wider dreams** (`Dreams.More`, `Dreams.Wider` from `[Features] DreamsWider`): Entry joins four more a feeling onto the old three (never onto OfYou's pools).
 
 ## The sweep round (SWEEP.md, 2026-11-12; settings version 460; nothing seen in game yet)
 
