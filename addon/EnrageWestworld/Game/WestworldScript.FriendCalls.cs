@@ -211,7 +211,7 @@ namespace EnrageWestworld.InGame
                     if (ps == null || !ps.Has(PickpocketMark) || ENTITY.GET_ENTITY_COORDS(oh, true, true).DistanceTo(me.Position) > 40f)
                         continue;
                     string named = WarnKnowsOf(friend, o) ? o.Name : null;
-                    if (FriendCalls.YoursOn && _cfg.NameCardsRobbed && ps.Has(RobbedYouMark))
+                    if (FriendCalls.YoursOn && ps.Has(RobbedYouMark))
                     {
                         danger = named;
                         return FriendCalls.ThiefYours;   // the one who robbed you (SEAMS item 14)

@@ -265,7 +265,7 @@ namespace EnrageWestworld.InGame
             try
             {
                 string id, name;
-                if (_cfg == null || !_cfg.NameCardsRobbed || thief == null || !thief.Exists() || !LastingId(thief, out id, out name))
+                if (_cfg == null || thief == null || !thief.Exists() || !LastingId(thief, out id, out name))   // the mark always (the warning and the reader read it); the card shows it under NameCardsRobbed (the round's review)
                     return;
                 PersonState st = _store.Find(id);
                 if (st == null)

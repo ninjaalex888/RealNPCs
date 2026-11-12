@@ -427,7 +427,7 @@ namespace EnrageWestworld.Core
             if (KinGrudges != null)
             {
                 foreach (KinGrudge k in KinGrudges)
-                    if (k != null && k.At > cut && k.VictimId != null && People != null)
+                    if (k != null && !k.Test && k.At > cut && k.VictimId != null && People != null)   // a test's never set it (the round's review)
                     {
                         PersonState vst;
                         if (People.TryGetValue(k.VictimId, out vst) && vst != null && vst.Told != null)

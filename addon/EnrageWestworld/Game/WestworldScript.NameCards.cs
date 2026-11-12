@@ -423,7 +423,8 @@ namespace EnrageWestworld.InGame
             string id, name;
             if (!LastingId(p, out id, out name) || id == null)
                 return null;
-            return _owesYou.Contains(id) ? "Owes you" : _stoodByYou.Contains(id) ? "Stood by you" : null;
+            string wid = _engine != null ? _engine.WorryIdOf(id) : id;   // one enRAGE took up since: the debt is under his first id (the round's review)
+            return _owesYou.Contains(id) || _owesYou.Contains(wid) ? "Owes you" : _stoodByYou.Contains(id) || _stoodByYou.Contains(wid) ? "Stood by you" : null;
         }
 
         // who mourns one you killed this week (SEAMS item 12; [Display] NameCardsMourns): the mind's own grief (Engine.MournsYourKill,
@@ -445,7 +446,7 @@ namespace EnrageWestworld.InGame
                 return was.Value;
             if (_mournsAt.Count > 400)
                 _mournsAt.Clear();
-            bool m = _engine.MournsYourKill(id, NameCardMournDays);
+            bool m = _engine.MournsYourKill(id, NameCardMournDays) || (_engine.WorryIdOf(id) != id && _engine.MournsYourKill(_engine.WorryIdOf(id), NameCardMournDays));
             _mournsAt[id] = new KeyValuePair<int, bool>(now, m);
             return m;
         }
@@ -469,9 +470,12 @@ namespace EnrageWestworld.InGame
         {
             string gang = Factions.MemberOf(c.Model, PED.GET_PED_RELATIONSHIP_GROUP_HASH(p.Handle));
             bool got = NameCardFillInner(p, c, everyone && gang == null);
-            string between = got && c.Name != null ? OwesYou(p) : null;
-            if (between == null && got && c.Name != null && MournsYou(p))
-                between = "Mourns one you killed";
+            // grief first: a man you saved whose friend you killed since thinks of the killing (the round's review)
+            string between = got && c.Name != null && MournsYou(p) ? "Mourns one you killed" : null;
+            if (between == null && got && c.Name != null)
+                between = OwesYou(p);
+            if (between == "Owes you" && c.Line2 != null && c.Line2.StartsWith("Robbed you", StringComparison.Ordinal))
+                between = null;   // the thief who robbed you: his card says that, not a debt too
             if (between == null && got && c.Name != null && _cfg.NameCardsLetter && LetterFor(p))
                 between = "You carry their letter";   // the letter you carry for him (SEAMS item 21; Find the letter)
             if (between != null && (c.Line2 == null || c.Line2.IndexOf(between, StringComparison.Ordinal) < 0))
