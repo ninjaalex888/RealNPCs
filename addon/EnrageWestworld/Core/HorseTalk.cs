@@ -21,7 +21,7 @@ namespace EnrageWestworld.Core
     {
         public static bool On;   // [World] HorseTalk, set by the game
         public const int TellsAtFidelity = 50, Pull = 32;
-        public const long RideMinutes = 60;   // a deed done on foot remembers the horse you rode in on this long ago
+        public const long RideMinutes = 360;   // a deed done on foot remembers the horse you rode in on this long ago (six game hours, twelve real minutes: one game hour was two real minutes, too short for a walk into town; the advisor's check)
 
         private static readonly Dictionary<string, string> Breeds = new Dictionary<string, string>
         {
@@ -97,10 +97,10 @@ namespace EnrageWestworld.Core
         }
 
         /// Someone who sees you ride up on the horse their town's tale tells of. town: where it happened.
-        public static string Seen(string horse, string town, string seed)
+        public static string Seen(string horse, string town, string seed, List<string> told = null)
         {
             string h = horse != null && horse.StartsWith("a ") ? horse.Substring(2) : horse != null && horse.StartsWith("an ") ? horse.Substring(3) : horse ?? "horse";
-            return Voice.Pick(seed + "|hs", Lines).Replace("{h}", Grammar.UpperFirst(h)).Replace("{hl}", h).Replace("{horse}", horse ?? "a horse").Replace("{t}", town ?? "up the road");
+            return (InnerLife.PickTold(Lines, seed + "|hs", told) ?? Lines[0]).Replace("{h}", Grammar.UpperFirst(h)).Replace("{hl}", h).Replace("{horse}", horse ?? "a horse").Replace("{t}", town ?? "up the road");
         }
 
         public static IEnumerable<string> AllLines()

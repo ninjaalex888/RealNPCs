@@ -89,7 +89,7 @@ namespace EnrageWestworld.Core
             string[] pool;
             if (kind == null || who == null || !Lines.TryGetValue(kind, out pool))
                 return null;
-            return pool[(Voice.Hash(seed + "|absent") & 0x7fffffff) % pool.Length].Replace("{who}", who);   // (a line said lately is passed over by the candidate's own check, SaidToday)
+            return (InnerLife.PickTold(pool, seed + "|absent", told) ?? pool[0]).Replace("{who}", who);   // the next one not thought lately
         }
 
         public static IEnumerable<string> AllLines()

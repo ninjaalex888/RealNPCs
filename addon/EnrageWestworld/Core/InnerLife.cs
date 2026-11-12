@@ -1259,6 +1259,15 @@ namespace EnrageWestworld.Core
             return deeds != null && deeds.Count > 0 ? TownTalk(p, deeds, seed, told) : null;
         }
 
+        /// The told-aware pick for the lives round's thought lines (LIVES, after the advisor's check): the seed's line, or the
+        /// next one this person hasn't thought lately (`told`, their Musings), as the old pools pick.
+        private static readonly Person NoOne = new Person();
+
+        public static string PickTold(string[] pool, string seed, List<string> told)
+        {
+            return pool == null || pool.Length == 0 ? null : Pick(pool, NoOne, seed, told);   // (Pick fills {town} from the person: these lines have none)
+        }
+
         private static string Pick(string[] pool, Person p, string seed, List<string> told)
         {
             int start = Voice.Hash(seed) % pool.Length;

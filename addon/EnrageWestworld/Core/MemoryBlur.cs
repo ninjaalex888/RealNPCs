@@ -56,7 +56,7 @@ namespace EnrageWestworld.Core
             string[] pool;
             if (m == null || how == null || !Lines.TryGetValue(how + ":" + GroupOf(m.Kind), out pool))
                 return null;
-            return pool[(Voice.Hash(seed + "|blurl") & 0x7fffffff) % pool.Length];   // (a line said lately is passed over by the candidate's own check, SaidToday)
+            return InnerLife.PickTold(pool, seed + "|blurl", told) ?? pool[0];   // the next one not thought lately
         }
 
         public static IEnumerable<string> AllLines()

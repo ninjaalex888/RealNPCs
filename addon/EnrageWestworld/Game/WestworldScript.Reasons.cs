@@ -278,6 +278,7 @@ namespace EnrageWestworld.InGame
                 TownNews = NewsOverFence.On && !saloon && TownNewsHere(now) != null,   // the town's news to pass over the fence (LIVES item 2e)
                 MailIn = MailDay.On && MailInHere(),   // a train in lately at this platform, and you by it (LIVES item 2f)
                 Town = _placeTown,
+                ElectionHere = !_cfg.EventElections || ElectionHereToday(now),   // election night only where the town votes (LIVES, the advisor's check)
                 PlayedLately = (x, y, k) => PairPlayedLately(x, y, k)   // the round's street scenes pass to the next (Core/Reasons.Lives.cs; the review)
             };
             var found = new List<PairReason>();

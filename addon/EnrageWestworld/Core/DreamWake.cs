@@ -67,7 +67,7 @@ namespace EnrageWestworld.Core
             { }
             else if (!Of.TryGetValue(d.Emotion, out pool))
                 return null;
-            return Fill(pool[(Voice.Hash(seed + "|dwake") & 0x7fffffff) % pool.Length], you ?? "the stranger", d.Nights);   // (a line said lately is passed over by the candidate's own check, SaidToday)
+            return Fill(InnerLife.PickTold(pool, seed + "|dwake", told) ?? pool[0], you ?? "the stranger", d.Nights);   // the next one not thought lately
         }
 
         private static readonly string[] Nth = { "", "", "second", "third", "fourth", "fifth" };

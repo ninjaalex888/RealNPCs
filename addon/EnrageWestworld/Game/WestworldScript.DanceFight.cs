@@ -11,6 +11,18 @@ namespace EnrageWestworld.InGame
         private bool _danceOn;
         private string _danceTown;
 
+        /// This town holds its election today (a town event of kind "election" for today, open or not yet done).
+        private bool ElectionHereToday(long gameNow)
+        {
+            if (!ElectionNight.On || _placeTown == null || _store.Events == null)
+                return false;
+            long today = gameNow / 1440;
+            foreach (TownEvent e in _store.Events)
+                if (e != null && e.Kind == "election" && e.Town == _placeTown && e.At / 1440 == today)
+                    return true;
+            return false;
+        }
+
         private bool DanceOnHere(long gameNow)
         {
             int t = Game.GameTime;

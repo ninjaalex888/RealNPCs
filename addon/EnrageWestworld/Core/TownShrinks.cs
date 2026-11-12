@@ -21,7 +21,7 @@ namespace EnrageWestworld.Core
 
         public static bool Shrinking(int index) { return On && index >= 0 && index <= Threshold; }
 
-        public static string Line(string seed, List<string> told) { return Voice.Pick(seed + "|shrink", Lines); }
+        public static string Line(string seed, List<string> told) { return InnerLife.PickTold(Lines, seed + "|shrink", told) ?? Lines[0]; }
 
         public const string PaperLine = " A shop on the main street has put up its shutters for good.";
 
@@ -32,13 +32,16 @@ namespace EnrageWestworld.Core
         }
 
         private static readonly string[] Lines = {
-            "Hendry's shuttered the bakery. Says there's no trade left to bake for.",
+            "The baker's shuttered up. Says there's no trade left to bake for.",
             "Three houses empty on our street now. You can hear the wind go through them.",
-            "The Pruitts took the train Tuesday. Didn't even sell the furniture.",
+            "Another family took the train Tuesday. Didn't even sell the furniture.",
             "Every family that goes makes it easier for the next. I keep thinking about it.",
             "Fewer at church every Sunday. The preacher's started counting out loud.",
             "Store's out of half of what it used to carry. Not worth his while to order it.",
             "This town was something, when I came. Now look.",
-            "If one more family goes, I'll go too. I said that last month." };
+            "If one more family goes, I'll go too. I said that last month.",
+            "Grass coming up through the boardwalk by the old feed store.",
+            "Used to know every face at the post office. Half of them are gone now.",
+            "Wrote my brother out in Oregon. Asked what land costs there. Just asking." };
     }
 }

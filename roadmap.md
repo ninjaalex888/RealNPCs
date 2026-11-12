@@ -342,7 +342,7 @@ One date to start with: Easter 1899 fell on 2 April, the very Sunday your game's
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **Holidays on the real calendar** | Easter (2 April), Decoration Day (30 May), the Fourth, Thanksgiving (30 November), Christmas (a Monday) each change thoughts, routines and the street. | Clock, routines | M |  |
+| **Holidays on the real calendar** | Easter (2 April), Decoration Day (30 May), the Fourth, Thanksgiving (30 November), Christmas (a Monday) each change thoughts, routines and the street. | Clock, routines | M || Built (Calendar's thoughts; the routines: LIVES 1f) |
 | **The Fourth of July** | Flags, a parade, a bandstand speech, a shooting match, and drunken gunfire at night. The whole town is out. | Town events, Crowd | L |  |
 | **Mardi Gras in Saint Denis** | Masks and music in the streets (Fat Tuesday was 14 February 1899); drunks and pickpockets work the crowd, and the waking won't take their masks off. | Clock, Scenes, Awakening | L |  |
 | **County fair** | Livestock judging, pies, a shooting match, horse races, a greased pig. Win and the county talks; cheat and it's a scandal. | Town events, Deeds | L |  |
@@ -437,72 +437,72 @@ The richest seam is already in the code: every resident lives through a week-lon
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
 | **Pay the debt** | Pay Whitlow the eleven dollars for Elwood and the arc ends well; both remember, and the town hears a stranger paid. Or buy the debt and collect it yourself. | Links (debt), worry arcs, Deeds | M | Built (Talk: cover the debt while the creditor stands over him, `Engine.DebtCovered`, or the settle row for a told debt; both settle the worry. Buying the debt to collect it yourself not built: Talk frozen) |
-| **Fetch the doctor** | Ride the doctor out to the feverish child, or pay his two dollars, and the ending you saw coming changes. | Worries (fever), Posts (doctor) | M |  |
+| **Fetch the doctor** | Ride the doctor out to the feverish child, or pay his two dollars, and the ending you saw coming changes. | Worries (fever), Posts (doctor) | M || Built (LIVES 4a: J at the doctor's pays his call; Talk's money mend unchanged) |
 | **Settle the feud** | Stand between the neighbours at the fence: make peace, take a side, or pay for the post. | Links (feud), Exchanges, Ties | M | Partly built (depth item 7: J to step between two about to quarrel, put off, and made up the second time; not taking a side or paying for the post) |
-| **Carry the note** | For the nervous courter, carry a note, put in a word, or tell him the truth he doesn't want to hear. | Links (courting), Romance | M |  |
+| **Carry the note** | For the nervous courter, carry a note, put in a word, or tell him the truth he doesn't want to hear. | Links (courting), Romance | M || Built (LIVES 4b: J carries a courting man's note to her and back) |
 | **Find the letter** | The letter that never came is sitting in another town's post office. Fetch it and watch them read it. | Worries (letter), Letters | S | Built (`[Scenes] FindTheLetter`, SEAMS item 18: the letter sits at another town's depot; its station agent hands it to you on J, and J near him gives it over; and Talk's telegraph mend) |
 | **One more, or none** | The man at the worst of the drink: buy him one more, or take the bottle and walk him home. | Worries (drink), saloon | S | Built (Talk's mend: coffee, not whiskey, its mirror another whiskey; and J's walk home now mends it: `[Scenes] WalkHomeMends`, SEAMS item 15) |
-| **The bad tooth** | Take him to the Saint Denis dentist, or pull it yourself in the street with pliers while a crowd winces. | Worries (tooth), Crowd | S |  |
-| **Make it worse** | Every fix has a dark mirror: collect a debt for a cut, fan a feud, steal savings meant for a ticket west. The rumours and letters follow. | Worries, Deeds, Letters | M |  |
+| **The bad tooth** | Take him to the Saint Denis dentist, or pull it yourself in the street with pliers while a crowd winces. | Worries (tooth), Crowd | S || Partly built (the tooth pulled in the street, 14h item 14; the dentist on J: not built) |
+| **Make it worse** | Every fix has a dark mirror: collect a debt for a cut, fan a feud, steal savings meant for a ticket west. The rumours and letters follow. | Worries, Deeds, Letters | M || Partly built (Talk's 14 dark mirrors; acted out on J: blocked, a worry can't be ended badly on purpose without new save state) |
 
 ### The social web
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **Who's who in the reader** | A page per town in the N reader: the regulars you've met, their trades, the worries you know of, and the ties you've seen between them. | Regulars, Ties, Links, Reader | M |  |
-| **Gossip travels along ties** | Inside a town, news moves friend to friend. Tell one man a secret: his friends know tomorrow, his enemies the day after. | Ties, Rumours | M |  |
-| **Opinions of each other** | Each pair carries a view (respect, contempt, envy, fear) that decides who sits together, who takes sides and who gossips. | Ties, Crowd, roadmap 4 | L |  |
-| **Shared fright** | Two people who both saw the player kill are tied by it. They talk about it quietly and steer clear of him together. | Deed witnesses, Ties | S |  |
-| **Grudges between towns** | Valentine thinks little of Strawberry, and tells Strawberry's rumours meaner. | Rumours, town lines | S |  |
+| **Who's who in the reader** | A page per town in the N reader: the regulars you've met, their trades, the worries you know of, and the ties you've seen between them. | Regulars, Ties, Links, Reader | M || Built (the page since 0.6; by town: LIVES 5a) |
+| **Gossip travels along ties** | Inside a town, news moves friend to friend. Tell one man a secret: his friends know tomorrow, his enemies the day after. | Ties, Rumours | M || Built ([Mind] TieGossip, 0.7.25) |
+| **Opinions of each other** | Each pair carries a view (respect, contempt, envy, fear) that decides who sits together, who takes sides and who gossips. | Ties, Crowd, roadmap 4 | L || Built (FOURTEENHOUR item 23; thought of when absent: LIVES 1b) |
+| **Shared fright** | Two people who both saw the player kill are tied by it. They talk about it quietly and steer clear of him together. | Deed witnesses, Ties | S || Built (FIVEDAY item 22; thought alone: LIVES 1b) |
+| **Grudges between towns** | Valentine thinks little of Strawberry, and tells Strawberry's rumours meaner. | Rumours, town lines | S || Built ([World] TownRivals) |
 | **Secrets and blackmail** | Earn enough trust to learn a resident's secret. Keep it and trust deepens; use it and you get money and an enemy. | Worries (secret), Talk trust | M |  |
 
 ### Memory that behaves like memory
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **Places hold memories** | Ride past where you shot someone's brother: those who knew him go quiet, stare, leave flowers there. | Deed places, Family | M |  |
-| **Known by horse and hat** | People remember "the man on the grey Arabian". Change horse and hat and the rumours lose your trail. | Rumours, player reads | M |  |
-| **Memories blur** | Old memories lose detail and gain errors; the painful ones stay sharp. Three weeks on, a witness swears it was raining. | Memories, Rumours | M |  |
-| **Dreams of real things** | Dream diary entries come from what really happened to the dreamer, bent out of shape. | Diaries, Reveries | S |  |
+| **Places hold memories** | Ride past where you shot someone's brother: those who knew him go quiet, stare, leave flowers there. | Deed places, Family | M || Built ([Mind] PlacesRemember, [Scenes] PlacesMourned) |
+| **Known by horse and hat** | People remember "the man on the grey Arabian". Change horse and hat and the rumours lose your trail. | Rumours, player reads | M || Partly built (the horse: PlacesRemember and LIVES 6a's tales; the hat: blocked, the outfit can't be read) |
+| **Memories blur** | Old memories lose detail and gain errors; the painful ones stay sharp. Three weeks on, a witness swears it was raining. | Memories, Rumours | M || Built (the told and heard: memory v1; what they saw: LIVES 1c) |
+| **Dreams of real things** | Dream diary entries come from what really happened to the dreamer, bent out of shape. | Diaries, Reveries | S || Built ([Features] DiaryDreams; the morning after: LIVES 1d; wider: LIVES R1) |
 
 ### Player verbs
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **Interaction menu** | Hold the look key on someone you know: ask about rumours or another person, buy a drink, offer money, threaten, apologise, flirt. | Feelings, Ties, Romance, Pleas | L |  |
-| **Buy the house a round** | Pay for everyone's drink: liking rises with all present, the barkeep remembers, the story travels. | Deeds, Rumours | S |  |
-| **Apologise** | Say sorry to someone with a grudge. The proud refuse, the kind soften, the cold take money instead. | Feelings (anger), tempers | S |  |
+| **Interaction menu** | Hold the look key on someone you know: ask about rumours or another person, buy a drink, offer money, threaten, apologise, flirt. | Feelings, Ties, Romance, Pleas | L || Built (Talk, frozen since 2026-11-04) |
+| **Buy the house a round** | Pay for everyone's drink: liking rises with all present, the barkeep remembers, the story travels. | Deeds, Rumours | S || Built ([Scenes] BarRound, J at the bar) |
+| **Apologise** | Say sorry to someone with a grudge. The proud refuse, the kind soften, the cold take money instead. | Feelings (anger), tempers | S || Partly built (Talk's sorry, for a wrong within three days) |
 | **Answer letters** | Reply kindly, coldly or with a threat; the writer's next letter, visit or revenge follows from it. | Letters, Family, avengers | M |  |
-| **Gifts** | A pelt, flowers or a drink for a sweetheart or a widow; what fits depends on who they are. | Romance, worries | M |  |
-| **Lend money** | Lend to a resident in trouble; they repay on payday, late, or never, and you collect kindly or not. | Links (debt), payday | M |  |
+| **Gifts** | A pelt, flowers or a drink for a sweetheart or a widow; what fits depends on who they are. | Romance, worries | M || Built (Talk's gift; a gift that fits, on J: LIVES 4c) |
+| **Lend money** | Lend to a resident in trouble; they repay on payday, late, or never, and you collect kindly or not. | Links (debt), payday | M || Built (Talk's lend) |
 
 ### West World, deeper
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **The voice is the schedule** | Past stage 2, a resident hears their routine as orders ("Seven o'clock. Saloon.") and answers back. Breaking the loop is not going. | Routines (Q6), Awakening | M |  |
-| **They noticed the reload** | Reload after a killing and the victim, alive again, has a sharper déjà vu. The waking talk about the morning that happened twice. | Store.Rewind, Hosts | M |  |
+| **The voice is the schedule** | Past stage 2, a resident hears their routine as orders ("Seven o'clock. Saloon.") and answers back. Breaking the loop is not going. | Routines (Q6), Awakening | M || Built ([West World] LoopVoice) |
+| **They noticed the reload** | Reload after a killing and the victim, alive again, has a sharper déjà vu. The waking talk about the morning that happened twice. | Store.Rewind, Hosts | M || Built ([West World] Ghosts) |
 | **The revived dead are seen** | Anyone who saw a death and later sees that person alive (a revenant, a keeper back from wounds) stares, crosses themselves, and wakes a stage. | Reveries, Posts, Awakening | S | Built (THREEHOUR R3: keepers back stared at; night 10-29 item 4: those who saw the death feel it and act; depth item 15: anyone who knew them, a thought each, and the bold ask to their face) |
-| **A line that wakes** | An awake resident passes on a public-domain line; whoever hears it the right way starts stirring. | Awakening spread, Crowd | M |  |
-| **Hosts compare notes** | Two waking people test the world together: walk to the town's edge, count the same faces, compare dreams. | Hosts scene, wake acts | M |  |
-| **The reset** | Someone fully awake turns up days later at stage 0, cheerful and blank. Those who knew them notice. | Awakening phases | S |  |
+| **A line that wakes** | An awake resident passes on a public-domain line; whoever hears it the right way starts stirring. | Awakening spread, Crowd | M || Built ([West World] WakeLines) |
+| **Hosts compare notes** | Two waking people test the world together: walk to the town's edge, count the same faces, compare dreams. | Hosts scene, wake acts | M || Built ([West World] HostNotes) |
+| **The reset** | Someone fully awake turns up days later at stage 0, cheerful and blank. Those who knew them notice. | Awakening phases | S || Built (LoopVoice's reset) |
 
 ### Making it visible
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **Overheard, in the reader** | A page of what happened near the player in the last game day, one line each: who quarrelled, made up or called in a debt. | Scene log, Reader | S |  |
-| **Raised voices behind you** | A scene starting out of view within 22 m puts a cue on the ticker ("Raised voices behind you") so the player can turn. | Director, Ticker | S |  |
-| **People you know on the map** | An optional toggle shows the regulars you've met as named marks while you're in town; F7 already does it for 60 s. | Regular blips | S |  |
-| **This week in town** | A weekly column in enRAGE's paper from the simulation: births, deaths, marriages, fights and visitors. | enRAGE papers, Engine.World | M |  |
+| **Overheard, in the reader** | A page of what happened near the player in the last game day, one line each: who quarrelled, made up or called in a debt. | Scene log, Reader | S || Built ([Display] Overheard) |
+| **Raised voices behind you** | A scene starting out of view within 22 m puts a cue on the ticker ("Raised voices behind you") so the player can turn. | Director, Ticker | S || Built ([Ticker] SceneCues) |
+| **People you know on the map** | An optional toggle shows the regulars you've met as named marks while you're in town; F7 already does it for 60 s. | Regular blips | S || Built ([Display] KnownOnMap) |
+| **This week in town** | A weekly column in enRAGE's paper from the simulation: births, deaths, marriages, fights and visitors. | enRAGE papers, Engine.World | M || Built ([World] WeekColumn) |
 
 ### Change over time
 
 | Idea | What the player sees | Builds on | Size | Your call |
 | --- | --- | --- | --- | --- |
-| **Leaving on the train** | Worries that end in departure end at the station: a farewell, a trunk, and that regular is gone from town for good. | Worries, Regulars | M |  |
-| **New faces arrive** | Settlers, a schoolteacher, a mail-order bride, a new preacher arrive by train or wagon, each with a worry from day one. | Arrivals, Regulars | L |  |
-| **Towns that shrink** | Where the player has killed many, fewer regulars remain; a shop closes and people talk of leaving. | Deeds, Regulars | M |  |
+| **Leaving on the train** | Worries that end in departure end at the station: a farewell, a trunk, and that regular is gone from town for good. | Worries, Regulars | M || Built ([World] TrainTime departures) |
+| **New faces arrive** | Settlers, a schoolteacher, a mail-order bride, a new preacher arrive by train or wagon, each with a worry from day one. | Arrivals, Regulars | L || Built ([World] NewFaces) |
+| **Towns that shrink** | Where the player has killed many, fewer regulars remain; a shop closes and people talk of leaving. | Deeds, Regulars | M || Built ([World] TownLedger; talked of: LIVES 5b) |
 | **The epilogue remembers** | On John's first load, some of Arthur's regulars carry over eight years older: married, widowed, moved on, and a few remember a man called Morgan. | Store, Regulars | L |  |
 
 ## Idea bank: brawls that grow, and the town between people (2026-11-10)
@@ -532,8 +532,8 @@ streets with more between people. "14h N" is the fourteen-hour plan's item (R: i
 | **Sore sides** | The men who fought on opposite sides stay sore for a week, so the next fight among them grows faster. | Ties, JoinIn (14h 12) | S | Built (14h item 12) |
 | **Payday night** | The night the ranch and the mine pay, the saloon fills and the fights get big. You learn which night it is. | the notice board's payday, the cascade (14h 13) | S | Built (14h item 13) |
 | **The town's best fist** | A man who wins three brawls gets a name; men come from other towns to try him, for a purse. | PrizeFight, Ties (14h R7) | M | Built (14h R7) |
-| **The fight at the dance** | A jealous word at the Saturday dance; the fiddler plays on while two men take it outside, and their friends follow. | Dances, jealous, the cascade | M |  |
-| **Election day** | The polls in the saloon, as they often were, the parties' men and the whiskey: the year's worst brawl. | Election day (P22), AlmanacSides | M |  |
+| **The fight at the dance** | A jealous word at the Saturday dance; the fiddler plays on while two men take it outside, and their friends follow. | Dances, jealous, the cascade | M || Built (LIVES 2d) |
+| **Election day** | The polls in the saloon, as they often were, the parties' men and the whiskey: the year's worst brawl. | Election day (P22), AlmanacSides | M || Built (Elections, P22; the saloon brawl: LIVES 2b) |
 | **The fight retold wrong** | Three days on, the town's version has twelve men and a knife in it, and the man who started it is somebody else. | Rumours, memories that blur | S | Built (14h item 24) |
 | **The brawler's wife** | The morning after, she has words for him in the street where everyone can hear, and the men who fought beside him keep their heads down. | Domestic, Exchanges | S | Built (14h item 12: she waits at the jail door; depth item 6: her words in the street when he comes out, the men who fought beside him turn away) |
 
@@ -552,14 +552,14 @@ streets with more between people. "14h N" is the fourteen-hour plan's item (R: i
 | **A tooth pulled in the street** | The barber and a man whose tooth is at its worst; whoever is near winces in their thoughts. | the tooth worry (14h 14) | S | Built (14h item 14) |
 | **The collector and his hired man** | The debt at its worst: the debtor pays, begs or runs, and a bystander has a word. | the debt links (14h 14) | S | Already there (x:debt; checked in 14h item 14) |
 | **An apology before the street** | The man who wronged another says so in public; the kind take it, the proud don't. | Grudges' apology (14h 14) | S | Already there (the grudge apology; checked in 14h item 14) |
-| **The peeping tom** | A scream from a window at night, a man running, the husband after him in his nightshirt; the town laughs for a week. | the night scenes, a chase | M |  |
-| **Talk at the pump** | Women at the pump trade the town's news; what's said there is in every house by supper. | Gossip, MindTalk, Rumours | S |  |
-| **The barber's chair** | The barber knows everything; the man in the chair hears the town's news and passes it on. | Gossip, the barber | S |  |
-| **Mail day** | The mail comes in on the train: letters read on the post office steps, good news called out, bad news taken home. | Letters, good and bad news | S |  |
-| **After the service** | Sunday on the church steps: who came, who didn't, who sat with whom; the preacher's word to a backslider. | Sundays, the preacher, Gossip | S |  |
-| **The tonic and the sceptic** | A drummer sells a tonic in the street; a sceptic heckles; a buyer is sick by Tuesday and wants his money back. | pitch, NewFaces' drummer | S |  |
-| **A son comes home** | A resident's son back from the army or the city: his mother at the depot, his old friends, the girl who married someone else. | NewFaces, Family, Times (the war) | M |  |
-| **The schoolteacher and the father** | A father wants his boy in the fields, not the schoolroom; the new teacher stands her ground in the street. | NewFaces' schoolteacher, Exchanges | S |  |
+| **The peeping tom** | A scream from a window at night, a man running, the husband after him in his nightshirt; the town laughs for a week. | the night scenes, a chase | M || Blocked (a window, a nightshirt, a night chase: unproven animations; LIVES) |
+| **Talk at the pump** | Women at the pump trade the town's news; what's said there is in every house by supper. | Gossip, MindTalk, Rumours | S || Built (as the town's news over the fence: LIVES 2e) |
+| **The barber's chair** | The barber knows everything; the man in the chair hears the town's news and passes it on. | Gossip, the barber | S || Partly built (his thoughts from the chair: LIVES 1e; a scene in the shop: not built) |
+| **Mail day** | The mail comes in on the train: letters read on the post office steps, good news called out, bad news taken home. | Letters, good and bad news | S || Built (LIVES 2f) |
+| **After the service** | Sunday on the church steps: who came, who didn't, who sat with whom; the preacher's word to a backslider. | Sundays, the preacher, Gossip | S || Built (LIVES 2c: the church steps, the backslider) |
+| **The tonic and the sceptic** | A drummer sells a tonic in the street; a sceptic heckles; a buyer is sick by Tuesday and wants his money back. | pitch, NewFaces' drummer | S || Built (the pitch's sceptic; the days after: LIVES 2g) |
+| **A son comes home** | A resident's son back from the army or the city: his mother at the depot, his old friends, the girl who married someone else. | NewFaces, Family, Times (the war) | M || Partly built (the son worry's good end and the good news told; his body at the depot: blocked) |
+| **The schoolteacher and the father** | A father wants his boy in the fields, not the schoolroom; the new teacher stands her ground in the street. | NewFaces' schoolteacher, Exchanges | S || Built (LIVES 2a) |
 | **Rain brings strangers together** | Two or three under one roof in the rain talk, and nod in passing after. | shelter, the nods (14h R2) | S | Built (14h item 26) |
 
 Why these read true, in short: crowds don't join a fight for the fight's sake, but for their own (Tajfel's minimal groups) and

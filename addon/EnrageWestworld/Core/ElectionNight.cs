@@ -34,7 +34,7 @@ namespace EnrageWestworld.Core
         {
             if (!On || where == null || !where.Saloon || where.Hour < FromHour || x == null || y == null || x.Id == y.Id || x.Woman || y.Woman)
                 return null;
-            if (x.P == null || y.P == null || !Today())
+            if (x.P == null || y.P == null || !Today() || !where.ElectionHere)
                 return null;
             int a = QuarrelPolitics.Stance(Topic, QuarrelPolitics.GroupOf(x.P.Trade), false), b = QuarrelPolitics.Stance(Topic, QuarrelPolitics.GroupOf(y.P.Trade), false);
             if (a == 0 || b == 0 || a == b)

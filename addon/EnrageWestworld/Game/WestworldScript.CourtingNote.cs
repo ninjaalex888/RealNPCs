@@ -125,6 +125,12 @@ namespace EnrageWestworld.InGame
                 if (st != null)
                     st.Affection = Romance.Clamp(st.Affection + 8, -100, 100);   // both warmer to the one who carried it
             }
+            foreach (string id in new[] { n.FromId, n.ToId })
+            {
+                string cacq = FolkIdOf(id);
+                if (cacq != null && _bridge != null)
+                    _bridge.LikeMore(cacq, 10);   // enRAGE's own fondness, both of them
+            }
             _courtNotesGiven++;
             Log.Write("COURT note given: " + n.ToName + " reads " + n.FromName + "'s note: " + answer);
         }

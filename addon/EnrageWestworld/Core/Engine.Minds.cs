@@ -1005,7 +1005,7 @@ namespace EnrageWestworld.Core
                 if (tale != null)
                 {
                     string th = tale.Horse, tw = tale.Where;
-                    c.Add(new Minds.Candidate { Source = "horse:tale", Pull = HorseTalk.Pull + Minds.Jitter(seed, "horsetale", 4), Make = () => HorseTalk.Seen(th, tw, seed) });
+                    c.Add(new Minds.Candidate { Source = "horse:tale", Pull = HorseTalk.Pull + Minds.Jitter(seed, "horsetale", 4), Make = () => HorseTalk.Seen(th, tw, seed, told) });
                 }
             }
             // a town that shrinks, in its people's thoughts (Core/TownShrinks.cs; [World] TownShrinks): only their own town

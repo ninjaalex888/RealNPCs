@@ -92,6 +92,9 @@ namespace EnrageWestworld.InGame
                 _ticker.Push((Person.FirstOf(e.BName) ?? "The doctor") + ", thinking", DoctorsCall.Thought(seed), "near", dh);
             }
             RecordEvent("charity", "player", "you", e.AId, e.AName, me.Position, me.Handle, me.Handle, dh, "paid the doctor's call to a feverish child");   // a kindness the doctor saw
+            string dacq = FolkIdOf(e.AId);
+            if (dacq != null && _bridge != null)
+                _bridge.LikeMore(dacq, 20);   // enRAGE's own fondness for one of its townsfolk, as the slate's
             _doctorsCallsPaid++;
             Log.Write("DOCTOR'S CALL paid: $2 for " + e.AName + "'s house (" + e.Extra + "); the worry settled");
         }

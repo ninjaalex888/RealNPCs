@@ -73,6 +73,7 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 - **A town that shrinks** (`Core/TownShrinks.cs`; `Context.TownIndex`/`IndexTown` from `ThoughtDay`; a `town:shrinking` candidate for the town's own people, pull 21; the ledger's paper line; `[World] TownShrinks`): ledger index 35 or under.
 - **Known by the horse** (`Core/HorseTalk.cs` `Words(model)`/`With`/`Seen`; `Core/Engine.HorseTalk.cs` `HorseTaleIn`; `Game/WestworldScript.HorseTalk.cs` sets `Engine.PlayerHorse/PlayerHorseAt/PlayerMounted` once a second; `Engine.OnDeed` stamps `Deed.Horse` (saved, EmitDefaultValue false) on a violent or weighty deed within 60 game minutes of riding; `Rumours.Version` wraps Who in `HorseTalk.With` at fidelity 50+; a `horse:tale` candidate (pull 32) for the tale's town's people near you while you ride the same horse; `[World] HorseTalk`).
 - **Wider dreams** (`Dreams.More`, `Dreams.Wider` from `[Features] DreamsWider`): Entry joins four more a feeling onto the old three (never onto OfYou's pools).
+- **After the advisor's check** (LIVES): the round's thought lines pick through `InnerLife.PickTold` (Musings' "il" keys, the old pools' rule); `HorseTalk.RideMinutes` 360; the J verbs call `_bridge.LikeMore(FolkIdOf(id), n)`; `Place.ElectionHere` (with EventElections, a town "election" event today); Testing rows `horsetale` and `shrinking` (`Game/WestworldScript.LivesRows.cs`); roadmap.md's idea-bank rows marked built/partly/blocked.
 
 ## The sweep round (SWEEP.md, 2026-11-12; settings version 460; nothing seen in game yet)
 

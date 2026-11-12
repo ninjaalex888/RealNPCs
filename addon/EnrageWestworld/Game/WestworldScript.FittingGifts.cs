@@ -149,6 +149,9 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             if (h != 0)
                 RecordEvent("charity", "player", "you", gi.ToId, gi.ToName, ENTITY.GET_ENTITY_COORDS(h, true, true), me.Handle, me.Handle, h, "gave them " + gi.Item);   // a kindness they and those near see
+            string gacq = FolkIdOf(gi.ToId);
+            if (gacq != null && _bridge != null)
+                _bridge.LikeMore(gacq, again ? 5 : 15);   // enRAGE's own fondness for one of its townsfolk
             _giftsGiven++;
             Log.Write("GIFT given: " + gi.Item + " to " + gi.ToName + " (" + (again ? "again this week" : takes) + ")");
         }
