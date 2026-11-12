@@ -157,6 +157,31 @@ namespace EnrageWestworld.Core
             return dead != null ? Telegraph.DeathLine(dead.Name, dead.Town, seed) : null;
         }
 
+        /// The barber's thought of what the chair heard (Core/BarberHears.cs; LIVES item 1e), or null: a townsman of his who died
+        /// this week, two of his town at odds or courting these two days, or the stranger's deeds as his town tells them.
+        private string BarberThought(Post post, Resident r, string seed)
+        {
+            if (!BarberHears.On || post == null || r == null)
+                return null;
+            PostKind k = Posts.Of(post.Model);
+            if (k == null || k.Kind != BarberHears.Kind)
+                return null;
+            string town = r.Town ?? k.Town;
+            long now = Store.LastGameMin;
+            SceneTie talk = Ties.TalkOf(Store.Ties, town, r.Id, now).FirstOrDefault();
+            TownRumour heard = Store.TownRumours == null ? null : Store.TownRumours.Where(x => x != null && x.Town == town && x.Text != null && now - x.At >= 0 && now - x.At < 3 * 1440L)
+                                                                                   .OrderByDescending(x => x.At).FirstOrDefault();
+            DeathEntry dead = Store.Deaths.Where(d => d != null && d.Town == town && d.Name != null && (d.Kind == "resident" || d.Kind == "folk") && d.Id != r.Id && now - d.At >= 0 && now - d.At < BarberHears.DeathDays * 1440L)
+                                          .OrderByDescending(d => d.At).FirstOrDefault();
+            return BarberHears.Thought(talk, heard != null ? heard.Text : null, heard != null ? heard.Fidelity : 100, dead != null ? dead.Name : null, seed);
+        }
+
+        /// The Testing row "barber": the barber's thought from the chair now, for a resident keeping the barber's post; null otherwise.
+        public string BarberThoughtFor(Resident r, string seed)
+        {
+            return BarberThought(PostOf(r), r, seed);
+        }
+
         /// The photographer's thought of the relic trade, in 1907 (FIVEDAY R26), or null.
         private string RelicThought(Post post, Resident r, string seed)
         {
@@ -203,6 +228,9 @@ namespace EnrageWestworld.Core
                 string wire = TelegraphThought(post, r, near, seed);   // what came over the wire (FIVEDAY R15)
                 if (wire != null)
                     extra.Add(new Minds.Candidate { Source = "post:telegraph", Pull = Telegraph.Pull + Minds.Jitter(seed, "tel", 6), Make = () => wire });
+                string chair = BarberThought(post, r, seed);   // what the barber's chair heard (LIVES item 1e)
+                if (chair != null)
+                    extra.Add(new Minds.Candidate { Source = "post:barber", Pull = BarberHears.Pull + Minds.Jitter(seed, "bar", 6), Make = () => chair });
                 string relic = RelicThought(post, r, seed);   // 1907: the outlaws for sale (FIVEDAY R26)
                 if (relic != null)
                     extra.Add(new Minds.Candidate { Source = "post:relics", Pull = Relics.Pull + Minds.Jitter(seed, "rel", 6), Make = () => relic });

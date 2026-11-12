@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 464;
+        public const int CurrentVersion = 465;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -478,6 +478,7 @@ namespace EnrageWestworld.Core
         public string LastingMarksPack = "SCR_Torture";   // [Scenes] the game's damage pack for the marked (the probe row's candidates; empty: none)
         public bool MoreMoments = true;   // [Mind] more of the moment in thoughts: a horse bolting, a purse lifted, rain in the saddle, a storm, the brawl's ring and an execution's onlookers; women's own fist lines; how you look, pools of its own (Core/Moments.cs; FIVEDAY item 32e, settings version 288)
         public bool TelegraphKnows = true;   // [Mind] the station agent knows first what came over the wire: deaths elsewhere, and your deeds in other towns before the word gets here (Core/Telegraph.cs; FIVEDAY R15, settings version 303)
+        public bool BarberHears = true;   // [Mind] the barber's thoughts come from what his chair hears: a customer of his town dead this week, two of his town at odds or courting, the stranger's deeds as the town tells them (Core/BarberHears.cs; LIVES item 1e) (settings version 465)
         public bool PlacesMourned = true;   // [Scenes] where someone died near you by another hand (yours are PlaceMemory's, PlacesRemember), those close to them stop there for three weeks after, turn to it, think of them; the dearest kneel (THREEHOUR item 5; settings version 360)
         public bool MemorialPhotos = true;   // [Mind] Saint Denis and Blackwater: the photographer thinks of the memorial portraits of the town's dead, and mourners of the photograph that came (Core/MemorialPhoto.cs; FIVEDAY R11, settings version 299)
         public bool UndertakerKnows = true;   // [Mind] the undertaker thinks of the week's dead of his town by name and cause, a busy week, and you as trade (Core/Undertaker.cs; FIVEDAY R10, settings version 298)
@@ -1107,6 +1108,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 465)
+                    log?.Invoke("Settings: new in this version: [Mind] BarberHears (on): the barber's thoughts come from what his chair hears: the town's quarrels, courtships, deaths and the stranger's deeds.");
                 if (s.SettingsVersion < 464)
                     log?.Invoke("Settings: new in this version: [Mind] DreamsRemembered (on): the morning after a dream, the dreamer's thoughts go back to it, and count it when it comes again.");
                 if (s.SettingsVersion < 463)
@@ -2115,6 +2118,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("LastingMarks = " + B(LastingMarks) + "   ; someone you beat carries it for days (a beating four, a knocking down one): when you're about they think of it, and those fond of them name you for it");
             b.AppendLine("MoreMoments = " + B(MoreMoments) + "   ; more of the moment in what people think: their horse bolting under them, their purse lifted or taken in the last hour and a half, rain on them in the saddle, a thunderstorm, standing in a fistfight's ring or near an execution by the road; women in a fistfight think their own lines; and how you look beside them has pools of its own");
             b.AppendLine("TelegraphKnows = " + B(TelegraphKnows) + "   ; the station agent at his counter thinks of what came over the wire these two days: deaths in other towns by name, and, with you at his window, your deed in another town before the word reaches his");
+            b.AppendLine("BarberHears = " + B(BarberHears) + "   ; the barber thinks of what his chair hears: a townsman dead this week whose face he shaved, two of his town at odds or courting these two days, by name, and the stranger's deeds as the town tells them (grown in the telling when they've bent); false: his trade's own lines only");
             b.AppendLine("MemorialPhotos = " + B(MemorialPhotos) + "   ; in Saint Denis and Blackwater: the photographer at his counter thinks of the memorial portraits he made of the town's dead these ten days, by name, and a mourner there now and then thinks of the photograph that came");
             b.AppendLine("UndertakerKnows = " + B(UndertakerKnows) + "   ; the undertaker (Rhodes, Armadillo) thinks of his town's dead of the last week by name and by how they died: the fever, the mine, the rope, a gun, by their own hand, or by you; a busy week; and, when you've killed twice or more, you as trade");
             b.AppendLine("TieGossip = " + B(TieGossip) + "   ; inside a town, word of your violence and your thieving moves person to person along the ties the street made: the friends of someone who knows hear it the next day, anyone else they're tied to the day after, a little more bent at each telling; who heard it thinks of who told them. A week on, the talk is done");
