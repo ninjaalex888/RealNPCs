@@ -998,6 +998,16 @@ namespace EnrageWestworld.Core
                         Make = () => Ties.Thought(t, p.Id, seed, dead)
                     });
             }
+            // the horse the town's tale tells of, ridden up now (Core/HorseTalk.cs; [World] HorseTalk)
+            if (HorseTalk.On && look != null && look.Near && look.Mounted && p.Home != null)
+            {
+                Deed tale = HorseTaleIn(p.Home, now);
+                if (tale != null)
+                {
+                    string th = tale.Horse, tw = tale.Where;
+                    c.Add(new Minds.Candidate { Source = "horse:tale", Pull = HorseTalk.Pull + Minds.Jitter(seed, "horsetale", 4), Make = () => HorseTalk.Seen(th, tw, seed) });
+                }
+            }
             // a town that shrinks, in its people's thoughts (Core/TownShrinks.cs; [World] TownShrinks): only their own town
             if (TownShrinks.Shrinking(day.TownIndex) && p.Home != null && p.Home == day.IndexTown)
                 c.Add(new Minds.Candidate { Source = "town:shrinking", Pull = TownShrinks.Pull + Minds.Jitter(seed, "shrink", 4), Make = () => TownShrinks.Line(seed, told) });

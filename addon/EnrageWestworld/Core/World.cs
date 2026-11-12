@@ -24,6 +24,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public bool Spread;      // started a rumour
         [DataMember(EmitDefaultValue = false)] public long TalkAt;      // a violent deed: when talk of it starts (0: started, or never waited; Knowing.cs)
         [DataMember(EmitDefaultValue = false)] public bool Unseen;      // nobody lived to tell who did it: the talk doesn't know
+        [DataMember(EmitDefaultValue = false)] public string Horse;     // the horse he rode for it, in words ("a grey Arabian"; Core/HorseTalk.cs, LIVES item 6a); null: on foot, or unknown
 
         public string Where { get { return Town ?? Zone; } }
 

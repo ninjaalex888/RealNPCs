@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 481;
+        public const int CurrentVersion = 482;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -432,6 +432,7 @@ namespace EnrageWestworld.Core
         public bool EpilogueCarries = true;   // [World] John's first save (john.json made with arthur.json beside it) takes Arthur's residents over eight years on (stayed, married, widowed, moved on, died), the ties between them, and the memory of a man called Morgan in those who met him (Core/Epilogue.cs; roadmap 25; SIXDAY item 23; settings version 239)
         public bool TownLedger = true;        // [World] each town's ledger, read off the records: your killings, other deaths and hangings take its index down, arrivals, good turns, the show and the dance take it up; the last month sets its mood (grieving, fearful, prospering) for its people's thoughts; the regulars a town keeps scale with the index (Core/TownLedgers.cs; SIXDAY item 11c; settings version 223)
         public bool TownShrinks = true;   // [World] with TownLedger: a town whose index has fallen to 35 or under says so: its people think of the empty houses, the shop that shut, who left and whether they're next; the paper's monthly mention adds a shop shuttered for good (Core/TownShrinks.cs; LIVES item 5b) (settings version 481)
+        public bool HorseTalk = true;   // [World] a deed of yours remembers the horse you rode for it; the town's tale says it while it keeps fairly true; someone of that town who sees you ride up on that horse puts the two together; on another horse the trail goes cold (Core/HorseTalk.cs; LIVES item 6a) (settings version 482)
         public bool ThinStreets = false;      // [World] off as it comes: a town whose index is under 30 has its ambient people thinned each frame (never below 0.6, that town only, never in missions); the log says what the game does with it
         public bool FindDiaries = true;
         public bool Avengers = true;
@@ -1124,6 +1125,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 482)
+                    log?.Invoke("Settings: new in this version: [World] HorseTalk (on): the town's tale of what you did says the horse you rode; ride in on another and the trail goes cold.");
                 if (s.SettingsVersion < 481)
                     log?.Invoke("Settings: new in this version: [World] TownShrinks (on): a town that shrinks says so: its people think of the empty houses and who'll leave next; the paper notes a shop shut.");
                 if (s.SettingsVersion < 480)
@@ -2419,6 +2422,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("EpilogueCarries = " + B(EpilogueCarries) + "   ; the epilogue remembers: the first time John's save is made with Arthur's beside it, Arthur's people come over eight years older (some married, widowed, moved on or dead), the ties between them with them, and those who met Arthur think of a man called Morgan when they see John; false: John starts with a world of his own");
             b.AppendLine("TownLedger = " + B(TownLedger) + "   ; each town's ledger, read off the records every day: 50 to start; a killing of yours -3, another death -1, a hanging -4, someone leaving on the train -2, someone arriving +2, a good turn of yours (peace, mercy, a rescue, someone spared, a thief caught) +1, the Wild West show +2, a dance you went to +1; the last month sets the mood (fearful: two or more killings of yours; grieving: three or more deaths; prospering: arrivals and good turns three ahead) for its people's thoughts; the regulars a town keeps are RegularsPerTown scaled by the index, never below 10 (or the setting); a monthly mention in the paper for towns you have been to; F7 TEST towns");
             b.AppendLine("TownShrinks = " + B(TownShrinks) + "   ; with TownLedger on: a town whose ledger index has fallen to 35 or under (the killings and the trains out outrunning the trains in) says so: its people think of the empty houses, the shop that shut, the neighbours who left and whether they'll be next, and the paper's monthly mention adds a shop on the main street shuttered for good; false: the town shrinks without a word of it");
+            b.AppendLine("HorseTalk = " + B(HorseTalk) + "   ; a deed of yours remembers the horse you rode for it (or rode in on within the hour), and the town's tale of it, while it keeps fairly to the truth, says so (a stranger on a grey Arabian); someone of that town who sees you ride up on that same horse puts the two together in their thoughts; ride in on another horse and the tale doesn't find you; false: the tales never say the horse");
             b.AppendLine("ThinStreets = " + B(ThinStreets) + "   ; off as it comes: in a town whose index is under 30 the game's ambient people are thinned each frame (never below 0.6, that town only, never in missions); the log counts the people within 60 m once a minute so you can see what the game makes of it");
             b.AppendLine("FindDiaries = " + B(FindDiaries) + "   ; loot a body and you may find the diary they kept");
             b.AppendLine("Avengers = " + B(Avengers) + "   ; kin you never met may ride in to settle accounts");

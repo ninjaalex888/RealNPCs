@@ -553,10 +553,17 @@ namespace EnrageWestworld.Core
         // ---- the player's deeds --------------------------------------------------------------------
 
         /// A deed the game layer saw. witnesses: enRAGE ids of people who saw it happen.
+        /// The horse the player rides, in words, and the game minute he was last seen on it (set by the game; Core/HorseTalk.cs).
+        public string PlayerHorse;
+        public long PlayerHorseAt = -100000;
+        public bool PlayerMounted;
+
         public Deed OnDeed(Deed d, IList<string> witnesses, long now)
         {
             if (d == null || !Cfg.Deeds)
                 return null;
+            if (HorseTalk.On && d.Horse == null && PlayerHorse != null && now - PlayerHorseAt <= HorseTalk.RideMinutes && (Deeds.IsViolent(d.Kind) || d.Weight >= 30))
+                d.Horse = PlayerHorse;   // the horse he rode for it, or rode in on (LIVES item 6a)
             // fold repeats: hunting the same day, the same shop the same day
             Deed same = Store.Deeds.LastOrDefault(x => x.Kind == d.Kind && x.Where == d.Where && now - x.At < (d.Kind == "hunt" ? 1440 : 720) &&
                                                         (d.Kind == "hunt" || Deeds.IsShop(d.Kind) || d.Kind == "visit"));

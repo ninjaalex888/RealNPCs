@@ -122,7 +122,7 @@ namespace EnrageWestworld.Core
             if (f < 75 && (Deeds.IsViolent(d.Kind) || d.Kind == "hunt"))
                 told.Count = f < 35 ? Math.Max(d.Count * 4, 6) : f < 55 ? d.Count * 3 : d.Count + 1;
             // nobody lived to tell who did it (Knowing.cs): the talk never names him, however it grows in the telling
-            string who = d.Unseen ? Voice.Pick(seed + "u", "somebody", "someone nobody saw", "whoever it was") : Who(you, nameKnown, f, seed);
+            string who = d.Unseen ? Voice.Pick(seed + "u", "somebody", "someone nobody saw", "whoever it was") : HorseTalk.With(Who(you, nameKnown, f, seed), d.Horse, f);   // and his horse, while the tale keeps fairly true (LIVES item 6a)
             string text = Deeds.Rumour(told, who);
             if (text == null)
                 return null;
