@@ -701,7 +701,11 @@ namespace EnrageWestworld.Core
                 // as the load's Fix does: the done ones kept a month, a hundred at most, at the save as well (the soak, SWEEP item 4: the
                 // save and its read-back disagreed, the list growing all session and pruned only by a reload)
                 KinGrudges.RemoveAll(k => k == null || (k.Done && LastGameMin - k.DoneAt > 30 * 1440L));
-                if (KinGrudges.Count > 100) KinGrudges.RemoveRange(0, KinGrudges.Count - 100);
+                while (KinGrudges.Count > 100)
+                {
+                    int i = KinGrudges.FindIndex(k => k.Done);   // the oldest done first; a running one only when none is done (the review of 12d492b)
+                    KinGrudges.RemoveAt(i >= 0 ? i : 0);
+                }
             }
             // each person's deeds of yours known and seen, the most recently learned DeedsKnownKept (HARDEN item 2: never trimmed, they kept the
             // ids of deeds long gone from Deeds' 250, and every look that asks whether someone knows a deed walks them; the soak of
@@ -716,6 +720,8 @@ namespace EnrageWestworld.Core
                         Cap(st.KnownDeeds, DeedsKnownKept);
                     if (st.SawDeeds != null)
                         Cap(st.SawDeeds, DeedsKnownKept);
+                    if (st.Told != null && st.Told.Count > 0)
+                        PruneDatedMarks(st.Told, LastGameMin);
                 }
             Weddings.RemoveAll(w => w.Done && LastGameMin - w.At > 43200);
             Avengers.RemoveAll(a => a.Stage == 3 && LastGameMin - a.DueAt > 43200);
@@ -729,6 +735,34 @@ namespace EnrageWestworld.Core
             if (Reveries.Count > 200)
                 foreach (string id in Reveries.OrderBy(kv => kv.Value.DiedAt).Take(Reveries.Count - 200).Select(kv => kv.Key).ToList())
                     Reveries.Remove(id);
+        }
+
+        /// The marks that carry their own time, let go once nothing reads them (SWEEP item 4's second sweep: Told only grew): a
+        /// sweetheart's letter bucket ("letter:" + now/7200) past the current one, the only one asked; a rescue's day ("rescued:" + day)
+        /// past the three days Executions looks back over; a tryst's day and a return's minute ("tryst:", "back:"), which nothing
+        /// reads, past a month. A mark keyed by anything but a number ("letter:" + a memory's key) stays.
+        public static int PruneDatedMarks(List<string> told, long now)
+        {
+            if (told == null)
+                return 0;
+            long day = now / 1440, bucket = now / 7200;
+            return told.RemoveAll(t =>
+            {
+                if (t == null)
+                    return true;
+                int c = t.IndexOf(':');
+                long n;
+                if (c <= 0 || !long.TryParse(t.Substring(c + 1), out n))
+                    return false;
+                switch (t.Substring(0, c))
+                {
+                    case "letter": return n < bucket;
+                    case "rescued": return n < day - 3;
+                    case "tryst": return n < day - 30;
+                    case "back": return n < now - 30 * 1440L;
+                    default: return false;
+                }
+            });
         }
 
         private static void Cap<T>(List<T> list, int max)
