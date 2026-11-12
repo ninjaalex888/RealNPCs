@@ -51,6 +51,50 @@ namespace EnrageWestworld.Core
             return b.ToString();
         }
 
+        // ---- by town (LIVES item 5a, 2026-11-12; [Display] WhosWhoByTown, settings version 480) --------------------------------
+        // The page listed everyone met, the most recent first: forty names from five towns in one run, so the town you're in was
+        // buried. People think of a town as its people (the "cognitive map" of a place is landmarks and faces), so the page now
+        // goes town by town: the town you're in first, then the rest by how many you've met there, each with its own most recent
+        // first, and those met on the roads or of no town last. The same entries, the same forty at most; only the order and the
+        // town headings change. Read only, as before.
+
+        /// The town a person belongs to as far as the page knows: their residence, else where you first saw them; null: none.
+        public static string TownOf(Store store, PersonState st)
+        {
+            Resident r = ResidentOf(store, st);
+            return r != null && !string.IsNullOrEmpty(r.Town) ? r.Town : !string.IsNullOrEmpty(st.FirstSeenTown) ? st.FirstSeenTown : null;
+        }
+
+        /// The page by town, `here` first; null when you've met nobody yet.
+        public static string ByTown(Store store, long now, string here, Func<string, List<FeltAt>> felt = null)
+        {
+            if (store == null || store.People == null)
+                return null;
+            var all = store.People.Values.Where(Met).ToList();
+            if (all.Count == 0)
+                return null;
+            var listed = all.Where(st => NameOf(store, st) != null || ResidentOf(store, st) != null)
+                            .OrderByDescending(Last).ThenBy(st => st.Id, StringComparer.Ordinal).Take(Most).ToList();
+            var towns = listed.GroupBy(st => TownOf(store, st) ?? "")
+                              .OrderBy(gr => gr.Key == "" ? 2 : gr.Key == here ? 0 : 1).ThenByDescending(gr => gr.Count()).ThenBy(gr => gr.Key, StringComparer.Ordinal).ToList();
+            var b = new StringBuilder();
+            b.Append(listed.Count > 0 ? "The people you have met, town by town." : "The people you have met.");
+            foreach (var gr in towns)
+            {
+                int n = gr.Count();
+                b.Append("\n\n").Append(gr.Key == "" ? "On the roads and elsewhere" : gr.Key).Append(gr.Key == here && here != null ? " (here)" : "").Append(": ")
+                 .Append(n == 1 ? "one you've met." : n + " you've met.");
+                foreach (PersonState st in gr)
+                    b.Append("\n\n").Append(Entry(store, st, now, felt));
+            }
+            int more = all.Count(st => NameOf(store, st) != null || ResidentOf(store, st) != null) - listed.Count, faceless = all.Count(st => !st.KnowsName && ResidentOf(store, st) == null);
+            if (more > 0)
+                b.Append("\n\n" + more + " more, longer ago.");
+            if (faceless > 0)
+                b.Append("\n\n" + Grammar.UpperFirst((more > 0 ? "and " : "") + (faceless == 1 ? "one other whose name you never learned." : faceless + " others whose names you never learned.")));
+            return b.ToString();
+        }
+
         private static long Last(PersonState st)
         {
             return Math.Max(st.LastSeenAt, Math.Max(st.LastTalkAt, Math.Max(st.ContactAt, st.FlirtedAt)));

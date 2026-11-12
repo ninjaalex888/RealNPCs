@@ -597,7 +597,8 @@ namespace EnrageWestworld.InGame
                 string body = null;
                 try
                 {
-                    body = WhosWho.Body(_store, Bridge.Now(), id => _cfg.MindLive && _engine != null && _engine.Shadow != null ? _engine.Shadow.Felt(id) : null);
+                    Func<string, List<FeltAt>> wwFelt = id => _cfg.MindLive && _engine != null && _engine.Shadow != null ? _engine.Shadow.Felt(id) : null;
+                    body = _cfg.WhosWhoByTown ? WhosWho.ByTown(_store, Bridge.Now(), _placeTown, wwFelt) : WhosWho.Body(_store, Bridge.Now(), wwFelt);   // town by town (LIVES item 5a)
                 }
                 catch (Exception ex)
                 {
