@@ -392,6 +392,8 @@ namespace EnrageWestworld.Core
                         {
                             s.Add(1, fill((manner == "cold" ? LendCold : LendSharp)[st]), manner == "cold" ? "mild" : "angry", "walkaway");
                             s.Kind = manner == "cold" ? "brushoff" : "snap";
+                            if (manner == "cold")
+                                s.Doer = 1;   // B turns A down: the lender's brush-off, not the gambler's (the review of HARDEN item 3; as courting's)
                         }
                     }
                     else if (good)

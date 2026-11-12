@@ -454,7 +454,7 @@ namespace EnrageWestworld.InGame
                         "Thank you, stranger. There's still some decency left in this world.");
                 SayLater(3000, label, line, t.Mark.Handle, "thanks");
             }
-            if (_cfg.Deeds && how == "caught")   // a dead thief is a killing, and the killing tells its own story
+            if (_cfg.Deeds && how == "caught" && !t.Test)   // a dead thief is a killing, and the killing tells its own story; a test lift's catch is no deed (it fed LiftNerve: the review of HARDEN item 3)
             {
                 Vector3 pos = me.Position;
                 long g = Bridge.Now();

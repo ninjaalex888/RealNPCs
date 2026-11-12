@@ -168,10 +168,11 @@ namespace EnrageWestworld.InGame
                 WanderLater(c.Handle, now + 18000);
                 try
                 {
-                    FolkRef ac = _bridge.AcquaintanceAt(c.Handle);
+                    FolkRef ac = t.Test ? null : _bridge.AcquaintanceAt(c.Handle);   // a test lift's chase leaves nothing lasting (the review of HARDEN item 3)
                     if (ac != null && ac.Id != null)
                         _bridge.LikeMore(ac.Id, FriendChase.LikeMore);   // the good turn done warms the doer (the Ben Franklin effect)
-                    RecordEvent("defend", t.ChaserId, t.ChaserName, "player", "you", ENTITY.GET_ENTITY_COORDS(c.Handle, true, true), c.Handle, c.Handle, me.Handle, Allies.MemoryWords(YourFullName()));
+                    if (!t.Test)
+                        RecordEvent("defend", t.ChaserId, t.ChaserName, "player", "you", ENTITY.GET_ENTITY_COORDS(c.Handle, true, true), c.Handle, c.Handle, me.Handle, Allies.MemoryWords(YourFullName()));
                 }
                 catch (Exception ex)
                 {
@@ -188,9 +189,11 @@ namespace EnrageWestworld.InGame
                 TASK.CLEAR_PED_TASKS(h, true, false);
                 TASK.TASK_SMART_FLEE_PED(h, c != null && c.Exists() ? c.Handle : me.Handle, 120f, -1, 0, 3f, 0);   // up and off, empty-handed
             }
-            ThiefSore(t, now);
+            if (!t.Test)
+                ThiefSore(t, now);   // (a test's thief bears the friend no grudge, and it's no news)
             LiftResolved(t, "friend");
-            NewsPush(t.Town ?? "Around here", FriendChase.News(chaser, seed), "news");
+            if (!t.Test)
+                NewsPush(t.Town ?? "Around here", FriendChase.News(chaser, seed), "news");
             Log.Write("FRIENDCHASE " + t.ChaserName + " ran the thief down and brought your " + Cents(t.Amount) + " back; they remember it");
         }
 
