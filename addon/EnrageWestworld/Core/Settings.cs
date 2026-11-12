@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 458;
+        public const int CurrentVersion = 459;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -1102,6 +1102,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 459)
+                    log?.Invoke("Settings: new in this version: the gambler's loan (with [Mind] GamblersBorrow, on): a gambler at the worst of his cards now meets the man he borrows from, as was meant since 0.7.25 and never played.");
                 if (s.SettingsVersion < 458)
                     log?.Invoke("Settings: new in this version: [Display] NameCardsBudgetUs (400): the name cards keep to their own share of a frame, shedding work in steps when a street is busy.");
                 if (s.SettingsVersion < 457)
@@ -2129,7 +2131,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, fondness and anger, as enRAGE keeps them");
             b.AppendLine("FeelingBarsMetres = " + F(FeelingBarsMetres) + "   ; how close they must be (the nearest three in plain view get bars)");
             b.AppendLine("FeelingBarsShowEmpty = " + B(FeelingBarsShowEmpty) + "   ; also show the empty part of each bar, so a low value reads as a little out of a whole bar");
-            b.AppendLine("NameCardsBudgetUs = " + NameCardsBudgetUs + "   ; the name cards' own share of a frame, in microseconds (400 = 0.4 ms of the add-on's 1 ms; the worst ten seconds seen in testing was 0.34): over it for two seconds they shed work a step at a time, first what you can't see (fewer cards' words a pass, the wall and head looks half as often), then the small line under the names, then all but the nearest eight fade; they ease back when the street quietens. 0: no budget, as before");
+            b.AppendLine("NameCardsBudgetUs = " + NameCardsBudgetUs + "   ; the name cards' own share of a frame, in microseconds (400 = 0.4 ms of the add-on's 1 ms; the worst ten seconds seen in testing was 0.34): over it for two seconds they shed work a step at a time, first what you can't see (fewer cards' words a pass, the wall and head looks half as often), then the small line under the names, then all but the nearest eight fade (a card that says what's between you, or a trade, keeps its line and stays); they ease back when the street quietens. 0: no budget (cards still worked out a few at a time)");
             b.AppendLine("NameCardsYouOwe = " + B(NameCardsYouOwe) + "   ; \"You owe them $1\" on the name card of one whose bet you didn't pay, for the month you can still pay it (J near them); first on the card, before \"Owes you\"");
             b.AppendLine("NameCardsLetter = " + B(NameCardsLetter) + "   ; \"You carry their letter\" on the name card of one whose letter you took at a depot and haven't yet given him");
             b.AppendLine("BetweenYouPage = " + B(BetweenYouPage) + "   ; a page in the reader (N), \"Between you and them\": who owes you and for what (and how much longer), who stood by you this week, who got away with your money, and whose letter you carry");

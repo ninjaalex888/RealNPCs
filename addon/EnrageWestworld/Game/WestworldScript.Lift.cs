@@ -322,7 +322,8 @@ namespace EnrageWestworld.InGame
                 _liftLast = (how == "law" ? "the law caught him" : how == "friend" ? (t.ChaserName ?? "a friend") + " caught him" : how == "killed" ? "killed" : "caught") + ", " + Cents(t.Amount) + " back";
                 if (how == "caught" && t.Thief != null)
                     ArthurSays("caught", t.Thief.Handle);   // his own words as he takes it back (WestworldScript.ArthurLines.cs)
-                RobbedYou(t.Thief, false);   // your money back from him: squared, whatever he took before
+                if (!t.Test)
+                    RobbedYou(t.Thief, false);   // your money back from him: squared, whatever he took before (a test's catch squares nothing: a known pickpocket is the first a test picks; the halfway review)
             }
             Log.Write("LIFT " + _liftLast);
         }

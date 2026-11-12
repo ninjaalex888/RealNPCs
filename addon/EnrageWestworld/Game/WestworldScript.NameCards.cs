@@ -47,6 +47,10 @@ namespace EnrageWestworld.InGame
             // body is that doesn't change with its handle and model, kept a while (its gang, its trade; CardKindMs), and why the
             // last try found nothing to say (for the probe's line)
             public bool Shed;
+            // its small line says what's between you (Owes you, You owe them, Robbed you, Mourns one you killed, their letter) or
+            // their trade or gang: the budget keeps that line at step 2 and never sheds the card at step 3 (the halfway review:
+            // the steps hid the very words SEAMS put there)
+            public bool Says;
             public int ShedSince = -100000;   // when Shed last changed: it holds CardBudget.ShedHoldMs (no pulsing at the eighth place)
             public string Gang, Job, Why;
             public int KindAt = -100000;
@@ -297,7 +301,7 @@ namespace EnrageWestworld.InGame
                     c.Units = TitleUnits(c.Name);
                 }
                 Draw.TextFormed(c.Formed, x - c.Units * s1 * 0.0205f / 2f, y - h1 - h2 + 0.002f, s1, c.R, c.G, c.B, a);
-                if (_cfg.NameCardsSecondLine && budget.SecondLines && NameCardPlan.SecondLine(up, c.Metres) && !string.IsNullOrEmpty(c.Line2) && !tight && Draw.Left > 0)   // off: the name alone (players, 2026-10-30); short of text, the name alone too; the nearest few only (FIVEDAY2 0g)
+                if (_cfg.NameCardsSecondLine && (budget.SecondLines || c.Says) && NameCardPlan.SecondLine(up, c.Metres) && !string.IsNullOrEmpty(c.Line2) && !tight && Draw.Left > 0)   // off: the name alone (players, 2026-10-30); short of text, the name alone too; the nearest few only (FIVEDAY2 0g)
                 {
                     if (!ReferenceEquals(c.Formed2Of, c.Line2))
                     {
@@ -465,7 +469,7 @@ namespace EnrageWestworld.InGame
             {
                 NameCard fc = found[i];
                 bool up = fc.Shed ? !fc.Blocked : _nameCardsFrame - fc.SeenFrame <= 10 && fc.Alpha > 0f;   // one shed and faded still counts while no wall is in the way (else it would come back, and go, by turns)
-                bool want = up && shown++ >= kept;
+                bool want = up && shown++ >= kept && !fc.Says;   // (one whose line says what's between you is kept)
                 if (want != fc.Shed && (now - fc.ShedSince >= CardBudget.ShedHoldMs || now < fc.ShedSince || kept >= most2))
                 {
                     fc.Shed = want;
@@ -595,6 +599,7 @@ namespace EnrageWestworld.InGame
             // lawman's and a shopkeeper's trade on the card); a stranger's "Stranger" gives way to it, the badge or the apron
             // being plain to see
             string job = got && gang == null ? c.Job : null;
+            c.Says = got && c.Name != null && (between != null || job != null || gang != null);
             if (job != null && c.Name != null)
             {
                 if (string.IsNullOrEmpty(c.Line2) || c.Line2 == "Stranger")

@@ -43,7 +43,7 @@ namespace EnrageWestworld.Core
         }
     }
 
-    /// The name cards' own frame budget (HARDEN item 1; [Display] NameCardsBudgetUs, 400, above the worst ten seconds of that log; 0 = off, exactly as before). The cards were
+    /// The name cards' own frame budget (HARDEN item 1; [Display] NameCardsBudgetUs, 400, above the worst ten-second mean of that log (shorter spells can climb past it); 0 = no budget; the probe and caching changes stay). The cards were
     /// the costliest part of a frame in Lex's 11-09 log (0.2 to 0.34 ms of the add-on's 1 ms), and SEAMS put five more words on them,
     /// unplayed. What a frame of cards costs is measured whole, every frame, and a slow mean (about a third of a second) drives a
     /// ladder that sheds work in a fixed order, the invisible first, the way the control ring draws itself in:
