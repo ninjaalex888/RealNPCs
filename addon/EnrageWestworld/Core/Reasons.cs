@@ -39,6 +39,7 @@ namespace EnrageWestworld.Core
         public int MarkedDays = -1;   // still marked from a beating of yours: the game days since (Core/LimpTale.cs; DEPTH item 13), set by the game side; -1: not marked
         public string FeverSick;  // of a house with the fever: the sick one's first name (Core/FeverKin.cs; DEPTH item 12), set by the game side; null: none
         public string War;        // the war he was in: "blue", "grey", "cuba", "islands" (Core/OldSoldiers.cs; FOURTEENHOUR item 17), set by the game side
+        public bool Backslid;     // went up at a revival's altar and has gone back to old ways since (Engine.SavedNow; Core/ChurchSteps.cs, LIVES item 2c), set by the game side
         public string Shamed;     // slighted, had words or beaten in the last four hours and not answered it ("slighted", "had words", "beaten"), else null (NIGHT3: displaced aggression)
     }
 
@@ -77,6 +78,7 @@ namespace EnrageWestworld.Core
             public bool TimesTalk;       // [Mind] TimesTalk (with MindTalks and HistoricalAccuracy): any two may talk over the times (Run 3, item 2)
             public int TimesShare = 100; // [Mind] TimesTalkShare: its chance, percent of as built
             public int CenturyEve;       // New Year's Eve of 1899 or 1900 from five o'clock: that year (Core/CenturyTurns.cs; DEPTH reserve R6); 0 (and in the old harnesses) none
+            public bool NearChurch;      // a Sunday's church steps: out of doors within 60 m of the town's church (Core/ChurchSteps.cs; LIVES item 2c); false in the old harnesses
             public bool MindTalks;       // [Mind] MindTalks: people talk to each other from what's on their minds (MindTalk.cs); the reason of last resort among people who know each other, ahead of small talk
         }
 

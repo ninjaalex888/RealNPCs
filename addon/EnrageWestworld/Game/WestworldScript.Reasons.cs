@@ -179,6 +179,10 @@ namespace EnrageWestworld.InGame
             if (Rivals.On && !s.Woman)
                 s.Courting = CourtingFor(s.Id, out s.CourtingName);   // whom he's courting, for two men after the same woman (FOURTEENHOUR item 19)
             s.FeverSick = FeverKin.On ? _engine.FeverHousehold(s.Id) : null;   // of a house with the fever (DEPTH item 12)
+            bool backslid = false;
+            if (ChurchSteps.On && InnerLife.Weekday == 0)
+                _engine.SavedNow(s.Id, g / 1440, out backslid);
+            s.Backslid = backslid;   // up at the revival's altar, back to old ways since (LIVES item 2c)
             s.MarkedDays = -1;
             if (LimpTale.On && _cfg.LastingMarks && _store.Deeds != null)
             {
@@ -268,7 +272,8 @@ namespace EnrageWestworld.InGame
                 TimesShare = _cfg.TimesTalkShare,
                 CenturyEve = CenturyEveNow(),   // New Year's Eve of 1899 or 1900 (DEPTH reserve R6)
                 Rumours = (!saloon || _cfg.SaloonGossip) && _engine.RumourPool(_placeTown, 1).Count > 0,
-                DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0
+                DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0,
+                NearChurch = ChurchSteps.On && InnerLife.Weekday == 0 && NearChurchSteps()   // a Sunday's church steps (LIVES item 2c)
             };
             var found = new List<PairReason>();
             for (int i = 0; i < people.Count; i++)
@@ -558,6 +563,11 @@ namespace EnrageWestworld.InGame
                 cast.TalkOf = TalkOfCast(doer, done);   // whom he talks of, and what each thinks of him (FOURTEENHOUR item 23)
             if (kind == FeverKin.AskKind || kind == FeverKin.AvoidKind)
                 cast.FeverSick = done.FeverSick ?? doer.FeverSick;   // the sick one at the house, for the words (DEPTH item 12)
+            if (kind == ChurchSteps.Kind)
+            {
+                cast.Backslid = pr.Why.Matter == "backslid";
+                cast.Absent = cast.Backslid ? null : AbsentFromChurch(doer, done);   // a townsman not in his pew (LIVES item 2c)
+            }
             if (kind == "rivals")
                 cast.Courted = Person.FirstOf(doer.CourtingName ?? done.CourtingName ?? "her");   // her name, for the rivals' words (FOURTEENHOUR item 19)
             // the trouble scenes (Scenes.Trouble.cs): each needs its setting, and the rough move a surface by the victim;

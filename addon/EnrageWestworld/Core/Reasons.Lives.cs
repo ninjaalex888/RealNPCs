@@ -11,6 +11,8 @@ namespace EnrageWestworld.Core
             Reason r = Either(a, b, (x, y) => SchoolFather.For(x, y, tie, gameDay, where));   // the schoolteacher and the father (LIVES item 2a)
             if (r == null)
                 r = ElectionNight.For(a, b, gameDay, where);   // election night in the saloon (LIVES item 2b)
+            if (r == null)
+                r = Either(a, b, (x, y) => ChurchSteps.For(x, y, gameDay, where));   // talk on the church steps (LIVES item 2c)
             return r;
         }
 

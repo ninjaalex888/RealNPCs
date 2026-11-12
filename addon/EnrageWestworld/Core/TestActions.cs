@@ -235,6 +235,7 @@ namespace EnrageWestworld.Core
             new Entry("scene:x:cards", "Street scenes", "A gambler asks a man for a loan", "TestGamblerLoanKey", needs: "[Scenes] GamblersBorrow; a named man whose worry is the cards (or who has a lender), and another within 16 m"),
             new Entry("scene:x:courting", "Street scenes", "A courting worry, face to face", "TestCourtingKey", needs: "a named man and woman within 16 m"),
             new Entry("scene:school", "Street scenes", "The schoolteacher asks a father after his boy", "TestSchoolKey", needs: "[Scenes] SchoolFather; two named people within 16 m (the nearest two play the teacher and the father for the test)"),
+            new Entry("scene:churchsteps", "Street scenes", "Talk on the church steps after the service", "TestChurchStepsKey", needs: "[Scenes] ChurchSteps; two named people within 16 m (the nearest two, any day for the test; the pew's absent man is named only in play)"),
             // ---- tools ---------------------------------------------------------------------------------------------
             new Entry("showminds", "Tools", "Show minds (a card over people near you)", "TestShowMindsKey", "Ctrl+F2"),   // on and off for the session (Lex, 2026-10-27)
             new Entry("wakestages", "Tools", "Show wake stages (a tag over the waking)", "TestWakeStagesKey"),

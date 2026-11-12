@@ -292,6 +292,7 @@ namespace EnrageWestworld.InGame
             Core.Routines.HolidaysOn = _cfg.HolidayRoutines;   // [World] HolidayRoutines (LIVES item 1f)
             Core.SchoolFather.On = _cfg.SchoolFather;     // [Scenes] SchoolFather (LIVES item 2a)
             Core.ElectionNight.On = _cfg.ElectionNight;   // [Scenes] ElectionNight (LIVES item 2b)
+            Core.ChurchSteps.On = _cfg.ChurchSteps;       // [Scenes] ChurchSteps (LIVES item 2c)
             Core.SleepOnIt.On = _cfg.SleepOnIt;           // [Mind] SleepOnIt (DEPTH item 19)
             Mourning.GraveNightOn = _cfg.GraveNight;      // [World] GraveNight (DEPTH reserve R1)
             Core.NoteMeet.On = _cfg.NoteMeet;             // [Scenes] NoteMeet (DEPTH reserve R2)
