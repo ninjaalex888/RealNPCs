@@ -142,6 +142,8 @@ namespace EnrageWestworld.Core
                 if (r.Id == id && r.Name != name) { r.Name = name; n++; }
             PersonState st;
             if (People.TryGetValue(id, out st) && st.Name != null && st.Name != name) { st.Name = name; n++; }
+            string trimmedAs;
+            if (Trimmed != null && Trimmed.TryGetValue(id, out trimmedAs) && trimmedAs.Length > 0 && trimmedAs.Substring(1) != name) { Trimmed[id] = trimmedAs[0] + name; n++; }   // one the trim let go comes back by the new name (the review of 2ab63cc)
             foreach (SceneTie t in Ties)
             {
                 if (t.A == id && t.AName != name) { t.AName = name; n++; }
