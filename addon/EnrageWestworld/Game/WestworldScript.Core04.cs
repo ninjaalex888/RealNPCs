@@ -290,6 +290,7 @@ namespace EnrageWestworld.InGame
             Core.DreamWake.On = _cfg.DreamsRemembered;     // [Mind] DreamsRemembered (LIVES item 1d)
             Core.BarberHears.On = _cfg.BarberHears;       // [Mind] BarberHears (LIVES item 1e)
             Core.Routines.HolidaysOn = _cfg.HolidayRoutines;   // [World] HolidayRoutines (LIVES item 1f)
+            Core.SchoolFather.On = _cfg.SchoolFather;     // [Scenes] SchoolFather (LIVES item 2a)
             Core.SleepOnIt.On = _cfg.SleepOnIt;           // [Mind] SleepOnIt (DEPTH item 19)
             Mourning.GraveNightOn = _cfg.GraveNight;      // [World] GraveNight (DEPTH reserve R1)
             Core.NoteMeet.On = _cfg.NoteMeet;             // [Scenes] NoteMeet (DEPTH reserve R2)

@@ -207,6 +207,7 @@ namespace EnrageWestworld.Core
                 case FeudArcs.Kind: { bool taken; return FeudArcs.Make(c, c.Tempers != null ? c.Tempers[1] : null, seed, out taken); }   // his hand before the street (Core/FeudArcs.cs; DEPTH item 18)
                 case CenturyTurns.Kind: return CenturyTurns.Make(c, c.CenturyEve, seed);   // the century turns (Core/CenturyTurns.cs; DEPTH reserve R6)
                 case Grumble.Kind: return Grumble.Make(c, seed);   // old hands grumble at the newcomer (Core/Grumble.cs; DEPTH reserve R5)
+                case SchoolFather.Kind: return SchoolFather.Make(c, seed);   // the schoolteacher and the father (Core/SchoolFather.cs; LIVES item 2a)
                 case LimpTale.Kind: return LimpTale.Make(c, c.MarkedDays, seed);   // how he got the limp (Core/LimpTale.cs; DEPTH item 13)
                 case FeverKin.AvoidKind: return FeverKin.Avoid(c, seed);   // the house of the sick kept clear of (Core/FeverKin.cs; DEPTH item 12)
                 case FeverKin.AskKind: return FeverKin.AskAfter(c, seed);   // ...or asked after

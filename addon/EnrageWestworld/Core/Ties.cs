@@ -77,6 +77,10 @@ namespace EnrageWestworld.Core
                     return -2;
                 case "fencecut":
                     return -2;
+                case SchoolFather.RowKind:
+                    return -1;   // the father wouldn't hear it from the schoolteacher (Core/SchoolFather.cs; LIVES item 2a): Doer is the teacher
+                case SchoolFather.KeptKind:
+                    return 1;    // ...or gave a little ground
                 case "blamed":
                     return -2;   // doctored brands laid at his door in front of the street (Core/Brands.cs; DEPTH item 8): Doer is the one who blames
                 case "cleared":

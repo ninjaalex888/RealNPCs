@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 466;
+        public const int CurrentVersion = 467;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -135,6 +135,7 @@ namespace EnrageWestworld.Core
         public bool RevivedSeen = true;   // [World] with West World and MindWakes: the revived dead are known by anyone who knew them, not only those who saw them die; each thinks it, and the brave ask them to their face (Core/RevivedSeen.cs; DEPTH item 15; settings version 416)
         public bool CollectionPlate = true;   // [Scenes] on a Sunday after the service, by a town's church, one of its churchmen brings the plate round to you: J a dime, a dollar, or let it pass (Core/CollectionPlate.cs; DEPTH item 11; settings version 415)
         public bool Brands = true;   // [Scenes] a ranch man of a ranch town, stock gone with the brands run over, blames his neighbour in the street; if you came on the rustlers' fire lately, J to tell him who it was (Core/Brands.cs; DEPTH item 8; settings version 414)
+        public bool SchoolFather = true;   // [Scenes] on a school day the town's schoolteacher asks a farming or working father in the street after his boy, kept home; he won't hear it or gives a little ground, by his nature; most at planting and harvest (Core/SchoolFather.cs; LIVES item 2a) (settings version 467)
         public bool StepBetween = true;   // [Scenes] J when two men with a quarrel between them are about to have it out near you: step between them; heeded by both, it's put off six game hours, and the second time they make it up (Core/StepBetween.cs; DEPTH item 7; settings version 413)
         public bool TemperanceDoor = true;   // [Scenes] at dusk a churchwoman puts the pledge to a drinker at the saloon door, a second woman beside her; a hothead's insult brings her kin; a pledge is the town's talk and the preacher's (FOURTEENHOUR item 25; settings version 393)
         public bool Snubs = true;            // [Scenes] a gentleman snubs a working man in the street; his lady's word ends it or makes it worse; alone, it can come to blows (FOURTEENHOUR item 18; settings version 386)
@@ -1109,6 +1110,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 467)
+                    log?.Invoke("Settings: new in this version: [Scenes] SchoolFather (on): the schoolteacher asks a father in the street after his boy, kept home for the fields.");
                 if (s.SettingsVersion < 466)
                     log?.Invoke("Settings: new in this version: [World] HolidayRoutines (on): the town keeps the holidays in who you find where: Easter and Christmas at church, the Fourth in the street, Thanksgiving at home.");
                 if (s.SettingsVersion < 465)
@@ -2464,6 +2467,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("NoteMeet = " + B(NoteMeet) + "   ; after you carried a word between two who fell out (Talk's errand), the next time they're near each other within two game days they meet in the street: taken, a word and a hand; sent back, a cold word and they part; false: the word is all there is");
             b.AppendLine("CollectionPlate = " + B(CollectionPlate) + "   ; on a Sunday from eleven till one, within 60 m of a town's church, one churchman (never a crowd) brings the collection plate round to you: J a dime, a dollar, or let it pass; who gave is seen, and a stranger's dollar is the next Sunday's sermon; false: no plate");
             b.AppendLine("Brands = " + B(Brands) + "   ; in a ranch town by day a ranch man, stock gone with the brands run over, blames his neighbour to his face in the street (a hostile tie between them); if you came on the rustlers at their branding fire in the last two game days, J while it plays to tell him who it was, and they make it right; false: no such scene");
+            b.AppendLine("SchoolFather = " + B(SchoolFather) + "   ; on a school day, by day, the town's schoolteacher meets a farming or working father of her town in the street and asks after his boy, who hasn't been at his desk; the proud and hotheaded won't hear it (a cold tie), the rest give a little ground (a warm one); most at planting and harvest, when the boys were kept home; false: no such scene");
             b.AppendLine("StepBetween = " + B(StepBetween) + "   ; two men with a quarrel between them about to have it out near you (words, before any blow): J to step between them; each heeds you by his nature and what he thinks of you; both heed and it's put off six game hours; one won't and he shoves past; the second time both heed, they make it up; false: no such J");
             b.AppendLine("TemperanceDoor = " + B(TemperanceDoor) + "   ; with Temperance on: at dusk a churchwoman by the saloon door puts the pledge to a man in drink going in, with a second woman of the church beside her if one is near (never a crowd); a hothead's insult brings her kin if he's near, and blows with sides; a man who signs is the town's talk for a week (and back at the bar by Friday, as often as not) and the preacher's word on Sunday; false: the pledge only in chance meetings, as before");
             b.AppendLine("Snubs = " + B(Snubs) + "   ; a working man asks a gentleman something in the street by day and is brushed off; he takes it, sneers or answers back; the gentleman's pride; with a lady beside him, her word ends it or makes it worse and they walk on together; alone, a hot man and a proud one can come to blows, and the working men near lean to their own; false: never");
