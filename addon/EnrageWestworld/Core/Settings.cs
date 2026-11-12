@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 478;
+        public const int CurrentVersion = 479;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -515,6 +515,7 @@ namespace EnrageWestworld.Core
         public bool StoreSlate = true;   // [Scenes] at the store: someone asks to put it on the slate; the keeper chalks it, asks for something first, or says it's full, and J lets you pay what they owe; on payday they pay it down (Core/Slate.cs; FIVEDAY R2, settings version 290)
         public bool DoctorsCall = true;   // [Scenes] a few steps from the town's doctor (Valentine, Rhodes), once a day, he names a house with a fever its people can't pay his call for; J pays his two dollars, and the worry is settled (Core/DoctorsCall.cs; LIVES item 4a) (settings version 477)
         public bool CourtingNote = true;   // [Scenes] a few steps from a man whose courting of a woman of his town is getting worse or at its worst, he asks you to carry his note; J takes it, and near her within two game days J gives it: her answer as his worry ends (Core/CourtingNote.cs; LIVES item 4b) (settings version 478)
+        public bool FittingGifts = true;   // [Scenes] in a town's general store, J once a visit lists up to three of the town fond of you with a gift that fits each (a hymn book, a bottle of rye, cigars, work gloves, a ribbon); bought, J gives it within two game days, a few steps from them (Core/FittingGifts.cs; LIVES item 4c) (settings version 479)
         public bool MoneyTalk = true;   // [Scenes] two men meeting in a town argue gold against silver, the banks and the trusts; who they are decides the side, and those who disagree are the colder for it (TENHOUR item 15; settings version 346)
         public bool Suffrage = true;   // [Scenes] by day in Saint Denis: a woman says what she thinks about the vote to a man she meets; he forbids it, laughs, is shaken or agrees (Core/Suffrage.cs; TENHOUR item 16, settings version 347)
         public bool ScripTalk = true;   // [Scenes] by day at Annesburg: a man says what he thinks of being paid in the company's scrip, and the other agrees, hushes him or warns him (Core/ScripTalk.cs; TENHOUR R2, settings version 349)
@@ -1121,6 +1122,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 479)
+                    log?.Invoke("Settings: new in this version: [Scenes] FittingGifts (on): J at the general store: a gift that fits someone fond of you, given on J when you meet them.");
                 if (s.SettingsVersion < 478)
                     log?.Invoke("Settings: new in this version: [Scenes] CourtingNote (on): a courting man's note carried on J: near her, J gives it, and she answers as his worry ends.");
                 if (s.SettingsVersion < 477)
@@ -2601,6 +2604,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("StoreSlate = " + B(StoreSlate) + "   ; at the store, now and then: a townsman or townswoman asks the keeper to put it on the slate, and he chalks it up, asks for something on account first, or says the slate's full (by what they owe this week and his manner). Refused, J for ten seconds lets you pay what they owe, a kindness remembered. On Saturday afternoon they pay it down instead");
             b.AppendLine("DoctorsCall = " + B(DoctorsCall) + "   ; within a few steps of the town's doctor (Valentine's or Rhodes'), once a day of the game, he names a house of the town with a fever its people can't pay his call for, and J for twelve seconds lets you pay his two dollars: he rides out, the family's worry is settled (their thoughts say a stranger paid the doctor), a kindness he saw; false: no such word from him");
             b.AppendLine("CourtingNote = " + B(CourtingNote) + "   ; a few steps from a man whose courting of a woman of his town is getting worse or at its worst, he lets on he has a note for her and no nerve to give it, and J takes it; for two game days, within a few steps of her, J gives it: she reads it and answers as his worry would end (yes, and they're walking out; not yet; or no, kindly), and both remember you carried it; false: no such note");
+            b.AppendLine("FittingGifts = " + B(FittingGifts) + "   ; in a town's general store, J once a visit lists up to three people of the town who are fond of you, each with the gift that fits who they are (a hymn book for the churchgoer, a bottle of rye for the saloon's regular, cigars for the well-off, work gloves for the farmer, a lace collar or a ribbon, a plug of tobacco); buy one, and within two game days, a few steps from them, J gives it: they take it by their nature, and a second inside a week warms them less; false: no such offer");
             b.AppendLine("MoneyTalk = " + B(MoneyTalk) + "   ; two men meeting in a town argue gold against silver, the banks and the trusts (the bank panic in 1907); how they're fixed decides the side, and those who fall out are the colder for it");
             b.AppendLine("Suffrage = " + B(Suffrage) + "   ; by day in Saint Denis: a woman says what she thinks about the vote to a man she meets; he forbids it, laughs, is shaken or agrees");
             b.AppendLine("ScripTalk = " + B(ScripTalk) + "   ; by day at Annesburg: a man says what he thinks of being paid in the company's scrip; the other agrees, hushes him or warns him");

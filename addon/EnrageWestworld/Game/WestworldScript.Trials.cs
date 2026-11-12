@@ -40,7 +40,7 @@ namespace EnrageWestworld.InGame
             _eventPrompt = kind;
             _eventPromptFor = e;
             _eventPromptUntil = Game.GameTime + ms;
-            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == Wayside.Kind ? ": what you do" : kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == DoctorsCall.Kind ? ": the doctor's call" : kind == CourtingNote.Kind ? ": his note" : kind == CourtingNote.GiveKind ? ": the note you carry" : kind == BarRound.Kind ? ": buy the house a round" : kind == WalkHome.Kind ? ": offer to see them home" : kind == FindLetter.Kind ? ": mail held here" : kind == BrawlVerbs.RepayKind ? ": the dollar you owe" : kind == FindLetter.GiveKind ? ": the letter you carry" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : kind == BrawlVerbs.Kind ? ": the fight" : kind == StepBetween.Kind ? ": step between them" : kind == Brands.Kind ? ": what you saw" : kind == Slander.PromptKind ? ": a word in his ear" : kind == YourReward.Kind ? ": put up a reward" : kind == PurseSnatch.Kind ? ": the thief you caught" : kind == Holdup.Kind ? ": your word" : kind == DoctorsDoor.Kind ? ": walk with him" : kind == Riders.Kind ? ": your word" : kind == Stories.Kind ? ": his father" : kind == AlleyVoice.Kind ? ": what you do" : kind == Elopers.Kind ? ": your word" : kind == WidowCollection.Kind ? ": give" : kind == CollectionPlate.Kind ? ": the plate" : kind == HorseWatch.Kind ? ": a dime" : kind == BrawlAfter.JailKind ? (VouchOn ? ": his fine, or your word" : ": his fine") : kind == BrawlVerbs.PayKind ? ": pay the bet you lost" : kind == NeighbourReward.Kind ? ": the reward" : kind == WantedWhich.Kind ? ": the poster" : ": the cell");
+            _eventPromptText = KeySpec.Name(_eventKey.Key) + (kind == Wayside.Kind ? ": what you do" : kind == "testify" ? ": speak to the court" : kind == "swear" ? ": be sworn in" : kind == "show" ? ": the show" : kind == PrizeFight.Kind ? ": the fight" : kind == Slate.Kind ? ": pay their slate" : kind == DoctorsCall.Kind ? ": the doctor's call" : kind == FittingGifts.BuyKind ? ": a gift for someone" : kind == FittingGifts.GiveKind ? ": the gift you carry" : kind == CourtingNote.Kind ? ": his note" : kind == CourtingNote.GiveKind ? ": the note you carry" : kind == BarRound.Kind ? ": buy the house a round" : kind == WalkHome.Kind ? ": offer to see them home" : kind == FindLetter.Kind ? ": mail held here" : kind == BrawlVerbs.RepayKind ? ": the dollar you owe" : kind == FindLetter.GiveKind ? ": the letter you carry" : kind == Foreclosure.Kind ? ": buy it back for them" : kind == BoxSocial.Kind ? ": bid for the box" : kind == BrawlVerbs.Kind ? ": the fight" : kind == StepBetween.Kind ? ": step between them" : kind == Brands.Kind ? ": what you saw" : kind == Slander.PromptKind ? ": a word in his ear" : kind == YourReward.Kind ? ": put up a reward" : kind == PurseSnatch.Kind ? ": the thief you caught" : kind == Holdup.Kind ? ": your word" : kind == DoctorsDoor.Kind ? ": walk with him" : kind == Riders.Kind ? ": your word" : kind == Stories.Kind ? ": his father" : kind == AlleyVoice.Kind ? ": what you do" : kind == Elopers.Kind ? ": your word" : kind == WidowCollection.Kind ? ": give" : kind == CollectionPlate.Kind ? ": the plate" : kind == HorseWatch.Kind ? ": a dime" : kind == BrawlAfter.JailKind ? (VouchOn ? ": his fine, or your word" : ": his fine") : kind == BrawlVerbs.PayKind ? ": pay the bet you lost" : kind == NeighbourReward.Kind ? ": the reward" : kind == WantedWhich.Kind ? ": the poster" : ": the cell");
         }
 
         private void PromptClear()
@@ -622,6 +622,8 @@ namespace EnrageWestworld.InGame
                 case FindLetter.GiveKind: menu.Rows = FindLetter.GiveRows(Person.FirstOf(_eventPromptFor.AName), _eventPromptFor.Extra); menu.Title = Person.FirstOf(_eventPromptFor.AName) + ":"; break;
                 case WalkHome.Kind: menu.Rows = WalkHome.Rows(_eventPromptFor.AName); menu.Title = Person.FirstOf(_eventPromptFor.AName) + ", after dark:"; break;   // (THREEHOUR item 4)
                 case BarRound.Kind: int barAt; int.TryParse(_eventPromptFor.Extra, out barAt); menu.Rows = BarRound.Rows(_eventPromptFor.Count, MONEY._MONEY_GET_CASH_BALANCE(), barAt, SaloonDamageToday(), _barRoundDays.Contains(BarRound.DayKey(_placeTown, _store.LastGameMin)), _eventPromptFor.AName); menu.Title = _eventPromptFor.AName != null ? Person.FirstOf(_eventPromptFor.AName) + "'s wake night, at the bar:" : "At the bar:"; break;   // (THREEHOUR item 3; the wake's row: reserve R19)
+                case FittingGifts.BuyKind: menu.Rows = GiftRows(); menu.Title = "A gift that fits:"; break;   // (LIVES item 4c)
+                case FittingGifts.GiveKind: menu.Rows = new List<InteractOption> { new InteractOption { Id = "gift:give", Label = "Give " + Person.FirstOf(_eventPromptFor.AName) + " " + _eventPromptFor.Extra + "." }, new InteractOption { Id = "gift:keep", Label = "Not now." } }; menu.Title = Person.FirstOf(_eventPromptFor.AName) + ":"; break;
                 case CourtingNote.Kind: menu.Rows = CourtingNote.TakeRows(Person.FirstOf(_eventPromptFor.BName)); menu.Title = Person.FirstOf(_eventPromptFor.AName) + ", courting:"; break;   // (LIVES item 4b)
                 case CourtingNote.GiveKind: menu.Rows = CourtingNote.GiveRows(Person.FirstOf(_eventPromptFor.BName)); menu.Title = Person.FirstOf(_eventPromptFor.AName) + ":"; break;
                 case DoctorsCall.Kind: menu.Rows = DoctorsCall.Rows(MONEY._MONEY_GET_CASH_BALANCE()); menu.Title = "The doctor:"; break;   // (LIVES item 4a)
@@ -833,6 +835,16 @@ namespace EnrageWestworld.InGame
             if (m.Mode == BarRound.Kind && row.Id == "barround:buy")
             {
                 BarRoundBuy(e);   // WestworldScript.BarRound.cs (THREEHOUR item 3)
+                return;
+            }
+            if (m.Mode == FittingGifts.BuyKind)
+            {
+                GiftBuy(row.Id);   // WestworldScript.FittingGifts.cs (LIVES item 4c)
+                return;
+            }
+            if (m.Mode == FittingGifts.GiveKind && row.Id == "gift:give")
+            {
+                GiftGive(e);
                 return;
             }
             if (m.Mode == CourtingNote.Kind && row.Id == "courtnote:take")
