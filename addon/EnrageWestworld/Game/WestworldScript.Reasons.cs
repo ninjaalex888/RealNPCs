@@ -274,7 +274,8 @@ namespace EnrageWestworld.InGame
                 Rumours = (!saloon || _cfg.SaloonGossip) && _engine.RumourPool(_placeTown, 1).Count > 0,
                 DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0,
                 NearChurch = ChurchSteps.On && InnerLife.Weekday == 0 && NearChurchSteps(),   // a Sunday's church steps (LIVES item 2c)
-                DanceOn = DanceFight.On && saloon && DanceOnHere(now)   // a dance on in this saloon (LIVES item 2d)
+                DanceOn = DanceFight.On && saloon && DanceOnHere(now),   // a dance on in this saloon (LIVES item 2d)
+                TownNews = NewsOverFence.On && !saloon && TownNewsHere(now) != null   // the town's news to pass over the fence (LIVES item 2e)
             };
             var found = new List<PairReason>();
             for (int i = 0; i < people.Count; i++)
@@ -564,6 +565,8 @@ namespace EnrageWestworld.InGame
                 cast.TalkOf = TalkOfCast(doer, done);   // whom he talks of, and what each thinks of him (FOURTEENHOUR item 23)
             if (kind == FeverKin.AskKind || kind == FeverKin.AvoidKind)
                 cast.FeverSick = done.FeverSick ?? doer.FeverSick;   // the sick one at the house, for the words (DEPTH item 12)
+            if (kind == NewsOverFence.Kind)
+                cast.News = TownNewsFor(doer, done, Bridge.Now());   // two others of the town and what's between them (LIVES item 2e)
             if (kind == ChurchSteps.Kind)
             {
                 cast.Backslid = pr.Why.Matter == "backslid";

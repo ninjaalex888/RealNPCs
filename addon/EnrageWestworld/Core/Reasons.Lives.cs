@@ -15,6 +15,8 @@ namespace EnrageWestworld.Core
                 r = Either(a, b, (x, y) => ChurchSteps.For(x, y, gameDay, where));   // talk on the church steps (LIVES item 2c)
             if (r == null)
                 r = Either(a, b, (x, y) => DanceFight.For(x, y, tie, gameDay, where));   // the fight at the dance (LIVES item 2d)
+            if (r == null)
+                r = NewsOverFence.For(a, b, gameDay, where);   // the town's news over the fence (LIVES item 2e)
             return r;
         }
 
