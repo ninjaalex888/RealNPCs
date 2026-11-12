@@ -48,9 +48,9 @@ namespace EnrageWestworld.InGame
             }
             if (best == null)
                 return;
-            _reachAskedAt[best.Id] = now;
             if (_reachAskedAt.Count > 200)
-                _reachAskedAt.Clear();
+                _reachAskedAt.Clear();   // (first: the one just asked stays marked; the track 3 review)
+            _reachAskedAt[best.Id] = now;
             string why;
             LanguageRequest r = MindRequestOf(best, bestH, now, out why);
             if (r != null && LanguageAsk(best, r, r.AvoidLine, false))

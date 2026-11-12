@@ -22,7 +22,20 @@ namespace EnrageWestworld.Core
         public const string AgainstFeeling = "against the feeling";
 
         private static readonly Regex Cheerful = new Regex(@"\b(glad|happy|happiest|delighted|wonderful|lovely|cheerful|merry|joyful|grand day|fine day|fine morning|best day|can't stop smiling|whistl(e|ed|ing)|laugh(ed|ing)? out loud|light as a feather|on top of the world)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-        private static readonly Regex Bitter = new Regex(@"\b(hate|hateful|despair|wretched|miserable|wish I were dead|wish I was dead|curse (him|her|them|it)|damn (him|her|them|it)|no hope|hopeless)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        private static readonly Regex Bitter = new Regex(@"\b(hate|hateful|despair|wretched|miserable|wish I were dead|wish I was dead|curse (him|her|them|it)|damn (him|her|them|it)|hopeless)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        private static readonly Regex Negated = new Regex(@"\b(not|never|no|nothing|nobody|nor|hardly|without|n't)\b\W*(\w+\W+){0,2}$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        private static readonly Regex Ironic = new Regex(@"^(lovely|wonderful|grand day|fine day|fine morning)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        /// The match isn't meant: "never be happy again", "nothing to be glad of" (a no-word within two words before it), or an
+        /// angry or scornful man's "Lovely. Just lovely." (the track 3 review).
+        private static bool NotMeant(string answer, Match m, string feeling)
+        {
+            string before = answer.Substring(0, m.Index);
+            if (Negated.IsMatch(before) || before.TrimEnd().EndsWith("n't", System.StringComparison.OrdinalIgnoreCase))
+                return true;
+            return (feeling == "anger" || feeling == "contempt") && Ironic.IsMatch(m.Value);
+        }
 
         private static bool Dark(string f) { return f == "fear" || f == "anger" || f == "shame" || f == "guilt" || f == "grief" || f == "contempt"; }
         private static bool Bright(string f) { return f == "joy" || f == "gratitude" || f == "relief" || f == "pride"; }
@@ -37,7 +50,7 @@ namespace EnrageWestworld.Core
             if (r.Shows == "masked" && Dark(r.Feeling))
                 return null;   // a brave face may say "glad" aloud; the thought is checked by its words alone, so leave a masked feeling be
             Match m = Dark(r.Feeling) ? Cheerful.Match(answer) : Bright(r.Feeling) ? Bitter.Match(answer) : Match.Empty;
-            return m.Success ? m.Value.ToLowerInvariant() + " for " + r.Feeling : null;
+            return m.Success && !NotMeant(answer, m, r.Feeling) ? m.Value.ToLowerInvariant() + " for " + r.Feeling : null;
         }
     }
 }

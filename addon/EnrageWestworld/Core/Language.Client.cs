@@ -145,7 +145,19 @@ namespace EnrageWestworld.Core
         /// Nothing waiting of any kind (thoughts, picks, Talk) and nothing asked still unanswered: the model is idle (LIVES item 3c).
         public bool Idle
         {
-            get { lock (_lock) return _queue.Count == 0 && _picks.Count == 0 && _talks.Count == 0 && _asked.Count == 0; }
+            get
+            {
+                lock (_lock)
+                {
+                    if (_queue.Count > 0 || _picks.Count > 0 || _talks.Count > 0)
+                        return false;
+                    long now = Environment.TickCount;
+                    foreach (long at in _asked.Values)
+                        if (now - at < 30000)
+                            return false;   // asked in the last 30 s and not settled: in flight (an older one never settled: not counted; the track 3 review)
+                    return true;
+                }
+            }
         }
 
         /// What came back (or didn't: null) for an ask, in `elapsedMs`: through Check and Resolve; a line that passes is kept

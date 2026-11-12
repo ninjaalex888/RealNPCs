@@ -719,7 +719,7 @@ namespace EnrageWestworld.Core
             string what;
             if (LinkedDead(p, k, arc) || !WorryPhrase.TryGetValue(k.Key, out what))
                 return null;
-            what = Fill(what, p, k, arc);
+            what = Fill(what, p, k, arc).Replace("my ", "their ");   // the kin as the model is told them: theirs (the track 3 review)
             string turn = WorryTurns.TurnOn(dayIn);
             string where = stage == 0 ? "it has only begun" : stage == 1 ? "it's getting worse" + (turn == "hope" ? ", though today there's a small hope" : turn == "back" ? "; they think back to how it began" : "")
                          : stage == 2 ? "it's at its worst" + (turn == "eve" ? ", and it's settled tomorrow" : "")
