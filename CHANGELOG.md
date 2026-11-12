@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.7.26 (2026-11-11)
+
 - **Fix: who did what, in memory.** When one of the street helped another out, or a beggar asked and was given a coin or sent off, the memory could have it backwards: the one helped remembered helping, the beggar remembered giving. The snubbed working man and the gentleman now each think their own side of it too.
 - **Fix: old soldiers and greenhorns thought like sweethearts.** Two old soldiers who drank to the dead, a war story heard out, a greenhorn ribbed by a regular, and those who watched alms given or two men make it up, left a memory whose own words were never found, so it was thought in a courting line ("Straightened my collar twice"). They have their own words now.
 - **Fix: the thoughts after a bet on a fight.** Paying, owing or welshing on a bet left a memory, but its own words were filed where they were never looked for, so people thought of it in a quarrel's plain words. Now they say it their own way ("Won fair and square and he won't pay").

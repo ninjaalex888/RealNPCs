@@ -1,4 +1,4 @@
-RealNPCs 0.7.25 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.26 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -20,6 +20,69 @@ Story Mode only. Don't run script mods in Red Dead Online.
 The settings are in RealNPCs.ini. It isn't in this zip: RealNPCs writes it the first time you
 load the game with the mod, in Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs. The
 settings panel (Alt+F or Alt+R) changes the same file.
+
+
+NEW IN 0.7.26
+-------------
+Everything built since 0.7.25, and it's a lot. It has been tested offline, not yet over long
+play, so if something misbehaves please send your log. Every new thing has its own switch
+(the list is at the end of SETTINGS below), and 0.7.25 stays on the GitHub releases page.
+
+What you asked for in the comments:
+- Pickpocketed far less often: about once an hour of play instead of nearly every town visit,
+  and thieves weigh the mark first: fewer try a man the town knows has killed, or has run
+  thieves down this week ([Scenes] LiftsWary).
+- Pickpockets off ([Scenes] Pickpockets = false) now stops the pickpocketing of you too.
+- No horse whistle from a controller's d-pad while the settings panel or the reader is open.
+- Friends leave the law alone in a fight that has had bandits in it; if the law alone comes
+  for you, they still stand with you ([Encounters] AlliesSpareLaw).
+- The AI model no longer reloads mid-game (one kind of request asked it for a different
+  context size, which made it reload for about three seconds).
+
+What you did, kept where it shows:
+- People who owe you: someone you saved, a man you stood with when he was losing a fight
+  (J, "Stand with him"), a man whose fine you paid at the jail door, one you stood surety for
+  who kept the peace his week out, and the kinsman who came to thank you. Each owes you for a
+  month: they come to your aid, the name card says "Owes you", and some come back days later
+  to thank you in their own words.
+- The kin of those you save: one time in two, a man of the family finds you a few days on to
+  thank you for them ([Scenes] KinThanks).
+- A friend runs down the man who picked your pocket and brings your money back, and a friend
+  may warn you of a known pickpocket near ([Scenes] FriendsChase, FriendsWarnThief).
+- Welsh on a bet and the man remembers it, and that town's betting men won't take your money
+  for a week; meet him again and J lets you pay the dollar to make it good.
+- The town hears of a fight you broke up, a quarrel you stepped into, someone you saved: it's
+  told about, and may be in the paper.
+- New words on the name cards: "Stood by you", "Robbed you" (the thief who got away),
+  "You owe them $1", "You carry their letter", "Mourns one you killed". They're checked every
+  few seconds; if a busy street feels heavier, the [Display] NameCards... switches turn each off.
+- A page in the reader (N), "Between you and them": who owes you and for what, who stood by
+  you, who robbed you, what you owe, and whose letter you carry.
+- Find the letter: someone you've met who waits on a letter that never comes; it's sitting at
+  another town's depot. Ask at that town's station agent (J), carry it back, and give it over
+  (J): he reads it there and then, and his worry ends well ([Scenes] FindTheLetter).
+- Walk a man home at night (J) while the drink is his trouble, and it turns for the better.
+
+The town on its own:
+- Arcs that play out within a session (a quarrel picks up again within hours, a night's sleep
+  cools one that nothing fed), people who keep crossing paths come to know each other by
+  sight, and a brawl draws in more of those who know the two.
+- The husband marched home by the temperance ladies, the brawler's wife at the jail door,
+  J to step between two men about to quarrel, doctored cattle brands, the railroad's land men,
+  a word sent by the man who watches your horse, the collection plate, the house with the
+  fever kept clear of, how a man got his limp, the big animals' tales growing in the telling,
+  sitting up with a fresh grave, spreading a rumour in a saloon, posting a reward for a
+  neighbour, old hands grumbling at the newcomer, the century turning on New Year's Eve, and
+  the miners' meeting at Annesburg after the shift.
+- On the road: things to come across (the hurt, the stranded, camps, prisoners and pursuit,
+  a burial, labour trouble), a posse after a killing on the road, vigilance committees, and
+  the awake circles and the dead you killed deciding what to do about it.
+- Thoughts follow on, come from the saddle, show what people say beside what they think,
+  and the weather talk fits the weather. Memory's own words were fixed: people now think of a
+  bet, an old soldier's toast or a coin given in their own words, and the right way round.
+
+For testing: the proof tour (the Testing menu's Tools, or a key on TestProofTourKey) walks every safe Testing row where you
+stand, about one every 20 seconds, and the log says what each did.
 
 
 NEW IN 0.7.25
@@ -2170,6 +2233,475 @@ T         the next line on the ticker now (on a long line, its next part first;
 None of the others are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's
 console (F8) or Faster Looting (F9, F10). If the game or another mod already uses one, change it
 in the ini or the panel (e.g. ReaderKey = Ctrl+N).
+
+
+SETTINGS NEW IN 0.7.26 (each is in RealNPCs.ini with its comment)
+
+[Scenes]    AllSaintsGraves (true): with Mourning: on the first of November in the south, those with
+            someone dead go to the tombs, the ones you put there among them
+            BarRound (true): at a saloon's bar by the barkeep, with a few others about: J to buy the
+            house a round (a dime a head, $1 to $4); the room cheers and each one treated thinks
+            better of you, the drunk most; one a day in each saloon
+            BestFist (true): three fights won in a town (the street's, the saloon's, the prize fight
+            out back) make a man its best fist: the town's talk says so, and he thinks of it near
+            you once a day; then six times in ten the town's prize fight is his, against a man of a
+            fighting temper from another town, for twice the purse; lose it and the name goes (with
+            [World] EventPrizeFights for the challenges); false: no names
+            BrawlAfter (true): the week after a brawl: the winner of a saloon's fight stands the
+            house a round; a big one (six or more) is in the town's news with its numbers, leaves
+            the barkeep's chairs broken (J at the bar pays for them) and the men of opposite sides
+            sore at each other; a man the law tied up is locked up overnight, and from seven to noon
+            the next morning his wife or mother waits at the jail door (J pays his $2 fine); false:
+            none of it
+            BrawlVerbs (true): with MindBrawls on: once a fight near you (20 m), J offers to break
+            it up (each heeds by their nature and what they think of you; one who won't may turn on
+            you), to stand with the man losing (the one beating him turns on you; that side thinks
+            the better of you, he the worse), or to take the bet of an onlooker waiting for a taker
+            (a dollar on the other man; a lost bet unpaid is a welsh he holds against you); false:
+            none of it
+            BreakUpKnown (true): with Deeds on: a fistfight you end with your shout (J, "Break it
+            up") is a good deed the town knows of, as stepping into any scene is: those who saw it
+            remember, it's talked of, it may be in the paper; false: only the fighters know
+            CardsharpRunOut (true): a card cheat shown the door, with men at the table to see to it:
+            six times in ten up to two of them (the man he cheated first) walk him out and down the
+            street out past the last houses, a word at the door and one at the edge, and turn back;
+            bad blood with each, and two days to two weeks on he's back in that town, sore, and
+            thinks of it near you; false: he's shown the door, as before
+            ColdSnaps (true): twice a winter, five days of bitter cold at Colter, Wapiti and
+            Strawberry: the store runs out of coal oil, and an old man may not wake. Someone can die
+            of it, off screen
+            DoctorsDoor (true): after dark (nine till five) in a town whose doctor is at his post
+            near you, once a night: a man whose child's fever is at its worst (or whose wife's time
+            has come) runs to the doctor and calls out; the doctor answers from his post; as the man
+            turns for home, J lets you walk with him to his door (a voice calls from inside), or let
+            him go. Next morning the town hears how the night went, and whether a stranger walked
+            with him; false: never
+            FeudArcs (true): a feud picks up again within hours; where it would come to blows, the
+            one who began it, if his nature allows (the kind and the loyal, never the proud or a
+            hothead before others), offers his hand where the street can see; the other takes it by
+            his own nature (a making-up) or refuses it (blows); false: the blows as before
+            FindTheLetter (true): one you've met who waits on a letter that never comes: it sits at
+            another town's depot. At that town's station agent J offers it to you; carry it to him
+            and J gives it over: he reads it, and his worry ends well; false: the letter never comes
+            FriendsChase (true): when your pocket is picked, a friend of yours within 30 m (someone
+            who'd come to your aid in a fight) may run the thief down, the bold and the kind more
+            readily, and bring your money back; he thinks the better of you for the good turn, and
+            the town hears of it
+            FriendsKnowYourThief (true): with FriendsWarnThief on: when a friend walks over to warn
+            you of a pickpocket near and he's the one who got clean away with your money, the friend
+            says so
+            FriendsWarnThief (true): with FriendCalls: a friend who comes over may warn you of a
+            known pickpocket near (one who has robbed you or been caught at it), by name if they
+            know him; forewarned, you're on your guard 20 real minutes and no thief tries you
+            GameEncounters (true): the game's own random encounters near you (a snakebite, a coach
+            robbery, a prison wagon; read by their models' names, never touched): someone of the
+            mind who saw it keeps it in mind and thinks of it, and the nearest town talks of it the
+            next day, with whether you stopped or rode on. A few kinds are left out on purpose (your
+            camp's visitors, the lewd, the game's story people); false: as before
+            GraveNight (true): with Mourning on: the night after a burial, eight till midnight, one
+            of those mourning the dead walks out to the grave (the town's cemetery spot, else by the
+            church) and kneels there; come within a few steps and they speak of the dead; false:
+            only the Sunday visits
+            Greenhorn (true): a regular ribs a greenhorn off the train in his first two weeks (his
+            boots, his hat, his city ways), and he answers by his nature: laughs it off and gives as
+            good (welcomed, a tie), squares up (a fistfight, and someone may step in), or takes it
+            and goes (scorned); men only; false: never
+            HoldupChance (15): with StoreHoldups: percent, the day's roll once a man who leans to it
+            and a customer on their own are by the store near you (0 to 100; offline, 15 gave a
+            holdup on about 3 town-days in 100 by a store)
+            HoldupShots (false): with StoreHoldups: one in four who bolt are fired after (someone
+            can die on screen); false: he curses and runs
+            HorseWatch (true): down off your horse in a town by day, once a town a day: a man who's
+            down on his luck offers to watch her for a dime (J); hired, he stands by her, shouts off
+            a horse thief who goes for a horse near him, and says so when you're back in the saddle;
+            false: never
+            LettersHome (true): those who left on the train write to a friend still in the town, and
+            the friend has it on their mind for a few days
+            LiftsWary (true): the thief who bumps into you comes about once an hour of play (24 game
+            hours between, which the storyteller may halve; 48 in the same town), and thieves weigh
+            the mark: where the town knows you've killed, fewer try it (one killing known: 60% of
+            them; two or three: 35%; more: 15%), and fewer again where you've run a thief down this
+            week (one: 60% of that; two or more: 35%); false: as before, a town every four game
+            hours
+            MeetWalkAgain (true): a street scene's walker who gets no nearer in 3 s is told again,
+            and the one waiting for them in a seat or at their work gets up to meet them, the game's
+            own way; false: the walker is told once, and the scene stops if they never get there
+            MoneyTalk (true): two men meeting in a town argue gold against silver, the banks and the
+            trusts (the bank panic in 1907); how they're fixed decides the side, and those who fall
+            out are the colder for it
+            NoteMeet (true): after you carried a word between two who fell out (Talk's errand), the
+            next time they're near each other within two game days they meet in the street: taken, a
+            word and a hand; sent back, a cold word and they part; false: the word is all there is
+            OldSoldiers (true): with [World] HistoricalAccuracy: two old men who fought on opposite
+            sides in the war find each other out, mostly in the saloon, and argue it (it ends in a
+            toast to the dead, a cold parting or blows, by their natures; in a brawl over it the old
+            soldiers near lean to their own side); two of the same side remember it together; and a
+            young man home from Cuba or the islands tells his war: an old soldier hears him out, a
+            man against the islands won't; false: never
+            PaydayNight (true): with Payday on: Saturday from eight into the small hours, the paid
+            hands stay in town and lean to the saloon, the bottle and the cards; a saloon's fights
+            grow faster that night (each man's threshold to join comes nearer); the town says which
+            night it is; false: payday ends at eight, as before
+            PlacesMourned (true): where someone died near you by another hand, those who were close
+            to them, passing the spot in the three weeks after, stop and think of them; the dearest
+            kneel there
+            PosseFromTheRoad (true): with PosseRides: a killing out of town, near enough to a town
+            for word to get there, with someone left alive to tell it, brings that town's posse too
+            PurseSnatch (true): when a thief snatches and runs, one man near may give chase, by his
+            nature (the bold, the kind, a friend of hers), bring him down and hand back what he
+            took; and when you catch a thief yourself, J asks: make him give it back, hand him to
+            the law, or let him run; false: as before
+            RainShelter (true): the town keeps a record of its rain while you're in it: in the rain
+            the street's errands wait (nobody is walked anywhere), strangers under one roof talk and
+            leave acquainted (they nod in passing after), and two days of rain in a farmer's town
+            end his drought well; false: as before
+            RevivedSeen (true): with West World (and MindLive, MindWakes): someone dead on RealNPCs'
+            ledger who walks again is known by anyone with a tie to them, not only those who saw
+            them die; each thinks it over their head, and the bold walk up and ask, and get a
+            denial; false: only those who saw the death, and only their act
+            Rivals (true): two men courting the same woman (a courting worry, a sweetheart, an
+            affair) meet and have it out: words, blows their friends may join, or one walks away;
+            then she chooses by her nature and how it went (the winner, the one who walked away, or
+            neither), her ties change, and the town hears of it; false: never
+            RoundupSeason (true): in the fortnight after each roundup (July and November) the cattle
+            towns fill with paid-off hands, and one comes back hurt
+            RowdyDrunks (true): out of doors in a town at night: a man in drink (never a coward)
+            with a friend in drink beside him picks on a man going by who isn't drunk or his friend;
+            they sing a line apiece as they come; the friend hauls him home, or now and then it
+            comes to blows (the brawl's own rules from there). A drunk alone calls the man out and
+            falls on his face, as in the saloon (with DrunkChallenges); false: never
+            SavedKnown (true): with Deeds on: pulling a bully off a man, putting down the man
+            beating him, cutting the hogtied loose and the like are good deeds the town knows of
+            (those who saw remember it, it's told about, it may be in the paper), as the rescue at
+            an execution already was; false: only the one saved knows
+            ScripTalk (true): by day at Annesburg: a man says what he thinks of being paid in the
+            company's scrip; the other agrees, hushes him or warns him
+            SleepOnIt (true): at each day's turn, a quarrel between two that nothing fed the day
+            before (no scene between them) eases a step, sore to cool and cool to nothing, so a feud
+            left alone fades in a day or two; one fed that day doesn't; false: quarrels keep their
+            heat until a scene changes it
+            Snubs (true): a working man asks a gentleman something in the street by day and is
+            brushed off; he takes it, sneers or answers back; the gentleman's pride; with a lady
+            beside him, her word ends it or makes it worse and they walk on together; alone, a hot
+            man and a proud one can come to blows, and the working men near lean to their own;
+            false: never
+            StandReminds (true): in a fistfight, the J row "Stand with ..." says "(he stood by you)"
+            when the man losing fought for you this week, or "(he owes you)" when he's one you
+            saved; false: just his name
+            StandTheWake (true): with BarRound and Wakes: on a wake night in town (8 till 2), J at
+            the bar can stand the house a drink to his memory (a round's price, once a day); the
+            barkeep says it for him, and those near you who knew him warmly think better of you;
+            false: the round only
+            StepBetweenKnown (true): with StepBetween and Deeds on: when you step between two men
+            about to quarrel (J) and both let it be, it's a good deed the town knows of, as a fight
+            you break up is; false: only the two of them know
+            StoreHoldups (true): by day (9 till 6) in a town, once a town a day at most: a man who
+            leans to it (known for theft, honest with nobody and short of money, or at the worst of
+            a money worry) shows his gun to a customer on their own outside the store near you; they
+            plead, hand it over, or bolt; he runs with it (the law's chase and a man near giving
+            chase, as a pickpocket), or empty-handed. J (or a greeting) is your word: talked down by
+            his nature, the desperate least. Never with a lawman within 50 m; false: never
+            Stories (true): a story over days (with Letters): a father in a town you've been to,
+            whose son went up to the Annesburg mine, writes to you (the letter waits at his post
+            office); ride to Annesburg and the son finds you: J, carry his letter home or send him
+            home on the train; either way the father's worry ends well, he thanks you, and the town
+            has it. Ten days and it lapses, and he remembers who never came back; and the mine
+            whistle doesn't wait. One open at a time; false: none
+            StreetMore (true): the street's own business beside its fights, by day: a man with
+            horses to deal sells one at the hitching post (the buyer may come off the worse and know
+            it: a grudge with a cause), a man whose bad tooth is at its worst has it pulled in the
+            street by a steady hand, a stranger asks a resident the way (shown it, walked there,
+            sent off short, or sent wrong for a joke); false: none of them
+            Suffrage (true): by day in Saint Denis: a woman says what she thinks about the vote to a
+            man she meets; he forbids it, laughs, is shaken or agrees
+            TemperanceDoor (true): with Temperance on: at dusk a churchwoman by the saloon door puts
+            the pledge to a man in drink going in, with a second woman of the church beside her if
+            one is near (never a crowd); a hothead's insult brings her kin if he's near, and blows
+            with sides; a man who signs is the town's talk for a week (and back at the bar by
+            Friday, as often as not) and the preacher's word on Sunday; false: the pledge only in
+            chance meetings, as before
+            TownRivals (true): a tale crossing to a rival town (Valentine and Strawberry, say)
+            arrives more bent than the miles would make it, and people near you say what they think
+            of the place
+            VigilanceCommittees (true): with PosseRides: a posse that comes home with nothing after
+            a killing can leave the town's angrier men to settle on someone a few days on: an
+            execution on the road if you're near, and off screen if you never come. Someone can die
+            of it
+            Vouch (true): at the jail door the morning after a brawl ([Scenes] BrawlAfter), a third
+            row: vouch for the man in the cells. He's out, bound over to keep the peace a week;
+            break it and your $5 goes to the county and that sheriff won't take your word for a
+            month; keep it and he's fonder of you; false: never
+            WalkHome (true): with FondnessActs: after dark in a town, beside a woman, someone in
+            drink or a timid man, J offers to see them home; they answer by their temper and, if
+            it's yes, walk with you to their door
+            WalkHomeMends (true): with WalkHome on: walking a man in drink home (J at night) while
+            his own trouble is the drink, gone worse or at its worst, turns it: the rest of his
+            worry ends well, as coffee through Talk does; false: the walk is only a kindness
+            WeekColumn (true): on a Sunday the paper carries a column of what really happened in the
+            town you're nearest that week: who was buried, who married, how many fights
+            WelshRemembered (true): with Minds on: when you don't pay a bet you lost on a fistfight,
+            the man you owed and those who saw it keep it in mind, as they do when one of the street
+            welshes on another: his thoughts come back to it, and the onlookers may pass it on;
+            false: only his liking for you drops
+            WelshRepay (true): meet the man you welshed on again within a month and J lets you pay
+            him the dollar: he likes you better for it (not all the way back), he remembers it as a
+            bet paid, and the town's betting men take your money again; false: a welsh stands
+            WelshersShunned (true): welsh on a bet in a town (J at a fistfight, lost and not paid)
+            and for a week its betting men won't take your money: the one who'd have offered you a
+            bet tells you why, and there's no bet on J; false: they offer as before
+            WidowCollection (true): in the three days after a death in town, by day, a townswoman
+            comes round with a collection for his widow or family: J, give a dollar, five, or not
+            today; she remembers who gave, the town hears of it, and the Sunday after the preacher
+            thanks a generous stranger; once for each death; false: never
+[Encounters]AlleyVoice (true): in Saint Denis after dark (nine till four), on foot and out of doors,
+            once a night at most: a man you can't see calls for help; go to him and he's real
+            (beaten and robbed: J, help him up or leave him) or bait (two men step out behind you
+            with their revolvers: J, pay five to twenty dollars or refuse, and it's their fight with
+            you); ignore him and the voice stops; false: never
+            AlliesSpareLaw (true): in a fight that has had anyone but the law against you (bandits,
+            say), friends leave the law alone, until nobody has fought you for six seconds; when the
+            law alone comes for you they still stand with you; false: the law is a foe whenever it
+            fights you
+            CircleAnswers (true): walk into the middle of a ring of the awake and it answers you as
+            one: they close in, one steps out and speaks, they all kneel, or they wake the one lying
+            among them; the AI model chooses if it is on, the rules if not
+            Elopers (true): in a town by day (nine till nine), on foot and out of doors, once a day
+            at most: a young woman and a young man come running to you, her family a minute behind;
+            J: hide them, send them on, or give them up; then her father and brother ask which way
+            (J: the wrong way, or the right one); nobody is hurt, and the town has it next day;
+            false: never
+            FineOwes (true): a man whose fine you paid at the jail door owes you for a month of game
+            days, as someone you saved does: he comes to your aid, remembers it in his thoughts, and
+            comes over later to thank you; standing surety for him is a kindness the town sees, but
+            no debt (he may yet break his word); false: paying a fine changes nothing between you
+            GratitudeFelt (true): with MindShadow on: standing with a man in a fight, paying his
+            fine or standing surety for him is felt in his mood as the kindness it is (and by those
+            who saw it), as a drink stood or a coin given already is; false: only the ledger has it
+            KinThanks (true): with KinGrudges on: one time in two, a kinsman of someone you saved (a
+            bully pulled off them, their beater put down, the rope, the hogtied cut loose) comes to
+            find you five to nine days on, as kin come over a wrong, and says the family is
+            grateful; false: only wrongs bring kin
+            KinThanksOwes (true): with KinThanks on: the kinsman who walks up to thank you for one
+            you saved owes you for a month too, as the one saved does: he comes to your aid in a
+            fight, and his card says so
+            NoMapRider (true): with Riders: on a road at night (nine till four), on the traveller's
+            turn (he walks by day), one time in ten and never within two weeks of the last, a
+            stranger rides up and asks the way to a town nobody has heard of, thanks you whatever
+            you say, and goes on into the dark; a day or two later the nearest town hears of a man
+            found dead on that road, and those near you think of it; false: never
+            Riders (true): on the road, half the traveller's turns are a rider instead (the road's
+            pace is the same): someone of the nearest town comes up beside you (on a horse when
+            you're in the saddle), rides along a while talking by nature and worry, and turns off
+            (J: ride on together, and he knows you in town; or good day); while a posse is out of
+            that town, a deputy may ride up asking after the man (J: the right way, the wrong way,
+            or nothing, and the posse's end follows your word); false: travellers only
+            SceneClips (true): the scenes' own clips, seen to play in game: a captor waves you back,
+            the man on his knees shakes, the saved one scrambles off; the chain gang, the injured
+            rider, the burial's preacher and digger
+            SecondActs (true): the people of the encounters come back: someone you saved (at an
+            execution, cut loose, from a beating, warned of a poster, on the road) comes over in
+            their town half a day to three weeks on to thank you for that very thing, with a token
+            of their trade (with [Scenes] FriendCalls); an execution you found and never stepped
+            into: one of the dead man's menfolk comes to say it to your face five to nine days on
+            (with [Scenes] KinGrudges); the men who got away after you saved their man are heard of
+            again, and the region's next outlaws are the same men, who know you; false: as before
+            StoodByOwes (true): a man you stood with when he was losing a fight (J, "Stand with
+            him") owes you for a month of game days, as someone you saved does: he comes to your aid
+            whatever the odds, and calls on you as a friend; and those who saw it count it a
+            kindness, as the town's regard does; false: only a rescue counts
+            StoodRemembered (true): the man you stood with when he was losing a fight keeps it in
+            his own mind, as someone you saved does: his thoughts come back to it ("stepped in for
+            me"), and some days on he comes over to say how much it meant; false: only the ledger
+            has it
+            SuretyBrokeRemembered (true): a man you stood surety for at the jail who breaks the
+            peace inside his week (and costs you the surety) keeps it in his own mind: his thoughts
+            come back to letting you down; no scene comes of it
+            SuretyKeptOwes (true): a man you stood surety for at the jail who keeps the peace his
+            week out owes you from then on, for a month of game days, as someone you saved does, and
+            comes over later to say so; false: his kept week only warms him to you
+            Wayside (true): things to come across out of the towns: men fighting by the road, and
+            more: their own people, staged out of your sight, and you can step in or ride on
+            WaysideAnswers (true): when you walk up on a road scene, one of them decides what to do
+            about you, from a short list that fits the scene. The AI model's word if it's on, the
+            rules' if not. The armed may turn on you
+            WaysideChance (25): percent a roll, among the other encounters (0 to 100)
+            WaysideComposed (true): with ComposedActs: someone standing in a road scene shows what
+            they feel, between what's said and done, in moves the game has been seen to play
+[World]     AlmanacSides (true): with Almanac: on the stories the country argued over in 1899,
+            people think their own side of it, by their trade (and for the vote and the drink, being
+            a woman); false: the same lines for everyone
+            NewFaces (true): with TrainTime: a stranger off the train may come as a settler, a
+            schoolteacher, a new preacher or a mail-order bride come to wed a bachelor here; they
+            think as newcomers for two weeks
+[Ticker]    Asides (true): while someone near you talks, the person listening may have a thought
+            about it over their head (needs ThoughtsAtOnce above 1)
+            HistoryNotes (true): the history behind the thought: when someone near you thinks of the
+            real news of the day, the news box says what happened, as the papers had it (once a
+            story, one every 90 seconds at most); false: the thought alone
+            Opinions (true): with PairThoughts: what one thinks of the other, from what's passed
+            between them (fear of who hurt them, contempt, envy of the better off, respect), in
+            their thoughts when two who know each other are in view
+            PairThoughts (true): two people in view with a history between them each think about the
+            other, at the same moment, in the boxes over their heads. Needs ThoughtsAtOnce 3 or more
+            RoadThoughts (true): out of town, the riders, drivers and walkers you pass think
+            something about the road and about you, and people at a scene think by their part in it
+            RoadThoughtsMetres (35): riders and drivers this far off, out of town (at least
+            TickerNearbyMetres)
+            ThoughtsAtOnce (3): how many people's thoughts may be up over their heads at once,
+            arriving one after another (1 to 4; 1: singly, as it was; needs ThoughtsOverHeads)
+            ThoughtsFollowOn (true): for a few minutes after a fight, a run for it or a gun in their
+            face, someone's next thoughts pick up from it; with the AI model on, some carry on from
+            the last thing they thought
+            WeatherChecked (true): what people think and say about the weather is held to what's
+            really out, the temperature too: no heat talk in a cold drizzle
+            WeatherTalk (true): with WeatherChecked: people remark on the weather more the worse it
+            is, and for a couple of minutes after it turns (the first drops, thunder, snow, the rain
+            stopping)
+[Display]   BetweenYouPage (true): a page in the reader (N), "Between you and them": who owes you
+            and for what (and how much longer), who stood by you this week, who got away with your
+            money, and whose letter you carry
+            NameCardsLetter (true): "You carry their letter" on the name card of one whose letter
+            you took at a depot and haven't yet given him
+            NameCardsMourns (true): "Mourns one you killed" on the name card of someone grieving a
+            friend you killed, for a week from when word reached them ("Owes you" and "Stood by you"
+            show first)
+            NameCardsOwes (true): "Owes you" on the name card of someone who owes you (you saved
+            them, or stood with them in a fight), for the month they owe you: they'll come to your
+            aid whatever the odds
+            NameCardsRobbed (true): "Robbed you" on the name card of the pickpocket who got clean
+            away with your money, until you catch him at it and have yours back
+            NameCardsStood (true): "Stood by you" on the name card of someone who fought for you
+            this week: an ally who came to your aid, a friend who ran down your thief
+            NameCardsYouOwe (true): "You owe them $1" on the name card of one whose bet you didn't
+            pay, for the month you can still pay it (J near them); first on the card, before "Owes
+            you"
+[Mind]      BrawlCascade (true): with MindBrawls on: an onlooker with no stake in a fight joins only
+            once enough are already at it for a man of his nature (the hot, the reckless and the
+            drunk first, the self-possessed and the law-abiding last; more with the law near), so
+            most fights stay two or three and a few tip into a brawl; friends, foes and their own
+            kind join by their own reasons; false: everyone weighed alike, so nearly every fight
+            with no law near grows to a brawl
+            BrawlLawSight (true): with MindBrawls on: a lawman holds onlookers back from joining a
+            fight by what they can see (in sight within 12 m as before; in sight farther, half as
+            much; out of sight, a little), some lawmen let a fair fight between two run a while and
+            step in when it turns two on one, one deputy alone against six or more holds off and
+            sends for help, and someone cries 'Law!' as he comes, so the law-abiding slip away;
+            false: any lawman within 30 m holds every joiner, as before
+            BrawlShape (true): with MindBrawls on: once six or more are at it, the barkeep shouts
+            from behind his bar (he keeps his post), the timid and the women near slip out, a gun
+            drawn in it scatters the room, and from ten seconds before its least time is up the
+            beaten-looking quit, so it thins out instead of stopping dead; false: none of these
+            BrawlSides (true): with MindBrawls on: an onlooker leans to the fighter who is his own
+            kind (his kin, a man of his trade against another: the farm hands for the farm hand, the
+            working men for the miner; the town's own against an outsider), about half a friend's
+            pull; those sat or leaning get up for a fight of two when they have a stake in it; the
+            well-off stay out and leave it to the law; false: friends, foes and heat alone, as
+            before
+            BrawlStrays (true): with MindBrawls on: someone standing at arm's length of the fighting
+            may take a stray blow (the hot swing back and are in it against the man who hit them,
+            the timid back off, a woman cries out and leaves), and a friend of a man losing badly
+            may pull him out of it, the two leaving together (the one beating him lets them go, or a
+            hothead follows); false: neither
+            ComposedActs (true): with ControlRing: someone held, with a strong enough feeling, shows
+            it in two or three of the game's own moves in an order that can follow (a look, a shrug,
+            walking off); only moves the game has been seen to play
+            ComposedModel (true): with ComposedActs and the AI model: the model chooses which moves
+            and in what order, from a short numbered list in plain words; a bad or late answer falls
+            back to the rules
+            ControlCensus (true): a CONTROL line in the log once a minute: of the people within 25
+            m, named or not, how many are the story's, the game's own encounters', ours (and which
+            feature), enRAGE's in a role, another script's, the game's (fighting, fleeing, riding,
+            in a scenario...) and free for us; only reads, a third of them a frame; false: no line
+            ControlRing (true): with MindActs: the people the mind knows near you are kept at what
+            their minds choose, one act straight into the next, instead of the game taking them back
+            between acts; less in the saddle, nobody at a gallop or on a train; draws itself in if
+            it costs too much (F7: TEST mind acts). false: the older HeldRing below, if that is on
+            ControlRingAhead (true): with ControlRing: people along the way you are going are taken
+            in a little sooner than those behind you, so they are already about something when you
+            reach them
+            ControlRingKeepAt (true): with ControlRing: someone held who stops getting where they
+            were sent is given the order again, a few times at most; never over a fight, a flee or a
+            fall
+            ControlRingMetres (Ring.DefaultMetres): with ControlRing: how near you, in metres, on
+            foot (6 to 25)
+            ControlRingMost (Ring.DefaultMost): with ControlRing: how many people at once, on foot
+            (2 to 20)
+            ControlRingPicks (true): with ControlRing and the AI model: as someone comes into the
+            ring, the model may change the next step of their errand; late or unreadable, the errand
+            stands (within PicksAtOnce)
+            ControlRingPlans (true): with ControlRing: someone held has a short errand of two to
+            four things (the store, a talk, home) that they carry on with if they leave your side
+            and come back; a strong feeling still comes first
+            ControlRingSeated (true): with ControlRing and MindActsScenarios: those sat or leaning
+            near you are held too, and after a minute or so someone whose mind wants something else
+            gets up for it, a few at most at a time
+            CrowdPicks (true): with [Scenes] FightCrowds: how a crowd takes a fight (eggs them on,
+            calls for it to stop, shouts for the law, goes quiet), one decision for all of them: the
+            AI model's if it is on, the rules' if not
+            FightHoldStart (true): two people told to fight in a street scene keep the order until
+            the first blow lands (the game's own alarms held off them, as enRAGE does), then the
+            game's fists as before; false: the alarms come back the moment they're told, and a man
+            may run off instead (Valentine, 2026-11-09)
+            HandBackLent (true): what RealNPCs sets on people who aren't its own to make them fight
+            (an ally, a brawl's holdout, a caller, a gang's man, one who joins your fight, the
+            waking who lash out, the road's fights: 'fight even unarmed', 'always fight', and the
+            hostile group on callers and thieves) is put back once they've been out of any fight 20
+            s and nothing of ours has them; false: it stays until the body despawns, as before
+            HeldStayInMind (true): someone the ring is walking on an errand stays in mind out to the
+            ring's own reach; false: dropped at the mind's 25 m edge, as before
+            KeepersBackSeen (true): a keeper shot down at the counter is back, bandaged, as the game
+            brings them: those who saw the fall, near you, turn and stare, with a thought
+            MemoriesBlur (true): a big brawl leaves a tale in the town for a week, told in the
+            gossip and in the thoughts of those near you, and it grows in the telling: more men each
+            day, the hour sliding into the night, a knife, the starting of it put on someone the
+            teller despises; those who were in it tell it truest; false: the brawl's news once, as
+            before
+            OnlookerPicks (true): with the model's picks on: at a fight or a quarrel, what the
+            strongest onlooker does (watch, walk off, shake their head, square up) is the model's
+            pick, with a thought; late or unreadable, the rules' as before
+            OpinionsAct (true): with MindLive: the views people hold of each other (respect,
+            contempt, envy, fear) decide things: the fearful keep clear of the one they fear and out
+            of any brawl he's in, contempt for a fighter pulls an onlooker against him, respect
+            draws two to walk on together, and a friend tells a friend what they think of someone
+            not there; false: views are thoughts only, as before
+            QuarrelPolitics (true): with QuarrelSlights on: two men in drink who hold opposite sides
+            of one of 1899's quarrels (free silver against gold, the trusts, the Philippines, the
+            dry vote, by their trade or their piety) may come to blows over it instead of a look or
+            a word; onlookers on each side lean to their man, and the town retells it by what it was
+            over; false: never
+            QuarrelSlights (true): with QuarrelLadder on: a quarrel between strangers that was "over
+            nothing" says what it's over, by the place (a shoulder in passing, the way blocked, a
+            look held, a word about a man's horse or hat; in a saloon a spilled drink, a seat taken,
+            a laugh), a man at the worst of his trouble snaps because of the week he's had, and foes
+            have it out over their old business; the words and the log only, never how far it goes;
+            false: the two old openings
+            ThreadsNextDay (true): with ThoughtsFollowOn: a fight, a fright or a body stays with a
+            resident overnight; the next day, their first quiet thought may come back to it
+            WalkTogether (true): with MindLive on: two friends (or a courting couple) whose talk in
+            the street plays to its end may walk on together, side by side, with a thought on the
+            way and a word as they part: two men to the saloon after work, homeward at dusk, a
+            couple's stroll on a Sunday afternoon; two pairs a town at once, a pair once a day;
+            false: they go their own ways
+            WitnessesFetchLaw (true): with MindLive: in a brawl of three or more that no lawman has
+            seen or heard, one onlooker (a gentleman or a lady first, else the law-abiding by
+            nature) runs to a lawman within 150 m and brings him at a run; after a face put into a
+            bar or a window, a witness may fetch one who has a word with the man who did it; false:
+            the law comes only to what it sees or hears
+[Features]  DiaryDreams (true): with Diaries: a fright, a grief, a shame or an anger they wrote down
+            comes back a night or two later as a dream in their diary, bent out of shape
+[Testing]   ProofTour (true): the Testing row "The proof tour" walks every row that can run where
+            you stand, each in its turn, and the log says of each PROOF ran, skipped (its own why)
+            or failed, then a PROOF summary; it pauses for a fight, a mission, a menu or the saddle
+            (the row again resumes it); false: the row does nothing
+[Stalkers]  RevenantHuntChance (30): percent at each chance once they are within 25 m, more for a
+            grievance from before, for having begged, for having come back before (0 to 100)
+            RevenantsAnger (true): someone you killed comes back by their temper: the angrier they
+            were, the likelier they walk again and come at you; the mild mostly stay in the ground
+            RevenantsHunt (true): someone you killed who has come back may try to kill you, by what
+            they hold against you; false: they follow and stare, and never lay a hand on you
+            RevenantsMinds (true): someone you killed who has come back chooses what to do next: the
+            AI model chooses from how they died and what they held against you, if it is on; the
+            rules choose if not; false: they go about it the old way
 
 
 CREDITS
