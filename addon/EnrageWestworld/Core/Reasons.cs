@@ -78,6 +78,7 @@ namespace EnrageWestworld.Core
             public bool TimesTalk;       // [Mind] TimesTalk (with MindTalks and HistoricalAccuracy): any two may talk over the times (Run 3, item 2)
             public int TimesShare = 100; // [Mind] TimesTalkShare: its chance, percent of as built
             public int CenturyEve;       // New Year's Eve of 1899 or 1900 from five o'clock: that year (Core/CenturyTurns.cs; DEPTH reserve R6); 0 (and in the old harnesses) none
+            public bool DanceOn;         // a dance on in this town's saloon now (Core/DanceFight.cs; LIVES item 2d); false in the old harnesses
             public bool NearChurch;      // a Sunday's church steps: out of doors within 60 m of the town's church (Core/ChurchSteps.cs; LIVES item 2c); false in the old harnesses
             public bool MindTalks;       // [Mind] MindTalks: people talk to each other from what's on their minds (MindTalk.cs); the reason of last resort among people who know each other, ahead of small talk
         }

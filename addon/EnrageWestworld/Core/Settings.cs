@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 469;
+        public const int CurrentVersion = 470;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -138,6 +138,7 @@ namespace EnrageWestworld.Core
         public bool SchoolFather = true;   // [Scenes] on a school day the town's schoolteacher asks a farming or working father in the street after his boy, kept home; he won't hear it or gives a little ground, by his nature; most at planting and harvest (Core/SchoolFather.cs; LIVES item 2a) (settings version 467)
         public bool ElectionNight = true;   // [Scenes] on election day from four o'clock two men in the saloon on opposite sides of the vote may come to blows over it, and onlookers of each side join their man (Core/ElectionNight.cs; LIVES item 2b) (settings version 468)
         public bool ChurchSteps = true;   // [Scenes] on a Sunday from eleven to two, near the town's church, two of the town talk it over on the steps: who wasn't in his pew by name, the sermon, who sat with whom; one back to old ways since the revival hears about it (Core/ChurchSteps.cs; LIVES item 2c) (settings version 469)
+        public bool DanceFight = true;   // [Scenes] with [World] EventDances: while the Saturday dance is on in the saloon, a man who's spoken for and another man there, no friend of his, may have it out over her, a brawl over a girl at the dance (Core/DanceFight.cs; LIVES item 2d) (settings version 470)
         public bool StepBetween = true;   // [Scenes] J when two men with a quarrel between them are about to have it out near you: step between them; heeded by both, it's put off six game hours, and the second time they make it up (Core/StepBetween.cs; DEPTH item 7; settings version 413)
         public bool TemperanceDoor = true;   // [Scenes] at dusk a churchwoman puts the pledge to a drinker at the saloon door, a second woman beside her; a hothead's insult brings her kin; a pledge is the town's talk and the preacher's (FOURTEENHOUR item 25; settings version 393)
         public bool Snubs = true;            // [Scenes] a gentleman snubs a working man in the street; his lady's word ends it or makes it worse; alone, it can come to blows (FOURTEENHOUR item 18; settings version 386)
@@ -1112,6 +1113,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 470)
+                    log?.Invoke("Settings: new in this version: [Scenes] DanceFight (on): the fight at the dance: a man who's spoken for may have it out with another over his girl while the dance is on.");
                 if (s.SettingsVersion < 469)
                     log?.Invoke("Settings: new in this version: [Scenes] ChurchSteps (on): on Sunday after the service two of the town talk it over on the church steps: who wasn't in his pew, the sermon, the backslider.");
                 if (s.SettingsVersion < 468)
@@ -2476,6 +2479,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("SchoolFather = " + B(SchoolFather) + "   ; on a school day, by day, the town's schoolteacher meets a farming or working father of her town in the street and asks after his boy, who hasn't been at his desk; the proud and hotheaded won't hear it (a cold tie), the rest give a little ground (a warm one); most at planting and harvest, when the boys were kept home; false: no such scene");
             b.AppendLine("ElectionNight = " + B(ElectionNight) + "   ; on election day by the real calendar, from four in the afternoon, two men in the saloon on opposite sides of the vote (the working, farming and rough trades against the well-off, the town's men of business and the church-minded) may come to blows over it; the brawl's sides follow the vote; false: election night is like any other");
             b.AppendLine("ChurchSteps = " + B(ChurchSteps) + "   ; on a Sunday from eleven to two, out of doors near the town's church, two of the town talk it over on the steps: a townsman who wasn't in his pew, by name, the sermon, who sat beside whom; and one who went up at the revival's altar and has gone back to old ways hears about it from the other; nobody is walked over; false: no such talk");
+            b.AppendLine("DanceFight = " + B(DanceFight) + "   ; with [World] EventDances on: while the Saturday dance is on in the town's saloon, a man who's spoken for (a sweetheart, someone he courts) and another man there who's no friend of his may have it out over her (\"That's twice you've had her round the floor.\"): a brawl over a girl at the dance, friends joining their man, or hard words where it can't be a fight; false: the dance passes without one");
             b.AppendLine("StepBetween = " + B(StepBetween) + "   ; two men with a quarrel between them about to have it out near you (words, before any blow): J to step between them; each heeds you by his nature and what he thinks of you; both heed and it's put off six game hours; one won't and he shoves past; the second time both heed, they make it up; false: no such J");
             b.AppendLine("TemperanceDoor = " + B(TemperanceDoor) + "   ; with Temperance on: at dusk a churchwoman by the saloon door puts the pledge to a man in drink going in, with a second woman of the church beside her if one is near (never a crowd); a hothead's insult brings her kin if he's near, and blows with sides; a man who signs is the town's talk for a week (and back at the bar by Friday, as often as not) and the preacher's word on Sunday; false: the pledge only in chance meetings, as before");
             b.AppendLine("Snubs = " + B(Snubs) + "   ; a working man asks a gentleman something in the street by day and is brushed off; he takes it, sneers or answers back; the gentleman's pride; with a lady beside him, her word ends it or makes it worse and they walk on together; alone, a hot man and a proud one can come to blows, and the working men near lean to their own; false: never");

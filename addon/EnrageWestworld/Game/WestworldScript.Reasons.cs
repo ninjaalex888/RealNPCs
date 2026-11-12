@@ -273,7 +273,8 @@ namespace EnrageWestworld.InGame
                 CenturyEve = CenturyEveNow(),   // New Year's Eve of 1899 or 1900 (DEPTH reserve R6)
                 Rumours = (!saloon || _cfg.SaloonGossip) && _engine.RumourPool(_placeTown, 1).Count > 0,
                 DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0,
-                NearChurch = ChurchSteps.On && InnerLife.Weekday == 0 && NearChurchSteps()   // a Sunday's church steps (LIVES item 2c)
+                NearChurch = ChurchSteps.On && InnerLife.Weekday == 0 && NearChurchSteps(),   // a Sunday's church steps (LIVES item 2c)
+                DanceOn = DanceFight.On && saloon && DanceOnHere(now)   // a dance on in this saloon (LIVES item 2d)
             };
             var found = new List<PairReason>();
             for (int i = 0; i < people.Count; i++)

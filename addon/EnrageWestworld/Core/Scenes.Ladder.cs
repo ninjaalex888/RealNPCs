@@ -213,6 +213,7 @@ namespace EnrageWestworld.Core
                 case "war": return "the war, blue and grey";   // the old soldiers (FOURTEENHOUR item 17)
                 case "class": return "a gentleman's snub";     // the well-off and the working man (item 18)
                 case "rival": return "a woman they both court"; // rivals for one woman (item 19)
+                case DanceFight.Over: return "his girl at the dance";   // the fight at the dance (LIVES item 2d)
                 case "old": return "the old business between them (" + what + ")";
                 case "slight":
                     switch (what)
@@ -246,6 +247,7 @@ namespace EnrageWestworld.Core
                 case "war": return "over the war";
                 case "class": return "over a gentleman's snub";
                 case "rival": return "over a woman";
+                case DanceFight.Over: return "over a girl at the dance";
                 case "snap": return "over one man's bad week";
                 case "old": return "over old business";
                 case "slight": return "over " + OverWords(null, over);
@@ -282,6 +284,7 @@ namespace EnrageWestworld.Core
                 case "snap": set = SnapLines(what); break;
                 case "old": set = OldLines(what, b); break;
                 case "politics": set = QuarrelPolitics.Openers(what); break;
+                case DanceFight.Over: set = DanceFight.Openers; break;   // the fight at the dance (LIVES item 2d)
             }
             if (set == null || set.Length == 0)
                 return null;
