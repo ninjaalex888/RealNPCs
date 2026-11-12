@@ -481,6 +481,8 @@ namespace EnrageWestworld.InGame
 			_saveRefusedTold = false;   // a store that could not be read says so once again (WestworldScript.Saving.cs)
 			_store.Player = _player;
 			EpilogueCarry(flag);   // John's first save takes Arthur's world over, eight years on (WestworldScript.Epilogue.cs)
+			TonicAfter.Clear();   // the round's memory-only marks belong to the save they came from (LIVES; the review)
+			MailDay.Clear();
 			if (_cfg != null && _cfg.PeopleTrim)
 			{
 				// the records of people nothing is kept of but a name, let go once a load, inside the load's long frame (about 60 ms on

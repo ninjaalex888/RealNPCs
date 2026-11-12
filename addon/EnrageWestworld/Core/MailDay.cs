@@ -24,12 +24,31 @@ namespace EnrageWestworld.Core
         {
             if (!On || where == null || !where.MailIn || where.Saloon || x == null || y == null || x.Id == y.Id || x.P == null)
                 return null;
+            if (where.Town != null && x.P.Home != where.Town)
+                return null;   // a visitor's mail comes to his own town (the review)
+            long readAt;
+            if (Read.TryGetValue(x.Id, out readAt) && gameDay - readAt <= 2)
+                return null;   // one letter, read once, not to everyone by in turn
             string kind; int stage; bool good;
             bool awaited = InnerLife.WorryNow(x.P, gameDay, out kind, out stage, out good) && kind == "letter" && stage == 3;
             if (!Voice.Chance(x.Id + "|" + gameDay + "|mail", awaited ? 80 : Percent))
                 return null;
             return new Reason { Kind = Kind, Strength = Strength + (awaited ? 8 : 0), Matter = awaited ? (good ? "awaited:good" : "awaited:bad") : null, Why = x.Name + " opens a letter off the train" + (awaited ? ", the one waited on" : "") };
         }
+
+        private static readonly Dictionary<string, long> Read = new Dictionary<string, long>();   // who has read a letter, by the game day (memory only)
+
+        /// The scene played: this one's letter is read (by the day).
+        public static void NoteRead(string id, long gameDay)
+        {
+            if (id == null)
+                return;
+            Read[id] = gameDay;
+            if (Read.Count > 128)
+                Read.Clear();
+        }
+
+        public static void Clear() { Read.Clear(); }
 
         /// Whether the letter's news is good: the awaited one as the worry ends; any other by the seed.
         public static bool Good(string matter, string seed)
@@ -70,13 +89,13 @@ namespace EnrageWestworld.Core
             new[] { "Ten dollars in it, from {kin}. For the winter.", "There's family for you.", "I'll not tell a soul how much." } };
         private static readonly string[][] Bad = {
             new[] { "Letter from {kin}.", "Bad news?", "I'll read the rest at home." },
-            new[] { "Uncle's passed. Last spring, and nobody wrote till now.", "That's hard news, that.", "So am I. Spring." },
+            new[] { "Uncle's passed. Last spring, and nobody wrote till now.", "That's hard news, that.", "Spring. And I've written him all summer." },
             new[] { "{kin} says the farm's to be sold.", "Can they not hold on?", "Seems not." } };
         private static readonly string[][] AwaitedGood = {
             new[] { "It came. It came! {kin}'s alive and well.", "There now. Didn't I say it would?", "You did. I didn't believe you." },
-            new[] { "Two months I've waited on this. {kin}, in their own hand.", "Read it, then! Don't just stand there.", "I can't. I keep reading the first line." } };
+            new[] { "Two months I've waited on this. {kin}, in the hand I know.", "Read it, then! Don't just stand there.", "I can't. I keep reading the first line." } };
         private static readonly string[][] AwaitedBad = {
-            new[] { "It's come. It isn't from {kin}. It's about them.", "Oh, no.", "Don't. I need to get home." },
+            new[] { "It's come. It isn't in {kin}'s hand. Somebody else wrote it.", "Oh, no.", "Don't. I need to get home." },
             new[] { "Two months for this.", "What does it say?", "Nothing a body wants to read on a platform." } };
 
         private static string[] Pick(string[][] a, string seed) { return a[(Voice.Hash(seed) & 0x7fffffff) % a.Length]; }

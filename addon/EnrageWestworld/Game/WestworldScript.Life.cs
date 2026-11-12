@@ -816,7 +816,13 @@ namespace EnrageWestworld.InGame
         private void NoteHappened(Pending p, string kind)
         {
             NoteSceneTie(kind, p.People, p.S != null ? p.S.Doer : -1);
-            if (kind == "pitch" && TonicAfter.On && p.S != null && p.S.Beats.Count > 0 && p.S.Beats[p.S.Beats.Count - 1].Voice == "buy" && p.People.Count >= 2)
+            if (kind == MailDay.Kind && p.People.Count >= 1)
+            {
+                string rid, rname;
+                if (LastingId(p.People[0], out rid, out rname))
+                    MailDay.NoteRead(rid, Bridge.Now() / 1440);   // read once (LIVES item 2f; the review)
+            }
+            if (kind == "pitch" && TonicAfter.On && p.S != null && p.S.Beats.Count > 0 && p.S.Beats[p.S.Beats.Count - 1].Line != null && p.S.Beats[p.S.Beats.Count - 1].Line.Contains("Give me one bottle") && p.People.Count >= 2)
             {
                 string bid, bname;
                 if (LastingId(p.People[1], out bid, out bname))

@@ -33,9 +33,9 @@ namespace EnrageWestworld.Core
                 return null;
             if (x.P == null || y.P == null || x.P.Home == null || x.P.Home != y.P.Home)
                 return null;
-            if (y.Backslid && !x.Backslid && Voice.Chance(x.Id + "|" + y.Id + "|" + gameDay + "|backslid", BackslidPercent))
+            if (y.Backslid && !x.Backslid && Voice.Chance(Lives.Key(x, y) + "|" + gameDay + "|backslid", BackslidPercent))
                 return new Reason { Kind = Kind, Strength = BackslidStrength, Matter = "backslid", Why = x.Name + " has a word with " + y.Name + " on the church steps: up at the revival's altar, and back to old ways since" };
-            if (!Voice.Chance(x.Id + "|" + y.Id + "|" + gameDay + "|steps", Percent))
+            if (!Voice.Chance(Lives.Key(x, y) + "|" + gameDay + "|steps", Percent))
                 return null;
             return new Reason { Kind = Kind, Strength = Strength, Why = x.Name + " and " + y.Name + " talk on the church steps after the service" };
         }
@@ -72,7 +72,7 @@ namespace EnrageWestworld.Core
         }
 
         private static readonly string[][] Absent = {
-            new[] { "Didn't see {z} in his pew this morning.", "Third Sunday running.", "His poor wife sat there alone again." },
+            new[] { "Didn't see {z} in his pew this morning.", "Third Sunday running.", "Somebody ought to go and knock on his door." },
             new[] { "{z}'s seat was empty.", "He'll be sleeping off Saturday night.", "Then we'll pray he wakes up in time for the next one." },
             new[] { "Reverend looked straight at {z}'s empty pew when he said the part about the lost sheep.", "Everybody saw him do it.", "Well. Somebody ought to tell {z}." } };
         private static readonly string[][] Sermon = {

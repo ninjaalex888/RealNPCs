@@ -52,7 +52,7 @@ namespace EnrageWestworld.Core
         {
             if (!On || where == null || where.Night || x == null || y == null || x.Id == y.Id || !Took(x.Id, now))
                 return null;
-            if (!Voice.Chance(x.Id + "|" + y.Id + "|" + gameDay + "|tonic", Percent))
+            if (!Voice.Chance(Lives.Key(x, y) + "|" + gameDay + "|tonic", Percent))
                 return null;
             return new Reason { Kind = Kind, Strength = Strength, Why = x.Name + " tells " + y.Name + " what the medicine show's bottle did" };
         }

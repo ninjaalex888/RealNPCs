@@ -35,7 +35,8 @@ namespace EnrageWestworld.InGame
             SceneTie t = ties.FirstOrDefault(x => !x.Has(ai) && !x.Has(bi) && x.AName != null && x.BName != null && !_engine.HasDied(x.A) && !_engine.HasDied(x.B));
             if (t == null)
                 return null;
-            return new[] { Person.FirstOf(t.AName), Person.FirstOf(t.BName), NewsOverFence.NewsKind(t) };
+            bool bDid = t.Doer != null && t.Doer == t.B;   // who did the good turn comes first (the review)
+            return new[] { Person.FirstOf(bDid ? t.BName : t.AName), Person.FirstOf(bDid ? t.AName : t.BName), NewsOverFence.NewsKind(t) };
         }
     }
 }

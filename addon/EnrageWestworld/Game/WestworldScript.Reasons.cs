@@ -276,7 +276,9 @@ namespace EnrageWestworld.InGame
                 NearChurch = ChurchSteps.On && InnerLife.Weekday == 0 && NearChurchSteps(),   // a Sunday's church steps (LIVES item 2c)
                 DanceOn = DanceFight.On && saloon && DanceOnHere(now),   // a dance on in this saloon (LIVES item 2d)
                 TownNews = NewsOverFence.On && !saloon && TownNewsHere(now) != null,   // the town's news to pass over the fence (LIVES item 2e)
-                MailIn = MailDay.On && MailInHere()   // a train in lately at this platform, and you by it (LIVES item 2f)
+                MailIn = MailDay.On && MailInHere(),   // a train in lately at this platform, and you by it (LIVES item 2f)
+                Town = _placeTown,
+                PlayedLately = (x, y, k) => PairPlayedLately(x, y, k)   // the round's street scenes pass to the next (Core/Reasons.Lives.cs; the review)
             };
             var found = new List<PairReason>();
             for (int i = 0; i < people.Count; i++)
@@ -566,13 +568,22 @@ namespace EnrageWestworld.InGame
                 cast.TalkOf = TalkOfCast(doer, done);   // whom he talks of, and what each thinks of him (FOURTEENHOUR item 23)
             if (kind == FeverKin.AskKind || kind == FeverKin.AvoidKind)
                 cast.FeverSick = done.FeverSick ?? doer.FeverSick;   // the sick one at the house, for the words (DEPTH item 12)
+            if (kind == SchoolFather.Kind)
+                cast.MailMatter = pr.Why.Matter;   // asked again (LIVES item 2a; the review)
             if (kind == MailDay.Kind)
             {
                 cast.Kin = doer.P != null ? InnerLife.LetterKin(doer.P) : null;
                 cast.MailMatter = pr.Why.Matter;   // the letter waited on, as the worry ends (LIVES item 2f)
             }
             if (kind == NewsOverFence.Kind)
+            {
                 cast.News = TownNewsFor(doer, done, Bridge.Now());   // two others of the town and what's between them (LIVES item 2e)
+                if (cast.News == null)
+                {
+                    NotePairCant(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);   // the only news is their own: passed over a while (the review)
+                    return false;
+                }
+            }
             if (kind == ChurchSteps.Kind)
             {
                 cast.Backslid = pr.Why.Matter == "backslid";

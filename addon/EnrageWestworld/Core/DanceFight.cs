@@ -14,7 +14,7 @@ namespace EnrageWestworld.Core
 {
     public static class DanceFight
     {
-        public const string Over = "dance";
+        public const string Over = "dance", Kind = "dancefight";
         public static bool On;   // [Scenes] DanceFight, set by the game
         public const int Strength = 55, Percent = 25;
 
@@ -25,9 +25,15 @@ namespace EnrageWestworld.Core
                 return null;
             if (!x.Taken || tie != null && tie.Warmth > 0)
                 return null;   // a friend may dance with your girl
-            if (!Voice.Chance(x.Id + "|" + y.Id + "|" + gameDay + "|dance", Percent))
+            if (!Voice.Chance(Lives.Key(x, y) + "|" + gameDay + "|dance", Reasons.Weighted(Percent, where.Trouble)))
                 return null;
-            return new Reason { Kind = "brawl", Fallback = "argue", Strength = Strength, Matter = "woman", Over = Over, Why = x.Name + " won't have " + y.Name + " dancing with his girl" };
+            return new Reason { Kind = Kind, Fallback = "argue", Strength = Strength, Matter = "woman", Over = Over, Why = x.Name + " won't have " + y.Name + " dancing with his girl" };
+        }
+
+        /// A, spoken for, opens; blows, or words when either is a coward (the scene's own: Over "dance" always).
+        public static Scene Make(SceneCast c, string seed)
+        {
+            return CauseFight.Make(c, Openers, Over, "two men came to blows over a girl at the dance", "two men had words over a girl at the dance", seed);
         }
 
         /// The openers (A spoken for, B the other man): A opens, B answers, A presses; the fourth is A's voice.

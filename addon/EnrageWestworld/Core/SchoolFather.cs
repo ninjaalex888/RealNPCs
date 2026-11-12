@@ -24,7 +24,7 @@ namespace EnrageWestworld.Core
 
         public static bool IsTeacher(Someone s)
         {
-            return s != null && s.P != null && s.P.Trade != null && s.P.Trade.IndexOf("teacher", System.StringComparison.OrdinalIgnoreCase) >= 0;
+            return s != null && s.Woman && s.P != null && s.P.Trade != null && s.P.Trade.IndexOf("teacher", System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         /// A father who might keep a boy home: farming or working folk, old enough for a boy at school.
@@ -58,10 +58,10 @@ namespace EnrageWestworld.Core
             if (tie != null && tie.Kind == KeptKind && gameDay * 1440 - tie.At < 7 * 1440)
                 return null;   // he gave ground this week: she lets it be a while
             int pct = FieldSeason(InnerLife.ClockMonth) ? SeasonPercent : OtherPercent;
-            if (!Voice.Chance(x.Id + "|" + y.Id + "|" + gameDay + "|school", pct))
+            if (!Voice.Chance(Lives.Key(x, y) + "|" + gameDay + "|school", pct))
                 return null;
             bool again = tie != null && tie.Kind == RowKind;
-            return new Reason { Kind = Kind, Strength = Strength + (again ? 4 : 0), Why = x.Name + " asks " + y.Name + " after his boy, who hasn't been at school" + (again ? " (again)" : "") };
+            return new Reason { Kind = Kind, Strength = Strength + (again ? 4 : 0), Matter = again ? "again" : null, Why = x.Name + " asks " + y.Name + " after his boy, who hasn't been at school" + (again ? " (again)" : "") };
         }
 
         /// Whether he gives ground, by his nature (and a second time asked, a little likelier).
@@ -76,7 +76,7 @@ namespace EnrageWestworld.Core
         {
             string b = c != null && c.Names != null && c.Names[1] != null ? Surname(c.Names[1]) : null;
             string mister = b != null ? "Mr. " + b : "mister";
-            bool ground = GivesGround(c != null && c.Tempers != null ? c.Tempers[1] : null, false, seed);
+            bool ground = GivesGround(c != null && c.Tempers != null ? c.Tempers[1] : null, c != null && c.MailMatter == "again", seed);
             var s = new Scene { Kind = ground ? KeptKind : RowKind, Doer = 0, Summary = "the schoolteacher asked a father after his boy, kept home from school" };
             s.Add(0, Pick(Asks, seed + "|a").Replace("{m}", mister), "mild", "face")
              .Add(1, Pick(Fields, seed + "|f"), ground ? "mild" : "angry")

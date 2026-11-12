@@ -29,7 +29,7 @@ namespace EnrageWestworld.Core
                 return null;
             if (x.P == null || y.P == null || x.P.Home == null || x.P.Home != y.P.Home)
                 return null;
-            if (!Voice.Chance(x.Id + "|" + y.Id + "|" + gameDay + "|fence", Percent))
+            if (!Voice.Chance(Lives.Key(x, y) + "|" + gameDay + "|fence", Percent))
                 return null;
             return new Reason { Kind = Kind, Strength = Strength, Why = x.Name + " has news of the town for " + y.Name };
         }

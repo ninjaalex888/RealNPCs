@@ -211,6 +211,8 @@ namespace EnrageWestworld.Core
                 case FeudArcs.Kind: { bool taken; return FeudArcs.Make(c, c.Tempers != null ? c.Tempers[1] : null, seed, out taken); }   // his hand before the street (Core/FeudArcs.cs; DEPTH item 18)
                 case CenturyTurns.Kind: return CenturyTurns.Make(c, c.CenturyEve, seed);   // the century turns (Core/CenturyTurns.cs; DEPTH reserve R6)
                 case Grumble.Kind: return Grumble.Make(c, seed);   // old hands grumble at the newcomer (Core/Grumble.cs; DEPTH reserve R5)
+                case ElectionNight.Kind: return ElectionNight.Make(c, seed);   // election night's fight over the vote (LIVES item 2b; the review: its own scene)
+                case DanceFight.Kind: return DanceFight.Make(c, seed);         // the fight at the dance (LIVES item 2d; the review: its own scene)
                 case TonicAfter.Kind: return TonicAfter.Make(c, seed);   // the medicine show's bottle, the days after (Core/TonicAfter.cs; LIVES item 2g)
                 case MailDay.Kind: return MailDay.Make(c, c.Kin, c.MailMatter, seed);   // a letter off the train (Core/MailDay.cs; LIVES item 2f)
                 case NewsOverFence.Kind: return NewsOverFence.Make(c, seed);   // the town's news over the fence (Core/NewsOverFence.cs; LIVES item 2e)
