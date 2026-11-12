@@ -136,6 +136,7 @@ namespace EnrageWestworld.InGame
                 if (v.Paid)
                     MONEY._MONEY_DECREMENT_CASH_BALANCE(Vouch.SuretyCents);
                 Hint(Vouch.BrokeHint(first, v.How, v.Paid, seed), 9000);
+                VouchBrokeRemembered(v);
                 NewsPush(v.Town, Vouch.BrokeNews(v.Name, seed), "news");
                 _vouchLast = v.Name + " broke his word (" + v.How + ")" + (v.Paid ? "; your " + BrawlVerbs.Money(Vouch.SuretyCents) + " went to the county" : "; you hadn't the money");
             }
@@ -159,6 +160,29 @@ namespace EnrageWestworld.InGame
                 _vouchLast = v.Name + " kept the peace his week out";
             }
             Log.Write("VOUCH told in " + v.Town + ": " + _vouchLast);
+        }
+
+        /// The man who broke his week on your word keeps it (SEAMS item 20; [Encounters] SuretyBrokeRemembered): a memory of his
+        /// own doing, with you the one let down (quarrel, Sub "suretybroke", Role doer), so his thoughts come back to it ("Gave my
+        /// word to {who} and broke it inside the week"). Before, his week's end was told to you, and his own mind kept nothing.
+        /// Guilt toward the one who trusted you is the strongest kind (the broken promise); no scene comes of it.
+        private void VouchBrokeRemembered(Vouched v)
+        {
+            if (!_cfg.SuretyBrokeRemembered || v == null || v.Test || v.Id == null || _store == null || _engine == null)
+                return;
+            PersonState st = _store.Find(v.Id);
+            if (st == null)
+                return;
+            if (st.Mind == null)
+                st.Mind = new List<MindMemory>();
+            long g = _store.LastGameMin;
+            string you = _engine.KnowsYourName(v.Id) && YourFullName() != null ? Person.FirstOf(YourFullName()) : "the stranger";
+            Minds.Note(st.Mind, new MindMemory
+            {
+                Kind = "quarrel", Sub = "suretybroke", Who = new List<string> { "player" }, Names = new List<string> { you }, Town = v.Town, At = g,
+                How = "did", Role = "doer", Feel = -2, Strength = 55, Key = "suretybroke:" + v.Id + ":" + g / 1440
+            }, g);
+            Log.Write("VOUCH " + v.Name + " won't forget breaking his word to you");
         }
 
         /// He's at it again where you can see, or the law took him (WestworldScript.BrawlAfter.cs, AfterJailed): his week is broken.

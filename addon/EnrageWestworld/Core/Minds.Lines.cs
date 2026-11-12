@@ -583,6 +583,10 @@ namespace EnrageWestworld.Core
             { "surety|did:done|fresh", new[] { "Kept the peace the week out. {who} gave his word for me, and I made it good.", "Out on {who}'s word, and I didn't make a liar of him." } },
             { "surety|did:done|chewing", new[] { "{who} spoke for me when nobody else would. I'll not forget it.", "Owe {who} a week of good behaviour. Paid it, too." } },
             { "surety|did:done|letting", new[] { "{who} stood surety for me, once. I kept my side of it." } },
+            // a week broken on the stranger's word, his surety forfeit (SEAMS item 20): quarrel, Sub "suretybroke", he the doer
+            { "suretybroke|did:doer|fresh", new[] { "Gave my word to {who} and broke it inside the week. Cost {who} money, too.", "{who} spoke for me, and I went and fought anyway." } },
+            { "suretybroke|did:doer|chewing", new[] { "Can't look {who} in the eye. Wouldn't blame {who} for spitting.", "Owe {who} the surety and an apology. Got neither." } },
+            { "suretybroke|did:doer|letting", new[] { "Let {who} down, once, after {who} stood up for me. Still sits wrong." } },
             { "fine|did:done|fresh", new[] { "{who} paid my fine. A stranger, paying for my foolishness.", "Out of that cell on {who}'s money. Don't know what to make of it.", "{who} counted out my fine at the jail door. I'll pay it back." } },
             { "fine|did:done|chewing", new[] { "Owe {who} for that fine. Mean to square it.", "Keep thinking of {who} at the jail door, with the money in hand.", "Ain't many would pay a stranger's fine. {who} did." } },
             { "fine|did:done|letting", new[] { "{who} paid my way out of the cell, once. A man remembers that.", "That night in the cell. {who} paid, and asked nothing for it." } },
