@@ -486,9 +486,16 @@ namespace EnrageWestworld.InGame
 				// the records of people nothing is kept of but a name, let go once a load, inside the load's long frame (about 60 ms on
 				// Lex's save: a walk of the store; SWEEP item 3, Core/PeopleTrim.cs); saved with the next save
 				PeopleTrim.On = true;
-				int trimmed = PeopleTrim.Prune(_store);
-				if (trimmed > 0)
-					Log.Write("PEOPLE trimmed: " + trimmed + " kept as no more than a name let go; " + _store.People.Count + " kept ([World] PeopleTrim)");
+				try
+				{
+					int trimmed = PeopleTrim.Prune(_store);
+					if (trimmed > 0)
+						Log.Write("PEOPLE trimmed: " + trimmed + " kept as no more than a name let go; " + _store.People.Count + " kept ([World] PeopleTrim)");
+				}
+				catch (Exception ex)
+				{
+					Log.Write("PEOPLE trim failed, everyone kept this load: " + ex.GetType().Name + " " + ex.Message);   // never stops the add-on starting (the whole-round review)
+				}
 			}
 			SaveWarm();     // the first save's one-off cost, paid inside the load's long frame
 			if (_recordFates.Count > 0)

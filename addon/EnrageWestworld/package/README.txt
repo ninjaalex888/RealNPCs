@@ -580,7 +580,7 @@ NEW IN 0.7.18
 
 NEW IN 0.7.17
 -------------
-- More happening, less idle talk: street scenes twice as often ([Scenes] DramaGapSeconds 30),
+- More happening, less idle talk: street scenes twice as often ([World] DramaGapSeconds 30),
   and scenes of nothing but talk passed over ([Scenes] EventfulOnly, on).
 - A lawman near may shoot the one who picked your pocket ([Scenes] LawShootsThieves, 50).
 - Gatherings of the awake: six to ten in the ring, each kneeling, dancing, staring, lying on
@@ -840,7 +840,7 @@ NEW IN 0.7.11
   weighed from who saw it, the dead man's friends against the accused's, his temper in the dock,
   your word if you give it (a known killer's word counts half) and a frightened town. Guilty means
   a hanging two days on at the jail at eleven, the drop never shown; not guilty splits the town.
-  J ([Keys] EventKey, keyboard): testify when the judge asks, be sworn in as a special deputy before the hour, or
+  J ([Ticker] EventKey, keyboard): testify when the judge asks, be sworn in as a special deputy before the hour, or
   break him out of the jail at night with no lawman near. Shots stop a hanging. A hogtied man of
   ours carried into a sheriff's office is brought in. Testing row "trial" to see it.
 - The Wild West show (EventShows): once your most-told deed is talked of in four towns, one of them
@@ -848,7 +848,7 @@ NEW IN 0.7.11
   acts out the most bent version of it under the name the rumour gave you. Away, the paper reviews
   it and the legend bends further. There: the ground outside town, a barker, riders, a crowd; J to
   heckle, stand up as the real one, or rob the takings. Testing row "show" to see it.
-- The spot key (K; [Keys] SpotKey): stand on a named place of a town (its platform, wharf, cemetery,
+- The spot key (K; [Ticker] SpotKey): stand on a named place of a town (its platform, wharf, cemetery,
   bandstand, church steps, corral, main street, saloon porch, bank door, jail yard, show ground...)
   and press it: the place is written to spots.txt beside this file under the current kind; Shift and
   the key change the kind (the news line says which). The trains, the hangings and the shows stand at
@@ -2237,7 +2237,7 @@ in the ini or the panel (e.g. ReaderKey = Ctrl+N).
 
 SETTINGS NEW IN 0.7.26 (each is in RealNPCs.ini with its comment)
 
-[Scenes]    AllSaintsGraves (true): with Mourning: on the first of November in the south, those with
+[World]     AllSaintsGraves (true): with Mourning: on the first of November in the south, those with
             someone dead go to the tombs, the ones you put there among them
             BarRound (true): at a saloon's bar by the barkeep, with a few others about: J to buy the
             house a round (a dime a head, $1 to $4); the room cheers and each one treated thinks

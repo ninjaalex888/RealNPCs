@@ -1104,7 +1104,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
                 if (s.SettingsVersion < 460)
-                    log?.Invoke("Settings: new in this version: [World] PeopleTrim (on): the save lets go of the people it keeps nothing of but a name. And 68 settings move to the section the README names (your values kept); their rows on the panel move with them.");
+                    log?.Invoke("Settings: new in this version: [World] PeopleTrim (on): the save lets go of the people it keeps nothing of but a name. And 67 settings move to the section the README names (your values kept); their rows on the panel move with them.");
                 if (s.SettingsVersion < 459)
                     log?.Invoke("Settings: new in this version: the gambler's loan (with [Scenes] GamblersBorrow, on): a gambler at the worst of his cards now meets the man he borrows from, as was meant since 0.7.25 and never played.");
                 if (s.SettingsVersion < 458)
@@ -1550,7 +1550,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 237)
                     log?.Invoke("Settings: new in this version: [Mind] GroupActs (on): friends close round a beaten friend after a fight, and an onlooker who leaves takes their spouse or sweetheart along.");
                 if (s.SettingsVersion < 236)
-                    log?.Invoke("Settings: new in this version: [Scenes] GunpointStages (on): the gun kept on someone brings a second and a third step by who they are.");
+                    log?.Invoke("Settings: new in this version: [World] GunpointStages (on): the gun kept on someone brings a second and a third step by who they are.");
                 if (s.SettingsVersion < 235)
                     log?.Invoke("Settings: new in this version: [Stalkers] StalkerHorse (35): some stalkers appear on horseback; RevenantsAtCamp (on): someone you killed comes to the edge of your firelight.");
                 if (s.SettingsVersion < 234)
@@ -2421,6 +2421,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("SundayMorning = " + B(SundayMorning) + "   ; Sunday properly: from eight the town's believers make for the church (the devout most); from half past nine near the church you hear the hymn; the sermon is on the town's week (a killing, a theft, a death, the drink) and the churchgoers think it over after; from noon, dinner on the grounds");
             b.AppendLine("NoticeBoard = " + B(NoticeBoard) + "   ; what is posted for the coming seven days, gathered on one board: a Notice board page in the reader (each town by day: dances, elections, the circuit judge, hangings, the show, prize fights, announced weddings, funerals, Saturday wages and Sunday service), and as you come into a town, what it has posted, in the Around town box (once a town a day)");
             b.AppendLine("WitnessesChoose = " + B(WitnessesChoose) + "   ; each witness to your violence whom RealNPCs knows chooses: tell it, or keep quiet out of fear of you or loyalty to you (the law-abiding, the honest and a friend of the victim tell); if nobody who saw it will tell, the town never learns it was you. Within the hour, a gun on a witness leans on them: the frightened swear they saw nothing, the proud tell it sooner");
+            b.AppendLine("GunpointStages = " + B(GunpointStages) + "   ; with Pleading: keep the gun on someone six seconds and they take a second step by who they are (beg, defy you, back away a step at a time, break and run, or freeze with their hands up; the model picks when it's on and the mind knows them), and a third at fourteen (most who begged or froze break and run; the steady hold, the defiant stand); false: the plea and the game's own answer alone");
             b.AppendLine();
             b.AppendLine("[Scenes]");
             b.AppendLine("PaydayNight = " + B(PaydayNight) + "   ; with Payday on: Saturday from eight into the small hours, the paid hands stay in town and lean to the saloon, the bottle and the cards; a saloon's fights grow faster that night (each man's threshold to join comes nearer); the town says which night it is; false: payday ends at eight, as before");
@@ -2566,7 +2567,6 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("PosseTalk = " + B(PosseTalk) + "   ; after a bad crime in town, men talk about getting up a posse");
             b.AppendLine("Mourners = " + B(Mourners) + "   ; the widow (or brother) of a stranger you killed grieves in town");
             b.AppendLine("Pleading = " + B(Pleading) + "   ; hold a gun on a stranger and they beg; lower it or don't");
-            b.AppendLine("GunpointStages = " + B(GunpointStages) + "   ; with Pleading: keep the gun on someone six seconds and they take a second step by who they are (beg, defy you, back away a step at a time, break and run, or freeze with their hands up; the model picks when it's on and the mind knows them), and a third at fourteen (most who begged or froze break and run; the steady hold, the defiant stand); false: the plea and the game's own answer alone");
             b.AppendLine("ArrivalTalk = " + B(ArrivalTalk) + "   ; when you ride into town, the locals say what they've heard of you");
             b.AppendLine("KinThanksOwes = " + B(KinThanksOwes) + "   ; with KinThanks on: the kinsman who walks up to thank you for one you saved owes you for a month too, as the one saved does: he comes to your aid in a fight, and his card says so");
             b.AppendLine("KinThanks = " + B(KinThanks) + "   ; with KinGrudges on: one time in two, a kinsman of someone you saved (a bully pulled off them, their beater put down, the rope, the hogtied cut loose) comes to find you five to nine days on, as kin come over a wrong, and says the family is grateful; false: only wrongs bring kin");
