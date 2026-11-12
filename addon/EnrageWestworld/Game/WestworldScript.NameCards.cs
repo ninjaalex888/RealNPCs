@@ -450,7 +450,7 @@ namespace EnrageWestworld.InGame
             return m;
         }
 
-        private const int NameCardMournDays = 7;
+        private const int NameCardMournDays = 7;   // a week, as the friends' warning has it
 
         /// Whether you carry a letter for him not yet given (FindLetter's mark, on his id or his worry's: SEAMS item 21). A
         /// dictionary look or two a card: no scan.
@@ -463,7 +463,7 @@ namespace EnrageWestworld.InGame
             if ((st == null || !st.Has(FindLetter.HeldMark)) && _engine.WorryIdOf(id) != id)
                 st = _store.Find(_engine.WorryIdOf(id));
             return st != null && st.Has(FindLetter.HeldMark) && !st.Has(FindLetter.GivenMark);
-        }   // a week, as the friends' warning has it
+        }
 
         private bool NameCardFill(Ped p, NameCard c, bool everyone)
         {
@@ -473,7 +473,7 @@ namespace EnrageWestworld.InGame
             if (between == null && got && c.Name != null && MournsYou(p))
                 between = "Mourns one you killed";
             if (between == null && got && c.Name != null && _cfg.NameCardsLetter && LetterFor(p))
-                between = "His letter is with you";   // the letter you carry for him (SEAMS item 21; Find the letter)
+                between = "You carry their letter";   // the letter you carry for him (SEAMS item 21; Find the letter)
             if (between != null && (c.Line2 == null || c.Line2.IndexOf(between, StringComparison.Ordinal) < 0))
                 c.Line2 = string.IsNullOrEmpty(c.Line2) || c.Line2 == "Stranger" ? between : c.Line2 + " - " + between;
             // what they are, before the rest of the line: "Lawman - Proud", "Barkeep" (Lex, 2026-10-30: enRAGE showed a
