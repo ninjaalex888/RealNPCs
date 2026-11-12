@@ -93,7 +93,7 @@ namespace EnrageWestworld.Core
                 case "near": return r.Near.Count > 0;
                 case "memory": return r.Memories.Count > 0;
                 case "body": return !string.IsNullOrEmpty(r.Need);
-                case "worry": return !string.IsNullOrEmpty(r.Worry);
+                case "worry": return !string.IsNullOrEmpty(r.Worry) || !string.IsNullOrEmpty(r.Week);   // the week's worry too (LIVES item 3a)
                 case "talk": return !string.IsNullOrEmpty(r.TownMood) || r.Town != null;
                 case "place": return true;
                 case "weather": return !string.IsNullOrEmpty(r.Weather);

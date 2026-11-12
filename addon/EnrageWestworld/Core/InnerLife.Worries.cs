@@ -691,6 +691,42 @@ namespace EnrageWestworld.Core
             return Fill(Pick(pool, p, seed, told), p, k, arc);
         }
 
+        // the week's worry in a few words for the model (LIVES item 3a; [Mind] ModelKnowsLife): what it is, by name, and where
+        // it stands, the turn of the day with it
+        private static readonly Dictionary<string, string> WorryPhrase = new Dictionary<string, string>
+        {
+            { "debt", "money owed to {who}" }, { "fever", "{who} at home, sick with fever" }, { "letter", "no letter from {kin}" },
+            { "drought", "the well and the crops in a dry spell" }, { "son", "a son, {who}, gone to {place}" }, { "courting", "courting {who}" },
+            { "feud", "bad blood with the neighbour, {who}" }, { "bank", "the bank's note on the place" }, { "drink", "keeping off the drink" },
+            { "cards", "card losses and the rent owed to Mrs. {who}" }, { "savings", "saving for a ticket to {place}" }, { "tooth", "a bad tooth" },
+            { "secret", "a secret kept from the town" }, { "law", "a wanted poster that looks like them" },
+        };
+
+        /// "money owed to Whitlow; it's at its worst, and it's settled tomorrow": the worry this person lives through today, in
+        /// words, with its stage and today's turn (Core/WorryTurns.cs); null when nothing fits them.
+        public static string WorryWords(Person p, long gameDay)
+        {
+            p = Self(p);
+            if (p == null || p.Id == null || gameDay < 0)
+                return null;
+            List<WorryKind> fits = FitsFor(p);
+            if (fits.Count == 0)
+                return null;
+            int dayIn;
+            long arc = ArcOf(p, gameDay, out dayIn);
+            int stage = StageOn(p.Id, arc, dayIn, gameDay);
+            WorryKind k = KindAt(p, fits, arc);
+            string what;
+            if (LinkedDead(p, k, arc) || !WorryPhrase.TryGetValue(k.Key, out what))
+                return null;
+            what = Fill(what, p, k, arc);
+            string turn = WorryTurns.TurnOn(dayIn);
+            string where = stage == 0 ? "it has only begun" : stage == 1 ? "it's getting worse" + (turn == "hope" ? ", though today there's a small hope" : turn == "back" ? "; they think back to how it began" : "")
+                         : stage == 2 ? "it's at its worst" + (turn == "eve" ? ", and it's settled tomorrow" : "")
+                         : SettledIn(p.Id, arc, gameDay) ? "it's over: a stranger settled it for them" : EndsWell(p, k, arc) ? "it's over, and it came out well" : "it's over, and it went badly";
+            return what + "; " + where;
+        }
+
         /// The Testing row "worryturn": this person's worry's turn ("back", "hope" or "eve") whatever day of the run it is,
         /// filled as WorryThought fills it; null with nothing that fits them or no such turn (Core/WorryTurns.cs).
         public static string WorryTurnLine(Person p, long gameDay, string turn, string seed)

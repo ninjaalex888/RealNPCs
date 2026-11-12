@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 473;
+        public const int CurrentVersion = 475;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -496,6 +496,8 @@ namespace EnrageWestworld.Core
         public bool AbsentThoughts = true;   // [Mind] a person's own thoughts go to someone of their ties out of sight: one who saw the same killing, or one they fear, scorn, envy or look up to (Core/AbsentThoughts.cs; LIVES item 1b) (settings version 462)
         public bool MemoryBlur = true;   // [Mind] with MindLive: a memory of their own past its half-life comes to mind, now and then, with its details doubted (the day, the weather, how many), or, if it was strong or a death, too sharp (Core/MemoryBlur.cs; LIVES item 1c) (settings version 463)
         public bool DreamsRemembered = true;   // [Mind] with [Features] DiaryDreams: the morning after a dream (5 to 14 o'clock) the dreamer's thoughts go back to it, and count it when it's the same dream again (Core/DreamWake.cs; LIVES item 1d) (settings version 464)
+        public bool ModelKnowsLife = true;   // [Mind] with Language: the model is told the worry a person lives through this week (by name, where it stands, today's turn) and up to three of their people (friend, sweetheart, bad blood, feared, a fellow witness), so its thoughts are of their own life (Core/ModelLife.cs; LIVES item 3a) (settings version 474)
+        public bool ModelAgrees = true;   // [Mind] with Language: the check holds a model's thought whose plain words go against the feeling the mind gave it (delight for the frightened or grieving, hate for the joyful), and the written line stands in (Core/Language.Agree.cs; LIVES item 3b) (settings version 475)
         public bool SurvivorsChanged = true;   // [Mind] one you beat or robbed comes back changed: with friends to get even, with standing for having faced you, or broken and keeping clear (Core/Survivors.cs; FIVEDAY item 21, settings version 273)
         public bool TrustSlow = true;   // [Mind] a wrong of yours undoes three greetings at once, and kindness to someone you wronged counts for less until time and kindness bring them back (Core/Trust.cs; FIVEDAY item 20, settings version 272)
         public bool PeakEnd = true;   // [Mind] a meeting with you is remembered by its strongest moment and how it ended, not its length (Core/PeakEnd.cs; FIVEDAY item 18, settings version 270)
@@ -1116,6 +1118,10 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 475)
+                    log?.Invoke("Settings: new in this version: [Mind] ModelAgrees (on): a model's thought that goes against the feeling the mind gave it is held, and the written line shows instead.");
+                if (s.SettingsVersion < 474)
+                    log?.Invoke("Settings: new in this version: [Mind] ModelKnowsLife (on): the model knows each person's week and their people, by name, so its thoughts are of their own life.");
                 if (s.SettingsVersion < 473)
                     log?.Invoke("Settings: new in this version: [Scenes] TonicAfter (on): the medicine show's tonic, the days after: the man who bought a bottle tells what it did.");
                 if (s.SettingsVersion < 472)
@@ -2150,6 +2156,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("AbsentThoughts = " + B(AbsentThoughts) + "   ; people think of someone who isn't there: of their ties of the last four days, out of sight and alive, the one who saw the same killing with them, or the one they fear, look down on, envy or look up to, in words for an absent person; false: those views and the shared fright show only when the two meet");
             b.AppendLine("MemoryBlur = " + B(MemoryBlur) + "   ; with MindLive: what someone saw with their own eyes blurs as it ages: past a memory's half-life, four times in ten it comes to mind with its details doubted (was it a Tuesday, two of them or three); one that was strong, or a death, comes too sharp instead; your own deeds and things told keep their own rules; false: old memories come as they were");
             b.AppendLine("DreamsRemembered = " + B(DreamsRemembered) + "   ; with [Features] DiaryDreams on: the morning after someone dreams of a hard thing, from five to two o'clock, their thoughts can go back to the dream (kept to the near side of the street, two cups set out), and count it when it comes again night after night; kept only till the game is reloaded; false: the dreams are in the diaries only");
+            b.AppendLine("ModelKnowsLife = " + B(ModelKnowsLife) + "   ; with Language on: the model is told the worry a person is living through this week, by name and where it stands (and today's turn of it), and up to three of their people of the last week by first name and what's between them (a friend, a sweetheart, bad blood, one they fear, one who saw the same killing; in sight or not), so its thoughts are of their own life; false: the model is told as before");
+            b.AppendLine("ModelAgrees = " + B(ModelAgrees) + "   ; with Language on: a model's thought whose plain words go against a moderate or strong feeling the mind gave it (\"glad\", \"fine morning\" for someone frightened, angry, ashamed or grieving; \"hate\", \"despair\" for someone joyful, grateful or relieved) is held, and the written line shows instead; a masked fear or grief is left be; false: such a line can show");
             b.AppendLine("SurvivorsChanged = " + B(SurvivorsChanged) + "   ; someone you beat or robbed and left alive comes back changed, a day on, by who they are: angry and with friends, they bring up to two of them when they call you out (and they fight with them); the bold have more standing for having faced you; the timid are broken by it, never come at you, keep clear and stay home; their thoughts and their friends' say which");
             b.AppendLine("TrustSlow = " + B(TrustSlow) + "   ; trust lost fast, won slow: a shove, a beating, a robbery or a theft of yours takes three greetings' worth off their liking at once, and for 60 days your greetings count for less with them (a fifth the day after, the rest coming back over three weeks, sooner for the forgiving, and with each kindness since). Someone you never wronged: three hellos fill the bar as before");
             b.AppendLine("PeakEnd = " + B(PeakEnd) + "   ; a meeting with you (what they feel about you, no more than a quarter hour between) is remembered by its strongest moment and how it ended, not by how long it went on: a long friendly talk ended by a shove is remembered as the shove; the moments between fade to a quarter");

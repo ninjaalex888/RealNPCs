@@ -252,6 +252,8 @@ namespace EnrageWestworld.Core
                                                     town, place, hour, year, weather, now, say.Key, beliefs);
             if (r != null)
                 VaryRequest(r, p, t, st, now);
+            if (r != null && ModelLife.On)
+                ModelLife.Fill(r, p, Store.Ties, nearFirstNames as ICollection<string> ?? (nearFirstNames != null ? new List<string>(nearFirstNames) : null), now);   // their week and their people (Core/ModelLife.cs; LIVES item 3a)
             return r;
         }
 

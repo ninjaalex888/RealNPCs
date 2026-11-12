@@ -54,6 +54,8 @@ namespace EnrageWestworld.Core
         public bool Compose;                 // Kind "pick": a few moves in order, not one (Core/Composed.cs; FIVEDAY2 item 9)
         public bool Circle;                  // Kind "pick": what a ring of the awake does as one (Core/GroupActs.cs; FIVEDAY2 item 10)
         public bool CrowdPick;               // Kind "pick": how a crowd takes a fight (FIVEDAY2 R10)
+        public string Week;                  // the week's worry in words, with its stage and today's turn (InnerLife.WorryWords; [Mind] ModelKnowsLife, LIVES item 3a), or null
+        public List<string> People = new List<string>();    // their people by name and what's between them ("Hollis, a friend, in sight"; LIVES item 3a), up to three
         public string Now;                   // Kind "pick" in a staged encounter (Core/Staged.cs): what is going on around them this moment, in a few words
 
         /// The variety rules apply here: set, and a thought or a pick (Talk's answers and the remarks said aloud keep their own).
@@ -72,6 +74,8 @@ namespace EnrageWestworld.Core
             add(YouAs);
             add(Town);
             add(Worry);
+            add(Week);
+            foreach (string s in People) add(s);   // (LIVES item 3a)
             foreach (string s in Memories) add(s);
             foreach (string s in Near) add(s);
             foreach (string s in Recent) add(s);   // names in their own thoughts lately were given then
@@ -151,6 +155,8 @@ namespace EnrageWestworld.Core
             }
             if (!string.IsNullOrEmpty(r.Need)) b.Append("The body: ").Append(NeedWords(r)).Append(".\n");
             if (!string.IsNullOrEmpty(r.Worry)) b.Append("On their mind: ").Append(r.Worry).Append(".\n");
+            if (!string.IsNullOrEmpty(r.Week) && r.Kind != "talk") b.Append("Their week: ").Append(r.Week).Append(".\n");   // (LIVES item 3a; never Talk's: the freeze)
+            if (r.People.Count > 0 && r.Kind != "talk") b.Append("Their people: ").Append(string.Join("; ", r.People.Take(3))).Append(".\n");
             foreach (string m in r.Memories.Take(2)) b.Append("Remembers: ").Append(m).Append(".\n");
             if (r.Beliefs.Count > 0) b.Append("Holds: ").Append(string.Join("; ", r.Beliefs.Take(3))).Append(".\n");
             if (!string.IsNullOrEmpty(r.TownMood)) b.Append("The town: ").Append(r.TownMood).Append(".\n");
@@ -249,6 +255,9 @@ namespace EnrageWestworld.Core
                 if (same != null)
                     return same;
             }
+            string against = AgainstFeelingIn(r, a);   // the agreement guard (Core/Language.Agree.cs; LIVES item 3b)
+            if (against != null)
+                return AgainstFeeling + " (" + against + ")";
             return null;
         }
 
