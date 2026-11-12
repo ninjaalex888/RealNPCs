@@ -70,6 +70,7 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 - **A gift that fits** (`Core/FittingGifts.cs` `For(Routines.Profile, woman)`; `Game/WestworldScript.FittingGifts.cs`; J kinds `giftbuy`/`giftgive`; `[Scenes] FittingGifts`): in `_placeKind == "genstore"`, once a visit, up to three residents of the town with Affection 20+ (read from `Store.People` directly, never `Find`); give within 3.5 m in two days: +15 Affection (+5 cold or again inside a week), a `charity` event.
 - **Track 4's review rules**: a J verb's Step asks `PromptFree()` (no menu, no prompt or one run out: PromptSet never clears an expired prompt), offers a give once an approach (re-armed when you step away), matches a person by `w.Id` or `_engine.WorryIdOf(w.Id)` (enRAGE's take-up), finds a post keeper as the slate does (`Peds.All`, `PostKindOf`, `HolderAt`), and `LivesForget()` clears the round's memory-only marks on load.
 - **Who's who by town** (`WhosWho.ByTown`/`TownOf` in `Core/WhosWho.cs`; the reader in Core04 picks it with `[Display] WhosWhoByTown`): the same forty, grouped by the resident's Town, else `FirstSeenTown`, else "On the roads and elsewhere"; here first, then by count.
+- **A town that shrinks** (`Core/TownShrinks.cs`; `Context.TownIndex`/`IndexTown` from `ThoughtDay`; a `town:shrinking` candidate for the town's own people, pull 21; the ledger's paper line; `[World] TownShrinks`): ledger index 35 or under.
 
 ## The sweep round (SWEEP.md, 2026-11-12; settings version 460; nothing seen in game yet)
 

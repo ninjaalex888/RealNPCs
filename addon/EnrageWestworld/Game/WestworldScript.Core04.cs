@@ -301,6 +301,7 @@ namespace EnrageWestworld.InGame
             Core.DoctorsCall.On = _cfg.DoctorsCall;       // [Scenes] DoctorsCall (LIVES item 4a)
             Core.CourtingNote.On = _cfg.CourtingNote;     // [Scenes] CourtingNote (LIVES item 4b)
             Core.FittingGifts.On = _cfg.FittingGifts;     // [Scenes] FittingGifts (LIVES item 4c)
+            Core.TownShrinks.On = _cfg.TownShrinks;       // [World] TownShrinks (LIVES item 5b)
             Core.Language.AgreeOn = _cfg.ModelAgrees;       // [Mind] ModelAgrees (LIVES item 3b)
             Core.SleepOnIt.On = _cfg.SleepOnIt;           // [Mind] SleepOnIt (DEPTH item 19)
             Mourning.GraveNightOn = _cfg.GraveNight;      // [World] GraveNight (DEPTH reserve R1)

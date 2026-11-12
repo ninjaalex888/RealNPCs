@@ -998,6 +998,9 @@ namespace EnrageWestworld.Core
                         Make = () => Ties.Thought(t, p.Id, seed, dead)
                     });
             }
+            // a town that shrinks, in its people's thoughts (Core/TownShrinks.cs; [World] TownShrinks): only their own town
+            if (TownShrinks.Shrinking(day.TownIndex) && p.Home != null && p.Home == day.IndexTown)
+                c.Add(new Minds.Candidate { Source = "town:shrinking", Pull = TownShrinks.Pull + Minds.Jitter(seed, "shrink", 4), Make = () => TownShrinks.Line(seed, told) });
             // last night's dream, the morning after (Core/DreamWake.cs; [Mind] DreamsRemembered)
             DreamMark dm;
             if (DreamWake.On && DreamMarks.TryGetValue(p.Id, out dm) && DreamWake.Morning(dm, now))

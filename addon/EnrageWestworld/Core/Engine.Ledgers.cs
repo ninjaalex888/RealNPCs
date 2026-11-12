@@ -56,7 +56,7 @@ namespace EnrageWestworld.Core
                     continue;
                 l.LastPaperAt = now;
                 if (Cfg.Newspaper)
-                    Requests.Add(new WorldRequest { Kind = "paper", Town = l.Town, Text = TownLedgers.Paper(l, month) });
+                    Requests.Add(new WorldRequest { Kind = "paper", Town = l.Town, Text = TownLedgers.Paper(l, month) + (TownShrinks.Shrinking(l.Index) ? TownShrinks.PaperLine : "") });   // a shop shut, in a shrinking town (LIVES item 5b)
                 Log("TOWN " + l.Town + ": the month's mention in the paper (" + l.Index + ", " + l.Mood + ")");
             }
         }

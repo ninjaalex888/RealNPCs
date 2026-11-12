@@ -1479,6 +1479,12 @@ namespace EnrageWestworld.Core
                                          .OrderByDescending(d => d.At).Take(3).ToList();
                 c.TownTies = Ties.TalkOf(Store.Ties, town, id, now);
                 c.TownMood = Cfg.TownLedger ? TownMoodOf(town) : null;   // the town's month: grieving, fearful, prospering (Core/TownLedgers.cs; SIXDAY 11c)
+                if (TownShrinks.On && Cfg.TownLedger)
+                {
+                    TownLedger led = LedgerOf(town);
+                    c.TownIndex = led != null ? led.Index : -1;
+                    c.IndexTown = town;   // a town that shrinks says so (Core/TownShrinks.cs; LIVES item 5b)
+                }
             }
             if (id != null)
             {

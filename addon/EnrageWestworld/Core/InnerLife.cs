@@ -30,6 +30,8 @@ namespace EnrageWestworld.Core
             public string Routine;                      // a regular's routine here, now (Routines.Key: "saloon|evening"...), for a thought of it; null for anyone else
             public bool RoutineOdd;                     // ...and they're somewhere their routine wouldn't put them (Routines.Odd)
             public string TownMood;                     // the town's month (TownLedgers): grieving, fearful, prospering; null steady or unknown
+            public string IndexTown;                    // ...the town that index is of
+            public int TownIndex = -1;                  // the town's ledger index, 0-100 (TownLedgers; LIVES item 5b: a shrinking town); -1 unknown
 
             public bool IsDead(string id)
             {
