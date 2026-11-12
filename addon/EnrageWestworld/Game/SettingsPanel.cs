@@ -761,7 +761,7 @@ namespace EnrageWestworld.InGame
         // [Testing]'s Show minds (the blue-edged card over people near you) and wake stages over heads (Lex, 2026-11-01: "move
         // this setting from the Testing page to the UI page", then the wake stages too), [Ticker]'s bar and the thoughts over
         // heads, and [Output]'s subtitles, notices and the panel's own ways.
-        private static readonly string[] UiFromOutput = { "Subtitles", "NewsTo", "WarNewsTo", "TerritoryNews", "UseGameFeed", "PanelShowsAll", "PanelSlowsTime", "PanelTimeScale", "ReplaceEnrageSettings" };
+        private static readonly string[] UiFromOutput = { "Subtitles", "NewsTo", "AroundTownStaysSeconds", "WarNewsTo", "TerritoryNews", "UseGameFeed", "PanelShowsAll", "PanelSlowsTime", "PanelTimeScale", "ReplaceEnrageSettings" };
 
         /// A section's rows: every setting but the keys (they are all on the Hotkeys page) and, from [Output], what the UI page shows.
         private static List<Row> SectionRows(IniSection s)
@@ -795,7 +795,7 @@ namespace EnrageWestworld.InGame
                 rows.AddRange(t);
             }
             Func<string[], List<Row>> from = keys => keys.Select(k => _ours.FindKey(k)).Where(e => e != null && !IsOurKey(e.Key)).Select(e => new Row { E = e }).ToList();
-            List<Row> said = from(new[] { "Subtitles", "NewsTo", "AroundTownStaysSeconds", "TownRegard", "WarNewsTo", "TerritoryNews", "UseGameFeed" }), panel = from(new[] { "PanelShowsAll", "PanelSlowsTime", "PanelTimeScale", "ReplaceEnrageSettings" });
+            List<Row> said = from(new[] { "Subtitles", "NewsTo", "AroundTownStaysSeconds", "WarNewsTo", "TerritoryNews", "UseGameFeed" }), panel = from(new[] { "PanelShowsAll", "PanelSlowsTime", "PanelTimeScale", "ReplaceEnrageSettings" });
             if (said.Count > 0)
             {
                 rows.Add(new Row { Heading = "Subtitles and notices" });
