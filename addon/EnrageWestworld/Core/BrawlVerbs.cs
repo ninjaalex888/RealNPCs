@@ -103,6 +103,7 @@ namespace EnrageWestworld.Core
         public static bool RepayOn = true;     // from the settings
         public const string RepayKind = "welshpay", Repaid = "welshpaid";
         public const long RepayDays = 30;
+        public const long RepayAfterMinutes = 60;   // a game hour at least before you can make it good
 
         /// Whether you've paid him since then (a "welshpaid" with you the doer, him the one paid).
         public static bool RepaidSince(List<Happening> log, string id, long since)

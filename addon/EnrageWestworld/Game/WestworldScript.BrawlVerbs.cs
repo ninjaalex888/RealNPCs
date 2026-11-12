@@ -92,8 +92,9 @@ namespace EnrageWestworld.InGame
                     string id, name;
                     if (!LastingId(p, out id, out name) || id == null || _wrOffered.Contains(id + "|" + now / 60000))
                         continue;
-                    if (BrawlVerbs.UnpaidWelsh(_store.WorldLog, id, _store.LastGameMin) == null)
-                        continue;
+                    Happening owed = BrawlVerbs.UnpaidWelsh(_store.WorldLog, id, _store.LastGameMin);
+                    if (owed == null || _store.LastGameMin - owed.At < BrawlVerbs.RepayAfterMinutes)
+                        continue;   // not straight after: the welsh stands a while first (else it would mean nothing)
                     _wrOffered.Add(id + "|" + now / 60000);
                     _wrTo = p;
                     _wrAgainAt = now + 30000;
