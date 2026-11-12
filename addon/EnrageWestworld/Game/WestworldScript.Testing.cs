@@ -1040,6 +1040,8 @@ namespace EnrageWestworld.InGame
                     _nextTickerUpdate = 0;
                     said = "the next thoughts are coming up beside the main one";
                     return null;
+                case "holidays":
+                    return HolidayRoutinesTest(out said);   // WestworldScript.HolidayRoutines.cs (LIVES item 1f)
                 case "barber":
                     return BarberTest(out said);   // WestworldScript.BarberHears.cs (LIVES item 1e)
                 case "dreamwake":

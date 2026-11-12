@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 465;
+        public const int CurrentVersion = 466;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -407,6 +407,7 @@ namespace EnrageWestworld.Core
         public int ReturnersPerTown = Core.Returners.PerTownAsBuilt;  // [World] at most this many returners with an outfit in one town
         public int LooksReadDepth = 1;      // [World] the Testing row "Read the looks of the people near you" only: 1 counts the pieces, 2 reads them, 3 their tints, 4 their kinds (the recognition plan's Stage 2)
         public bool RegularsRoutines = true;   // [World] the town keeps time: who a passer-by becomes follows the hour and the spot (the drinkers at the saloon of an evening, the churchgoers in church on Sunday morning, the early up at dawn, only the owls out at night); a new regular is made to fit the spot, and a regular out of their hour thinks so (Core/Routines.cs; roadmap 17; SIXDAY item 5a; settings version 211)
+        public bool HolidayRoutines = true;   // [World] with RegularsRoutines and HistoricalAccuracy: the town keeps the holidays of the real calendar in who a passer-by becomes: Easter and Christmas fill the church and shut the store, the Fourth fills the street, Thanksgiving sends them home (Core/Routines.cs OnHoliday; LIVES item 1f) (settings version 466)
         public bool RumoursTravel = true;
         public bool Newspaper = true;
         public bool Letters = true;
@@ -1108,6 +1109,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 466)
+                    log?.Invoke("Settings: new in this version: [World] HolidayRoutines (on): the town keeps the holidays in who you find where: Easter and Christmas at church, the Fourth in the street, Thanksgiving at home.");
                 if (s.SettingsVersion < 465)
                     log?.Invoke("Settings: new in this version: [Mind] BarberHears (on): the barber's thoughts come from what his chair hears: the town's quarrels, courtships, deaths and the stranger's deeds.");
                 if (s.SettingsVersion < 464)
@@ -2350,6 +2353,7 @@ b.AppendLine("Returners = " + B(Returners) + "   ; (off as it comes, in testing)
             b.AppendLine("ReturnersPerTown = " + ReturnersPerTown + "   ; with Returners: at most this many returners with an outfit of their own in one town (1-40)");
             b.AppendLine("LooksReadDepth = " + LooksReadDepth + "   ; the Testing row \"Read the looks of the people near you\" only (nothing else reads a body's clothes): 1 counts the pieces, 2 reads each piece, 3 adds its tints, 4 adds its kind");
                         b.AppendLine("RegularsRoutines = " + B(RegularsRoutines) + "   ; the town keeps time: who a passer-by becomes follows the hour and the spot (the drinkers at the saloon of an evening, the churchgoers in church on Sunday morning, the early risers at dawn, only the night owls out late); nobody walks across town for it, and a regular caught out of their hour thinks so");
+                        b.AppendLine("HolidayRoutines = " + B(HolidayRoutines) + "   ; with RegularsRoutines and HistoricalAccuracy on: the town keeps the real calendar's holidays in who a passer-by becomes (nobody walks anywhere): Easter and Christmas mornings fill the church past a Sunday's and shut the store all day, Christmas afternoon keeps people home, Christmas Eve has its evening service, the Fourth fills the street and the saloon by evening, Thanksgiving's store shuts at noon, New Year's Eve keeps the saloon late; false: every holiday is a weekday");
             b.AppendLine("RumoursTravel = " + B(RumoursTravel) + "   ; word of your deeds travels town to town and grows in the telling");
             b.AppendLine("Newspaper = " + B(Newspaper) + "   ; your deeds and the town talk turn up in enRAGE's newspapers");
             b.AppendLine("Letters = " + B(Letters) + "   ; letters wait for you at post offices (read them with ReaderKey)");

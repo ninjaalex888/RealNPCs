@@ -122,10 +122,75 @@ namespace EnrageWestworld.Core
                     else f = p.NightOwl ? 60 : p.Drinker ? 45 : 8;
                     break;
             }
+            string hol = HolidayNow();
+            if (hol != null)
+                f = OnHoliday(p, spot, hol, hour, d, f);
             if (p.EarlyRiser && d == "night" && spot != "street") f -= 25;
             if (p.NightOwl && d == "dawn") f -= 20;
             if (p.Old && d == "night") f -= 15;
             return Math.Max(0, Math.Min(100, f));
+        }
+
+        // ---- the holidays (LIVES item 1f, 2026-11-12; [World] HolidayRoutines, settings version 466) -----------------------
+        // The town kept Sunday (church in the morning, the store shut) but no holiday: Christmas morning found the same faces
+        // at the store counter as any Monday. A holiday is a community's shared rhythm (Durkheim's collective effervescence: the
+        // days a town is most itself), and in 1899 the big ones emptied the shops and filled the church or the street. Now, by
+        // the real calendar (Core/Calendar.cs) and only through who a passer-by is cast as (nobody walks anywhere, no crowd is
+        // gathered): Easter and Christmas mornings fill the church past a Sunday's and shut the store all day, and Christmas
+        // afternoon keeps people home; Christmas Eve's evening service; Good Friday's church; the Fourth fills the street and,
+        // by evening, the saloon, the store shut from noon; Thanksgiving shuts the store from noon, a morning service, then home
+        // to the table; New Year's Eve keeps the saloon late. Off in Core so the goldens stand; national holidays only.
+
+        /// [World] HolidayRoutines: set by the game from the settings.
+        public static bool HolidaysOn;
+
+        /// The holiday the clock says it is today (InnerLife's real calendar), national ones only; null with the switch or the
+        /// history off, or none.
+        public static string HolidayNow()
+        {
+            if (!HolidaysOn || !InnerLife.Historical || InnerLife.ClockMonth <= 0 || InnerLife.ClockDay <= 0)
+                return null;
+            Holiday h = Calendar.Today(InnerLife.CalendarYear > 0 ? InnerLife.CalendarYear : InnerLife.ClockYear, InnerLife.ClockMonth, InnerLife.ClockDay, null);
+            return h != null ? h.Key : null;
+        }
+
+        /// The fit bent by the holiday.
+        public static int OnHoliday(Profile p, string spot, string hol, int hour, string d, int f)
+        {
+            bool morning = hour >= 8 && hour < 12, afternoonOn = hour >= 12 && hour < 18, evening = hour >= 18 && hour < 23;
+            switch (hol)
+            {
+                case "easter":
+                case "christmas":
+                    if (spot == "church" && morning) return p.Churchgoer ? 97 : p.Old ? 75 : 40;   // the year's fullest pews: even the once-a-year
+                    if (spot == "store") return p.Indoors ? 10 : 6;   // shut all day
+                    if (spot == "saloon" && morning) return Math.Min(f, p.Churchgoer ? 2 : 15);
+                    if (hol == "christmas" && afternoonOn && (spot == "street" || spot == "saloon")) return Math.Max(0, f - 30);   // home to the table
+                    return f;
+                case "goodfriday":
+                    if (spot == "church" && (morning || afternoonOn)) return p.Churchgoer ? 70 : p.Devout ? 85 : f;
+                    if (spot == "saloon" && p.Churchgoer) return Math.Min(f, 10);
+                    return f;
+                case "christmaseve":
+                    if (spot == "church" && evening) return p.Churchgoer ? 80 : p.Old ? 45 : 18;
+                    if (spot == "store" && afternoonOn) return Math.Min(100, f + 15);   // the last of the shopping
+                    return f;
+                case "fourth":
+                    if (spot == "street" && (morning || afternoonOn || evening)) return Math.Min(95, f + 15);   // the parade, the speeches, the fireworks
+                    if (spot == "saloon" && evening) return p.Devout ? f : Math.Min(95, f + 15);
+                    if (spot == "store" && hour >= 12) return Math.Min(f, 20);
+                    return f;
+                case "thanksgiving":
+                    if (spot == "church" && morning) return p.Churchgoer ? 60 : f;
+                    if (spot == "store" && hour >= 12) return Math.Min(f, 10);
+                    if ((spot == "street" || spot == "saloon") && afternoonOn) return Math.Max(0, f - 20);
+                    return f;
+                case "newyearseve":
+                    if (spot == "saloon" && (evening || d == "night")) return p.Devout ? f : Math.Min(95, f + 20);
+                    return f;
+                default:
+                    return f;
+            }
         }
 
         /// Where their routine would have them now, in words, for the F7 line and the log: "the saloon", "church",
