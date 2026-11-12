@@ -302,6 +302,15 @@ namespace EnrageWestworld.Core
         private static readonly string[] Yes = { "I'm asking, {b}. Will you walk out with me? Proper?", "Yes. Yes, you fool. Yes." };
         private static readonly string[] No = { "So it's no, then.", "It's no. I'm sorry, {a}. Truly." };
 
+        /// Whether a reason's exchange is a linked one (the worrier and the real person at the other end: MakeLinked), read off
+        /// Links.Linkable so a new linked kind can't be missed. The game's routing listed debt, feud and courting by hand and
+        /// left out cards when FIVEDAY item 32a made it linked: the gambler's loan scene was chosen as a reason and then never
+        /// played (Make has no "x:cards"; HARDEN item 3, a loose end since SEAMS). Behind [Mind] GamblersBorrow, as the lender is.
+        public static bool IsLinked(string kind)
+        {
+            return kind != null && kind.StartsWith("x:") && Links.Linkable(kind.Substring(2));
+        }
+
         /// A meeting between a worrier (A) and the real person at the other end of their worry (B): "x:debt", "x:feud",
         /// "x:courting". The stage and how it will end come from the worrier's own run (the same as their thoughts).
         public static Scene MakeLinked(string kind, Someone a, Someone b, string aName, string bName, long day, string seed)

@@ -34,6 +34,7 @@ namespace EnrageWestworld.InGame
             public int ThiefHealth;
             public Ped Lawman;            // a lawman who gave chase (LawChases)
             public bool PlayerMark;       // your own pocket (the lift, WestworldScript.Lift.cs)
+            public bool Test;             // a Testing row's lift: your money really goes and comes back, but nobody is marked for it (HARDEN item 3)
             public int Amount;            // what he took from you, in cents
             public Blip Blip;             // his red mark on the map (the lift)
             public int LawSince, LawLookAt;

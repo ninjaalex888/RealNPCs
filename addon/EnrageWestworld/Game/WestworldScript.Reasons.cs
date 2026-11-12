@@ -801,7 +801,7 @@ namespace EnrageWestworld.InGame
                 bool atWorst = (InnerLife.WorryNow(done.P, day, out wk, out wst, out wg) && wst == 2) || done.Hurt != null;   // sore from today, too
                 SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(doer.Id) && t.Has(done.Id));
                 string fn = cast.Names[0] ?? Person.FirstOf(doer.Name), sn = cast.Names[1] ?? Person.FirstOf(done.Name);
-                if (note && (kind == "x:debt" || kind == "x:feud" || kind == "x:courting") && InnerLife.StageFor(doer.Id, day) == 3)
+                if (note && Exchanges.IsLinked(kind) && InnerLife.StageFor(doer.Id, day) == 3)
                 {
                     // its ending, played: not again (Reasons.Between passes over an Ended link)
                     long arc = InnerLife.ArcFor(doer.Id, day);
@@ -809,7 +809,7 @@ namespace EnrageWestworld.InGame
                     if (ended != null)
                         ended.Ended = true;
                 }
-                return kind == "x:debt" || kind == "x:feud" || kind == "x:courting"
+                return Exchanges.IsLinked(kind)   // (x:cards too: the gambler and his lender, HARDEN item 3)
                     ? Exchanges.MakeLinked(kind, doer, done, fn, sn, day, seed)   // the worrier (A) and the one at the other end (B)
                     : Exchanges.Make(kind, doer, done, fn, sn, day, atWorst, tie, seed);
             }

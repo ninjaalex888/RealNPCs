@@ -176,7 +176,7 @@ namespace EnrageWestworld.InGame
                 {
                     var stood = new HashSet<string>();
                     Interact.StoodByYou(_store.WorldLog, _store.LastGameMin, stood);   // once, at the menu: never per frame
-                    between = BrawlVerbs.Between(stood.Contains(lw.Id), Interact.SavedLately(_store.WorldLog, lw.Id, _store.LastGameMin));
+                    between = BrawlVerbs.Between(stood.Contains(lw.Id) || (_engine != null && stood.Contains(_engine.WorryIdOf(lw.Id))), Interact.SavedLately(_store.WorldLog, lw.Id, _store.LastGameMin));   // (his first id too, if enRAGE took him up since: HARDEN item 3)
                 }
             }
             return BrawlVerbs.Rows(NameOfFighter(_bvLoser), _bvBacker != null ? Person.FirstOf(_bvBacker.Name) : null, backed, other, MONEY._MONEY_GET_CASH_BALANCE(), between);

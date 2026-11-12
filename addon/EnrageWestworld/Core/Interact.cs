@@ -662,10 +662,13 @@ namespace EnrageWestworld.Core
         {
             if (log == null || id == null)
                 return false;
+            // one enRAGE took up since you saved him: the debt is under his first id, the resident's (HARDEN item 3; the name card
+            // already looked it up so, but the allies' aid, the word sent and the fight's menu asked by the id he has now)
+            string wid = InnerLife.WorryIdOf != null ? InnerLife.WorryIdOf(id) : id;
             for (int i = log.Count - 1; i >= 0; i--)
             {
                 Happening e = log[i];
-                if (!Owing(e) || e.TargetId != id || e.At > now || now - e.At >= SavedMinutes)
+                if (!Owing(e) || (e.TargetId != id && e.TargetId != wid) || e.At > now || now - e.At >= SavedMinutes)
                     continue;
                 return true;
             }

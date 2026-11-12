@@ -95,6 +95,7 @@ namespace EnrageWestworld.Core
 			{
 				int num = Store.Rewind(now);
 				ForgetThinking();   // what the minds thought after the cut hasn't happened either (Engine.Minds.cs)
+				_leavingDay = -1;   // today's leavers found again: one seen off after the cut is back in town (the review of HARDEN item 2: DeparturesDaily reads yesterday's list)
 				GhostsNoted(now);   // what the rewind kept as ghosts, logged; the rewound ties remembered by both sides (Engine.Ghosts.cs)
 				Log("Game time went back (" + Store.WasAt + " -> " + now + "): an older save was loaded. Rolled back " + num + " things that hadn't happened yet.");
 			}

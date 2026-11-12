@@ -24,6 +24,7 @@ namespace EnrageWestworld.InGame
         private int _lifterSince, _liftLookAt, _lifts, _liftsBack, _lifterWalkAt, _lifterGiveUpMs = 30000, _lifterGainAt;
         private float _lifterNearest = 999f;
         private uint _lifterModel;
+        private bool _lifterTest;   // the walk-up was a Testing row's (HARDEN item 3: a test lift marked the man a pickpocket, and "Robbed you" if he got away)
         private Ped _liftRun;
         private int _liftRunAt, _liftRunTake;
         private string _liftLast;
@@ -117,6 +118,7 @@ namespace EnrageWestworld.InGame
                 NoteBold(who != null ? who.Name : "a man", "lift", watcher, me, seed);
             }
             _lifter = pick;
+            _lifterTest = test;
             _lifterSince = now;
             _lifterWalkAt = now;
             _lifterGainAt = now;
@@ -201,14 +203,17 @@ namespace EnrageWestworld.InGame
             _theft = new Theft
             {
                 Thief = p, Mark = null, MarkName = null, Town = _placeTown, Started = now, ThiefHealth = Math.Max(1, ENTITY.GET_ENTITY_HEALTH(h)),
-                PlayerMark = true, Amount = take
+                PlayerMark = true, Amount = take, Test = _lifterTest
             };
             _thieves.Add(h);
             _liftRun = p;
             _liftRunAt = now + 1200;   // a moment's pause, then he runs
             _liftRunTake = take;
             Log.Write("LIFT the man bumped you and took " + Cents(take) + " (cash was " + Cents(cash) + ")" + (line != null ? "; he said " + line : ""));
-            MarkPickpocket(p);
+            if (!_lifterTest)
+                MarkPickpocket(p);   // (a test lift marks nobody: Test rows leave nothing lasting, as the SEAMS round made the rest)
+            else
+                Log.Write("LIFT a test: he isn't marked a pickpocket for it");
         }
 
         private const string PickpocketMark = "pickpocket";
@@ -305,7 +310,8 @@ namespace EnrageWestworld.InGame
             {
                 Feed.Notice("Pickpocketed", "He got away with your " + Cents(t.Amount) + ".");
                 _liftLast = "got away with " + Cents(t.Amount);
-                RobbedYou(t.Thief, true);
+                if (!t.Test)
+                    RobbedYou(t.Thief, true);   // (a test's thief isn't "Robbed you" on his card)
             }
             else
             {
