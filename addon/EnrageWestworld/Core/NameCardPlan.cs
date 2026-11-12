@@ -66,7 +66,11 @@ namespace EnrageWestworld.Core
         public double MeanUs { get; private set; }
         public int Rises { get; private set; }   // steps up this session (F7, and the log's line)
         public int EaseWaitMs { get { return _easeWaitMs; } }
-        private int _overMs, _underMs, _easeWaitMs = EaseAfterMs, _sinceEaseMs = int.MaxValue / 2, _calmMs;
+        private int _overMs, _underMs, _easeWaitMs = EaseAfterMs, _sinceEaseMs = int.MaxValue / 2, _calmMs, _bandMs;
+        public const int BandEaseTimes = 3;
+        /// How long a card keeps being shed, or kept, before it may change (the review of item 1: two people swapping eighth and
+        /// ninth place as they walk pulsed in and out every quarter second).
+        public const int ShedHoldMs = 1000;
 
         public CardBudget(int budgetUs) { BudgetUs = budgetUs; }
 
@@ -121,9 +125,21 @@ namespace EnrageWestworld.Core
             }
             else
             {
+                // between the ease share and the budget: neither climbing nor easing, except that a long spell here eases a step
+                // too, at a third of the pace (the review of item 1: a street whose floor sat in this band kept the line under
+                // names off for good); a rise from that is the see-saw the doubled wait already slows
                 _overMs = 0;
                 _underMs = 0;
+                _bandMs += dtMs;
+                if (_bandMs >= _easeWaitMs * BandEaseTimes && Level > 0)
+                {
+                    Level--;
+                    _bandMs = 0;
+                    _sinceEaseMs = 0;
+                }
+                return Level != was;
             }
+            _bandMs = 0;
             return Level != was;
         }
 

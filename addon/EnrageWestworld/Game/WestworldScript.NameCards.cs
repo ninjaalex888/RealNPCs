@@ -47,6 +47,7 @@ namespace EnrageWestworld.InGame
             // body is that doesn't change with its handle and model, kept a while (its gang, its trade; CardKindMs), and why the
             // last try found nothing to say (for the probe's line)
             public bool Shed;
+            public int ShedSince = -100000;   // when Shed last changed: it holds CardBudget.ShedHoldMs (no pulsing at the eighth place)
             public string Gang, Job, Why;
             public int KindAt = -100000;
         }
@@ -66,6 +67,7 @@ namespace EnrageWestworld.InGame
         // every frame whether the meter is on or not (a Stopwatch read is a few tens of nanoseconds)
         private CardBudget _cardBudget;
         private int _cardBudgetLogAt = -100000, _cardBudgetLogs, _cardBackstops;
+        private double _cardWordsUs;   // the last pass's words, counted once into the frame the budget sees (the review of item 1)
         private static readonly double UsPerTick = 1000000.0 / System.Diagnostics.Stopwatch.Frequency;
         private const int CardKindMs = 30000;   // a body's gang and trade asked again after this (a handle the game gives a new model is a new card)
         private static readonly Dictionary<uint, bool> HumanModel = new Dictionary<uint, bool>();   // IS_PED_HUMAN by model: a model is human or it isn't
@@ -121,7 +123,6 @@ namespace EnrageWestworld.InGame
                 _nameCardsUp = 0;
                 return;
             }
-            long cardsAt = System.Diagnostics.Stopwatch.GetTimestamp();   // the whole frame of cards, for the budget
             if (_cardBudget == null)
                 _cardBudget = new CardBudget(_cfg.NameCardsBudgetUs);
             _cardBudget.BudgetUs = _cfg.NameCardsBudgetUs;
@@ -150,10 +151,16 @@ namespace EnrageWestworld.InGame
             // stage tag went the moment her Fondness bar came, the frame's text all spent on names)
             int keep = !_cfg.NameCardsAlways ? 0 : (_cfg.ShowWakeStages && _cfg.WestWorld ? WakeTagMax : 0) + (_cfg.ShowMinds ? 12 : 0) + 2;
             bool held = false;   // cards that wanted drawing and had no text left (logged once a minute: what spent it)
+            // the budget sees the loop below and the words worked out (what its steps can shed), not the pool walk of the 250 ms pass,
+            // which no step makes cheaper: counted, it could hold the mean up on a street with nothing to shed, and the backstop's
+            // clock, started before that pass, cut every card on a frame it ran (the review of item 1)
+            long cardsAt = System.Diagnostics.Stopwatch.GetTimestamp();
+            double wordsUs = _cardWordsUs;
+            _cardWordsUs = 0;
             foreach (NameCard c in _nameCardsNow)
             {
                 int h = c.Handle;
-                if (budget.Backstop((System.Diagnostics.Stopwatch.GetTimestamp() - cardsAt) * UsPerTick))
+                if (up >= NameCardFloor && budget.Backstop((System.Diagnostics.Stopwatch.GetTimestamp() - cardsAt) * UsPerTick))   // (the nearest few always drawn)
                 {
                     _cardBackstops++;   // a gross overrun (a hitch, not the mean): the rest of this frame's cards wait (HARDEN item 1)
                     break;
@@ -313,7 +320,7 @@ namespace EnrageWestworld.InGame
                 SubTicks(ref _psCardsDraw, "name cards: drawing", tDraw);
             }
             _nameCardsUp = up;
-            NameCardsBudgetStep((System.Diagnostics.Stopwatch.GetTimestamp() - cardsAt) * UsPerTick, dtMs, now);
+            NameCardsBudgetStep((System.Diagnostics.Stopwatch.GetTimestamp() - cardsAt) * UsPerTick + wordsUs, dtMs, now);
             if (held && (now - _nameHeldLogAt > 60000 || now < _nameHeldLogAt))
             {
                 _nameHeldLogAt = now;
@@ -418,21 +425,25 @@ namespace EnrageWestworld.InGame
                     if (!NameCardFill(p, c, everyone))
                     {
                         c.Name = null;
-                        c.Why = d <= strangerRange ? (Natives.StoryModel(p) ? "the game's own" : !IsGrownUp(p) ? "not grown" : !everyone ? "not known (NameCards known)" : "nothing to say") : null;
+                        c.Why = "";   // nothing to say; the reason is worked out only for the probe's line (the review of item 1)
                     }
                     else
                         c.Why = null;
                     long wTicks = System.Diagnostics.Stopwatch.GetTimestamp() - wAt;
                     wordsTicks += wTicks;
                     wordsUs += wTicks * UsPerTick;
+                    _cardWordsUs += wTicks * UsPerTick;
                 }
                 if (c.Name == null)
                 {
-                    if (probe && d <= strangerRange && c.Why != null)
+                    if (probe && d <= strangerRange)
                     {
+                        // from this card's own last try (a few natives, on the probe only); "not worked out yet" for one still
+                        // waiting its turn, so the line adds up (the review of item 1)
+                        string r = c.Why == null ? "not worked out yet" : Natives.StoryModel(p) ? "the game's own" : !IsGrownUp(p) ? "not grown" : !everyone ? "not known (NameCards known)" : "nothing to say";
                         int n0;
-                        why.TryGetValue(c.Why, out n0);
-                        why[c.Why] = n0 + 1;
+                        why.TryGetValue(r, out n0);
+                        why[r] = n0 + 1;
                         if (models.Count < 6)
                             models.Add(Natives.ModelName(p));
                     }
@@ -445,11 +456,22 @@ namespace EnrageWestworld.InGame
             }
             found.Sort(NearerFirst);   // in place, one comparer for good (was OrderBy and Take: an enumerator and a buffer a pass)
             int most2 = Math.Min(found.Count, _cfg.NameCardsAlways ? NameCardsMostAlways : NameCardsMost);
-            int kept = budget.Most(most2);   // the budget's last step: the nearest few keep their card, the rest fade out (HARDEN item 1)
+            // the budget's last step: the nearest few of those up on screen keep their card, the rest of those up fade out (HARDEN item
+            // 1). Ranked among the cards drawn lately, not all in range: the nearest eight could be indoors or behind you, and the
+            // ones in front fade (the review of item 1). A card off screen or behind a wall isn't shed (it costs nothing now) and
+            // isn't counted. A change holds a second, so two people swapping eighth and ninth don't pulse.
+            int kept = budget.Most(most2), shown = 0;
             for (int i = 0; i < most2; i++)
             {
-                found[i].Shed = i >= kept;
-                _nameCardsNow.Add(found[i]);
+                NameCard fc = found[i];
+                bool up = fc.Shed ? !fc.Blocked : _nameCardsFrame - fc.SeenFrame <= 10 && fc.Alpha > 0f;   // one shed and faded still counts while no wall is in the way (else it would come back, and go, by turns)
+                bool want = up && shown++ >= kept;
+                if (want != fc.Shed && (now - fc.ShedSince >= CardBudget.ShedHoldMs || now < fc.ShedSince || kept >= most2))
+                {
+                    fc.Shed = want;
+                    fc.ShedSince = now;
+                }
+                _nameCardsNow.Add(fc);
             }
             if (wordsTicks > 0)
                 SubTicks(ref _psCardsWords, "name cards: words", wordsTicks);   // taken off "who's near", the way a part is
