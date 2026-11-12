@@ -144,6 +144,7 @@ namespace EnrageWestworld.Core
             return st;
         }
 
+        public const int DeedsKnownKept = 50;   // a person's deeds of yours known, and seen, kept: the newest (Trim; HARDEN item 2)
         public const int MaxResidents = 700;   // room for the town regulars (RegularsPerTown in each town) and the rest
 
         public Resident FindResident(string id)
@@ -623,6 +624,20 @@ namespace EnrageWestworld.Core
             Cap(Fallen, 150);
             Cap(Debts, 60);
             Cap(Transfers, 30);
+            // each person's deeds of yours known and seen, the newest DeedsKnownKept (HARDEN item 2: never trimmed, they kept the
+            // ids of deeds long gone from Deeds' 250, and every look that asks whether someone knows a deed walks them; the soak of
+            // a copy of Lex's save had the tick climbing over 60 game days). Anyone who knew of you still does: a count read as
+            // "knows something of him" stays above nought.
+            if (People != null)
+                foreach (PersonState st in People.Values)
+                {
+                    if (st == null)
+                        continue;
+                    if (st.KnownDeeds != null)
+                        Cap(st.KnownDeeds, DeedsKnownKept);
+                    if (st.SawDeeds != null)
+                        Cap(st.SawDeeds, DeedsKnownKept);
+                }
             Weddings.RemoveAll(w => w.Done && LastGameMin - w.At > 43200);
             Avengers.RemoveAll(a => a.Stage == 3 && LastGameMin - a.DueAt > 43200);
             if (Replies != null)

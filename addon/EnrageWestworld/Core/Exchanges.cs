@@ -305,7 +305,7 @@ namespace EnrageWestworld.Core
         /// Whether a reason's exchange is a linked one (the worrier and the real person at the other end: MakeLinked), read off
         /// Links.Linkable so a new linked kind can't be missed. The game's routing listed debt, feud and courting by hand and
         /// left out cards when FIVEDAY item 32a made it linked: the gambler's loan scene was chosen as a reason and then never
-        /// played (Make has no "x:cards"; HARDEN item 3, a loose end since SEAMS). Behind [Mind] GamblersBorrow, as the lender is.
+        /// played (Make has no "x:cards"; HARDEN item 3, a loose end since SEAMS). Behind [Scenes] GamblersBorrow, as the lender is.
         public static bool IsLinked(string kind)
         {
             return kind != null && kind.StartsWith("x:") && Links.Linkable(kind.Substring(2));

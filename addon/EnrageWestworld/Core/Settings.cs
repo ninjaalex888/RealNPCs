@@ -1103,7 +1103,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
                 if (s.SettingsVersion < 459)
-                    log?.Invoke("Settings: new in this version: the gambler's loan (with [Mind] GamblersBorrow, on): a gambler at the worst of his cards now meets the man he borrows from, as was meant since 0.7.25 and never played.");
+                    log?.Invoke("Settings: new in this version: the gambler's loan (with [Scenes] GamblersBorrow, on): a gambler at the worst of his cards now meets the man he borrows from, as was meant since 0.7.25 and never played.");
                 if (s.SettingsVersion < 458)
                     log?.Invoke("Settings: new in this version: [Display] NameCardsBudgetUs (400): the name cards keep to their own share of a frame, shedding work in steps when a street is busy.");
                 if (s.SettingsVersion < 457)
