@@ -18,6 +18,7 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private string _sbOfferedFor, _sbLast;
+        private readonly System.Collections.Generic.HashSet<string> _sbDeedDays = new System.Collections.Generic.HashSet<string>();   // "pair|day": a peace deed made (SEAMS item 16)
         private Ped _sbA, _sbB;
         private Action _aStepBetween;
         private int _sbOffered, _sbPutOff, _sbMadeUp, _sbShoved, _sbNextLook;
@@ -121,8 +122,10 @@ namespace EnrageWestworld.InGame
                 }
                 _sbLast = (second ? "made it up: " : "put off: ") + how;
                 Log.Write("STEP BETWEEN " + na + " and " + nb + ": " + _sbLast);
-                if (_cfg.StepBetweenKnown && _cfg.Deeds && _engine != null && !TestPerson(a.Handle) && !TestPerson(b.Handle))
+                string pairDay = (t != null ? t.A + "|" + t.B : na + "|" + nb) + "|" + g / 1440;
+                if (_cfg.StepBetweenKnown && _cfg.Deeds && _engine != null && !TestPerson(a.Handle) && !TestPerson(b.Handle) && _sbDeedDays.Add(pairDay))
                 {
+                    // once a pair a game day (review 4: a pair put off again and again was a peace deed each time)
                     // a quarrel you stopped is a peace the town hears of, as a fight you broke up is (SEAMS item 16; BreakUpKnown's deed)
                     Vector3 pos = me.Position;
                     NoteDeedMinds(_engine.OnDeed(Deeds.Make("peace", "a quarrel", _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, 0, 25f)), WitnessesNear(pos, 0, 25f), g), pos, 0);

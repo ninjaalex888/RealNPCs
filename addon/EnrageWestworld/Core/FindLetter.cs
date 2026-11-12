@@ -19,6 +19,20 @@ namespace EnrageWestworld.Core
         public const int LookMs = 1000, PromptMs = 8000, AgainMs = 30000, ScanMs = 10000;
         public const float NearMetres = 4f;
         public const string HeldMark = "letterheld", GivenMark = "lettergiven";   // PersonState marks on the one waiting (kept in the save)
+        public const string ArcMark = "letterarc:";   // + the worry's arc the letter was taken in: given in another run, it settles nothing (review 4)
+
+        /// The arc a carried letter belongs to, from his marks; -1 for none.
+        public static long ArcOf(IList<string> told)
+        {
+            if (told != null)
+                foreach (string t in told)
+                {
+                    long a;
+                    if (t != null && t.StartsWith(ArcMark, System.StringComparison.Ordinal) && long.TryParse(t.Substring(ArcMark.Length), out a))
+                        return a;
+                }
+            return -1;
+        }
 
         /// The towns with a station agent (Core/Posts.cs, kind "station").
         public static readonly string[] Towns = { "Rhodes", "Saint Denis", "Blackwater", "Strawberry", "Armadillo", "Tumbleweed", "Van Horn" };

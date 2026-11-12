@@ -56,7 +56,8 @@ namespace EnrageWestworld.Core
         // cared for more than by being told, and the walk home is the caring done.
         public static bool WalkHomeMendsOn = true;   // from the settings
 
-        /// Whether seeing this one home mends their worry: in drink, the worry the drink, worse or at its crisis (not begun, not ended).
+        /// Whether seeing this one home mends their worry: the worry the drink, worse or at its crisis (not begun, not ended).
+        /// `drunk`: the game side passes true (a man at his drinking worry is in drink enough; review 4).
         public static bool WalkHomeMends(bool drunk, string worry, int stage)
         {
             return WalkHomeMendsOn && drunk && worry == "drink" && stage >= 1 && stage <= 2;

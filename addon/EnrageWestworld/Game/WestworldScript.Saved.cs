@@ -113,12 +113,15 @@ namespace EnrageWestworld.InGame
         /// put down, the hogtied cut loose were known only to the one saved. Never the rope (its own "rescue"), never a test's.
         private void SavedKnown(int handle, string name, string how)
         {
-            if (!_cfg.SavedKnown || !_cfg.Deeds || _engine == null || SecondActs.HowKind(how) == "rope" || TestPerson(handle) || !ENTITY.DOES_ENTITY_EXIST(handle))
+            string hk = SecondActs.HowKind(how);
+            if (!_cfg.SavedKnown || !_cfg.Deeds || _engine == null || hk == "rope" || hk == "poster" || TestPerson(handle) || !ENTITY.DOES_ENTITY_EXIST(handle))
                 return;
             Vector3 pos = ENTITY.GET_ENTITY_COORDS(handle, true, true);
             long g = Bridge.Now();
             string who = name != null ? Person.FirstOf(name) : "a stranger";
-            NoteDeedMinds(_engine.OnDeed(Deeds.Make("saved", who, _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, handle, 25f)), WitnessesNear(pos, handle, 25f), g), pos, handle);
+            // the town's knowing only (rumour, paper, ledger): no "deed:" record and no witnesses' memories, which the "defend" record
+            // already gave (KindnessSeen) and would count twice in the town's standing (review 4)
+            _engine.OnDeed(Deeds.Make("saved", who, _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, handle, 25f)), null, g);
             Log.Write("SAVED " + who + ": a good deed the town will hear of (" + how + ")");
         }
 

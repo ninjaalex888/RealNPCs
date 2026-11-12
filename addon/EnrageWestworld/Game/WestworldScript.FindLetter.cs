@@ -85,8 +85,10 @@ namespace EnrageWestworld.InGame
             long day = _store.LastGameMin / 1440;
             foreach (Resident r in _store.Residents)
             {
-                if (r == null || r.Dead || r.Id == null || r.Town == null || r.Town == _placeTown || r.Name == null)
-                    continue;
+                if (r == null || r.Dead || r.Id == null || r.Town == null || r.Town == _placeTown || r.Name == null || r.Cast != null || _flOffered.Contains(r.Id + "|take"))
+                    continue;   // (never a test's cast; one declined this session doesn't hide the next: review 4)
+                if (_store.WorrySeedOf != null && _store.WorrySeedOf.ContainsValue(r.Id))
+                    continue;   // taken up by enRAGE: his marks live under another id (review 4)
                 PersonState st = _store.Find(r.Id);
                 if (st == null || st.Has(FindLetter.HeldMark) || st.Has(FindLetter.GivenMark) || !(st.Talks > 0 || st.KnowsName || st.ContactAt > 0))
                     continue;   // only one you've met, and one letter a person
@@ -120,6 +122,10 @@ namespace EnrageWestworld.InGame
             if (st == null || st.Has(FindLetter.HeldMark))
                 return;
             st.Mark(FindLetter.HeldMark);
+            st.Mark(FindLetter.ArcMark + InnerLife.ArcFor(e.AId, _store.LastGameMin / 1440));
+            Resident kept = _store.FindResident(e.AId);
+            if (kept != null)
+                _engine.KeepResident(kept, _store.LastGameMin);   // kept until it's delivered (review 4: a resident pruned took the mark with him)
             _flHeldHere = null;
             _flTaken++;
             if (_flAgent != null && _flAgent.Exists() && !_flAgent.IsDead)
@@ -133,16 +139,25 @@ namespace EnrageWestworld.InGame
         {
             PersonState st = _store.Find(e.AId);
             Ped to = _flTo, me = Game.Player.Character;
-            if (st == null || !st.Has(FindLetter.HeldMark) || st.Has(FindLetter.GivenMark) || to == null || !to.Exists() || to.IsDead)
+            if (st == null || !st.Has(FindLetter.HeldMark) || st.Has(FindLetter.GivenMark) || to == null || !to.Exists() || to.IsDead || TestPerson(to.Handle))
                 return;
+            long arcTaken = FindLetter.ArcOf(st.Told);
             st.Told.Remove(FindLetter.HeldMark);
+            st.Told.RemoveAll(t => t != null && t.StartsWith(FindLetter.ArcMark, StringComparison.Ordinal));
             st.Mark(FindLetter.GivenMark);
             string seed = e.AId + "|letter";
             string first = Person.FirstOf(e.AName ?? "He");
             TASK.TASK_TURN_PED_TO_FACE_ENTITY(to.Handle, me.Handle, 4000, 0f, 0f, 0f);
             string line = FindLetter.Reads(e.Extra, seed);
             Feed.Say(first, line, Speech.For(to.Handle, line, me.Handle, 0, 0, true, "relieved"), to.Handle, toYou: true);
-            _engine.SettleWorry(e.AId);   // the rest of his worry's run reads as ended well
+            long day = _store.LastGameMin / 1440;
+            Person wp = _engine.KinPerson(e.AId);
+            string wk;
+            int wstage;
+            bool wgood;
+            bool same = wp != null && InnerLife.WorryNow(wp, day, out wk, out wstage, out wgood) && wk == "letter" && InnerLife.ArcFor(e.AId, day) == arcTaken;
+            if (same)
+                _engine.SettleWorry(e.AId);   // the rest of his worry's run reads as ended well; a letter from a run that's over settles nothing new (review 4)
             RecordEvent("help", "player", "you", e.AId, e.AName, to.Position, me.Handle, me.Handle, to.Handle, FindLetter.Outcome);
             FolkRef ac = _bridge != null ? _bridge.AcquaintanceAt(to.Handle) : null;
             if (ac != null)
@@ -150,7 +165,7 @@ namespace EnrageWestworld.InGame
             _ticker.Push(first + ", thinking", FindLetter.After(seed), "near", to.Handle);
             _flGiven++;
             _flLast = "gave " + e.AName + " his letter";
-            Log.Write("LETTER you gave " + e.AName + " the letter from " + (e.Extra ?? "his kin") + ": his worry ends well");
+            Log.Write("LETTER you gave " + e.AName + " the letter from " + (e.Extra ?? "his kin") + (same ? ": his worry ends well" : ": late, his worry had run its course"));
         }
 
         private string FindLetterStatus()
