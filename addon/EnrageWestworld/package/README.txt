@@ -1,4 +1,4 @@
-RealNPCs 0.7.26 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.27 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -21,6 +21,56 @@ The settings are in RealNPCs.ini. It isn't in this zip: RealNPCs writes it the f
 load the game with the mod, in Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs. The
 settings panel (Alt+F or Alt+R) changes the same file.
 
+
+NEW IN 0.7.27
+-------------
+A fix release: no new features, the things that made 0.7.26 slower or quieter than it should
+be. Tested offline on a copy of a long-played save over 30 to 60 game days, not yet over long
+play, so if something misbehaves please send your log. 0.7.26 stays on the GitHub releases
+page.
+
+Smoother:
+- A stutter about once a minute that grew with your deeds is gone. Word of your deeds passing
+  friend to friend checked every person the add-on keeps, for every recent deed of yours; on a
+  long-played save it grew to a long hitch every half game hour. Now the same people hear of
+  it at a fraction of the cost.
+- The day's turn no longer works out every resident's worry twice (a hitch at midnight).
+- The name cards keep to their own share of a frame ([Display] NameCardsBudgetUs, 400; 0 = no
+  budget). In a heavy crowd they shed work a step at a time, first what can't be seen, then
+  the small line under names of people with nothing between you, then the farthest plain cards
+  fade. A card saying "Owes you", "Robbed you", "You owe them $1", "Mourns one you killed",
+  "You carry their letter", a trade or a gang keeps its line and stays. And the hitch just
+  after a load, the cards working out everyone within 50 m at once, is gone.
+- Fewer slow looks through the town's records (residents found by an index, crowds' pairs cut
+  by distance first).
+
+Fixed:
+- The world going quiet: a town event leading into the next (a wedding's shivaree) could stop
+  the rest of that half hour's world (the rumours, the weddings, the day's turn); a damaged
+  save could have stopped them for good.
+- The gambler's loan plays ([Scenes] GamblersBorrow): since 0.7.25 a gambler at the worst of
+  his cards was meant to ask the man he borrows from, and the scene never played.
+- A man you saved still owes you after enRAGE takes him up (the allies, the word sent, the
+  fight's menu).
+- The Testing rows leave nothing lasting, the lift too.
+
+The save:
+- It grows far more slowly with passers-by ([World] PeopleTrim, on). Once a load, when more
+  than a thousand are kept, the add-on lets go of the people it kept nothing of but a name (a
+  third of the people on a long-played save), never anyone met, named, remembered, owed,
+  marked, kin, waking, or in anyone else's ties, grudges, debts or worries. Looked at again,
+  they're made again as they were.
+- What each person knows of your deeds is kept to the fifty they learned most lately, and a
+  relative's hearsay to twelve (never a death).
+- Old bookkeeping is let go at the save: a man you stood surety for whose week ended while you
+  were away no longer stays on the books for good, finished kin visits a month old go, and
+  dated notes nobody reads any more are let go.
+
+The settings:
+- Sixty-eight settings were written in RealNPCs.ini under the wrong section (most [World] and
+  [Mind] features under [Scenes]); they're now where this README and the changelog always
+  said, and so are their rows in the settings panel. Your values are kept: the ini is read by
+  name, and rewritten in the new layout on the first load.
 
 NEW IN 0.7.26
 -------------
@@ -2235,6 +2285,20 @@ None of the others are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Sc
 console (F8) or Faster Looting (F9, F10). If the game or another mod already uses one, change it
 in the ini or the panel (e.g. ReaderKey = Ctrl+N).
 
+
+SETTINGS NEW IN 0.7.27 (each is in RealNPCs.ini with its comment)
+
+[Display]   NameCardsBudgetUs (400): the name cards' own share of a frame, in microseconds (400 =
+            0.4 ms of the add-on's 1 ms; the worst ten seconds seen in testing was 0.34): over it
+            for two seconds they shed work a step at a time, first what you can't see (fewer cards'
+            words a pass, the wall and head looks half as often), then the small line under the
+            names, then all but the nearest eight fade (a card that says what's between you, or a
+            trade, keeps its line and stays); they ease back when the street quietens. 0: no budget
+            (cards still worked out a few at a time)
+[World]     PeopleTrim (true): once a load, when more than a thousand people are kept, the records
+            of those nothing is kept of but a name (no word, feeling, memory, mark, debt, tie,
+            grudge, kin or waking) are let go, so the save stops growing with every passer-by looked
+            at; made again, the same, if they're looked at again. Off: everyone kept, as before
 
 SETTINGS NEW IN 0.7.26 (each is in RealNPCs.ini with its comment)
 

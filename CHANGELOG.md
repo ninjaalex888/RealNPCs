@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.7.27 (2026-11-12)
+
 - **The save grows far more slowly with passers-by** (`[World] PeopleTrim`, on; settings version 460). The add-on kept a full record of everyone it had ever looked at, even those it knew nothing of but a name (a third of the people kept on a long-played save; a few percent of the file). Once a load, when more than a thousand are kept, those records are let go, never anyone met, named, remembered, owed, marked, kin, waking, or named in anyone else's ties, grudges, debts or worries; if they're looked at again they're made again as they were (a short line of their name is all that stays), and a townsman already rolled not to wake isn't rolled again.
 - **The settings file and panel keep each setting in the section this changelog and the README always named** (settings version 460). Sixty-eight had been written under the wrong section of RealNPCs.ini, most [World] and [Mind] features under [Scenes]; they move, and so do their rows on the settings panel (most from Street scenes to World and people, and to The mind; the kin's thanks from Encounters to Street scenes). Your values are kept: the file is read by name, and rewritten in the new layout on the first load.
 - **A relative's hearsay is kept to the newest twelve** (never a death), and **the law breaking up a brawl** no longer stops when one fighter is counted on both sides.
