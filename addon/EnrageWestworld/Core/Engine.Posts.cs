@@ -171,7 +171,7 @@ namespace EnrageWestworld.Core
             SceneTie talk = Ties.TalkOf(Store.Ties, town, r.Id, now).FirstOrDefault();
             TownRumour heard = Store.TownRumours == null ? null : Store.TownRumours.Where(x => x != null && x.Town == town && x.Text != null && now - x.At >= 0 && now - x.At < 3 * 1440L)
                                                                                    .OrderByDescending(x => x.At).FirstOrDefault();
-            DeathEntry dead = Store.Deaths.Where(d => d != null && d.Town == town && d.Name != null && (d.Kind == "resident" || d.Kind == "folk") && d.Id != r.Id && now - d.At >= 0 && now - d.At < BarberHears.DeathDays * 1440L)
+            DeathEntry dead = Store.Deaths.Where(d => d != null && d.Town == town && d.Name != null && d.Kind == "resident" && d.Id != r.Id && now - d.At >= 0 && now - d.At < BarberHears.DeathDays * 1440L && Store.FindResident(d.Id) != null && !Store.FindResident(d.Id).Woman)   // a man of his town (he shaved men): a resident, whose sex is known
                                           .OrderByDescending(d => d.At).FirstOrDefault();
             return BarberHears.Thought(talk, heard != null ? heard.Text : null, heard != null ? heard.Fidelity : 100, dead != null ? dead.Name : null, seed);
         }

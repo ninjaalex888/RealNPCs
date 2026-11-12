@@ -163,12 +163,12 @@ namespace EnrageWestworld.Core
                 case "easter":
                 case "christmas":
                     if (spot == "church" && morning) return p.Churchgoer ? 97 : p.Old ? 75 : 40;   // the year's fullest pews: even the once-a-year
-                    if (spot == "store") return p.Indoors ? 10 : 6;   // shut all day
+                    if (spot == "store") return Math.Min(f, p.Indoors ? 10 : 6);   // shut all day (never above an ordinary night)
                     if (spot == "saloon" && morning) return Math.Min(f, p.Churchgoer ? 2 : 15);
                     if (hol == "christmas" && afternoonOn && (spot == "street" || spot == "saloon")) return Math.Max(0, f - 30);   // home to the table
                     return f;
                 case "goodfriday":
-                    if (spot == "church" && (morning || afternoonOn)) return p.Churchgoer ? 70 : p.Devout ? 85 : f;
+                    if (spot == "church" && (morning || afternoonOn)) return p.Devout ? 85 : p.Churchgoer ? 70 : f;
                     if (spot == "saloon" && p.Churchgoer) return Math.Min(f, 10);
                     return f;
                 case "christmaseve":
@@ -186,7 +186,7 @@ namespace EnrageWestworld.Core
                     if ((spot == "street" || spot == "saloon") && afternoonOn) return Math.Max(0, f - 20);
                     return f;
                 case "newyearseve":
-                    if (spot == "saloon" && (evening || d == "night")) return p.Devout ? f : Math.Min(95, f + 20);
+                    if (spot == "saloon" && (evening || hour >= 22)) return p.Devout ? f : Math.Min(95, f + 20);   // the night of the 31st (past midnight it's the 1st)
                     return f;
                 default:
                     return f;

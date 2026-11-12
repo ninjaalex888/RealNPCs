@@ -8,7 +8,7 @@
 //
 // So once a first-hand memory is older than its half-life, some of the times it comes to mind it comes as the person
 // doubting its details ("That quarrel. Was it a Tuesday? I'd have said a Tuesday."), unless it was strong (70 or more) or a
-// death, which come as too sharp ("Weeks now, and I could tell you what everyone had on."). The player's own deeds keep
+// death, which come as too sharp ("I could tell you what everyone had on. Down to the buttons."). The player's own deeds keep
 // their own rules (they never drift here: the rumours bend them, Core/Rumours.cs), and so do things told or heard.
 //
 // No new state: it reads the memory's kind, how it was had, its strength and age. Off in Core so the goldens stand.
@@ -23,13 +23,14 @@ namespace EnrageWestworld.Core
 
         public const int Chance = 40;          // of the times an old first-hand memory comes to mind
         public const int SharpStrength = 70;   // this strong, or a death: too sharp, not blurred
+        public const long LeastAge = 2 * 1440;  // and two game days at least, whatever its half-life (the review: a quarrel's is 18 hours)
 
         /// "blur", "sharp" or null: how this memory comes to mind now, for this seed.
         public static string How(MindMemory m, long now, string seed)
         {
             if (!On || m == null || m.From != null || m.How == "heard" || Minds.AboutYou(m) || m.Kind == null || m.Kind == "rescued")
                 return null;
-            if (now - m.At < Minds.HalfLife(m))
+            if (now - m.At < Minds.HalfLife(m) || now - m.At < LeastAge)
                 return null;   // still fresh: as it was
             if (!Voice.Chance(seed + "|blur", Chance))
                 return null;
@@ -55,14 +56,7 @@ namespace EnrageWestworld.Core
             string[] pool;
             if (m == null || how == null || !Lines.TryGetValue(how + ":" + GroupOf(m.Kind), out pool))
                 return null;
-            int start = (Voice.Hash(seed + "|blurl") & 0x7fffffff) % pool.Length;
-            for (int i = 0; i < pool.Length; i++)
-            {
-                string l = pool[(start + i) % pool.Length];
-                if (told == null || !told.Contains(l))
-                    return l;
-            }
-            return pool[start];
+            return pool[(Voice.Hash(seed + "|blurl") & 0x7fffffff) % pool.Length];   // (a line said lately is passed over by the candidate's own check, SaidToday)
         }
 
         public static IEnumerable<string> AllLines()
@@ -86,18 +80,18 @@ namespace EnrageWestworld.Core
                 "Tried to tell it straight the other day and caught myself adding to it.",
                 "Saw it plain as day, I told the deputy. Plain as day is getting dim." } },
             { "blur:kind", new[] {
-                "Somebody was good to me, that week. The kindness I keep. The rest is going.",
+                "Somebody was good to me. The kindness I keep. The rest is going.",
                 "Can't recall what was said. Only that I walked home lighter.",
-                "Was it spring? It was warm, whatever it was. That's what stayed.",
+                "Was it morning or evening? It was warm, whatever it was. That's what stayed.",
                 "Lost the day of it and kept the feeling. Good trade." } },
             { "blur:other", new[] {
                 "Something was said that day I meant to remember. Gone now.",
-                "Had it all clear a week ago. Now it's a picture somebody left in the rain.",
+                "Had it all clear once. Now it's a picture somebody left in the rain.",
                 "Funny what stays. The smell of the coffee. Not a word of what was said.",
                 "Told it to myself so often I don't know which parts were there." } },
             { "sharp:fight", new[] {
                 "Could tell you every word of that fight. Wish I couldn't.",
-                "Weeks gone, and I could still name everyone who stood there.",
+                "I could still name everyone who stood there. Every last one.",
                 "Close my eyes and I'm back there. Same light. Same noise." } },
             { "sharp:theft", new[] {
                 "I'd know that face in a crowd of a thousand. I see it in my sleep.",
@@ -107,7 +101,7 @@ namespace EnrageWestworld.Core
                 "Clear as the day it happened. Clearer, maybe." } },
             { "sharp:death", new[] {
                 "Time is supposed to soften it. Nobody told time.",
-                "Weeks now, and I could tell you what everyone had on.",
+                "Every face that was there, I could draw you. I'd sooner not.",
                 "The sound of it. I'll have the sound of it when I'm old.",
                 "Remember the light on the street. The very light. Isn't that a strange thing to keep." } },
             { "sharp:other", new[] {

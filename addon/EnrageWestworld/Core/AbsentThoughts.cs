@@ -43,16 +43,19 @@ namespace EnrageWestworld.Core
                     continue;
                 if (SharedFright.Fresh(t, day.Now))
                 {
+                    string fw = Person.FirstOf(t.A == id ? t.BName : t.AName);
+                    if (fw == null)
+                        continue;
                     kind = "fright";
-                    who = Person.FirstOf(t.A == id ? t.BName : t.AName);
-                    return who != null ? t : null;
+                    who = fw;
+                    return t;
                 }
                 if (viewTie == null)
                 {
                     Resident mine = resident != null ? resident(id) : null, theirs = resident != null ? resident(other) : null;
                     bool iGentry = mine != null && InnerLife.TradeGroup(mine.Trade) == "gentry", otherGentry = theirs != null && InnerLife.TradeGroup(theirs.Trade) == "gentry";
                     string v = Opinions.View(t, id, temper, iGentry, otherGentry, false);   // not drunk: not seen
-                    if (v != null)
+                    if (v != null && Person.FirstOf(t.A == id ? t.BName : t.AName) != null)
                     {
                         viewTie = t;
                         view = v;
@@ -63,7 +66,7 @@ namespace EnrageWestworld.Core
                 return null;
             kind = view;
             who = Person.FirstOf(viewTie.A == id ? viewTie.BName : viewTie.AName);
-            return who != null ? viewTie : null;
+            return viewTie;
         }
 
         private static bool InSight(InnerLife.Context day, string id)
@@ -86,14 +89,7 @@ namespace EnrageWestworld.Core
             string[] pool;
             if (kind == null || who == null || !Lines.TryGetValue(kind, out pool))
                 return null;
-            int start = (Voice.Hash(seed + "|absent") & 0x7fffffff) % pool.Length;
-            for (int i = 0; i < pool.Length; i++)
-            {
-                string l = pool[(start + i) % pool.Length].Replace("{who}", who);
-                if (told == null || !told.Contains(l))
-                    return l;
-            }
-            return pool[start].Replace("{who}", who);
+            return pool[(Voice.Hash(seed + "|absent") & 0x7fffffff) % pool.Length].Replace("{who}", who);   // (a line said lately is passed over by the candidate's own check, SaidToday)
         }
 
         public static IEnumerable<string> AllLines()
@@ -121,7 +117,7 @@ namespace EnrageWestworld.Core
                 "Every door that opens, I think it's {who}.",
                 "{who} won't forget me. That's the trouble with being noticed." } },
             { "contempt", new[] {
-                "{who} will be at the bottle by now. Regular as a church bell.",
+                "{who} thinks this whole town owes {who} a living.",
                 "Said a word about {who} at supper. Got a laugh. Didn't feel like one.",
                 "Every town has one like {who}. Ours is the genuine article.",
                 "Thinking of {who} puts me off my supper.",

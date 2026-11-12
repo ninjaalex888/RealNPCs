@@ -19,7 +19,7 @@ namespace EnrageWestworld.Core
     public static class BarberHears
     {
         public const string Kind = "barber";
-        public const int Pull = 40, DeathDays = 7;
+        public const int Pull = 34, DeathDays = 7;   // (the review: 40 took over his thoughts; under the post's own 30 + a fresh one)
 
         /// Off in Core so the harness goldens stand; the game's settings ([Mind] BarberHears) turn it on.
         public static bool On;
@@ -63,7 +63,7 @@ namespace EnrageWestworld.Core
             "Everybody in that chair today had a side in {a} and {b}'s trouble. I had a full till." };
         private static readonly string[] Courting = {
             "{a} walking out with {b}, so the chair says. Half the town knew before {b} did.",
-            "Trimmed a young man's hair for a Sunday. Said it wasn't for {b}. It was for {b}.",
+            "Trimmed a young man's hair for a Sunday. Wouldn't say who it was for. Didn't need to.",
             "Every lather this week, somebody's got a word on {a} and {b}." };
         private static readonly string[] Kind_ = {
             "Heard {a} did {b} a good turn. Doesn't travel half as fast as a bad one.",

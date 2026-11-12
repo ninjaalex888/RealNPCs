@@ -31,9 +31,10 @@ namespace EnrageWestworld.InGame
                     continue;
                 Routines.Profile prof = Routines.ProfileOf(r, Voice.NowYear);
                 string with = Routines.Expected(prof, hour, wd);
+                bool was = Routines.HolidaysOn;
                 Routines.HolidaysOn = false;
                 string without = Routines.Expected(prof, hour, wd);
-                Routines.HolidaysOn = true;
+                Routines.HolidaysOn = was;
                 said = (hol ?? "no holiday today") + "; " + r.Name + " at " + hour + ":00: " + with + (with != without ? " (an ordinary day: " + without + ")" : " (the same as any day)");
                 Log.Write("HOLIDAY routines (test): " + said);
                 return null;

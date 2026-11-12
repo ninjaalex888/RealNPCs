@@ -67,15 +67,7 @@ namespace EnrageWestworld.Core
             { }
             else if (!Of.TryGetValue(d.Emotion, out pool))
                 return null;
-            int start = (Voice.Hash(seed + "|dwake") & 0x7fffffff) % pool.Length;
-            string who = you ?? "the stranger";
-            for (int i = 0; i < pool.Length; i++)
-            {
-                string l = Fill(pool[(start + i) % pool.Length], who, d.Nights);
-                if (told == null || !told.Contains(l))
-                    return l;
-            }
-            return Fill(pool[start], who, d.Nights);
+            return Fill(pool[(Voice.Hash(seed + "|dwake") & 0x7fffffff) % pool.Length], you ?? "the stranger", d.Nights);   // (a line said lately is passed over by the candidate's own check, SaidToday)
         }
 
         private static readonly string[] Nth = { "", "", "second", "third", "fourth", "fifth" };
@@ -101,7 +93,7 @@ namespace EnrageWestworld.Core
         private static readonly string[] Again =
         {
             "Same dream, {nth} night. I know every turn of it now and still can't wake.",
-            "That dream again. {nth} time. Something in me isn't done with it.",
+            "That dream again, the {nth} time. Something in me isn't done with it.",
             "Dreamt it the {nth} night running. Might sit up tonight and spite it.",
         };
 
