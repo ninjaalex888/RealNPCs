@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **A worry's week has turns** (`[Mind] WorryTurns`, on; settings version 461). The eight days of a resident's worry used to sound the same within each stage. Now the third day looks back on how it began ("Two days back it was a sum I owed. Now it's a man I hide from."), the fourth holds to a small hope, whether or not it comes good, and the sixth is the eve before it's settled ("Tomorrow I face Whitlow with what I've got."): 42 new turns, three for each of the fourteen worries, in about a quarter of a worry's thoughts. A worry you settled for them keeps its own lines. Testing row "A worry's turn" shows the nearest worried person's three turns, a press each.
 ## 0.7.27 (2026-11-12)
 
 **In short, for players:** a fix release on 0.7.26, nothing new to switch on. The stutter about once a minute that got worse the more you'd done is gone, and so are the hitches at midnight and just after a load. Name cards keep to a small share of each frame in a crowd. Towns no longer go quiet when one event leads into the next (a wedding's shivaree). The gambler's loan scene finally plays. Your save grows far more slowly. Sixty-eight settings move to their proper section of RealNPCs.ini and the settings panel; your values are kept, and the ini updates itself on the first load. Tested offline on a long-played save, not yet in long play: if anything misbehaves, please send your RealNPCs.log.

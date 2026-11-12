@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 460;
+        public const int CurrentVersion = 461;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -489,6 +489,7 @@ namespace EnrageWestworld.Core
         public bool PeakEnd = true;   // [Mind] a meeting with you is remembered by its strongest moment and how it ended, not its length (Core/PeakEnd.cs; FIVEDAY item 18, settings version 270)
         public bool StressBuilds = true;   // [Mind] a week's load adds up (deaths, beatings, quarrels, thefts, a worry); past their breaking point a person breaks in their own way and the habit stays a week (Core/StressLoad.cs; FIVEDAY item 17, settings version 269)
         public bool WorriesShown = true;   // [Mind] with MindLive and MindActs: the worry a person carries leans what they choose to do, and the thought over their head says so when they act on it (Core/WorryActs.cs; FIVEDAY item 7, settings version 260)
+        public bool WorryTurns = true;   // [Mind] a worry's week has turns: on its third day they look back on how it began, on the fourth a hope, on the sixth the eve before it's settled (Core/WorryTurns.cs; LIVES item 1a) (settings version 461)
         public bool VoicedEncounters = true;   // [Mind] with VoicedDialogue and the voice server: the encounters' and walk-ups' lines (a friend's visit, a warning, a campfire, a traveller, a callout, a bet...) said in the speaker's own cloned voice instead of a recorded remark picked by tone, one every 5 s at most (FIVEDAY item 8, settings version 261)
         public bool EventPrizeFights = true;   // [World] with TownEvents: now and then two of a town's men fight for a purse out back of the saloon at night, the word going round that afternoon (Core/PrizeFight.cs; FIVEDAY item 10, settings version 262)
         public bool Payday = true;   // [Scenes] Saturday noon to eight in town: the working people's day bends to the week's pay, and a woman may meet a man at the door for his wages (Core/Payday.cs; FIVEDAY item 11, settings version 263)
@@ -1103,6 +1104,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 461)
+                    log?.Invoke("Settings: new in this version: [Mind] WorryTurns (on): a worry's week has turns in people's thoughts: looking back, a hope, the eve before it's settled.");
                 if (s.SettingsVersion < 460)
                     log?.Invoke("Settings: new in this version: [World] PeopleTrim (on): the save lets go of the people it keeps nothing of but a name. And settings written under the wrong section move to the one the README names (your values kept); their rows on the panel move with them.");
                 if (s.SettingsVersion < 459)
@@ -2112,6 +2115,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("PeakEnd = " + B(PeakEnd) + "   ; a meeting with you (what they feel about you, no more than a quarter hour between) is remembered by its strongest moment and how it ended, not by how long it went on: a long friendly talk ended by a shove is remembered as the shove; the moments between fade to a quarter");
             b.AppendLine("StressBuilds = " + B(StressBuilds) + "   ; a week's troubles add up, person by person: a friend's death, a death seen, a beating, a theft, quarrels, a worry at its worst. Past their breaking point (lower for the anxious, higher for the steady) someone breaks, once in three weeks, in a way that fits them, and it stays a week: drinks the nights away, prays at the church, can't keep from the grave, takes it out on those at home, or takes the train");
             b.AppendLine("WorriesShown = " + B(WorriesShown) + "   ; with MindLive and MindActs on: the worry each person carries this week leans what they do (a debtor keeps to his work and away from the cards, a parent with a feverish child goes home and prays, a toothache rests and reaches for the whiskey, a dry spell keeps an eye on the sky), most at its worst, and the thought over their head says why");
+            b.AppendLine("WorryTurns = " + B(WorryTurns) + "   ; a worry's eight days have turns of their own in the thoughts: on the third day they look back on how it began, on the fourth they hold to a small hope (whether or not it comes good), on the sixth it's the eve before it's settled; false: each stage's thoughts as before");
             b.AppendLine("VoicedEncounters = " + B(VoicedEncounters) + "   ; with [Mind] VoicedDialogue on and the voice server running: what people say to you or near you in the encounters and walk-ups (a friend's visit, a warning, a campfire, a traveller, a callout at you, a bet on a fight) is said in their own cloned voice, matching the words, instead of a recorded remark picked by its tone; at most one such line every 5 seconds, so the graphics card isn't crowded. Off: the recorded remarks, as before");
             b.AppendLine();
             b.AppendLine("[Ticker]");

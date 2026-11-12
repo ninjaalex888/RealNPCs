@@ -676,11 +676,36 @@ namespace EnrageWestworld.Core
             WorryKind k = KindAt(p, fits, arc);
             if (LinkedDead(p, k, arc))
                 return null;
+            // a turning day of the run (Core/WorryTurns.cs; [Mind] WorryTurns): looking back, a hope, the eve; never once
+            // the player has settled it (its own lines speak of him) and not every thought, so the stage's pool still comes
+            if (WorryTurns.On && stage < 3 && Voice.Chance(seed + "wt", WorryTurns.Chance))
+            {
+                string[] turn = WorryTurns.For(k.Key, WorryTurns.TurnOn(dayIn));
+                if (turn != null)
+                    return Fill(Pick(turn, p, seed, told), p, k, arc);
+            }
             GrowWorries();   // the more lines a stage (InnerLife.WorriesMore.cs; the no-model run, item 6b)
             string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis
                           : k.Settled != null && SettledIn(p.Id, arc, gameDay) ? (k.PaidToday != null && PaidOn(p.Id, gameDay) ? k.PaidToday : k.Settled)   // the day he paid: not mended yet
                           : EndsWell(p, k, arc) ? GoodLines(p, k, arc) : k.Bad;
             return Fill(Pick(pool, p, seed, told), p, k, arc);
+        }
+
+        /// The Testing row "worryturn": this person's worry's turn ("back", "hope" or "eve") whatever day of the run it is,
+        /// filled as WorryThought fills it; null with nothing that fits them or no such turn (Core/WorryTurns.cs).
+        public static string WorryTurnLine(Person p, long gameDay, string turn, string seed)
+        {
+            p = Self(p);
+            if (p == null || p.Id == null || gameDay < 0)
+                return null;
+            List<WorryKind> fits = FitsFor(p);
+            if (fits.Count == 0)
+                return null;
+            int dayIn;
+            long arc = ArcOf(p, gameDay, out dayIn);
+            WorryKind k = KindAt(p, fits, arc);
+            string[] lines = WorryTurns.For(k.Key, turn);
+            return lines == null ? null : Fill(Pick(lines, p, seed, null), p, k, arc);
         }
 
         /// The worry's own words today, for saying aloud when asked after it (the interaction menu): the line for the run
