@@ -812,6 +812,7 @@ namespace EnrageWestworld.InGame
             }
             if (m.Mode == BrawlVerbs.RepayKind)
             {
+                WelshRepayAnswered(e);
                 if (row.Id == "welshpay:pay")
                     Safe("welsh repay", () => WelshRepayPay(e));   // WestworldScript.BrawlVerbs.cs (SEAMS item 24)
                 return;

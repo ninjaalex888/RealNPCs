@@ -216,8 +216,6 @@ namespace EnrageWestworld.Core
             Log("KIN GRUDGE: " + k.Name + " (" + Person.FirstOf(k.VictimName ?? "?") + "'s " + k.Relation + "): " + why + "; he comes again tomorrow");
         }
 
-        /// A Testing row: a man of this person's kin due here now, as if the player had threatened them a week ago; the mark
-        /// isn't set (a test). What was made, or why not ("no ...").
         /// A Testing row (SEAMS item 7/23): a kinsman of the nearest known resident due here now to thank you, as if you'd saved
         /// that one a week ago; marked a test, so his thanks leaves no debt (KinThanksOwes) and the resident's once-only mark is untouched.
         public string KinThanksTest(string victimId, string town, long now)
@@ -239,7 +237,7 @@ namespace EnrageWestworld.Core
                 Store.KinGrudges = new List<KinGrudge>();
             KinGrudge k = new KinGrudge
             {
-                Id = Ids.New(), VictimId = p.Id, VictimName = p.Name, VictimTown = town, Wrong = KinGrudges.Thanked, WrongWord = "stood up for " + (p.Woman ? "her" : "him"), At = now - 7 * 1440L, DueAt = now,
+                Id = Ids.New(), VictimId = p.Id, VictimName = p.Name, VictimTown = town, Wrong = KinGrudges.Thanked, WrongWord = "stood up for " + (p.Woman ? "her" : "him"), At = now, DueAt = now,   // At now: an earlier test grudge on him never closes it (review 8)
                 Name = rel.Name, Relation = rel.Relation, Town = rel.Town, Temper = KinGrudges.TemperOf(rel.Name), Test = true
             };
             Store.KinGrudges.Add(k);
@@ -248,6 +246,8 @@ namespace EnrageWestworld.Core
             return rel.Name + ", " + Person.FirstOf(p.Name) + "'s " + rel.Relation + ", is due in " + town + " now to thank you; the look comes within fifteen seconds";
         }
 
+        /// A Testing row: a man of this person's kin due here now, as if the player had threatened them a week ago; the mark
+        /// isn't set (a test). What was made, or why not ("no ...").
         public string KinTest(string victimId, string town, long now)
         {
             if (Cfg == null || !Cfg.KinGrudges)

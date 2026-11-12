@@ -70,7 +70,15 @@ namespace EnrageWestworld.InGame
         private bool _bvPayShown;
         private int _wrNextLook, _wrAgainAt, _wrRepaid;
         private Ped _wrTo;
-        private readonly HashSet<string> _wrOffered = new HashSet<string>();   // ids offered this session
+        private readonly HashSet<string> _wrOffered = new HashSet<string>();   // ids answered this session
+        private readonly HashSet<string> _wrAskedAt = new HashSet<string>();   // "id|minute": asked, and not again within the minute
+
+        /// "Not now" or paid: not asked again this session.
+        private void WelshRepayAnswered(TownEvent e)
+        {
+            if (e != null && e.AId != null)
+                _wrOffered.Add(e.AId);
+        }
 
         /// J near the man you welshed on, within the month (SEAMS item 24): pay what you owe. Once a second, J free, on foot.
         private void WelshRepayStep(int now)
@@ -90,12 +98,12 @@ namespace EnrageWestworld.InGame
                     if (p == null || p.Handle == me.Handle || !p.Exists() || p.IsDead || p.Position.DistanceTo(me.Position) > 4f)
                         continue;
                     string id, name;
-                    if (!LastingId(p, out id, out name) || id == null || _wrOffered.Contains(id))
+                    if (!LastingId(p, out id, out name) || id == null || _wrOffered.Contains(id) || _wrAskedAt.Contains(id + "|" + now / 60000))
                         continue;
                     Happening owed = BrawlVerbs.UnpaidWelsh(_store.WorldLog, id, _store.LastGameMin);
                     if (owed == null || _store.LastGameMin - owed.At < BrawlVerbs.RepayAfterMinutes)
                         continue;   // not straight after: the welsh stands a while first (else it would mean nothing)
-                    _wrOffered.Add(id);   // once a session each: "Not now" is an answer (review 7)
+                    _wrAskedAt.Add(id + "|" + now / 60000);   // asked; answered ("Not now" or paid) it is never asked again this session (WelshRepayAnswered; reviews 7 and 8)
                     _wrTo = p;
                     _wrAgainAt = now + 30000;
                     PromptSet(BrawlVerbs.RepayKind, new TownEvent { Kind = BrawlVerbs.RepayKind, Town = _placeTown, AId = id, AName = name }, 8000);
