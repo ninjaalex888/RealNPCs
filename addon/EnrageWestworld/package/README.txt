@@ -1,4 +1,4 @@
-RealNPCs 0.7.27 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.28 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 ========================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -21,6 +21,57 @@ The settings are in RealNPCs.ini. It isn't in this zip: RealNPCs writes it the f
 load the game with the mod, in Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs. The
 settings panel (Alt+F or Alt+R) changes the same file.
 
+
+NEW IN 0.7.28
+-------------
+More life in what people think, what they do with each other, and what you can do for them.
+Every new thing has its own switch (on as it comes; the list is at the end of SETTINGS), and
+nothing needs the AI model. Tested offline, including 30 game days on a long-played save, but
+not yet over long play: if something misbehaves, please send your RealNPCs.log. 0.7.27 stays
+on the GitHub releases page.
+
+What people think (no AI model needed):
+- A worry's week has turns: on its third day they look back on how it began, on the fourth
+  they hold to a small hope, on the sixth it's the eve before it's settled.
+- They think of people who aren't there: the one who saw the same killing with them, or the
+  one they fear, look down on, envy or look up to.
+- What they saw themselves blurs as it ages (was it a Tuesday? two of them or three?), and
+  the worst of it stays too sharp.
+- The morning after a hard dream, the dream hangs over them, and they count it when it comes
+  again night after night. And more dreams in the diaries.
+- Valentine's barber thinks of what his chair heard: a customer dead this week, who's at odds
+  or courting, your deeds as the town tells them.
+- The town keeps the holidays: Easter and Christmas mornings fill the church and shut the
+  store, the Fourth fills the street, Thanksgiving sends them home to the table.
+- A town that has shrunk (many killed, many gone) talks of the empty houses and who's next.
+- Known by your horse: the town's tale of what you did says the horse you rode, and its
+  people know you when you ride it up; on another horse, the trail goes cold.
+
+What they do with each other (in the street, near you; nobody is walked over):
+- The schoolteacher asks a farming father after his boy, kept home for the fields.
+- Election night: two men on opposite sides of the vote come to blows in the saloon.
+- Sunday after the service: talk on the church steps of who wasn't in his pew, and a word
+  for the one who went up at the revival and has gone back to the drink.
+- The fight at the Saturday dance over a girl.
+- Two women pass on the town's news: who's at odds, walking out, made it up.
+- Mail day: a letter off the train opened by the platform, good news called out, bad taken
+  home; for someone waiting on a letter, it's the one.
+- The medicine show's bottle, the days after: the man who bought it tells what it did.
+
+What you can do (J, not Talk):
+- At the doctor's (Valentine, Rhodes): pay his $2 call to a house with a feverish child.
+- Carry a courting man's note to the woman he's after, and bring back her answer.
+- At the general store: a gift that fits someone fond of you (a hymn book, rye, cigars,
+  work gloves, a ribbon), given when you meet them.
+- Who's who in the reader goes town by town, the town you're in first.
+
+With the AI model, if you use it:
+- It knows each person's week and their people by name, so its thoughts are of their own
+  life (in a test: thoughts naming someone of their own life went from none to four in ten).
+- A thought that goes against what the mind feels (glad, for the grieving) is held, and the
+  written line shows instead.
+- While it's idle, it words more of the people near you.
+Talk is unchanged.
 
 NEW IN 0.7.27
 -------------
@@ -2289,6 +2340,121 @@ None of the others are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Sc
 console (F8) or Faster Looting (F9, F10). If the game or another mod already uses one, change it
 in the ini or the panel (e.g. ReaderKey = Ctrl+N).
 
+
+SETTINGS NEW IN 0.7.28 (each is in RealNPCs.ini with its comment)
+
+[Mind]      WorryTurns (on): a worry's eight days have turns of their own in the thoughts: on
+            the third day they look back on how it began, on the fourth they hold to a small
+            hope (whether or not it comes good), on the sixth it's the eve before it's settled;
+            false: each stage's thoughts as before
+[Mind]      AbsentThoughts (on): people think of someone who isn't there: of their ties of the
+            last four days, out of sight and alive, the one who saw the same killing with them,
+            or the one they fear, look down on, envy or look up to, in words for an absent
+            person; false: those views and the shared fright show only when the two meet
+[Mind]      MemoryBlur (on): with MindLive: what someone saw with their own eyes blurs as it
+            ages: past a memory's half-life, four times in ten it comes to mind with its details
+            doubted (was it a Tuesday, two of them or three); one that was strong, or a death,
+            comes too sharp instead; your own deeds and things told keep their own rules; false:
+            old memories come as they were
+[Mind]      DreamsRemembered (on): with [Features] DiaryDreams on: the morning after someone
+            dreams of a hard thing, from five to two o'clock, their thoughts can go back to the
+            dream (kept to the near side of the street, two cups set out), and count it when it
+            comes again night after night; kept only till the game is reloaded; false: the
+            dreams are in the diaries only
+[Mind]      BarberHears (on): the barber thinks of what his chair hears: a townsman dead this
+            week whose face he shaved, two of his town at odds or courting these two days, by
+            name, and the stranger's deeds as the town tells them (grown in the telling when
+            they've bent); false: his trade's own lines only
+[World]     HolidayRoutines (on): with RegularsRoutines and HistoricalAccuracy on: the town
+            keeps the real calendar's holidays in who a passer-by becomes (nobody walks
+            anywhere): Easter and Christmas mornings fill the church past a Sunday's and shut
+            the store all day, Christmas afternoon keeps people home, Christmas Eve has its
+            evening service, the Fourth fills the street and the saloon by evening,
+            Thanksgiving's store shuts at noon, New Year's Eve keeps the saloon late; false:
+            every holiday is a weekday
+[Scenes]    SchoolFather (on): on a school day, by day, the town's schoolteacher meets a farming
+            or working father of her town in the street and asks after his boy, who hasn't been
+            at his desk; the proud and hotheaded won't hear it (a cold tie), the rest give a
+            little ground (a warm one); most at planting and harvest, when the boys were kept
+            home; false: no such scene
+[Scenes]    ElectionNight (on): on election day by the real calendar (with HistoricalAccuracy),
+            from four in the afternoon, two men in the saloon on opposite sides of the vote (the
+            working, farming and rough trades against the well-off, and the town's men of
+            business) may come to blows over it; the brawl's sides follow the vote; false:
+            election night is like any other
+[Scenes]    ChurchSteps (on): on a Sunday from eleven to two, out of doors near the town's
+            church, two of the town talk it over on the steps: a townsman who wasn't in his pew,
+            by name, the sermon, who sat beside whom; and one who went up at the revival's altar
+            and has gone back to old ways hears about it from the other; nobody is walked over;
+            false: no such talk
+[Scenes]    DanceFight (on): with [World] EventDances on: while the Saturday dance is on in the
+            town's saloon, a man who's spoken for (a sweetheart, someone he courts) and another
+            man there who's no friend of his may have it out over her ("That's twice you've had
+            her round the floor."): a brawl over a girl at the dance, friends joining their man,
+            or hard words where it can't be a fight; false: the dance passes without one
+[Scenes]    NewsOverFence (on): by day, away from the saloon, two women of the same town who
+            meet in the street may pass on the town's freshest news between two others, by name
+            (who's at odds, who's walking out together, who's made it up, who did whom a good
+            turn), from the town's ties of the last two days; false: no such talk
+[Scenes]    MailDay (on): with [World] TrainTime on: for ten minutes after a train comes in at a
+            town's platform, with you near it, one of the town opens a letter off the train and
+            reads it to whoever is by: good news called out, bad news folded away and taken
+            home; for someone whose worry is a letter that never came, at its end, it's that
+            letter; false: the train brings no mail
+[Scenes]    TonicAfter (on): the sceptic at the medicine show who buys a bottle anyway is
+            remembered (until the game is reloaded) and, in the three days after, meeting anyone
+            by day, tells what it did: sick as a dog since, or the horse that won't look at him
+            the same, and the other has his laugh; false: the bottle is never heard of again
+[Mind]      ModelKnowsLife (on): with Language on: the model is told the worry a person is
+            living through this week, by name and where it stands (and today's turn of it), and
+            up to three of their people of the last week by first name and what's between them
+            (a friend, a sweetheart, bad blood, one they fear, one who saw the same killing; in
+            sight or not), so its thoughts are of their own life; false: the model is told as
+            before
+[Mind]      ModelAgrees (on): with Language on: a model's thought whose plain words go against a
+            moderate or strong feeling the mind gave it ("glad", "fine morning" for someone
+            frightened, angry, ashamed or grieving; "hate", "despair" for someone joyful,
+            grateful or relieved) is held, and the written line shows instead; a masked fear or
+            grief is left be; false: such a line can show
+[Mind]      ModelIdleReach (on): with Language on: while the AI model has nothing waiting, every
+            eight seconds the person the mind knows within 20 m who was asked longest ago (never
+            first, then the nearest; at most once a minute) is asked ahead, so more of the
+            thoughts near you come in the model's own words (it was asked ahead only for a fresh
+            feeling); false: as before
+[Scenes]    DoctorsCall (on): within a few steps of the town's doctor (Valentine's or Rhodes'),
+            once a day of the game, he names a house of the town with a fever its people can't
+            pay his call for, and J for twelve seconds lets you pay his two dollars: he rides
+            out, the family's worry is settled (their thoughts say a stranger paid the doctor),
+            a kindness he saw; false: no such word from him
+[Scenes]    CourtingNote (on): a few steps from a man whose courting of a woman of his town is
+            getting worse or at its worst, he lets on he has a note for her and no nerve to give
+            it, and J takes it; for two game days, within a few steps of her, J gives it: she
+            reads it and answers as his worry would end (yes, and they're walking out; not yet;
+            or no, kindly), and both remember you carried it; false: no such note
+[Scenes]    FittingGifts (on): in a town's general store, J once a visit lists up to three
+            people of the town who are fond of you, each with the gift that fits who they are (a
+            hymn book for the churchgoer, a bottle of rye for the saloon's regular, cigars for
+            the well-off, work gloves for the farmer, a lace collar or a ribbon, a plug of
+            tobacco); buy one, and within two game days, a few steps from them, J gives it: they
+            take it by their nature, and a second inside a week warms them less; false: no such
+            offer
+[Display]   WhosWhoByTown (on): with WhosWho on: the reader's page of the people you've met goes
+            town by town (the town you're in first, then the rest by how many you've met there,
+            those met on the roads last), each town's most recent first; false: one list, the
+            most recent first
+[World]     TownShrinks (on): with TownLedger on: a town whose ledger index has fallen to 35 or
+            under (the killings and the trains out outrunning the trains in) says so: its people
+            think of the empty houses, the shop that shut, the neighbours who left and whether
+            they'll be next, and the paper's monthly mention adds a shop on the main street
+            shuttered for good; false: the town shrinks without a word of it
+[World]     HorseTalk (on): a deed of yours remembers the horse you rode for it (or rode in on
+            within the hour), and the town's tale of it, while it keeps fairly to the truth,
+            says so (a stranger on a grey Arabian); someone of that town who sees you ride up on
+            that same horse puts the two together in their thoughts; ride in on another horse
+            and the tale doesn't find you; false: the tales never say the horse
+[Features]  DreamsWider (on): with DiaryDreams on: four more dreams for each feeling (fear,
+            anger, shame, grief) in the diaries, so a hard month's dreams don't read the same;
+            false: the three a feeling as before
 
 SETTINGS NEW IN 0.7.27 (each is in RealNPCs.ini with its comment)
 
