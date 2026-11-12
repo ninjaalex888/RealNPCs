@@ -907,6 +907,18 @@ namespace EnrageWestworld.InGame
                         _nextKinGrudge = 0;
                         return null;
                     }
+                case "kinthanks":   // a kinsman due now to thank you for one "saved" (SEAMS items 7 and 23; a test: no debt)
+                    {
+                        Ped me0 = Game.Player.Character;
+                        Candidate near = ReasonCandidates(me0, now, true).Where(c => c.Who != null && c.Who.Id != null && Resident.IsResident(c.Who.Id) && c.Ped.Position.DistanceTo(me0.Position) < 20f)
+                                                                         .OrderBy(c => c.Ped.Position.DistanceTo(me0.Position)).FirstOrDefault();
+                        string what = _engine.KinThanksTest(near != null ? near.Who.Id : null, _placeTown, Bridge.Now());
+                        if (what.StartsWith("no "))
+                            return what;
+                        said = what;
+                        _nextKinGrudge = 0;
+                        return null;
+                    }
                 case "kintown":   // a townsman's grudge due now (FIVEDAY item 32b)
                     {
                         Ped me0 = Game.Player.Character;

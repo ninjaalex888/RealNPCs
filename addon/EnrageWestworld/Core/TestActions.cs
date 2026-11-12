@@ -178,6 +178,7 @@ namespace EnrageWestworld.Core
             new Entry("lostchild", "People", "A mother asks around for her lost child", "TestLostChildKey", needs: "a town street, a named woman within 25 m in view (within 7 m she asks you)"),
             new Entry("callout", "People", "A man calls another out at noon", "TestCalloutKey", needs: "a town street, two named men with bad blood 2-14 m apart"),
             new Entry("grudge", "People", "A friend takes up a wrong", "TestGrudgeKey", needs: "a friend of someone wronged in the last 3 days, near the one who did it"),
+            new Entry("kinthanks", "People", "Kin come to thank you (the nearest known resident's)", "TestKinThanksKey", needs: "[Scenes] KinGrudges and KinThanks; a town; a known resident within 20 m with a man among their kin"),
             new Entry("kingrudge", "People", "Kin come about a wrong (the nearest known resident's)", "TestKinGrudgeKey", needs: "[Scenes] KinGrudges; a town; a known resident within 20 m with a man among their kin"),
             new Entry("grudge:you", "People", "Someone grieving one you killed", "TestGrudgeYouKey", needs: "in town, someone within 20 m whose friend you killed this week"),
             new Entry("kintown", "People", "Kin come for a townsman who beat theirs (now)", "TestKinTownKey", needs: "[Scenes] KinGrudges, KinTownWrongs; a known resident within 30 m with a man among their kin, and another named man near"),

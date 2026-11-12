@@ -25,6 +25,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public string Name, Relation, Town, Temper;   // the kin (Core/Family.cs's relative), their town, their seeded temper
         [DataMember(EmitDefaultValue = false)] public string CastId;     // the resident they became when a body was cast (one body with the name)
         [DataMember(EmitDefaultValue = false)] public bool Done;
+        [DataMember(EmitDefaultValue = false)] public bool Test;          // a Testing row's (the kin thanks row, SEAMS item 23): it leaves no debt
         [DataMember(EmitDefaultValue = false)] public long DoneAt;
         [DataMember(EmitDefaultValue = false)] public string How;        // said to your face, never reached you, never found you
         [DataMember(EmitDefaultValue = false)] public string DoerId, DoerName;   // a townsman who did the wrong (FIVEDAY item 32b; [Scenes] KinTownWrongs): the kin come for him, not you; null for yours
