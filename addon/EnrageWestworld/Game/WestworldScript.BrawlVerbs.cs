@@ -104,6 +104,8 @@ namespace EnrageWestworld.InGame
                     if (owed == null && _engine != null && _engine.WorryIdOf(id) != id)
                     {
                         id = _engine.WorryIdOf(id);   // enRAGE took him up since: the welsh is under his first id (review 7)
+                        if (_wrOffered.Contains(id) || _wrAskedAt.Contains(id + "|" + now / 60000))
+                            continue;   // the asked and answered marks go under this id too (review 9)
                         owed = BrawlVerbs.UnpaidWelsh(_store.WorldLog, id, _store.LastGameMin);
                     }
                     if (owed == null || _store.LastGameMin - owed.At < BrawlVerbs.RepayAfterMinutes)

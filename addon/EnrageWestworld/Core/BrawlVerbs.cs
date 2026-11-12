@@ -140,7 +140,7 @@ namespace EnrageWestworld.Core
                     continue;
                 if (e.Kind == "welshed" && !e.Test)
                     owed.Add(e);
-                else if (e.Kind == Repaid)
+                else if (e.Kind == Repaid && !e.Test)
                 {
                     int i = owed.FindIndex(w => w.At <= e.At);
                     if (i >= 0)
