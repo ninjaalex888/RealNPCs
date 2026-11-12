@@ -183,7 +183,7 @@ namespace EnrageWestworld.Core
                 new[] { "Clove oil helps. An hour. I'll take an hour.",
                         "Swelling's down a little. Maybe it's going on its own. Maybe.",
                         "Slept on the other side and it let me be till dawn." },
-                new[] { "Tomorrow the barber. Bottle tonight, pliers tomorrow.",
+                new[] { "Barber opens at seven. I'll be on his step at six, or I won't go at all.",
                         "Last night with this tooth. Can't say I'll miss it. Can't say I'm ready.",
                         "Told the barber first thing tomorrow before I lose my nerve." } } },
             { "secret", new[] {
