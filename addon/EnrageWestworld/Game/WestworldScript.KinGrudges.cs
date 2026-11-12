@@ -187,6 +187,8 @@ namespace EnrageWestworld.InGame
             int h = w.Ped != null ? w.Ped.Handle : 0;
             if (kinId != null)
                 _youNodAt[kinId] = now;
+            if (KinGrudges.IsThanks(k) && Interact.KinOwes && kinId != null)
+                RecordEvent(Interact.KinOwesKind, "player", "you", kinId, k.Name, me.Position, me.Handle, me.Handle, h, "his family owes you for " + Person.FirstOf(k.VictimName ?? "his kin"));   // (SEAMS item 23)
             if (!KinGrudges.IsThanks(k))
                 RecordEvent("scene:kin", kinId, k.Name, "player", "you", me.Position, h, h, me.Handle, k.WrongWord);   // (a thanks faces nobody down: SEAMS item 7)
             Feed.Notice("Kin", KinGrudges.Notice(k, _placeTown));

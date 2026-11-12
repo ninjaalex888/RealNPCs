@@ -622,8 +622,13 @@ namespace EnrageWestworld.Core
             if (e == null || e.DoerId != "player" || e.TargetId == null || e.Test)
                 return false;
             return e.Kind == "defend" || (StoodByOwes && e.Kind == "stoodby") || (FineOwes && e.Kind == "paidfine" && e.Outcome != SuretyOutcome) ||
-                   (SuretyKeptOwes && e.Kind == SuretyKept);
+                   (SuretyKeptOwes && e.Kind == SuretyKept) || (KinOwes && e.Kind == KinOwesKind);
         }
+
+        /// The kinsman who came to thank you for one you saved owes you too, for his family (SEAMS item 23; [Scenes] KinThanksOwes):
+        /// his "anybody gives you trouble, send for me" made good, as one you saved would (allies' warmth 3, "Owes you" on his card).
+        public static bool KinOwes;
+        public const string KinOwesKind = "kinowes";
 
         public const long StoodByYouMinutes = 7 * 1440L;   // the card's "Stood by you": a week of game days
 

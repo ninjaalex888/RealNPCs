@@ -260,7 +260,8 @@ namespace EnrageWestworld.InGame
             Interact.StoodByOwes = _cfg.StoodByOwes;   // [Encounters] StoodByOwes: the man you stood with in a fight owes you (DEEPEN item 4)
             Interact.FineOwes = _cfg.FineOwes;         // [Encounters] FineOwes: the man whose fine you paid owes you (SEAMS item 1)
             Interact.SuretyKeptOwes = _cfg.SuretyKeptOwes;   // [Encounters] SuretyKeptOwes: a week kept on your word owes you (SEAMS item 10)
-            KinGrudges.ThanksOn = _cfg.KinThanks;           // [Scenes] KinThanks: a kinsman of someone you saved comes to thank you (SEAMS item 7)
+            KinGrudges.ThanksOn = _cfg.KinThanks;
+            Interact.KinOwes = _cfg.KinThanksOwes;          // [Scenes] KinThanksOwes: the thanking kinsman owes you (SEAMS item 23)           // [Scenes] KinThanks: a kinsman of someone you saved comes to thank you (SEAMS item 7)
             Appraisal.GratitudeFelt = _cfg.GratitudeFelt;   // [Encounters] GratitudeFelt: the mind feels a stand, a fine, a surety as a kindness (SEAMS item 11)
             BetweenYou.On = _cfg.BetweenYouPage;          // [Display] BetweenYouPage (SEAMS item 19)
             FindLetter.On = _cfg.FindTheLetter;            // [Scenes] FindTheLetter (SEAMS item 18)

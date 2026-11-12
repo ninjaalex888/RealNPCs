@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 454;
+        public const int CurrentVersion = 455;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -366,6 +366,7 @@ namespace EnrageWestworld.Core
         public bool Wayside = true;          // [Encounters] things to come across on the road: fights, prisoners, trouble, camps, what's left after (Core/Wayside*.cs; settings version 324)
         public int WaysideChance = 25;       // ... percent a roll, among the other encounters
         public bool AlliesHelp = true;       // [Encounters] attacked within sight of people who think well of you, some of them come to your aid (Core/Allies.cs; a player's request, 2026-11-03; settings version 197)
+        public bool KinThanksOwes = true;    // [Scenes] with KinThanks: the kinsman who came to thank you owes you for his family, as one you saved: readier to come to your aid, "Owes you" on his card, for a month (SEAMS item 23; settings version 455)
         public bool KinThanks = true;        // [Scenes] with KinGrudges: one time in two, a kinsman of someone you saved comes to find you a few days on and thank you for him (SEAMS item 7; settings version 444)
         public bool GratitudeFelt = true;    // [Encounters] with MindShadow: the man you stood with in a fight, paid the fine of or stood surety for feels it as a kindness in his mood, and so do those who saw (SEAMS item 11; settings version 443)
         public bool SuretyBrokeRemembered = true;   // [Encounters] the man you stood surety for who breaks the peace inside his week keeps it in his own mind: his thoughts come back to letting you down (SEAMS item 20; settings version 453)
@@ -1098,6 +1099,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 455)
+                    log?.Invoke("Settings: new in this version: [Scenes] KinThanksOwes (on): the kinsman who came to thank you owes you for his family.");
                 if (s.SettingsVersion < 454)
                     log?.Invoke("Settings: new in this version: [Display] NameCardsLetter (on): \"You carry their letter\" on the card of one whose letter you carry.");
                 if (s.SettingsVersion < 453)
@@ -2240,6 +2243,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Wayside = " + B(Wayside) + "   ; things to come across out of the towns: men fighting by the road, and more: their own people, staged out of your sight, and you can step in or ride on");
             b.AppendLine("WaysideChance = " + WaysideChance + "   ; percent a roll, among the other encounters (0 to 100)");
             b.AppendLine("AlliesHelp = " + B(AlliesHelp) + "   ; attacked by anyone, the law too, within sight of people who think well of you, some of them come to your aid: someone who owes you (the bar at AlliesLiking or more, someone you saved) whatever the odds, and of the rest the brave and the hot first, cowards never, a woman only against fists, and against a gun only those who carry one (they're given a revolver for it and keep it after). They shout as they come, and have a word with you after; they remember it, and think better of you for it");
+            b.AppendLine("KinThanksOwes = " + B(KinThanksOwes) + "   ; with KinThanks on: the kinsman who walks up to thank you for one you saved owes you for a month too, as the one saved does: he comes to your aid in a fight, and his card says so");
             b.AppendLine("KinThanks = " + B(KinThanks) + "   ; with KinGrudges on: one time in two, a kinsman of someone you saved (a bully pulled off them, their beater put down, the rope, the hogtied cut loose) comes to find you five to nine days on, as kin come over a wrong, and says the family is grateful; false: only wrongs bring kin");
             b.AppendLine("GratitudeFelt = " + B(GratitudeFelt) + "   ; with MindShadow on: standing with a man in a fight, paying his fine or standing surety for him is felt in his mood as the kindness it is (and by those who saw it), as a drink stood or a coin given already is; false: only the ledger has it");
             b.AppendLine("SuretyBrokeRemembered = " + B(SuretyBrokeRemembered) + "   ; a man you stood surety for at the jail who breaks the peace inside his week (and costs you the surety) keeps it in his own mind: his thoughts come back to letting you down; no scene comes of it");

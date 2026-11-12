@@ -23,6 +23,7 @@ namespace EnrageWestworld.Core
                 case "stoodby": return "you stood with them in a fight";
                 case "paidfine": return "you paid their fine";
                 case Interact.SuretyKept: return "they kept the peace a week on your word";
+                case Interact.KinOwesKind: return "you saved one of their family";
                 default: return "a good turn of yours";
             }
         }
