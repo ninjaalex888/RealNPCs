@@ -57,7 +57,14 @@ namespace EnrageWestworld.Core
             if (!Cfg.TrainTime)
                 return;
             long today = now / 1440;
-            foreach (Resident r in Store.Residents.ToList())
+            // yesterday's leavers: the list found at yesterday's start when there is one (each asked again, so one who left on the
+            // platform, died or was taken in since stays), else all of them asked, as after a load. Asking every resident twice a
+            // day (yesterday's and today's) was 9 to 16 ms on the day's first tick in the soak of a copy of Lex's save, 700
+            // residents (HARDEN item 2); now only after a load. Who leaves is who the platform was told of.
+            IEnumerable<Resident> ask = _leavingDay == today - 1
+                ? _leaving.Keys.Select(id => Store.FindResident(id)).Where(r => r != null).ToList()
+                : Store.Residents.ToList();
+            foreach (Resident r in ask)
             {
                 string why = LeavesOn(r, today - 1);
                 if (why != null)

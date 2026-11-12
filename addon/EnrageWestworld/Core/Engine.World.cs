@@ -728,7 +728,7 @@ namespace EnrageWestworld.Core
             List<TownRumour> arrived = Rumours.Spread(Store, now, Cfg != null && Cfg.TownRivals);
             if (arrived.Count == 0)
                 return;
-            Dictionary<string, Deed> deeds = Store.Deeds.ToDictionary(x => x.Id, x => x);
+            Dictionary<string, Deed> deeds = Deeds.ById(Store.Deeds);   // (no throw on a deed with no id: HARDEN item 2)
             foreach (TownRumour r in arrived)
             {
                 Deed d;
@@ -760,7 +760,7 @@ namespace EnrageWestworld.Core
             List<string> lines = new List<string>();
             if (town == null)
                 return lines;
-            Dictionary<string, Deed> deeds = Store.Deeds.ToDictionary(x => x.Id, x => x);
+            Dictionary<string, Deed> deeds = Deeds.ById(Store.Deeds);   // (no throw on a deed with no id: HARDEN item 2)
             foreach (TownRumour r in Store.TownRumours.Where(x => x.Town == town && !x.Heard).OrderByDescending(x => x.At).Take(max))
             {
                 Deed d;
@@ -777,7 +777,7 @@ namespace EnrageWestworld.Core
         /// Third-person versions strangers can trade in a saloon (heard or not).
         public List<string> RumourPool(string town, int max)
         {
-            Dictionary<string, Deed> deeds = Store.Deeds.ToDictionary(x => x.Id, x => x);
+            Dictionary<string, Deed> deeds = Deeds.ById(Store.Deeds);   // (no throw on a deed with no id: HARDEN item 2)
             List<string> pool = new List<string>();
             IEnumerable<TownRumour> here = Store.TownRumours.Where(x => town == null || x.Town == town).OrderBy(x => x.Heard ? 1 : 0).ThenByDescending(x => x.At);
             foreach (TownRumour r in here.Take(max * 2))

@@ -221,6 +221,20 @@ namespace EnrageWestworld.Core
             return kind != null && Kinds.TryGetValue(kind, out k) ? k.Mood ?? "Steady" : "Steady";
         }
 
+        /// The deeds by id, the first of each kept: a deed with no id (or two with one) is passed over instead of throwing. Four ticks
+        /// built this with ToDictionary, which throws on either, and one such deed in a save stopped the rest of the world tick on
+        /// every tick from then on: the rumours, the weddings, the day's turn (HARDEN item 2, found by the soak). Every deed the
+        /// game makes has an id (Make); this only keeps a damaged save from silencing the world.
+        public static Dictionary<string, Deed> ById(IEnumerable<Deed> deeds)
+        {
+            var d = new Dictionary<string, Deed>();
+            if (deeds != null)
+                foreach (Deed x in deeds)
+                    if (x != null && x.Id != null && !d.ContainsKey(x.Id))
+                        d[x.Id] = x;
+            return d;
+        }
+
         public static Deed Make(string kind, string detail, string town, string zone, long at, float x, float y, float z, int witnesses, int count = 1)
         {
             Kind k;

@@ -169,9 +169,17 @@ namespace EnrageWestworld.Core
         {
             if (Store.Events == null)
                 return;
+            // over a copy of those due: resolving one can post the next (a wedding's shivaree, a revival's baptism) into the list
+            // being walked, which threw and took the rest of the world tick with it (the rumours, the weddings, the day's turn;
+            // found by the soak of a copy of Lex's save, HARDEN item 2). The copy is only made when one is due.
+            List<TownEvent> due = null;
             foreach (TownEvent e in Store.Events)
                 if (e != null && !e.Done && now >= e.Until)
-                    ResolveAway(e, now);
+                    (due ?? (due = new List<TownEvent>())).Add(e);
+            if (due != null)
+                foreach (TownEvent e in due)
+                    if (!e.Done)
+                        ResolveAway(e, now);
         }
 
         private void ResolveAway(TownEvent e, long now)

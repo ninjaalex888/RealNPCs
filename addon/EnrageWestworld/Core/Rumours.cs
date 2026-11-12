@@ -81,7 +81,7 @@ namespace EnrageWestworld.Core
         public static List<TownRumour> Spread(Store s, long now, bool rivals = false)
         {
             List<TownRumour> arrived = new List<TownRumour>();
-            Dictionary<string, Deed> deeds = s.Deeds.ToDictionary(d => d.Id, d => d);
+            Dictionary<string, Deed> deeds = Deeds.ById(s.Deeds);   // (no throw on a deed with no id: HARDEN item 2)
             foreach (TownRumour r in s.TownRumours.ToList())
             {
                 Deed d;

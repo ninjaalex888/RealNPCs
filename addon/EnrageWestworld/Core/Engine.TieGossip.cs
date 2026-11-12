@@ -21,18 +21,40 @@ namespace EnrageWestworld.Core
             if (recent.Count == 0)
                 return;
             int budget = TieGossip.MostPerTick;
+            // who knows each deed, in one pass over the kept people for all of them, and whether they're still about asked only of
+            // those who know: Present walks the residents and the deaths, and asked of all ~3000 kept people for every deed it took
+            // 140 ms a world tick in the soak of a copy of Lex's save a few deeds in (HARDEN item 2). The same people come out, in
+            // the same order.
+            var knownOf = new Dictionary<string, Dictionary<string, TieHeard>>();
+            var deedAt = new Dictionary<string, long>();
+            foreach (Deed d in recent)
+                if (!knownOf.ContainsKey(d.Id))
+                {
+                    knownOf[d.Id] = new Dictionary<string, TieHeard>();
+                    deedAt[d.Id] = d.At;
+                }
+            var presentAsked = new Dictionary<string, bool>();
+            foreach (KeyValuePair<string, PersonState> kv in Store.People)
+            {
+                PersonState st = kv.Value;
+                if (st == null || (st.SawDeeds.Count == 0 && st.KnownDeeds.Count == 0))
+                    continue;
+                for (int pass = 0; pass < 2; pass++)
+                    foreach (string id in pass == 0 ? st.SawDeeds : st.KnownDeeds)
+                    {
+                        Dictionary<string, TieHeard> into;
+                        if (id == null || !knownOf.TryGetValue(id, out into) || into.ContainsKey(kv.Key))
+                            continue;
+                        bool here;
+                        if (!presentAsked.TryGetValue(kv.Key, out here))
+                            presentAsked[kv.Key] = here = Present(kv.Key);   // (the dead and the gone pass nothing on)
+                        if (here)
+                            into[kv.Key] = new TieHeard { Id = kv.Key, DeedId = id, At = deedAt[id] + 60, Hops = pass == 0 ? 0 : 1 };   // (the talk's own start: an hour on)
+                    }
+            }
             foreach (Deed d in recent)
             {
-                var known = new Dictionary<string, TieHeard>();
-                foreach (KeyValuePair<string, PersonState> kv in Store.People)
-                {
-                    PersonState st = kv.Value;
-                    if (st == null || !Present(kv.Key))
-                        continue;   // (the dead and the gone pass nothing on)
-                    bool saw = st.SawDeeds.Contains(d.Id);
-                    if (saw || st.KnownDeeds.Contains(d.Id))
-                        known[kv.Key] = new TieHeard { Id = kv.Key, DeedId = d.Id, At = d.At + 60, Hops = saw ? 0 : 1 };   // (the talk's own start: an hour on)
-                }
+                var known = knownOf[d.Id];
                 foreach (TieHeard th in Store.TieHeard)
                     if (th.DeedId == d.Id)
                         known[th.Id] = th;
