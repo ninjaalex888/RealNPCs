@@ -267,7 +267,10 @@ namespace EnrageWestworld.InGame
                 return;
             }
             var all = a.Concat(b).Where(h => ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !AtArthur(h)).ToList();   // never one fighting Arthur (the review of items 1-13)
-            var targets = all.ToDictionary(h => h, h => _director.TargetOf(h));
+            var targets = new Dictionary<int, int>();   // (one on both sides would have thrown in ToDictionary and lost the law's break-up: SWEEP item 1)
+            foreach (int h in all)
+                if (!targets.ContainsKey(h))
+                    targets[h] = _director.TargetOf(h);
             var holdouts = new List<int>();
             var taken = new HashSet<int>();
             int began0, began1;
