@@ -89,7 +89,7 @@ namespace EnrageWestworld.Core
             {
                 Happening e = log[i];
                 if (e != null && e.Kind == "welshed" && e.DoerId == "player" && !e.Test && e.Town == town && e.At <= now && now - e.At < ShunDays * 1440 &&
-                    !(RepayOn && RepaidSince(log, e.TargetId, e.At)))
+                    !(RepayOn && WelshSettled(log, e)))
                     return true;
             }
             return false;
@@ -121,13 +121,37 @@ namespace EnrageWestworld.Core
         {
             if (!RepayOn || log == null || id == null)
                 return null;
-            for (int i = log.Count - 1; i >= 0; i--)
-            {
-                Happening e = log[i];
-                if (e != null && e.Kind == "welshed" && e.DoerId == "player" && e.TargetId == id && !e.Test && e.At <= now && now - e.At < RepayDays * 1440)
-                    return RepaidSince(log, id, e.At) ? null : e;
-            }
+            foreach (Happening e in log)   // the oldest unpaid first: each payment squares one welsh (review 7)
+                if (e != null && e.Kind == "welshed" && e.DoerId == "player" && e.TargetId == id && !e.Test && e.At <= now && now - e.At < RepayDays * 1440 && !WelshSettled(log, e))
+                    return e;
             return null;
+        }
+
+        /// Whether this welsh has been paid: payments to him are matched to his welshes in order, one each, a payment only to a
+        /// welsh before it (review 7: one dollar used to clear every welsh before it).
+        public static bool WelshSettled(List<Happening> log, Happening welsh)
+        {
+            if (log == null || welsh == null || welsh.TargetId == null)
+                return false;
+            var owed = new List<Happening>();
+            foreach (Happening e in log)
+            {
+                if (e == null || e.DoerId != "player" || e.TargetId != welsh.TargetId)
+                    continue;
+                if (e.Kind == "welshed" && !e.Test)
+                    owed.Add(e);
+                else if (e.Kind == Repaid)
+                {
+                    int i = owed.FindIndex(w => w.At <= e.At);
+                    if (i >= 0)
+                    {
+                        if (owed[i] == welsh)
+                            return true;
+                        owed.RemoveAt(i);
+                    }
+                }
+            }
+            return false;
         }
 
         public static List<InteractOption> RepayRows(string to, int cashCents)

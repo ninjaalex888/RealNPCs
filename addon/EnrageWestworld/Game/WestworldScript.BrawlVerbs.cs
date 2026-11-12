@@ -101,6 +101,11 @@ namespace EnrageWestworld.InGame
                     if (!LastingId(p, out id, out name) || id == null || _wrOffered.Contains(id) || _wrAskedAt.Contains(id + "|" + now / 60000))
                         continue;
                     Happening owed = BrawlVerbs.UnpaidWelsh(_store.WorldLog, id, _store.LastGameMin);
+                    if (owed == null && _engine != null && _engine.WorryIdOf(id) != id)
+                    {
+                        id = _engine.WorryIdOf(id);   // enRAGE took him up since: the welsh is under his first id (review 7)
+                        owed = BrawlVerbs.UnpaidWelsh(_store.WorldLog, id, _store.LastGameMin);
+                    }
                     if (owed == null || _store.LastGameMin - owed.At < BrawlVerbs.RepayAfterMinutes)
                         continue;   // not straight after: the welsh stands a while first (else it would mean nothing)
                     _wrAskedAt.Add(id + "|" + now / 60000);   // asked; answered ("Not now" or paid) it is never asked again this session (WelshRepayAnswered; reviews 7 and 8)
