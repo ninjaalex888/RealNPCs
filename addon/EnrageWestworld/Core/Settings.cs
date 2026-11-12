@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 455;
+        public const int CurrentVersion = 456;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -463,6 +463,7 @@ namespace EnrageWestworld.Core
         public bool FriendsKnowYourThief = true;   // [Scenes] with FriendsWarnThief and NameCardsRobbed: a friend's warning of a pickpocket near says when he's the one who got away with yours (SEAMS item 14; settings version 447)
         public bool StandReminds = true;      // [Scenes] with BrawlVerbs: the J row "Stand with ..." says when the man losing stood by you this week, or owes you (SEAMS item 13; settings version 446)
         public bool BreakUpKnown = true;      // [Scenes] with Deeds: a fight you break up on J is a peace deed, as a word in a scene is: the witnesses keep it, it goes round as gossip, a newspaper might carry it (SEAMS item 6; settings version 440)
+        public bool WelshRepay = true;        // [Scenes] meet the man you welshed on again within the month and J pays him the dollar: his liking back, a paid bet in his memory, the betting men take your money again (SEAMS item 24; settings version 456)
         public bool WelshersShunned = true;   // [Scenes] with BrawlVerbs: welsh on a bet in a town and its betting men won't take your money for a week; the one who'd have offered says why (SEAMS item 4; settings version 438)
         public bool WelshRemembered = true;   // [Scenes] with Minds: the man you welshed on, and those who saw it, keep it in mind in the bet's own words (SEAMS item 3; settings version 437)
         public bool BrawlWagers = true;   // [Scenes] with MindLive: people watching a fistfight bet on it among themselves, and settle after: paid, grumbled, owed or welshed on (Core/Wagers.cs; FIVEDAY item 1, settings version 256)
@@ -1099,6 +1100,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 456)
+                    log?.Invoke("Settings: new in this version: [Scenes] WelshRepay (on): pay the man you welshed on, when you meet him again.");
                 if (s.SettingsVersion < 455)
                     log?.Invoke("Settings: new in this version: [Scenes] KinThanksOwes (on): the kinsman who came to thank you owes you for his family.");
                 if (s.SettingsVersion < 454)
@@ -2436,6 +2439,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("FriendsKnowYourThief = " + B(FriendsKnowYourThief) + "   ; with FriendsWarnThief and NameCardsRobbed on: when a friend walks over to warn you of a pickpocket near and he's the one who got clean away with your money, the friend says so");
             b.AppendLine("StandReminds = " + B(StandReminds) + "   ; in a fistfight, the J row \"Stand with ...\" says \"(he stood by you)\" when the man losing fought for you this week, or \"(he owes you)\" when he's one you saved; false: just his name");
             b.AppendLine("BreakUpKnown = " + B(BreakUpKnown) + "   ; with Deeds on: a fistfight you end with your shout (J, \"Break it up\") is a good deed the town knows of, as stepping into any scene is: those who saw it remember, it's talked of, it may be in the paper; false: only the fighters know");
+            b.AppendLine("WelshRepay = " + B(WelshRepay) + "   ; meet the man you welshed on again within a month and J lets you pay him the dollar: he likes you better for it (not all the way back), he remembers it as a bet paid, and the town's betting men take your money again; false: a welsh stands");
             b.AppendLine("WelshersShunned = " + B(WelshersShunned) + "   ; welsh on a bet in a town (J at a fistfight, lost and not paid) and for a week its betting men won't take your money: the one who'd have offered you a bet tells you why, and there's no bet on J; false: they offer as before");
             b.AppendLine("WelshRemembered = " + B(WelshRemembered) + "   ; with Minds on: when you don't pay a bet you lost on a fistfight, the man you owed and those who saw it keep it in mind, as they do when one of the street welshes on another: his thoughts come back to it, and the onlookers may pass it on; false: only his liking for you drops");
             b.AppendLine("BrawlWagers = " + B(BrawlWagers) + "   ; with MindLive on: people watching a fistfight between two of the street's people bet on it among themselves (words only, nobody walks over), up to three bets a fight; after it the one who backed the loser pays, pays with a sour word, says he'll owe it, or won't pay, and a welshed bet leaves bad blood between the two backers");

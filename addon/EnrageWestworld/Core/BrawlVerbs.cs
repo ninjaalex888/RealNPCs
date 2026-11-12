@@ -79,7 +79,8 @@ namespace EnrageWestworld.Core
         }
         public const long ShunDays = 7;        // how long the town's betting men remember a welsh of yours
 
-        /// Whether you've welshed on a bet in this town within the week (the "welshed" happening, you the doer; a test's never).
+        /// Whether you've welshed on a bet in this town within the week (the "welshed" happening, you the doer; a test's never),
+        /// and not paid it since (SEAMS item 24: a welsh made good is no welsh to the betting men).
         public static bool WelshedHere(List<Happening> log, string town, long now)
         {
             if (!Shunning || log == null || town == null)
@@ -87,16 +88,63 @@ namespace EnrageWestworld.Core
             for (int i = log.Count - 1; i >= 0; i--)
             {
                 Happening e = log[i];
-                if (e != null && e.Kind == "welshed" && e.DoerId == "player" && !e.Test && e.Town == town && e.At <= now && now - e.At < ShunDays * 1440)
+                if (e != null && e.Kind == "welshed" && e.DoerId == "player" && !e.Test && e.Town == town && e.At <= now && now - e.At < ShunDays * 1440 &&
+                    !(RepayOn && RepaidSince(log, e.TargetId, e.At)))
                     return true;
             }
             return false;
         }
 
+        // ---- the welsh made good (SEAMS item 24; [Scenes] WelshRepay) ------------------------------------------------------------
+        // A welsh was for ever: the man you owed a dollar held it against you and the town's betting men refused you, and nothing
+        // you did could square it. Now, meeting him again within the month (J near him), you can pay him what you owe: his liking
+        // back up, his memory of a bet paid (the wagers' own "wagerpaid"), and the betting men take your money again. The
+        // psychology: a debt repaid late restores trust, if not all of it (a man remembers he had to wait).
+        public static bool RepayOn = true;     // from the settings
+        public const string RepayKind = "welshpay", Repaid = "welshpaid";
+        public const long RepayDays = 30;
+
+        /// Whether you've paid him since then (a "welshpaid" with you the doer, him the one paid).
+        public static bool RepaidSince(List<Happening> log, string id, long since)
+        {
+            if (log == null || id == null)
+                return false;
+            foreach (Happening e in log)
+                if (e != null && e.Kind == Repaid && e.DoerId == "player" && e.TargetId == id && e.At >= since)
+                    return true;
+            return false;
+        }
+
+        /// The welsh of yours on him not yet paid, within the month: its happening, or null.
+        public static Happening UnpaidWelsh(List<Happening> log, string id, long now)
+        {
+            if (!RepayOn || log == null || id == null)
+                return null;
+            for (int i = log.Count - 1; i >= 0; i--)
+            {
+                Happening e = log[i];
+                if (e != null && e.Kind == "welshed" && e.DoerId == "player" && e.TargetId == id && !e.Test && e.At <= now && now - e.At < RepayDays * 1440)
+                    return RepaidSince(log, id, e.At) ? null : e;
+            }
+            return null;
+        }
+
+        public static List<InteractOption> RepayRows(string to, int cashCents)
+        {
+            return new List<InteractOption>
+            {
+                new InteractOption { Id = "welshpay:pay", Label = "Pay " + (to ?? "him") + " the " + Money(StakeCents) + " you owe from the bet.", Why = cashCents < StakeCents ? "you haven't a dollar on you" : null },
+                new InteractOption { Id = "welshpay:no", Label = "Not now." },
+            };
+        }
+
+        private static readonly string[] RepaidWords = { "Took you long enough. But I'll take it.", "Well. Late, but you paid. I'll say so.", "Huh. Didn't think I'd see that dollar." };
+        public static string RepaidLine(string seed) { return Pick(RepaidWords, seed + "|repaid"); }
+
         private static readonly string[] Refuses = { "Not with you, mister. Word's gone round about your bets.", "I'd sooner bet with the horse. You don't pay.",
                                                      "Keep your dollar. Heard what happened last time." };
         public static string WontBetWithYou(string seed) { return Pick(Refuses, seed + "|refuse"); }
-        public static IEnumerable<string> AllLines() { foreach (string[] a in new[] { Shouts, TakesYou, PaysYou, WantsIt, Welshed, Refuses }) foreach (string s in a) yield return s; }
+        public static IEnumerable<string> AllLines() { foreach (string[] a in new[] { Shouts, TakesYou, PaysYou, WantsIt, Welshed, Refuses, RepaidWords }) foreach (string s in a) yield return s; }
 
         private static string Pick(string[] a, string seed) { return a[(Voice.Hash(seed) & 0x7fffffff) % a.Length]; }
     }

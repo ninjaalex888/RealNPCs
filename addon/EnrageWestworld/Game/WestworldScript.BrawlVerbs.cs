@@ -68,6 +68,68 @@ namespace EnrageWestworld.InGame
         }
 
         private bool _bvPayShown;
+        private int _wrNextLook, _wrAgainAt, _wrRepaid;
+        private Ped _wrTo;
+        private readonly HashSet<string> _wrOffered = new HashSet<string>();   // "id|minute": offered at most once a minute
+
+        /// J near the man you welshed on, within the month (SEAMS item 24): pay what you owe. Once a second, J free, on foot.
+        private void WelshRepayStep(int now)
+        {
+            if (!BrawlVerbs.RepayOn || _cfg == null || _store == null || _placeTown == null || now < _wrNextLook)
+                return;
+            _wrNextLook = now + 1000;
+            if (_eventMenu != null || now < _wrAgainAt || (_eventPrompt != null && Game.GameTime <= _eventPromptUntil) || _director.FightOnFor(now) > 0)
+                return;
+            Safe("welsh repay", () =>
+            {
+                Ped me = Game.Player.Character;
+                if (PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false) || PED.IS_PED_IN_COMBAT(me.Handle, 0))
+                    return;
+                foreach (Ped p in Peds.All())
+                {
+                    if (p == null || p.Handle == me.Handle || !p.Exists() || p.IsDead || p.Position.DistanceTo(me.Position) > 4f)
+                        continue;
+                    string id, name;
+                    if (!LastingId(p, out id, out name) || id == null || _wrOffered.Contains(id + "|" + now / 60000))
+                        continue;
+                    if (BrawlVerbs.UnpaidWelsh(_store.WorldLog, id, _store.LastGameMin) == null)
+                        continue;
+                    _wrOffered.Add(id + "|" + now / 60000);
+                    _wrTo = p;
+                    _wrAgainAt = now + 30000;
+                    PromptSet(BrawlVerbs.RepayKind, new TownEvent { Kind = BrawlVerbs.RepayKind, Town = _placeTown, AId = id, AName = name }, 8000);
+                    return;
+                }
+            });
+        }
+
+        /// J, "Pay him the dollar": the money, his word, his liking back, the wagers' paid-bet memory, the ledger's "welshpaid".
+        private void WelshRepayPay(TownEvent e)
+        {
+            Ped to = _wrTo, me = Game.Player.Character;
+            if (e == null || e.AId == null || to == null || !to.Exists() || to.IsDead || BrawlVerbs.UnpaidWelsh(_store.WorldLog, e.AId, _store.LastGameMin) == null)
+                return;
+            if (MONEY._MONEY_GET_CASH_BALANCE() < BrawlVerbs.StakeCents)
+            {
+                Hint("You haven't a dollar on you.", 2500);
+                return;
+            }
+            MONEY._MONEY_DECREMENT_CASH_BALANCE(BrawlVerbs.StakeCents);
+            SpeechCaption(Person.FirstOf(e.AName ?? "He"), BrawlVerbs.RepaidLine(e.AId), to.Handle, 4000, true, false);
+            FolkRef ac = _bridge != null ? _bridge.AcquaintanceAt(to.Handle) : null;
+            if (ac != null)
+                _bridge.LikeMore(ac.Id, 12);   // back most of the way (the welsh took 15: he remembers he had to wait)
+            RecordEvent(BrawlVerbs.Repaid, "player", "you", e.AId, e.AName, to.Position, me.Handle, me.Handle, to.Handle, "paid the bet he welshed on");
+            if (_engine != null && !FromTestRow("player", me.Handle, me.Handle, to.Handle))
+            {
+                Minds.Party you = new Minds.Party { Id = "player", Name = _engine.KnowsYourName(e.AId) && YourFullName() != null ? YourFullName() : "the stranger", Label = "the stranger" };
+                Minds.Party his = PartyOf(to, false);
+                if (his != null && his.Id != null)
+                    _engine.RememberScene("wagerpaid", you, his, null, _placeTown, null);   // the bet paid, in the wagers' own words
+            }
+            _wrRepaid++;
+            Log.Write("BRAWL bet: you paid " + e.AName + " the dollar you welshed on; the betting men will take your money again");
+        }
         private int _bvShunned;   // backers who wouldn't take your money, a welsher's (SEAMS item 4)
 
         /// The lost bet's prompt on J, once J is free; its 30 s count from then.
@@ -351,7 +413,7 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.BrawlVerbs)
                 return "off ([Scenes] BrawlVerbs)";
-            return "broke up " + _bvBreakups + ", stood with " + _bvStands + ", bets " + _bvBets + " (won " + _bvWon + ", paid " + _bvPaid + ", welshed " + _bvWelshed + (_bvShunned > 0 ? ", refused you " + _bvShunned : "") + ")" +
+            return "broke up " + _bvBreakups + ", stood with " + _bvStands + ", bets " + _bvBets + " (won " + _bvWon + ", paid " + _bvPaid + ", welshed " + _bvWelshed + (_bvShunned > 0 ? ", refused you " + _bvShunned : "") + (_wrRepaid > 0 ? ", paid late " + _wrRepaid : "") + ")" +
                    (_bvOwedTo != null ? "; you owe " + _bvOwedTo.Name + " " + BrawlVerbs.Money(_bvOwedCents) : "") + (_bvLast != null ? "; last: " + _bvLast : "");
         }
     }
