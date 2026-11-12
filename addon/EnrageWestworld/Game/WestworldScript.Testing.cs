@@ -1040,6 +1040,8 @@ namespace EnrageWestworld.InGame
                     _nextTickerUpdate = 0;
                     said = "the next thoughts are coming up beside the main one";
                     return null;
+                case "absent":
+                    return AbsentTest(out said);   // WestworldScript.AbsentThoughts.cs (LIVES item 1b)
                 case "worryturn":
                     return WorryTurnTest(out said);   // WestworldScript.WorryTurns.cs (LIVES item 1a)
                 case "pairs":

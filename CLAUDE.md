@@ -49,6 +49,7 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 
 - **Switches the round adds** go in with `py -3 -I daytime/addswitch.py <spec.json>` (git-excluded): the Settings field after an anchor's, its ToIni line after the anchor's (so the same section and panel page), the upgrade note first in the list, CurrentVersion, the Core04 assignment and the panel's page and label. Core statics such as `WorryTurns.On` are false in Core so the goldens stand; Core04 sets them.
 - **Worry turns** (`Core/WorryTurns.cs`; `InnerLife.WorryThought`; `[Mind] WorryTurns`): days 3, 4 and 6 of the run (dayIn 2, 3, 5) take a turn 60% of the time (back, hope, eve), never on a settled worry; `InnerLife.WorryTurnLine` forces one for the Testing row `worryturn`. Lines for every WorryKind key: a new worry kind needs its three turns (WorryTurnsTest fails otherwise).
+- **Absent thoughts** (`Core/AbsentThoughts.cs`; a candidate in `Engine.Candidates` after the tie's; `[Mind] AbsentThoughts`): from `Context.Ties` (the last four days), the first fresh `SharedFright` tie whose other is out of sight (`Context.Nearby`) and alive, else the first `Opinions.View` (not drunk: unseen); pulls 33 and 23. No state. Testing row `absent` (uses `Engine.ThoughtDay`).
 
 ## The sweep round (SWEEP.md, 2026-11-12; settings version 460; nothing seen in game yet)
 

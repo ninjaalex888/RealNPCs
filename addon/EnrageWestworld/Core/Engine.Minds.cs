@@ -991,6 +991,14 @@ namespace EnrageWestworld.Core
                         Make = () => Ties.Thought(t, p.Id, seed, dead)
                     });
             }
+            // someone of their ties out of sight (Core/AbsentThoughts.cs; [Mind] AbsentThoughts): the fellow witness of a killing,
+            // or the one they fear, scorn, envy or look up to, thought of alone
+            string absentKind, absentWho;
+            if (AbsentThoughts.Pick(p.Id, p.Personality, day, Store.FindResident, out absentKind, out absentWho) != null)
+            {
+                string ak = absentKind, aw = absentWho;
+                c.Add(new Minds.Candidate { Source = "absent:" + ak, Pull = AbsentThoughts.PullOf(ak) + Minds.Jitter(seed, "absent", 4), Make = () => AbsentThoughts.Line(ak, aw, seed, told) });
+            }
             if (day.Linked != null && day.Linked.Count > 0)
             {
                 WorryLink l = day.Linked[Voice.Hash(seed + "lw") % day.Linked.Count];

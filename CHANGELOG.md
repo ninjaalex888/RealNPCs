@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **People think of those who aren't there** (`[Mind] AbsentThoughts`, on; settings version 462). What one thinks of another (fear, contempt, envy, respect) showed only when the two stood in view of each other, and two who saw you kill thought of it only when they met. Now a person's own thoughts can go to someone of their ties from the last four days who is out of sight and alive: the one who saw the same killing ("Ruth saw it too. I wonder does Ruth sleep."), else the one they fear, look down on, envy or look up to, in words for someone absent ("Haven't seen Jack all day. I'll take that."). Testing row "Someone thinks of a person who isn't there".
 - **A worry's week has turns** (`[Mind] WorryTurns`, on; settings version 461). The eight days of a resident's worry used to sound the same within each stage. Now the third day looks back on how it began ("Two days back it was a sum I owed. Now it's a man I hide from."), the fourth holds to a small hope, whether or not it comes good, and the sixth is the eve before it's settled ("Tomorrow I face Whitlow with what I've got."): 42 new turns, three for each of the fourteen worries, in about a quarter of a worry's thoughts. A worry you settled for them keeps its own lines. Testing row "A worry's turn" shows the nearest worried person's three turns, a press each.
 ## 0.7.27 (2026-11-12)
 

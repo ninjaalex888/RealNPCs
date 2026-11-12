@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 461;
+        public const int CurrentVersion = 462;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -484,6 +484,7 @@ namespace EnrageWestworld.Core
         public bool GamblersBorrow = true;   // [Scenes] a gambler at the worst of his cards borrows from a man of his town (a friend first), who lends, refuses or snaps; paid back or never (Links, Exchanges.MakeLinked; FIVEDAY item 32a, settings version 284)
         public bool TieGossip = true;   // [Mind] word of your deeds moves along the town's ties: friends tomorrow, others the day after, bent at each telling (Core/TieGossip.cs; FIVEDAY item 23, settings version 275)
         public bool SharedFright = true;   // [Mind] two who both saw you kill are tied by it: their tie warms, they keep clear of you together, and their quiet talks are of it (Core/SharedFright.cs; FIVEDAY item 22, settings version 274)
+        public bool AbsentThoughts = true;   // [Mind] a person's own thoughts go to someone of their ties out of sight: one who saw the same killing, or one they fear, scorn, envy or look up to (Core/AbsentThoughts.cs; LIVES item 1b) (settings version 462)
         public bool SurvivorsChanged = true;   // [Mind] one you beat or robbed comes back changed: with friends to get even, with standing for having faced you, or broken and keeping clear (Core/Survivors.cs; FIVEDAY item 21, settings version 273)
         public bool TrustSlow = true;   // [Mind] a wrong of yours undoes three greetings at once, and kindness to someone you wronged counts for less until time and kindness bring them back (Core/Trust.cs; FIVEDAY item 20, settings version 272)
         public bool PeakEnd = true;   // [Mind] a meeting with you is remembered by its strongest moment and how it ended, not its length (Core/PeakEnd.cs; FIVEDAY item 18, settings version 270)
@@ -1104,6 +1105,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 462)
+                    log?.Invoke("Settings: new in this version: [Mind] AbsentThoughts (on): people think of those who aren't there: a fellow witness of a killing, or the one they fear, scorn, envy or look up to.");
                 if (s.SettingsVersion < 461)
                     log?.Invoke("Settings: new in this version: [Mind] WorryTurns (on): a worry's week has turns in people's thoughts: looking back, a hope, the eve before it's settled.");
                 if (s.SettingsVersion < 460)
@@ -2110,6 +2113,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("UndertakerKnows = " + B(UndertakerKnows) + "   ; the undertaker (Rhodes, Armadillo) thinks of his town's dead of the last week by name and by how they died: the fever, the mine, the rope, a gun, by their own hand, or by you; a busy week; and, when you've killed twice or more, you as trade");
             b.AppendLine("TieGossip = " + B(TieGossip) + "   ; inside a town, word of your violence and your thieving moves person to person along the ties the street made: the friends of someone who knows hear it the next day, anyone else they're tied to the day after, a little more bent at each telling; who heard it thinks of who told them. A week on, the talk is done");
             b.AppendLine("SharedFright = " + B(SharedFright) + "   ; two people who both saw you kill are tied by it: the tie between them warms, for two weeks they keep clear of you together when both are about, and when the street's quiet talk falls to the two of them it is mostly about that, low-voiced");
+            b.AppendLine("AbsentThoughts = " + B(AbsentThoughts) + "   ; people think of someone who isn't there: of their ties of the last four days, out of sight and alive, the one who saw the same killing with them, or the one they fear, look down on, envy or look up to, in words for an absent person; false: those views and the shared fright show only when the two meet");
             b.AppendLine("SurvivorsChanged = " + B(SurvivorsChanged) + "   ; someone you beat or robbed and left alive comes back changed, a day on, by who they are: angry and with friends, they bring up to two of them when they call you out (and they fight with them); the bold have more standing for having faced you; the timid are broken by it, never come at you, keep clear and stay home; their thoughts and their friends' say which");
             b.AppendLine("TrustSlow = " + B(TrustSlow) + "   ; trust lost fast, won slow: a shove, a beating, a robbery or a theft of yours takes three greetings' worth off their liking at once, and for 60 days your greetings count for less with them (a fifth the day after, the rest coming back over three weeks, sooner for the forgiving, and with each kindness since). Someone you never wronged: three hellos fill the bar as before");
             b.AppendLine("PeakEnd = " + B(PeakEnd) + "   ; a meeting with you (what they feel about you, no more than a quarter hour between) is remembered by its strongest moment and how it ended, not by how long it went on: a long friendly talk ended by a shove is remembered as the shove; the moments between fade to a quarter");
