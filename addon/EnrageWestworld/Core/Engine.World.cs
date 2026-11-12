@@ -562,7 +562,7 @@ namespace EnrageWestworld.Core
         {
             if (d == null || !Cfg.Deeds)
                 return null;
-            if (HorseTalk.On && d.Horse == null && PlayerHorse != null && now - PlayerHorseAt <= HorseTalk.RideMinutes && (Deeds.IsViolent(d.Kind) || d.Weight >= 30))
+            if (HorseTalk.On && d.Horse == null && PlayerHorse != null && now >= PlayerHorseAt && now - PlayerHorseAt <= HorseTalk.RideMinutes && HorseTalk.Told(d.Kind))
                 d.Horse = PlayerHorse;   // the horse he rode for it, or rode in on (LIVES item 6a)
             // fold repeats: hunting the same day, the same shop the same day
             Deed same = Store.Deeds.LastOrDefault(x => x.Kind == d.Kind && x.Where == d.Where && now - x.At < (d.Kind == "hunt" ? 1440 : 720) &&

@@ -31,11 +31,8 @@ namespace EnrageWestworld.InGame
                 if (_horseTalkWords != null)
                     Log.Detail("HORSE talk: you ride " + _horseTalkWords);
             }
-            if (_horseTalkWords != null)
-            {
-                _engine.PlayerHorse = _horseTalkWords;
-                _engine.PlayerHorseAt = _store.LastGameMin;
-            }
+            _engine.PlayerHorse = _horseTalkWords;   // null on a mount whose words can't be read: not the last horse's (the review)
+            _engine.PlayerHorseAt = _store.LastGameMin;
         }
     }
 }

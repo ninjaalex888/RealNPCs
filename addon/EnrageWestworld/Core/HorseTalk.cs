@@ -36,12 +36,12 @@ namespace EnrageWestworld.Core
 
         private static readonly string[][] Coats =
         {
-            new[] { "white", "white" }, new[] { "black", "black" }, new[] { "chestnut", "chestnut" }, new[] { "bay", "bay" },
+            new[] { "liverchestnut", "liver chestnut" }, new[] { "whiteroan", "white roan" }, new[] { "white", "white" }, new[] { "black", "black" }, new[] { "chestnut", "chestnut" }, new[] { "bay", "bay" },
             new[] { "dapplegrey", "dapple grey" }, new[] { "grey", "grey" }, new[] { "gray", "grey" }, new[] { "palomino", "palomino" },
             new[] { "buckskin", "buckskin" }, new[] { "dun", "dun" }, new[] { "roan", "roan" }, new[] { "sorrel", "sorrel" },
             new[] { "pinto", "pinto" }, new[] { "brown", "brown" }, new[] { "silver", "silver" }, new[] { "cream", "cream" },
             new[] { "champagne", "pale gold" }, new[] { "leopard", "spotted" }, new[] { "blanket", "spotted" }, new[] { "overo", "spotted" },
-            new[] { "tobiano", "spotted" }, new[] { "splashed", "splashed" }, new[] { "sooty", "dark" }, new[] { "liver", "liver chestnut" },
+            new[] { "tobiano", "spotted" }, new[] { "splashed", "splashed" }, new[] { "sooty", "dark" },
         };
 
         /// "a grey Arabian" from "a_c_horse_arabian_grey", or null for a model that isn't a horse or can't be read.
@@ -70,6 +70,8 @@ namespace EnrageWestworld.Core
                 }
             if (breed == null && coat == null)
                 return null;
+            if ((breed == null || breed == "horse") && coat == null)
+                return null;   // "a horse" tells nobody anything, and would make two horses one (the review)
             string words = (coat != null ? coat + " " : "") + (breed ?? "horse");
             if (breed != null && breed != "horse" && breed != "nag" && breed != "cob" && breed != "roadster" && breed != "paint" && breed != "mustang" && coat == null)
                 words = breed + " horse";
@@ -77,6 +79,14 @@ namespace EnrageWestworld.Core
         }
 
         private static bool StartsVowel(string s) { return s.Length > 0 && "aeiouAEIOU".IndexOf(s[0]) >= 0; }
+
+        private static readonly HashSet<string> Wrongs = new HashSet<string> { "theft", "robbery", "horsetheft", "looting", "jailbreak", "assault", "reveal" };
+
+        /// A deed the town tells with the horse: a killing or a wrong (never a wedding, a rescue, a kindness; the review).
+        public static bool Told(string kind)
+        {
+            return kind != null && (Deeds.IsViolent(kind) || Wrongs.Contains(kind));
+        }
 
         /// The tale's who, with the horse while the tale keeps fairly to the truth ("a stranger on a grey Arabian").
         public static string With(string who, string horse, int fidelity)

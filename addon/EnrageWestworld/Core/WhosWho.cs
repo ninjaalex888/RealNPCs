@@ -91,7 +91,8 @@ namespace EnrageWestworld.Core
             if (more > 0)
                 b.Append("\n\n" + more + " more, longer ago.");
             if (faceless > 0)
-                b.Append("\n\n" + Grammar.UpperFirst((more > 0 ? "and " : "") + (faceless == 1 ? "one other whose name you never learned." : faceless + " others whose names you never learned.")));
+                b.Append("\n\n" + Grammar.UpperFirst((more > 0 ? "and " : "") + (listed.Count == 0 ? (faceless == 1 ? "one person whose name you never learned." : faceless + " people whose names you never learned.")
+                                                                                       : (faceless == 1 ? "one other whose name you never learned." : faceless + " others whose names you never learned."))));
             return b.ToString();
         }
 

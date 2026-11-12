@@ -23,7 +23,7 @@ namespace EnrageWestworld.Core
             _horseTale = null;
             TownRumour newest = null;
             foreach (TownRumour r in Store.TownRumours)
-                if (r != null && r.Town == town && r.DeedId != null && now - r.At >= 0 && now - r.At < 7 * 1440L && (newest == null || r.At > newest.At))
+                if (r != null && r.Town == town && r.DeedId != null && r.Fidelity >= HorseTalk.TellsAtFidelity && now - r.At >= 0 && now - r.At < 7 * 1440L && (newest == null || r.At > newest.At))   // a tale that still says the horse (the review)
                     newest = r;
             if (newest == null)
                 return null;
