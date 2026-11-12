@@ -481,7 +481,7 @@ namespace EnrageWestworld.Core
         public bool PlacesMourned = true;   // [Mind] where someone died near you by another hand (yours are PlaceMemory's, PlacesRemember), those close to them stop there for three weeks after, turn to it, think of them; the dearest kneel (THREEHOUR item 5; settings version 360)
         public bool MemorialPhotos = true;   // [Mind] Saint Denis and Blackwater: the photographer thinks of the memorial portraits of the town's dead, and mourners of the photograph that came (Core/MemorialPhoto.cs; FIVEDAY R11, settings version 299)
         public bool UndertakerKnows = true;   // [Mind] the undertaker thinks of the week's dead of his town by name and cause, a busy week, and you as trade (Core/Undertaker.cs; FIVEDAY R10, settings version 298)
-        public bool GamblersBorrow = true;   // [Mind] a gambler at the worst of his cards borrows from a man of his town (a friend first), who lends, refuses or snaps; paid back or never (Links, Exchanges.MakeLinked; FIVEDAY item 32a, settings version 284)
+        public bool GamblersBorrow = true;   // [Scenes] a gambler at the worst of his cards borrows from a man of his town (a friend first), who lends, refuses or snaps; paid back or never (Links, Exchanges.MakeLinked; FIVEDAY item 32a, settings version 284)
         public bool TieGossip = true;   // [Mind] word of your deeds moves along the town's ties: friends tomorrow, others the day after, bent at each telling (Core/TieGossip.cs; FIVEDAY item 23, settings version 275)
         public bool SharedFright = true;   // [Mind] two who both saw you kill are tied by it: their tie warms, they keep clear of you together, and their quiet talks are of it (Core/SharedFright.cs; FIVEDAY item 22, settings version 274)
         public bool SurvivorsChanged = true;   // [Mind] one you beat or robbed comes back changed: with friends to get even, with standing for having faced you, or broken and keeping clear (Core/Survivors.cs; FIVEDAY item 21, settings version 273)
@@ -1451,7 +1451,7 @@ namespace EnrageWestworld.Core
                 if (s.SettingsVersion < 285)
                     log?.Invoke("Settings: new in this version: [Scenes] KinTownWrongs (on): kin take up a wrong one townsman did another.");
                 if (s.SettingsVersion < 284)
-                    log?.Invoke("Settings: new in this version: [Mind] GamblersBorrow (on): a gambler borrows from a man of his town.");
+                    log?.Invoke("Settings: new in this version: [Scenes] GamblersBorrow (on): a gambler borrows from a man of his town.");
                 if (s.SettingsVersion < 283)
                     log?.Invoke("Settings: new in this version: [World] FenceCutters (on): wire cut in the night, and a feud that climbs.");
                 if (s.SettingsVersion < 282)

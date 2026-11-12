@@ -30,7 +30,7 @@ namespace EnrageWestworld.Core
         /// The worries that have a real person at the other end.
         public static bool Linkable(string kind)
         {
-            return kind == "debt" || kind == "feud" || kind == "courting" || kind == "cards";   // cards: the man the gambler borrows from (FIVEDAY item 32a; [Mind] GamblersBorrow)
+            return kind == "debt" || kind == "feud" || kind == "courting" || kind == "cards";   // cards: the man the gambler borrows from (FIVEDAY item 32a; [Scenes] GamblersBorrow)
         }
 
         /// Whether `id` is this link's worrier: the id itself, or the resident whose worry they live on with since enRAGE took
