@@ -420,6 +420,7 @@ namespace EnrageWestworld.InGame
             foreach (Happening e in _store.WorldLog)
                 if (e.DoerId == "player" && !e.Test && e.Town == town && e.At >= since && Fondness.IsKindness(e.Kind))
                     kind++;
+            kind += Reputation.GoodDeedsKnown(_store.Deeds, town, since);   // (SEAMS item 19)
             string standing = Reputation.Standing(kills, kind);
             if (standing == null)
                 return;
