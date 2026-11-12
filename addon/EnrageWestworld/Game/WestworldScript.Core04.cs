@@ -283,6 +283,7 @@ namespace EnrageWestworld.InGame
             Core.SessionClock.On = _cfg.SessionClock;     // [World] SessionClock (DEPTH item 16)
             Core.Familiarity.On = _cfg.Familiarity;       // [Mind] Familiarity (DEPTH item 17)
             Core.FeudArcs.On = _cfg.FeudArcs;             // [Mind] FeudArcs (DEPTH item 18)
+            Core.PeopleTrim.On = _cfg.PeopleTrim;         // [World] PeopleTrim (SWEEP item 3)
             Core.SleepOnIt.On = _cfg.SleepOnIt;           // [Mind] SleepOnIt (DEPTH item 19)
             Mourning.GraveNightOn = _cfg.GraveNight;      // [World] GraveNight (DEPTH reserve R1)
             Core.NoteMeet.On = _cfg.NoteMeet;             // [Scenes] NoteMeet (DEPTH reserve R2)

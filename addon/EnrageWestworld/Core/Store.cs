@@ -72,6 +72,29 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, long> WorryWorsened;   // id -> the game minute the player turned their worry the wrong way (Core/Helps.cs; SIXDAY item 9); null until one
         [DataMember(EmitDefaultValue = false)] public Dictionary<string, string> WorrySeedOf;   // enRAGE's person id -> the resident id whose worry they live on with (Engine.CarryPerson; NIGHT3 For Lex 9a); null until one is taken up
         [DataMember(EmitDefaultValue = false)] public PaceState Pace = new PaceState();                           // when things may happen again (Pacing.cs)
+        // townsfolk whose bare record the trim took out, rolled once and not waking: the roll reads this first (Core/PeopleTrim.cs;
+        // SWEEP item 3), so a record made again isn't rolled again
+        [DataMember(EmitDefaultValue = false)] public List<string> RolledAsleep;
+        private HashSet<string> _rolledAsleep;
+        public int PeopleTrimmed;   // this session (F7, the log)
+
+        public bool RolledAsleepHas(string id)
+        {
+            if (id == null || RolledAsleep == null || RolledAsleep.Count == 0)
+                return false;
+            if (_rolledAsleep == null || _rolledAsleep.Count != RolledAsleep.Count)
+                _rolledAsleep = new HashSet<string>(RolledAsleep);
+            return _rolledAsleep.Contains(id);
+        }
+
+        public void RolledAsleepAdd(string id)
+        {
+            if (id == null || RolledAsleepHas(id))
+                return;
+            (RolledAsleep ?? (RolledAsleep = new List<string>())).Add(id);
+            _rolledAsleep = null;
+        }
+
         public List<string> RewoundShares = new List<string>();   // deaths we told enRAGE of that a reload undid; the game side takes them back
         private Dictionary<string, DeathEntry> _deathIndex;
 

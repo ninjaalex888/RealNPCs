@@ -44,6 +44,8 @@ namespace EnrageWestworld.Core
         {
             Person p = new Person { Id = key, Name = name, Woman = woman, Home = town };
             PersonState st = Store.Get(p);
+            if (!st.WakeRolled && Store.RolledAsleepHas(key))
+                st.WakeRolled = true;   // rolled before, not waking, and its record trimmed since (Core/PeopleTrim.cs): not rolled again
             if (!st.WakeRolled)
             {
                 st.WakeRolled = true;

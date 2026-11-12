@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 459;
+        public const int CurrentVersion = 460;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -532,6 +532,7 @@ namespace EnrageWestworld.Core
         public bool ColdSnaps = true;   // [World] twice a winter, five days of bitter cold in the high country; an old man may not wake, off screen (Core/ColdSnap.cs; TENHOUR R3, settings version 350)
         public bool TownRivals = true;   // [World] a tale crossing to a rival town arrives more bent, and people say what they think of the place (Core/TownRivals.cs; TENHOUR R4, settings version 351)
         public bool WeekColumn = true;   // [World] on a Sunday the paper carries a column of what really happened in the town you're nearest that week (Core/WeekColumn.cs; TENHOUR R5, settings version 352)
+        public bool PeopleTrim = true;   // [World] once a load, the records of people nothing is kept of (only a name, nobody's tie, debt, grudge or kin) are let go (Core/PeopleTrim.cs; SWEEP item 3; settings version 460)
         public bool LettersHome = true;   // [World] those who left on the train write to a friend still in the town, and the friend has it on their mind for a few days (Core/LettersHome.cs; TENHOUR R7, settings version 354)
         public bool RoundupSeason = true;   // [World] the fortnight after each roundup, the cattle towns fill with paid-off hands, and one comes back hurt (Core/Roundup.cs; TENHOUR R1, settings version 348)
         public bool PosseRides = true;   // [World] after a bad crime in a town, three to five of its men ride out as a posse, off screen, and come back a day on with nothing, a stranger, or one of them dead (Core/PosseRides.cs; FIVEDAY R32, settings version 321)
@@ -1102,6 +1103,8 @@ namespace EnrageWestworld.Core
                     log?.Invoke("Settings: thoughts vary over an hour of play now, not a few minutes; new in this version: [Mind] SaidLately (on): the street's talk passes over lines said lately.");
                 if (s.SettingsVersion < 184)
                     log?.Invoke("Settings: new in this version: [Scenes] LawShootsThieves (50): a lawman near may shoot the one who picked your pocket instead of running him down.");
+                if (s.SettingsVersion < 460)
+                    log?.Invoke("Settings: new in this version: [World] PeopleTrim (on): the save lets go of the people it keeps nothing of but a name.");
                 if (s.SettingsVersion < 459)
                     log?.Invoke("Settings: new in this version: the gambler's loan (with [Scenes] GamblersBorrow, on): a gambler at the worst of his cards now meets the man he borrows from, as was meant since 0.7.25 and never played.");
                 if (s.SettingsVersion < 458)
@@ -2513,6 +2516,7 @@ b.AppendLine("FriendCalls = " + B(FriendCalls) + "   ; a friend of yours in town
             b.AppendLine("ColdSnaps = " + B(ColdSnaps) + "   ; twice a winter, five days of bitter cold at Colter, Wapiti and Strawberry: the store runs out of coal oil, and an old man may not wake. Someone can die of it, off screen");
             b.AppendLine("TownRivals = " + B(TownRivals) + "   ; a tale crossing to a rival town (Valentine and Strawberry, say) arrives more bent than the miles would make it, and people near you say what they think of the place");
             b.AppendLine("WeekColumn = " + B(WeekColumn) + "   ; on a Sunday the paper carries a column of what really happened in the town you're nearest that week: who was buried, who married, how many fights");
+            b.AppendLine("PeopleTrim = " + B(PeopleTrim) + "   ; once a load, when more than a thousand people are kept, the records of those nothing is kept of but a name (no word, feeling, memory, mark, debt, tie, grudge, kin or waking) are let go, so the save stops growing with every passer-by looked at; made again, the same, if they're looked at again. Off: everyone kept, as before");
             b.AppendLine("LettersHome = " + B(LettersHome) + "   ; those who left on the train write to a friend still in the town, and the friend has it on their mind for a few days");
             b.AppendLine("RoundupSeason = " + B(RoundupSeason) + "   ; in the fortnight after each roundup (July and November) the cattle towns fill with paid-off hands, and one comes back hurt");
             b.AppendLine("PosseRides = " + B(PosseRides) + "   ; the day after a bad crime in a town (a killing or a robbery with talk of it), three to five of its own men ride out as a posse; off screen, they come back a day on with nothing, with a stranger they say did it, or one short (a posse man killed, mourned like anyone); while they're out the town thinks of the road");
