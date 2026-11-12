@@ -12,6 +12,20 @@ A mod for Red Dead Redemption 2 that gives the people of the world lives of thei
 >
 > **Story Mode only.** Don't run script mods in Red Dead Online.
 
+## Your graphics card: RealNPCs needs no extra memory
+
+**RealNPCs itself needs no graphics card memory (VRAM) of its own.** It's a script (a DLL that ScriptHookRDR2 runs on the CPU), and it draws its names, thoughts and panel with the game's own text, so if your PC runs Red Dead Redemption 2, it runs RealNPCs. Its only cost is a little CPU time each frame, kept to a budget.
+
+Only the two **optional** extras below use your graphics card, and both are off unless you install them:
+
+| | Graphics card memory free beside RDR2 |
+| --- | --- |
+| **RealNPCs on its own** | **none extra**: the game's own requirements |
+| + the AI model (Ollama, `llama3.2:3b` as it comes) | about 2.5 GB (`llama3.1:8b`: about 5.5 GB) |
+| + the voice server (NVIDIA only) | about 3 GB |
+
+Every feature works without either: people think and speak in RealNPCs' own written lines.
+
 ## New: the people speak in their own voices (optional, recommended)
 
 > **The headline of 0.7.19.** With the voice server running, the people near you say RealNPCs' words out loud in their own voices: the thought over someone's head is murmured in that person's voice a moment after it shows, and what people say near you (the street's scenes, their talks with each other, Talk's answers, the encounters) is said in the speaker's own voice, the subtitle coming with it. It's played for the first time on 2026-11-03 and it's good: the town talks.
